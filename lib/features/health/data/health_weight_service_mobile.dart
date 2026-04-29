@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:health/health.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
@@ -8,6 +9,7 @@ const _logName = 'HealthWeightService';
 const _weightTypes = <HealthDataType>[HealthDataType.WEIGHT];
 const _weightCacheTtl = Duration(minutes: 5);
 const _recentPastWeightQueryWindow = Duration(days: 30);
+const _appWeightClientRecordPrefix = 'yamt-weight';
 
 /// Create health weight service.
 HealthWeightService createHealthWeightService() {
@@ -29,6 +31,7 @@ class MobileHealthWeightService implements HealthWeightService {
   final DateTime Function() _now;
   final Duration _cacheTtl;
   bool _isConfigured = false;
+  String? _packageName;
   _WeightSampleCacheEntry? _cache;
 
   @override
@@ -123,6 +126,8 @@ class MobileHealthWeightService implements HealthWeightService {
       value: weightKg,
       type: HealthDataType.WEIGHT,
       startTime: recordedAt,
+      clientRecordId: _weightClientRecordId(recordedAt),
+      clientRecordVersion: _weightClientRecordVersion(),
       recordingMethod: RecordingMethod.manual,
     );
 
@@ -140,11 +145,45 @@ class MobileHealthWeightService implements HealthWeightService {
     return saved;
   }
 
+  @override
+  Future<bool> deleteWeightSample(HealthWeightSample sample) async {
+    await _ensureConfigured();
+    if (!sample.isFromThisApp) {
+      log(
+        'Skipped weight delete. Sample belongs to another source. '
+        'source=${sample.sourcePackageName}',
+        name: _logName,
+      );
+      return false;
+    }
+
+    final uuid = sample.uuid?.trim();
+    if (uuid == null || uuid.isEmpty) {
+      log('Skipped weight delete. Missing sample uuid.', name: _logName);
+      return false;
+    }
+
+    final deleted = await _health.deleteByUUID(
+      uuid: uuid,
+      type: HealthDataType.WEIGHT,
+    );
+    if (deleted) {
+      _cache = null;
+    }
+    log(
+      'Deleted app-owned weight sample. '
+      'uuid=$uuid deleted=$deleted',
+      name: _logName,
+    );
+    return deleted;
+  }
+
   Future<void> _ensureConfigured() async {
     if (_isConfigured) {
       return;
     }
     await _health.configure();
+    _packageName = (await PackageInfo.fromPlatform()).packageName;
     _isConfigured = true;
   }
 
@@ -214,11 +253,32 @@ class MobileHealthWeightService implements HealthWeightService {
     if (numericValue == null) {
       return null;
     }
+    final sourcePackageName = point.sourceName.trim().isNotEmpty
+        ? point.sourceName.trim()
+        : point.sourceId.trim();
+    final packageName = _packageName?.trim();
     return HealthWeightSample(
       recordedAt: point.dateFrom.toLocal(),
       weightKg: numericValue.toDouble(),
+      uuid: point.uuid.trim().isEmpty ? null : point.uuid.trim(),
+      sourcePackageName: sourcePackageName.isEmpty ? null : sourcePackageName,
+      isFromThisApp:
+          packageName != null &&
+          packageName.isNotEmpty &&
+          sourcePackageName == packageName,
     );
   }
+}
+
+String _weightClientRecordId(DateTime recordedAt) {
+  final day = DateTime(recordedAt.year, recordedAt.month, recordedAt.day);
+  final month = day.month.toString().padLeft(2, '0');
+  final date = day.day.toString().padLeft(2, '0');
+  return '$_appWeightClientRecordPrefix-${day.year}-$month-$date';
+}
+
+double _weightClientRecordVersion() {
+  return DateTime.now().millisecondsSinceEpoch.toDouble();
 }
 
 class _WeightSampleCacheEntry {

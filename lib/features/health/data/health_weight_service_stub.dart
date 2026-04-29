@@ -24,4 +24,9 @@ class _UnsupportedHealthWeightService implements HealthWeightService {
   }) async {
     return false;
   }
+
+  @override
+  Future<bool> deleteWeightSample(HealthWeightSample sample) async {
+    return false;
+  }
 }

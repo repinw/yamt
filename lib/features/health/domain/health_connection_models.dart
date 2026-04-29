@@ -1,3 +1,7 @@
+/// Error message used when Android activity recognition permission is missing.
+const healthActivityRecognitionPermissionErrorMessage =
+    'Android activity recognition permission not granted.';
+
 /// Defines health platform.
 enum HealthPlatform {
   /// Unsupported.

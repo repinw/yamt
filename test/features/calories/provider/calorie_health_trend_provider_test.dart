@@ -76,6 +76,12 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   Future<void> installHealthConnect() async {}
 
   @override
+  Future<void> openAppPermissionSettings() async {}
+
+  @override
+  Future<void> openHealthPermissionSettings() async {}
+
+  @override
   Future<HealthConnectionStatus> loadStatus() async => status;
 
   @override
@@ -117,6 +123,11 @@ class _FakeHealthWeightService implements HealthWeightService {
               sample.recordedAt.isBefore(endExclusive),
         )
         .toList(growable: false);
+  }
+
+  @override
+  Future<bool> deleteWeightSample(HealthWeightSample sample) async {
+    return true;
   }
 
   @override

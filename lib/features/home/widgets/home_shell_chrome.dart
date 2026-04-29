@@ -8,6 +8,8 @@ const _compactHomeChromeTextScaleThreshold = 1.15;
 const _bottomNavLabelMinItemWidth = 64.0;
 const _regularHomeTopBarHeight = 76.0;
 const _compactHomeTopBarHeight = 88.0;
+const _regularHomeTopBarWithSubtitleHeight = 86.0;
+const _compactHomeTopBarWithSubtitleHeight = 96.0;
 
 double _effectiveTextScale(
   BuildContext context, {
@@ -64,6 +66,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.compact = false,
     this.titleColor,
     this.titleIcon,
+    this.subtitle,
   });
 
   /// The title.
@@ -81,10 +84,23 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// The title icon.
   final IconData? titleIcon;
 
+  /// Optional subtitle shown below the title.
+  final String? subtitle;
+
   @override
-  Size get preferredSize => Size.fromHeight(
-    compact ? _compactHomeTopBarHeight : _regularHomeTopBarHeight,
-  );
+  Size get preferredSize {
+    if (subtitle != null) {
+      return Size.fromHeight(
+        compact
+            ? _compactHomeTopBarWithSubtitleHeight
+            : _regularHomeTopBarWithSubtitleHeight,
+      );
+    }
+
+    return Size.fromHeight(
+      compact ? _compactHomeTopBarHeight : _regularHomeTopBarHeight,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,22 +144,45 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
                             ),
                           ],
                           Expanded(
-                            child: Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  (compact
-                                          ? Theme.of(
-                                              context,
-                                            ).textTheme.titleLarge
-                                          : Theme.of(
-                                              context,
-                                            ).textTheme.headlineSmall)
-                                      ?.copyWith(
-                                        color: titleColor ?? colors.onSurface,
-                                        fontWeight: FontWeight.w800,
-                                      ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style:
+                                      (compact
+                                              ? Theme.of(
+                                                  context,
+                                                ).textTheme.titleLarge
+                                              : Theme.of(
+                                                  context,
+                                                ).textTheme.headlineSmall)
+                                          ?.copyWith(
+                                            color:
+                                                titleColor ?? colors.onSurface,
+                                            fontWeight: FontWeight.w800,
+                                            height: subtitle == null ? null : 1,
+                                          ),
+                                ),
+                                if (subtitle != null) ...[
+                                  const SizedBox(height: AppSpacing.xxs),
+                                  Text(
+                                    subtitle!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(
+                                          color: colors.onSurfaceVariant,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ],

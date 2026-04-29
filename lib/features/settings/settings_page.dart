@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
@@ -10,6 +11,13 @@ import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_sheet.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_start_dialog.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -35,6 +43,9 @@ class SettingsPage extends StatelessWidget {
       _HouseholdTile(l10n: l10n),
       _AccountTile(l10n: l10n),
       const _HealthConnectTile(),
+      const _CalorieGoalTile(),
+      const _CalorieGoalStartTile(),
+      const _CalorieGoalCalculatorTile(),
       const _ThemeModeTile(),
       const _SeedColorTile(),
       _NotImplementedTile(
@@ -82,6 +93,120 @@ class SettingsPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CalorieGoalTile extends ConsumerWidget {
+  const _CalorieGoalTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final settingsState = ref.watch(calorieGoalControllerProvider);
+    final settings = settingsState.asData?.value;
+    final numberFormat = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toString(),
+    );
+    final currentGoal = settings?.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
+
+    return ListTile(
+      leading: const Icon(Icons.flag_outlined),
+      title: Text(l10n.caloriesSetGoalAction),
+      subtitle: Text(
+        settings?.hasGoal == true
+            ? '${numberFormat.format(currentGoal.round())} '
+                  '${l10n.caloriesUnitKcal}'
+            : 'Kein Ziel gesetzt',
+      ),
+      trailing: settingsState.isLoading
+          ? const SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : null,
+      enabled: !settingsState.isLoading,
+      onTap: settingsState.isLoading
+          ? null
+          : () => unawaited(
+              showCalorieGoalDialog(
+                context: context,
+                currentGoal: currentGoal,
+                onSaveGoal: ref
+                    .read(calorieGoalControllerProvider.notifier)
+                    .setGoal,
+                onClearGoal: ref
+                    .read(calorieGoalControllerProvider.notifier)
+                    .clearGoal,
+              ),
+            ),
+    );
+  }
+}
+
+class _CalorieGoalStartTile extends ConsumerWidget {
+  const _CalorieGoalStartTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final settingsState = ref.watch(calorieGoalControllerProvider);
+    final settings = settingsState.asData?.value;
+    final latestGoal = settings?.latestGoalEntry;
+    final hasGoal = latestGoal != null;
+    final locale = Localizations.localeOf(context).toString();
+    final dateFormat = DateFormat.yMMMd(locale);
+    final initialGoalStartDate =
+        latestGoal?.effectiveCountingStartDate ?? DateTime.now();
+
+    return ListTile(
+      leading: const Icon(Icons.event_outlined),
+      title: Text(l10n.caloriesShiftGoalStartAction),
+      subtitle: Text(
+        hasGoal
+            ? dateFormat.format(initialGoalStartDate)
+            : 'Zuerst Ziel setzen',
+      ),
+      enabled: hasGoal && !settingsState.isLoading,
+      onTap: !hasGoal || settingsState.isLoading
+          ? null
+          : () => unawaited(
+              showCalorieGoalStartDialog(
+                context: context,
+                initialGoalStartDate: initialGoalStartDate,
+                onSaveGoalStart: (goalStartDate) {
+                  return ref
+                      .read(calorieGoalControllerProvider.notifier)
+                      .shiftGoalStart(goalStartDate: goalStartDate);
+                },
+              ),
+            ),
+    );
+  }
+}
+
+class _CalorieGoalCalculatorTile extends ConsumerWidget {
+  const _CalorieGoalCalculatorTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final settingsState = ref.watch(calorieGoalControllerProvider);
+    final settings = settingsState.asData?.value;
+
+    return ListTile(
+      leading: const Icon(Icons.calculate_outlined),
+      title: Text(l10n.caloriesCalculatorAction),
+      subtitle: Text(l10n.caloriesCalculatorOnboardingSubtitle),
+      enabled: settings != null && !settingsState.isLoading,
+      onTap: settings == null || settingsState.isLoading
+          ? null
+          : () => unawaited(
+              showCalorieGoalCalculatorSheet(
+                context,
+                initialSettings: settings,
+              ),
+            ),
     );
   }
 }
@@ -245,6 +370,10 @@ class _HealthConnectTile extends ConsumerWidget {
         accessState == HealthDataAccessState.permissionRequired ||
         accessState == HealthDataAccessState.historyRequired;
     final needsHistoryOnly = status?.needsHistoryOnly ?? false;
+    final shouldOpenPermissionSettings =
+        showsConnect && status?.errorMessage != null;
+    final shouldOpenAppPermissionSettings =
+        status?.errorMessage == healthActivityRecognitionPermissionErrorMessage;
 
     return ListTile(
       leading: Icon(
@@ -283,7 +412,11 @@ class _HealthConnectTile extends ConsumerWidget {
           : showsInstall
           ? () => _installHealthConnect(ref)
           : showsConnect
-          ? () => _connectHealth(context, ref)
+          ? shouldOpenPermissionSettings
+                ? shouldOpenAppPermissionSettings
+                      ? () => _openAppPermissionSettings(ref)
+                      : () => _openHealthPermissionSettings(ref)
+                : () => _connectHealth(context, ref)
           : () => _confirmDisconnect(context, ref),
     );
   }
@@ -305,6 +438,18 @@ class _HealthConnectTile extends ConsumerWidget {
     await ref
         .read(healthConnectionControllerProvider.notifier)
         .installHealthConnect();
+  }
+
+  Future<void> _openHealthPermissionSettings(WidgetRef ref) async {
+    await ref
+        .read(healthConnectionControllerProvider.notifier)
+        .openHealthPermissionSettings();
+  }
+
+  Future<void> _openAppPermissionSettings(WidgetRef ref) async {
+    await ref
+        .read(healthConnectionControllerProvider.notifier)
+        .openAppPermissionSettings();
   }
 
   Future<void> _confirmDisconnect(BuildContext context, WidgetRef ref) async {

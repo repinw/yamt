@@ -1,8 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yamt/features/health/data/health_weight_service_mobile.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    PackageInfo.setMockInitialValues(
+      appName: 'YAMT',
+      packageName: 'de.yamt.app',
+      version: '1.0.0',
+      buildNumber: '1',
+      buildSignature: '',
+    );
+  });
+
   test(
     'queries weights through now for recent past ranges and filters locally',
     () async {

@@ -4,16 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
@@ -115,6 +112,35 @@ PreparedMeal _preparedMeal(String id) {
   );
 }
 
+CalorieWeekOverview _weekOverview(DateTime selectedDay) {
+  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
+  final balanceStartDate = normalizedSelectedDay.subtract(
+    const Duration(days: 6),
+  );
+  final days = [
+    for (var offset = 0; offset < 7; offset += 1)
+      CalorieWeekDayOverview(
+        date: balanceStartDate.add(Duration(days: offset)),
+        totalKcal: 0,
+        goalKcal: 2000,
+        entryCount: 0,
+      ),
+  ];
+
+  return CalorieWeekOverview(
+    days: days,
+    totalConsumedKcal: 0,
+    totalGoalKcal: 14000,
+    remainingKcal: 14000,
+    balanceStartDate: balanceStartDate,
+    carryoverBeforeTodayKcal: 0,
+    todayFlexibleGoalKcal: 2000,
+    goalStartsInFuture: false,
+    nextGoalStartDate: null,
+    futureGoalKcal: null,
+  );
+}
+
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
@@ -129,6 +155,7 @@ Widget _buildHarness({
   InventoryItemsController? inventoryItemsController,
   PreparedMealsController? preparedMealsController,
 }) {
+  final today = normalizeDiaryDay(DateTime.now());
   final router = GoRouter(
     initialLocation: initialLocation,
     routes: <RouteBase>[
@@ -177,6 +204,9 @@ Widget _buildHarness({
   final container = ProviderContainer(
     overrides: [
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      calorieWeekOverviewForWindowProvider(today).overrideWith(
+        (ref) => _weekOverview(today),
+      ),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
       householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
@@ -227,156 +257,20 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('diary menu shows the calculator action and opens the sheet', (
+  testWidgets('diary tab shows selected day metadata in the shell bar', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
+    final today = normalizeDiaryDay(DateTime.now());
 
     await tester.pumpWidget(_buildHarness(settingsRepository: repository));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuButton));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(CaloriesPageKeys.appBarMenuCalculatorAction),
-      findsOneWidget,
-    );
-    await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuCalculatorAction));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Calorie calculator'), findsOneWidget);
+    expect(find.text('Heute'), findsOneWidget);
+    expect(find.text(formatDiaryHeaderDate(today)), findsOneWidget);
+    expect(find.text('Woche 1 Tag 7'), findsOneWidget);
   });
-
-  testWidgets('diary menu opens the shift goal start dialog', (tester) async {
-    final countingStartDate = DateTime(2026, 4, 12);
-    final repository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2200,
-        calculatorProfile: null,
-        effectiveDate: DateTime(2026, 4, 10, 16, 30),
-        countingStartDate: countingStartDate,
-      ),
-    );
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuButton));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(CaloriesPageKeys.appBarMenuShiftGoalStartAction),
-      findsOneWidget,
-    );
-
-    await tester.tap(
-      find.byKey(CaloriesPageKeys.appBarMenuShiftGoalStartAction),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Move goal start'), findsOneWidget);
-    expect(
-      find.text(DateFormat.yMMMd('en').format(countingStartDate)),
-      findsOneWidget,
-    );
-    expect(find.text('Start'), findsNothing);
-    expect(find.text('End'), findsNothing);
-  });
-
-  testWidgets(
-    'diary menu save keeps dismissed weekly check in when date is unchanged',
-    (tester) async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final dismissedAt = today.add(const Duration(hours: 10));
-      final pending = PendingCalorieGoalWeeklyCheckIn(
-        windowStartDate: today.subtract(
-          const Duration(days: weeklyCheckInWindowLengthDays),
-        ),
-        windowEndDate: today.subtract(const Duration(days: 1)),
-        dueDate: today,
-        dismissedAt: dismissedAt,
-      );
-      final repository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2200,
-          calculatorProfile: null,
-          effectiveDate: today,
-        ).copyWithPendingWeeklyCheckIn(pending),
-      );
-      addTearDown(repository.dispose);
-
-      await tester.pumpWidget(_buildHarness(settingsRepository: repository));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuButton));
-      await tester.pumpAndSettle();
-
-      await tester.tap(
-        find.byKey(CaloriesPageKeys.appBarMenuShiftGoalStartAction),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(CalorieGoalStartDialogKeys.saveButton));
-      await tester.pumpAndSettle();
-
-      final savedSettings = await repository.readSettings();
-      expect(savedSettings.goalHistory, hasLength(1));
-      expect(
-        savedSettings.pendingWeeklyCheckIn?.windowKey,
-        pending.windowKey,
-      );
-      expect(
-        savedSettings.pendingWeeklyCheckIn?.dismissedAt,
-        dismissedAt,
-      );
-    },
-  );
-
-  testWidgets('diary menu disables shift goal start without a goal', (
-    tester,
-  ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuButton));
-    await tester.pumpAndSettle();
-
-    final item = tester.widget<PopupMenuItem<dynamic>>(
-      find.byKey(CaloriesPageKeys.appBarMenuShiftGoalStartAction),
-    );
-    expect(item.enabled, isFalse);
-  });
-
-  testWidgets(
-    'diary menu disables shift goal start when only a future goal exists',
-    (tester) async {
-      final repository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2200,
-          calculatorProfile: null,
-          effectiveDate: DateTime.now().add(const Duration(days: 2)),
-        ),
-      );
-      addTearDown(repository.dispose);
-
-      await tester.pumpWidget(_buildHarness(settingsRepository: repository));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuButton));
-      await tester.pumpAndSettle();
-
-      final item = tester.widget<PopupMenuItem<dynamic>>(
-        find.byKey(CaloriesPageKeys.appBarMenuShiftGoalStartAction),
-      );
-      expect(item.enabled, isFalse);
-    },
-  );
 
   testWidgets('inventory tab hides shell fab when inventory is empty', (
     tester,

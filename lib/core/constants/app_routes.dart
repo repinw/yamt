@@ -41,7 +41,7 @@ abstract final class AppRoutes {
   /// Shopping home route.
   static const homeShopping = '/home/shopping';
 
-  /// Calories home route.
+  /// Diary/Tagebuch home route.
   static const homeCalories = '/home/calories';
 
   /// Burn Week mock route.
