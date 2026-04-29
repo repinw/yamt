@@ -86,6 +86,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     if (state != AppLifecycleState.resumed || !mounted) {
       return;
     }
+    ref.read(diaryCalendarControllerProvider.notifier).refreshToday();
     ref.invalidate(healthConnectionControllerProvider);
   }
 

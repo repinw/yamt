@@ -53,14 +53,12 @@ Future<void> _showWeightDialog({
   required DateTime selectedDay,
   required DateTime day,
   required double? initialWeightKg,
+  required bool hasManualWeight,
   required bool canClearWeight,
   required HealthWeightSample? healthSample,
 }) {
   final locale = Localizations.localeOf(context).toLanguageTag();
   final dayLabel = DateFormat.yMMMd(locale).format(day);
-  final controller = ref.read(
-    manualHealthWeightEntriesControllerProvider.notifier,
-  );
 
   return showCalorieHealthWeightDialog(
     context: context,
@@ -68,7 +66,9 @@ Future<void> _showWeightDialog({
     initialWeightKg: initialWeightKg,
     hasManualWeight: canClearWeight,
     onSaveWeight: (weightKg) async {
-      final saved = await controller.saveEntry(day: day, weightKg: weightKg);
+      final saved = await ref
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .saveEntry(day: day, weightKg: weightKg);
       if (saved) {
         _refreshWeightDependents(
           ref,
@@ -79,12 +79,14 @@ Future<void> _showWeightDialog({
       return saved;
     },
     onClearWeight: () async {
-      final deleted = healthSample?.isFromThisApp == true
-          ? await _deleteAppOwnedHealthWeight(
+      final deleted = hasManualWeight
+          ? await ref
+                .read(manualHealthWeightEntriesControllerProvider.notifier)
+                .deleteEntryForDay(day)
+          : await _deleteAppOwnedHealthWeight(
               ref: ref,
               sample: healthSample,
-            )
-          : await controller.deleteEntryForDay(day);
+            );
       if (deleted) {
         _refreshWeightDependents(
           ref,
@@ -121,6 +123,7 @@ class _WeightDetailsCard extends ConsumerWidget {
             selectedDay: normalizedSelectedDay,
             day: normalizedSelectedDay,
             initialWeightKg: data.selectedWeightKg,
+            hasManualWeight: selectedWeightDay?.hasManualWeight ?? false,
             canClearWeight: selectedWeightDay?.canDeleteWeight ?? false,
             healthSample: selectedWeightDay?.healthSample,
           ),
@@ -132,6 +135,7 @@ class _WeightDetailsCard extends ConsumerWidget {
             selectedDay: normalizedSelectedDay,
             day: weightDay.day,
             initialWeightKg: weightDay.weightKg,
+            hasManualWeight: weightDay.hasManualWeight,
             canClearWeight: weightDay.canDeleteWeight,
             healthSample: weightDay.healthSample,
           ),

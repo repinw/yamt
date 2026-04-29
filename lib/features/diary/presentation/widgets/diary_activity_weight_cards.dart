@@ -267,6 +267,7 @@ class _WeightMetricCard extends ConsumerWidget {
             selectedDay: normalizedSelectedDay,
             day: normalizedSelectedDay,
             initialWeightKg: data.selectedWeightKg,
+            hasManualWeight: false,
             canClearWeight: false,
             healthSample: null,
           ),

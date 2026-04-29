@@ -47,6 +47,52 @@ void main() {
     expect(state.isSelectedToday, isTrue);
   });
 
+  test('refreshToday moves selected today after midnight', () {
+    var now = DateTime(2026, 4, 27, 10);
+    final container = ProviderContainer(
+      overrides: [
+        diaryCalendarNowProvider.overrideWithValue(() => now),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(
+      container.read(diaryCalendarControllerProvider).selectedDay,
+      DateTime(2026, 4, 27),
+    );
+
+    now = DateTime(2026, 4, 28, 8);
+    container.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    final state = container.read(diaryCalendarControllerProvider);
+
+    expect(state.today, DateTime(2026, 4, 28));
+    expect(state.selectedDay, DateTime(2026, 4, 28));
+    expect(state.todayRequest, 1);
+    expect(state.isSelectedToday, isTrue);
+  });
+
+  test('refreshToday preserves a manually selected non-today day', () {
+    var now = DateTime(2026, 4, 27, 10);
+    final container = ProviderContainer(
+      overrides: [
+        diaryCalendarNowProvider.overrideWithValue(() => now),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container
+        .read(diaryCalendarControllerProvider.notifier)
+        .selectDay(DateTime(2026, 4, 25, 16));
+    now = DateTime(2026, 4, 28, 8);
+    container.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    final state = container.read(diaryCalendarControllerProvider);
+
+    expect(state.today, DateTime(2026, 4, 28));
+    expect(state.selectedDay, DateTime(2026, 4, 25));
+    expect(state.todayRequest, 0);
+    expect(state.isSelectedToday, isFalse);
+  });
+
   test('copyWith keeps unchanged values and applies overrides', () {
     final state = DiaryCalendarState(
       today: DateTime(2026, 4, 27),

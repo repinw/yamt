@@ -194,6 +194,27 @@ void main() {
 
     expect(find.text('Could not print calorie debug table.'), findsOneWidget);
   });
+
+  testWidgets('refreshes calendar today when the app resumes', (tester) async {
+    var now = selectedDay;
+    final container = await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      overrides: [
+        diaryCalendarNowProvider.overrideWithValue(() => now),
+      ],
+    );
+
+    now = selectedDay.add(const Duration(days: 1, hours: 8));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+
+    final state = container.read(diaryCalendarControllerProvider);
+    expect(state.today, DateTime(2026, 4, 28));
+    expect(state.selectedDay, DateTime(2026, 4, 28));
+    expect(state.todayRequest, 1);
+  });
 }
 
 Future<ProviderContainer> _pumpDiaryPage(

@@ -320,6 +320,9 @@ class FakeHealthWeightService implements HealthWeightService {
   FakeHealthWeightService(this.samples);
 
   final List<HealthWeightSample> samples;
+  final List<HealthWeightSample> deletedSamples = <HealthWeightSample>[];
+
+  int get deleteWeightSampleCallCount => deletedSamples.length;
 
   @override
   Future<List<HealthWeightSample>> loadWeightSamples({
@@ -337,6 +340,7 @@ class FakeHealthWeightService implements HealthWeightService {
 
   @override
   Future<bool> deleteWeightSample(HealthWeightSample sample) async {
+    deletedSamples.add(sample);
     return true;
   }
 
@@ -353,9 +357,16 @@ class FakeManualHealthWeightRepository implements ManualHealthWeightRepository {
   FakeManualHealthWeightRepository(this.entries);
 
   final List<ManualHealthWeightEntry> entries;
+  final List<DateTime> deletedDays = <DateTime>[];
+
+  int get deleteEntryForDayCallCount => deletedDays.length;
 
   @override
-  Future<bool> deleteEntryForDay(DateTime day) async => true;
+  Future<bool> deleteEntryForDay(DateTime day) async {
+    deletedDays.add(day);
+    entries.removeWhere((entry) => isSameDiaryDay(entry.day, day));
+    return true;
+  }
 
   @override
   Future<List<ManualHealthWeightEntry>> readEntries() async => entries;
