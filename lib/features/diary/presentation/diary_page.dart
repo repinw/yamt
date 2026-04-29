@@ -326,13 +326,13 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     final controller = ref.read(
       calorieWeeklyCheckInControllerProvider.notifier,
     );
-    await controller.syncPendingWeeklyCheckIn(pending);
-    if (!mounted) {
-      _weeklyCheckInDialogOpen = false;
-      return;
-    }
 
     try {
+      await controller.syncPendingWeeklyCheckIn(pending);
+      if (!mounted) {
+        return;
+      }
+
       final action = await showCalorieWeeklyCheckInDialog(
         context,
         viewModel: viewModel,

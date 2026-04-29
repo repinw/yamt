@@ -410,6 +410,7 @@ class _WeightMetricCard extends ConsumerWidget {
         onTrack: () => unawaited(
           _showWeightDialog(
             context: context,
+            ref: ref,
             selectedDay: normalizedSelectedDay,
             day: normalizedSelectedDay,
             initialWeightKg: data.selectedWeightKg,

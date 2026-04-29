@@ -1,22 +1,21 @@
 part of 'diary_activity_weight_cards.dart';
 
 Future<bool> _deleteWeight({
-  required BuildContext context,
+  required WidgetRef ref,
   required DateTime selectedDay,
   required DiaryWeightDayData weightDay,
 }) async {
-  final container = ProviderScope.containerOf(context, listen: false);
   final deleted = weightDay.hasManualWeight
-      ? await container
+      ? await ref
             .read(manualHealthWeightEntriesControllerProvider.notifier)
             .deleteEntryForDay(weightDay.day)
       : await _deleteAppOwnedHealthWeight(
-          container: container,
+          ref: ref,
           sample: weightDay.healthSample,
         );
   if (deleted) {
     _refreshWeightDependents(
-      container,
+      ref,
       selectedDay: selectedDay,
       day: weightDay.day,
     );
@@ -25,31 +24,32 @@ Future<bool> _deleteWeight({
 }
 
 Future<bool> _deleteAppOwnedHealthWeight({
-  required ProviderContainer container,
+  required WidgetRef ref,
   required HealthWeightSample? sample,
 }) async {
   if (sample == null || !sample.isFromThisApp) {
     return false;
   }
-  return container.read(healthWeightServiceProvider).deleteWeightSample(sample);
+  return ref.read(healthWeightServiceProvider).deleteWeightSample(sample);
 }
 
 void _refreshWeightDependents(
-  ProviderContainer container, {
+  WidgetRef ref, {
   required DateTime selectedDay,
   DateTime? day,
 }) {
-  container
+  ref
     ..invalidate(diaryActivityWeightDataProvider(selectedDay))
     ..invalidate(calorieHealthTrendSnapshotProvider)
     ..invalidate(calorieWeeklyCheckInViewModelProvider);
   if (day != null && !isSameDiaryDay(day, selectedDay)) {
-    container.invalidate(diaryActivityWeightDataProvider(day));
+    ref.invalidate(diaryActivityWeightDataProvider(day));
   }
 }
 
 Future<void> _showWeightDialog({
   required BuildContext context,
+  required WidgetRef ref,
   required DateTime selectedDay,
   required DateTime day,
   required double? initialWeightKg,
@@ -58,8 +58,7 @@ Future<void> _showWeightDialog({
 }) {
   final locale = Localizations.localeOf(context).toLanguageTag();
   final dayLabel = DateFormat.yMMMd(locale).format(day);
-  final container = ProviderScope.containerOf(context, listen: false);
-  final controller = container.read(
+  final controller = ref.read(
     manualHealthWeightEntriesControllerProvider.notifier,
   );
 
@@ -72,7 +71,7 @@ Future<void> _showWeightDialog({
       final saved = await controller.saveEntry(day: day, weightKg: weightKg);
       if (saved) {
         _refreshWeightDependents(
-          container,
+          ref,
           selectedDay: selectedDay,
           day: day,
         );
@@ -82,13 +81,13 @@ Future<void> _showWeightDialog({
     onClearWeight: () async {
       final deleted = healthSample?.isFromThisApp == true
           ? await _deleteAppOwnedHealthWeight(
-              container: container,
+              ref: ref,
               sample: healthSample,
             )
           : await controller.deleteEntryForDay(day);
       if (deleted) {
         _refreshWeightDependents(
-          container,
+          ref,
           selectedDay: selectedDay,
           day: day,
         );
@@ -98,14 +97,14 @@ Future<void> _showWeightDialog({
   );
 }
 
-class _WeightDetailsCard extends StatelessWidget {
+class _WeightDetailsCard extends ConsumerWidget {
   const _WeightDetailsCard({required this.data, required this.selectedDay});
 
   final DiaryActivityWeightData data;
   final DateTime selectedDay;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
     final days = data.weightDays.reversed.toList(growable: false);
     final selectedWeightDay = data.weightDays.where((weightDay) {
@@ -118,6 +117,7 @@ class _WeightDetailsCard extends StatelessWidget {
         onAdd: () => unawaited(
           _showWeightDialog(
             context: context,
+            ref: ref,
             selectedDay: normalizedSelectedDay,
             day: normalizedSelectedDay,
             initialWeightKg: data.selectedWeightKg,
@@ -128,6 +128,7 @@ class _WeightDetailsCard extends StatelessWidget {
         onEdit: (weightDay) => unawaited(
           _showWeightDialog(
             context: context,
+            ref: ref,
             selectedDay: normalizedSelectedDay,
             day: weightDay.day,
             initialWeightKg: weightDay.weightKg,
@@ -137,7 +138,7 @@ class _WeightDetailsCard extends StatelessWidget {
         ),
         onDelete: (weightDay) => unawaited(
           _deleteWeight(
-            context: context,
+            ref: ref,
             selectedDay: normalizedSelectedDay,
             weightDay: weightDay,
           ),
