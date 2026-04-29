@@ -21,12 +21,19 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+part 'diary_balance_header.dart';
+part 'diary_balance_progress.dart';
+part 'diary_balance_shell.dart';
+
 const _balanceCardRadius = 32.0;
 const _balanceProgressHeight = 24.0;
 const _balanceFlameIconSize = 24.0;
 const _balanceTargetMarkerWidth = 3.0;
 const _balanceProgressAreaHeight = 56.0;
 const _balanceStatTileHeight = 84.0;
+const _balanceGameHeaderHeight = 24.0;
+const _balanceCounterBadgeHeight = 22.0;
+const _balanceCounterIconSize = 14.0;
 const _balanceTickerPeriod = Duration(minutes: 1);
 
 /// Ticker period for minute-sensitive balance UI updates.
@@ -199,8 +206,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
 
     if (weekOverviewState.hasError || selectedDayState.hasError) {
       final l10n = AppLocalizations.of(context)!;
-      return _buildShell(
-        context,
+      return _DiaryBalanceShell(
         child: Text(
           l10n.diaryBalanceLoadFailed,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -211,7 +217,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
       );
     }
 
-    return _buildLoading(context);
+    return const _DiaryBalanceLoading();
   }
 
   Widget _buildLoaded(
@@ -234,8 +240,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
       isLiveDay: isLiveDay,
     );
     if (scheduledRestartDate != null) {
-      return _buildScheduledRestartCard(
-        context,
+      return _DiaryBalanceScheduledRestartCard(
         scheduledRestartDate: scheduledRestartDate,
       );
     }
@@ -254,10 +259,16 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     final dayBudgetKcal = weekOverview.todayFlexibleGoalKcal;
     final dayLeftKcal = dayBudgetKcal - selectedDayOverview.totalKcal;
     final showGameControls = isLiveDay && !weekOverview.goalStartsInFuture;
+    final runWeekNumber = isLiveDay
+        ? runState.runWeekNumber
+        : _resolveSnapshotRunWeekNumber(
+            currentDay: selectedDayOverview.date,
+            balanceStartDate: weekOverview.balanceStartDate,
+          );
     final weekDayLabel = formatBurnWeekLiveWeekDayLabel(
       currentDay: selectedDayOverview.date,
       currentWeekStartDate: currentWeekStartDate,
-      runWeekNumber: runState.runWeekNumber,
+      runWeekNumber: runWeekNumber,
       l10n: l10n,
     );
     if (showGameControls &&
@@ -266,36 +277,29 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
       _queueZoneDialogIfNeeded(metrics: metrics, runState: runState);
     }
 
-    return _buildShell(
-      context,
+    return _DiaryBalanceShell(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (showGameControls) ...[
-            _buildGameHeader(
-              context,
-              label: weekDayLabel,
-              starCount: runState.starCount,
-              heartCount: runState.heartCount,
-              canUseHeart: runState.heartCount > 0,
-              onHeartTap: () => _showUseHeartDialog(
-                dailyGoalKcal: metrics.dailyGoalKcal,
-                runState: runState,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-          ],
-          _buildProgressBar(
-            context,
-            metrics: metrics,
+          _DiaryBalanceGameHeader(
+            label: weekDayLabel,
+            starCount: showGameControls ? runState.starCount : null,
+            heartCount: showGameControls ? runState.heartCount : null,
+            onHeartTap: showGameControls && runState.heartCount > 0
+                ? () => _showUseHeartDialog(
+                    dailyGoalKcal: metrics.dailyGoalKcal,
+                    runState: runState,
+                  )
+                : null,
           ),
+          const SizedBox(height: AppSpacing.lg),
+          _DiaryBalanceProgressBar(metrics: metrics),
           const SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildScaleLabel(context, '0 ${l10n.caloriesUnitKcal}'),
-              _buildScaleLabel(
-                context,
+              _DiaryBalanceScaleLabel('0 ${l10n.caloriesUnitKcal}'),
+              _DiaryBalanceScaleLabel(
                 _formatKcal(
                   numberFormat,
                   metrics.barMaxKcal,
@@ -308,8 +312,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
           Row(
             children: [
               Expanded(
-                child: _buildStatTile(
-                  context,
+                child: _DiaryBalanceStatTile(
                   label: l10n.diaryBalanceEatenLabel,
                   value: _formatKcal(
                     numberFormat,
@@ -328,8 +331,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: _buildStatTile(
-                  context,
+                child: _DiaryBalanceStatTile(
                   label: l10n.diaryBalanceLeftLabel,
                   value: _formatKcal(
                     numberFormat,
@@ -349,347 +351,6 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShell(BuildContext context, {required Widget child}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : const Color(0xFFEEF2EF),
-        borderRadius: BorderRadius.circular(_balanceCardRadius),
-        border: Border.all(
-          color: isDark ? const Color(0xFF1F2937) : const Color(0xFFDDE6E0),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.34 : 0.1),
-            blurRadius: isDark ? 26 : 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: child,
-      ),
-    );
-  }
-
-  Widget _buildLoading(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark
-        ? const Color(0xFF1F2937)
-        : const Color(0xFFDDE6E0);
-    final highlightColor = isDark
-        ? const Color(0xFF374151)
-        : const Color(0xFFF8FAFC);
-
-    return _buildShell(
-      context,
-      child: _DiaryBalanceSkeleton(
-        baseColor: baseColor,
-        highlightColor: highlightColor,
-      ),
-    );
-  }
-
-  Widget _buildScheduledRestartCard(
-    BuildContext context, {
-    required DateTime scheduledRestartDate,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    final dateFormat = DateFormat.yMMMd(
-      Localizations.localeOf(context).toString(),
-    );
-    final colors = Theme.of(context).colorScheme;
-
-    return _buildShell(
-      context,
-      child: Column(
-        children: [
-          Icon(
-            Icons.favorite_border_rounded,
-            color: colors.error,
-            size: 34,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            l10n.burnWeekRunOverTitle,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: colors.error,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            l10n.burnWeekRunRestartsOn(
-              dateFormat.format(scheduledRestartDate),
-            ),
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colors.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGameHeader(
-    BuildContext context, {
-    required String label,
-    required int starCount,
-    required int heartCount,
-    required bool canUseHeart,
-    required VoidCallback onHeartTap,
-  }) {
-    final colors = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colors.onSurfaceVariant,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        _BurnWeekCounterBadge(
-          icon: Icons.stars_rounded,
-          iconColor: const Color(0xFFF59E0B),
-          label: l10n.diaryCounterLabel(starCount),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        _BurnWeekCounterBadge(
-          icon: Icons.favorite_rounded,
-          iconColor: colors.error,
-          label: l10n.diaryCounterLabel(heartCount),
-          onTap: canUseHeart ? onHeartTap : null,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressBar(
-    BuildContext context, {
-    required BurnWeekMockMetrics metrics,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final colors = Theme.of(context).colorScheme;
-
-    return SizedBox(
-      height: _balanceProgressAreaHeight,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          final safeZoneRadiusRatio = _resolveSafeZoneRadiusRatio(metrics);
-
-          return Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 16,
-                child: Container(
-                  key: DiaryBalanceCardKeys.progressTrack,
-                  height: _balanceProgressHeight,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1F2937)
-                        : const Color(0xFFE5E7EB),
-                    borderRadius: BorderRadius.circular(999),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1A000000),
-                        blurRadius: 3,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              _AnimatedBalanceRatio(
-                value: metrics.targetRatio,
-                builder: (context, targetRatio) {
-                  return _AnimatedBalanceRatio(
-                    value: safeZoneRadiusRatio,
-                    builder: (context, radiusRatio) {
-                      final safeCenter = width * targetRatio;
-                      final requestedHalfWidth = width * radiusRatio;
-                      final availableHalfWidth = math.min(
-                        safeCenter,
-                        math.max<double>(0, width - safeCenter),
-                      );
-                      final safeHalfWidth = math.min(
-                        requestedHalfWidth,
-                        availableHalfWidth,
-                      );
-                      final safeWidth = safeHalfWidth * 2;
-
-                      if (safeWidth <= 0) {
-                        return const SizedBox.shrink();
-                      }
-
-                      return Positioned(
-                        left: safeCenter - safeHalfWidth,
-                        top: 20,
-                        width: safeWidth,
-                        child: Container(
-                          key: DiaryBalanceCardKeys.safeZone,
-                          height: _balanceProgressHeight - 8,
-                          decoration: BoxDecoration(
-                            color: colors.tertiary.withValues(alpha: 0.32),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-              _AnimatedBalanceRatio(
-                value: metrics.targetRatio,
-                builder: (context, targetRatio) {
-                  final markerLeft = (width * targetRatio - 1.5).clamp(
-                    0.0,
-                    math.max<double>(0, width - _balanceTargetMarkerWidth),
-                  );
-
-                  return Positioned(
-                    left: markerLeft,
-                    top: 8,
-                    child: Container(
-                      key: DiaryBalanceCardKeys.targetMarker,
-                      width: _balanceTargetMarkerWidth,
-                      height: _balanceProgressHeight + 8,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF9CA3AF)
-                            : const Color(0xFF6B7280),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              _AnimatedBalanceRatio(
-                value: metrics.consumedRatio,
-                builder: (context, consumedRatio) {
-                  final flameCenter = width * consumedRatio;
-                  final flameLeft = (flameCenter - _balanceFlameIconSize / 2)
-                      .clamp(
-                        0.0,
-                        math.max<double>(0, width - _balanceFlameIconSize),
-                      );
-
-                  return Positioned(
-                    left: flameLeft,
-                    top: 14,
-                    child: const SizedBox.square(
-                      key: DiaryBalanceCardKeys.consumedMarker,
-                      dimension: _balanceFlameIconSize,
-                      child: Icon(
-                        Icons.local_fire_department_rounded,
-                        color: Color(0xFFD32F2F),
-                        size: _balanceFlameIconSize,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  double _resolveSafeZoneRadiusRatio(BurnWeekMockMetrics metrics) {
-    final span = metrics.barMaxKcal - metrics.barMinKcal;
-    if (span <= 0) {
-      return 0;
-    }
-
-    final lowerRadius = (metrics.targetKcal - metrics.safeZoneMinKcal).abs();
-    final upperRadius = (metrics.safeZoneMaxKcal - metrics.targetKcal).abs();
-    return (math.max(lowerRadius, upperRadius) / span).clamp(0.0, 0.5);
-  }
-
-  Widget _buildScaleLabel(BuildContext context, String label) {
-    return Text(
-      label,
-      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-        fontWeight: FontWeight.w800,
-      ),
-    );
-  }
-
-  Widget _buildStatTile(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required Color valueColor,
-    required Color backgroundColor,
-    required Color borderColor,
-  }) {
-    return Container(
-      height: _balanceStatTileHeight,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            label.toUpperCase(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
-              height: 1.1,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              maxLines: 1,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: valueColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                height: 1.15,
-              ),
-            ),
           ),
         ],
       ),
@@ -1042,184 +703,13 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   }
 }
 
-class _AnimatedBalanceRatio extends StatelessWidget {
-  const _AnimatedBalanceRatio({required this.value, required this.builder});
-
-  final double value;
-  final Widget Function(BuildContext context, double value) builder;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 1000),
-      curve: Curves.easeOut,
-      tween: Tween<double>(begin: 0, end: value),
-      builder: (context, value, child) => builder(context, value),
-    );
-  }
-}
-
-class _BurnWeekCounterBadge extends StatelessWidget {
-  const _BurnWeekCounterBadge({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final child = Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: iconColor, size: 18),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colors.onSurface,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return Material(
-      color: colors.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(999),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
-        child: child,
-      ),
-    );
-  }
-}
-
-class _DiaryBalanceSkeleton extends StatefulWidget {
-  const _DiaryBalanceSkeleton({
-    required this.baseColor,
-    required this.highlightColor,
-  });
-
-  final Color baseColor;
-  final Color highlightColor;
-
-  @override
-  State<_DiaryBalanceSkeleton> createState() => _DiaryBalanceSkeletonState();
-}
-
-class _DiaryBalanceSkeletonState extends State<_DiaryBalanceSkeleton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1300),
-    );
-    unawaited(_controller.repeat());
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final shaderOffset = boundsWidthMultiplier(_controller.value);
-
-        return ShaderMask(
-          blendMode: BlendMode.srcATop,
-          shaderCallback: (bounds) {
-            return LinearGradient(
-              colors: [
-                widget.baseColor,
-                widget.highlightColor,
-                widget.baseColor,
-              ],
-              stops: const [0.28, 0.5, 0.72],
-            ).createShader(
-              Rect.fromLTWH(
-                bounds.left + (bounds.width * shaderOffset),
-                bounds.top,
-                bounds.width,
-                bounds.height,
-              ),
-            );
-          },
-          child: child,
-        );
-      },
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            height: _balanceProgressAreaHeight,
-            child: Align(
-              child: _SkeletonBlock(height: _balanceProgressHeight),
-            ),
-          ),
-          SizedBox(height: AppSpacing.md),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _SkeletonBlock(width: 52, height: 14),
-              _SkeletonBlock(width: 86, height: 14),
-            ],
-          ),
-          SizedBox(height: AppSpacing.xxl),
-          Row(
-            children: [
-              Expanded(child: _SkeletonBlock(height: _balanceStatTileHeight)),
-              SizedBox(width: AppSpacing.md),
-              Expanded(child: _SkeletonBlock(height: _balanceStatTileHeight)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  double boundsWidthMultiplier(double animationValue) {
-    return -1 + (animationValue * 2);
-  }
-}
-
-class _SkeletonBlock extends StatelessWidget {
-  const _SkeletonBlock({required this.height, this.width});
-
-  final double? width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(height / 2),
-      ),
-    );
-  }
+int _resolveSnapshotRunWeekNumber({
+  required DateTime currentDay,
+  required DateTime balanceStartDate,
+}) {
+  final elapsedDays = resolveBurnWeekLiveElapsedDays(
+    currentDay: currentDay,
+    balanceStartDate: balanceStartDate,
+  );
+  return (elapsedDays ~/ burnWeekDaysPerWeek) + 1;
 }

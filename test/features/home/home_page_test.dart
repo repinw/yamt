@@ -257,7 +257,7 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('diary tab shows selected day metadata in the shell bar', (
+  testWidgets('diary tab shows selected day date in the shell bar', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -269,7 +269,7 @@ void main() {
 
     expect(find.text('Today'), findsOneWidget);
     expect(find.text(formatDiaryHeaderDate(today, 'en')), findsOneWidget);
-    expect(find.text('Week 1 day 7'), findsOneWidget);
+    expect(find.text('Week 1 day 7'), findsNothing);
   });
 
   testWidgets('inventory tab hides shell fab when inventory is empty', (

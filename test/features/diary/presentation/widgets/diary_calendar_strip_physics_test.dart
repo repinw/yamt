@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_day_snap_scroll_physics.dart';
 
 void main() {
   test('snaps slow movement to nearest day boundary', () {

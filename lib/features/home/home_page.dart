@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
@@ -93,24 +91,6 @@ class HomePage extends ConsumerWidget {
     return formatDiaryHeaderDate(diaryCalendarState.selectedDay, localeName);
   }
 
-  String? _diaryWeekDayLabel(
-    AppLocalizations l10n,
-    DiaryCalendarState? diaryCalendarState,
-    CalorieWeekOverview? weekOverview,
-  ) {
-    if (diaryCalendarState == null || weekOverview == null) {
-      return null;
-    }
-
-    final elapsedDays = normalizeDiaryDay(
-      diaryCalendarState.selectedDay,
-    ).difference(normalizeDiaryDay(weekOverview.balanceStartDate)).inDays;
-    final cycleDay = elapsedDays < 0 ? 1 : elapsedDays + 1;
-    final weekNumber = ((cycleDay - 1) ~/ 7) + 1;
-    final dayNumber = ((cycleDay - 1) % 7) + 1;
-    return l10n.diaryCycleDayLabel(weekNumber, dayNumber);
-  }
-
   List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
     final currentTab = _currentTab();
 
@@ -157,7 +137,6 @@ class HomePage extends ConsumerWidget {
     PreparedMealSelectionState selectionState,
     bool useCompactSelectionActions,
     DiaryCalendarState? diaryCalendarState,
-    String? diaryWeekDayLabel,
   ) {
     final colors = Theme.of(context).colorScheme;
     if (_currentTab() == HomeTabType.inventory &&
@@ -235,42 +214,18 @@ class HomePage extends ConsumerWidget {
           ),
         ];
       case HomeTabType.diary:
-        final actions = <Widget>[
-          if (diaryWeekDayLabel != null)
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 120),
-                child: Text(
-                  diaryWeekDayLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-        ];
-
         if (diaryCalendarState == null || diaryCalendarState.isSelectedToday) {
-          return actions;
+          return const <Widget>[];
         }
 
-        actions.add(
+        return [
           TextButton(
             onPressed: () {
               ref.read(diaryCalendarControllerProvider.notifier).selectToday();
             },
             child: Text(l10n.diaryTodayTitle),
           ),
-        );
-
-        if (actions.isEmpty) {
-          return const <Widget>[];
-        }
-
-        return actions;
+        ];
       case HomeTabType.statistics:
         return const <Widget>[];
       case HomeTabType.settings:
@@ -288,21 +243,6 @@ class HomePage extends ConsumerWidget {
     final diaryCalendarState = currentTab == HomeTabType.diary
         ? ref.watch(diaryCalendarControllerProvider)
         : null;
-    final diaryWeekOverview = diaryCalendarState == null
-        ? null
-        : ref
-              .watch(
-                calorieWeekOverviewForWindowProvider(
-                  diaryCalendarState.selectedDay,
-                ),
-              )
-              .asData
-              ?.value;
-    final diaryWeekDayLabel = _diaryWeekDayLabel(
-      l10n,
-      diaryCalendarState,
-      diaryWeekOverview,
-    );
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
       HomeTabType.diary || HomeTabType.statistics => null,
@@ -329,7 +269,6 @@ class HomePage extends ConsumerWidget {
           selectionState,
           compactHomeChrome,
           diaryCalendarState,
-          diaryWeekDayLabel,
         ),
       ),
       body: navigationShell,

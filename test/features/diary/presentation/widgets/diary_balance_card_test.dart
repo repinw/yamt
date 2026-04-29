@@ -133,6 +133,66 @@ void main() {
     expect(syncWatchCount, greaterThan(0));
   });
 
+  testWidgets('shows Burn Week label on non-live days without counters', (
+    tester,
+  ) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: null,
+      ),
+    );
+
+    expect(find.text('Week 1 day 1'), findsOneWidget);
+    expect(find.byIcon(Icons.stars_rounded), findsNothing);
+    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+  });
+
+  testWidgets('keeps live and non-live balance cards the same height', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final nonLiveDay = today.subtract(const Duration(days: 1));
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: today,
+      weekStartDate: today,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(today),
+      ),
+      hasAutoOpeningWeeklyCheckIn: true,
+    );
+    final liveHeight = tester.getSize(find.byType(DiaryBalanceCard)).height;
+    expect(find.byIcon(Icons.stars_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: nonLiveDay,
+      weekStartDate: nonLiveDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: null,
+      ),
+    );
+    final nonLiveHeight = tester.getSize(find.byType(DiaryBalanceCard)).height;
+    expect(find.byIcon(Icons.stars_rounded), findsNothing);
+    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+    expect(liveHeight, nonLiveHeight);
+  });
+
   testWidgets('pauses and resumes ticker with app lifecycle', (tester) async {
     final selectedDay = normalizeDiaryDay(
       DateTime.now().subtract(const Duration(days: 1)),
@@ -175,6 +235,7 @@ Future<void> _pumpBalanceCard(
   VoidCallback? onBurnWeekLiveSyncWatch,
   VoidCallback? onBalanceTickerTick,
   Duration? tickerPeriod,
+  bool hasAutoOpeningWeeklyCheckIn = false,
   bool settle = true,
 }) async {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
@@ -221,7 +282,7 @@ Future<void> _pumpBalanceCard(
             padding: const EdgeInsets.all(16),
             child: DiaryBalanceCard(
               selectedDay: normalizedSelectedDay,
-              hasAutoOpeningWeeklyCheckIn: false,
+              hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
             ),
           ),
         ),
