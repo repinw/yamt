@@ -27,6 +27,28 @@ const _balanceFlameIconSize = 24.0;
 const _balanceTargetMarkerWidth = 3.0;
 const _balanceProgressAreaHeight = 56.0;
 const _balanceStatTileHeight = 84.0;
+const _balanceTickerPeriod = Duration(minutes: 1);
+
+/// Stable keys for diary balance card tests.
+abstract final class DiaryBalanceCardKeys {
+  /// Progress track key.
+  static const progressTrack = ValueKey<String>(
+    'diary-balance-progress-track',
+  );
+
+  /// Safe-zone fill key.
+  static const safeZone = ValueKey<String>('diary-balance-safe-zone');
+
+  /// Target marker key.
+  static const targetMarker = ValueKey<String>(
+    'diary-balance-target-marker',
+  );
+
+  /// Consumed marker key.
+  static const consumedMarker = ValueKey<String>(
+    'diary-balance-consumed-marker',
+  );
+}
 
 final FutureProvider<List<CalorieEntry>> Function(DateTime)
 _diaryBalanceEntriesForDayProvider =
@@ -57,7 +79,9 @@ class DiaryBalanceCard extends ConsumerStatefulWidget {
 }
 
 class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
-    with AutomaticKeepAliveClientMixin<DiaryBalanceCard> {
+    with
+        WidgetsBindingObserver,
+        AutomaticKeepAliveClientMixin<DiaryBalanceCard> {
   CalorieWeekOverview? _lastWeekOverview;
   CalorieWeekDayOverview? _lastSelectedDayOverview;
   Timer? _ticker;
@@ -73,12 +97,8 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   @override
   void initState() {
     super.initState();
-    _ticker = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    });
+    WidgetsBinding.instance.addObserver(this);
+    _startTicker();
   }
 
   @override
@@ -92,9 +112,22 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startTicker();
+      if (mounted) {
+        setState(() {});
+      }
+      return;
+    }
+    _stopTicker();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _closeZoneDialog();
-    _ticker?.cancel();
+    _stopTicker();
     super.dispose();
   }
 
@@ -464,6 +497,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                 right: 0,
                 top: 16,
                 child: Container(
+                  key: DiaryBalanceCardKeys.progressTrack,
                   height: _balanceProgressHeight,
                   decoration: BoxDecoration(
                     color: isDark
@@ -507,6 +541,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                         top: 20,
                         width: safeWidth,
                         child: Container(
+                          key: DiaryBalanceCardKeys.safeZone,
                           height: _balanceProgressHeight - 8,
                           decoration: BoxDecoration(
                             color: colors.tertiary.withValues(alpha: 0.32),
@@ -530,6 +565,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                     left: markerLeft,
                     top: 8,
                     child: Container(
+                      key: DiaryBalanceCardKeys.targetMarker,
                       width: _balanceTargetMarkerWidth,
                       height: _balanceProgressHeight + 8,
                       decoration: BoxDecoration(
@@ -556,6 +592,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                     left: flameLeft,
                     top: 14,
                     child: const SizedBox.square(
+                      key: DiaryBalanceCardKeys.consumedMarker,
                       dimension: _balanceFlameIconSize,
                       child: Icon(
                         Icons.local_fire_department_rounded,
@@ -979,6 +1016,20 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
 
   String _formatKcal(NumberFormat numberFormat, double value, String unit) {
     return '${numberFormat.format(value.round())} $unit';
+  }
+
+  void _startTicker() {
+    _ticker ??= Timer.periodic(_balanceTickerPeriod, (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+    });
+  }
+
+  void _stopTicker() {
+    _ticker?.cancel();
+    _ticker = null;
   }
 }
 

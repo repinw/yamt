@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
@@ -27,6 +26,9 @@ import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/presentation/diary_scroll_controller.dart';
+import 'package:yamt/features/diary/presentation/'
+    'diary_weekly_checkin_dialog_scheduler.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_activity_details_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_activity_weight_cards.dart';
@@ -44,13 +46,6 @@ import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-const _scrollActionEdgeThreshold = 32.0;
-const _jumpToMealsPrimaryDuration = Duration(milliseconds: 520);
-const _jumpToMealsFallbackDuration = Duration(milliseconds: 460);
-const _jumpToMealsSettleDuration = Duration(milliseconds: 260);
-const _jumpToMealsRevealAlignment = 0.04;
-const _scrollToTopDuration = Duration(milliseconds: 560);
-
 /// Diary content.
 class DiaryPage extends ConsumerStatefulWidget {
   /// The diary page.
@@ -65,34 +60,24 @@ class DiaryPage extends ConsumerStatefulWidget {
 
 class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
-  final ScrollController _scrollController = ScrollController();
-  final GlobalKey _mealsSectionKey = GlobalKey();
-  CalorieWeeklyCheckInViewModel? _lastWeeklyCheckInViewModel;
-  CalorieWeeklyCheckInViewModel? _deferredWeeklyCheckInViewModel;
-  String? _autoOpenedWeeklyCheckInWindowKey;
-  var _showJumpToMeals = false;
-  var _showScrollToTop = false;
-  var _isManualScrolling = false;
-  var _weeklyCheckInDialogOpen = false;
+  final DiaryScrollController _diaryScrollController = DiaryScrollController();
+  final DiaryWeeklyCheckInDialogScheduler _weeklyCheckInDialogs =
+      DiaryWeeklyCheckInDialogScheduler();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _scrollController.addListener(_updateScrollActions);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _updateScrollActions();
-      }
-    });
+    _diaryScrollController.addListener(_refreshScrollActions);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _scrollController
-      ..removeListener(_updateScrollActions)
+    _diaryScrollController
+      ..removeListener(_refreshScrollActions)
       ..dispose();
+    _weeklyCheckInDialogs.dispose();
     super.dispose();
   }
 
@@ -121,7 +106,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         ?.value;
     final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
     final weeklyCheckIn =
-        weeklyCheckInState.asData?.value ?? _lastWeeklyCheckInViewModel;
+        weeklyCheckInState.asData?.value ?? _weeklyCheckInDialogs.lastViewModel;
     final hasAutoOpeningWeeklyCheckIn =
         weeklyCheckInState.isLoading ||
         (weeklyCheckIn?.pendingWeeklyCheckIn != null &&
@@ -145,10 +130,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     return Stack(
       children: [
         NotificationListener<ScrollNotification>(
-          onNotification: _handleScrollNotification,
+          onNotification: _diaryScrollController.handleScrollNotification,
           child: ListView(
             key: DiaryPage.pageKey,
-            controller: _scrollController,
+            controller: _diaryScrollController.scrollController,
             padding: responsivePagePadding(
               context,
               top: AppSpacing.lg,
@@ -221,7 +206,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
               ],
               const SizedBox(height: AppSpacing.xl),
               KeyedSubtree(
-                key: _mealsSectionKey,
+                key: _diaryScrollController.mealsSectionKey,
                 child: DiaryMealsSection(
                   selectedDay: calendarState.selectedDay,
                 ),
@@ -238,10 +223,14 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
               AppSpacing.xs,
           child: Center(
             child: _DiaryScrollShortcut(
-              showJumpToMeals: !_isManualScrolling && _showJumpToMeals,
-              showScrollToTop: !_isManualScrolling && _showScrollToTop,
-              onJumpToMeals: _scrollToMeals,
-              onScrollToTop: _scrollToTop,
+              showJumpToMeals:
+                  !_diaryScrollController.isManualScrolling &&
+                  _diaryScrollController.showJumpToMeals,
+              showScrollToTop:
+                  !_diaryScrollController.isManualScrolling &&
+                  _diaryScrollController.showScrollToTop,
+              onJumpToMeals: _diaryScrollController.scrollToMeals,
+              onScrollToTop: _diaryScrollController.scrollToTop,
             ),
           ),
         ),
@@ -253,82 +242,39 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     AsyncValue<CalorieWeeklyCheckInViewModel>? previous,
     AsyncValue<CalorieWeeklyCheckInViewModel> next,
   ) {
-    final nextValue = next.asData?.value;
-    if (nextValue == null) {
+    final viewModel = next.asData?.value;
+    if (viewModel == null) {
       return;
     }
-    _lastWeeklyCheckInViewModel = nextValue;
-    final pending = nextValue.pendingWeeklyCheckIn;
-    final willAutoOpen =
-        pending != null &&
-        nextValue.shouldAutoOpen &&
-        _autoOpenedWeeklyCheckInWindowKey != pending.windowKey;
-    if (!willAutoOpen && !_weeklyCheckInDialogOpen) {
-      final controller = ref.read(
-        calorieWeeklyCheckInControllerProvider.notifier,
-      );
-      unawaited(controller.syncLearnedTdeeCache(nextValue));
-    }
-    _maybeOpenWeeklyCheckInDialog(next);
-  }
-
-  void _maybeOpenWeeklyCheckInDialog(
-    AsyncValue<CalorieWeeklyCheckInViewModel> next,
-  ) {
-    _scheduleWeeklyCheckInDialog(next.asData?.value);
-  }
-
-  void _scheduleWeeklyCheckInDialog(
-    CalorieWeeklyCheckInViewModel? viewModel,
-  ) {
-    final pending = viewModel?.pendingWeeklyCheckIn;
-    if (!mounted ||
-        viewModel == null ||
-        pending == null ||
-        !viewModel.shouldAutoOpen) {
-      return;
-    }
-
-    if (_autoOpenedWeeklyCheckInWindowKey == pending.windowKey) {
-      return;
-    }
-    if (_weeklyCheckInDialogOpen) {
-      _deferredWeeklyCheckInViewModel = viewModel;
-      return;
-    }
-    _autoOpenedWeeklyCheckInWindowKey = pending.windowKey;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      unawaited(_openWeeklyCheckInDialog(viewModel));
-    });
-  }
-
-  void _scheduleDeferredWeeklyCheckInDialog() {
-    final deferredViewModel = _deferredWeeklyCheckInViewModel;
-    _deferredWeeklyCheckInViewModel = null;
-    if (deferredViewModel == null) {
-      return;
-    }
-    _scheduleWeeklyCheckInDialog(deferredViewModel);
+    final controller = ref.read(
+      calorieWeeklyCheckInControllerProvider.notifier,
+    );
+    _weeklyCheckInDialogs.cacheAndSchedule(
+      viewModel: viewModel,
+      isMounted: () => mounted,
+      syncLearnedTdeeCache: controller.syncLearnedTdeeCache,
+      openDialog: _openWeeklyCheckInDialog,
+    );
   }
 
   Future<void> _openWeeklyCheckInDialog(
     CalorieWeeklyCheckInViewModel viewModel,
   ) async {
     final pending = viewModel.pendingWeeklyCheckIn;
-    if (!mounted || pending == null || _weeklyCheckInDialogOpen) {
+    if (!_weeklyCheckInDialogs.beginDialog(
+      viewModel: viewModel,
+      isMounted: () => mounted,
+    )) {
       return;
     }
 
-    _weeklyCheckInDialogOpen = true;
     final controller = ref.read(
       calorieWeeklyCheckInControllerProvider.notifier,
     );
+    final resolvedPending = pending!;
 
     try {
-      await controller.syncPendingWeeklyCheckIn(pending);
+      await controller.syncPendingWeeklyCheckIn(resolvedPending);
       if (!mounted) {
         return;
       }
@@ -353,11 +299,13 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
           );
           return;
         case CalorieWeeklyCheckInDialogAction.openHealthTrends:
-          await controller.dismissPendingWeeklyCheckIn(pending);
+          await controller.dismissPendingWeeklyCheckIn(resolvedPending);
           if (!mounted) {
             return;
           }
-          _openHealthTrendsPage(visibleWindowEnd: pending.windowEndDate);
+          _openHealthTrendsPage(
+            visibleWindowEnd: resolvedPending.windowEndDate,
+          );
           return;
         case CalorieWeeklyCheckInDialogAction.later:
         case null:
@@ -365,9 +313,18 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
           return;
       }
     } finally {
-      _weeklyCheckInDialogOpen = false;
-      _scheduleDeferredWeeklyCheckInDialog();
+      _weeklyCheckInDialogs.endDialog(
+        isMounted: () => mounted,
+        openDialog: _openWeeklyCheckInDialog,
+      );
     }
+  }
+
+  void _refreshScrollActions() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
   }
 
   void _openHealthTrendsPage({DateTime? visibleWindowEnd}) {
@@ -462,154 +419,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       }
     }
     return null;
-  }
-
-  bool _handleScrollNotification(ScrollNotification notification) {
-    if (notification.metrics.axis != Axis.vertical) {
-      return false;
-    }
-
-    if (notification is ScrollStartNotification &&
-        notification.dragDetails != null) {
-      _setManualScrolling(true);
-    } else if (notification is ScrollUpdateNotification &&
-        notification.dragDetails != null) {
-      _setManualScrolling(true);
-    } else if (notification is UserScrollNotification &&
-        notification.direction == ScrollDirection.idle) {
-      _setManualScrolling(false);
-    } else if (notification is ScrollEndNotification) {
-      _setManualScrolling(false);
-    }
-
-    return false;
-  }
-
-  void _setManualScrolling(bool value) {
-    if (_isManualScrolling == value) {
-      return;
-    }
-
-    setState(() {
-      _isManualScrolling = value;
-    });
-  }
-
-  void _updateScrollActions() {
-    if (!_scrollController.hasClients) {
-      return;
-    }
-
-    final position = _scrollController.position;
-    final showJumpToMeals =
-        position.maxScrollExtent > 0 &&
-        position.pixels <=
-            position.minScrollExtent + _scrollActionEdgeThreshold;
-    final showScrollToTop =
-        position.maxScrollExtent > 0 &&
-        position.pixels >=
-            position.maxScrollExtent - _scrollActionEdgeThreshold;
-
-    if (_showJumpToMeals == showJumpToMeals &&
-        _showScrollToTop == showScrollToTop) {
-      return;
-    }
-
-    setState(() {
-      _showJumpToMeals = showJumpToMeals;
-      _showScrollToTop = showScrollToTop;
-    });
-  }
-
-  double? _offsetForKey(GlobalKey key, {double alignment = 0}) {
-    final keyContext = key.currentContext;
-    final renderObject = keyContext?.findRenderObject();
-    if (renderObject == null) {
-      return null;
-    }
-
-    final viewport = RenderAbstractViewport.maybeOf(renderObject);
-    if (viewport == null) {
-      return null;
-    }
-
-    return viewport.getOffsetToReveal(renderObject, alignment).offset;
-  }
-
-  void _scrollToMeals() {
-    if (!_scrollController.hasClients) {
-      return;
-    }
-
-    unawaited(_scrollToMealsSection());
-  }
-
-  Future<void> _scrollToMealsSection() async {
-    if (!_scrollController.hasClients) {
-      return;
-    }
-
-    final scrolledToExactTarget = await _animateToMealsOffset(
-      duration: _jumpToMealsPrimaryDuration,
-    );
-    if (scrolledToExactTarget || !mounted || !_scrollController.hasClients) {
-      _updateScrollActions();
-      return;
-    }
-
-    await _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: _jumpToMealsFallbackDuration,
-      curve: Curves.easeOutCubic,
-    );
-    if (!mounted) {
-      return;
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => unawaited(
-        _animateToMealsOffset(duration: _jumpToMealsSettleDuration),
-      ),
-    );
-  }
-
-  Future<bool> _animateToMealsOffset({required Duration duration}) async {
-    if (!_scrollController.hasClients) {
-      return false;
-    }
-
-    final targetOffset = _offsetForKey(
-      _mealsSectionKey,
-      alignment: _jumpToMealsRevealAlignment,
-    );
-    if (targetOffset == null) {
-      return false;
-    }
-
-    final position = _scrollController.position;
-    await _scrollController.animateTo(
-      targetOffset.clamp(position.minScrollExtent, position.maxScrollExtent),
-      duration: duration,
-      curve: Curves.easeOutCubic,
-    );
-    if (mounted) {
-      _updateScrollActions();
-    }
-    return true;
-  }
-
-  void _scrollToTop() {
-    if (!_scrollController.hasClients) {
-      return;
-    }
-
-    unawaited(
-      _scrollController.animateTo(
-        0,
-        duration: _scrollToTopDuration,
-        curve: Curves.easeOutCubic,
-      ),
-    );
   }
 }
 

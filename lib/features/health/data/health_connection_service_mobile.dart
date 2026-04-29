@@ -61,15 +61,24 @@ class MobileHealthConnectionService implements HealthConnectionService {
     AppPreferences? preferences,
     bool? isAndroid,
     bool? isIOS,
+    Future<String> Function()? packageNameLoader,
+    Future<bool> Function(AndroidIntent intent)? androidIntentLauncher,
+    Future<void> Function()? appSettingsLauncher,
   }) : _health = health ?? Health(),
        _preferences = preferences,
        _isAndroid = isAndroid ?? Platform.isAndroid,
-       _isIOS = isIOS ?? Platform.isIOS;
+       _isIOS = isIOS ?? Platform.isIOS,
+       _packageNameLoader = packageNameLoader,
+       _androidIntentLauncher = androidIntentLauncher,
+       _appSettingsLauncher = appSettingsLauncher;
 
   final Health _health;
   final AppPreferences? _preferences;
   final bool _isAndroid;
   final bool _isIOS;
+  final Future<String> Function()? _packageNameLoader;
+  final Future<bool> Function(AndroidIntent intent)? _androidIntentLauncher;
+  final Future<void> Function()? _appSettingsLauncher;
   bool _isConfigured = false;
   bool _requiresRestartAfterDisconnect = false;
 
@@ -194,7 +203,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
       return;
     }
 
-    final packageName = (await PackageInfo.fromPlatform()).packageName;
+    final packageName = await _loadPackageName();
     if (await _launchAndroidIntent(
       AndroidIntent(
         action: _manageHealthPermissionsAction,
@@ -222,6 +231,11 @@ class MobileHealthConnectionService implements HealthConnectionService {
   @override
   Future<void> openAppPermissionSettings() async {
     if (!_isAndroid) {
+      return;
+    }
+    final launcher = _appSettingsLauncher;
+    if (launcher != null) {
+      await launcher();
       return;
     }
     await openAppSettings();
@@ -285,6 +299,11 @@ class MobileHealthConnectionService implements HealthConnectionService {
 
   Future<bool> _launchAndroidIntent(AndroidIntent intent) async {
     try {
+      final launcher = _androidIntentLauncher;
+      if (launcher != null) {
+        return await launcher(intent);
+      }
+
       await intent.launch();
       return true;
     } on Object catch (error, stackTrace) {
@@ -296,6 +315,14 @@ class MobileHealthConnectionService implements HealthConnectionService {
       );
       return false;
     }
+  }
+
+  Future<String> _loadPackageName() async {
+    final packageNameLoader = _packageNameLoader;
+    if (packageNameLoader != null) {
+      return packageNameLoader();
+    }
+    return (await PackageInfo.fromPlatform()).packageName;
   }
 
   Future<HealthConnectAvailability> _loadHealthConnectAvailability() async {
