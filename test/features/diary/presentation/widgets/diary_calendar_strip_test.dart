@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('de');
+  });
+
   testWidgets('calendar strip centers today and emits tapped day', (
     tester,
   ) async {
@@ -61,6 +67,9 @@ Future<void> _pumpCalendarStrip(
 }) async {
   await tester.pumpWidget(
     MaterialApp(
+      locale: const Locale('de'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Center(
           child: SizedBox(
