@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -38,7 +39,7 @@ class DiaryNutritionBarsData {
 }
 
 /// Provides real macro totals and targets for one diary day.
-final FutureProvider<DiaryNutritionBarsData> Function(DateTime)
+final FutureProviderFamily<DiaryNutritionBarsData, DateTime>
 diaryNutritionBarsDataProvider =
     FutureProvider.family<DiaryNutritionBarsData, DateTime>((ref, day) async {
       ref.watch(calorieOverviewRevisionProvider);

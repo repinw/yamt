@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -35,7 +36,7 @@ part 'diary_weight_details_card.dart';
 part 'diary_activity_metric_shells.dart';
 
 /// Provides real activity and weight data for the selected diary day.
-final FutureProvider<DiaryActivityWeightData> Function(DateTime)
+final FutureProviderFamily<DiaryActivityWeightData, DateTime>
 diaryActivityWeightDataProvider =
     FutureProvider.family<DiaryActivityWeightData, DateTime>((ref, day) async {
       final selectedDay = normalizeDiaryDay(day);

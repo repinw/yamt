@@ -2,6 +2,7 @@ import 'dart:async' show unawaited;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_routes.dart';
@@ -24,7 +25,7 @@ part 'diary_meal_card.dart';
 part 'diary_meal_media.dart';
 
 /// Provides real meal sections for one diary day.
-final FutureProvider<List<CalorieMealSection>> Function(DateTime)
+final FutureProviderFamily<List<CalorieMealSection>, DateTime>
 diaryMealSectionsProvider =
     FutureProvider.family<List<CalorieMealSection>, DateTime>((ref, day) async {
       ref.watch(calorieOverviewRevisionProvider);

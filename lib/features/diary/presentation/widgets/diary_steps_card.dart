@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
@@ -15,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 part 'diary_steps_card_content.dart';
 
 /// Provides real step data for one diary day.
-final FutureProvider<DiaryActivitySummary> Function(DateTime)
+final FutureProviderFamily<DiaryActivitySummary, DateTime>
 diaryStepsSummaryProvider =
     FutureProvider.family<DiaryActivitySummary, DateTime>((ref, day) async {
       final normalizedDay = normalizeDiaryDay(day);

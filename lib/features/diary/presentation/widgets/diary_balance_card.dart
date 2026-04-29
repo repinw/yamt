@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -67,7 +68,7 @@ abstract final class DiaryBalanceCardKeys {
   );
 }
 
-final FutureProvider<List<CalorieEntry>> Function(DateTime)
+final FutureProviderFamily<List<CalorieEntry>, DateTime>
 _diaryBalanceEntriesForDayProvider =
     FutureProvider.family<List<CalorieEntry>, DateTime>((ref, day) {
       ref.watch(calorieOverviewRevisionProvider);
@@ -691,6 +692,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     _ticker ??= Timer.periodic(ref.read(diaryBalanceTickerPeriodProvider), (_) {
       ref.read(diaryBalanceTickerObserverProvider)?.call();
       if (!mounted) {
+        _stopTicker();
         return;
       }
       setState(() {});
