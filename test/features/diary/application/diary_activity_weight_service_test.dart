@@ -162,6 +162,26 @@ void main() {
     expect(data.selectedWeightKg, 76.8);
     expect(data.hasSelectedDayWeight, isTrue);
   });
+
+  test('does not swallow fatal health service errors', () async {
+    await expectLater(
+      service.load(
+        day: selectedDay,
+        goalSettings: _settings(selectedDay),
+        healthStatus: _readyStatus,
+        manualEntries: const <ManualHealthWeightEntry>[],
+        diaryHealthService: _FakeDiaryHealthService(
+          const {},
+          failingDays: {diaryDayKey(selectedDay)},
+          error: StateError('load failed'),
+        ),
+        healthWeightService: _FakeHealthWeightService(
+          const <HealthWeightSample>[],
+        ),
+      ),
+      throwsA(isA<StateError>()),
+    );
+  });
 }
 
 const _readyStatus = HealthConnectionStatus(
@@ -199,10 +219,12 @@ class _FakeDiaryHealthService implements DiaryHealthService {
   _FakeDiaryHealthService(
     this.dataByDay, {
     this.failingDays = const <String>{},
+    this.error,
   });
 
   final Map<String, DiaryHealthDayData> dataByDay;
   final Set<String> failingDays;
+  final Error? error;
 
   @override
   Future<DiaryHealthDayData> loadDayData({
@@ -211,7 +233,11 @@ class _FakeDiaryHealthService implements DiaryHealthService {
   }) async {
     final key = diaryDayKey(day);
     if (failingDays.contains(key)) {
-      throw StateError('load failed');
+      final error = this.error;
+      if (error != null) {
+        throw error;
+      }
+      throw Exception('load failed');
     }
     return dataByDay[key] ??
         const DiaryHealthDayData(totalSteps: 0, workouts: []);
@@ -230,7 +256,7 @@ class _FakeHealthWeightService implements HealthWeightService {
     required DateTime endExclusive,
   }) async {
     if (shouldThrow) {
-      throw StateError('weight load failed');
+      throw Exception('weight load failed');
     }
     return samples
         .where(

@@ -216,7 +216,7 @@ class DiaryActivityWeightService {
         day: day,
         userHeightCm: userHeightCm,
       );
-    } on Object catch (error, stackTrace) {
+    } on Exception catch (error, stackTrace) {
       log(
         'Failed to load diary health day data.',
         name: _logName,
@@ -237,7 +237,7 @@ class DiaryActivityWeightService {
         startInclusive: startInclusive,
         endExclusive: endExclusive,
       );
-    } on Object catch (error, stackTrace) {
+    } on Exception catch (error, stackTrace) {
       log(
         'Failed to load diary weight samples.',
         name: _logName,

@@ -57,6 +57,94 @@ diaryActivityWeightDataProvider =
       );
     });
 
+final _diaryWeightActionsProvider = Provider<_DiaryWeightActions>((ref) {
+  return _DiaryWeightActions(
+    saveManualWeight: ({required day, required weightKg}) => ref
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .saveEntry(day: day, weightKg: weightKg),
+    deleteManualWeight: (day) => ref
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .deleteEntryForDay(day),
+    deleteHealthWeightSample: (sample) =>
+        ref.read(healthWeightServiceProvider).deleteWeightSample(sample),
+    refreshDependents: ({required selectedDay, day}) {
+      ref
+        ..invalidate(diaryActivityWeightDataProvider(selectedDay))
+        ..invalidate(calorieHealthTrendSnapshotProvider)
+        ..invalidate(calorieWeeklyCheckInViewModelProvider);
+      if (day != null && !isSameDiaryDay(day, selectedDay)) {
+        ref.invalidate(diaryActivityWeightDataProvider(day));
+      }
+    },
+  );
+});
+
+class _DiaryWeightActions {
+  const _DiaryWeightActions({
+    required Future<bool> Function({
+      required DateTime day,
+      required double weightKg,
+    })
+    saveManualWeight,
+    required Future<bool> Function(DateTime day) deleteManualWeight,
+    required Future<bool> Function(HealthWeightSample sample)
+    deleteHealthWeightSample,
+    required void Function({
+      required DateTime selectedDay,
+      DateTime? day,
+    })
+    refreshDependents,
+  }) : _saveManualWeight = saveManualWeight,
+       _deleteManualWeight = deleteManualWeight,
+       _deleteHealthWeightSample = deleteHealthWeightSample,
+       _refreshDependents = refreshDependents;
+
+  final Future<bool> Function({
+    required DateTime day,
+    required double weightKg,
+  })
+  _saveManualWeight;
+  final Future<bool> Function(DateTime day) _deleteManualWeight;
+  final Future<bool> Function(HealthWeightSample sample)
+  _deleteHealthWeightSample;
+  final void Function({required DateTime selectedDay, DateTime? day})
+  _refreshDependents;
+
+  Future<bool> saveManualWeight({
+    required DateTime selectedDay,
+    required DateTime day,
+    required double weightKg,
+  }) async {
+    final saved = await _saveManualWeight(day: day, weightKg: weightKg);
+    if (saved) {
+      _refreshDependents(selectedDay: selectedDay, day: day);
+    }
+    return saved;
+  }
+
+  Future<bool> deleteWeight({
+    required DateTime selectedDay,
+    required DateTime day,
+    required bool hasManualWeight,
+    required HealthWeightSample? healthSample,
+  }) async {
+    final deleted = hasManualWeight
+        ? await _deleteManualWeight(day)
+        : await deleteAppOwnedHealthWeight(healthSample);
+    if (deleted) {
+      _refreshDependents(selectedDay: selectedDay, day: day);
+    }
+    return deleted;
+  }
+
+  Future<bool> deleteAppOwnedHealthWeight(HealthWeightSample? sample) async {
+    if (sample == null || !sample.isFromThisApp) {
+      return false;
+    }
+    return _deleteHealthWeightSample(sample);
+  }
+}
+
 /// Activity and weight cards for the diary page.
 class DiaryActivityWeightCards extends ConsumerStatefulWidget {
   /// Creates activity and weight cards.
@@ -250,20 +338,23 @@ class _WeightMetricCard extends ConsumerWidget {
     );
     final accentColors = DiaryAccentColors.of(context);
     final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
-    final dismissalController = ref.watch(
+    final dismissalController = ref.read(
       calorieTodayWeightPromptDismissalControllerProvider.notifier,
     );
-    ref.watch(calorieTodayWeightPromptDismissalControllerProvider);
+    final dismissedDayKey = ref.watch(
+      calorieTodayWeightPromptDismissalControllerProvider,
+    );
+    final weightActions = ref.read(_diaryWeightActionsProvider);
     final showWeightWarning =
         !data.hasSelectedDayWeight &&
-        !dismissalController.isDismissedForDay(normalizedSelectedDay);
+        dismissedDayKey != diaryDayKey(normalizedSelectedDay);
 
     if (showWeightWarning) {
       return _WeightMissingPromptCard(
         onTrack: () => unawaited(
           _showWeightDialog(
             context: context,
-            ref: ref,
+            weightActions: weightActions,
             selectedDay: normalizedSelectedDay,
             day: normalizedSelectedDay,
             initialWeightKg: data.selectedWeightKg,
