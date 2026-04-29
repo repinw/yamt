@@ -3,8 +3,17 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 
+/// Schedules work after the current frame.
+typedef DiaryPostFrameScheduler = void Function(VoidCallback callback);
+
 /// Coordinates auto-open and deferred weekly check-in dialog scheduling.
 class DiaryWeeklyCheckInDialogScheduler {
+  /// Creates a dialog scheduler.
+  DiaryWeeklyCheckInDialogScheduler({
+    DiaryPostFrameScheduler? schedulePostFrame,
+  }) : _schedulePostFrame = schedulePostFrame ?? _defaultSchedulePostFrame;
+
+  final DiaryPostFrameScheduler _schedulePostFrame;
   CalorieWeeklyCheckInViewModel? _deferredViewModel;
   String? _autoOpenedWindowKey;
   var _isDialogOpen = false;
@@ -69,7 +78,7 @@ class DiaryWeeklyCheckInDialogScheduler {
       return;
     }
     _autoOpenedWindowKey = pending.windowKey;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    _schedulePostFrame(() {
       if (_disposed || !isMounted()) {
         return;
       }
@@ -116,5 +125,9 @@ class DiaryWeeklyCheckInDialogScheduler {
   void dispose() {
     _disposed = true;
     _deferredViewModel = null;
+  }
+
+  static void _defaultSchedulePostFrame(VoidCallback callback) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => callback());
   }
 }

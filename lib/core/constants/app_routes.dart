@@ -41,8 +41,11 @@ abstract final class AppRoutes {
   /// Shopping home route.
   static const homeShopping = '/home/shopping';
 
-  /// Diary/Tagebuch home route.
-  static const homeCalories = '/home/calories';
+  /// Diary home route.
+  static const homeDiary = '/home/calories';
+
+  /// Legacy calorie tab route alias.
+  static const String homeCalories = homeDiary;
 
   /// Burn Week mock route.
   static const homeCaloriesBurnWeekMock = '/home/calories/burn-week';

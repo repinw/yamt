@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
@@ -7,7 +9,14 @@ import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
+import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+
+const _logName = 'DiaryActivityWeightService';
+const _emptyDiaryHealthDayData = DiaryHealthDayData(
+  totalSteps: 0,
+  workouts: <HealthWorkoutSession>[],
+);
 
 /// Data for the diary activity and weight cards.
 class DiaryActivityWeightData {
@@ -113,7 +122,8 @@ class DiaryActivityWeightService {
     if (healthAccessState == HealthDataAccessState.ready) {
       final dayDataList = await Future.wait(
         days.map(
-          (trendDay) => diaryHealthService.loadDayData(
+          (trendDay) => _loadDayDataSafely(
+            diaryHealthService: diaryHealthService,
             day: trendDay,
             userHeightCm: userHeightCm,
           ),
@@ -137,7 +147,8 @@ class DiaryActivityWeightService {
 
     final healthWeightByDay = <String, HealthWeightSample>{};
     if (healthAccessState == HealthDataAccessState.ready && days.isNotEmpty) {
-      final healthSamples = await healthWeightService.loadWeightSamples(
+      final healthSamples = await _loadWeightSamplesSafely(
+        healthWeightService: healthWeightService,
         startInclusive: days.first,
         endExclusive: nextDiaryDay(days.last),
       );
@@ -193,6 +204,48 @@ class DiaryActivityWeightService {
         (workout) => workout.totalCalories,
       ),
     );
+  }
+
+  Future<DiaryHealthDayData> _loadDayDataSafely({
+    required DiaryHealthService diaryHealthService,
+    required DateTime day,
+    required double? userHeightCm,
+  }) async {
+    try {
+      return await diaryHealthService.loadDayData(
+        day: day,
+        userHeightCm: userHeightCm,
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to load diary health day data.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return _emptyDiaryHealthDayData;
+    }
+  }
+
+  Future<List<HealthWeightSample>> _loadWeightSamplesSafely({
+    required HealthWeightService healthWeightService,
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    try {
+      return await healthWeightService.loadWeightSamples(
+        startInclusive: startInclusive,
+        endExclusive: endExclusive,
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to load diary weight samples.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <HealthWeightSample>[];
+    }
   }
 
   int _resolveActiveMinutes(DiaryHealthDayData dayData) {

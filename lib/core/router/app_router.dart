@@ -242,7 +242,7 @@ Raw<GoRouter> appRouter(Ref ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppRoutes.homeCalories,
+                path: AppRoutes.homeDiary,
                 builder: (context, state) => const DiaryPage(),
               ),
             ],
