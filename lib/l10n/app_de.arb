@@ -1274,6 +1274,90 @@
   "caloriesUnitKg": "kg",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
+  "diaryTodayTitle": "Heute",
+  "diaryCycleDayLabel": "Woche {week} Tag {day}",
+  "@diaryCycleDayLabel": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryMealsTitle": "Tagebuch",
+  "diaryMealsEmpty": "Noch nichts eingetragen",
+  "diaryBalanceLoadFailed": "Balance konnte nicht geladen werden",
+  "diaryBalanceEatenLabel": "Gegessen",
+  "diaryBalanceLeftLabel": "Übrig",
+  "diaryScrollToTopAction": "Nach oben",
+  "diaryJumpToMealsAction": "Zum Tagebuch",
+  "diaryActivityTitle": "Aktivität",
+  "diaryActivityEmpty": "Keine Aktivität",
+  "diaryActiveMinutesLabel": "{minutes} Min. aktiv",
+  "@diaryActiveMinutesLabel": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryWeightTitle": "Gewicht",
+  "diarySevenDaysLabel": "7 Tage",
+  "diaryProfileWeightLabel": "Profil: {weight} kg",
+  "@diaryProfileWeightLabel": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryWeightMissingPrompt": "Trage dein Gewicht ein für bessere Berechnung.",
+  "diaryWeightTrackNowAction": "JETZT TRACKEN",
+  "diaryWeightEmpty": "Keine Gewichte",
+  "diaryWeightAddAction": "Gewicht eintragen",
+  "diaryOkAction": "OK",
+  "diaryCounterLabel": "x {count}",
+  "@diaryCounterLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryHealthLabel": "Health",
+  "diaryHealthInstallTitle": "Health installieren",
+  "diaryHealthHistoryTitle": "Verlauf erlauben",
+  "diaryHealthUnsupportedTitle": "Health nicht verfügbar",
+  "diaryHealthConnectTitle": "Health verbinden",
+  "diaryHealthPermissionDenied": "Berechtigung wurde nicht erteilt.",
+  "diaryHealthInstallBody": "Für Schritte und Aktivität.",
+  "diaryHealthHistoryBody": "Für ältere Tage erlauben.",
+  "diaryHealthUnsupportedBody": "Auf diesem Gerät nicht verfügbar.",
+  "diaryHealthConnectBody": "Schritte und Aktivität verbinden.",
+  "diaryHealthSettingsAction": "Einstellungen",
+  "diaryHealthInstallAction": "Installieren",
+  "diaryHealthAllowAction": "Erlauben",
+  "diaryHealthUnavailableAction": "Nicht verfügbar",
+  "diaryHealthConnectAction": "Verbinden",
+  "diaryStepsTitle": "Schritte",
+  "diaryStepsLoadFailed": "Schritte konnten nicht geladen werden",
+  "diaryStepDetailsTitle": "Schritte Details",
+  "diaryStepsDuringWorkoutsLabel": "Schritte im Training",
+  "diaryStepsOutsideWorkoutsLabel": "Schritte außerhalb",
+  "diaryWorkoutsTitle": "Trainings",
+  "diaryWorkoutsLoadFailed": "Trainings konnten nicht geladen werden",
+  "diaryWorkoutsEmpty": "Keine Trainings",
+  "diaryWorkoutFallbackTitle": "Training",
+  "diaryWorkoutMinutesLabel": "{minutes} Min.",
+  "@diaryWorkoutMinutesLabel": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
   "caloriesBundlePortions": "{consumed}/{total} Portionen",
   "@caloriesBundlePortions": {
     "placeholders": {
@@ -1293,6 +1377,8 @@
   "settingsThemeLight": "Hell",
   "settingsThemeDark": "Dunkel",
   "settingsDiaryTitle": "Tagebuch",
+  "settingsDiaryGoalNoGoal": "Kein Ziel gesetzt",
+  "settingsDiaryGoalSetGoalFirst": "Zuerst Ziel setzen",
   "settingsColorTitle": "Akzentfarbe",
   "settingsColorLime": "Limette",
   "settingsColorBlue": "Blau",

@@ -9,8 +9,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-/// Provides real step data for one Tagebuch day.
+/// Provides real step data for one diary day.
 final FutureProvider<DiaryActivitySummary> Function(DateTime)
 diaryStepsSummaryProvider =
     FutureProvider.family<DiaryActivitySummary, DateTime>((ref, day) async {
@@ -35,7 +36,7 @@ diaryStepsSummaryProvider =
       return buildDiaryActivitySummary(day: normalizedDay, dayData: dayData);
     });
 
-/// Steps card for the Tagebuch page.
+/// Steps card for the diary page.
 class DiaryStepsCard extends ConsumerStatefulWidget {
   /// Creates a diary steps card.
   const DiaryStepsCard({
@@ -151,6 +152,7 @@ class _StepsCardContent extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
+    final l10n = AppLocalizations.of(context)!;
     final clampedProgress = progress.clamp(0.0, 1.0);
     final accentColor = isDark
         ? const Color(0xFF818CF8)
@@ -181,7 +183,7 @@ class _StepsCardContent extends StatelessWidget {
                   const SizedBox(width: AppSpacing.md),
                   Flexible(
                     child: Text(
-                      'Schritte',
+                      l10n.diaryStepsTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(

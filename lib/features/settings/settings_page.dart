@@ -117,7 +117,7 @@ class _CalorieGoalTile extends ConsumerWidget {
         settings?.hasGoal == true
             ? '${numberFormat.format(currentGoal.round())} '
                   '${l10n.caloriesUnitKcal}'
-            : 'Kein Ziel gesetzt',
+            : l10n.settingsDiaryGoalNoGoal,
       ),
       trailing: settingsState.isLoading
           ? const SizedBox.square(
@@ -165,7 +165,7 @@ class _CalorieGoalStartTile extends ConsumerWidget {
       subtitle: Text(
         hasGoal
             ? dateFormat.format(initialGoalStartDate)
-            : 'Zuerst Ziel setzen',
+            : l10n.settingsDiaryGoalSetGoalFirst,
       ),
       enabled: hasGoal && !settingsState.isLoading,
       onTap: !hasGoal || settingsState.isLoading

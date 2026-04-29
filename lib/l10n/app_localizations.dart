@@ -4481,6 +4481,282 @@ abstract class AppLocalizations {
   /// **'ml'**
   String get caloriesUnitMilliliter;
 
+  /// No description provided for @diaryTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get diaryTodayTitle;
+
+  /// No description provided for @diaryCycleDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week} day {day}'**
+  String diaryCycleDayLabel(int week, int day);
+
+  /// No description provided for @diaryMealsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary'**
+  String get diaryMealsTitle;
+
+  /// No description provided for @diaryMealsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged yet'**
+  String get diaryMealsEmpty;
+
+  /// No description provided for @diaryBalanceLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance could not be loaded'**
+  String get diaryBalanceLoadFailed;
+
+  /// No description provided for @diaryBalanceEatenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten'**
+  String get diaryBalanceEatenLabel;
+
+  /// No description provided for @diaryBalanceLeftLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get diaryBalanceLeftLabel;
+
+  /// No description provided for @diaryScrollToTopAction.
+  ///
+  /// In en, this message translates to:
+  /// **'To top'**
+  String get diaryScrollToTopAction;
+
+  /// No description provided for @diaryJumpToMealsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'To diary'**
+  String get diaryJumpToMealsAction;
+
+  /// No description provided for @diaryActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get diaryActivityTitle;
+
+  /// No description provided for @diaryActivityEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity'**
+  String get diaryActivityEmpty;
+
+  /// No description provided for @diaryActiveMinutesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min active'**
+  String diaryActiveMinutesLabel(String minutes);
+
+  /// No description provided for @diaryWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get diaryWeightTitle;
+
+  /// No description provided for @diarySevenDaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get diarySevenDaysLabel;
+
+  /// No description provided for @diaryProfileWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile: {weight} kg'**
+  String diaryProfileWeightLabel(String weight);
+
+  /// No description provided for @diaryWeightMissingPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your weight for better calculation.'**
+  String get diaryWeightMissingPrompt;
+
+  /// No description provided for @diaryWeightTrackNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Track now'**
+  String get diaryWeightTrackNowAction;
+
+  /// No description provided for @diaryWeightEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No weights'**
+  String get diaryWeightEmpty;
+
+  /// No description provided for @diaryWeightAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Log weight'**
+  String get diaryWeightAddAction;
+
+  /// No description provided for @diaryOkAction.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get diaryOkAction;
+
+  /// No description provided for @diaryCounterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'x {count}'**
+  String diaryCounterLabel(int count);
+
+  /// No description provided for @diaryHealthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get diaryHealthLabel;
+
+  /// No description provided for @diaryHealthInstallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Health'**
+  String get diaryHealthInstallTitle;
+
+  /// No description provided for @diaryHealthHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow history'**
+  String get diaryHealthHistoryTitle;
+
+  /// No description provided for @diaryHealthUnsupportedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health unavailable'**
+  String get diaryHealthUnsupportedTitle;
+
+  /// No description provided for @diaryHealthConnectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Health'**
+  String get diaryHealthConnectTitle;
+
+  /// No description provided for @diaryHealthPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission was not granted.'**
+  String get diaryHealthPermissionDenied;
+
+  /// No description provided for @diaryHealthInstallBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For steps and activity.'**
+  String get diaryHealthInstallBody;
+
+  /// No description provided for @diaryHealthHistoryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow older days.'**
+  String get diaryHealthHistoryBody;
+
+  /// No description provided for @diaryHealthUnsupportedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available on this device.'**
+  String get diaryHealthUnsupportedBody;
+
+  /// No description provided for @diaryHealthConnectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect steps and activity.'**
+  String get diaryHealthConnectBody;
+
+  /// No description provided for @diaryHealthSettingsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get diaryHealthSettingsAction;
+
+  /// No description provided for @diaryHealthInstallAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get diaryHealthInstallAction;
+
+  /// No description provided for @diaryHealthAllowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get diaryHealthAllowAction;
+
+  /// No description provided for @diaryHealthUnavailableAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get diaryHealthUnavailableAction;
+
+  /// No description provided for @diaryHealthConnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get diaryHealthConnectAction;
+
+  /// No description provided for @diaryStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get diaryStepsTitle;
+
+  /// No description provided for @diaryStepsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps could not be loaded'**
+  String get diaryStepsLoadFailed;
+
+  /// No description provided for @diaryStepDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Step details'**
+  String get diaryStepDetailsTitle;
+
+  /// No description provided for @diaryStepsDuringWorkoutsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps during workouts'**
+  String get diaryStepsDuringWorkoutsLabel;
+
+  /// No description provided for @diaryStepsOutsideWorkoutsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps outside'**
+  String get diaryStepsOutsideWorkoutsLabel;
+
+  /// No description provided for @diaryWorkoutsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts'**
+  String get diaryWorkoutsTitle;
+
+  /// No description provided for @diaryWorkoutsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts could not be loaded'**
+  String get diaryWorkoutsLoadFailed;
+
+  /// No description provided for @diaryWorkoutsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts'**
+  String get diaryWorkoutsEmpty;
+
+  /// No description provided for @diaryWorkoutFallbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout'**
+  String get diaryWorkoutFallbackTitle;
+
+  /// No description provided for @diaryWorkoutMinutesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String diaryWorkoutMinutesLabel(String minutes);
+
   /// No description provided for @caloriesBundlePortions.
   ///
   /// In en, this message translates to:
@@ -4534,6 +4810,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Diary'**
   String get settingsDiaryTitle;
+
+  /// No description provided for @settingsDiaryGoalNoGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'No goal set'**
+  String get settingsDiaryGoalNoGoal;
+
+  /// No description provided for @settingsDiaryGoalSetGoalFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a goal first'**
+  String get settingsDiaryGoalSetGoalFirst;
 
   /// No description provided for @settingsColorTitle.
   ///

@@ -58,6 +58,7 @@ class HomePage extends ConsumerWidget {
     AppLocalizations l10n,
     PreparedMealSelectionState selectionState,
     DiaryCalendarState? diaryCalendarState,
+    String localeName,
   ) {
     if (_currentTab() == HomeTabType.inventory &&
         selectionState.isSelectionMode) {
@@ -69,8 +70,11 @@ class HomePage extends ConsumerWidget {
         return l10n.inventoryPageTitle;
       case HomeTabType.diary:
         return diaryCalendarState?.isSelectedToday ?? true
-            ? 'Heute'
-            : diaryWeekdayFullLabel(diaryCalendarState!.selectedDay);
+            ? l10n.diaryTodayTitle
+            : diaryWeekdayFullLabel(
+                diaryCalendarState!.selectedDay,
+                localeName,
+              );
       case HomeTabType.statistics:
         return l10n.homeStatistics;
       case HomeTabType.settings:
@@ -78,15 +82,19 @@ class HomePage extends ConsumerWidget {
     }
   }
 
-  String? _subtitleForTab(DiaryCalendarState? diaryCalendarState) {
+  String? _subtitleForTab(
+    DiaryCalendarState? diaryCalendarState,
+    String localeName,
+  ) {
     if (diaryCalendarState == null) {
       return null;
     }
 
-    return formatDiaryHeaderDate(diaryCalendarState.selectedDay);
+    return formatDiaryHeaderDate(diaryCalendarState.selectedDay, localeName);
   }
 
   String? _diaryWeekDayLabel(
+    AppLocalizations l10n,
     DiaryCalendarState? diaryCalendarState,
     CalorieWeekOverview? weekOverview,
   ) {
@@ -100,7 +108,7 @@ class HomePage extends ConsumerWidget {
     final cycleDay = elapsedDays < 0 ? 1 : elapsedDays + 1;
     final weekNumber = ((cycleDay - 1) ~/ 7) + 1;
     final dayNumber = ((cycleDay - 1) % 7) + 1;
-    return 'Woche $weekNumber Tag $dayNumber';
+    return l10n.diaryCycleDayLabel(weekNumber, dayNumber);
   }
 
   List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
@@ -254,7 +262,7 @@ class HomePage extends ConsumerWidget {
             onPressed: () {
               ref.read(diaryCalendarControllerProvider.notifier).selectToday();
             },
-            child: const Text('Heute'),
+            child: Text(l10n.diaryTodayTitle),
           ),
         );
 
@@ -273,6 +281,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final localeName = Localizations.localeOf(context).toLanguageTag();
     final colors = Theme.of(context).colorScheme;
     final currentTab = _currentTab();
     final compactHomeChrome = shouldUseCompactHomeChrome(context);
@@ -290,6 +299,7 @@ class HomePage extends ConsumerWidget {
               .asData
               ?.value;
     final diaryWeekDayLabel = _diaryWeekDayLabel(
+      l10n,
       diaryCalendarState,
       diaryWeekOverview,
     );
@@ -303,8 +313,13 @@ class HomePage extends ConsumerWidget {
     return Scaffold(
       extendBody: currentTab != HomeTabType.settings,
       appBar: HomeTopBar(
-        title: _titleForTab(l10n, selectionState, diaryCalendarState),
-        subtitle: _subtitleForTab(diaryCalendarState),
+        title: _titleForTab(
+          l10n,
+          selectionState,
+          diaryCalendarState,
+          localeName,
+        ),
+        subtitle: _subtitleForTab(diaryCalendarState, localeName),
         titleColor: colors.primary,
         compact: compactHomeChrome,
         actions: _buildActions(

@@ -6,8 +6,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-/// Workout session list for the Tagebuch page.
+/// Workout session list for the diary page.
 class DiaryWorkoutsCard extends ConsumerWidget {
   /// Creates the workouts card.
   const DiaryWorkoutsCard({required this.selectedDay, super.key});
@@ -21,8 +22,8 @@ class DiaryWorkoutsCard extends ConsumerWidget {
 
     return summaryState.when(
       loading: () => const DiaryDetailCardShell(child: _WorkoutsSkeleton()),
-      error: (_, _) => const DiaryDetailCardShell(
-        child: Text('Trainings konnten nicht geladen werden'),
+      error: (_, _) => DiaryDetailCardShell(
+        child: Text(AppLocalizations.of(context)!.diaryWorkoutsLoadFailed),
       ),
       data: (summary) {
         if (summary.accessState != HealthDataAccessState.ready) {
@@ -43,6 +44,7 @@ class _WorkoutsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -50,7 +52,7 @@ class _WorkoutsContent extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         if (workouts.isEmpty)
           Text(
-            'Keine Trainings',
+            l10n.diaryWorkoutsEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w700,
@@ -78,6 +80,7 @@ class _WorkoutsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         const Icon(
@@ -88,7 +91,7 @@ class _WorkoutsHeader extends StatelessWidget {
         const SizedBox(width: AppSpacing.xs),
         Expanded(
           child: Text(
-            'TRAININGS',
+            l10n.diaryWorkoutsTitle.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -114,7 +117,8 @@ class _WorkoutRow extends StatelessWidget {
     final locale = Localizations.localeOf(context).toString();
     final numberFormat = NumberFormat.decimalPattern(locale);
     final timeFormat = DateFormat.Hm(locale);
-    final title = workout.activityLabel ?? 'Training';
+    final l10n = AppLocalizations.of(context)!;
+    final title = workout.activityLabel ?? l10n.diaryWorkoutFallbackTitle;
     final timeRange =
         '${timeFormat.format(workout.start)} - '
         '${timeFormat.format(workout.endExclusive)}';
@@ -169,7 +173,9 @@ class _WorkoutRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '${numberFormat.format(workout.durationMinutes.round())} Min.',
+              l10n.diaryWorkoutMinutesLabel(
+                numberFormat.format(workout.durationMinutes.round()),
+              ),
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: colors.onSurface,
                 fontWeight: FontWeight.w900,
@@ -178,7 +184,8 @@ class _WorkoutRow extends StatelessWidget {
             if (workout.totalCalories != null) ...[
               const SizedBox(height: AppSpacing.xxs),
               Text(
-                '${numberFormat.format(workout.totalCalories)} kcal',
+                '${numberFormat.format(workout.totalCalories)} '
+                '${l10n.caloriesUnitKcal}',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: colors.onSurfaceVariant,
                   fontWeight: FontWeight.w800,

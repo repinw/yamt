@@ -60,36 +60,41 @@ class _HealthConnectCardShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final accentColor = colors.primary;
     final title = switch (accessState) {
-      HealthDataAccessState.installRequired => 'Health installieren',
-      HealthDataAccessState.historyRequired => 'Verlauf erlauben',
-      HealthDataAccessState.unsupported => 'Health nicht verfügbar',
+      HealthDataAccessState.installRequired => l10n.diaryHealthInstallTitle,
+      HealthDataAccessState.historyRequired => l10n.diaryHealthHistoryTitle,
+      HealthDataAccessState.unsupported => l10n.diaryHealthUnsupportedTitle,
       HealthDataAccessState.ready ||
-      HealthDataAccessState.permissionRequired => 'Health verbinden',
+      HealthDataAccessState.permissionRequired => l10n.diaryHealthConnectTitle,
     };
     final body = hasConnectionError
-        ? 'Berechtigung wurde nicht erteilt.'
+        ? l10n.diaryHealthPermissionDenied
         : switch (accessState) {
             HealthDataAccessState.installRequired =>
-              'Für Schritte und Aktivität.',
+              l10n.diaryHealthInstallBody,
             HealthDataAccessState.historyRequired =>
-              'Für ältere Tage erlauben.',
+              l10n.diaryHealthHistoryBody,
             HealthDataAccessState.unsupported =>
-              'Auf diesem Gerät nicht verfügbar.',
+              l10n.diaryHealthUnsupportedBody,
             HealthDataAccessState.ready ||
             HealthDataAccessState.permissionRequired =>
-              'Schritte und Aktivität verbinden.',
+              l10n.diaryHealthConnectBody,
           };
     final buttonLabel = hasConnectionError
-        ? 'Einstellungen'
+        ? l10n.diaryHealthSettingsAction
         : switch (accessState) {
-            HealthDataAccessState.installRequired => 'Installieren',
-            HealthDataAccessState.historyRequired => 'Erlauben',
-            HealthDataAccessState.unsupported => 'Nicht verfügbar',
+            HealthDataAccessState.installRequired =>
+              l10n.diaryHealthInstallAction,
+            HealthDataAccessState.historyRequired =>
+              l10n.diaryHealthAllowAction,
+            HealthDataAccessState.unsupported =>
+              l10n.diaryHealthUnavailableAction,
             HealthDataAccessState.ready ||
-            HealthDataAccessState.permissionRequired => 'Verbinden',
+            HealthDataAccessState.permissionRequired =>
+              l10n.diaryHealthConnectAction,
           };
 
     return DiaryMetricCardFrame(
@@ -110,7 +115,7 @@ class _HealthConnectCardShell extends StatelessWidget {
                     const SizedBox(width: AppSpacing.xs),
                     Expanded(
                       child: Text(
-                        'HEALTH',
+                        l10n.diaryHealthLabel.toUpperCase(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(

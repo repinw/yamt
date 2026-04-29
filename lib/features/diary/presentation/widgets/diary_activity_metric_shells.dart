@@ -31,6 +31,7 @@ class _WeightMissingPromptCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = isDark
         ? const Color(0xFFFBBF24)
@@ -90,7 +91,7 @@ class _WeightMissingPromptCard extends StatelessWidget {
                       const SizedBox(width: AppSpacing.xs),
                       Expanded(
                         child: Text(
-                          'GEWICHT',
+                          l10n.diaryWeightTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.labelSmall
@@ -107,7 +108,7 @@ class _WeightMissingPromptCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Trage dein Gewicht ein für bessere Berechnung.',
+                    l10n.diaryWeightMissingPrompt,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: textColor,
                       fontWeight: FontWeight.w900,
@@ -130,7 +131,7 @@ class _WeightMissingPromptCard extends StatelessWidget {
                                   letterSpacing: 0.8,
                                 ),
                           ),
-                          child: const Text('JETZT TRACKEN'),
+                          child: Text(l10n.diaryWeightTrackNowAction),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.xs),
@@ -151,7 +152,7 @@ class _WeightMissingPromptCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text('OK'),
+                        child: Text(l10n.diaryOkAction),
                       ),
                     ],
                   ),
@@ -192,6 +193,7 @@ class _MetricCardShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return DiaryMetricCardFrame(
       child: Stack(
@@ -295,7 +297,7 @@ class _MetricCardShell extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       Text(
-                        '7 Tage',
+                        l10n.diarySevenDaysLabel,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: colors.onSurfaceVariant.withValues(
                             alpha: 0.6,

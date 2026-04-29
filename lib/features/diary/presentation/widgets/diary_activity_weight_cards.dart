@@ -25,12 +25,13 @@ import 'package:yamt/features/health/provider/health_connection_controller.dart'
 import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
 import 'package:yamt/features/health/provider/'
     'manual_health_weight_entries_controller.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 part 'diary_health_connect_metric_card.dart';
 part 'diary_weight_details_card.dart';
 part 'diary_activity_metric_shells.dart';
 
-/// Data for the Tagebuch activity and weight cards.
+/// Data for the diary activity and weight cards.
 class DiaryActivityWeightData {
   /// Creates diary activity and weight data.
   const DiaryActivityWeightData({
@@ -73,7 +74,7 @@ class DiaryActivityWeightData {
   final List<DiaryWeightDayData> weightDays;
 }
 
-/// One day of weight data for the selected Tagebuch window.
+/// One day of weight data for the selected diary window.
 class DiaryWeightDayData {
   /// Creates one weight day.
   const DiaryWeightDayData({
@@ -103,7 +104,7 @@ class DiaryWeightDayData {
   bool get canDeleteWeight => hasManualWeight || hasAppOwnedHealthWeight;
 }
 
-/// Provides real activity and weight data for the selected Tagebuch day.
+/// Provides real activity and weight data for the selected diary day.
 final FutureProvider<DiaryActivityWeightData> Function(DateTime)
 diaryActivityWeightDataProvider =
     FutureProvider.family<DiaryActivityWeightData, DateTime>((ref, day) async {
@@ -205,7 +206,7 @@ diaryActivityWeightDataProvider =
       );
     });
 
-/// Activity and weight cards for the Tagebuch page.
+/// Activity and weight cards for the diary page.
 class DiaryActivityWeightCards extends ConsumerStatefulWidget {
   /// Creates activity and weight cards.
   const DiaryActivityWeightCards({required this.selectedDay, super.key});
@@ -328,21 +329,24 @@ class _ActivityMetricCard extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
+    final l10n = AppLocalizations.of(context)!;
     return _MetricTapShell(
       onTap: onToggleExpanded,
       child: _MetricCardShell(
         accentColor: const Color(0xFFF97316),
         watermarkIcon: Icons.local_activity_rounded,
         titleIcon: Icons.local_activity_rounded,
-        title: 'Aktivität',
+        title: l10n.diaryActivityTitle,
         value: data.activityKcal == null
             ? '—'
             : numberFormat.format(data.activityKcal),
-        unit: 'kcal',
+        unit: l10n.caloriesUnitKcal,
         trend: data.activityTrend,
         footer: data.activeMinutes == null
-            ? 'Keine Aktivität'
-            : '${numberFormat.format(data.activeMinutes)} Min. aktiv',
+            ? l10n.diaryActivityEmpty
+            : l10n.diaryActiveMinutesLabel(
+                numberFormat.format(data.activeMinutes),
+              ),
         trailing: AnimatedRotation(
           turns: isExpanded ? 0.25 : 0,
           duration: const Duration(milliseconds: 220),
@@ -387,6 +391,7 @@ class _WeightMetricCard extends ConsumerWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
+    final l10n = AppLocalizations.of(context)!;
     final weightFormat = NumberFormat(
       '0.#',
       Localizations.localeOf(context).toString(),
@@ -425,15 +430,17 @@ class _WeightMetricCard extends ConsumerWidget {
         accentColor: const Color(0xFF3B82F6),
         watermarkIcon: Icons.trending_down_rounded,
         titleIcon: Icons.trending_down_rounded,
-        title: 'Gewicht',
+        title: l10n.diaryWeightTitle,
         value: data.selectedWeightKg == null
             ? '—'
             : weightFormat.format(data.selectedWeightKg),
-        unit: 'kg',
+        unit: l10n.caloriesUnitKg,
         trend: data.weightTrend,
         footer: profileWeightKg == null
-            ? '7 Tage'
-            : 'Profil: ${numberFormat.format(profileWeightKg)} kg',
+            ? l10n.diarySevenDaysLabel
+            : l10n.diaryProfileWeightLabel(
+                numberFormat.format(profileWeightKg),
+              ),
         trailing: AnimatedRotation(
           turns: isExpanded ? 0.25 : 0,
           duration: const Duration(milliseconds: 220),

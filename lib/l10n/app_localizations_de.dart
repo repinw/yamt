@@ -2296,6 +2296,154 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesUnitMilliliter => 'ml';
 
   @override
+  String get diaryTodayTitle => 'Heute';
+
+  @override
+  String diaryCycleDayLabel(int week, int day) {
+    return 'Woche $week Tag $day';
+  }
+
+  @override
+  String get diaryMealsTitle => 'Tagebuch';
+
+  @override
+  String get diaryMealsEmpty => 'Noch nichts eingetragen';
+
+  @override
+  String get diaryBalanceLoadFailed => 'Balance konnte nicht geladen werden';
+
+  @override
+  String get diaryBalanceEatenLabel => 'Gegessen';
+
+  @override
+  String get diaryBalanceLeftLabel => 'Übrig';
+
+  @override
+  String get diaryScrollToTopAction => 'Nach oben';
+
+  @override
+  String get diaryJumpToMealsAction => 'Zum Tagebuch';
+
+  @override
+  String get diaryActivityTitle => 'Aktivität';
+
+  @override
+  String get diaryActivityEmpty => 'Keine Aktivität';
+
+  @override
+  String diaryActiveMinutesLabel(String minutes) {
+    return '$minutes Min. aktiv';
+  }
+
+  @override
+  String get diaryWeightTitle => 'Gewicht';
+
+  @override
+  String get diarySevenDaysLabel => '7 Tage';
+
+  @override
+  String diaryProfileWeightLabel(String weight) {
+    return 'Profil: $weight kg';
+  }
+
+  @override
+  String get diaryWeightMissingPrompt => 'Trage dein Gewicht ein für bessere Berechnung.';
+
+  @override
+  String get diaryWeightTrackNowAction => 'JETZT TRACKEN';
+
+  @override
+  String get diaryWeightEmpty => 'Keine Gewichte';
+
+  @override
+  String get diaryWeightAddAction => 'Gewicht eintragen';
+
+  @override
+  String get diaryOkAction => 'OK';
+
+  @override
+  String diaryCounterLabel(int count) {
+    return 'x $count';
+  }
+
+  @override
+  String get diaryHealthLabel => 'Health';
+
+  @override
+  String get diaryHealthInstallTitle => 'Health installieren';
+
+  @override
+  String get diaryHealthHistoryTitle => 'Verlauf erlauben';
+
+  @override
+  String get diaryHealthUnsupportedTitle => 'Health nicht verfügbar';
+
+  @override
+  String get diaryHealthConnectTitle => 'Health verbinden';
+
+  @override
+  String get diaryHealthPermissionDenied => 'Berechtigung wurde nicht erteilt.';
+
+  @override
+  String get diaryHealthInstallBody => 'Für Schritte und Aktivität.';
+
+  @override
+  String get diaryHealthHistoryBody => 'Für ältere Tage erlauben.';
+
+  @override
+  String get diaryHealthUnsupportedBody => 'Auf diesem Gerät nicht verfügbar.';
+
+  @override
+  String get diaryHealthConnectBody => 'Schritte und Aktivität verbinden.';
+
+  @override
+  String get diaryHealthSettingsAction => 'Einstellungen';
+
+  @override
+  String get diaryHealthInstallAction => 'Installieren';
+
+  @override
+  String get diaryHealthAllowAction => 'Erlauben';
+
+  @override
+  String get diaryHealthUnavailableAction => 'Nicht verfügbar';
+
+  @override
+  String get diaryHealthConnectAction => 'Verbinden';
+
+  @override
+  String get diaryStepsTitle => 'Schritte';
+
+  @override
+  String get diaryStepsLoadFailed => 'Schritte konnten nicht geladen werden';
+
+  @override
+  String get diaryStepDetailsTitle => 'Schritte Details';
+
+  @override
+  String get diaryStepsDuringWorkoutsLabel => 'Schritte im Training';
+
+  @override
+  String get diaryStepsOutsideWorkoutsLabel => 'Schritte außerhalb';
+
+  @override
+  String get diaryWorkoutsTitle => 'Trainings';
+
+  @override
+  String get diaryWorkoutsLoadFailed => 'Trainings konnten nicht geladen werden';
+
+  @override
+  String get diaryWorkoutsEmpty => 'Keine Trainings';
+
+  @override
+  String get diaryWorkoutFallbackTitle => 'Training';
+
+  @override
+  String diaryWorkoutMinutesLabel(String minutes) {
+    return '$minutes Min.';
+  }
+
+  @override
   String caloriesBundlePortions(int consumed, int total) {
     return '$consumed/$total Portionen';
   }
@@ -2323,6 +2471,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsDiaryTitle => 'Tagebuch';
+
+  @override
+  String get settingsDiaryGoalNoGoal => 'Kein Ziel gesetzt';
+
+  @override
+  String get settingsDiaryGoalSetGoalFirst => 'Zuerst Ziel setzen';
 
   @override
   String get settingsColorTitle => 'Akzentfarbe';

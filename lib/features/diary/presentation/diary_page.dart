@@ -44,19 +44,26 @@ import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Blank Tagebuch content with only the calendar.
-class TagebuchPage extends ConsumerStatefulWidget {
-  /// The Tagebuch page.
-  const TagebuchPage({super.key});
+const _scrollActionEdgeThreshold = 32.0;
+const _jumpToMealsPrimaryDuration = Duration(milliseconds: 520);
+const _jumpToMealsFallbackDuration = Duration(milliseconds: 460);
+const _jumpToMealsSettleDuration = Duration(milliseconds: 260);
+const _jumpToMealsRevealAlignment = 0.04;
+const _scrollToTopDuration = Duration(milliseconds: 560);
+
+/// Diary content.
+class DiaryPage extends ConsumerStatefulWidget {
+  /// The diary page.
+  const DiaryPage({super.key});
 
   /// Key used by the shell and later design tests.
-  static const pageKey = ValueKey<String>('tagebuch-page');
+  static const pageKey = ValueKey<String>('diary-page');
 
   @override
-  ConsumerState<TagebuchPage> createState() => _TagebuchPageState();
+  ConsumerState<DiaryPage> createState() => _DiaryPageState();
 }
 
-class _TagebuchPageState extends ConsumerState<TagebuchPage>
+class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _mealsSectionKey = GlobalKey();
@@ -112,9 +119,13 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
         .watch(calorieWeekDayOverviewForDateProvider(calendarState.selectedDay))
         .asData
         ?.value;
+    final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
     final weeklyCheckIn =
-        ref.watch(calorieWeeklyCheckInViewModelProvider).asData?.value ??
-        _lastWeeklyCheckInViewModel;
+        weeklyCheckInState.asData?.value ?? _lastWeeklyCheckInViewModel;
+    final hasAutoOpeningWeeklyCheckIn =
+        weeklyCheckInState.isLoading ||
+        (weeklyCheckIn?.pendingWeeklyCheckIn != null &&
+            weeklyCheckIn?.shouldAutoOpen == true);
     final goalSettings = ref.watch(calorieGoalControllerProvider).asData?.value;
     final latestGoalHistoryEntry = _latestGoalHistoryEntry(goalSettings);
     final referenceNow = DateTime.now();
@@ -136,7 +147,7 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
         NotificationListener<ScrollNotification>(
           onNotification: _handleScrollNotification,
           child: ListView(
-            key: TagebuchPage.pageKey,
+            key: DiaryPage.pageKey,
             controller: _scrollController,
             padding: responsivePagePadding(
               context,
@@ -151,7 +162,10 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
                 onSelectDay: calendarController.selectDay,
               ),
               const SizedBox(height: AppSpacing.xl),
-              DiaryBalanceCard(selectedDay: calendarState.selectedDay),
+              DiaryBalanceCard(
+                selectedDay: calendarState.selectedDay,
+                hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
+              ),
               if (weeklyCheckIn != null && weeklyCheckIn.showDiaryHint) ...[
                 const SizedBox(height: AppSpacing.md),
                 CalorieWeeklyCheckInHintCard(
@@ -489,10 +503,12 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
     final position = _scrollController.position;
     final showJumpToMeals =
         position.maxScrollExtent > 0 &&
-        position.pixels <= position.minScrollExtent + 32;
+        position.pixels <=
+            position.minScrollExtent + _scrollActionEdgeThreshold;
     final showScrollToTop =
         position.maxScrollExtent > 0 &&
-        position.pixels >= position.maxScrollExtent - 32;
+        position.pixels >=
+            position.maxScrollExtent - _scrollActionEdgeThreshold;
 
     if (_showJumpToMeals == showJumpToMeals &&
         _showScrollToTop == showScrollToTop) {
@@ -534,7 +550,7 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
     }
 
     final scrolledToExactTarget = await _animateToMealsOffset(
-      duration: const Duration(milliseconds: 520),
+      duration: _jumpToMealsPrimaryDuration,
     );
     if (scrolledToExactTarget || !mounted || !_scrollController.hasClients) {
       _updateScrollActions();
@@ -543,7 +559,7 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
 
     await _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 460),
+      duration: _jumpToMealsFallbackDuration,
       curve: Curves.easeOutCubic,
     );
     if (!mounted) {
@@ -552,7 +568,7 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => unawaited(
-        _animateToMealsOffset(duration: const Duration(milliseconds: 260)),
+        _animateToMealsOffset(duration: _jumpToMealsSettleDuration),
       ),
     );
   }
@@ -562,7 +578,10 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
       return false;
     }
 
-    final targetOffset = _offsetForKey(_mealsSectionKey, alignment: 0.04);
+    final targetOffset = _offsetForKey(
+      _mealsSectionKey,
+      alignment: _jumpToMealsRevealAlignment,
+    );
     if (targetOffset == null) {
       return false;
     }
@@ -587,7 +606,7 @@ class _TagebuchPageState extends ConsumerState<TagebuchPage>
     unawaited(
       _scrollController.animateTo(
         0,
-        duration: const Duration(milliseconds: 560),
+        duration: _scrollToTopDuration,
         curve: Curves.easeOutCubic,
       ),
     );
@@ -643,11 +662,14 @@ class _DiaryScrollShortcutState extends State<_DiaryScrollShortcut>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final showButton = widget.showJumpToMeals || widget.showScrollToTop;
     final icon = _showScrollToTopContent
         ? Icons.keyboard_arrow_up_rounded
         : Icons.keyboard_arrow_down_rounded;
-    final label = _showScrollToTopContent ? 'Nach oben' : 'Zum Tagebuch';
+    final label = _showScrollToTopContent
+        ? l10n.diaryScrollToTopAction
+        : l10n.diaryJumpToMealsAction;
     final onPressed = _showScrollToTopContent
         ? widget.onScrollToTop
         : widget.onJumpToMeals;

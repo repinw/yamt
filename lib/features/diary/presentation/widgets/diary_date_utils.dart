@@ -1,42 +1,24 @@
-const _weekdaysShort = <String>['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const _weekdaysFull = <String>[
-  'Montag',
-  'Dienstag',
-  'Mittwoch',
-  'Donnerstag',
-  'Freitag',
-  'Samstag',
-  'Sonntag',
-];
-const _months = <String>[
-  'Januar',
-  'Februar',
-  'März',
-  'April',
-  'Mai',
-  'Juni',
-  'Juli',
-  'August',
-  'September',
-  'Oktober',
-  'November',
-  'Dezember',
-];
+import 'package:intl/intl.dart';
 
 /// Formats the diary header date.
-String formatDiaryHeaderDate(DateTime day) {
-  return '${diaryWeekdayLabel(day)}, ${day.day}. '
-      '${_months[day.month - 1]}';
+String formatDiaryHeaderDate(DateTime day, String localeName) {
+  return '${diaryWeekdayLabel(day, localeName)}, ${day.day}. '
+      '${DateFormat.MMMM(localeName).format(day)}';
 }
 
-/// Returns the short German weekday label for [day].
-String diaryWeekdayLabel(DateTime day) {
-  return _weekdaysShort[day.weekday - 1];
+/// Returns the localized short weekday label for [day].
+String diaryWeekdayLabel(DateTime day, String localeName) {
+  return DateFormat.E(localeName)
+      .format(day)
+      .replaceFirst(
+        RegExp(r'\.$'),
+        '',
+      );
 }
 
-/// Returns the full German weekday label for [day].
-String diaryWeekdayFullLabel(DateTime day) {
-  return _weekdaysFull[day.weekday - 1];
+/// Returns the localized full weekday label for [day].
+String diaryWeekdayFullLabel(DateTime day, String localeName) {
+  return DateFormat.EEEE(localeName).format(day);
 }
 
 /// Normalizes [day] to date-only precision.

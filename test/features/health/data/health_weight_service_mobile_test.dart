@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yamt/features/health/data/health_weight_service_mobile.dart';
+import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -326,6 +327,23 @@ void main() {
     expect(fakeHealth.writeCalls, 1);
     expect(fakeHealth.requestedEndTimes, hasLength(1));
   });
+
+  test('does not delete weight sample from another source', () async {
+    final fakeHealth = _FakeHealth(healthDataPoints: const <HealthDataPoint>[]);
+    final service = MobileHealthWeightService(health: fakeHealth);
+
+    final deleted = await service.deleteWeightSample(
+      HealthWeightSample(
+        recordedAt: DateTime(2026, 4, 27, 8),
+        weightKg: 83.5,
+        uuid: 'foreign-weight-sample',
+        sourcePackageName: 'com.other.health.app',
+      ),
+    );
+
+    expect(deleted, isFalse);
+    expect(fakeHealth.deleteByUuidCallCount, 0);
+  });
 }
 
 class _FakeHealth extends Health {
@@ -341,6 +359,7 @@ class _FakeHealth extends Health {
   final List<DateTime> requestedStartTimes = <DateTime>[];
   final List<DateTime> requestedEndTimes = <DateTime>[];
   int writeCalls = 0;
+  int deleteByUuidCallCount = 0;
 
   @override
   Future<void> configure() async {}
@@ -398,6 +417,15 @@ class _FakeHealth extends Health {
       throw error;
     }
     return writeSucceeds;
+  }
+
+  @override
+  Future<bool> deleteByUUID({
+    required String uuid,
+    HealthDataType? type,
+  }) async {
+    deleteByUuidCallCount += 1;
+    return true;
   }
 }
 

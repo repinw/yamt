@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/'
     'calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Data for the diary nutrition bars.
 class DiaryNutritionBarsData {
@@ -66,7 +67,7 @@ diaryNutritionBarsDataProvider =
       );
     });
 
-/// Macro nutrition bars for the Tagebuch page.
+/// Macro nutrition bars for the diary page.
 class DiaryNutritionBars extends ConsumerStatefulWidget {
   /// Creates diary nutrition bars.
   const DiaryNutritionBars({required this.selectedDay, super.key});
@@ -119,36 +120,40 @@ class _NutritionBarsContent extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
+    final l10n = AppLocalizations.of(context)!;
 
     return Row(
       children: [
         Expanded(
           child: _NutritionMacroColumn(
-            label: 'Kohlenhydrate',
+            label: l10n.caloriesCarbsLabel,
             current: data.carbs,
             target: data.goals.carbs,
             color: const Color(0xFF3B82F6),
             numberFormat: numberFormat,
+            unit: l10n.caloriesUnitGram,
           ),
         ),
         const SizedBox(width: AppSpacing.xl),
         Expanded(
           child: _NutritionMacroColumn(
-            label: 'Eiweiß',
+            label: l10n.caloriesProteinLabel,
             current: data.protein,
             target: data.goals.protein,
             color: const Color(0xFFEF4444),
             numberFormat: numberFormat,
+            unit: l10n.caloriesUnitGram,
           ),
         ),
         const SizedBox(width: AppSpacing.xl),
         Expanded(
           child: _NutritionMacroColumn(
-            label: 'Fette',
+            label: l10n.caloriesFatLabel,
             current: data.fat,
             target: data.goals.fat,
             color: const Color(0xFFEAB308),
             numberFormat: numberFormat,
+            unit: l10n.caloriesUnitGram,
           ),
         ),
       ],
@@ -163,6 +168,7 @@ class _NutritionMacroColumn extends StatelessWidget {
     required this.target,
     required this.color,
     required this.numberFormat,
+    required this.unit,
   });
 
   final String label;
@@ -170,6 +176,7 @@ class _NutritionMacroColumn extends StatelessWidget {
   final double target;
   final Color color;
   final NumberFormat numberFormat;
+  final String unit;
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +245,7 @@ class _NutritionMacroColumn extends StatelessWidget {
                 ),
               ),
               TextSpan(
-                text: ' / ${numberFormat.format(target.round())}g',
+                text: ' / ${numberFormat.format(target.round())}$unit',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: colors.onSurfaceVariant,
                   fontWeight: FontWeight.w700,

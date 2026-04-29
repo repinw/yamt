@@ -13,11 +13,13 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-/// Provides real meal sections for one Tagebuch day.
+/// Provides real meal sections for one diary day.
 final FutureProvider<List<CalorieMealSection>> Function(DateTime)
 diaryMealSectionsProvider =
     FutureProvider.family<List<CalorieMealSection>, DateTime>((ref, day) async {
@@ -54,7 +56,7 @@ diaryMealSectionsProvider =
           .toList(growable: false);
     });
 
-/// Collapsible meal cards for the Tagebuch page.
+/// Collapsible meal cards for the diary page.
 class DiaryMealsSection extends ConsumerStatefulWidget {
   /// Creates diary meal cards.
   const DiaryMealsSection({required this.selectedDay, super.key});
@@ -80,12 +82,13 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
       _lastSections = loadedSections;
     }
     final sections = loadedSections ?? _lastSections;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tagebuch',
+          l10n.diaryMealsTitle,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w900,
@@ -140,6 +143,7 @@ class _DiaryMealCard extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
+    final l10n = AppLocalizations.of(context)!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -173,7 +177,7 @@ class _DiaryMealCard extends StatelessWidget {
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Text(
-                          _mealTitle(section.mealType),
+                          section.mealType.localizedName(l10n),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleMedium
@@ -187,7 +191,7 @@ class _DiaryMealCard extends StatelessWidget {
                         const SizedBox(width: AppSpacing.sm),
                         Text(
                           '${numberFormat.format(section.totalKcal.round())} '
-                          'kcal',
+                          '${l10n.caloriesUnitKcal}',
                           style: Theme.of(context).textTheme.labelLarge
                               ?.copyWith(
                                 color: colors.onSurfaceVariant,
@@ -245,15 +249,16 @@ class _CollapsedMealBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (section.entries.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.only(
+      final l10n = AppLocalizations.of(context)!;
+      return Padding(
+        padding: const EdgeInsets.only(
           top: AppSpacing.md,
         ),
         child: Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'Noch nichts eingetragen',
-            style: TextStyle(
+            l10n.diaryMealsEmpty,
+            style: const TextStyle(
               color: Color(0xFF9CA3AF),
               fontSize: 13,
               fontStyle: FontStyle.italic,
@@ -268,6 +273,7 @@ class _CollapsedMealBody extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -308,7 +314,7 @@ class _CollapsedMealBody extends StatelessWidget {
                         const SizedBox(width: AppSpacing.md),
                         Text(
                           '${numberFormat.format(entry.totalKcal.round())} '
-                          'kcal',
+                          '${l10n.caloriesUnitKcal}',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 color: colors.onSurfaceVariant,
@@ -412,7 +418,7 @@ class _ExpandedEmptyMeal extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
-        'Noch nichts eingetragen',
+        AppLocalizations.of(context)!.diaryMealsEmpty,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           fontStyle: FontStyle.italic,
@@ -436,6 +442,7 @@ class _ExpandedMealEntry extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
+    final l10n = AppLocalizations.of(context)!;
 
     return Material(
       color: Colors.transparent,
@@ -485,7 +492,7 @@ class _ExpandedMealEntry extends StatelessWidget {
                           const SizedBox(width: AppSpacing.sm),
                           Text(
                             '${numberFormat.format(entry.totalKcal.round())} '
-                            'kcal',
+                            '${l10n.caloriesUnitKcal}',
                             style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(
                                   color: const Color(0xFF059669),
@@ -516,21 +523,28 @@ class _MacroDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.xs,
       children: [
         _MacroDot(
           color: const Color(0xFF3B82F6),
-          label: '${numberFormat.format(entry.totalCarbs.round())}g',
+          label:
+              '${numberFormat.format(entry.totalCarbs.round())}'
+              '${l10n.caloriesUnitGram}',
         ),
         _MacroDot(
           color: const Color(0xFFEF4444),
-          label: '${numberFormat.format(entry.totalProtein.round())}g',
+          label:
+              '${numberFormat.format(entry.totalProtein.round())}'
+              '${l10n.caloriesUnitGram}',
         ),
         _MacroDot(
           color: const Color(0xFFEAB308),
-          label: '${numberFormat.format(entry.totalFat.round())}g',
+          label:
+              '${numberFormat.format(entry.totalFat.round())}'
+              '${l10n.caloriesUnitGram}',
         ),
       ],
     );
@@ -677,15 +691,6 @@ class _MealCardsSkeleton extends StatelessWidget {
       ],
     );
   }
-}
-
-String _mealTitle(MealType mealType) {
-  return switch (mealType) {
-    MealType.breakfast => 'Frühstück',
-    MealType.lunch => 'Mittagessen',
-    MealType.dinner => 'Abendessen',
-    MealType.snack => 'Snacks',
-  };
 }
 
 IconData _mealIcon(MealType mealType) {

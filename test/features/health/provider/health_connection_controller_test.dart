@@ -338,6 +338,62 @@ void main() {
     expect(status.accessState, HealthDataAccessState.permissionRequired);
   });
 
+  test(
+    'openHealthPermissionSettings reloads status after settings intent',
+    () async {
+      final service = _FakeHealthConnectionService()
+        ..status = _permissionRequiredStatus;
+      service.onOpenHealthPermissionSettings = () async {
+        service.status = _readyStatus;
+      };
+      final container = _createContainer(service);
+
+      await container.read(healthConnectionControllerProvider.future);
+      final status = await container
+          .read(healthConnectionControllerProvider.notifier)
+          .openHealthPermissionSettings();
+
+      expect(service.openHealthPermissionSettingsCallCount, 1);
+      expect(service.loadStatusCallCount, 2);
+      expect(status.accessState, HealthDataAccessState.ready);
+      expect(
+        container
+            .read(healthConnectionControllerProvider)
+            .requireValue
+            .accessState,
+        HealthDataAccessState.ready,
+      );
+    },
+  );
+
+  test(
+    'openAppPermissionSettings reloads status after settings intent',
+    () async {
+      final service = _FakeHealthConnectionService()
+        ..status = _permissionRequiredStatus;
+      service.onOpenAppPermissionSettings = () async {
+        service.status = _readyStatus;
+      };
+      final container = _createContainer(service);
+
+      await container.read(healthConnectionControllerProvider.future);
+      final status = await container
+          .read(healthConnectionControllerProvider.notifier)
+          .openAppPermissionSettings();
+
+      expect(service.openAppPermissionSettingsCallCount, 1);
+      expect(service.loadStatusCallCount, 2);
+      expect(status.accessState, HealthDataAccessState.ready);
+      expect(
+        container
+            .read(healthConnectionControllerProvider)
+            .requireValue
+            .accessState,
+        HealthDataAccessState.ready,
+      );
+    },
+  );
+
   test('disconnect refreshes state after service call', () async {
     final service = _FakeHealthConnectionService()..status = _readyStatus;
     service.onDisconnect = () async {

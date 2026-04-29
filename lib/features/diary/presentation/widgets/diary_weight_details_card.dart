@@ -163,6 +163,7 @@ class _WeightDetailsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dateFormat = DateFormat.MMMEd(locale);
     final weightFormat = NumberFormat(
@@ -183,7 +184,7 @@ class _WeightDetailsContent extends StatelessWidget {
             const SizedBox(width: AppSpacing.xs),
             Expanded(
               child: Text(
-                'GEWICHT',
+                l10n.diaryWeightTitle.toUpperCase(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -202,7 +203,7 @@ class _WeightDetailsContent extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         if (days.isEmpty)
           Text(
-            'Keine Gewichte',
+            l10n.diaryWeightEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: colors.onSurfaceVariant,
               fontWeight: FontWeight.w700,
@@ -215,7 +216,8 @@ class _WeightDetailsContent extends StatelessWidget {
               dayLabel: dateFormat.format(day.day),
               weightLabel: day.weightKg == null
                   ? '—'
-                  : '${weightFormat.format(day.weightKg)} kg',
+                  : '${weightFormat.format(day.weightKg)} '
+                        '${l10n.caloriesUnitKg}',
               onEdit: () => onEdit(day),
               onDelete: day.canDeleteWeight ? () => onDelete(day) : null,
             ),
@@ -238,6 +240,7 @@ class _WeightAddRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Material(
       color: colors.surfaceContainerHighest.withValues(alpha: 0.24),
@@ -268,7 +271,7 @@ class _WeightAddRow extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  'Gewicht eintragen',
+                  l10n.diaryWeightAddAction,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(

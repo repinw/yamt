@@ -36,6 +36,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isActive ? Colors.white : inactiveTextColor;
+    final localeName = Localizations.localeOf(context).toLanguageTag();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1),
@@ -67,7 +68,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      diaryWeekdayLabel(day).toUpperCase(),
+                      diaryWeekdayLabel(day, localeName).toUpperCase(),
                       style: TextStyle(
                         color: isActive
                             ? Colors.white.withValues(alpha: 0.9)

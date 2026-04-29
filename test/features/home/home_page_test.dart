@@ -267,9 +267,9 @@ void main() {
     await tester.pumpWidget(_buildHarness(settingsRepository: repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('Heute'), findsOneWidget);
-    expect(find.text(formatDiaryHeaderDate(today)), findsOneWidget);
-    expect(find.text('Woche 1 Tag 7'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text(formatDiaryHeaderDate(today, 'en')), findsOneWidget);
+    expect(find.text('Week 1 day 7'), findsOneWidget);
   });
 
   testWidgets('inventory tab hides shell fab when inventory is empty', (

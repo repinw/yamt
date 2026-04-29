@@ -627,7 +627,7 @@ void main() {
     router.go(AppRoutes.homeCalories);
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeCalories);
-    expect(find.text('Heute'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
 
     router.go(AppRoutes.homeSettings);
     await _pumpRouterTransition(tester);

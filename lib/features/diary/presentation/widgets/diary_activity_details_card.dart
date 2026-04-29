@@ -6,8 +6,9 @@ import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-/// Detailed step breakdown for the Tagebuch page.
+/// Detailed step breakdown for the diary page.
 class DiaryActivityDetailsCard extends ConsumerWidget {
   /// Creates the step details card.
   const DiaryActivityDetailsCard({required this.selectedDay, super.key});
@@ -23,8 +24,8 @@ class DiaryActivityDetailsCard extends ConsumerWidget {
       loading: () => const DiaryDetailCardShell(
         child: _ActivityDetailsSkeleton(),
       ),
-      error: (_, _) => const DiaryDetailCardShell(
-        child: Text('Schritte konnten nicht geladen werden'),
+      error: (_, _) => DiaryDetailCardShell(
+        child: Text(AppLocalizations.of(context)!.diaryStepsLoadFailed),
       ),
       data: (summary) {
         if (summary.accessState != HealthDataAccessState.ready) {
@@ -48,25 +49,26 @@ class _ActivityDetailsContent extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _ActivityDetailsHeader(
-          title: 'Schritte Details',
+        _ActivityDetailsHeader(
+          title: l10n.diaryStepDetailsTitle,
           icon: Icons.directions_walk_rounded,
-          color: Color(0xFF6366F1),
+          color: const Color(0xFF6366F1),
         ),
         const SizedBox(height: AppSpacing.lg),
         _DetailRow(
-          label: 'Schritte im Training',
+          label: l10n.diaryStepsDuringWorkoutsLabel,
           value: summary.stepsDuringWorkouts == null
               ? '-'
               : numberFormat.format(summary.stepsDuringWorkouts),
         ),
         const SizedBox(height: AppSpacing.sm),
         _DetailRow(
-          label: 'Schritte außerhalb',
+          label: l10n.diaryStepsOutsideWorkoutsLabel,
           value: summary.stepsOutsideWorkouts == null
               ? '-'
               : numberFormat.format(summary.stepsOutsideWorkouts),
