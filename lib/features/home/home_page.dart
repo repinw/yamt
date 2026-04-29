@@ -240,28 +240,35 @@ class HomePage extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
     final currentTab = _currentTab();
     final compactHomeChrome = shouldUseCompactHomeChrome(context);
+    final selectionState = ref.watch(preparedMealSelectionControllerProvider);
     final diaryCalendarState = currentTab == HomeTabType.diary
         ? ref.watch(diaryCalendarControllerProvider)
         : null;
+    final topBarTitle = _titleForTab(
+      l10n,
+      selectionState,
+      diaryCalendarState,
+      localeName,
+    );
+    final topBarSubtitle = _subtitleForTab(diaryCalendarState, localeName);
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
       HomeTabType.diary || HomeTabType.statistics => null,
       HomeTabType.settings => null,
     };
-    final selectionState = ref.watch(preparedMealSelectionControllerProvider);
 
     return Scaffold(
       extendBody: currentTab != HomeTabType.settings,
       appBar: HomeTopBar(
-        title: _titleForTab(
-          l10n,
-          selectionState,
-          diaryCalendarState,
-          localeName,
-        ),
-        subtitle: _subtitleForTab(diaryCalendarState, localeName),
+        title: topBarTitle,
+        subtitle: topBarSubtitle,
         titleColor: colors.primary,
         compact: compactHomeChrome,
+        preferredHeight: HomeTopBar.preferredHeightFor(
+          context,
+          compact: compactHomeChrome,
+          hasSubtitle: topBarSubtitle != null,
+        ),
         actions: _buildActions(
           context,
           ref,

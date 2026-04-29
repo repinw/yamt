@@ -13,6 +13,7 @@ import 'package:yamt/features/calories/provider/calorie_week_overview_provider.d
 import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -270,6 +271,25 @@ void main() {
     expect(find.text('Today'), findsOneWidget);
     expect(find.text(formatDiaryHeaderDate(today, 'en')), findsOneWidget);
     expect(find.text('Week 1 day 7'), findsNothing);
+  });
+
+  testWidgets('diary shell bar grows for very large accessibility text', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 3;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
+    await tester.pumpAndSettle();
+
+    final topBar = tester.widget<HomeTopBar>(find.byType(HomeTopBar));
+    expect(topBar.preferredSize.height, greaterThan(96));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('inventory tab hides shell fab when inventory is empty', (
