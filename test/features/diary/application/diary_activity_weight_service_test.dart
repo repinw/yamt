@@ -83,6 +83,25 @@ void main() {
     expect(data.weightDays.last.canDeleteWeight, isFalse);
   });
 
+  test('falls back to profile weight when no saved weight exists', () async {
+    final data = await service.load(
+      day: selectedDay,
+      goalSettings: _settings(selectedDay),
+      healthStatus: _readyStatus,
+      manualEntries: const <ManualHealthWeightEntry>[],
+      diaryHealthService: _FakeDiaryHealthService(const {}),
+      healthWeightService: _FakeHealthWeightService(
+        const <HealthWeightSample>[],
+      ),
+    );
+
+    expect(data.profileWeightKg, 80);
+    expect(data.selectedWeightKg, 80);
+    expect(data.hasSelectedDayWeight, isFalse);
+    expect(data.weightTrend.last, isNull);
+    expect(data.weightDays.last.canDeleteWeight, isFalse);
+  });
+
   test(
     'manual weight overrides Health Connect weight for the same day',
     () async {

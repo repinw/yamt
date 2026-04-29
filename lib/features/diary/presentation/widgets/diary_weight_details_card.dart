@@ -167,6 +167,7 @@ class _WeightDetailsContent extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dateFormat = DateFormat.MMMEd(locale);
+    final accentColors = DiaryAccentColors.of(context);
     final weightFormat = NumberFormat(
       '0.#',
       Localizations.localeOf(context).toString(),
@@ -177,9 +178,9 @@ class _WeightDetailsContent extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.trending_down_rounded,
-              color: Color(0xFF3B82F6),
+              color: accentColors.weight,
               size: 18,
             ),
             const SizedBox(width: AppSpacing.xs),
@@ -242,6 +243,7 @@ class _WeightAddRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
 
     return Material(
       color: colors.surfaceContainerHighest.withValues(alpha: 0.24),
@@ -260,12 +262,12 @@ class _WeightAddRow extends StatelessWidget {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                  color: accentColors.weight.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.add_rounded,
-                  color: Color(0xFF3B82F6),
+                  color: accentColors.weight,
                   size: 18,
                 ),
               ),
@@ -307,6 +309,7 @@ class _WeightHistoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final accentColors = DiaryAccentColors.of(context);
     final hasWeight = day.weightKg != null;
 
     return Material(
@@ -352,7 +355,7 @@ class _WeightHistoryRow extends StatelessWidget {
                 ),
                 icon: Icon(
                   hasWeight ? Icons.edit_rounded : Icons.add_rounded,
-                  color: const Color(0xFF3B82F6),
+                  color: accentColors.weight,
                   size: 16,
                 ),
               ),

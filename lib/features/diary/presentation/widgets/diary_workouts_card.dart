@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -81,11 +82,12 @@ class _WorkoutsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.fitness_center_rounded,
-          color: Color(0xFFF97316),
+          color: accentColors.activity,
           size: 18,
         ),
         const SizedBox(width: AppSpacing.xs),
@@ -118,6 +120,7 @@ class _WorkoutRow extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(locale);
     final timeFormat = DateFormat.Hm(locale);
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
     final title = workout.activityLabel ?? l10n.diaryWorkoutFallbackTitle;
     final timeRange =
         '${timeFormat.format(workout.start)} - '
@@ -130,12 +133,12 @@ class _WorkoutRow extends StatelessWidget {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: const Color(0xFFF97316).withValues(alpha: 0.12),
+            color: accentColors.activity.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.local_fire_department_rounded,
-            color: Color(0xFFF97316),
+            color: accentColors.activity,
             size: 19,
           ),
         ),

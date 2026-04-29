@@ -32,26 +32,27 @@ class _WeightMissingPromptCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final titleColor = isDark
-        ? const Color(0xFFFBBF24)
-        : const Color(0xFFF97316);
-    final textColor = isDark
-        ? const Color(0xFFF59E0B)
-        : const Color(0xFFEA580C);
+    final colors = Theme.of(context).colorScheme;
+    final isDark = colors.brightness == Brightness.dark;
+    final accentColors = DiaryAccentColors.of(context);
+    final titleColor = accentColors.activityFor(colors.brightness);
+    final textColor = accentColors.activityTextFor(colors.brightness);
+    final backgroundColor = Color.alphaBlend(
+      titleColor.withValues(alpha: isDark ? 0.16 : 0.08),
+      colors.surfaceContainerLow,
+    );
+    final borderColor = titleColor.withValues(alpha: isDark ? 0.38 : 0.24);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C1A0B) : const Color(0xFFFFF7ED),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark ? const Color(0xFF7C2D12) : const Color(0xFFFED7AA),
-        ),
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: const Color(
-              0xFFF97316,
-            ).withValues(alpha: isDark ? 0.1 : 0.15),
+            color: accentColors.activity.withValues(
+              alpha: isDark ? 0.1 : 0.15,
+            ),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -139,9 +140,9 @@ class _WeightMissingPromptCard extends StatelessWidget {
                         onPressed: onDismiss,
                         style: TextButton.styleFrom(
                           foregroundColor: textColor,
-                          backgroundColor: const Color(
-                            0xFFF97316,
-                          ).withValues(alpha: isDark ? 0.18 : 0.12),
+                          backgroundColor: accentColors.activity.withValues(
+                            alpha: isDark ? 0.18 : 0.12,
+                          ),
                           minimumSize: const Size(44, 30),
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.sm,
@@ -274,9 +275,7 @@ class _MetricCardShell extends StatelessWidget {
                       painter: _SparklinePainter(
                         values: trend,
                         color: accentColor,
-                        backgroundColor: isDark
-                            ? const Color(0xFF111827)
-                            : Colors.white,
+                        backgroundColor: colors.surfaceContainerLowest,
                       ),
                     ),
                   ),

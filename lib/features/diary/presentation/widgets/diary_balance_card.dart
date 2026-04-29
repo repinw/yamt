@@ -29,6 +29,16 @@ const _balanceProgressAreaHeight = 56.0;
 const _balanceStatTileHeight = 84.0;
 const _balanceTickerPeriod = Duration(minutes: 1);
 
+/// Ticker period for minute-sensitive balance UI updates.
+final diaryBalanceTickerPeriodProvider = Provider<Duration>(
+  (ref) => _balanceTickerPeriod,
+);
+
+/// Optional observer for balance ticker tests.
+final diaryBalanceTickerObserverProvider = Provider<VoidCallback?>(
+  (ref) => null,
+);
+
 /// Stable keys for diary balance card tests.
 abstract final class DiaryBalanceCardKeys {
   /// Progress track key.
@@ -1017,7 +1027,8 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   }
 
   void _startTicker() {
-    _ticker ??= Timer.periodic(_balanceTickerPeriod, (_) {
+    _ticker ??= Timer.periodic(ref.read(diaryBalanceTickerPeriodProvider), (_) {
+      ref.read(diaryBalanceTickerObserverProvider)?.call();
       if (!mounted) {
         return;
       }

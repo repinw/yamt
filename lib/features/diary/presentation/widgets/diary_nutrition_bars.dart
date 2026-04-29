@@ -10,6 +10,7 @@ import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_resolved_goal_provider.dart';
+import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -121,6 +122,7 @@ class _NutritionBarsContent extends StatelessWidget {
       Localizations.localeOf(context).toString(),
     );
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
 
     return Row(
       children: [
@@ -129,7 +131,7 @@ class _NutritionBarsContent extends StatelessWidget {
             label: l10n.caloriesCarbsLabel,
             current: data.carbs,
             target: data.goals.carbs,
-            color: const Color(0xFF3B82F6),
+            color: accentColors.carbs,
             numberFormat: numberFormat,
             unit: l10n.caloriesUnitGram,
           ),
@@ -140,7 +142,7 @@ class _NutritionBarsContent extends StatelessWidget {
             label: l10n.caloriesProteinLabel,
             current: data.protein,
             target: data.goals.protein,
-            color: const Color(0xFFEF4444),
+            color: accentColors.protein,
             numberFormat: numberFormat,
             unit: l10n.caloriesUnitGram,
           ),
@@ -151,7 +153,7 @@ class _NutritionBarsContent extends StatelessWidget {
             label: l10n.caloriesFatLabel,
             current: data.fat,
             target: data.goals.fat,
-            color: const Color(0xFFEAB308),
+            color: accentColors.fat,
             numberFormat: numberFormat,
             unit: l10n.caloriesUnitGram,
           ),
@@ -201,11 +203,11 @@ class _NutritionMacroColumn extends StatelessWidget {
           decoration: BoxDecoration(
             color: colors.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(999),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Color(0x14000000),
+                color: colors.shadow.withValues(alpha: 0.08),
                 blurRadius: 3,
-                offset: Offset(0, 1),
+                offset: const Offset(0, 1),
               ),
             ],
           ),

@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
@@ -148,15 +149,15 @@ class _StepsCardContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = colors.brightness == Brightness.dark;
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
     final l10n = AppLocalizations.of(context)!;
     final clampedProgress = progress.clamp(0.0, 1.0);
-    final accentColor = isDark
-        ? const Color(0xFF818CF8)
-        : const Color(0xFF6366F1);
+    final accentColor = DiaryAccentColors.of(context).stepsFor(
+      colors.brightness,
+    );
 
     return Column(
       children: [
@@ -169,9 +170,10 @@ class _StepsCardContent extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.xs),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0x1A6366F1)
-                          : const Color(0xFFEEF2FF),
+                      color: Color.alphaBlend(
+                        accentColor.withValues(alpha: isDark ? 0.16 : 0.1),
+                        colors.surfaceContainerLow,
+                      ),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(
@@ -243,15 +245,13 @@ class _StepsCardContent extends StatelessWidget {
         Container(
           height: 12,
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1F2937)
-                : colors.surfaceContainerHighest,
+            color: colors.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(999),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Color(0x14000000),
+                color: colors.shadow.withValues(alpha: 0.08),
                 blurRadius: 3,
-                offset: Offset(0, 1),
+                offset: const Offset(0, 1),
               ),
             ],
           ),
@@ -276,9 +276,9 @@ class _StepsCardContent extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: accentColor,
                     borderRadius: BorderRadius.circular(999),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x996366F1),
+                        color: accentColor.withValues(alpha: 0.6),
                         blurRadius: 8,
                       ),
                     ],

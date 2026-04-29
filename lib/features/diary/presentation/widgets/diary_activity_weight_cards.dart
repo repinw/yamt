@@ -15,6 +15,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/application/diary_activity_weight_service.dart';
+import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_workouts_card.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -179,10 +180,11 @@ class _ActivityMetricCard extends StatelessWidget {
       Localizations.localeOf(context).toString(),
     );
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
     return _MetricTapShell(
       onTap: onToggleExpanded,
       child: _MetricCardShell(
-        accentColor: const Color(0xFFF97316),
+        accentColor: accentColors.activity,
         watermarkIcon: Icons.local_activity_rounded,
         titleIcon: Icons.local_activity_rounded,
         title: l10n.diaryActivityTitle,
@@ -200,9 +202,9 @@ class _ActivityMetricCard extends StatelessWidget {
           turns: isExpanded ? 0.25 : 0,
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          child: const Icon(
+          child: Icon(
             Icons.chevron_right_rounded,
-            color: Color(0xFFF97316),
+            color: accentColors.activity,
             size: 20,
           ),
         ),
@@ -245,6 +247,7 @@ class _WeightMetricCard extends ConsumerWidget {
       '0.#',
       Localizations.localeOf(context).toString(),
     );
+    final accentColors = DiaryAccentColors.of(context);
     final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
     final dismissalController = ref.watch(
       calorieTodayWeightPromptDismissalControllerProvider.notifier,
@@ -277,7 +280,7 @@ class _WeightMetricCard extends ConsumerWidget {
     return _MetricTapShell(
       onTap: onToggleExpanded,
       child: _MetricCardShell(
-        accentColor: const Color(0xFF3B82F6),
+        accentColor: accentColors.weight,
         watermarkIcon: Icons.trending_down_rounded,
         titleIcon: Icons.trending_down_rounded,
         title: l10n.diaryWeightTitle,
@@ -295,9 +298,9 @@ class _WeightMetricCard extends ConsumerWidget {
           turns: isExpanded ? 0.25 : 0,
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          child: const Icon(
+          child: Icon(
             Icons.chevron_right_rounded,
-            color: Color(0xFF3B82F6),
+            color: accentColors.weight,
             size: 20,
           ),
         ),

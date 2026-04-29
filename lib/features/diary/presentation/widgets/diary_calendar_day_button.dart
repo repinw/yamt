@@ -34,7 +34,6 @@ class DiaryCalendarDayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isActive ? Colors.white : inactiveTextColor;
     final localeName = Localizations.localeOf(context).toLanguageTag();
 
@@ -100,7 +99,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
                       width: 4,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF34D399) : activeColor,
+                        color: activeColor,
                         shape: BoxShape.circle,
                       ),
                     ),

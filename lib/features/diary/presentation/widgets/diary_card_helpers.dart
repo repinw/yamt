@@ -11,18 +11,19 @@ class DiaryDetailCardShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final isDark = colors.brightness == Brightness.dark;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE5E7EB),
+          color: colors.outlineVariant.withValues(alpha: isDark ? 0.4 : 0.55),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.1),
+            color: colors.shadow.withValues(alpha: isDark ? 0.28 : 0.1),
             blurRadius: isDark ? 30 : 20,
             offset: const Offset(0, 10),
           ),
@@ -61,7 +62,8 @@ class DiaryMetricCardFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final isDark = colors.brightness == Brightness.dark;
     final radius = BorderRadius.circular(24);
     final content = padding == null
         ? child
@@ -69,15 +71,15 @@ class DiaryMetricCardFrame extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
+        color: colors.surfaceContainerLowest,
         borderRadius: radius,
         border: Border.all(
-          color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE5E7EB),
+          color: colors.outlineVariant.withValues(alpha: isDark ? 0.4 : 0.55),
         ),
         boxShadow: withShadow
             ? [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.26 : 0.1),
+                  color: colors.shadow.withValues(alpha: isDark ? 0.26 : 0.1),
                   blurRadius: isDark ? 25 : 20,
                   offset: const Offset(0, 8),
                 ),

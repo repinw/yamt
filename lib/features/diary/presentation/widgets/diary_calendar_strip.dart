@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_day_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
 
@@ -78,15 +79,16 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = colors.brightness == Brightness.dark;
+    final accentColors = DiaryAccentColors.of(context);
 
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE5E7EB),
+          color: colors.outlineVariant.withValues(alpha: isDark ? 0.4 : 0.55),
         ),
         boxShadow: [
           BoxShadow(
@@ -110,7 +112,7 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
-                physics: _DaySnapScrollPhysics(itemExtent: itemWidth),
+                physics: DiaryDaySnapScrollPhysics(itemExtent: itemWidth),
                 itemCount: _itemCount,
                 itemExtent: itemWidth,
                 itemBuilder: (context, index) {
@@ -122,7 +124,7 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
                       widget.selectedDay,
                     ),
                     isToday: isSameDiaryCalendarDay(day, widget.today),
-                    activeColor: const Color(0xFF10B981),
+                    activeColor: accentColors.today,
                     inactiveTextColor: colors.onSurfaceVariant,
                     onTap: () {
                       unawaited(HapticFeedback.lightImpact());
@@ -247,14 +249,20 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
   }
 }
 
-class _DaySnapScrollPhysics extends ClampingScrollPhysics {
-  const _DaySnapScrollPhysics({required this.itemExtent, super.parent});
+/// Snaps diary calendar flings to exact day boundaries.
+class DiaryDaySnapScrollPhysics extends ClampingScrollPhysics {
+  /// Creates day snap scroll physics.
+  const DiaryDaySnapScrollPhysics({
+    required this.itemExtent,
+    super.parent,
+  });
 
+  /// Width of one day item.
   final double itemExtent;
 
   @override
-  _DaySnapScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return _DaySnapScrollPhysics(
+  DiaryDaySnapScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return DiaryDaySnapScrollPhysics(
       itemExtent: itemExtent,
       parent: buildParent(ancestor),
     );
@@ -271,7 +279,7 @@ class _DaySnapScrollPhysics extends ClampingScrollPhysics {
 
     final tolerance = toleranceFor(position);
     if (velocity.abs() > tolerance.velocity) {
-      return _DayCoastThenSnapSimulation(
+      return DiaryDayCoastThenSnapSimulation(
         start: position.pixels,
         velocity: velocity,
         itemExtent: itemExtent,
@@ -287,7 +295,7 @@ class _DaySnapScrollPhysics extends ClampingScrollPhysics {
       return null;
     }
 
-    return _DaySnapSimulation(
+    return DiaryDaySnapSimulation(
       start: position.pixels,
       end: target,
       itemExtent: itemExtent,
@@ -303,8 +311,10 @@ class _DaySnapScrollPhysics extends ClampingScrollPhysics {
   }
 }
 
-class _DaySnapSimulation extends Simulation {
-  _DaySnapSimulation({
+/// Animates from the current offset to the nearest day boundary.
+class DiaryDaySnapSimulation extends Simulation {
+  /// Creates a day snap simulation.
+  DiaryDaySnapSimulation({
     required this.start,
     required this.end,
     required double itemExtent,
@@ -313,8 +323,13 @@ class _DaySnapSimulation extends Simulation {
          itemExtent: itemExtent,
        );
 
+  /// Start offset.
   final double start;
+
+  /// End offset.
   final double end;
+
+  /// Animation duration in seconds.
   final double duration;
 
   @override
@@ -355,8 +370,10 @@ class _DaySnapSimulation extends Simulation {
   }
 }
 
-class _DayCoastThenSnapSimulation extends Simulation {
-  _DayCoastThenSnapSimulation({
+/// Lets a fling coast, then snaps the final offset to a day boundary.
+class DiaryDayCoastThenSnapSimulation extends Simulation {
+  /// Creates a coast-then-snap day simulation.
+  DiaryDayCoastThenSnapSimulation({
     required double start,
     required double velocity,
     required this.itemExtent,
@@ -371,14 +388,19 @@ class _DayCoastThenSnapSimulation extends Simulation {
     _coastDuration = _resolveCoastDuration(_coast);
     _snapStart = _clampPixels(_coast.x(_coastDuration));
     _snapEnd = _nearestSnapPixels(_snapStart);
-    _snapDuration = _DaySnapSimulation._resolveDuration(
+    _snapDuration = DiaryDaySnapSimulation._resolveDuration(
       distance: (_snapEnd - _snapStart).abs(),
       itemExtent: itemExtent,
     );
   }
 
+  /// Width of one day item.
   final double itemExtent;
+
+  /// Minimum scroll offset.
   final double minScrollExtent;
+
+  /// Maximum scroll offset.
   final double maxScrollExtent;
   final ClampingScrollSimulation _coast;
 

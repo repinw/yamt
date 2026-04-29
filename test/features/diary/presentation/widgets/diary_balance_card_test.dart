@@ -132,6 +132,38 @@ void main() {
 
     expect(syncWatchCount, greaterThan(0));
   });
+
+  testWidgets('pauses and resumes ticker with app lifecycle', (tester) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+    var tickerTickCount = 0;
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+      tickerPeriod: const Duration(milliseconds: 30),
+      settle: false,
+      onBalanceTickerTick: () {
+        tickerTickCount += 1;
+      },
+    );
+    await tester.pump();
+    final initialTickCount = tickerTickCount;
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump(const Duration(milliseconds: 120));
+    expect(tickerTickCount, initialTickCount);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(tickerTickCount, greaterThan(initialTickCount));
+  });
 }
 
 Future<void> _pumpBalanceCard(
@@ -141,6 +173,9 @@ Future<void> _pumpBalanceCard(
   required List<double> dayTotals,
   required BurnWeekRunState runState,
   VoidCallback? onBurnWeekLiveSyncWatch,
+  VoidCallback? onBalanceTickerTick,
+  Duration? tickerPeriod,
+  bool settle = true,
 }) async {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final weekOverview = _weekOverview(
@@ -161,6 +196,12 @@ Future<void> _pumpBalanceCard(
           onBurnWeekLiveSyncWatch?.call();
           return null;
         }),
+        if (tickerPeriod != null)
+          diaryBalanceTickerPeriodProvider.overrideWithValue(tickerPeriod),
+        if (onBalanceTickerTick != null)
+          diaryBalanceTickerObserverProvider.overrideWithValue(
+            onBalanceTickerTick,
+          ),
         calorieWeekOverviewForWindowProvider(
           normalizedSelectedDay,
         ).overrideWith((ref) => weekOverview),
@@ -187,7 +228,11 @@ Future<void> _pumpBalanceCard(
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }
 
 CalorieWeekOverview _weekOverview({

@@ -17,6 +17,7 @@ import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
+import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Provides real meal sections for one diary day.
@@ -139,22 +140,23 @@ class _DiaryMealCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = colors.brightness == Brightness.dark;
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE5E7EB),
+          color: colors.outlineVariant.withValues(alpha: isDark ? 0.4 : 0.55),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.06),
+            color: colors.shadow.withValues(alpha: isDark ? 0.18 : 0.06),
             blurRadius: isDark ? 24 : 14,
             offset: const Offset(0, 5),
           ),
@@ -207,7 +209,7 @@ class _DiaryMealCard extends StatelessWidget {
                         child: Icon(
                           Icons.chevron_right_rounded,
                           color: isExpanded
-                              ? const Color(0xFF10B981)
+                              ? accentColors.today
                               : colors.onSurfaceVariant,
                         ),
                       ),
@@ -250,6 +252,7 @@ class _CollapsedMealBody extends StatelessWidget {
   Widget build(BuildContext context) {
     if (section.entries.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
+      final colors = Theme.of(context).colorScheme;
       return Padding(
         padding: const EdgeInsets.only(
           top: AppSpacing.md,
@@ -258,8 +261,8 @@ class _CollapsedMealBody extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Text(
             l10n.diaryMealsEmpty,
-            style: const TextStyle(
-              color: Color(0xFF9CA3AF),
+            style: TextStyle(
+              color: colors.onSurfaceVariant,
               fontSize: 13,
               fontStyle: FontStyle.italic,
               fontWeight: FontWeight.w600,
@@ -274,6 +277,7 @@ class _CollapsedMealBody extends StatelessWidget {
       Localizations.localeOf(context).toString(),
     );
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -375,7 +379,7 @@ class _ExpandedMealBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.xxl),
@@ -383,7 +387,7 @@ class _ExpandedMealBody extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF3F4F6),
+              color: colors.outlineVariant.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -438,11 +442,12 @@ class _ExpandedMealEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = colors.brightness == Brightness.dark;
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toString(),
     );
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
 
     return Material(
       color: Colors.transparent,
@@ -451,10 +456,12 @@ class _ExpandedMealEntry extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: Ink(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0x801F2937) : const Color(0xFFF9FAFB),
+            color: colors.surfaceContainerLow.withValues(
+              alpha: isDark ? 0.74 : 0.58,
+            ),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF3F4F6),
+              color: colors.outlineVariant.withValues(alpha: 0.5),
             ),
             boxShadow: [
               BoxShadow(
@@ -495,7 +502,7 @@ class _ExpandedMealEntry extends StatelessWidget {
                             '${l10n.caloriesUnitKcal}',
                             style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(
-                                  color: const Color(0xFF059669),
+                                  color: accentColors.meal,
                                   fontWeight: FontWeight.w900,
                                 ),
                           ),
@@ -524,24 +531,25 @@ class _MacroDots extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
     return Wrap(
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.xs,
       children: [
         _MacroDot(
-          color: const Color(0xFF3B82F6),
+          color: accentColors.carbs,
           label:
               '${numberFormat.format(entry.totalCarbs.round())}'
               '${l10n.caloriesUnitGram}',
         ),
         _MacroDot(
-          color: const Color(0xFFEF4444),
+          color: accentColors.protein,
           label:
               '${numberFormat.format(entry.totalProtein.round())}'
               '${l10n.caloriesUnitGram}',
         ),
         _MacroDot(
-          color: const Color(0xFFEAB308),
+          color: accentColors.fat,
           label:
               '${numberFormat.format(entry.totalFat.round())}'
               '${l10n.caloriesUnitGram}',
@@ -588,17 +596,18 @@ class _MealIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final accentColors = DiaryAccentColors.of(context);
     return Container(
       width: 42,
       height: 42,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF3F4F6),
+        color: colors.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Icon(
         _mealIcon(mealType),
-        color: const Color(0xFF059669),
+        color: accentColors.meal,
         size: 22,
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
+import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -50,6 +51,7 @@ class _ActivityDetailsContent extends StatelessWidget {
       Localizations.localeOf(context).toString(),
     );
     final l10n = AppLocalizations.of(context)!;
+    final accentColors = DiaryAccentColors.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,7 +59,7 @@ class _ActivityDetailsContent extends StatelessWidget {
         _ActivityDetailsHeader(
           title: l10n.diaryStepDetailsTitle,
           icon: Icons.directions_walk_rounded,
-          color: const Color(0xFF6366F1),
+          color: accentColors.stepsFor(Theme.of(context).brightness),
         ),
         const SizedBox(height: AppSpacing.lg),
         _DetailRow(
