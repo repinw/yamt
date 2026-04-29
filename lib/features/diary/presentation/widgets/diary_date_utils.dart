@@ -2,8 +2,8 @@ import 'package:intl/intl.dart';
 
 /// Formats the diary header date.
 String formatDiaryHeaderDate(DateTime day, String localeName) {
-  return '${diaryWeekdayLabel(day, localeName)}, ${day.day}. '
-      '${DateFormat.MMMM(localeName).format(day)}';
+  return '${diaryWeekdayLabel(day, localeName)}, '
+      '${DateFormat.MMMMd(localeName).format(day)}';
 }
 
 /// Returns the localized short weekday label for [day].

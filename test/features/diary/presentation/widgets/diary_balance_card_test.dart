@@ -108,6 +108,30 @@ void main() {
     expect(find.text('Run over'), findsOneWidget);
     expect(find.textContaining('Fresh run starts on'), findsOneWidget);
   });
+
+  testWidgets('keeps Burn Week live sync subscribed on non-live days', (
+    tester,
+  ) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+    var syncWatchCount = 0;
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+      onBurnWeekLiveSyncWatch: () {
+        syncWatchCount += 1;
+      },
+    );
+
+    expect(syncWatchCount, greaterThan(0));
+  });
 }
 
 Future<void> _pumpBalanceCard(
@@ -116,6 +140,7 @@ Future<void> _pumpBalanceCard(
   required DateTime weekStartDate,
   required List<double> dayTotals,
   required BurnWeekRunState runState,
+  VoidCallback? onBurnWeekLiveSyncWatch,
 }) async {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final weekOverview = _weekOverview(
@@ -132,7 +157,10 @@ Future<void> _pumpBalanceCard(
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(repository),
         burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
-        burnWeekLiveSyncProvider.overrideWith((ref) => null),
+        burnWeekLiveSyncProvider.overrideWith((ref) {
+          onBurnWeekLiveSyncWatch?.call();
+          return null;
+        }),
         calorieWeekOverviewForWindowProvider(
           normalizedSelectedDay,
         ).overrideWith((ref) => weekOverview),

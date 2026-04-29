@@ -21,7 +21,7 @@ void main() {
 
     expect(diaryWeekdayLabel(day, 'en'), 'Mon');
     expect(diaryWeekdayFullLabel(day, 'en'), 'Monday');
-    expect(formatDiaryHeaderDate(day, 'en'), 'Mon, 27. April');
+    expect(formatDiaryHeaderDate(day, 'en'), 'Mon, April 27');
   });
 
   test('normalizes days and resolves week starts', () {

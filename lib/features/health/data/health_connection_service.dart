@@ -14,10 +14,10 @@ abstract interface class HealthConnectionService {
   /// Install health connect.
   Future<void> installHealthConnect();
 
-  /// Open Health Connect permission settings.
+  /// Open health permission settings.
   Future<void> openHealthPermissionSettings();
 
-  /// Open Android app permission settings.
+  /// Open app permission settings.
   Future<void> openAppPermissionSettings();
 
   /// Disconnect.

@@ -135,11 +135,9 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   Widget build(BuildContext context) {
     super.build(context);
 
-    final isLiveDay = _isLiveDay(widget.selectedDay);
-    if (isLiveDay) {
-      ref.watch(burnWeekLiveSyncProvider);
-    }
+    ref.watch(burnWeekLiveSyncProvider);
 
+    final isLiveDay = _isLiveDay(widget.selectedDay);
     final weekOverviewState = ref.watch(
       calorieWeekOverviewForWindowProvider(widget.selectedDay),
     );

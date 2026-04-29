@@ -344,6 +344,33 @@ void main() {
     expect(deleted, isFalse);
     expect(fakeHealth.deleteByUuidCallCount, 0);
   });
+
+  test('marks iOS weight sample from this app by source id', () async {
+    final recordedAt = DateTime(2026, 4, 27, 8);
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: <HealthDataPoint>[
+        _buildWeightPoint(
+          recordedAt: recordedAt,
+          weightKg: 83.5,
+          sourcePlatform: HealthPlatformType.appleHealth,
+          sourceId: 'de.yamt.app',
+          sourceName: 'YAMT',
+        ),
+      ],
+    );
+    final service = MobileHealthWeightService(health: fakeHealth);
+
+    final samples = await service.loadWeightSamples(
+      startInclusive: DateTime(2026, 4, 27),
+      endExclusive: DateTime(2026, 4, 28),
+    );
+    final deleted = await service.deleteWeightSample(samples.single);
+
+    expect(samples.single.sourcePackageName, 'de.yamt.app');
+    expect(samples.single.isFromThisApp, isTrue);
+    expect(deleted, isTrue);
+    expect(fakeHealth.deleteByUuidCallCount, 1);
+  });
 }
 
 class _FakeHealth extends Health {
@@ -432,6 +459,9 @@ class _FakeHealth extends Health {
 HealthDataPoint _buildWeightPoint({
   required DateTime recordedAt,
   required double weightKg,
+  HealthPlatformType sourcePlatform = HealthPlatformType.googleHealthConnect,
+  String sourceId = 'health-connect',
+  String sourceName = 'Health Connect',
 }) {
   return HealthDataPoint(
     uuid: 'weight-${recordedAt.millisecondsSinceEpoch}',
@@ -440,9 +470,9 @@ HealthDataPoint _buildWeightPoint({
     unit: HealthDataUnit.KILOGRAM,
     dateFrom: recordedAt,
     dateTo: recordedAt,
-    sourcePlatform: HealthPlatformType.googleHealthConnect,
+    sourcePlatform: sourcePlatform,
     sourceDeviceId: 'device-id',
-    sourceId: 'health-connect',
-    sourceName: 'Health Connect',
+    sourceId: sourceId,
+    sourceName: sourceName,
   );
 }

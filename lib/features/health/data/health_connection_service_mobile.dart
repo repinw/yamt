@@ -199,6 +199,10 @@ class MobileHealthConnectionService implements HealthConnectionService {
 
   @override
   Future<void> openHealthPermissionSettings() async {
+    if (_isIOS) {
+      await openAppPermissionSettings();
+      return;
+    }
     if (!_isAndroid) {
       return;
     }
@@ -230,7 +234,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
 
   @override
   Future<void> openAppPermissionSettings() async {
-    if (!_isAndroid) {
+    if (!_isAndroid && !_isIOS) {
       return;
     }
     final launcher = _appSettingsLauncher;

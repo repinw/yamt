@@ -200,6 +200,25 @@ void main() {
       expect(openAppSettingsCallCount, 1);
     },
   );
+
+  test(
+    'openHealthPermissionSettings uses app settings launcher on iOS',
+    () async {
+      var openAppSettingsCallCount = 0;
+      final service = MobileHealthConnectionService(
+        health: _FakeHealth(hasPermissionsResult: true),
+        isAndroid: false,
+        isIOS: true,
+        appSettingsLauncher: () async {
+          openAppSettingsCallCount += 1;
+        },
+      );
+
+      await service.openHealthPermissionSettings();
+
+      expect(openAppSettingsCallCount, 1);
+    },
+  );
 }
 
 class _FakeHealth extends Health {

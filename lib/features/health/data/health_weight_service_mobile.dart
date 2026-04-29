@@ -253,9 +253,14 @@ class MobileHealthWeightService implements HealthWeightService {
     if (numericValue == null) {
       return null;
     }
-    final sourcePackageName = point.sourceName.trim().isNotEmpty
-        ? point.sourceName.trim()
-        : point.sourceId.trim();
+    final sourceId = point.sourceId.trim();
+    final sourceName = point.sourceName.trim();
+    final sourcePackageName =
+        point.sourcePlatform == HealthPlatformType.appleHealth
+        ? sourceId
+        : sourceName.isNotEmpty
+        ? sourceName
+        : sourceId;
     final packageName = _packageName?.trim();
     return HealthWeightSample(
       recordedAt: point.dateFrom.toLocal(),
@@ -265,7 +270,7 @@ class MobileHealthWeightService implements HealthWeightService {
       isFromThisApp:
           packageName != null &&
           packageName.isNotEmpty &&
-          sourcePackageName == packageName,
+          (sourceId == packageName || sourceName == packageName),
     );
   }
 }
