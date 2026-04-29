@@ -13,4 +13,7 @@ abstract interface class HealthWeightService {
     required DateTime recordedAt,
     required double weightKg,
   });
+
+  /// Delete a weight sample, only when the service can prove app ownership.
+  Future<bool> deleteWeightSample(HealthWeightSample sample);
 }

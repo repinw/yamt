@@ -82,6 +82,8 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   HealthConnectionStatus _status;
   int disconnectCallCount = 0;
   int installCallCount = 0;
+  int openAppPermissionSettingsCallCount = 0;
+  int openHealthPermissionSettingsCallCount = 0;
   int requestAuthorizationCallCount = 0;
   int requestHistoryAuthorizationCallCount = 0;
 
@@ -102,6 +104,16 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   @override
   Future<void> installHealthConnect() async {
     installCallCount += 1;
+  }
+
+  @override
+  Future<void> openAppPermissionSettings() async {
+    openAppPermissionSettingsCallCount += 1;
+  }
+
+  @override
+  Future<void> openHealthPermissionSettings() async {
+    openHealthPermissionSettingsCallCount += 1;
   }
 
   @override
@@ -207,20 +219,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.language_outlined), findsOneWidget);
     expect(find.byIcon(Icons.group_outlined), findsOneWidget);
     expect(find.byIcon(Icons.person_outline), findsOneWidget);
-    expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.format_paint_outlined), findsOneWidget);
 
-    expect(find.text('Language'), findsOneWidget);
-    expect(find.text('Choose app language'), findsOneWidget);
-    expect(find.text('Theme'), findsOneWidget);
-    expect(find.text('System'), findsNWidgets(2));
-    expect(find.text('Accent color'), findsOneWidget);
-    expect(find.text('Teal'), findsNWidgets(2));
-    expect(find.text('Notifications'), findsOneWidget);
-    expect(find.text('Manage reminders and alerts'), findsOneWidget);
     expect(find.text('Household'), findsOneWidget);
     expect(
       find.text('Invite members and manage shared access'),
@@ -232,6 +233,21 @@ void main() {
     expect(find.byIcon(Icons.link_off), findsOneWidget);
     expect(find.text('Health Connect'), findsOneWidget);
     expect(find.text('Remove Health Connect access for YAMT.'), findsOneWidget);
+
+    await _scrollToText(tester, 'Theme');
+    expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
+    expect(find.text('Theme'), findsOneWidget);
+    expect(find.text('System'), findsNWidgets(2));
+
+    await _scrollToText(tester, 'Accent color');
+    expect(find.byIcon(Icons.format_paint_outlined), findsOneWidget);
+    expect(find.text('Accent color'), findsOneWidget);
+    expect(find.text('Teal'), findsNWidgets(2));
+
+    await _scrollToText(tester, 'Language');
+    expect(find.byIcon(Icons.language_outlined), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('Choose app language'), findsOneWidget);
 
     await _scrollToText(tester, 'Notifications');
     expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
@@ -469,6 +485,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _scrollToText(tester, 'Language');
     await tester.tap(find.text('Language'));
     await tester.pumpAndSettle();
     expect(find.text('Not implemented yet'), findsOneWidget);
@@ -551,6 +568,7 @@ void main() {
 
     expect(container.read(seedColorControllerProvider).toARGB32(), 0xFF00695C);
 
+    await _scrollToText(tester, 'Accent color');
     await tester.tap(colorDropdownFinder);
     await tester.pumpAndSettle();
     expect(find.text('Pink'), findsOneWidget);

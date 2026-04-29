@@ -3,16 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_goal_calculator_sheet.dart';
-import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_goal_start_dialog.dart';
-import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
-import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
@@ -28,8 +20,6 @@ const _inventoryBranchIndex = 0;
 const _diaryBranchIndex = 1;
 const _statisticsBranchIndex = 2;
 const _settingsBranchIndex = 3;
-
-enum _DiaryAppBarAction { setGoal, shiftGoalStart, calculator }
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 @Dependencies([
@@ -65,6 +55,8 @@ class HomePage extends ConsumerWidget {
   String _titleForTab(
     AppLocalizations l10n,
     PreparedMealSelectionState selectionState,
+    DiaryCalendarState? diaryCalendarState,
+    String localeName,
   ) {
     if (_currentTab() == HomeTabType.inventory &&
         selectionState.isSelectionMode) {
@@ -75,12 +67,28 @@ class HomePage extends ConsumerWidget {
       case HomeTabType.inventory:
         return l10n.inventoryPageTitle;
       case HomeTabType.diary:
-        return l10n.homeCalories;
+        return diaryCalendarState?.isSelectedToday ?? true
+            ? l10n.diaryTodayTitle
+            : diaryWeekdayFullLabel(
+                diaryCalendarState!.selectedDay,
+                localeName,
+              );
       case HomeTabType.statistics:
         return l10n.homeStatistics;
       case HomeTabType.settings:
         return l10n.homeSettings;
     }
+  }
+
+  String? _subtitleForTab(
+    DiaryCalendarState? diaryCalendarState,
+    String localeName,
+  ) {
+    if (diaryCalendarState == null) {
+      return null;
+    }
+
+    return formatDiaryHeaderDate(diaryCalendarState.selectedDay, localeName);
   }
 
   List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
@@ -97,7 +105,7 @@ class HomePage extends ConsumerWidget {
       ),
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.bar_chart_rounded,
+          icon: Icons.menu_book_rounded,
           label: l10n.homeCalories,
         ),
         isSelected: currentTab == HomeTabType.diary,
@@ -127,8 +135,8 @@ class HomePage extends ConsumerWidget {
     WidgetRef ref,
     AppLocalizations l10n,
     PreparedMealSelectionState selectionState,
-    CalorieGoalSettings? currentCalorieSettings,
     bool useCompactSelectionActions,
+    DiaryCalendarState? diaryCalendarState,
   ) {
     final colors = Theme.of(context).colorScheme;
     if (_currentTab() == HomeTabType.inventory &&
@@ -206,39 +214,16 @@ class HomePage extends ConsumerWidget {
           ),
         ];
       case HomeTabType.diary:
+        if (diaryCalendarState == null || diaryCalendarState.isSelectedToday) {
+          return const <Widget>[];
+        }
+
         return [
-          PopupMenuButton<_DiaryAppBarAction>(
-            key: CaloriesPageKeys.appBarMenuButton,
-            tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-            onSelected: (action) => _onDiaryActionSelected(
-              action: action,
-              context: context,
-              ref: ref,
-              l10n: l10n,
-            ),
-            itemBuilder: (context) {
-              return <PopupMenuEntry<_DiaryAppBarAction>>[
-                PopupMenuItem<_DiaryAppBarAction>(
-                  value: _DiaryAppBarAction.setGoal,
-                  child: Text(l10n.caloriesSetGoalAction),
-                ),
-                PopupMenuItem<_DiaryAppBarAction>(
-                  key: CaloriesPageKeys.appBarMenuShiftGoalStartAction,
-                  value: _DiaryAppBarAction.shiftGoalStart,
-                  enabled:
-                      currentCalorieSettings?.activeGoalEntryForDay(
-                        DateTime.now(),
-                      ) !=
-                      null,
-                  child: Text(l10n.caloriesShiftGoalStartAction),
-                ),
-                PopupMenuItem<_DiaryAppBarAction>(
-                  key: CaloriesPageKeys.appBarMenuCalculatorAction,
-                  value: _DiaryAppBarAction.calculator,
-                  child: Text(l10n.caloriesCalculatorAction),
-                ),
-              ];
+          TextButton(
+            onPressed: () {
+              ref.read(diaryCalendarControllerProvider.notifier).selectToday();
             },
+            child: Text(l10n.diaryTodayTitle),
           ),
         ];
       case HomeTabType.statistics:
@@ -251,39 +236,49 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final localeName = Localizations.localeOf(context).toLanguageTag();
     final colors = Theme.of(context).colorScheme;
     final currentTab = _currentTab();
     final compactHomeChrome = shouldUseCompactHomeChrome(context);
-    final currentCalorieSettings = ref
-        .watch(calorieGoalControllerProvider)
-        .asData
-        ?.value;
+    final selectionState = ref.watch(preparedMealSelectionControllerProvider);
+    final diaryCalendarState = currentTab == HomeTabType.diary
+        ? ref.watch(diaryCalendarControllerProvider)
+        : null;
+    final topBarTitle = _titleForTab(
+      l10n,
+      selectionState,
+      diaryCalendarState,
+      localeName,
+    );
+    final topBarSubtitle = _subtitleForTab(diaryCalendarState, localeName);
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
       HomeTabType.diary || HomeTabType.statistics => null,
       HomeTabType.settings => null,
     };
-    final selectionState = ref.watch(preparedMealSelectionControllerProvider);
 
     return Scaffold(
       extendBody: currentTab != HomeTabType.settings,
       appBar: HomeTopBar(
-        title: _titleForTab(l10n, selectionState),
+        title: topBarTitle,
+        subtitle: topBarSubtitle,
         titleColor: colors.primary,
         compact: compactHomeChrome,
+        preferredHeight: HomeTopBar.preferredHeightFor(
+          context,
+          compact: compactHomeChrome,
+          hasSubtitle: topBarSubtitle != null,
+        ),
         actions: _buildActions(
           context,
           ref,
           l10n,
           selectionState,
-          currentCalorieSettings,
           compactHomeChrome,
+          diaryCalendarState,
         ),
       ),
-      body: _BurnWeekLiveSyncBootstrap(
-        isEnabled: currentTab == HomeTabType.diary,
-        child: navigationShell,
-      ),
+      body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: floatingActionButton,
       bottomNavigationBar: HomeBottomNavBar(
@@ -308,122 +303,5 @@ class HomePage extends ConsumerWidget {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> _onDiaryActionSelected({
-    required _DiaryAppBarAction action,
-    required BuildContext context,
-    required WidgetRef ref,
-    required AppLocalizations l10n,
-  }) async {
-    switch (action) {
-      case _DiaryAppBarAction.setGoal:
-        final currentGoal =
-            ref
-                .read(calorieGoalControllerProvider)
-                .asData
-                ?.value
-                .dailyKcalGoal ??
-            defaultDailyCalorieGoalKcal;
-        await showCalorieGoalDialog(
-          context: context,
-          currentGoal: currentGoal,
-          onSaveGoal: ref.read(calorieGoalControllerProvider.notifier).setGoal,
-          onClearGoal: ref
-              .read(calorieGoalControllerProvider.notifier)
-              .clearGoal,
-        );
-        return;
-      case _DiaryAppBarAction.shiftGoalStart:
-        final currentSettings = ref
-            .read(calorieGoalControllerProvider)
-            .asData
-            ?.value;
-        if (currentSettings == null) {
-          return;
-        }
-        final currentGoalEntry = currentSettings.activeGoalEntryForDay(
-          DateTime.now(),
-        );
-        if (currentGoalEntry == null) {
-          return;
-        }
-        await showCalorieGoalStartDialog(
-          context: context,
-          initialGoalStartDate: currentGoalEntry.effectiveCountingStartDate,
-          onSaveGoalStart: (goalStartDate) {
-            final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
-            if (currentGoalEntry.effectiveCountingStartDate ==
-                normalizedGoalStartDate) {
-              return Future<bool>.value(true);
-            }
-            return ref
-                .read(calorieGoalControllerProvider.notifier)
-                .shiftGoalStart(goalStartDate: goalStartDate);
-          },
-        );
-        return;
-      case _DiaryAppBarAction.calculator:
-        final currentSettings =
-            ref.read(calorieGoalControllerProvider).asData?.value ??
-            const CalorieGoalSettings.empty();
-        await showCalorieGoalCalculatorSheet(
-          context,
-          initialSettings: currentSettings,
-        );
-        return;
-    }
-  }
-}
-
-class _BurnWeekLiveSyncBootstrap extends ConsumerStatefulWidget {
-  const _BurnWeekLiveSyncBootstrap({
-    required this.child,
-    required this.isEnabled,
-  });
-
-  final Widget child;
-  final bool isEnabled;
-
-  @override
-  ConsumerState<_BurnWeekLiveSyncBootstrap> createState() =>
-      _BurnWeekLiveSyncBootstrapState();
-}
-
-class _BurnWeekLiveSyncBootstrapState
-    extends ConsumerState<_BurnWeekLiveSyncBootstrap> {
-  ProviderSubscription<Object?>? _syncSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _ensureSyncStarted();
-  }
-
-  @override
-  void didUpdateWidget(covariant _BurnWeekLiveSyncBootstrap oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _ensureSyncStarted();
-  }
-
-  @override
-  void dispose() {
-    _syncSubscription?.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
-  }
-
-  void _ensureSyncStarted() {
-    if (!widget.isEnabled || _syncSubscription != null) {
-      return;
-    }
-    _syncSubscription = ref.listenManual<Object?>(
-      burnWeekLiveSyncProvider,
-      (_, _) {},
-    );
   }
 }

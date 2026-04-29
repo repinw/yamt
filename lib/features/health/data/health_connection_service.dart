@@ -14,6 +14,12 @@ abstract interface class HealthConnectionService {
   /// Install health connect.
   Future<void> installHealthConnect();
 
+  /// Open health permission settings.
+  Future<void> openHealthPermissionSettings();
+
+  /// Open app permission settings.
+  Future<void> openAppPermissionSettings();
+
   /// Disconnect.
   Future<HealthDisconnectResult> disconnect();
 }

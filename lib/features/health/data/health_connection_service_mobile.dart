@@ -1,7 +1,9 @@
 import 'dart:developer' show log;
 import 'dart:io' show Platform;
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:health/health.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
@@ -36,6 +38,13 @@ const _iosPermissionStatusPermissions = <HealthDataAccess>[
 
 const _androidReconnectRequiresRestartMessage =
     'Restart YAMT after disconnecting Health Connect before reconnecting.';
+const _manageHealthPermissionsAction =
+    'android.health.connect.action.MANAGE_HEALTH_PERMISSIONS';
+const _healthHomeSettingsAction =
+    'android.health.connect.action.HEALTH_HOME_SETTINGS';
+const _legacyHealthConnectSettingsAction =
+    'androidx.health.ACTION_HEALTH_CONNECT_SETTINGS';
+const _intentExtraPackageName = 'android.intent.extra.PACKAGE_NAME';
 
 /// Create health connection service.
 HealthConnectionService createHealthConnectionService({
@@ -52,15 +61,24 @@ class MobileHealthConnectionService implements HealthConnectionService {
     AppPreferences? preferences,
     bool? isAndroid,
     bool? isIOS,
+    Future<String> Function()? packageNameLoader,
+    Future<bool> Function(AndroidIntent intent)? androidIntentLauncher,
+    Future<void> Function()? appSettingsLauncher,
   }) : _health = health ?? Health(),
        _preferences = preferences,
        _isAndroid = isAndroid ?? Platform.isAndroid,
-       _isIOS = isIOS ?? Platform.isIOS;
+       _isIOS = isIOS ?? Platform.isIOS,
+       _packageNameLoader = packageNameLoader,
+       _androidIntentLauncher = androidIntentLauncher,
+       _appSettingsLauncher = appSettingsLauncher;
 
   final Health _health;
   final AppPreferences? _preferences;
   final bool _isAndroid;
   final bool _isIOS;
+  final Future<String> Function()? _packageNameLoader;
+  final Future<bool> Function(AndroidIntent intent)? _androidIntentLauncher;
+  final Future<void> Function()? _appSettingsLauncher;
   bool _isConfigured = false;
   bool _requiresRestartAfterDisconnect = false;
 
@@ -117,8 +135,11 @@ class MobileHealthConnectionService implements HealthConnectionService {
     if (_isAndroid) {
       final permission = await Permission.activityRecognition.request();
       if (!permission.isGranted) {
+        if (permission.isPermanentlyDenied || permission.isRestricted) {
+          await openAppPermissionSettings();
+        }
         return (await loadStatus()).copyWith(
-          errorMessage: 'Android activity recognition permission not granted.',
+          errorMessage: healthActivityRecognitionPermissionErrorMessage,
         );
       }
     }
@@ -177,6 +198,54 @@ class MobileHealthConnectionService implements HealthConnectionService {
   }
 
   @override
+  Future<void> openHealthPermissionSettings() async {
+    if (_isIOS) {
+      await openAppPermissionSettings();
+      return;
+    }
+    if (!_isAndroid) {
+      return;
+    }
+
+    final packageName = await _loadPackageName();
+    if (await _launchAndroidIntent(
+      AndroidIntent(
+        action: _manageHealthPermissionsAction,
+        arguments: <String, Object>{_intentExtraPackageName: packageName},
+      ),
+    )) {
+      return;
+    }
+
+    if (await _launchAndroidIntent(
+      const AndroidIntent(action: _healthHomeSettingsAction),
+    )) {
+      return;
+    }
+
+    if (await _launchAndroidIntent(
+      const AndroidIntent(action: _legacyHealthConnectSettingsAction),
+    )) {
+      return;
+    }
+
+    await installHealthConnect();
+  }
+
+  @override
+  Future<void> openAppPermissionSettings() async {
+    if (!_isAndroid && !_isIOS) {
+      return;
+    }
+    final launcher = _appSettingsLauncher;
+    if (launcher != null) {
+      await launcher();
+      return;
+    }
+    await openAppSettings();
+  }
+
+  @override
   Future<HealthDisconnectResult> disconnect() async {
     if (!_isSupportedPlatform) {
       return HealthDisconnectResult.unsupported;
@@ -230,6 +299,34 @@ class MobileHealthConnectionService implements HealthConnectionService {
       return;
     }
     await _health.requestHealthDataHistoryAuthorization();
+  }
+
+  Future<bool> _launchAndroidIntent(AndroidIntent intent) async {
+    try {
+      final launcher = _androidIntentLauncher;
+      if (launcher != null) {
+        return await launcher(intent);
+      }
+
+      await intent.launch();
+      return true;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to open Health Connect settings intent.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<String> _loadPackageName() async {
+    final packageNameLoader = _packageNameLoader;
+    if (packageNameLoader != null) {
+      return packageNameLoader();
+    }
+    return (await PackageInfo.fromPlatform()).packageName;
   }
 
   Future<HealthConnectAvailability> _loadHealthConnectAvailability() async {

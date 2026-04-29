@@ -46,11 +46,15 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   Future<HealthConnectionStatus> Function()? onRequestAuthorization;
   Future<HealthConnectionStatus> Function()? onRequestHistoryAuthorization;
   Future<void> Function()? onInstallHealthConnect;
+  Future<void> Function()? onOpenAppPermissionSettings;
+  Future<void> Function()? onOpenHealthPermissionSettings;
   Future<HealthDisconnectResult> Function()? onDisconnect;
   int loadStatusCallCount = 0;
   int requestAuthorizationCallCount = 0;
   int requestHistoryAuthorizationCallCount = 0;
   int installHealthConnectCallCount = 0;
+  int openAppPermissionSettingsCallCount = 0;
+  int openHealthPermissionSettingsCallCount = 0;
   int disconnectCallCount = 0;
 
   @override
@@ -67,6 +71,24 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   Future<void> installHealthConnect() async {
     installHealthConnectCallCount += 1;
     final handler = onInstallHealthConnect;
+    if (handler != null) {
+      await handler();
+    }
+  }
+
+  @override
+  Future<void> openAppPermissionSettings() async {
+    openAppPermissionSettingsCallCount += 1;
+    final handler = onOpenAppPermissionSettings;
+    if (handler != null) {
+      await handler();
+    }
+  }
+
+  @override
+  Future<void> openHealthPermissionSettings() async {
+    openHealthPermissionSettingsCallCount += 1;
+    final handler = onOpenHealthPermissionSettings;
     if (handler != null) {
       await handler();
     }
@@ -111,6 +133,23 @@ ProviderContainer _createContainer(_FakeHealthConnectionService service) {
         calorieSettingsRepository,
       ),
       healthConnectionServiceProvider.overrideWith((ref) => service),
+    ],
+  );
+  addTearDown(calorieSettingsRepository.dispose);
+  addTearDown(container.dispose);
+  return container;
+}
+
+ProviderContainer _createContainerWithHealthServiceFactory(
+  HealthConnectionService Function() createService,
+) {
+  final calorieSettingsRepository = FakeCalorieSettingsRepository();
+  final container = ProviderContainer(
+    overrides: [
+      calorieSettingsRepositoryProvider.overrideWithValue(
+        calorieSettingsRepository,
+      ),
+      healthConnectionServiceProvider.overrideWith((ref) => createService()),
     ],
   );
   addTearDown(calorieSettingsRepository.dispose);
@@ -198,6 +237,23 @@ void main() {
     },
   );
 
+  test('connect keeps existing service instance', () async {
+    var createServiceCallCount = 0;
+    final service = _FakeHealthConnectionService()
+      ..status = _historyRequiredStatus
+      ..onRequestHistoryAuthorization = () async => _readyStatus;
+    final container = _createContainerWithHealthServiceFactory(() {
+      createServiceCallCount += 1;
+      return service;
+    });
+
+    await container.read(healthConnectionControllerProvider.future);
+    await container.read(healthConnectionControllerProvider.notifier).connect();
+
+    expect(createServiceCallCount, 1);
+    expect(service.requestHistoryAuthorizationCallCount, 1);
+  });
+
   test('ready authorization marks activity tracking start day', () async {
     final service = _FakeHealthConnectionService()
       ..status = _permissionRequiredStatus
@@ -281,6 +337,62 @@ void main() {
     expect(service.installHealthConnectCallCount, 1);
     expect(status.accessState, HealthDataAccessState.permissionRequired);
   });
+
+  test(
+    'openHealthPermissionSettings reloads status after settings intent',
+    () async {
+      final service = _FakeHealthConnectionService()
+        ..status = _permissionRequiredStatus;
+      service.onOpenHealthPermissionSettings = () async {
+        service.status = _readyStatus;
+      };
+      final container = _createContainer(service);
+
+      await container.read(healthConnectionControllerProvider.future);
+      final status = await container
+          .read(healthConnectionControllerProvider.notifier)
+          .openHealthPermissionSettings();
+
+      expect(service.openHealthPermissionSettingsCallCount, 1);
+      expect(service.loadStatusCallCount, 2);
+      expect(status.accessState, HealthDataAccessState.ready);
+      expect(
+        container
+            .read(healthConnectionControllerProvider)
+            .requireValue
+            .accessState,
+        HealthDataAccessState.ready,
+      );
+    },
+  );
+
+  test(
+    'openAppPermissionSettings reloads status after settings intent',
+    () async {
+      final service = _FakeHealthConnectionService()
+        ..status = _permissionRequiredStatus;
+      service.onOpenAppPermissionSettings = () async {
+        service.status = _readyStatus;
+      };
+      final container = _createContainer(service);
+
+      await container.read(healthConnectionControllerProvider.future);
+      final status = await container
+          .read(healthConnectionControllerProvider.notifier)
+          .openAppPermissionSettings();
+
+      expect(service.openAppPermissionSettingsCallCount, 1);
+      expect(service.loadStatusCallCount, 2);
+      expect(status.accessState, HealthDataAccessState.ready);
+      expect(
+        container
+            .read(healthConnectionControllerProvider)
+            .requireValue
+            .accessState,
+        HealthDataAccessState.ready,
+      );
+    },
+  );
 
   test('disconnect refreshes state after service call', () async {
     final service = _FakeHealthConnectionService()..status = _readyStatus;

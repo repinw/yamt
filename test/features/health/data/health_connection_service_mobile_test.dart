@@ -1,3 +1,4 @@
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
 import 'package:yamt/features/health/data/health_connection_service_mobile.dart';
@@ -77,7 +78,9 @@ void main() {
 
   test('disconnect on iOS disables local Apple Health access', () async {
     final preferences = MemoryAppPreferences(
-      initialStrings: <String, String>{'ios_health_connection_enabled_v1': '1'},
+      initialStrings: <String, String>{
+        'ios_health_connection_enabled_v1': '1',
+      },
     );
     final fakeHealth = _FakeHealth(hasPermissionsResult: true);
     final service = MobileHealthConnectionService(
@@ -101,7 +104,9 @@ void main() {
 
   test('requestAuthorization re-enables local Apple Health access', () async {
     final preferences = MemoryAppPreferences(
-      initialStrings: <String, String>{'ios_health_connection_enabled_v1': '0'},
+      initialStrings: <String, String>{
+        'ios_health_connection_enabled_v1': '0',
+      },
     );
     final fakeHealth = _FakeHealth(hasPermissionsResult: true);
     final service = MobileHealthConnectionService(
@@ -120,6 +125,100 @@ void main() {
       '1',
     );
   });
+
+  test(
+    'openHealthPermissionSettings launches manage permissions intent first',
+    () async {
+      final launchedIntents = <AndroidIntent>[];
+      final service = MobileHealthConnectionService(
+        health: _FakeHealth(hasPermissionsResult: true),
+        isAndroid: true,
+        isIOS: false,
+        packageNameLoader: () async => 'de.yamt.app',
+        androidIntentLauncher: (intent) async {
+          launchedIntents.add(intent);
+          return true;
+        },
+      );
+
+      await service.openHealthPermissionSettings();
+
+      expect(launchedIntents, hasLength(1));
+      expect(
+        launchedIntents.single.action,
+        'android.health.connect.action.MANAGE_HEALTH_PERMISSIONS',
+      );
+      expect(launchedIntents.single.arguments, {
+        'android.intent.extra.PACKAGE_NAME': 'de.yamt.app',
+      });
+    },
+  );
+
+  test(
+    'openHealthPermissionSettings falls back through settings intents '
+    'to install',
+    () async {
+      final fakeHealth = _FakeHealth(hasPermissionsResult: true);
+      final launchedActions = <String?>[];
+      final service = MobileHealthConnectionService(
+        health: fakeHealth,
+        isAndroid: true,
+        isIOS: false,
+        packageNameLoader: () async => 'de.yamt.app',
+        androidIntentLauncher: (intent) async {
+          launchedActions.add(intent.action);
+          return false;
+        },
+      );
+
+      await service.openHealthPermissionSettings();
+
+      expect(launchedActions, [
+        'android.health.connect.action.MANAGE_HEALTH_PERMISSIONS',
+        'android.health.connect.action.HEALTH_HOME_SETTINGS',
+        'androidx.health.ACTION_HEALTH_CONNECT_SETTINGS',
+      ]);
+      expect(fakeHealth.installHealthConnectCallCount, 1);
+    },
+  );
+
+  test(
+    'openAppPermissionSettings uses injected app settings launcher',
+    () async {
+      var openAppSettingsCallCount = 0;
+      final service = MobileHealthConnectionService(
+        health: _FakeHealth(hasPermissionsResult: true),
+        isAndroid: true,
+        isIOS: false,
+        appSettingsLauncher: () async {
+          openAppSettingsCallCount += 1;
+        },
+      );
+
+      await service.openAppPermissionSettings();
+
+      expect(openAppSettingsCallCount, 1);
+    },
+  );
+
+  test(
+    'openHealthPermissionSettings uses app settings launcher on iOS',
+    () async {
+      var openAppSettingsCallCount = 0;
+      final service = MobileHealthConnectionService(
+        health: _FakeHealth(hasPermissionsResult: true),
+        isAndroid: false,
+        isIOS: true,
+        appSettingsLauncher: () async {
+          openAppSettingsCallCount += 1;
+        },
+      );
+
+      await service.openHealthPermissionSettings();
+
+      expect(openAppSettingsCallCount, 1);
+    },
+  );
 }
 
 class _FakeHealth extends Health {
@@ -128,6 +227,7 @@ class _FakeHealth extends Health {
   final bool? hasPermissionsResult;
 
   int requestAuthorizationCallCount = 0;
+  int installHealthConnectCallCount = 0;
   List<HealthDataType>? lastHasPermissionsTypes;
   List<HealthDataAccess>? lastHasPermissionsAccess;
 
@@ -151,5 +251,10 @@ class _FakeHealth extends Health {
   }) async {
     requestAuthorizationCallCount += 1;
     return true;
+  }
+
+  @override
+  Future<void> installHealthConnect() async {
+    installHealthConnectCallCount += 1;
   }
 }

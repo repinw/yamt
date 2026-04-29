@@ -2296,6 +2296,154 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesUnitMilliliter => 'ml';
 
   @override
+  String get diaryTodayTitle => 'Today';
+
+  @override
+  String diaryCycleDayLabel(int week, int day) {
+    return 'Week $week day $day';
+  }
+
+  @override
+  String get diaryMealsTitle => 'Diary';
+
+  @override
+  String get diaryMealsEmpty => 'Nothing logged yet';
+
+  @override
+  String get diaryBalanceLoadFailed => 'Balance could not be loaded';
+
+  @override
+  String get diaryBalanceEatenLabel => 'Eaten';
+
+  @override
+  String get diaryBalanceLeftLabel => 'Left';
+
+  @override
+  String get diaryScrollToTopAction => 'To top';
+
+  @override
+  String get diaryJumpToMealsAction => 'To diary';
+
+  @override
+  String get diaryActivityTitle => 'Activity';
+
+  @override
+  String get diaryActivityEmpty => 'No activity';
+
+  @override
+  String diaryActiveMinutesLabel(String minutes) {
+    return '$minutes min active';
+  }
+
+  @override
+  String get diaryWeightTitle => 'Weight';
+
+  @override
+  String get diarySevenDaysLabel => '7 days';
+
+  @override
+  String diaryProfileWeightLabel(String weight) {
+    return 'Profile: $weight kg';
+  }
+
+  @override
+  String get diaryWeightMissingPrompt => 'Log your weight for better calculation.';
+
+  @override
+  String get diaryWeightTrackNowAction => 'Track now';
+
+  @override
+  String get diaryWeightEmpty => 'No weights';
+
+  @override
+  String get diaryWeightAddAction => 'Log weight';
+
+  @override
+  String get diaryOkAction => 'OK';
+
+  @override
+  String diaryCounterLabel(int count) {
+    return 'x $count';
+  }
+
+  @override
+  String get diaryHealthLabel => 'Health';
+
+  @override
+  String get diaryHealthInstallTitle => 'Install Health';
+
+  @override
+  String get diaryHealthHistoryTitle => 'Allow history';
+
+  @override
+  String get diaryHealthUnsupportedTitle => 'Health unavailable';
+
+  @override
+  String get diaryHealthConnectTitle => 'Connect Health';
+
+  @override
+  String get diaryHealthPermissionDenied => 'Permission was not granted.';
+
+  @override
+  String get diaryHealthInstallBody => 'For steps and activity.';
+
+  @override
+  String get diaryHealthHistoryBody => 'Allow older days.';
+
+  @override
+  String get diaryHealthUnsupportedBody => 'Not available on this device.';
+
+  @override
+  String get diaryHealthConnectBody => 'Connect steps and activity.';
+
+  @override
+  String get diaryHealthSettingsAction => 'Settings';
+
+  @override
+  String get diaryHealthInstallAction => 'Install';
+
+  @override
+  String get diaryHealthAllowAction => 'Allow';
+
+  @override
+  String get diaryHealthUnavailableAction => 'Unavailable';
+
+  @override
+  String get diaryHealthConnectAction => 'Connect';
+
+  @override
+  String get diaryStepsTitle => 'Steps';
+
+  @override
+  String get diaryStepsLoadFailed => 'Steps could not be loaded';
+
+  @override
+  String get diaryStepDetailsTitle => 'Step details';
+
+  @override
+  String get diaryStepsDuringWorkoutsLabel => 'Steps during workouts';
+
+  @override
+  String get diaryStepsOutsideWorkoutsLabel => 'Steps outside';
+
+  @override
+  String get diaryWorkoutsTitle => 'Workouts';
+
+  @override
+  String get diaryWorkoutsLoadFailed => 'Workouts could not be loaded';
+
+  @override
+  String get diaryWorkoutsEmpty => 'No workouts';
+
+  @override
+  String get diaryWorkoutFallbackTitle => 'Workout';
+
+  @override
+  String diaryWorkoutMinutesLabel(String minutes) {
+    return '$minutes min';
+  }
+
+  @override
   String caloriesBundlePortions(int consumed, int total) {
     return '$consumed/$total portions';
   }
@@ -2323,6 +2471,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDiaryTitle => 'Diary';
+
+  @override
+  String get settingsDiaryGoalNoGoal => 'No goal set';
+
+  @override
+  String get settingsDiaryGoalSetGoalFirst => 'Set a goal first';
 
   @override
   String get settingsColorTitle => 'Accent color';

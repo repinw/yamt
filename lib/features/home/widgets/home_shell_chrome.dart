@@ -8,6 +8,9 @@ const _compactHomeChromeTextScaleThreshold = 1.15;
 const _bottomNavLabelMinItemWidth = 64.0;
 const _regularHomeTopBarHeight = 76.0;
 const _compactHomeTopBarHeight = 88.0;
+const _regularHomeTopBarWithSubtitleHeight = 86.0;
+const _compactHomeTopBarWithSubtitleHeight = 96.0;
+const double _homeTopBarTextVerticalPadding = AppSpacing.xxl;
 
 double _effectiveTextScale(
   BuildContext context, {
@@ -17,6 +20,51 @@ double _effectiveTextScale(
         context,
       ).scale(referenceFontSize) /
       referenceFontSize;
+}
+
+double _preferredHomeTopBarBaseHeight({
+  required bool compact,
+  required bool hasSubtitle,
+}) {
+  if (hasSubtitle) {
+    return compact
+        ? _compactHomeTopBarWithSubtitleHeight
+        : _regularHomeTopBarWithSubtitleHeight;
+  }
+
+  return compact ? _compactHomeTopBarHeight : _regularHomeTopBarHeight;
+}
+
+TextStyle? _homeTopBarTitleStyle(
+  BuildContext context, {
+  required bool compact,
+  required bool hasSubtitle,
+  Color? color,
+}) {
+  final textTheme = Theme.of(context).textTheme;
+  return (compact ? textTheme.titleLarge : textTheme.headlineSmall)?.copyWith(
+    color: color ?? Theme.of(context).colorScheme.onSurface,
+    fontWeight: FontWeight.w800,
+    height: hasSubtitle ? 1 : null,
+  );
+}
+
+TextStyle? _homeTopBarSubtitleStyle(BuildContext context) {
+  final colors = Theme.of(context).colorScheme;
+  return Theme.of(context).textTheme.labelLarge?.copyWith(
+    color: colors.onSurfaceVariant,
+    fontWeight: FontWeight.w700,
+  );
+}
+
+double _scaledTextLineHeight(BuildContext context, TextStyle? style) {
+  final painter = TextPainter(
+    text: TextSpan(text: 'Ag', style: style),
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+    textScaler: MediaQuery.textScalerOf(context),
+  )..layout();
+  return painter.height;
 }
 
 /// Whether shared home chrome should switch to its compact layout.
@@ -62,8 +110,10 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     required this.actions,
     super.key,
     this.compact = false,
+    this.preferredHeight,
     this.titleColor,
     this.titleIcon,
+    this.subtitle,
   });
 
   /// The title.
@@ -75,16 +125,58 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Whether to use compact spacing for tight layouts.
   final bool compact;
 
+  /// Optional precomputed preferred height for context-dependent layouts.
+  final double? preferredHeight;
+
   /// The title color.
   final Color? titleColor;
 
   /// The title icon.
   final IconData? titleIcon;
 
+  /// Optional subtitle shown below the title.
+  final String? subtitle;
+
+  /// Computes a preferred height that accounts for accessibility text scaling.
+  static double preferredHeightFor(
+    BuildContext context, {
+    required bool compact,
+    required bool hasSubtitle,
+  }) {
+    final baseHeight = _preferredHomeTopBarBaseHeight(
+      compact: compact,
+      hasSubtitle: hasSubtitle,
+    );
+    final titleHeight = _scaledTextLineHeight(
+      context,
+      _homeTopBarTitleStyle(
+        context,
+        compact: compact,
+        hasSubtitle: hasSubtitle,
+      ),
+    );
+    final subtitleHeight = hasSubtitle
+        ? _scaledTextLineHeight(context, _homeTopBarSubtitleStyle(context))
+        : 0.0;
+    final contentHeight =
+        titleHeight +
+        subtitleHeight +
+        (hasSubtitle ? AppSpacing.xxs : 0.0) +
+        _homeTopBarTextVerticalPadding;
+
+    return baseHeight < contentHeight ? contentHeight : baseHeight;
+  }
+
   @override
-  Size get preferredSize => Size.fromHeight(
-    compact ? _compactHomeTopBarHeight : _regularHomeTopBarHeight,
-  );
+  Size get preferredSize {
+    return Size.fromHeight(
+      preferredHeight ??
+          _preferredHomeTopBarBaseHeight(
+            compact: compact,
+            hasSubtitle: subtitle != null,
+          ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +184,20 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     final borderColor = AppInventoryEditorialSurfaces.ghostBorder(
       colors,
     ).withValues(alpha: 0.1);
+    final resolvedHeight =
+        preferredHeight ??
+        preferredHeightFor(
+          context,
+          compact: compact,
+          hasSubtitle: subtitle != null,
+        );
+    final titleStyle = _homeTopBarTitleStyle(
+      context,
+      compact: compact,
+      hasSubtitle: subtitle != null,
+      color: titleColor,
+    );
+    final subtitleStyle = _homeTopBarSubtitleStyle(context);
 
     return ClipRect(
       child: BackdropFilter(
@@ -107,7 +213,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
           child: SafeArea(
             bottom: false,
             child: SizedBox(
-              height: preferredSize.height,
+              height: resolvedHeight,
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: compact ? AppSpacing.lg : AppSpacing.xl,
@@ -128,22 +234,26 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
                             ),
                           ],
                           Expanded(
-                            child: Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  (compact
-                                          ? Theme.of(
-                                              context,
-                                            ).textTheme.titleLarge
-                                          : Theme.of(
-                                              context,
-                                            ).textTheme.headlineSmall)
-                                      ?.copyWith(
-                                        color: titleColor ?? colors.onSurface,
-                                        fontWeight: FontWeight.w800,
-                                      ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: titleStyle,
+                                ),
+                                if (subtitle != null) ...[
+                                  const SizedBox(height: AppSpacing.xxs),
+                                  Text(
+                                    subtitle!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: subtitleStyle,
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ],

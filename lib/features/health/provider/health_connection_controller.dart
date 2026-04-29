@@ -13,6 +13,8 @@ const _logName = 'HealthConnectionController';
 /// Defines health connection controller.
 @riverpod
 class HealthConnectionController extends _$HealthConnectionController {
+  Future<HealthConnectionStatus>? _runningStatusAction;
+
   @override
   FutureOr<HealthConnectionStatus> build() async {
     return _loadStatusFallback(previousStatus: null);
@@ -20,11 +22,14 @@ class HealthConnectionController extends _$HealthConnectionController {
 
   /// Connect.
   Future<HealthConnectionStatus> connect() async {
-    final currentStatus = state.asData?.value;
-    if (currentStatus?.needsHistoryOnly ?? false) {
-      return requestHistoryAuthorization();
-    }
-    return requestAuthorization();
+    return _runStatusAction(() async {
+      final service = ref.read(healthConnectionServiceProvider);
+      final currentStatus = await service.loadStatus();
+      if (currentStatus.needsHistoryOnly) {
+        return service.requestHistoryAuthorization();
+      }
+      return service.requestAuthorization();
+    });
   }
 
   /// Request authorization.
@@ -48,6 +53,24 @@ class HealthConnectionController extends _$HealthConnectionController {
     return _runStatusAction(() async {
       final service = ref.read(healthConnectionServiceProvider);
       await service.installHealthConnect();
+      return service.loadStatus();
+    });
+  }
+
+  /// Open Health Connect permission settings.
+  Future<HealthConnectionStatus> openHealthPermissionSettings() async {
+    return _runStatusAction(() async {
+      final service = ref.read(healthConnectionServiceProvider);
+      await service.openHealthPermissionSettings();
+      return service.loadStatus();
+    });
+  }
+
+  /// Open Android app permission settings.
+  Future<HealthConnectionStatus> openAppPermissionSettings() async {
+    return _runStatusAction(() async {
+      final service = ref.read(healthConnectionServiceProvider);
+      await service.openAppPermissionSettings();
       return service.loadStatus();
     });
   }
@@ -95,6 +118,24 @@ class HealthConnectionController extends _$HealthConnectionController {
   }
 
   Future<HealthConnectionStatus> _runStatusAction(
+    Future<HealthConnectionStatus> Function() action,
+  ) async {
+    final runningStatusAction = _runningStatusAction;
+    if (runningStatusAction != null) {
+      return runningStatusAction;
+    }
+
+    late final Future<HealthConnectionStatus> nextStatusAction;
+    nextStatusAction = _performStatusAction(action).whenComplete(() {
+      if (identical(_runningStatusAction, nextStatusAction)) {
+        _runningStatusAction = null;
+      }
+    });
+    _runningStatusAction = nextStatusAction;
+    return nextStatusAction;
+  }
+
+  Future<HealthConnectionStatus> _performStatusAction(
     Future<HealthConnectionStatus> Function() action,
   ) async {
     final previousStatus = state.asData?.value;
