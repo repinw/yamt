@@ -797,8 +797,8 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, closeTo(-40, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(1960, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, closeTo(-60, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(1840, 0.001));
     },
   );
 
@@ -930,6 +930,66 @@ void main() {
     expect(overview.todayFlexibleGoalKcal, 0);
     expect(overview.days.firstWhere((day) => day.date == today).goalKcal, 0);
   });
+
+  test(
+    'calorieWeekOverview excludes practice food before counting start',
+    () async {
+      final practiceDay = DateTime(2026, 4, 23);
+      final startDay = DateTime(2026, 4, 24);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'practice-food',
+            loggedAt: practiceDay.add(const Duration(hours: 12)),
+            totalKcal: 900,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 1200,
+          calculatorProfile: null,
+          effectiveDate: startDay,
+          countingStartDate: startDay,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container
+          .read(calorieVisibleWindowControllerProvider.notifier)
+          .setWindowEnd(startDay);
+      await container.read(calorieGoalControllerProvider.future);
+      final overview = await container.read(
+        calorieWeekOverviewProvider.future,
+      );
+
+      expect(overview.balanceStartDate, startDay);
+      expect(overview.totalConsumedKcal, 0);
+      expect(overview.totalGoalKcal, 1200);
+      expect(overview.remainingKcal, 1200);
+      expect(overview.carryoverBeforeTodayKcal, 0);
+      expect(overview.todayFlexibleGoalKcal, 1200);
+      expect(
+        overview.days.firstWhere((day) => day.date == practiceDay).totalKcal,
+        900,
+      );
+      expect(
+        overview.days.firstWhere((day) => day.date == practiceDay).goalKcal,
+        0,
+      );
+    },
+  );
 }
 
 class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {

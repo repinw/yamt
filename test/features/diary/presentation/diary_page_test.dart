@@ -23,6 +23,7 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_balance_card.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -193,6 +194,40 @@ void main() {
     await _pumpFrames(tester);
 
     expect(find.text('Could not print calorie debug table.'), findsOneWidget);
+  });
+
+  testWidgets('shows practice day message before tomorrow goal start', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final startDate = nextDiaryDay(today);
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: today,
+      logRepository: FakeCalorieLogRepository(
+        initialEntries: [
+          _entry(
+            id: 'practice-food',
+            day: today,
+            mealType: MealType.breakfast,
+          ),
+        ],
+      ),
+      settingsRepository: FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 1200,
+          calculatorProfile: null,
+          effectiveDate: startDate,
+          countingStartDate: startDate,
+        ),
+      ),
+    );
+
+    expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
+    expect(find.text('Practice day'), findsOneWidget);
+    expect(find.textContaining('Burn Week starts on'), findsOneWidget);
+    expect(find.text('Goal: 1,200 kcal'), findsOneWidget);
   });
 
   testWidgets('refreshes calendar today when the app resumes', (tester) async {

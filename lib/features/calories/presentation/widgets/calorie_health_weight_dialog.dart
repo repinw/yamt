@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yamt/features/calories/presentation/calorie_health_trends_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -90,11 +91,17 @@ class _CalorieHealthWeightDialogContentState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      scrollable: true,
       title: Text(l10n.caloriesHealthTrendsWeightDialogTitle(widget.dayLabel)),
       content: TextField(
         key: CalorieHealthTrendsPageKeys.weightDialogField,
         controller: _controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        keyboardType: _weightKeyboardType,
+        textInputAction: TextInputAction.done,
+        autocorrect: false,
+        enableSuggestions: false,
+        onSubmitted: (_) => _save(),
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         decoration: InputDecoration(
           labelText: l10n.caloriesCalculatorWeightLabel,
           errorText: _errorText,
@@ -163,3 +170,10 @@ class _CalorieHealthWeightDialogResult {
 }
 
 enum _CalorieHealthWeightDialogAction { save, clear }
+
+TextInputType get _weightKeyboardType {
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    return TextInputType.text;
+  }
+  return const TextInputType.numberWithOptions(decimal: true);
+}

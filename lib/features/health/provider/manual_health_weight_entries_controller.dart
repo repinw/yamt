@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
@@ -14,6 +15,11 @@ import 'package:yamt/features/health/provider/manual_health_weight_repository_pr
 part 'manual_health_weight_entries_controller.g.dart';
 
 const _logName = 'ManualHealthWeightEntriesController';
+
+/// Provides the current clock for manual weight timestamps.
+final manualHealthWeightNowProvider = Provider<DateTime Function()>((ref) {
+  return DateTime.now;
+});
 
 /// Defines manual health weight entries controller.
 @riverpod
@@ -34,6 +40,7 @@ class ManualHealthWeightEntriesController
     final connectionStatusFuture = ref.read(
       healthConnectionControllerProvider.future,
     );
+    final now = ref.read(manualHealthWeightNowProvider)();
     final previousEntries = await _loadCurrentEntries(repository);
     final normalizedDay = normalizeDiaryDay(day);
     final connectionStatus = await connectionStatusFuture;
@@ -44,6 +51,7 @@ class ManualHealthWeightEntriesController
         healthWeightService: healthWeightService,
         previousEntries: previousEntries,
         normalizedDay: normalizedDay,
+        now: now,
         weightKg: weightKg,
       );
     }
@@ -105,12 +113,13 @@ class ManualHealthWeightEntriesController
     required HealthWeightService healthWeightService,
     required List<ManualHealthWeightEntry> previousEntries,
     required DateTime normalizedDay,
+    required DateTime now,
     required double weightKg,
   }) async {
     final nextEntries = _entriesWithoutDay(previousEntries, normalizedDay);
     try {
       final saved = await healthWeightService.saveWeightSample(
-        recordedAt: _weightRecordedAtForDay(normalizedDay),
+        recordedAt: _weightRecordedAtForDay(normalizedDay, now),
         weightKg: weightKg,
       );
       if (!saved) {
@@ -196,8 +205,18 @@ class ManualHealthWeightEntriesController
   }
 }
 
-DateTime _weightRecordedAtForDay(DateTime day) {
+DateTime _weightRecordedAtForDay(DateTime day, DateTime now) {
   // Stable midday timestamp avoids creating near-duplicate manual samples
   // for same day when user edits weight multiple times.
-  return DateTime(day.year, day.month, day.day, 12);
+  final dayStart = DateTime(day.year, day.month, day.day);
+  final midday = DateTime(day.year, day.month, day.day, 12);
+  if (!isSameDiaryDay(day, now) || !midday.isAfter(now)) {
+    return midday;
+  }
+
+  final visibleNow = now.subtract(const Duration(seconds: 1));
+  if (visibleNow.isAfter(dayStart)) {
+    return visibleNow;
+  }
+  return dayStart;
 }
