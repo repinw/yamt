@@ -762,10 +762,52 @@ void main() {
 
     expect(result, isNotNull);
     expect(result?.inventoryAmount, 75);
-    expect(result?.calorieAmount, isNull);
+    expect(result?.calorieAmount, 75);
+    expect(result?.calorieUnit, ConsumedUnit.grams);
     expect(result?.portionBaseAmount, 25);
     expect(result?.portionBaseUnit, ConsumedUnit.grams);
     expect(result?.portionCount, 3);
+    expect(result?.portionLabel, 'Scheibe');
+  });
+
+  testWidgets('logs fractional fixed-unit portions exactly', (tester) async {
+    InventoryItemEatRequest? result;
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _slicedCheeseItem(),
+        maxAmount: 200,
+        onResult: (value) {
+          result = value;
+        },
+      ),
+    );
+
+    await _openSheet(tester);
+    await _selectAmountMode(tester, '+ New portion...');
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_label_field')),
+      'Scheibe',
+    );
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      '37,5',
+    );
+    await tester.tap(find.text('Save portion'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '0,5',
+    );
+    await _tapConfirmButton(tester);
+
+    expect(result, isNotNull);
+    expect(result?.inventoryAmount, 19);
+    expect(result?.calorieAmount, 18.75);
+    expect(result?.calorieUnit, ConsumedUnit.grams);
+    expect(result?.portionBaseAmount, 37.5);
+    expect(result?.portionBaseUnit, ConsumedUnit.grams);
+    expect(result?.portionCount, 0.5);
     expect(result?.portionLabel, 'Scheibe');
   });
 

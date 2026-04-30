@@ -182,11 +182,7 @@ class InventoryItemEatSheetController {
       if (inventoryUnit != inventoryAmountUnit) {
         return null;
       }
-      final rounded = totalAmount.round();
-      if ((totalAmount - rounded).abs() > 0.001) {
-        return null;
-      }
-      return rounded;
+      return _ceilPositiveAmount(totalAmount);
     }
 
     return parseInventoryAmount(
@@ -385,10 +381,15 @@ class InventoryItemEatSheetController {
     final inedibleAmount = parseNonNegativeAmount(inedibleAmountText);
     final hasInvalidInedibleAmount =
         inedibleAmountText.trim().isNotEmpty && inedibleAmount == null;
+    final baseAmountForCalories = _baseAmountForFixedUnitCalories(
+      usesPortionMode: usesPortionMode,
+      portionTotalAmount: portion?.totalAmount,
+      inventoryAmount: inventoryAmount,
+    );
     final hasTooLargeInedibleAmount =
-        inventoryAmount != null &&
+        baseAmountForCalories != null &&
         inedibleAmount != null &&
-        inedibleAmount >= inventoryAmount;
+        inedibleAmount >= baseAmountForCalories;
 
     return InventoryItemEatSubmissionDraft(
       inventoryAmount: inventoryAmount,
@@ -396,12 +397,11 @@ class InventoryItemEatSheetController {
       portionBaseAmount: portion?.baseAmount,
       portionTotalAmount: portion?.totalAmount,
       inedibleAmount: inedibleAmount,
-      fixedUnitCalorieAmount: inventoryAmount == null
-          ? null
-          : resolveFixedUnitCalorieAmount(
-              inventoryAmount: inventoryAmount,
-              inedibleAmount: inedibleAmount,
-            ),
+      fixedUnitCalorieAmount: _resolveFixedUnitDraftCalorieAmount(
+        usesPortionMode: usesPortionMode,
+        baseAmountForCalories: baseAmountForCalories,
+        inedibleAmount: inedibleAmount,
+      ),
       hasInvalidInventoryAmount:
           inventoryAmount == null ||
           inventoryAmount < 1 ||
@@ -420,6 +420,47 @@ class InventoryItemEatSheetController {
   /// Whether a value is effectively a whole number.
   bool isWholeNumber(double value) {
     return (value - value.roundToDouble()).abs() < 0.001;
+  }
+
+  int? _ceilPositiveAmount(double value) {
+    if (!value.isFinite || value <= 0) {
+      return null;
+    }
+    final rounded = value.round();
+    final amount = (value - rounded).abs() <= 0.001 ? rounded : value.ceil();
+    return amount < 1 ? null : amount;
+  }
+
+  double? _baseAmountForFixedUnitCalories({
+    required bool usesPortionMode,
+    required double? portionTotalAmount,
+    required int? inventoryAmount,
+  }) {
+    if (!inventoryItemUsesFixedCalorieUnit(item)) {
+      return null;
+    }
+    if (usesPortionMode) {
+      return portionTotalAmount;
+    }
+    return inventoryAmount?.toDouble();
+  }
+
+  double? _resolveFixedUnitDraftCalorieAmount({
+    required bool usesPortionMode,
+    required double? baseAmountForCalories,
+    required double? inedibleAmount,
+  }) {
+    if (baseAmountForCalories == null) {
+      return null;
+    }
+    final consumedAmount = baseAmountForCalories - (inedibleAmount ?? 0);
+    if (consumedAmount <= 0) {
+      return null;
+    }
+    if (usesPortionMode || (inedibleAmount ?? 0) > 0) {
+      return consumedAmount;
+    }
+    return null;
   }
 }
 

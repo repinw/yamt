@@ -99,5 +99,27 @@ void main() {
       expect(draft.inventoryAmount, 125);
       expect(draft.fixedUnitCalorieAmount, 100);
     });
+
+    test('allows fractional fixed-unit portion totals', () {
+      final controller = InventoryItemEatSheetController(
+        item: _fixedUnitItem(),
+        maxAmount: 200,
+      );
+
+      final draft = controller.buildSubmissionDraft(
+        usesPortionMode: true,
+        inventoryAmountText: '',
+        portionCountText: '1',
+        portionAmountText: '37,5',
+        portionUnit: ConsumedUnit.grams,
+        inedibleAmountText: '',
+      );
+
+      expect(draft.hasValidationErrors, isFalse);
+      expect(draft.inventoryAmount, 38);
+      expect(draft.portionBaseAmount, 37.5);
+      expect(draft.portionTotalAmount, 37.5);
+      expect(draft.fixedUnitCalorieAmount, 37.5);
+    });
   });
 }

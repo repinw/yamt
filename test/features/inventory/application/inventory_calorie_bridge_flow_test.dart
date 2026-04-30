@@ -357,6 +357,33 @@ void main() {
     expect(context.portionLabel, 'Scheibe');
   });
 
+  test('buildInventoryContext keeps exact fixed-unit portion amount', () {
+    final item = _amountItemWithNutrition();
+    final request = InventoryItemEatRequest(
+      inventoryAmount: 38,
+      loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+      mealType: MealType.lunch,
+      calorieAmount: 37.5,
+      calorieUnit: ConsumedUnit.grams,
+      portionBaseAmount: 37.5,
+      portionBaseUnit: ConsumedUnit.grams,
+      portionCount: 1,
+      portionLabel: 'Scheibe',
+    );
+
+    final context = InventoryCalorieBridgeFlow.buildInventoryContext(
+      item: item,
+      pendingConsumptionId: 'pending-1',
+      request: request,
+    );
+
+    expect(context.inventoryAmountToRestore, 38);
+    expect(context.consumedAmount, 37.5);
+    expect(context.consumedUnit, ConsumedUnit.grams);
+    expect(context.portionBaseAmount, 37.5);
+    expect(context.portionCount, 1);
+  });
+
   test('buildInventoryContext throws without manual portion when required', () {
     final item = _portionItemWithNutrition();
     final request = InventoryItemEatRequest(
