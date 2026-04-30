@@ -63,6 +63,73 @@ void main() {
 
     expect(find.byType(AlertDialog), findsNothing);
   });
+
+  testWidgets('showBurnWeekZoneUseHeartDialog skips when no hearts remain', (
+    tester,
+  ) async {
+    final key = GlobalKey<_TestBurnWeekZoneDialogHostState>();
+    final controller = _FakeBurnWeekRunController();
+    await _pumpHost(tester, key: key, controller: controller);
+
+    await key.currentState!.showBurnWeekZoneUseHeartDialog(
+      dailyGoalKcal: 2000,
+      runState: const BurnWeekRunState.initial().copyWith(heartCount: 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(controller.positiveHeartCalls, isEmpty);
+    expect(controller.negativeHeartCalls, isEmpty);
+  });
+
+  testWidgets(
+    'showBurnWeekZoneUseHeartDialog adds heart and resets zone status',
+    (tester) async {
+      final key = GlobalKey<_TestBurnWeekZoneDialogHostState>();
+      final controller = _FakeBurnWeekRunController();
+      await _pumpHost(
+        tester,
+        key: key,
+        queueOnBuild: true,
+        controller: controller,
+      );
+      await _primeAboveZoneStatus(tester, key);
+
+      final dialogFuture = key.currentState!.showBurnWeekZoneUseHeartDialog(
+        dailyGoalKcal: 2000,
+        runState: const BurnWeekRunState.initial(),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('+1 day kcal'));
+      await tester.pumpAndSettle();
+      await dialogFuture;
+
+      expect(controller.positiveHeartCalls, [2000]);
+      expect(controller.negativeHeartCalls, isEmpty);
+      expect(
+        key.currentState!.debugLastZoneStatus,
+        BurnWeekZoneStatus.inside,
+      );
+    },
+  );
+
+  testWidgets('showBurnWeekZoneUseHeartDialog removes heart', (tester) async {
+    final key = GlobalKey<_TestBurnWeekZoneDialogHostState>();
+    final controller = _FakeBurnWeekRunController();
+    await _pumpHost(tester, key: key, controller: controller);
+
+    final dialogFuture = key.currentState!.showBurnWeekZoneUseHeartDialog(
+      dailyGoalKcal: 2000,
+      runState: const BurnWeekRunState.initial(),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('-1 day kcal'));
+    await tester.pumpAndSettle();
+    await dialogFuture;
+
+    expect(controller.negativeHeartCalls, [2000]);
+    expect(controller.positiveHeartCalls, isEmpty);
+  });
 }
 
 Future<void> _pumpHost(
@@ -70,12 +137,13 @@ Future<void> _pumpHost(
   required GlobalKey<_TestBurnWeekZoneDialogHostState> key,
   bool canShow = true,
   bool queueOnBuild = false,
+  _FakeBurnWeekRunController? controller,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         burnWeekRunControllerProvider.overrideWith(
-          _FakeBurnWeekRunController.new,
+          () => controller ?? _FakeBurnWeekRunController(),
         ),
       ],
       child: MaterialApp(
@@ -96,6 +164,22 @@ Future<void> _pumpHost(
     return;
   }
   await tester.pumpAndSettle();
+}
+
+Future<void> _primeAboveZoneStatus(
+  WidgetTester tester,
+  GlobalKey<_TestBurnWeekZoneDialogHostState> key,
+) async {
+  await _pumpQueuedDialog(tester);
+  expect(find.byType(AlertDialog), findsOneWidget);
+  expect(
+    key.currentState!.debugLastZoneStatus,
+    BurnWeekZoneStatus.above,
+  );
+
+  await tester.tap(find.text('Close'));
+  await tester.pumpAndSettle();
+  expect(find.byType(AlertDialog), findsNothing);
 }
 
 Future<void> _pumpQueuedDialog(WidgetTester tester) async {
@@ -148,9 +232,22 @@ class _TestBurnWeekZoneDialogHostState
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
+  final positiveHeartCalls = <double>[];
+  final negativeHeartCalls = <double>[];
+
   @override
   Future<BurnWeekRunState> build() async {
     return const BurnWeekRunState.initial();
+  }
+
+  @override
+  Future<void> usePositiveHeart(double dailyGoalKcal) async {
+    positiveHeartCalls.add(dailyGoalKcal);
+  }
+
+  @override
+  Future<void> useNegativeHeart(double dailyGoalKcal) async {
+    negativeHeartCalls.add(dailyGoalKcal);
   }
 }
 

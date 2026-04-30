@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -18,6 +19,10 @@ mixin BurnWeekZoneDialogHost<T extends ConsumerStatefulWidget>
   var _zoneDialogEpoch = 0;
   var _isZoneDialogOpen = false;
   BurnWeekZoneStatus _lastZoneStatus = BurnWeekZoneStatus.inside;
+
+  /// Last remembered zone status, exposed for focused host tests.
+  @visibleForTesting
+  BurnWeekZoneStatus get debugLastZoneStatus => _lastZoneStatus;
 
   /// Whether this host can currently show zone dialogs.
   bool get canShowBurnWeekZoneDialogs;
