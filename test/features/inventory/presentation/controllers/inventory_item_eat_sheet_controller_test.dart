@@ -144,6 +144,46 @@ void main() {
       expect(draft.portionTotalAmount, 37.5);
       expect(draft.fixedUnitCalorieAmount, 37.5);
     });
+
+    test('clamps final fractional fixed-unit remainder to stock', () {
+      final controller = InventoryItemEatSheetController(
+        item: _fixedUnitItem(),
+        maxAmount: 37,
+      );
+
+      final draft = controller.buildSubmissionDraft(
+        usesPortionMode: true,
+        inventoryAmountText: '',
+        portionCountText: '1',
+        portionAmountText: '37,5',
+        portionUnit: ConsumedUnit.grams,
+        inedibleAmountText: '',
+      );
+
+      expect(draft.hasValidationErrors, isFalse);
+      expect(draft.inventoryAmount, 37);
+      expect(draft.portionTotalAmount, 37.5);
+      expect(draft.fixedUnitCalorieAmount, 37.5);
+    });
+
+    test('rejects fractional fixed-unit portion beyond rounding remainder', () {
+      final controller = InventoryItemEatSheetController(
+        item: _fixedUnitItem(),
+        maxAmount: 36,
+      );
+
+      final draft = controller.buildSubmissionDraft(
+        usesPortionMode: true,
+        inventoryAmountText: '',
+        portionCountText: '1',
+        portionAmountText: '37,5',
+        portionUnit: ConsumedUnit.grams,
+        inedibleAmountText: '',
+      );
+
+      expect(draft.hasInvalidInventoryAmount, isTrue);
+      expect(draft.inventoryAmount, 38);
+    });
   });
 
   group('InventoryItemEatSheetController models', () {

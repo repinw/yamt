@@ -187,7 +187,7 @@ class InventoryItemEatSheetController {
       if (inventoryUnit != inventoryAmountUnit) {
         return null;
       }
-      return _ceilPositiveAmount(totalAmount);
+      return _ceilPositiveAmountWithinRemainingStock(totalAmount);
     }
 
     return parseInventoryAmount(
@@ -427,13 +427,19 @@ class InventoryItemEatSheetController {
     return (value - value.roundToDouble()).abs() < 0.001;
   }
 
-  int? _ceilPositiveAmount(double value) {
+  int? _ceilPositiveAmountWithinRemainingStock(double value) {
     if (!value.isFinite || value <= 0) {
       return null;
     }
     final rounded = value.round();
     final amount = (value - rounded).abs() <= 0.001 ? rounded : value.ceil();
-    return amount < 1 ? null : amount;
+    if (amount < 1) {
+      return null;
+    }
+    if (amount > maxAmount && value - maxAmount < 1) {
+      return maxAmount;
+    }
+    return amount;
   }
 
   double? _baseAmountForFixedUnitCalories({
