@@ -633,6 +633,67 @@ void main() {
   );
 
   test(
+    'uses saved learned target when end weight is missing from health',
+    () async {
+      final startDay = DateTime(2026, 4, 8);
+      final today = DateTime(2026, 4, 15);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: _weeklySourceEntries(
+          startDay: startDay,
+          dailyKcal: 2580,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: startDay,
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: today,
+            dailyKcalGoal: 2580,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: startDay,
+              windowEndDate: previousDiaryDay(today),
+              trendWeightChangePerDay: 0,
+              calculatedTrueTdeeKcal: 2580,
+              averageActiveKcal: 0,
+              lowConfidence: false,
+            ),
+          );
+
+      final container = _createContainer(
+        today: today,
+        settings: settings,
+        diaryHealthService: FakeDiaryHealthService(
+          const <String, DiaryHealthDayData>{},
+        ),
+        logRepository: logRepository,
+        healthWeightService: FakeHealthWeightService(
+          <HealthWeightSample>[
+            HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          ],
+        ),
+        manualWeightRepository: FakeManualHealthWeightRepository(
+          <ManualHealthWeightEntry>[],
+        ),
+      );
+      addTearDown(container.dispose);
+
+      final resolvedGoal = await container.read(
+        resolvedCalorieGoalForDayProvider(today).future,
+      );
+
+      expect(resolvedGoal.storedGoalKcal, 2580);
+      expect(resolvedGoal.goalKcal, 2580);
+      expect(resolvedGoal.usedLearnedTdee, isTrue);
+    },
+  );
+
+  test(
     'recalculates learned activity comparison for a selected historical day',
     () async {
       final today = DateTime(2026, 4, 16);

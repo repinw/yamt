@@ -187,14 +187,9 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
       representativeWeightByDay: representativeWeightByDay,
     );
     if (weightPoints.length < 2) {
-      return _latestOrLegacySnapshotBeforeWindow(
+      return _latestOrSnapshotForMissingWeight(
         latest: latest,
-        settings: settings,
         snapshotFallback: snapshotFallback,
-        snapshot: snapshot,
-        learningDays: learningDays,
-        entriesByDay: entriesByDay,
-        window: window,
       );
     }
 
@@ -228,6 +223,13 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
   }
 
   return latest;
+}
+
+DailyLearnedTdeeGoalData? _latestOrSnapshotForMissingWeight({
+  required DailyLearnedTdeeGoalData? latest,
+  required DailyLearnedTdeeGoalData? snapshotFallback,
+}) {
+  return latest ?? snapshotFallback;
 }
 
 DailyLearnedTdeeGoalData? _latestOrLegacySnapshotBeforeWindow({

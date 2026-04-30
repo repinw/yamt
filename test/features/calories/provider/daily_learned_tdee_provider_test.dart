@@ -309,6 +309,79 @@ void main() {
     expect(result, isNull);
   });
 
+  test(
+    'uses saved learned target when saved window now misses end weight',
+    () async {
+      final startDay = DateTime(2026, 4);
+      final today = startDay.add(
+        const Duration(days: weeklyCheckInWindowLengthDays),
+      );
+      final settings = _learnedSettings(
+        startDay: startDay,
+        windowEndDate: today.subtract(const Duration(days: 1)),
+        dailyGoalKcal: 2580,
+        learnedTdeeKcal: 2580,
+      );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: _dailyEntries(
+          startDay: startDay,
+          count: weeklyCheckInWindowLengthDays,
+          kcalForIndex: (_) => 2580,
+        ),
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+        ],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNotNull);
+      expect(result!.calculatedTrueTdeeKcal, closeTo(2580, 0.01));
+      expect(result.newGoalKcal, closeTo(2580, 0.01));
+    },
+  );
+
+  test(
+    'keeps latest learned target when current window misses end weight',
+    () async {
+      final startDay = DateTime(2026, 4);
+      final weekTwoStart = startDay.add(
+        const Duration(days: weeklyCheckInWindowLengthDays),
+      );
+      final today = weekTwoStart.add(
+        const Duration(days: weeklyCheckInWindowLengthDays),
+      );
+      final settings = _learnedSettings(
+        startDay: startDay,
+        windowEndDate: weekTwoStart.subtract(const Duration(days: 1)),
+        dailyGoalKcal: 2580,
+        learnedTdeeKcal: 2580,
+      );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: _dailyEntries(
+          startDay: startDay,
+          count: weeklyCheckInWindowLengthDays * 2,
+          kcalForIndex: (index) =>
+              index < weeklyCheckInWindowLengthDays ? 2580 : 3000,
+        ),
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          HealthWeightSample(recordedAt: weekTwoStart, weightKg: 80),
+        ],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNotNull);
+      expect(result!.calculatedTrueTdeeKcal, greaterThan(0));
+      expect(result.newGoalKcal, greaterThan(0));
+    },
+  );
+
   test('uses latest completed learned target for future days', () async {
     final startDay = DateTime(2026, 4, 8);
     final today = DateTime(2026, 4, 15);

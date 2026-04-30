@@ -711,6 +711,56 @@ void main() {
     },
   );
 
+  test(
+    'calorieBalanceSummary ignores practice food before counting start',
+    () async {
+      final practiceDay = DateTime(2026, 4, 23);
+      final startDay = DateTime(2026, 4, 24);
+      final now = startDay.add(const Duration(hours: 18));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'practice-food',
+            loggedAt: practiceDay.add(const Duration(hours: 12)),
+            totalKcal: 900,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 1200,
+          calculatorProfile: const CalorieCalculatorProfile.defaults(),
+          effectiveDate: startDay,
+          countingStartDate: startDay,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieBalanceNowProvider.overrideWithValue(() => now),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(calorieDayControllerProvider.notifier).setDay(startDay);
+
+      final summary = await container.read(
+        calorieBalanceSummaryProvider.future,
+      );
+
+      expect(summary.balanceStartDate, startDay);
+      expect(summary.baseGoalKcal, 1200);
+      expect(summary.consumedKcal, 0);
+      expect(summary.carryoverKcal, 0);
+      expect(summary.flexibleGoalKcal, 1200);
+    },
+  );
+
   test('recommendsFastingToday when uncapped flex goal is exactly zero', () {
     final summary = _summaryData(
       goalMode: CalorieGoalMode.maintain,

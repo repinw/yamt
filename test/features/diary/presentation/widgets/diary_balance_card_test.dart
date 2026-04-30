@@ -109,6 +109,32 @@ void main() {
     expect(find.textContaining('Fresh run starts on'), findsOneWidget);
   });
 
+  testWidgets('shows practice day card before a future goal start', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final startDate = nextDiaryDay(today);
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: today,
+      weekStartDate: startDate,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+      goalKcal: 0,
+      todayFlexibleGoalKcal: 0,
+      goalStartsInFuture: true,
+      nextGoalStartDate: startDate,
+      futureGoalKcal: 1200,
+    );
+
+    expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
+    expect(find.text('Practice day'), findsOneWidget);
+    expect(find.textContaining('Burn Week starts on'), findsOneWidget);
+    expect(find.text('Goal: 1,200 kcal'), findsOneWidget);
+    expect(find.text('LEFT'), findsNothing);
+  });
+
   testWidgets('keeps Burn Week live sync subscribed on non-live days', (
     tester,
   ) async {
@@ -153,6 +179,111 @@ void main() {
     expect(find.text('Week 1 day 1'), findsOneWidget);
     expect(find.byIcon(Icons.stars_rounded), findsNothing);
     expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+  });
+
+  testWidgets('renders dark over-goal state', (tester) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 2500],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+      themeMode: ThemeMode.dark,
+    );
+
+    expect(find.text('EATEN'), findsOneWidget);
+    expect(find.text('LEFT'), findsOneWidget);
+    expect(find.text('-500 kcal'), findsOneWidget);
+  });
+
+  testWidgets('renders future non-live day snapshot', (tester) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().add(const Duration(days: 1)),
+    );
+    final weekStartDate = selectedDay.subtract(const Duration(days: 6));
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: weekStartDate,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: null,
+      ),
+    );
+
+    expect(find.text('Week 1 day 7'), findsOneWidget);
+    expect(find.byIcon(Icons.stars_rounded), findsNothing);
+    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+  });
+
+  testWidgets('opens and cancels use-heart dialog from live counter', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: today,
+      weekStartDate: today,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(today),
+      ),
+      hasAutoOpeningWeeklyCheckIn: true,
+    );
+
+    await tester.tap(find.byIcon(Icons.favorite_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Use heart?'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Use heart?'), findsNothing);
+  });
+
+  testWidgets('applies add and remove heart dialog actions', (tester) async {
+    final today = normalizeDiaryDay(DateTime.now());
+    var positiveHeartUseCount = 0;
+    var negativeHeartUseCount = 0;
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: today,
+      weekStartDate: today,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(today),
+      ),
+      hasAutoOpeningWeeklyCheckIn: true,
+      onUsePositiveHeart: (_) {
+        positiveHeartUseCount += 1;
+      },
+      onUseNegativeHeart: (_) {
+        negativeHeartUseCount += 1;
+      },
+    );
+
+    await tester.tap(find.byIcon(Icons.favorite_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('+1 day kcal'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.favorite_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('-1 day kcal'));
+    await tester.pumpAndSettle();
+
+    expect(positiveHeartUseCount, 1);
+    expect(negativeHeartUseCount, 1);
   });
 
   testWidgets('keeps live and non-live balance cards the same height', (
@@ -237,12 +368,25 @@ Future<void> _pumpBalanceCard(
   Duration? tickerPeriod,
   bool hasAutoOpeningWeeklyCheckIn = false,
   bool settle = true,
+  double goalKcal = 2000,
+  double todayFlexibleGoalKcal = 2000,
+  bool goalStartsInFuture = false,
+  DateTime? nextGoalStartDate,
+  double? futureGoalKcal,
+  ThemeMode themeMode = ThemeMode.light,
+  ValueChanged<double>? onUsePositiveHeart,
+  ValueChanged<double>? onUseNegativeHeart,
 }) async {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final weekOverview = _weekOverview(
     selectedDay: normalizedSelectedDay,
     weekStartDate: weekStartDate,
     dayTotals: dayTotals,
+    goalKcal: goalKcal,
+    todayFlexibleGoalKcal: todayFlexibleGoalKcal,
+    goalStartsInFuture: goalStartsInFuture,
+    nextGoalStartDate: nextGoalStartDate,
+    futureGoalKcal: futureGoalKcal,
   );
   final selectedDayOverview = weekOverview.days.last;
   final repository = FakeCalorieLogRepository();
@@ -270,13 +414,20 @@ Future<void> _pumpBalanceCard(
           normalizedSelectedDay,
         ).overrideWith((ref) => selectedDayOverview),
         burnWeekRunControllerProvider.overrideWith(
-          () => _FakeBurnWeekRunController(runState),
+          () => _FakeBurnWeekRunController(
+            runState,
+            onUsePositiveHeart: onUsePositiveHeart,
+            onUseNegativeHeart: onUseNegativeHeart,
+          ),
         ),
       ],
       child: MaterialApp(
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
+        theme: ThemeData.light(),
+        darkTheme: ThemeData.dark(),
+        themeMode: themeMode,
         home: Scaffold(
           body: Padding(
             padding: const EdgeInsets.all(16),
@@ -300,6 +451,11 @@ CalorieWeekOverview _weekOverview({
   required DateTime selectedDay,
   required DateTime weekStartDate,
   required List<double> dayTotals,
+  double goalKcal = 2000,
+  double todayFlexibleGoalKcal = 2000,
+  bool goalStartsInFuture = false,
+  DateTime? nextGoalStartDate,
+  double? futureGoalKcal,
 }) {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final days = [
@@ -307,32 +463,55 @@ CalorieWeekOverview _weekOverview({
       CalorieWeekDayOverview(
         date: normalizedSelectedDay.subtract(Duration(days: offset)),
         totalKcal: dayTotals[6 - offset],
-        goalKcal: 2000,
+        goalKcal: goalKcal,
         entryCount: dayTotals[6 - offset] > 0 ? 1 : 0,
       ),
   ];
+  final totalConsumedKcal = days.fold<double>(
+    0,
+    (sum, day) => sum + day.totalKcal,
+  );
+  final totalGoalKcal = days.fold<double>(
+    0,
+    (sum, day) => sum + day.goalKcal,
+  );
   return CalorieWeekOverview(
     days: days,
-    totalConsumedKcal: days.fold<double>(0, (sum, day) => sum + day.totalKcal),
-    totalGoalKcal: 14000,
-    remainingKcal:
-        14000 - days.fold<double>(0, (sum, day) => sum + day.totalKcal),
+    totalConsumedKcal: totalConsumedKcal,
+    totalGoalKcal: totalGoalKcal,
+    remainingKcal: totalGoalKcal - totalConsumedKcal,
     balanceStartDate: normalizeDiaryDay(weekStartDate),
     carryoverBeforeTodayKcal: 0,
-    todayFlexibleGoalKcal: 2000,
-    goalStartsInFuture: false,
-    nextGoalStartDate: null,
-    futureGoalKcal: null,
+    todayFlexibleGoalKcal: todayFlexibleGoalKcal,
+    goalStartsInFuture: goalStartsInFuture,
+    nextGoalStartDate: nextGoalStartDate,
+    futureGoalKcal: futureGoalKcal,
   );
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
-  _FakeBurnWeekRunController(this.initialState);
+  _FakeBurnWeekRunController(
+    this.initialState, {
+    this.onUsePositiveHeart,
+    this.onUseNegativeHeart,
+  });
 
   final BurnWeekRunState initialState;
+  final ValueChanged<double>? onUsePositiveHeart;
+  final ValueChanged<double>? onUseNegativeHeart;
 
   @override
   Future<BurnWeekRunState> build() async => initialState;
+
+  @override
+  Future<void> usePositiveHeart(double dailyGoalKcal) async {
+    onUsePositiveHeart?.call(dailyGoalKcal);
+  }
+
+  @override
+  Future<void> useNegativeHeart(double dailyGoalKcal) async {
+    onUseNegativeHeart?.call(dailyGoalKcal);
+  }
 }
 
 extension on Offset {

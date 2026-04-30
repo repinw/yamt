@@ -23,6 +23,7 @@ import 'package:yamt/features/calories/provider/calorie_week_overview_provider.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 part 'diary_balance_header.dart';
+part 'diary_balance_practice_day_card.dart';
 part 'diary_balance_progress.dart';
 part 'diary_balance_shell.dart';
 
@@ -66,6 +67,9 @@ abstract final class DiaryBalanceCardKeys {
   static const consumedMarker = ValueKey<String>(
     'diary-balance-consumed-marker',
   );
+
+  /// Practice day card key.
+  static const practiceDay = ValueKey<String>('diary-balance-practice-day');
 }
 
 final FutureProviderFamily<List<CalorieEntry>, DateTime>
@@ -243,6 +247,16 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     if (scheduledRestartDate != null) {
       return _DiaryBalanceScheduledRestartCard(
         scheduledRestartDate: scheduledRestartDate,
+      );
+    }
+    if (shouldShowDiaryBalancePracticeDayCard(
+      weekOverview: weekOverview,
+      selectedDay: selectedDayOverview.date,
+      isLiveDay: isLiveDay,
+    )) {
+      return DiaryBalancePracticeDayCard(
+        startDate: weekOverview.nextGoalStartDate!,
+        futureGoalKcal: weekOverview.futureGoalKcal,
       );
     }
     final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(

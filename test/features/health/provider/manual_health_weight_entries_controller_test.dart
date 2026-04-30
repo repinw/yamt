@@ -165,9 +165,13 @@ void main() {
     required _FakeManualHealthWeightRepository repository,
     HealthConnectionStatus status = _permissionRequiredStatus,
     _FakeHealthWeightService? healthWeightService,
+    DateTime Function()? now,
   }) {
     return ProviderContainer(
       overrides: [
+        manualHealthWeightNowProvider.overrideWithValue(
+          now ?? () => DateTime(2026, 4, 1, 12),
+        ),
         manualHealthWeightRepositoryProvider.overrideWith((ref) => repository),
         healthConnectionServiceProvider.overrideWith(
           (ref) => _FakeHealthConnectionService(status),
@@ -217,6 +221,33 @@ void main() {
         .requireValue;
     expect(stateEntries, isEmpty);
   });
+
+  test(
+    'saveEntry avoids future health timestamp for today before noon',
+    () async {
+      final todayMorning = DateTime(2026, 4, 30, 8, 30);
+      final repository = _FakeManualHealthWeightRepository();
+      final healthWeightService = _FakeHealthWeightService();
+      final container = buildContainer(
+        repository: repository,
+        status: _readyStatus,
+        healthWeightService: healthWeightService,
+        now: () => todayMorning,
+      );
+      addTearDown(container.dispose);
+
+      await container.read(manualHealthWeightEntriesControllerProvider.future);
+      final saved = await container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .saveEntry(day: todayMorning, weightKg: 71.2);
+
+      expect(saved, isTrue);
+      expect(
+        healthWeightService.lastRecordedAt,
+        DateTime(2026, 4, 30, 8, 29, 59),
+      );
+    },
+  );
 
   test(
     'saveEntry falls back to repository when connection not ready',
