@@ -105,6 +105,22 @@ void main() {
       await tester.pumpAndSettle();
     }
   });
+
+  testWidgets('intro dialog fits compact landscape with large text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(568, 320);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await _pumpIntroDialog(tester, textScaler: const TextScaler.linear(1.7));
+    await _goToActivityPage(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(DiaryIntroDialogKeys.dialog), findsOneWidget);
+    expect(find.text('Activity'), findsOneWidget);
+  });
 }
 
 Future<void> _pumpIntroDialog(
@@ -112,6 +128,7 @@ Future<void> _pumpIntroDialog(
   DiaryIntroHealthAction? healthAction,
   CalorieActivityLevelOption activityLevelOption =
       CalorieActivityLevelOption.low,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
   await tester.pumpWidget(const SizedBox.shrink());
   await tester.pump();
@@ -120,6 +137,13 @@ Future<void> _pumpIntroDialog(
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: textScaler),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       home: Scaffold(
         body: DiaryIntroDialog(
           data: _introData(activityLevelOption),

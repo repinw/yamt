@@ -30,6 +30,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
+import 'package:yamt/features/diary/presentation/diary_intro_trigger_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_scroll_controller.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_dialog_scheduler.dart';
@@ -41,6 +42,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.da
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_scroll_shortcut.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -50,53 +52,6 @@ import 'package:yamt/features/health/provider/health_weight_service_provider.dar
 import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-final _diaryIntroTriggerProvider = Provider.autoDispose<_DiaryIntroTrigger?>((
-  ref,
-) {
-  final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
-  final weeklyCheckIn = weeklyCheckInState.asData?.value;
-  final hasAutoOpeningWeeklyCheckIn =
-      weeklyCheckInState.isLoading ||
-      (weeklyCheckIn?.pendingWeeklyCheckIn != null &&
-          weeklyCheckIn?.shouldAutoOpen == true);
-  if (hasAutoOpeningWeeklyCheckIn) {
-    return null;
-  }
-
-  final settings = ref.watch(calorieGoalControllerProvider).asData?.value;
-  final healthConnectionState = ref.watch(healthConnectionControllerProvider);
-  if (settings == null || healthConnectionState.isLoading) {
-    return null;
-  }
-  if (settings.hasLearnedTdee || !DiaryIntroData.canBuildFrom(settings)) {
-    return null;
-  }
-
-  final preferences = ref.watch(appPreferencesProvider);
-  if (DiaryIntroPreferences.isSeen(preferences)) {
-    return null;
-  }
-
-  return _DiaryIntroTrigger(
-    preferences: preferences,
-    introData: DiaryIntroData.fromSettings(settings),
-    healthStatus: healthConnectionState.asData?.value,
-  );
-});
-
-@immutable
-class _DiaryIntroTrigger {
-  const _DiaryIntroTrigger({
-    required this.preferences,
-    required this.introData,
-    required this.healthStatus,
-  });
-
-  final AppPreferences preferences;
-  final DiaryIntroData introData;
-  final HealthConnectionStatus? healthStatus;
-}
 
 /// Diary content.
 class DiaryPage extends ConsumerStatefulWidget {
@@ -115,18 +70,12 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   final DiaryWeeklyCheckInDialogScheduler _weeklyCheckInDialogs =
       DiaryWeeklyCheckInDialogScheduler();
-  ProviderSubscription<_DiaryIntroTrigger?>? _diaryIntroSubscription;
   bool _didQueueDiaryIntro = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _diaryIntroSubscription = ref.listenManual<_DiaryIntroTrigger?>(
-      _diaryIntroTriggerProvider,
-      _handleDiaryIntroTrigger,
-      fireImmediately: true,
-    );
     _diaryScrollController.addListener(_refreshScrollActions);
   }
 
@@ -136,7 +85,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     _diaryScrollController
       ..removeListener(_refreshScrollActions)
       ..dispose();
-    _diaryIntroSubscription?.close();
     _weeklyCheckInDialogs.dispose();
     super.dispose();
   }
@@ -152,10 +100,15 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(
-      calorieWeeklyCheckInViewModelProvider,
-      _cacheWeeklyCheckInView,
-    );
+    ref
+      ..listen(
+        calorieWeeklyCheckInViewModelProvider,
+        _cacheWeeklyCheckInView,
+      )
+      ..listen<DiaryIntroTrigger?>(
+        diaryIntroTriggerProvider,
+        _handleDiaryIntroTrigger,
+      );
 
     final calendarState = ref.watch(diaryCalendarControllerProvider);
     final calendarController = ref.read(
@@ -307,7 +260,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
               AppSpacing.xxxxl +
               AppSpacing.xs,
           child: Center(
-            child: _DiaryScrollShortcut(
+            child: DiaryScrollShortcut(
               showJumpToMeals:
                   !_diaryScrollController.isManualScrolling &&
                   _diaryScrollController.showJumpToMeals,
@@ -413,8 +366,8 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   }
 
   void _handleDiaryIntroTrigger(
-    _DiaryIntroTrigger? previous,
-    _DiaryIntroTrigger? next,
+    DiaryIntroTrigger? previous,
+    DiaryIntroTrigger? next,
   ) {
     if (_didQueueDiaryIntro || next == null) {
       return;
@@ -584,157 +537,5 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       }
     }
     return null;
-  }
-}
-
-class _DiaryScrollShortcut extends StatefulWidget {
-  const _DiaryScrollShortcut({
-    required this.showJumpToMeals,
-    required this.showScrollToTop,
-    required this.onJumpToMeals,
-    required this.onScrollToTop,
-  });
-
-  final bool showJumpToMeals;
-  final bool showScrollToTop;
-  final VoidCallback onJumpToMeals;
-  final VoidCallback onScrollToTop;
-
-  @override
-  State<_DiaryScrollShortcut> createState() => _DiaryScrollShortcutState();
-}
-
-class _DiaryScrollShortcutState extends State<_DiaryScrollShortcut>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController;
-  late bool _showScrollToTopContent;
-
-  @override
-  void initState() {
-    super.initState();
-    _showScrollToTopContent = widget.showScrollToTop;
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    unawaited(_pulseController.repeat(reverse: true));
-  }
-
-  @override
-  void didUpdateWidget(covariant _DiaryScrollShortcut oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.showJumpToMeals || widget.showScrollToTop) {
-      _showScrollToTopContent = widget.showScrollToTop;
-    }
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final showButton = widget.showJumpToMeals || widget.showScrollToTop;
-    final icon = _showScrollToTopContent
-        ? Icons.keyboard_arrow_up_rounded
-        : Icons.keyboard_arrow_down_rounded;
-    final label = _showScrollToTopContent
-        ? l10n.diaryScrollToTopAction
-        : l10n.diaryJumpToMealsAction;
-    final onPressed = _showScrollToTopContent
-        ? widget.onScrollToTop
-        : widget.onJumpToMeals;
-
-    return AnimatedScale(
-      scale: showButton ? 1 : 0.82,
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      child: AnimatedOpacity(
-        opacity: showButton ? 1 : 0,
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        child: IgnorePointer(
-          ignoring: !showButton,
-          child: AnimatedBuilder(
-            animation: _pulseController,
-            child: _DiaryScrollShortcutButton(
-              icon: icon,
-              label: label,
-              onPressed: onPressed,
-            ),
-            builder: (context, child) {
-              final pulse = Curves.easeInOut.transform(_pulseController.value);
-              return Transform.translate(
-                offset: Offset(0, _showScrollToTopContent ? 0 : pulse * 2),
-                child: Transform.scale(
-                  scale: _showScrollToTopContent ? 1 : 1 + pulse * 0.025,
-                  child: Opacity(
-                    opacity: _showScrollToTopContent ? 1 : 0.82 + pulse * 0.18,
-                    child: child,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DiaryScrollShortcutButton extends StatelessWidget {
-  const _DiaryScrollShortcutButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Tooltip(
-      message: label,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(20),
-          child: Ink(
-            height: 38,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            decoration: BoxDecoration(
-              color: colors.primaryContainer,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: colors.primary.withValues(alpha: 0.12),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Icon(icon, color: colors.primary, size: 18),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

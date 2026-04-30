@@ -24,7 +24,7 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   _FakeBurnWeekRunStateRepository(this.state);
 
   BurnWeekRunState state;
-  var saveCallCount = 0;
+  int saveCallCount = 0;
 
   @override
   Future<BurnWeekRunState> readState() async => state;

@@ -258,10 +258,11 @@ class CaloriesSummaryMacroGoals {
 
   /// Derives macro goals from the calorie goal.
   factory CaloriesSummaryMacroGoals.fromGoalKcal(double goalKcal) {
+    final positiveGoalKcal = goalKcal > 0 ? goalKcal : 0.0;
     return CaloriesSummaryMacroGoals(
-      carbs: goalKcal * 0.45 / 4,
-      protein: goalKcal * 0.25 / 4,
-      fat: goalKcal * 0.30 / 9,
+      carbs: positiveGoalKcal * 0.45 / 4,
+      protein: positiveGoalKcal * 0.25 / 4,
+      fat: positiveGoalKcal * 0.30 / 9,
     );
   }
 

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -176,10 +174,6 @@ class _DiaryIntroDialogState extends State<DiaryIntroDialog> {
     final l10n = AppLocalizations.of(context)!;
     final pages = _introPages(context, l10n);
     final isLastPage = _pageIndex == pages.length - 1;
-    final pageHeight = math.min<double>(
-      280,
-      MediaQuery.sizeOf(context).height * 0.42,
-    );
 
     return Dialog(
       key: DiaryIntroDialogKeys.dialog,
@@ -191,8 +185,7 @@ class _DiaryIntroDialogState extends State<DiaryIntroDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                height: pageHeight,
+              Flexible(
                 child: PageView.builder(
                   key: DiaryIntroDialogKeys.pageView,
                   controller: _pageController,
@@ -221,14 +214,17 @@ class _DiaryIntroDialogState extends State<DiaryIntroDialog> {
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              Row(
+              OverflowBar(
+                alignment: MainAxisAlignment.spaceBetween,
+                overflowAlignment: OverflowBarAlignment.end,
+                spacing: AppSpacing.sm,
+                overflowSpacing: AppSpacing.sm,
                 children: [
                   TextButton(
                     key: DiaryIntroDialogKeys.backButton,
                     onPressed: _pageIndex == 0 ? null : _previousPage,
                     child: Text(l10n.diaryIntroBackAction),
                   ),
-                  const Spacer(),
                   FilledButton(
                     key: isLastPage
                         ? DiaryIntroDialogKeys.doneButton
@@ -391,30 +387,35 @@ class _DiaryIntroPage extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return Column(
       children: [
-        Icon(
-          Icons.auto_graph_rounded,
-          color: colors.primary,
-          size: 42,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: colors.onSurface,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
         Expanded(
           child: SingleChildScrollView(
-            child: Text(
-              body,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: colors.onSurfaceVariant,
-                height: 1.35,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.auto_graph_rounded,
+                  color: colors.primary,
+                  size: 42,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  body,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
