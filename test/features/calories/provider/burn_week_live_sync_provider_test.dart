@@ -628,6 +628,50 @@ void main() {
 
         expect(controller.syncCalls, isEmpty);
         expect(controller.restartCalls, <DateTime>[today]);
+        expect(
+          controller.restartRunWeekNumbers,
+          <int?>[burnWeekLearningRunWeekNumber],
+        );
+      },
+    );
+
+    test(
+      'restarts learned stale cycle as first game week',
+      () async {
+        final today = normalizeDiaryDay(DateTime.now());
+        late _RecordingBurnWeekRunController controller;
+        final container = _buildContainer(
+          today: today,
+          weekOverview: _weekOverview(
+            today: today,
+            balanceStartDate: today,
+          ),
+          todayOverview: _defaultTodayOverview(today),
+          settings: _learnedGoalSettings(today),
+          initialRunState: BurnWeekRunState(
+            currentWeekStartDayKey: diaryDayKey(
+              today.subtract(const Duration(days: 8)),
+            ),
+            lastActiveDayKey: diaryDayKey(today),
+            runWeekNumber: 3,
+            starCount: 2,
+            heartCount: 1,
+            heartCreditKcal: -400,
+            starBrokeThisWeek: true,
+            missedTrackingThisWeek: true,
+          ),
+          captureController: (value) => controller = value,
+        );
+        addTearDown(container.dispose);
+
+        await _activateSync(container);
+
+        expect(controller.syncCalls, isEmpty);
+        expect(controller.restartCalls, <DateTime>[today]);
+        expect(
+          controller.restartRunWeekNumbers,
+          <int?>[burnWeekFirstGameRunWeekNumber],
+        );
       },
     );
 

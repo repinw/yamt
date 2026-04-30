@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meta/meta.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_live_overview_logic.dart';
@@ -102,7 +103,11 @@ final Provider<Object?> burnWeekLiveSyncProvider =
           storedWeekStartDate != null &&
           storedWeekStartDate.isBefore(weekOverviewValue.balanceStartDate);
       if (hasStoredWeekStartOutsideCycle) {
-        _queueRunRestart(ref, weekStartDate: syncWeekStartDate);
+        _queueRunRestart(
+          ref,
+          weekStartDate: syncWeekStartDate,
+          runWeekNumber: _resolveRestartRunWeekNumber(settings),
+        );
         return;
       }
 
@@ -263,6 +268,12 @@ bool _isInitialBurnWeekRunState(BurnWeekRunState state) {
       state.heartCreditKcal == 0 &&
       !state.starBrokeThisWeek &&
       !state.missedTrackingThisWeek;
+}
+
+int _resolveRestartRunWeekNumber(CalorieGoalSettings settings) {
+  return settings.hasLearnedTdee
+      ? burnWeekFirstGameRunWeekNumber
+      : burnWeekLearningRunWeekNumber;
 }
 
 bool _shouldRepairBackfilledInitialRun({
