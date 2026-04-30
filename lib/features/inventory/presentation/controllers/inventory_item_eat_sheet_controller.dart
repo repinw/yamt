@@ -2,9 +2,14 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_item_eat_sheet_controller_models.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+export 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_item_eat_sheet_controller_models.dart';
 
 /// Controls inventory eat sheet amount and portion calculations.
 class InventoryItemEatSheetController {
@@ -182,11 +187,7 @@ class InventoryItemEatSheetController {
       if (inventoryUnit != inventoryAmountUnit) {
         return null;
       }
-      final rounded = totalAmount.round();
-      if ((totalAmount - rounded).abs() > 0.001) {
-        return null;
-      }
-      return rounded;
+      return _ceilPositiveAmountWithinRemainingStock(totalAmount);
     }
 
     return parseInventoryAmount(
@@ -385,10 +386,15 @@ class InventoryItemEatSheetController {
     final inedibleAmount = parseNonNegativeAmount(inedibleAmountText);
     final hasInvalidInedibleAmount =
         inedibleAmountText.trim().isNotEmpty && inedibleAmount == null;
+    final baseAmountForCalories = _baseAmountForFixedUnitCalories(
+      usesPortionMode: usesPortionMode,
+      portionTotalAmount: portion?.totalAmount,
+      inventoryAmount: inventoryAmount,
+    );
     final hasTooLargeInedibleAmount =
-        inventoryAmount != null &&
+        baseAmountForCalories != null &&
         inedibleAmount != null &&
-        inedibleAmount >= inventoryAmount;
+        inedibleAmount >= baseAmountForCalories;
 
     return InventoryItemEatSubmissionDraft(
       inventoryAmount: inventoryAmount,
@@ -396,12 +402,11 @@ class InventoryItemEatSheetController {
       portionBaseAmount: portion?.baseAmount,
       portionTotalAmount: portion?.totalAmount,
       inedibleAmount: inedibleAmount,
-      fixedUnitCalorieAmount: inventoryAmount == null
-          ? null
-          : resolveFixedUnitCalorieAmount(
-              inventoryAmount: inventoryAmount,
-              inedibleAmount: inedibleAmount,
-            ),
+      fixedUnitCalorieAmount: _resolveFixedUnitDraftCalorieAmount(
+        usesPortionMode: usesPortionMode,
+        baseAmountForCalories: baseAmountForCalories,
+        inedibleAmount: inedibleAmount,
+      ),
       hasInvalidInventoryAmount:
           inventoryAmount == null ||
           inventoryAmount < 1 ||
@@ -421,91 +426,51 @@ class InventoryItemEatSheetController {
   bool isWholeNumber(double value) {
     return (value - value.roundToDouble()).abs() < 0.001;
   }
-}
 
-/// Parsed portion input.
-class InventoryItemEatPortionInput {
-  /// The parsed portion input.
-  const InventoryItemEatPortionInput({
-    required this.count,
-    required this.baseAmount,
-    required this.totalAmount,
-    required this.unit,
-  });
+  int? _ceilPositiveAmountWithinRemainingStock(double value) {
+    if (!value.isFinite || value <= 0) {
+      return null;
+    }
+    final rounded = value.round();
+    final amount = (value - rounded).abs() <= 0.001 ? rounded : value.ceil();
+    if (amount < 1) {
+      return null;
+    }
+    if (amount > maxAmount && value - maxAmount < 1) {
+      return maxAmount;
+    }
+    return amount;
+  }
 
-  /// Portion count.
-  final double count;
+  double? _baseAmountForFixedUnitCalories({
+    required bool usesPortionMode,
+    required double? portionTotalAmount,
+    required int? inventoryAmount,
+  }) {
+    if (!inventoryItemUsesFixedCalorieUnit(item)) {
+      return null;
+    }
+    if (usesPortionMode) {
+      return portionTotalAmount;
+    }
+    return inventoryAmount?.toDouble();
+  }
 
-  /// Amount in one portion.
-  final double baseAmount;
-
-  /// Total consumed amount.
-  final double totalAmount;
-
-  /// Portion unit.
-  final ConsumedUnit unit;
-}
-
-/// Submit validation data for the eat sheet.
-class InventoryItemEatSubmissionDraft {
-  /// The submit validation data.
-  const InventoryItemEatSubmissionDraft({
-    required this.inventoryAmount,
-    required this.portionCount,
-    required this.portionBaseAmount,
-    required this.portionTotalAmount,
-    required this.inedibleAmount,
-    required this.fixedUnitCalorieAmount,
-    required this.hasInvalidInventoryAmount,
-    required this.hasInvalidInedibleAmount,
-    required this.hasTooLargeInedibleAmount,
-    required this.hasInvalidPortionCount,
-    required this.hasInvalidPortionAmount,
-    required this.needsManualCalorieAmount,
-  });
-
-  /// Inventory amount to deduct.
-  final int? inventoryAmount;
-
-  /// Portion count.
-  final double? portionCount;
-
-  /// Amount in one portion.
-  final double? portionBaseAmount;
-
-  /// Total calorie amount from portions.
-  final double? portionTotalAmount;
-
-  /// Non-edible amount.
-  final double? inedibleAmount;
-
-  /// Calorie amount for fixed-unit items after non-edible adjustment.
-  final double? fixedUnitCalorieAmount;
-
-  /// Whether inventory amount is invalid.
-  final bool hasInvalidInventoryAmount;
-
-  /// Whether non-edible amount cannot be parsed.
-  final bool hasInvalidInedibleAmount;
-
-  /// Whether non-edible amount is not smaller than eaten amount.
-  final bool hasTooLargeInedibleAmount;
-
-  /// Whether portion count is invalid.
-  final bool hasInvalidPortionCount;
-
-  /// Whether portion base amount is invalid.
-  final bool hasInvalidPortionAmount;
-
-  /// Whether a manual calorie portion must be collected first.
-  final bool needsManualCalorieAmount;
-
-  /// Whether submit has validation errors.
-  bool get hasValidationErrors {
-    return hasInvalidInventoryAmount ||
-        hasInvalidPortionCount ||
-        hasInvalidPortionAmount ||
-        hasInvalidInedibleAmount ||
-        hasTooLargeInedibleAmount;
+  double? _resolveFixedUnitDraftCalorieAmount({
+    required bool usesPortionMode,
+    required double? baseAmountForCalories,
+    required double? inedibleAmount,
+  }) {
+    if (baseAmountForCalories == null) {
+      return null;
+    }
+    final consumedAmount = baseAmountForCalories - (inedibleAmount ?? 0);
+    if (consumedAmount <= 0) {
+      return null;
+    }
+    if (usesPortionMode || (inedibleAmount ?? 0) > 0) {
+      return consumedAmount;
+    }
+    return null;
   }
 }
