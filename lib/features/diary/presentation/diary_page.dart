@@ -21,6 +21,8 @@ import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_health_trends_window_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_page_action_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
@@ -195,9 +197,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                         weeklyCheckIn.pendingWeeklyCheckIn?.windowEndDate,
                   ),
                   onToggleSelectedDaySkipped: ({required isSkipped}) {
-                    return toggleSkippedCalorieIntakeDay(
-                      context: context,
-                      ref: ref,
+                    return _toggleSkippedCalorieIntakeDay(
                       selectedDay: calendarState.selectedDay,
                       isSkipped: isSkipped,
                     );
@@ -218,13 +218,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                 FilledButton.tonalIcon(
                   key: CaloriesPageKeys.calorieDebugDumpButton,
                   onPressed: () {
-                    unawaited(
-                      printCalorieDebugDumpFromPage(
-                        context: context,
-                        ref: ref,
-                        now: DateTime.now(),
-                      ),
-                    );
+                    unawaited(_printCalorieDebugDump());
                   },
                   icon: const Icon(Icons.table_chart_rounded),
                   label: Text(
@@ -359,6 +353,30 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         openDialog: _openWeeklyCheckInDialog,
       );
     }
+  }
+
+  Future<void> _printCalorieDebugDump() async {
+    final controller = ref.read(caloriePageActionControllerProvider.notifier);
+    final result = await controller.printDebugDump(DateTime.now());
+    if (!mounted) {
+      return;
+    }
+    showCalorieDebugDumpResultSnackBar(context: context, result: result);
+  }
+
+  Future<void> _toggleSkippedCalorieIntakeDay({
+    required DateTime selectedDay,
+    required bool isSkipped,
+  }) async {
+    final controller = ref.read(caloriePageActionControllerProvider.notifier);
+    final saved = await controller.setSkippedIntakeDay(
+      selectedDay: selectedDay,
+      isSkipped: isSkipped,
+    );
+    if (!mounted || saved) {
+      return;
+    }
+    showSkippedCalorieIntakeSaveFailedSnackBar(context);
   }
 
   void _refreshScrollActions() {
