@@ -22,9 +22,10 @@ mixin BurnWeekZoneDialogHost<T extends ConsumerStatefulWidget>
   /// Whether this host can currently show zone dialogs.
   bool get canShowBurnWeekZoneDialogs;
 
-  /// Invalidates any queued zone-dialog work.
+  /// Invalidates queued zone-dialog work and closes any remembered dialog.
   void invalidateBurnWeekZoneDialogs() {
     _zoneDialogEpoch += 1;
+    closeBurnWeekZoneDialog();
   }
 
   /// Resets zone-dialog memory and closes any open zone dialog.
