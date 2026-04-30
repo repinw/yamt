@@ -37,6 +37,29 @@ InventoryItem _fixedUnitItem() {
   );
 }
 
+InventoryItemEatSubmissionDraft _submissionDraft({
+  bool hasInvalidInventoryAmount = false,
+  bool hasInvalidInedibleAmount = false,
+  bool hasTooLargeInedibleAmount = false,
+  bool hasInvalidPortionCount = false,
+  bool hasInvalidPortionAmount = false,
+}) {
+  return InventoryItemEatSubmissionDraft(
+    inventoryAmount: 1,
+    portionCount: null,
+    portionBaseAmount: null,
+    portionTotalAmount: null,
+    inedibleAmount: null,
+    fixedUnitCalorieAmount: null,
+    hasInvalidInventoryAmount: hasInvalidInventoryAmount,
+    hasInvalidInedibleAmount: hasInvalidInedibleAmount,
+    hasTooLargeInedibleAmount: hasTooLargeInedibleAmount,
+    hasInvalidPortionCount: hasInvalidPortionCount,
+    hasInvalidPortionAmount: hasInvalidPortionAmount,
+    needsManualCalorieAmount: false,
+  );
+}
+
 void main() {
   group('InventoryItemEatSheetController', () {
     test('requires manual portion before logging raw piece items', () {
@@ -120,6 +143,46 @@ void main() {
       expect(draft.portionBaseAmount, 37.5);
       expect(draft.portionTotalAmount, 37.5);
       expect(draft.fixedUnitCalorieAmount, 37.5);
+    });
+  });
+
+  group('InventoryItemEatSheetController models', () {
+    test('portion input keeps parsed portion values', () {
+      const input = InventoryItemEatPortionInput(
+        count: 0.5,
+        baseAmount: 37.5,
+        totalAmount: 18.75,
+        unit: ConsumedUnit.grams,
+      );
+
+      expect(input.count, 0.5);
+      expect(input.baseAmount, 37.5);
+      expect(input.totalAmount, 18.75);
+      expect(input.unit, ConsumedUnit.grams);
+    });
+
+    test('submission draft reports validation errors', () {
+      expect(_submissionDraft().hasValidationErrors, isFalse);
+      expect(
+        _submissionDraft(hasInvalidInventoryAmount: true).hasValidationErrors,
+        isTrue,
+      );
+      expect(
+        _submissionDraft(hasInvalidInedibleAmount: true).hasValidationErrors,
+        isTrue,
+      );
+      expect(
+        _submissionDraft(hasTooLargeInedibleAmount: true).hasValidationErrors,
+        isTrue,
+      );
+      expect(
+        _submissionDraft(hasInvalidPortionCount: true).hasValidationErrors,
+        isTrue,
+      );
+      expect(
+        _submissionDraft(hasInvalidPortionAmount: true).hasValidationErrors,
+        isTrue,
+      );
     });
   });
 }
