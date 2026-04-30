@@ -86,6 +86,31 @@ void main() {
     expect(find.textContaining('18 / 0g', findRichText: true), findsOneWidget);
     expect(find.textContaining('9 / 0g', findRichText: true), findsOneWidget);
   });
+
+  test(
+    'provider clamps negative calorie goals to zero macro targets',
+    () async {
+      final repository = FakeCalorieLogRepository();
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(repository),
+          resolvedCalorieGoalForDayProvider(
+            selectedDay,
+          ).overrideWith((ref) => _resolvedGoal(selectedDay, goalKcal: -838)),
+        ],
+      );
+      addTearDown(repository.dispose);
+      addTearDown(container.dispose);
+
+      final data = await container.read(
+        diaryNutritionBarsDataProvider(selectedDay).future,
+      );
+
+      expect(data.goals.carbs, 0);
+      expect(data.goals.protein, 0);
+      expect(data.goals.fat, 0);
+    },
+  );
 }
 
 Future<void> _pumpNutritionBars(

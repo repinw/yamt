@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
@@ -98,6 +99,12 @@ class CalorieGoalCalculatorFormController
 
     final referenceNow = now ?? DateTime.now();
     state = state.copyWith(isSaving: true);
+    final onboardingRunWeekNumber = await _resolveOnboardingRunWeekNumber(
+      syncBurnWeekForOnboarding: syncBurnWeekForOnboarding,
+    );
+    if (!ref.mounted) {
+      return false;
+    }
     final saved = await ref
         .read(calorieGoalControllerProvider.notifier)
         .saveCalculatedGoal(
@@ -111,6 +118,7 @@ class CalorieGoalCalculatorFormController
         goalStartDate: goalStartDate,
         now: referenceNow,
         dailyGoalKcal: calculation.finalGoalKcal,
+        runWeekNumber: onboardingRunWeekNumber,
         catchUpEstimate: onboardingCatchUpEstimate,
       );
     }
@@ -121,21 +129,46 @@ class CalorieGoalCalculatorFormController
     return saved;
   }
 
+  Future<int> _resolveOnboardingRunWeekNumber({
+    required bool syncBurnWeekForOnboarding,
+  }) async {
+    if (!syncBurnWeekForOnboarding) {
+      return burnWeekLearningRunWeekNumber;
+    }
+    final existingSettings = await ref.read(
+      calorieGoalControllerProvider.future,
+    );
+    return existingSettings.hasLearnedTdee
+        ? burnWeekFirstGameRunWeekNumber
+        : burnWeekLearningRunWeekNumber;
+  }
+
   Future<void> _applyOnboardingBurnWeekStart({
     required DateTime goalStartDate,
     required DateTime now,
     required double dailyGoalKcal,
+    required int runWeekNumber,
     required CalorieGoalOnboardingCatchUpEstimate? catchUpEstimate,
   }) async {
     final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
     final normalizedToday = normalizeDiaryDay(now);
     final controller = ref.read(burnWeekRunControllerProvider.notifier);
     if (normalizedGoalStartDate.isAfter(normalizedToday)) {
+      if (runWeekNumber > burnWeekLearningRunWeekNumber) {
+        await controller.restartRunFrom(
+          weekStartDate: normalizedGoalStartDate,
+          runWeekNumber: runWeekNumber,
+        );
+        return;
+      }
       await controller.resetRun();
       return;
     }
     if (catchUpEstimate == null) {
-      await controller.restartRunFrom(weekStartDate: normalizedGoalStartDate);
+      await controller.restartRunFrom(
+        weekStartDate: normalizedGoalStartDate,
+        runWeekNumber: runWeekNumber,
+      );
       return;
     }
 
@@ -170,6 +203,7 @@ class CalorieGoalCalculatorFormController
     await controller.bootstrapRunFrom(
       weekStartDate: normalizedGoalStartDate,
       heartCreditKcal: effectiveDesiredConsumedKcal - loggedKcalSoFar,
+      runWeekNumber: runWeekNumber,
     );
   }
 }

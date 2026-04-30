@@ -54,16 +54,37 @@ final Provider<Object?> burnWeekLiveSyncProvider =
         return;
       }
 
+      final storedWeekStartDate = tryParseBurnWeekDayKey(
+        runState.currentWeekStartDayKey,
+      );
+      final hasFutureStoredWeekStart =
+          storedWeekStartDate != null &&
+          storedWeekStartDate.isAfter(todayOverviewValue.date);
       if (weekOverviewValue.goalStartsInFuture) {
+        final nextGoalStartDate = weekOverviewValue.nextGoalStartDate;
+        if (settings.hasLearnedTdee && nextGoalStartDate != null) {
+          final normalizedGoalStartDate = normalizeDiaryDay(
+            nextGoalStartDate,
+          );
+          if (!_isScheduledFutureGameRun(
+            runState: runState,
+            storedWeekStartDate: storedWeekStartDate,
+            expectedWeekStartDate: normalizedGoalStartDate,
+          )) {
+            _queueRunRestart(
+              ref,
+              weekStartDate: normalizedGoalStartDate,
+              runWeekNumber: burnWeekFirstGameRunWeekNumber,
+            );
+          }
+          return null;
+        }
         if (!_isInitialBurnWeekRunState(runState)) {
           _queueRunReset(ref);
         }
         return null;
       }
 
-      final storedWeekStartDate = tryParseBurnWeekDayKey(
-        runState.currentWeekStartDayKey,
-      );
       final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
         currentDay: todayOverviewValue.date,
         balanceStartDate: weekOverviewValue.balanceStartDate,
@@ -73,9 +94,6 @@ final Provider<Object?> burnWeekLiveSyncProvider =
         currentDay: todayOverviewValue.date,
         currentWeekStartDate: currentWeekStartDate,
       );
-      final hasFutureStoredWeekStart =
-          storedWeekStartDate != null &&
-          storedWeekStartDate.isAfter(todayOverviewValue.date);
       if (hasFutureStoredWeekStart) {
         return;
       }
@@ -186,16 +204,22 @@ void _queueRunSync(
   );
 }
 
-void _queueRunRestart(Ref ref, {required DateTime weekStartDate}) {
+void _queueRunRestart(
+  Ref ref, {
+  required DateTime weekStartDate,
+  int? runWeekNumber,
+}) {
   final controller = ref.read(burnWeekRunControllerProvider.notifier);
   _queuePendingBurnWeekMutation(
     ref,
     mutation: _PendingBurnWeekMutation.restart(
       weekStartDate: weekStartDate,
+      runWeekNumber: runWeekNumber,
     ),
     action: () {
       return controller.restartRunFrom(
         weekStartDate: weekStartDate,
+        runWeekNumber: runWeekNumber,
       );
     },
   );
@@ -233,7 +257,7 @@ void _queuePendingBurnWeekMutation(
 bool _isInitialBurnWeekRunState(BurnWeekRunState state) {
   return state.currentWeekStartDayKey == null &&
       state.lastActiveDayKey == null &&
-      state.runWeekNumber == 1 &&
+      state.runWeekNumber == burnWeekLearningRunWeekNumber &&
       state.starCount == 0 &&
       state.heartCount == 3 &&
       state.heartCreditKcal == 0 &&
@@ -275,11 +299,26 @@ bool _shouldRepairBackfilledInitialRun({
 }
 
 bool _looksLikeFreshRun(BurnWeekRunState state) {
-  return state.runWeekNumber == 1 &&
+  return state.runWeekNumber == burnWeekLearningRunWeekNumber &&
       state.starCount == 0 &&
       state.heartCount == 3 &&
       state.heartCreditKcal == 0 &&
       !state.starBrokeThisWeek;
+}
+
+bool _isScheduledFutureGameRun({
+  required BurnWeekRunState runState,
+  required DateTime? storedWeekStartDate,
+  required DateTime expectedWeekStartDate,
+}) {
+  return storedWeekStartDate != null &&
+      _isSameDiaryDay(storedWeekStartDate, expectedWeekStartDate) &&
+      runState.runWeekNumber == burnWeekFirstGameRunWeekNumber &&
+      runState.starCount == 0 &&
+      runState.heartCount == 3 &&
+      runState.heartCreditKcal == 0 &&
+      !runState.starBrokeThisWeek &&
+      !runState.missedTrackingThisWeek;
 }
 
 bool _isSameDiaryDay(DateTime left, DateTime right) {
@@ -350,9 +389,15 @@ class _PendingBurnWeekMutation {
 
   factory _PendingBurnWeekMutation.restart({
     required DateTime weekStartDate,
+    int? runWeekNumber,
   }) {
+    final keyParts = <String>[
+      'restart',
+      diaryDayKey(normalizeDiaryDay(weekStartDate)),
+      if (runWeekNumber != null) runWeekNumber.toString(),
+    ];
     return _PendingBurnWeekMutation._(
-      'restart:${diaryDayKey(normalizeDiaryDay(weekStartDate))}',
+      keyParts.join(':'),
     );
   }
 

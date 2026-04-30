@@ -405,9 +405,29 @@ void main() {
         );
 
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
-    expect(repository.state.runWeekNumber, 1);
+    expect(repository.state.runWeekNumber, burnWeekLearningRunWeekNumber);
     expect(repository.state.starCount, 0);
     expect(repository.state.heartCount, 3);
+    expect(repository.state.heartCreditKcal, 875);
+  });
+
+  test('bootstrapRunFrom can seed first game week position', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial(),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .bootstrapRunFrom(
+          weekStartDate: DateTime(2026, 4, 21),
+          heartCreditKcal: 875,
+          runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        );
+
+    expect(repository.state.currentWeekStartDayKey, '2026-4-21');
+    expect(repository.state.runWeekNumber, burnWeekFirstGameRunWeekNumber);
     expect(repository.state.heartCreditKcal, 875);
   });
 
@@ -589,7 +609,22 @@ void main() {
     expect(state.starCount, 0);
   });
 
-  test('restartRunFrom resets progress and anchors new week start', () async {
+  test('restartRunFrom keeps first fresh run in learning week', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial(),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .restartRunFrom(weekStartDate: DateTime(2026, 4, 21));
+
+    expect(repository.state.currentWeekStartDayKey, '2026-4-21');
+    expect(repository.state.runWeekNumber, burnWeekLearningRunWeekNumber);
+  });
+
+  test('restartRunFrom resets progress into first game week', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState(
         currentWeekStartDayKey: '2026-4-15',
@@ -609,7 +644,7 @@ void main() {
         .restartRunFrom(weekStartDate: DateTime(2026, 4, 21));
 
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
-    expect(repository.state.runWeekNumber, 1);
+    expect(repository.state.runWeekNumber, burnWeekFirstGameRunWeekNumber);
     expect(repository.state.starCount, 0);
     expect(repository.state.heartCount, 3);
     expect(repository.state.heartCreditKcal, 0);

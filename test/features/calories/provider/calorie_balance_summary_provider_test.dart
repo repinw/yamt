@@ -512,7 +512,7 @@ void main() {
   );
 
   test(
-    'calorieBalanceSummary keeps carryover from before the visible week',
+    'calorieBalanceSummary resets previous-run carryover',
     () async {
       final now = DateTime(2026, 4, 11, 14);
       final selectedDay = DateTime(2026, 4, 10);
@@ -561,9 +561,9 @@ void main() {
       );
 
       expect(summary.balanceStartDate, cycleStartDay);
-      expect(summary.carryoverKcal, closeTo(-60, 0.001));
-      expect(summary.flexibleGoalKcal, closeTo(1940, 0.001));
-      expect(summary.pacedGoalKcal, closeTo(1940, 0.001));
+      expect(summary.carryoverKcal, 0);
+      expect(summary.flexibleGoalKcal, 2000);
+      expect(summary.pacedGoalKcal, 2000);
     },
   );
 
@@ -760,6 +760,72 @@ void main() {
       expect(summary.flexibleGoalKcal, 1200);
     },
   );
+
+  test('calorieBalanceSummary keeps negative flexible goal', () async {
+    final now = DateTime(2026, 4, 30, 14);
+    final startDay = DateTime(2026, 4, 24);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'day-24',
+          loggedAt: DateTime(2026, 4, 24, 12),
+          totalKcal: 2370,
+        ),
+        _entry(
+          'day-25',
+          loggedAt: DateTime(2026, 4, 25, 12),
+          totalKcal: 1806,
+        ),
+        _entry(
+          'day-26',
+          loggedAt: DateTime(2026, 4, 26, 12),
+          totalKcal: 898,
+        ),
+        _entry(
+          'day-27',
+          loggedAt: DateTime(2026, 4, 27, 12),
+          totalKcal: 1370,
+        ),
+        _entry(
+          'day-28',
+          loggedAt: DateTime(2026, 4, 28, 12),
+          totalKcal: 1498,
+        ),
+        _entry(
+          'day-29',
+          loggedAt: DateTime(2026, 4, 29, 12),
+          totalKcal: 1296,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 1200,
+        calculatorProfile: const CalorieCalculatorProfile.defaults(),
+        effectiveDate: startDay,
+        countingStartDate: startDay,
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+        calorieBalanceNowProvider.overrideWithValue(() => now),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(calorieDayControllerProvider.notifier).setDay(now);
+
+    final summary = await container.read(calorieBalanceSummaryProvider.future);
+
+    expect(summary.carryoverKcal, -2038);
+    expect(summary.flexibleGoalKcal, -838);
+  });
 
   test('recommendsFastingToday when uncapped flex goal is exactly zero', () {
     final summary = _summaryData(

@@ -35,6 +35,7 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
   final Completer<void>? resetBlocker;
   final List<_SyncCall> syncCalls = <_SyncCall>[];
   final List<DateTime> restartCalls = <DateTime>[];
+  final List<int?> restartRunWeekNumbers = <int?>[];
   int _resetCallCount = 0;
 
   int resetCallCount() => _resetCallCount;
@@ -45,8 +46,12 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
   }
 
   @override
-  Future<void> restartRunFrom({required DateTime weekStartDate}) async {
+  Future<void> restartRunFrom({
+    required DateTime weekStartDate,
+    int? runWeekNumber,
+  }) async {
     restartCalls.add(normalizeDiaryDay(weekStartDate));
+    restartRunWeekNumbers.add(runWeekNumber);
     await restartBlocker?.future;
   }
 
@@ -251,6 +256,23 @@ CalorieGoalSettings _activeGoalSettings(DateTime effectiveDate) {
   );
 }
 
+CalorieGoalSettings _learnedGoalSettings(DateTime effectiveDate) {
+  return CalorieGoalSettings.single(
+    dailyKcalGoal: 2000,
+    calculatorProfile: null,
+    effectiveDate: effectiveDate,
+    source: CalorieGoalSource.calculator,
+    weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: effectiveDate.subtract(const Duration(days: 7)),
+      windowEndDate: effectiveDate.subtract(const Duration(days: 1)),
+      trendWeightChangePerDay: -0.05,
+      calculatedTrueTdeeKcal: 2300,
+      averageActiveKcal: 200,
+      lowConfidence: false,
+    ),
+  );
+}
+
 void main() {
   group('burnWeekLiveSyncProvider', () {
     test('does nothing when the run state is already synchronized', () async {
@@ -434,6 +456,144 @@ void main() {
       expect(controller.restartCalls, isEmpty);
       expect(controller.resetCallCount(), 0);
     });
+
+    test(
+      'keeps scheduled game week while the goal starts in the future',
+      () async {
+        final today = normalizeDiaryDay(DateTime.now());
+        final tomorrow = nextDiaryDay(today);
+        late _RecordingBurnWeekRunController controller;
+        final container = _buildContainer(
+          today: today,
+          weekOverview: _weekOverview(
+            today: today,
+            balanceStartDate: tomorrow,
+            goalStartsInFuture: true,
+            nextGoalStartDate: tomorrow,
+          ),
+          todayOverview: _defaultTodayOverview(
+            today,
+            totalKcal: 0,
+            goalKcal: 0,
+            entryCount: 0,
+          ),
+          settings: _learnedGoalSettings(tomorrow),
+          initialRunState: BurnWeekRunState(
+            currentWeekStartDayKey: diaryDayKey(tomorrow),
+            runWeekNumber: burnWeekFirstGameRunWeekNumber,
+            starCount: 0,
+            heartCount: 3,
+            heartCreditKcal: 0,
+            starBrokeThisWeek: false,
+            missedTrackingThisWeek: false,
+          ),
+          captureController: (value) => controller = value,
+        );
+        addTearDown(container.dispose);
+
+        await _activateSync(container);
+
+        expect(controller.syncCalls, isEmpty);
+        expect(controller.restartCalls, isEmpty);
+        expect(controller.resetCallCount(), 0);
+      },
+    );
+
+    test(
+      'schedules learned future goal start as first game week',
+      () async {
+        final today = normalizeDiaryDay(DateTime.now());
+        final tomorrow = nextDiaryDay(today);
+        late _RecordingBurnWeekRunController controller;
+        final container = _buildContainer(
+          today: today,
+          weekOverview: _weekOverview(
+            today: today,
+            balanceStartDate: tomorrow,
+            goalStartsInFuture: true,
+            nextGoalStartDate: tomorrow,
+          ),
+          todayOverview: _defaultTodayOverview(
+            today,
+            totalKcal: 0,
+            goalKcal: 0,
+            entryCount: 0,
+          ),
+          settings: _learnedGoalSettings(tomorrow),
+          initialRunState: BurnWeekRunState(
+            currentWeekStartDayKey: diaryDayKey(
+              today.subtract(const Duration(days: 6)),
+            ),
+            lastActiveDayKey: diaryDayKey(today),
+            runWeekNumber: 3,
+            starCount: 2,
+            heartCount: 1,
+            heartCreditKcal: -400,
+            starBrokeThisWeek: true,
+            missedTrackingThisWeek: true,
+          ),
+          captureController: (value) => controller = value,
+        );
+        addTearDown(container.dispose);
+
+        await _activateSync(container);
+
+        expect(controller.syncCalls, isEmpty);
+        expect(controller.restartCalls, <DateTime>[tomorrow]);
+        expect(
+          controller.restartRunWeekNumbers,
+          <int?>[burnWeekFirstGameRunWeekNumber],
+        );
+        expect(controller.resetCallCount(), 0);
+      },
+    );
+
+    test(
+      'reschedules stale learned future goal start',
+      () async {
+        final today = normalizeDiaryDay(DateTime.now());
+        final tomorrow = nextDiaryDay(today);
+        final staleStart = tomorrow.add(const Duration(days: 2));
+        late _RecordingBurnWeekRunController controller;
+        final container = _buildContainer(
+          today: today,
+          weekOverview: _weekOverview(
+            today: today,
+            balanceStartDate: tomorrow,
+            goalStartsInFuture: true,
+            nextGoalStartDate: tomorrow,
+          ),
+          todayOverview: _defaultTodayOverview(
+            today,
+            totalKcal: 0,
+            goalKcal: 0,
+            entryCount: 0,
+          ),
+          settings: _learnedGoalSettings(tomorrow),
+          initialRunState: BurnWeekRunState(
+            currentWeekStartDayKey: diaryDayKey(staleStart),
+            runWeekNumber: burnWeekFirstGameRunWeekNumber,
+            starCount: 0,
+            heartCount: 3,
+            heartCreditKcal: 0,
+            starBrokeThisWeek: false,
+            missedTrackingThisWeek: false,
+          ),
+          captureController: (value) => controller = value,
+        );
+        addTearDown(container.dispose);
+
+        await _activateSync(container);
+
+        expect(controller.syncCalls, isEmpty);
+        expect(controller.restartCalls, <DateTime>[tomorrow]);
+        expect(
+          controller.restartRunWeekNumbers,
+          <int?>[burnWeekFirstGameRunWeekNumber],
+        );
+        expect(controller.resetCallCount(), 0);
+      },
+    );
 
     test(
       'restarts when stored week start is outside the active cycle',

@@ -101,3 +101,25 @@ int resolveRemainingCalorieGoalRunDays({
   final runEnd = resolveCalorieGoalRunEndDate(settings: settings, day: day);
   return runEnd.difference(normalizedDay).inDays + 1;
 }
+
+/// Resolve where carryover starts for the current 7-day run.
+DateTime resolveCalorieCarryoverStartDate({
+  required CalorieGoalSettings settings,
+  required DateTime day,
+  required DateTime balanceStartDate,
+}) {
+  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedBalanceStart = normalizeDiaryDay(balanceStartDate);
+  if (normalizedBalanceStart.isAfter(normalizedDay)) {
+    return normalizedBalanceStart;
+  }
+
+  final runStartDate = resolveCalorieGoalRunStartDate(
+    settings: settings,
+    day: normalizedDay,
+  );
+  if (runStartDate.isAfter(normalizedBalanceStart)) {
+    return runStartDate;
+  }
+  return normalizedBalanceStart;
+}

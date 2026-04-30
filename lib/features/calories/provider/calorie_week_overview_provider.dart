@@ -1,5 +1,4 @@
 import 'dart:developer' show log;
-import 'dart:math' as math;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -246,9 +245,14 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     fallbackStartDate: visibleWindowStart,
     firstEntryDate: firstEntryDate,
   );
+  final carryoverStartDate = resolveCalorieCarryoverStartDate(
+    settings: settings,
+    day: today,
+    balanceStartDate: balanceStartDate,
+  );
   final historicalEntries = await _readEntriesInRangeSafely(
     repository: repository,
-    startInclusive: balanceStartDate,
+    startInclusive: carryoverStartDate,
     endExclusive: visibleWindowStart,
   );
   final historicalEntriesByDay = historicalEntries.groupByDiaryDayKey();
@@ -256,7 +260,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     throw StateError('Calorie week overview disposed.');
   }
   final historicalDays = buildCalorieCarryoverDateRange(
-    startInclusive: balanceStartDate,
+    startInclusive: carryoverStartDate,
     endExclusive: visibleWindowStart,
   );
   final historicalGoals = await Future.wait(
@@ -287,7 +291,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       )
       .toList(growable: false);
   final cycleTotals = _calculateCycleTotals(
-    cycleStartDate: balanceStartDate,
+    cycleStartDate: carryoverStartDate,
     today: today,
     historicalCarryoverDays: historicalCarryoverDays,
     visibleOverviews: adjustedOverviews,
@@ -308,10 +312,8 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       day: today,
     ),
   );
-  final todayFlexibleGoalKcal = math.max<double>(
-    0,
-    adjustedOverviews.last.goalKcal + carryoverBeforeTodayKcal,
-  );
+  final todayFlexibleGoalKcal =
+      adjustedOverviews.last.goalKcal + carryoverBeforeTodayKcal;
   return CalorieWeekOverview(
     days: List<CalorieWeekDayOverview>.unmodifiable(adjustedOverviews),
     totalConsumedKcal: cycleTotals.totalConsumedKcal,

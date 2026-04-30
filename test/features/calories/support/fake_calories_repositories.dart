@@ -276,6 +276,11 @@ class FakeHealthConnectionService implements HealthConnectionService {
   FakeHealthConnectionService(this.status);
 
   final HealthConnectionStatus status;
+  int requestAuthorizationCallCount = 0;
+  int requestHistoryAuthorizationCallCount = 0;
+  int installHealthConnectCallCount = 0;
+  int openAppPermissionSettingsCallCount = 0;
+  int openHealthPermissionSettingsCallCount = 0;
 
   @override
   Future<HealthDisconnectResult> disconnect() async {
@@ -283,22 +288,34 @@ class FakeHealthConnectionService implements HealthConnectionService {
   }
 
   @override
-  Future<void> installHealthConnect() async {}
+  Future<void> installHealthConnect() async {
+    installHealthConnectCallCount += 1;
+  }
 
   @override
-  Future<void> openAppPermissionSettings() async {}
+  Future<void> openAppPermissionSettings() async {
+    openAppPermissionSettingsCallCount += 1;
+  }
 
   @override
-  Future<void> openHealthPermissionSettings() async {}
+  Future<void> openHealthPermissionSettings() async {
+    openHealthPermissionSettingsCallCount += 1;
+  }
 
   @override
   Future<HealthConnectionStatus> loadStatus() async => status;
 
   @override
-  Future<HealthConnectionStatus> requestAuthorization() async => status;
+  Future<HealthConnectionStatus> requestAuthorization() async {
+    requestAuthorizationCallCount += 1;
+    return status;
+  }
 
   @override
-  Future<HealthConnectionStatus> requestHistoryAuthorization() async => status;
+  Future<HealthConnectionStatus> requestHistoryAuthorization() async {
+    requestHistoryAuthorizationCallCount += 1;
+    return status;
+  }
 }
 
 class FakeDiaryHealthService implements DiaryHealthService {

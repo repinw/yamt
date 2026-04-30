@@ -620,7 +620,7 @@ void main() {
   });
 
   test(
-    'calorieWeekOverview keeps carryover from before the visible window',
+    'calorieWeekOverview resets previous-run carryover',
     () async {
       final today = DateTime(2026, 4, 10);
       final cycleStartDay = today.subtract(const Duration(days: 9));
@@ -668,11 +668,11 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, closeTo(-60, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(1940, 0.001));
-      expect(overview.totalConsumedKcal, 18300);
-      expect(overview.totalGoalKcal, 20000);
-      expect(overview.remainingKcal, 1700);
+      expect(overview.carryoverBeforeTodayKcal, 0);
+      expect(overview.todayFlexibleGoalKcal, 2000);
+      expect(overview.totalConsumedKcal, 4000);
+      expect(overview.totalGoalKcal, 6000);
+      expect(overview.remainingKcal, 2000);
     },
   );
 
@@ -797,8 +797,8 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, closeTo(-60, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(1840, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, 0);
+      expect(overview.todayFlexibleGoalKcal, 1900);
     },
   );
 
@@ -988,6 +988,80 @@ void main() {
         overview.days.firstWhere((day) => day.date == practiceDay).goalKcal,
         0,
       );
+    },
+  );
+
+  test(
+    'calorieWeekOverview shows negative carryover on final run day',
+    () async {
+      final startDay = DateTime(2026, 4, 24);
+      final today = DateTime(2026, 4, 30);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'day-24',
+            loggedAt: DateTime(2026, 4, 24, 12),
+            totalKcal: 2370,
+          ),
+          _entry(
+            'day-25',
+            loggedAt: DateTime(2026, 4, 25, 12),
+            totalKcal: 1806,
+          ),
+          _entry(
+            'day-26',
+            loggedAt: DateTime(2026, 4, 26, 12),
+            totalKcal: 898,
+          ),
+          _entry(
+            'day-27',
+            loggedAt: DateTime(2026, 4, 27, 12),
+            totalKcal: 1370,
+          ),
+          _entry(
+            'day-28',
+            loggedAt: DateTime(2026, 4, 28, 12),
+            totalKcal: 1498,
+          ),
+          _entry(
+            'day-29',
+            loggedAt: DateTime(2026, 4, 29, 12),
+            totalKcal: 1296,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 1200,
+          calculatorProfile: null,
+          effectiveDate: startDay,
+          countingStartDate: startDay,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container
+          .read(calorieVisibleWindowControllerProvider.notifier)
+          .setWindowEnd(today);
+      await container.read(calorieGoalControllerProvider.future);
+      final overview = await container.read(calorieWeekOverviewProvider.future);
+
+      expect(overview.totalConsumedKcal, 9238);
+      expect(overview.totalGoalKcal, 8400);
+      expect(overview.remainingKcal, -838);
+      expect(overview.carryoverBeforeTodayKcal, -2038);
+      expect(overview.todayFlexibleGoalKcal, -838);
     },
   );
 }
