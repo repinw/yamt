@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/core/widgets/inventory_receipt_product_selection_widgets.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/shared/widgets/'
+    'inventory_receipt_product_selection_widgets.dart';
 
 /// Reusable candidate row for manual search and barcode pickers.
 class InventoryProductCandidateTile extends StatelessWidget {
