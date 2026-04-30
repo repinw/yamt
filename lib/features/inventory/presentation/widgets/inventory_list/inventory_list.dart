@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
@@ -13,7 +12,6 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -49,6 +47,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_groups_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'prepared_meal_filter_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'receipt_group_tile.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
@@ -114,52 +114,26 @@ class InventoryList extends ConsumerStatefulWidget {
   onThrowAwayItem;
 
   /// The on eat prepared meal.
-  final Future<bool> Function({
-    required String mealId,
-    required int portions,
-    required MealType mealType,
-    required DateTime loggedDay,
-  })
-  onEatPreparedMeal;
+  final PreparedMealEatCallback onEatPreparedMeal;
 
   /// The on throw away prepared meal.
-  final Future<bool> Function(
-    String mealId,
-    int portions,
-    InventoryDiscardReason reason,
-  )
-  onThrowAwayPreparedMeal;
+  final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
 
   /// The on fill pending prepared meal ingredient.
-  final Future<bool> Function(
-    String mealId,
-    String ingredient,
-    List<String> inventoryItemIds,
-  )
-  onFillPendingPreparedMealIngredient;
+  final PreparedMealIngredientFillCallback onFillPendingPreparedMealIngredient;
 
   /// The on ignore pending prepared meal ingredient.
-  final Future<bool> Function(String mealId, String ingredient)
+  final PreparedMealIngredientIgnoreCallback
   onIgnorePendingPreparedMealIngredient;
 
   /// The on unbundle prepared meal.
-  final Future<bool> Function(String mealId) onUnbundlePreparedMeal;
+  final PreparedMealIdCallback onUnbundlePreparedMeal;
 
-  /// The function.
-  final Future<bool> Function(
-    String mealId,
-    String name,
-    // Callback mirrors PreparedMealEditSheetResult shape.
-    // ignore: avoid_positional_boolean_parameters
-    bool imageChanged,
-    Uint8List? imageBytes,
-
-    /// Documented member.
-  )
-  onEditPreparedMeal;
+  /// The on edit prepared meal.
+  final PreparedMealEditCallback onEditPreparedMeal;
 
   /// The on save prepared meal template.
-  final Future<bool> Function(PreparedMeal meal) onSavePreparedMealTemplate;
+  final PreparedMealSaveTemplateCallback onSavePreparedMealTemplate;
 
   /// Whether selection mode.
   final bool isSelectionMode;
@@ -284,15 +258,17 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             onShowFilters: () =>
                 _showPreparedMealFiltersSheet(context, l10n: l10n),
             onToggleExpanded: _togglePreparedMealsSection,
-            onEatPreparedMeal: widget.onEatPreparedMeal,
-            onThrowAwayPreparedMeal: widget.onThrowAwayPreparedMeal,
-            onFillPendingPreparedMealIngredient:
-                widget.onFillPendingPreparedMealIngredient,
-            onIgnorePendingPreparedMealIngredient:
-                widget.onIgnorePendingPreparedMealIngredient,
-            onUnbundlePreparedMeal: widget.onUnbundlePreparedMeal,
-            onEditPreparedMeal: widget.onEditPreparedMeal,
-            onSavePreparedMealTemplate: widget.onSavePreparedMealTemplate,
+            actions: PreparedMealSectionActions(
+              onEatPreparedMeal: widget.onEatPreparedMeal,
+              onThrowAwayPreparedMeal: widget.onThrowAwayPreparedMeal,
+              onFillPendingPreparedMealIngredient:
+                  widget.onFillPendingPreparedMealIngredient,
+              onIgnorePendingPreparedMealIngredient:
+                  widget.onIgnorePendingPreparedMealIngredient,
+              onUnbundlePreparedMeal: widget.onUnbundlePreparedMeal,
+              onEditPreparedMeal: widget.onEditPreparedMeal,
+              onSavePreparedMealTemplate: widget.onSavePreparedMealTemplate,
+            ),
             l10n: l10n,
           ),
         if (showRecentItemsSection)
@@ -342,13 +318,17 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             dateFormat: DateFormat.yMMMd(locale),
             showBarcodeMarkers: showBarcodeMarkers,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
-            onDeleteItem: widget.onDeleteItem,
-            onEatItem: widget.onEatItem,
-            onThrowAwayItem: widget.onThrowAwayItem,
-            isSelectionMode: widget.isSelectionMode,
-            selectedItemIds: widget.selectedItemIds,
-            onItemLongPress: widget.onItemLongPress,
-            onSelectionToggle: widget.onSelectionToggle,
+            actions: ReceiptGroupTileActions(
+              onDeleteItem: widget.onDeleteItem,
+              onEatItem: widget.onEatItem,
+              onThrowAwayItem: widget.onThrowAwayItem,
+            ),
+            selection: ReceiptGroupSelectionOptions(
+              isSelectionMode: widget.isSelectionMode,
+              selectedItemIds: widget.selectedItemIds,
+              onItemLongPress: widget.onItemLongPress,
+              onSelectionToggle: widget.onSelectionToggle,
+            ),
           )
         else if (hasFilteredItems && _isRecentItemsSectionExpanded)
           InventoryAllItemsSliver(

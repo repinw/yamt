@@ -15,6 +15,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_live_overview_logic.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_overview_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'burn_week_zone_dialog_host.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
@@ -49,15 +51,10 @@ final _burnWeekEntriesForDayProvider =
       return ref.watch(calorieLogRepositoryProvider).readEntriesForDay(day);
     });
 
-class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
+class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview>
+    with BurnWeekZoneDialogHost<BurnWeekLiveOverview> {
   Timer? _ticker;
   ProviderSubscription<CalorieSummaryViewMode>? _summaryModeSubscription;
-  NavigatorState? _zoneDialogNavigator;
-  Route<void>? _zoneDialogRoute;
-  var _dismissZoneDialogs = false;
-  var _zoneDialogEpoch = 0;
-  bool _isZoneDialogOpen = false;
-  BurnWeekZoneStatus _lastZoneStatus = BurnWeekZoneStatus.inside;
 
   @override
   void initState() {
@@ -65,12 +62,11 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     _summaryModeSubscription = ref.listenManual(
       calorieSummaryViewModeControllerProvider,
       (previous, next) {
-        _zoneDialogEpoch += 1;
-        _dismissZoneDialogs = next != CalorieSummaryViewMode.balance;
-        if (!_dismissZoneDialogs) {
+        invalidateBurnWeekZoneDialogs();
+        if (next == CalorieSummaryViewMode.balance) {
           return;
         }
-        _closeZoneDialog();
+        closeBurnWeekZoneDialog();
       },
     );
     _ticker = Timer.periodic(const Duration(minutes: 1), (_) {
@@ -83,273 +79,16 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
 
   @override
   void dispose() {
-    _closeZoneDialog();
+    closeBurnWeekZoneDialog();
     _summaryModeSubscription?.close();
     _ticker?.cancel();
     super.dispose();
   }
 
-  void _queueZoneDialogIfNeeded({
-    required BurnWeekMockMetrics metrics,
-    required BurnWeekRunState runState,
-    required bool hasAutoOpeningWeeklyCheckIn,
-  }) {
-    final expectedEpoch = _zoneDialogEpoch;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (hasAutoOpeningWeeklyCheckIn) {
-        return;
-      }
-      if (!_canShowZoneDialogs(expectedEpoch)) {
-        return;
-      }
-      unawaited(
-        _maybeShowZoneDialog(
-          metrics: metrics,
-          runState: runState,
-          expectedEpoch: expectedEpoch,
-          hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
-        ),
-      );
-    });
-  }
-
-  Future<void> _maybeShowZoneDialog({
-    required BurnWeekMockMetrics metrics,
-    required BurnWeekRunState runState,
-    required int expectedEpoch,
-    required bool hasAutoOpeningWeeklyCheckIn,
-  }) async {
-    if (hasAutoOpeningWeeklyCheckIn) {
-      return;
-    }
-    await WidgetsBinding.instance.endOfFrame;
-    if (hasAutoOpeningWeeklyCheckIn) {
-      return;
-    }
-    if (!_canShowZoneDialogs(expectedEpoch)) {
-      return;
-    }
-
-    final zoneDecision = resolveBurnWeekZoneDecision(metrics);
-    if (zoneDecision.status == BurnWeekZoneStatus.inside) {
-      _lastZoneStatus = BurnWeekZoneStatus.inside;
-      return;
-    }
-    if (_isZoneDialogOpen || zoneDecision.status == _lastZoneStatus) {
-      return;
-    }
-
-    _lastZoneStatus = zoneDecision.status;
-    _isZoneDialogOpen = true;
-    switch (zoneDecision.status) {
-      case BurnWeekZoneStatus.below:
-        await _showBelowZoneDialog(
-          metrics: metrics,
-          runState: runState,
-          decision: zoneDecision,
-        );
-      case BurnWeekZoneStatus.above:
-        await _showAboveZoneDialog(
-          metrics: metrics,
-          runState: runState,
-          decision: zoneDecision,
-        );
-      case BurnWeekZoneStatus.inside:
-        break;
-    }
-    _zoneDialogNavigator = null;
-    _zoneDialogRoute = null;
-    _isZoneDialogOpen = false;
-  }
-
-  bool _canShowZoneDialogs(int expectedEpoch) {
-    if (!mounted || expectedEpoch != _zoneDialogEpoch) {
-      return false;
-    }
-    final route = ModalRoute.of(context);
-    if (route != null && !route.isCurrent) {
-      return false;
-    }
+  @override
+  bool get canShowBurnWeekZoneDialogs {
     return ref.read(calorieSummaryViewModeControllerProvider) ==
         CalorieSummaryViewMode.balance;
-  }
-
-  void _rememberZoneDialogRoute(
-    NavigatorState navigator,
-    Route<void> route,
-  ) {
-    _zoneDialogNavigator = navigator;
-    _zoneDialogRoute = route;
-    if (_dismissZoneDialogs || !_canShowZoneDialogs(_zoneDialogEpoch)) {
-      _closeZoneDialog();
-    }
-  }
-
-  void _closeZoneDialog() {
-    final navigator = _zoneDialogNavigator;
-    final route = _zoneDialogRoute;
-    if (navigator == null || route == null) {
-      return;
-    }
-    if (!route.isActive) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_zoneDialogNavigator != navigator || _zoneDialogRoute != route) {
-          return;
-        }
-        if (!route.isActive) {
-          return;
-        }
-        navigator.removeRoute(route);
-        _zoneDialogNavigator = null;
-        _zoneDialogRoute = null;
-      });
-      return;
-    }
-    navigator.removeRoute(route);
-    _zoneDialogNavigator = null;
-    _zoneDialogRoute = null;
-  }
-
-  Future<void> _showBelowZoneDialog({
-    required BurnWeekMockMetrics metrics,
-    required BurnWeekRunState runState,
-    required BurnWeekZoneDecision decision,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    if (decision.type == BurnWeekZoneDecisionType.belowNeedsHeart) {
-      if (runState.heartCount <= 0) {
-        await _showRunOverDialog(
-          message: l10n.burnWeekZoneBelowRunOverMessage,
-        );
-        return;
-      }
-      final shouldUseHeart = await showBurnWeekBelowNeedsHeartDialog(
-        context,
-        onRouteReady: _rememberZoneDialogRoute,
-      );
-      if (shouldUseHeart == true && mounted) {
-        await ref
-            .read(burnWeekRunControllerProvider.notifier)
-            .usePositiveHeart(metrics.dailyGoalKcal);
-        if (mounted) {
-          setState(() {
-            _lastZoneStatus = BurnWeekZoneStatus.inside;
-          });
-        }
-      }
-      return;
-    }
-
-    final action = await showBurnWeekBelowRecoverDialog(
-      context: context,
-      hasHearts: runState.heartCount > 0,
-      onRouteReady: _rememberZoneDialogRoute,
-    );
-    if (!mounted) {
-      return;
-    }
-    if (action == BurnWeekLiveBelowZoneAction.useHeart) {
-      await ref
-          .read(burnWeekRunControllerProvider.notifier)
-          .usePositiveHeart(metrics.dailyGoalKcal);
-      if (mounted) {
-        setState(() {
-          _lastZoneStatus = BurnWeekZoneStatus.inside;
-        });
-      }
-      return;
-    }
-    await showBurnWeekSimpleDialog(
-      context: context,
-      title: l10n.burnWeekZoneEatMoreTitle,
-      message: l10n.burnWeekZoneEatMoreMessage,
-      onRouteReady: _rememberZoneDialogRoute,
-    );
-  }
-
-  Future<void> _showAboveZoneDialog({
-    required BurnWeekMockMetrics metrics,
-    required BurnWeekRunState runState,
-    required BurnWeekZoneDecision decision,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    if (decision.type == BurnWeekZoneDecisionType.aboveFastOnly) {
-      await showBurnWeekSimpleDialog(
-        context: context,
-        title: l10n.burnWeekZoneOutOfSafeZoneTitle,
-        message: l10n.burnWeekZoneAboveFastMessage,
-        onRouteReady: _rememberZoneDialogRoute,
-      );
-      return;
-    }
-    if (runState.heartCount <= 0) {
-      await _showRunOverDialog(
-        message: l10n.burnWeekZoneAboveRunOverMessage,
-      );
-      return;
-    }
-    final shouldUseHeart = await showBurnWeekAboveNeedsHeartDialog(
-      context,
-      onRouteReady: _rememberZoneDialogRoute,
-    );
-    if (shouldUseHeart == true && mounted) {
-      await ref
-          .read(burnWeekRunControllerProvider.notifier)
-          .useNegativeHeart(metrics.dailyGoalKcal);
-      if (mounted) {
-        setState(() {
-          _lastZoneStatus = BurnWeekZoneStatus.inside;
-        });
-      }
-    }
-  }
-
-  Future<void> _showRunOverDialog({required String message}) async {
-    final l10n = AppLocalizations.of(context)!;
-    await showBurnWeekSimpleDialog(
-      context: context,
-      title: l10n.burnWeekRunOverTitle,
-      message: message,
-      onRouteReady: _rememberZoneDialogRoute,
-    );
-    if (!mounted) {
-      return;
-    }
-    await ref
-        .read(burnWeekRunControllerProvider.notifier)
-        .restartRunFrom(weekStartDate: nextDiaryDay(DateTime.now()));
-  }
-
-  Future<void> _showUseHeartDialog({
-    required double dailyGoalKcal,
-    required BurnWeekRunState runState,
-  }) async {
-    if (runState.heartCount <= 0) {
-      return;
-    }
-
-    final action = await showBurnWeekUseHeartDialog(
-      context: context,
-      dayKcal: dailyGoalKcal.round(),
-    );
-
-    if (!mounted || action == null) {
-      return;
-    }
-
-    final controller = ref.read(burnWeekRunControllerProvider.notifier);
-    switch (action) {
-      case BurnWeekLiveHeartAction.add:
-        await controller.usePositiveHeart(dailyGoalKcal);
-      case BurnWeekLiveHeartAction.remove:
-        await controller.useNegativeHeart(dailyGoalKcal);
-    }
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _lastZoneStatus = BurnWeekZoneStatus.inside;
-    });
   }
 
   @override
@@ -510,10 +249,10 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
             colors: colors,
           );
     if (overviewViewModel.shouldQueueZoneDialog) {
-      _queueZoneDialogIfNeeded(
+      queueBurnWeekZoneDialogIfNeeded(
         metrics: overviewViewModel.metrics,
         runState: runState,
-        hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
+        shouldSkip: () => hasAutoOpeningWeeklyCheckIn,
       );
     }
 
@@ -525,7 +264,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
       starCount: overviewViewModel.starCount,
       heartCount: overviewViewModel.heartCount,
       onHeartTap: overviewViewModel.canUseHeart
-          ? () => _showUseHeartDialog(
+          ? () => showBurnWeekZoneUseHeartDialog(
               dailyGoalKcal: overviewViewModel.metrics.dailyGoalKcal,
               runState: runState,
             )

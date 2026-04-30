@@ -15,6 +15,94 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Callback used to eat a prepared meal.
+typedef PreparedMealEatCallback =
+    Future<bool> Function({
+      required String mealId,
+      required int portions,
+      required MealType mealType,
+      required DateTime loggedDay,
+    });
+
+/// Callback used to discard prepared meal portions.
+typedef PreparedMealDiscardCallback =
+    Future<bool> Function(
+      String mealId,
+      int portions,
+      InventoryDiscardReason reason,
+    );
+
+/// Callback used to fill a pending prepared meal ingredient.
+typedef PreparedMealIngredientFillCallback =
+    Future<bool> Function(
+      String mealId,
+      String ingredient,
+      List<String> inventoryItemIds,
+    );
+
+/// Callback used to ignore a pending prepared meal ingredient.
+typedef PreparedMealIngredientIgnoreCallback =
+    Future<bool> Function(
+      String mealId,
+      String ingredient,
+    );
+
+/// Callback used to mutate one prepared meal by id.
+typedef PreparedMealIdCallback = Future<bool> Function(String mealId);
+
+/// Callback used to edit prepared meal metadata.
+typedef PreparedMealEditCallback =
+    Future<bool> Function(
+      String mealId,
+      String name,
+      // Callback mirrors PreparedMealEditSheetResult shape.
+      // ignore: avoid_positional_boolean_parameters
+      bool imageChanged,
+      Uint8List? imageBytes,
+    );
+
+/// Callback used to save a prepared meal as a template.
+typedef PreparedMealSaveTemplateCallback =
+    Future<bool> Function(
+      PreparedMeal meal,
+    );
+
+/// Actions used by [InventoryPreparedMealsSection].
+class PreparedMealSectionActions {
+  /// Creates prepared meal section actions.
+  const PreparedMealSectionActions({
+    required this.onEatPreparedMeal,
+    required this.onThrowAwayPreparedMeal,
+    required this.onFillPendingPreparedMealIngredient,
+    required this.onIgnorePendingPreparedMealIngredient,
+    required this.onUnbundlePreparedMeal,
+    required this.onEditPreparedMeal,
+    required this.onSavePreparedMealTemplate,
+  });
+
+  /// The on eat prepared meal.
+  final PreparedMealEatCallback onEatPreparedMeal;
+
+  /// The on throw away prepared meal.
+  final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
+
+  /// The on fill pending prepared meal ingredient.
+  final PreparedMealIngredientFillCallback onFillPendingPreparedMealIngredient;
+
+  /// The on ignore pending prepared meal ingredient.
+  final PreparedMealIngredientIgnoreCallback
+  onIgnorePendingPreparedMealIngredient;
+
+  /// The on unbundle prepared meal.
+  final PreparedMealIdCallback onUnbundlePreparedMeal;
+
+  /// The on edit prepared meal.
+  final PreparedMealEditCallback onEditPreparedMeal;
+
+  /// The on save prepared meal template.
+  final PreparedMealSaveTemplateCallback onSavePreparedMealTemplate;
+}
+
 /// Defines inventory prepared meals section.
 @Dependencies([InventoryItemsController, preparedMealImagePicker])
 class InventoryPreparedMealsSection extends StatelessWidget {
@@ -25,15 +113,9 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     required this.isExpanded,
     required this.subtitle,
     required this.isSelectionMode,
+    required this.actions,
     required this.onShowFilters,
     required this.onToggleExpanded,
-    required this.onEatPreparedMeal,
-    required this.onThrowAwayPreparedMeal,
-    required this.onFillPendingPreparedMealIngredient,
-    required this.onIgnorePendingPreparedMealIngredient,
-    required this.onUnbundlePreparedMeal,
-    required this.onEditPreparedMeal,
-    required this.onSavePreparedMealTemplate,
     required this.l10n,
     super.key,
   });
@@ -53,57 +135,14 @@ class InventoryPreparedMealsSection extends StatelessWidget {
   /// Whether selection mode.
   final bool isSelectionMode;
 
+  /// Prepared meal section actions.
+  final PreparedMealSectionActions actions;
+
   /// The on show filters.
   final VoidCallback onShowFilters;
 
   /// The on toggle expanded.
   final VoidCallback onToggleExpanded;
-
-  /// The on eat prepared meal.
-  final Future<bool> Function({
-    required String mealId,
-    required int portions,
-    required MealType mealType,
-    required DateTime loggedDay,
-  })
-  onEatPreparedMeal;
-
-  /// The on throw away prepared meal.
-  final Future<bool> Function(
-    String mealId,
-    int portions,
-    InventoryDiscardReason reason,
-  )
-  onThrowAwayPreparedMeal;
-
-  /// The on fill pending prepared meal ingredient.
-  final Future<bool> Function(
-    String mealId,
-    String ingredient,
-    List<String> inventoryItemIds,
-  )
-  onFillPendingPreparedMealIngredient;
-
-  /// The on ignore pending prepared meal ingredient.
-  final Future<bool> Function(String mealId, String ingredient)
-  onIgnorePendingPreparedMealIngredient;
-
-  /// The on unbundle prepared meal.
-  final Future<bool> Function(String mealId) onUnbundlePreparedMeal;
-
-  /// The on edit prepared meal.
-  final Future<bool> Function(
-    String mealId,
-    String name,
-    // Callback mirrors PreparedMealEditSheetResult shape.
-    // ignore: avoid_positional_boolean_parameters
-    bool imageChanged,
-    Uint8List? imageBytes,
-  )
-  onEditPreparedMeal;
-
-  /// The on save prepared meal template.
-  final Future<bool> Function(PreparedMeal meal) onSavePreparedMealTemplate;
 
   /// The l10n.
   final AppLocalizations l10n;
@@ -162,15 +201,15 @@ class InventoryPreparedMealsSection extends StatelessWidget {
                     meal: meal,
                     initiallyExpanded: meal.id == expandedPreparedMealId,
                     enabled: !isSelectionMode,
-                    onEatPressed: onEatPreparedMeal,
-                    onThrowAwayPressed: onThrowAwayPreparedMeal,
+                    onEatPressed: actions.onEatPreparedMeal,
+                    onThrowAwayPressed: actions.onThrowAwayPreparedMeal,
                     onFillPendingIngredientPressed:
-                        onFillPendingPreparedMealIngredient,
+                        actions.onFillPendingPreparedMealIngredient,
                     onIgnorePendingIngredientPressed:
-                        onIgnorePendingPreparedMealIngredient,
-                    onUnbundlePressed: onUnbundlePreparedMeal,
-                    onEditPressed: onEditPreparedMeal,
-                    onSaveTemplatePressed: onSavePreparedMealTemplate,
+                        actions.onIgnorePendingPreparedMealIngredient,
+                    onUnbundlePressed: actions.onUnbundlePreparedMeal,
+                    onEditPressed: actions.onEditPreparedMeal,
+                    onSaveTemplatePressed: actions.onSavePreparedMealTemplate,
                   ),
                 );
               }),

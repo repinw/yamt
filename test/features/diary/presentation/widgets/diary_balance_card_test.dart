@@ -138,7 +138,7 @@ void main() {
       tester,
       selectedDay: today,
       weekStartDate: weekStartDate,
-      dayTotals: const [5000, 5000, 5000, 5000, 5000, 5000, 5000],
+      dayTotals: const [20000, 20000, 20000, 20000, 20000, 20000, 20000],
       runState: const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: 2,

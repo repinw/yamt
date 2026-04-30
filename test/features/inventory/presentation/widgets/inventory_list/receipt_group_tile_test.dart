@@ -96,14 +96,16 @@ Widget _buildHarness({
     dateFormat: DateFormat.yMMMd(const Locale('en').toLanguageTag()),
     showBarcodeMarkers: false,
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
-    onDeleteItem: onDeleteItem ?? (_) async => true,
-    onEatItem: onEatItem ?? (itemId, request) async => true,
-    onThrowAwayItem:
-        onThrowAwayItem ??
-        (itemId, amount, reason) async {
-          return (discardEventId: 'discard-$itemId', removedAmount: amount);
-        },
-    isSelectionMode: isSelectionMode,
+    actions: ReceiptGroupTileActions(
+      onDeleteItem: onDeleteItem ?? (_) async => true,
+      onEatItem: onEatItem ?? (itemId, request) async => true,
+      onThrowAwayItem:
+          onThrowAwayItem ??
+          (itemId, amount, reason) async {
+            return (discardEventId: 'discard-$itemId', removedAmount: amount);
+          },
+    ),
+    selection: ReceiptGroupSelectionOptions(isSelectionMode: isSelectionMode),
   );
   final body = SingleChildScrollView(
     padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),

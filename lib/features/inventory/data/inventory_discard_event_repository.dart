@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
@@ -124,7 +125,7 @@ class FirestoreInventoryDiscardEventRepository
     for (final document in snapshot.docs) {
       try {
         final rawData = document.data();
-        final normalizedData = _normalizeFirestoreJson(rawData);
+        final normalizedData = normalizeFirestoreJson(rawData);
         normalizedData['id'] = normalizedData['id'] ?? document.id;
         events.add(InventoryDiscardEvent.fromJson(normalizedData));
       } on Object catch (error, stackTrace) {
@@ -137,33 +138,6 @@ class FirestoreInventoryDiscardEventRepository
       }
     }
     return events;
-  }
-
-  Map<String, dynamic> _normalizeFirestoreJson(Map<String, dynamic> rawData) {
-    return rawData.map(
-      (key, value) =>
-          MapEntry<String, dynamic>(key, _normalizeFirestoreValue(value)),
-    );
-  }
-
-  dynamic _normalizeFirestoreValue(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-    if (value is Map) {
-      return value.map(
-        (key, nestedValue) => MapEntry<String, dynamic>(
-          key.toString(),
-          _normalizeFirestoreValue(nestedValue),
-        ),
-      );
-    }
-    if (value is List) {
-      return value
-          .map<dynamic>(_normalizeFirestoreValue)
-          .toList(growable: false);
-    }
-    return value;
   }
 }
 
