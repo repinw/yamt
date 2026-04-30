@@ -4,10 +4,9 @@ part of 'diary_balance_card.dart';
 bool shouldShowDiaryBalancePracticeDayCard({
   required CalorieWeekOverview weekOverview,
   required DateTime selectedDay,
-  required bool isLiveDay,
 }) {
   final startDate = weekOverview.nextGoalStartDate;
-  if (!isLiveDay || !weekOverview.goalStartsInFuture || startDate == null) {
+  if (!weekOverview.goalStartsInFuture || startDate == null) {
     return false;
   }
   return normalizeDiaryDay(selectedDay).isBefore(normalizeDiaryDay(startDate));

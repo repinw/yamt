@@ -135,6 +135,33 @@ void main() {
     expect(find.text('LEFT'), findsNothing);
   });
 
+  testWidgets('shows practice day card for past day before goal start', (
+    tester,
+  ) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 7)),
+    );
+    final startDate = nextDiaryDay(selectedDay);
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: startDate,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+      goalKcal: 0,
+      todayFlexibleGoalKcal: 0,
+      goalStartsInFuture: true,
+      nextGoalStartDate: startDate,
+      futureGoalKcal: 1200,
+    );
+
+    expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
+    expect(find.text('Practice day'), findsOneWidget);
+    expect(find.textContaining('Burn Week starts on'), findsOneWidget);
+    expect(find.text('LEFT'), findsNothing);
+  });
+
   testWidgets('keeps Burn Week live sync subscribed on non-live days', (
     tester,
   ) async {

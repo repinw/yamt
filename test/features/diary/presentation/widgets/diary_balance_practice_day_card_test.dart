@@ -34,7 +34,7 @@ void main() {
     expect(find.textContaining('Goal:'), findsNothing);
   });
 
-  test('practice card shows only for live days before future start', () {
+  test('practice card shows for any selected day before future start', () {
     final selectedDay = DateTime(2026, 4, 23);
     final startDate = DateTime(2026, 4, 24);
     final overview = _weekOverview(
@@ -46,7 +46,6 @@ void main() {
       shouldShowDiaryBalancePracticeDayCard(
         weekOverview: overview,
         selectedDay: selectedDay,
-        isLiveDay: true,
       ),
       isTrue,
     );
@@ -54,15 +53,13 @@ void main() {
       shouldShowDiaryBalancePracticeDayCard(
         weekOverview: overview,
         selectedDay: startDate,
-        isLiveDay: true,
       ),
       isFalse,
     );
     expect(
       shouldShowDiaryBalancePracticeDayCard(
         weekOverview: overview,
-        selectedDay: selectedDay,
-        isLiveDay: false,
+        selectedDay: startDate.add(const Duration(days: 1)),
       ),
       isFalse,
     );
@@ -75,7 +72,6 @@ void main() {
       shouldShowDiaryBalancePracticeDayCard(
         weekOverview: _weekOverview(goalStartsInFuture: false),
         selectedDay: selectedDay,
-        isLiveDay: true,
       ),
       isFalse,
     );
@@ -83,7 +79,6 @@ void main() {
       shouldShowDiaryBalancePracticeDayCard(
         weekOverview: _weekOverview(goalStartsInFuture: true),
         selectedDay: selectedDay,
-        isLiveDay: true,
       ),
       isFalse,
     );

@@ -252,7 +252,6 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     if (shouldShowDiaryBalancePracticeDayCard(
       weekOverview: weekOverview,
       selectedDay: selectedDayOverview.date,
-      isLiveDay: isLiveDay,
     )) {
       return DiaryBalancePracticeDayCard(
         startDate: weekOverview.nextGoalStartDate!,
