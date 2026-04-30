@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/widgets/inventory_receipt_product_selection_widgets.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_receipt_product_selection_widgets.dart';
 
 void main() {
   testWidgets('nutrition chips render available nutrition values', (
