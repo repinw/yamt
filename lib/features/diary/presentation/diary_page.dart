@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +8,9 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_debug_dump_service.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/presentation/calorie_page_actions.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -46,11 +43,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_scroll_shortcut.d
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/'
-    'manual_health_weight_repository_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Diary content.
@@ -202,7 +195,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                         weeklyCheckIn.pendingWeeklyCheckIn?.windowEndDate,
                   ),
                   onToggleSelectedDaySkipped: ({required isSkipped}) {
-                    return _toggleSkippedSelectedDay(
+                    return toggleSkippedCalorieIntakeDay(
+                      context: context,
+                      ref: ref,
                       selectedDay: calendarState.selectedDay,
                       isSkipped: isSkipped,
                     );
@@ -222,7 +217,15 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                 const SizedBox(height: AppSpacing.md),
                 FilledButton.tonalIcon(
                   key: CaloriesPageKeys.calorieDebugDumpButton,
-                  onPressed: () => unawaited(_printCalorieDebugDump()),
+                  onPressed: () {
+                    unawaited(
+                      printCalorieDebugDumpFromPage(
+                        context: context,
+                        ref: ref,
+                        now: DateTime.now(),
+                      ),
+                    );
+                  },
                   icon: const Icon(Icons.table_chart_rounded),
                   label: Text(
                     AppLocalizations.of(context)!.caloriesDebugDumpAction,
@@ -451,77 +454,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         .read(calorieHealthTrendsWindowControllerProvider.notifier)
         .setWindowEnd(resolvedWindowEnd);
     unawaited(context.push(AppRoutes.homeStatisticsWeight));
-  }
-
-  Future<void> _printCalorieDebugDump() async {
-    final l10n = AppLocalizations.of(context)!;
-    final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
-    final diaryHealthService = ref.read(diaryHealthServiceProvider);
-    final healthWeightService = ref.read(healthWeightServiceProvider);
-    final manualWeightRepository = ref.read(
-      manualHealthWeightRepositoryProvider,
-    );
-    final healthStatusFuture = ref.read(
-      healthConnectionControllerProvider.future,
-    );
-    final settingsFuture = ref.read(calorieGoalControllerProvider.future);
-
-    try {
-      final result = await buildCalorieDebugDump(
-        calorieLogRepository: calorieLogRepository,
-        diaryHealthService: diaryHealthService,
-        healthWeightService: healthWeightService,
-        manualWeightRepository: manualWeightRepository,
-        healthStatusFuture: healthStatusFuture,
-        settingsFuture: settingsFuture,
-        now: DateTime.now(),
-      );
-      developer.log(
-        'Calorie debug dump\n${result.table}',
-        name: 'CalorieDebugDump',
-      );
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(l10n.caloriesDebugDumpPrinted(result.rowCount)),
-          ),
-        );
-    } on Object catch (error, stackTrace) {
-      developer.log(
-        'Failed to build calorie debug dump.',
-        name: 'CalorieDebugDump',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.caloriesDebugDumpFailed)),
-        );
-    }
-  }
-
-  Future<void> _toggleSkippedSelectedDay({
-    required DateTime selectedDay,
-    required bool isSkipped,
-  }) async {
-    final saved = await ref
-        .read(calorieWeeklyCheckInControllerProvider.notifier)
-        .setSkippedIntakeDay(day: selectedDay, isSkipped: isSkipped);
-    if (!mounted || saved) {
-      return;
-    }
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.caloriesGoalSaveFailed)));
   }
 
   CalorieGoalHistoryEntry? _latestGoalHistoryEntry(

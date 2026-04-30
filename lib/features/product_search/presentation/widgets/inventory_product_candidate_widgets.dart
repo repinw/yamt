@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_receipt_product_selection_widgets.dart';
 
 /// Reusable candidate row for manual search and barcode pickers.

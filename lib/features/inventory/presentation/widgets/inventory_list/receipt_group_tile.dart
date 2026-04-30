@@ -17,6 +17,63 @@ import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Callback used to delete an inventory item.
+typedef InventoryItemDeleteCallback = Future<bool> Function(String itemId);
+
+/// Callback used to eat an inventory item.
+typedef InventoryItemEatCallback =
+    Future<bool> Function(String itemId, InventoryItemEatRequest request);
+
+/// Callback used to throw away inventory item quantity.
+typedef InventoryItemThrowAwayCallback =
+    Future<InventoryItemDiscardResult?> Function(
+      String itemId,
+      int amount,
+      InventoryDiscardReason reason,
+    );
+
+/// Actions used by [ReceiptGroupTile] rows.
+class ReceiptGroupTileActions {
+  /// Creates receipt group tile actions.
+  const ReceiptGroupTileActions({
+    required this.onDeleteItem,
+    required this.onEatItem,
+    required this.onThrowAwayItem,
+  });
+
+  /// The on delete item.
+  final InventoryItemDeleteCallback onDeleteItem;
+
+  /// The on eat item.
+  final InventoryItemEatCallback onEatItem;
+
+  /// The on throw away item.
+  final InventoryItemThrowAwayCallback onThrowAwayItem;
+}
+
+/// Selection options used by [ReceiptGroupTile] rows.
+class ReceiptGroupSelectionOptions {
+  /// Creates receipt group selection options.
+  const ReceiptGroupSelectionOptions({
+    this.isSelectionMode = false,
+    this.selectedItemIds = const <String>{},
+    this.onItemLongPress = _noopItemSelection,
+    this.onSelectionToggle = _noopItemSelection,
+  });
+
+  /// Whether selection mode.
+  final bool isSelectionMode;
+
+  /// The selected item ids.
+  final Set<String> selectedItemIds;
+
+  /// The on item long press.
+  final ValueChanged<String> onItemLongPress;
+
+  /// The on selection toggle.
+  final ValueChanged<String> onSelectionToggle;
+}
+
 /// Defines receipt group tile.
 @Dependencies([inventoryItemRepository, InventoryItemsController])
 class ReceiptGroupTile extends StatefulWidget {
@@ -26,14 +83,9 @@ class ReceiptGroupTile extends StatefulWidget {
     required this.dateFormat,
     required this.showBarcodeMarkers,
     required this.activeShoppingListItemKeys,
-    required this.onDeleteItem,
-    required this.onEatItem,
-    required this.onThrowAwayItem,
+    required this.actions,
     super.key,
-    this.isSelectionMode = false,
-    this.selectedItemIds = const <String>{},
-    this.onItemLongPress = _noopItemSelection,
-    this.onSelectionToggle = _noopItemSelection,
+    this.selection = const ReceiptGroupSelectionOptions(),
   });
 
   /// The group.
@@ -48,32 +100,11 @@ class ReceiptGroupTile extends StatefulWidget {
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
 
-  /// The on delete item.
-  final Future<bool> Function(String itemId) onDeleteItem;
+  /// Inventory item row actions.
+  final ReceiptGroupTileActions actions;
 
-  /// Documented member.
-  final Future<bool> Function(String itemId, InventoryItemEatRequest request)
-  onEatItem;
-
-  /// The on throw away item.
-  final Future<InventoryItemDiscardResult?> Function(
-    String itemId,
-    int amount,
-    InventoryDiscardReason reason,
-  )
-  onThrowAwayItem;
-
-  /// Whether selection mode.
-  final bool isSelectionMode;
-
-  /// The selected item ids.
-  final Set<String> selectedItemIds;
-
-  /// The on item long press.
-  final ValueChanged<String> onItemLongPress;
-
-  /// The on selection toggle.
-  final ValueChanged<String> onSelectionToggle;
+  /// Inventory item selection options.
+  final ReceiptGroupSelectionOptions selection;
 
   @override
   State<ReceiptGroupTile> createState() => _ReceiptGroupTileState();
@@ -111,7 +142,7 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
-          onTap: widget.isSelectionMode ? null : _toggleExpanded,
+          onTap: widget.selection.isSelectionMode ? null : _toggleExpanded,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
@@ -148,7 +179,7 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                 const SizedBox(width: AppSpacing.sm),
                 InventoryExpandIndicator(
                   isExpanded: _isExpanded,
-                  enabled: !widget.isSelectionMode,
+                  enabled: !widget.selection.isSelectionMode,
                   rotationKey: Key(
                     'receipt_group_expand_indicator_${widget.group.key}',
                   ),
@@ -175,17 +206,18 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                             showBarcodeMarkers: widget.showBarcodeMarkers,
                             activeShoppingListItemKeys:
                                 widget.activeShoppingListItemKeys,
-                            onDeleteItem: widget.onDeleteItem,
-                            onEatItem: widget.onEatItem,
-                            onThrowAwayItem: widget.onThrowAwayItem,
-                            isSelectionMode: widget.isSelectionMode,
-                            isSelected: widget.selectedItemIds.contains(
-                              item.id,
-                            ),
+                            onDeleteItem: widget.actions.onDeleteItem,
+                            onEatItem: widget.actions.onEatItem,
+                            onThrowAwayItem: widget.actions.onThrowAwayItem,
+                            isSelectionMode: widget.selection.isSelectionMode,
+                            isSelected: widget.selection.selectedItemIds
+                                .contains(
+                                  item.id,
+                                ),
                             onItemLongPress: () =>
-                                widget.onItemLongPress(item.id),
+                                widget.selection.onItemLongPress(item.id),
                             onSelectionToggle: () =>
-                                widget.onSelectionToggle(item.id),
+                                widget.selection.onSelectionToggle(item.id),
                           );
                         })
                         .toList(growable: false),
@@ -198,7 +230,7 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
   }
 
   void _toggleExpanded() {
-    if (widget.isSelectionMode) {
+    if (widget.selection.isSelectionMode) {
       return;
     }
     setState(() {

@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
@@ -256,7 +257,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 
   CalorieEntry _decodeDocument(DocumentSnapshot<Map<String, dynamic>> doc) {
     final rawData = doc.data() ?? const <String, dynamic>{};
-    final normalizedData = _normalizeFirestoreJson(rawData);
+    final normalizedData = normalizeFirestoreJson(rawData);
     final id = normalizedData['id'];
     if (id is! String || id.trim().isEmpty) {
       normalizedData['id'] = doc.id;
@@ -265,33 +266,6 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     return entry.copyWith(
       imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
     );
-  }
-
-  Map<String, dynamic> _normalizeFirestoreJson(Map<String, dynamic> rawData) {
-    return rawData.map(
-      (key, value) =>
-          MapEntry<String, dynamic>(key, _normalizeFirestoreValue(value)),
-    );
-  }
-
-  dynamic _normalizeFirestoreValue(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-    if (value is Map) {
-      return value.map(
-        (key, nestedValue) => MapEntry<String, dynamic>(
-          key.toString(),
-          _normalizeFirestoreValue(nestedValue),
-        ),
-      );
-    }
-    if (value is List) {
-      return value
-          .map<dynamic>(_normalizeFirestoreValue)
-          .toList(growable: false);
-    }
-    return value;
   }
 
   ({DateTime startInclusive, DateTime endExclusive}) _dayBoundsLocal(

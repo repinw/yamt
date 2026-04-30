@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
@@ -185,7 +186,7 @@ class FirestoreCalorieProductCacheRepository
       return null;
     }
 
-    final normalized = _normalizeFirestoreJson(raw);
+    final normalized = normalizeFirestoreJson(raw);
     final barcode = normalized['barcode'];
     if (barcode is! String || barcode.isEmpty) {
       normalized['barcode'] = fallbackBarcode;
@@ -223,7 +224,7 @@ class FirestoreCalorieProductCacheRepository
       return null;
     }
 
-    final normalized = _normalizeFirestoreJson(product);
+    final normalized = normalizeFirestoreJson(product);
 
     final barcode = normalized['barcode'];
     if (barcode is! String || barcode.isEmpty) {
@@ -241,30 +242,6 @@ class FirestoreCalorieProductCacheRepository
       );
       return null;
     }
-  }
-
-  Map<String, dynamic> _normalizeFirestoreJson(Map<String, dynamic> rawData) {
-    return rawData.map(
-      (key, value) => MapEntry<String, dynamic>(key, _normalizeValue(value)),
-    );
-  }
-
-  dynamic _normalizeValue(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-    if (value is Map) {
-      return value.map(
-        (key, nestedValue) => MapEntry<String, dynamic>(
-          key.toString(),
-          _normalizeValue(nestedValue),
-        ),
-      );
-    }
-    if (value is List) {
-      return value.map<dynamic>(_normalizeValue).toList(growable: false);
-    }
-    return value;
   }
 }
 
