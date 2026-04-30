@@ -391,9 +391,13 @@ class _PendingBurnWeekMutation {
     required DateTime weekStartDate,
     int? runWeekNumber,
   }) {
-    final runWeekKey = runWeekNumber == null ? '' : ':$runWeekNumber';
+    final keyParts = <String>[
+      'restart',
+      diaryDayKey(normalizeDiaryDay(weekStartDate)),
+      if (runWeekNumber != null) runWeekNumber.toString(),
+    ];
     return _PendingBurnWeekMutation._(
-      'restart:${diaryDayKey(normalizeDiaryDay(weekStartDate))}$runWeekKey',
+      keyParts.join(':'),
     );
   }
 

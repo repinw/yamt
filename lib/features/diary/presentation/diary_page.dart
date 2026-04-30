@@ -51,6 +51,53 @@ import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+final _diaryIntroTriggerProvider = Provider.autoDispose<_DiaryIntroTrigger?>((
+  ref,
+) {
+  final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
+  final weeklyCheckIn = weeklyCheckInState.asData?.value;
+  final hasAutoOpeningWeeklyCheckIn =
+      weeklyCheckInState.isLoading ||
+      (weeklyCheckIn?.pendingWeeklyCheckIn != null &&
+          weeklyCheckIn?.shouldAutoOpen == true);
+  if (hasAutoOpeningWeeklyCheckIn) {
+    return null;
+  }
+
+  final settings = ref.watch(calorieGoalControllerProvider).asData?.value;
+  final healthConnectionState = ref.watch(healthConnectionControllerProvider);
+  if (settings == null || healthConnectionState.isLoading) {
+    return null;
+  }
+  if (settings.hasLearnedTdee || !DiaryIntroData.canBuildFrom(settings)) {
+    return null;
+  }
+
+  final preferences = ref.watch(appPreferencesProvider);
+  if (DiaryIntroPreferences.isSeen(preferences)) {
+    return null;
+  }
+
+  return _DiaryIntroTrigger(
+    preferences: preferences,
+    introData: DiaryIntroData.fromSettings(settings),
+    healthStatus: healthConnectionState.asData?.value,
+  );
+});
+
+@immutable
+class _DiaryIntroTrigger {
+  const _DiaryIntroTrigger({
+    required this.preferences,
+    required this.introData,
+    required this.healthStatus,
+  });
+
+  final AppPreferences preferences;
+  final DiaryIntroData introData;
+  final HealthConnectionStatus? healthStatus;
+}
+
 /// Diary content.
 class DiaryPage extends ConsumerStatefulWidget {
   /// The diary page.
@@ -68,12 +115,18 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   final DiaryWeeklyCheckInDialogScheduler _weeklyCheckInDialogs =
       DiaryWeeklyCheckInDialogScheduler();
+  ProviderSubscription<_DiaryIntroTrigger?>? _diaryIntroSubscription;
   bool _didQueueDiaryIntro = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _diaryIntroSubscription = ref.listenManual<_DiaryIntroTrigger?>(
+      _diaryIntroTriggerProvider,
+      _handleDiaryIntroTrigger,
+      fireImmediately: true,
+    );
     _diaryScrollController.addListener(_refreshScrollActions);
   }
 
@@ -83,6 +136,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     _diaryScrollController
       ..removeListener(_refreshScrollActions)
       ..dispose();
+    _diaryIntroSubscription?.close();
     _weeklyCheckInDialogs.dispose();
     super.dispose();
   }
@@ -137,12 +191,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         goalSettings != null &&
         !goalSettings.hasLearnedTdee &&
         DiaryIntroData.canBuildFrom(goalSettings);
-
-    _queueDiaryIntroIfNeeded(
-      goalSettings,
-      canShow: !hasAutoOpeningWeeklyCheckIn,
-      healthConnectionState: healthConnectionState,
-    );
 
     return Stack(
       children: [
@@ -364,39 +412,26 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     setState(() {});
   }
 
-  void _queueDiaryIntroIfNeeded(
-    CalorieGoalSettings? settings, {
-    required bool canShow,
-    required AsyncValue<HealthConnectionStatus> healthConnectionState,
-  }) {
-    if (_didQueueDiaryIntro ||
-        !canShow ||
-        settings == null ||
-        healthConnectionState.isLoading) {
+  void _handleDiaryIntroTrigger(
+    _DiaryIntroTrigger? previous,
+    _DiaryIntroTrigger? next,
+  ) {
+    if (_didQueueDiaryIntro || next == null) {
       return;
     }
-    if (settings.hasLearnedTdee) {
-      _didQueueDiaryIntro = true;
-      return;
-    }
-    if (!DiaryIntroData.canBuildFrom(settings)) {
-      return;
-    }
-    final preferences = ref.read(appPreferencesProvider);
-    if (DiaryIntroPreferences.isSeen(preferences)) {
-      _didQueueDiaryIntro = true;
-      return;
-    }
-    final introData = DiaryIntroData.fromSettings(settings);
-    final healthAction = _resolveDiaryIntroHealthAction(
-      healthConnectionState.asData?.value,
-    );
     _didQueueDiaryIntro = true;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
       }
-      unawaited(_showDiaryIntro(preferences, introData, healthAction));
+      unawaited(
+        _showDiaryIntro(
+          next.preferences,
+          next.introData,
+          _resolveDiaryIntroHealthAction(next.healthStatus),
+        ),
+      );
     });
   }
 
