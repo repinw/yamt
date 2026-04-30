@@ -7,10 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_dialog.dart';
@@ -18,6 +20,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_hint_card.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_health_trends_window_controller.dart';
@@ -26,6 +29,7 @@ import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/diary_scroll_controller.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_dialog_scheduler.dart';
@@ -34,6 +38,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/diary_activity_weight_cards.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
@@ -63,6 +68,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   final DiaryWeeklyCheckInDialogScheduler _weeklyCheckInDialogs =
       DiaryWeeklyCheckInDialogScheduler();
+  bool _didQueueDiaryIntro = false;
 
   @override
   void initState() {
@@ -121,12 +127,22 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
           latestGoalHistoryEntry?.effectiveDate,
           referenceNow,
         );
-    final healthStatus = ref
-        .watch(healthConnectionControllerProvider)
-        .asData
-        ?.value;
+    final healthConnectionState = ref.watch(healthConnectionControllerProvider);
+    final healthStatus = healthConnectionState.asData?.value;
     final showActivityTrackingWidgets =
         healthStatus?.accessState == HealthDataAccessState.ready;
+    final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
+    final showIntroReplayButton =
+        runState?.runWeekNumber == burnWeekLearningRunWeekNumber &&
+        goalSettings != null &&
+        !goalSettings.hasLearnedTdee &&
+        DiaryIntroData.canBuildFrom(goalSettings);
+
+    _queueDiaryIntroIfNeeded(
+      goalSettings,
+      canShow: !hasAutoOpeningWeeklyCheckIn,
+      healthConnectionState: healthConnectionState,
+    );
 
     return Stack(
       children: [
@@ -152,6 +168,26 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                 selectedDay: calendarState.selectedDay,
                 hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
               ),
+              if (showIntroReplayButton) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    key: DiaryIntroDialogKeys.replayButton,
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    onPressed: () => _openDiaryIntroReplay(
+                      goalSettings: goalSettings,
+                      healthStatus: healthStatus,
+                    ),
+                    icon: const Icon(Icons.help_outline_rounded, size: 18),
+                    label: Text(
+                      AppLocalizations.of(context)!.diaryIntroReplayAction,
+                    ),
+                  ),
+                ),
+              ],
               if (weeklyCheckIn != null && weeklyCheckIn.showDiaryHint) ...[
                 const SizedBox(height: AppSpacing.md),
                 CalorieWeeklyCheckInHintCard(
@@ -326,6 +362,99 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       return;
     }
     setState(() {});
+  }
+
+  void _queueDiaryIntroIfNeeded(
+    CalorieGoalSettings? settings, {
+    required bool canShow,
+    required AsyncValue<HealthConnectionStatus> healthConnectionState,
+  }) {
+    if (_didQueueDiaryIntro ||
+        !canShow ||
+        settings == null ||
+        healthConnectionState.isLoading) {
+      return;
+    }
+    if (settings.hasLearnedTdee) {
+      _didQueueDiaryIntro = true;
+      return;
+    }
+    if (!DiaryIntroData.canBuildFrom(settings)) {
+      return;
+    }
+    final preferences = ref.read(appPreferencesProvider);
+    if (DiaryIntroPreferences.isSeen(preferences)) {
+      _didQueueDiaryIntro = true;
+      return;
+    }
+    final introData = DiaryIntroData.fromSettings(settings);
+    final healthAction = _resolveDiaryIntroHealthAction(
+      healthConnectionState.asData?.value,
+    );
+    _didQueueDiaryIntro = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(_showDiaryIntro(preferences, introData, healthAction));
+    });
+  }
+
+  Future<void> _showDiaryIntro(
+    AppPreferences preferences,
+    DiaryIntroData introData,
+    DiaryIntroHealthAction? healthAction,
+  ) async {
+    final completed = await showDiaryIntroDialog(
+      context: context,
+      data: introData,
+      healthAction: healthAction,
+    );
+    if (!mounted || completed != true) {
+      return;
+    }
+    await DiaryIntroPreferences.markSeen(preferences);
+  }
+
+  void _openDiaryIntroReplay({
+    required CalorieGoalSettings goalSettings,
+    required HealthConnectionStatus? healthStatus,
+  }) {
+    final introData = DiaryIntroData.fromSettings(goalSettings);
+    final healthAction = _resolveDiaryIntroHealthAction(healthStatus);
+    final preferences = ref.read(appPreferencesProvider);
+    unawaited(_showDiaryIntro(preferences, introData, healthAction));
+  }
+
+  DiaryIntroHealthAction? _resolveDiaryIntroHealthAction(
+    HealthConnectionStatus? status,
+  ) {
+    if (status == null) {
+      return null;
+    }
+    final hasConnectionError = status.errorMessage != null;
+    final needsAppPermissionSettings =
+        status.errorMessage == healthActivityRecognitionPermissionErrorMessage;
+    final controller = ref.read(healthConnectionControllerProvider.notifier);
+    final action = switch (status.accessState) {
+      HealthDataAccessState.permissionRequired ||
+      HealthDataAccessState.historyRequired =>
+        hasConnectionError
+            ? needsAppPermissionSettings
+                  ? controller.openAppPermissionSettings
+                  : controller.openHealthPermissionSettings
+            : controller.connect,
+      HealthDataAccessState.installRequired => controller.installHealthConnect,
+      HealthDataAccessState.ready || HealthDataAccessState.unsupported => null,
+    };
+    if (action == null) {
+      return null;
+    }
+    return DiaryIntroHealthAction(
+      accessState: status.accessState,
+      hasConnectionError: hasConnectionError,
+      onPressed: () => unawaited(action()),
+    );
   }
 
   void _openHealthTrendsPage({DateTime? visibleWindowEnd}) {

@@ -168,12 +168,19 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
   }
 
   /// Restarts Burn Week run from given fresh day.
-  Future<void> restartRunFrom({required DateTime weekStartDate}) {
+  Future<void> restartRunFrom({
+    required DateTime weekStartDate,
+    int? runWeekNumber,
+  }) async {
+    final current = await future;
+    final resolvedRunWeekNumber =
+        runWeekNumber ?? _resolveFreshRunWeekNumber(current);
     return _save(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
+        runWeekNumber: resolvedRunWeekNumber,
       ),
-      previous: state.asData?.value,
+      previous: current,
     );
   }
 
@@ -181,10 +188,12 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
   Future<void> bootstrapRunFrom({
     required DateTime weekStartDate,
     required double heartCreditKcal,
+    int runWeekNumber = burnWeekLearningRunWeekNumber,
   }) {
     return _save(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
+        runWeekNumber: runWeekNumber,
         heartCreditKcal: heartCreditKcal,
       ),
       previous: state.asData?.value,
@@ -229,6 +238,13 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       ),
       previous: current,
     );
+  }
+
+  int _resolveFreshRunWeekNumber(BurnWeekRunState current) {
+    if (current.runWeekNumber > burnWeekLearningRunWeekNumber) {
+      return burnWeekFirstGameRunWeekNumber;
+    }
+    return burnWeekLearningRunWeekNumber;
   }
 
   BurnWeekRunState _advanceToNextWeek({
@@ -307,7 +323,7 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
   }) {
     return closedWeekCount > 0 &&
         currentWeekStartDayKey == weekStartDayKey &&
-        current.runWeekNumber == 1 &&
+        current.runWeekNumber == burnWeekLearningRunWeekNumber &&
         current.starCount == 0 &&
         current.heartCount == 3 &&
         current.heartCreditKcal == 0 &&

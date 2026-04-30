@@ -1,6 +1,12 @@
 /// Number of days in one Burn Week.
 const int burnWeekDaysPerWeek = 7;
 
+/// First run week, used only before YAMT has learned a TDEE estimate.
+const int burnWeekLearningRunWeekNumber = 1;
+
+/// First normal Burn Week after the initial learning run.
+const int burnWeekFirstGameRunWeekNumber = 2;
+
 /// Persistent Burn Week run state for real users.
 class BurnWeekRunState {
   /// Creates Burn Week run state.
@@ -19,7 +25,7 @@ class BurnWeekRunState {
   const BurnWeekRunState.initial()
     : currentWeekStartDayKey = null,
       lastActiveDayKey = null,
-      runWeekNumber = 1,
+      runWeekNumber = burnWeekLearningRunWeekNumber,
       starCount = 0,
       heartCount = 3,
       heartCreditKcal = 0,
@@ -31,7 +37,9 @@ class BurnWeekRunState {
     return BurnWeekRunState(
       currentWeekStartDayKey: json['current_week_start_day_key'] as String?,
       lastActiveDayKey: json['last_active_day_key'] as String?,
-      runWeekNumber: (json['run_week_number'] as num?)?.toInt() ?? 1,
+      runWeekNumber:
+          (json['run_week_number'] as num?)?.toInt() ??
+          burnWeekLearningRunWeekNumber,
       starCount: (json['star_count'] as num?)?.toInt() ?? 0,
       heartCount: (json['heart_count'] as num?)?.toInt() ?? 3,
       heartCreditKcal: (json['heart_credit_kcal'] as num?)?.toDouble() ?? 0,

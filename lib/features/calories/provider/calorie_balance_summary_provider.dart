@@ -176,8 +176,13 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     fallbackStartDate: windowStartDate,
     firstEntryDate: firstEntryDate,
   );
+  final carryoverStartDate = resolveCalorieCarryoverStartDate(
+    settings: settings,
+    day: selectedDay,
+    balanceStartDate: balanceStartDate,
+  );
   final historyEntries = await _readHistoryEntriesSafely(
-    startInclusive: balanceStartDate,
+    startInclusive: carryoverStartDate,
     endExclusive: selectedDay,
     repository: repository,
   );
@@ -186,7 +191,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
   }
   final historyEntriesByDay = historyEntries.groupByDiaryDayKey();
   final carryoverHistoryDays = buildCalorieCarryoverDateRange(
-    startInclusive: balanceStartDate,
+    startInclusive: carryoverStartDate,
     endExclusive: selectedDay,
   );
   final carryoverHistoryGoals = await Future.wait(
@@ -239,7 +244,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     carryoverKcal: totalCarryoverKcal,
     remainingDays: remainingDays,
   );
-  final flexibleGoalKcal = math.max<double>(0, baseGoalKcal + carryoverKcal);
+  final flexibleGoalKcal = baseGoalKcal + carryoverKcal;
   final defaultPaceWindowStart = normalizeDiaryDay(selectedDay);
   final defaultPaceWindowEnd = nextDiaryDay(selectedDay);
   final resolvedPaceWindowStart = _resolvePaceWindowStart(

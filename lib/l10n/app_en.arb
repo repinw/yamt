@@ -1245,6 +1245,68 @@
   "diaryBalanceLeftLabel": "Left",
   "diaryScrollToTopAction": "To top",
   "diaryJumpToMealsAction": "To diary",
+  "diaryIntroBackAction": "Back",
+  "diaryIntroNextAction": "Next",
+  "diaryIntroDoneAction": "Start tracking",
+  "diaryIntroReplayAction": "Show intro",
+  "diaryIntroStartTitle": "Your starting point",
+  "diaryIntroStartBody": "From your profile, we estimate your maintenance at about {maintenanceKcal} kcal per day. That should keep your weight roughly stable.",
+  "@diaryIntroStartBody": {
+    "placeholders": {
+      "maintenanceKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryIntroActivityTitle": "Activity",
+  "diaryIntroActivityBody": "You can connect Health so YAMT can track daily activity. With your activity profile \"{activityProfile}\", YAMT expects about {activityKcal} kcal from activity per day. Extra activity above that can raise today's target, but only 50% is credited because recorded calories are estimates. No worries if you cannot track activity calories: the system also works without them.",
+  "@diaryIntroActivityBody": {
+    "placeholders": {
+      "activityProfile": {
+        "type": "String"
+      },
+      "activityKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryIntroGoalTitle": "Your goal",
+  "diaryIntroGoalLoseBody": "Your goal is losing weight. For {speedKg} kg per week, we subtract about {adjustmentKcal} kcal per day.",
+  "@diaryIntroGoalLoseBody": {
+    "placeholders": {
+      "speedKg": {
+        "type": "String"
+      },
+      "adjustmentKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryIntroGoalGainBody": "Your goal is gaining weight. For {speedKg} kg per week, we add about {adjustmentKcal} kcal per day.",
+  "@diaryIntroGoalGainBody": {
+    "placeholders": {
+      "speedKg": {
+        "type": "String"
+      },
+      "adjustmentKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryIntroGoalMaintainBody": "Your goal is maintaining weight, so your daily target stays close to your maintenance estimate.",
+  "diaryIntroTargetTitle": "Your first daily target",
+  "diaryIntroTargetBody": "Your start target is about {targetKcal} kcal per day. It is a first estimate and gets better with your data.",
+  "@diaryIntroTargetBody": {
+    "placeholders": {
+      "targetKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryIntroWeekOneTitle": "Week 1: build routine",
+  "diaryIntroWeekOneBody": "Eat normally, but track food, drinks, and weight as completely as you can. Accurate tracking helps YAMT learn your real needs.",
+  "diaryIntroBetterDataTitle": "Better with data",
+  "diaryIntroBetterDataBody": "After 7 days, the estimate is better than the start value. After 14 consistent days, YAMT sees your metabolism more clearly.",
   "diaryActivityTitle": "Activity",
   "diaryActivityEmpty": "No activity",
   "diaryActiveMinutesLabel": "{minutes} min active",

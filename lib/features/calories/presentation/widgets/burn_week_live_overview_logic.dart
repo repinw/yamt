@@ -136,7 +136,7 @@ double resolveBurnWeekPreviousOverflowKcal({
   required double currentWeekCarryoverBeforeTodayKcal,
   required int runWeekNumber,
 }) {
-  if (runWeekNumber <= 1) {
+  if (runWeekNumber <= burnWeekLearningRunWeekNumber) {
     return 0;
   }
   return cycleCarryoverBeforeTodayKcal - currentWeekCarryoverBeforeTodayKcal;

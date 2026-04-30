@@ -21,6 +21,9 @@ part 'calorie_goal_controller.g.dart';
 
 const _goalControllerLogName = 'CalorieGoalController';
 
+/// Result for saving a learned TDEE goal.
+typedef LearnedTdeeGoalSaveResult = ({bool saved, bool goalChanged});
+
 /// Defines calorie goal controller.
 @riverpod
 class CalorieGoalController extends _$CalorieGoalController {
@@ -259,10 +262,26 @@ class CalorieGoalController extends _$CalorieGoalController {
     required DateTime goalStartDate,
     bool? countGoalStartDayForLearning,
   }) async {
+    final result = await saveLearnedTdeeGoalWithResult(
+      goalMode: goalMode,
+      goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+      goalStartDate: goalStartDate,
+      countGoalStartDayForLearning: countGoalStartDayForLearning,
+    );
+    return result.saved;
+  }
+
+  /// Save learned tdee goal and report whether goal data changed.
+  Future<LearnedTdeeGoalSaveResult> saveLearnedTdeeGoalWithResult({
+    required CalorieGoalMode goalMode,
+    required double goalSpeedKgPerWeek,
+    required DateTime goalStartDate,
+    bool? countGoalStartDayForLearning,
+  }) async {
     final previousSettings = await _currentSettings();
     final learnedTdeeKcal = previousSettings.latestLearnedTdeeKcal;
     if (learnedTdeeKcal == null) {
-      return Future<bool>.value(false);
+      return (saved: false, goalChanged: false);
     }
     final currentProfile =
         previousSettings.calculatorProfile ??
@@ -324,7 +343,7 @@ class CalorieGoalController extends _$CalorieGoalController {
         ) ||
         currentGoalEntry?.source != CalorieGoalSource.calculator;
     if (!goalChanged) {
-      return Future<bool>.value(true);
+      return (saved: true, goalChanged: false);
     }
     final nextSettings = previousSettings.applyGoalChange(
       changedAt: changedAt,
@@ -338,7 +357,8 @@ class CalorieGoalController extends _$CalorieGoalController {
           previousSettings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot,
       replaceFutureHistory: true,
     );
-    return _persistSettings(nextSettings);
+    final saved = await _persistSettings(nextSettings);
+    return (saved: saved, goalChanged: saved);
   }
 
   /// Save weekly check in goal.

@@ -11,10 +11,8 @@ import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
-import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -43,7 +41,6 @@ class SettingsPage extends StatelessWidget {
       _HouseholdTile(l10n: l10n),
       _AccountTile(l10n: l10n),
       const _HealthConnectTile(),
-      const _CalorieGoalTile(),
       const _CalorieGoalStartTile(),
       const _CalorieGoalCalculatorTile(),
       const _ThemeModeTile(),
@@ -93,53 +90,6 @@ class SettingsPage extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _CalorieGoalTile extends ConsumerWidget {
-  const _CalorieGoalTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final settingsState = ref.watch(calorieGoalControllerProvider);
-    final settings = settingsState.asData?.value;
-    final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
-    );
-    final currentGoal = settings?.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
-
-    return ListTile(
-      leading: const Icon(Icons.flag_outlined),
-      title: Text(l10n.caloriesSetGoalAction),
-      subtitle: Text(
-        settings?.hasGoal == true
-            ? '${numberFormat.format(currentGoal.round())} '
-                  '${l10n.caloriesUnitKcal}'
-            : l10n.settingsDiaryGoalNoGoal,
-      ),
-      trailing: settingsState.isLoading
-          ? const SizedBox.square(
-              dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : null,
-      enabled: !settingsState.isLoading,
-      onTap: settingsState.isLoading
-          ? null
-          : () => unawaited(
-              showCalorieGoalDialog(
-                context: context,
-                currentGoal: currentGoal,
-                onSaveGoal: ref
-                    .read(calorieGoalControllerProvider.notifier)
-                    .setGoal,
-                onClearGoal: ref
-                    .read(calorieGoalControllerProvider.notifier)
-                    .clearGoal,
-              ),
-            ),
     );
   }
 }

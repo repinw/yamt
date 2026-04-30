@@ -49,7 +49,7 @@ void main() {
     expect(budget.remainingKcal, 500);
   });
 
-  test('classic carryover can move budget below safety floor', () {
+  test('classic carryover can move budget below zero', () {
     final budget = CalorieBudgetCalculator.calculateClassicBudget(
       storedGoalKcal: 1400,
       activityDeltaKcal: 0,
@@ -59,7 +59,8 @@ void main() {
       includeCarryover: true,
     );
 
-    expect(budget.goalKcal, 0);
+    expect(budget.goalKcal, -200);
+    expect(budget.remainingKcal, -200);
     expect(budget.wasClampedToMinimum, isFalse);
   });
 

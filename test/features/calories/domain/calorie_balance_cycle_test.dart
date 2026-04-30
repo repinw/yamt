@@ -78,4 +78,39 @@ void main() {
       expect(startDate, DateTime(2026, 4, 8));
     });
   });
+
+  group('resolveCalorieCarryoverStartDate', () {
+    test('uses current 7-day run start after the first run', () {
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4),
+      );
+
+      final startDate = resolveCalorieCarryoverStartDate(
+        settings: settings,
+        day: DateTime(2026, 4, 10),
+        balanceStartDate: DateTime(2026, 4),
+      );
+
+      expect(startDate, DateTime(2026, 4, 8));
+    });
+
+    test('keeps future counting start for practice days', () {
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4, 24),
+        countingStartDate: DateTime(2026, 4, 24),
+      );
+
+      final startDate = resolveCalorieCarryoverStartDate(
+        settings: settings,
+        day: DateTime(2026, 4, 23),
+        balanceStartDate: DateTime(2026, 4, 24),
+      );
+
+      expect(startDate, DateTime(2026, 4, 24));
+    });
+  });
 }

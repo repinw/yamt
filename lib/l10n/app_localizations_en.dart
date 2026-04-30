@@ -2325,6 +2325,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryJumpToMealsAction => 'To diary';
 
   @override
+  String get diaryIntroBackAction => 'Back';
+
+  @override
+  String get diaryIntroNextAction => 'Next';
+
+  @override
+  String get diaryIntroDoneAction => 'Start tracking';
+
+  @override
+  String get diaryIntroReplayAction => 'Show intro';
+
+  @override
+  String get diaryIntroStartTitle => 'Your starting point';
+
+  @override
+  String diaryIntroStartBody(String maintenanceKcal) {
+    return 'From your profile, we estimate your maintenance at about $maintenanceKcal kcal per day. That should keep your weight roughly stable.';
+  }
+
+  @override
+  String get diaryIntroActivityTitle => 'Activity';
+
+  @override
+  String diaryIntroActivityBody(String activityProfile, String activityKcal) {
+    return 'You can connect Health so YAMT can track daily activity. With your activity profile \"$activityProfile\", YAMT expects about $activityKcal kcal from activity per day. Extra activity above that can raise today\'s target, but only 50% is credited because recorded calories are estimates. No worries if you cannot track activity calories: the system also works without them.';
+  }
+
+  @override
+  String get diaryIntroGoalTitle => 'Your goal';
+
+  @override
+  String diaryIntroGoalLoseBody(String speedKg, String adjustmentKcal) {
+    return 'Your goal is losing weight. For $speedKg kg per week, we subtract about $adjustmentKcal kcal per day.';
+  }
+
+  @override
+  String diaryIntroGoalGainBody(String speedKg, String adjustmentKcal) {
+    return 'Your goal is gaining weight. For $speedKg kg per week, we add about $adjustmentKcal kcal per day.';
+  }
+
+  @override
+  String get diaryIntroGoalMaintainBody => 'Your goal is maintaining weight, so your daily target stays close to your maintenance estimate.';
+
+  @override
+  String get diaryIntroTargetTitle => 'Your first daily target';
+
+  @override
+  String diaryIntroTargetBody(String targetKcal) {
+    return 'Your start target is about $targetKcal kcal per day. It is a first estimate and gets better with your data.';
+  }
+
+  @override
+  String get diaryIntroWeekOneTitle => 'Week 1: build routine';
+
+  @override
+  String get diaryIntroWeekOneBody => 'Eat normally, but track food, drinks, and weight as completely as you can. Accurate tracking helps YAMT learn your real needs.';
+
+  @override
+  String get diaryIntroBetterDataTitle => 'Better with data';
+
+  @override
+  String get diaryIntroBetterDataBody => 'After 7 days, the estimate is better than the start value. After 14 consistent days, YAMT sees your metabolism more clearly.';
+
+  @override
   String get diaryActivityTitle => 'Activity';
 
   @override

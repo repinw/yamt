@@ -272,7 +272,10 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     );
     final dayBudgetKcal = weekOverview.todayFlexibleGoalKcal;
     final dayLeftKcal = dayBudgetKcal - selectedDayOverview.totalKcal;
-    final showGameControls = isLiveDay && !weekOverview.goalStartsInFuture;
+    final showGameControls =
+        isLiveDay &&
+        !weekOverview.goalStartsInFuture &&
+        !_isBurnWeekLearningWeek(runState.runWeekNumber);
     final runWeekNumber = isLiveDay
         ? runState.runWeekNumber
         : _resolveSnapshotRunWeekNumber(
@@ -727,4 +730,8 @@ int _resolveSnapshotRunWeekNumber({
     balanceStartDate: balanceStartDate,
   );
   return (elapsedDays ~/ burnWeekDaysPerWeek) + 1;
+}
+
+bool _isBurnWeekLearningWeek(int runWeekNumber) {
+  return runWeekNumber <= burnWeekLearningRunWeekNumber;
 }

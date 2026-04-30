@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
@@ -19,6 +20,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -239,6 +241,7 @@ class _CalorieLearnedTdeeGoalSheetState
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(calorieGoalControllerProvider.notifier);
+    final burnWeekController = ref.read(burnWeekRunControllerProvider.notifier);
     final logRepository = ref.read(calorieLogRepositoryProvider);
     final countGoalStartDayForLearning =
         await _resolveCountGoalStartDayForLearning(logRepository);
@@ -249,7 +252,7 @@ class _CalorieLearnedTdeeGoalSheetState
       _isSaving = true;
     });
 
-    final saved = await controller.saveLearnedTdeeGoal(
+    final saveResult = await controller.saveLearnedTdeeGoalWithResult(
       goalMode: _goalMode,
       goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
       goalStartDate: _goalStartDate,
@@ -259,13 +262,22 @@ class _CalorieLearnedTdeeGoalSheetState
     if (!mounted) {
       return;
     }
-    setState(() {
-      _isSaving = false;
-    });
-    if (saved) {
+    if (saveResult.saved) {
+      if (saveResult.goalChanged) {
+        await burnWeekController.restartRunFrom(
+          weekStartDate: _goalStartDate,
+          runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        );
+        if (!mounted) {
+          return;
+        }
+      }
       Navigator.of(context).pop();
       return;
     }
+    setState(() {
+      _isSaving = false;
+    });
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

@@ -279,9 +279,9 @@ void main() {
     await tester.tap(find.byTooltip('Show Burn Week details'));
     await tester.pumpAndSettle();
 
-    expect(_richTextContaining('Week target: 13,417 kcal'), findsOneWidget);
+    expect(_richTextContaining('Week target: 14,000 kcal'), findsOneWidget);
     expect(
-      _richTextContaining('Previous week overflow: -583 kcal'),
+      _richTextContaining('Previous week overflow: 0 kcal'),
       findsOneWidget,
     );
   });

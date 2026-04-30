@@ -233,6 +233,7 @@ void main() {
     expect(find.byIcon(Icons.link_off), findsOneWidget);
     expect(find.text('Health Connect'), findsOneWidget);
     expect(find.text('Remove Health Connect access for YAMT.'), findsOneWidget);
+    expect(find.text('Set goal manually'), findsNothing);
 
     await _scrollToText(tester, 'Theme');
     expect(find.byIcon(Icons.palette_outlined), findsOneWidget);

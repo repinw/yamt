@@ -172,7 +172,7 @@ abstract final class CalorieBudgetCalculator {
         storedGoalKcal + includedActivityDeltaKcal + includedCarryoverKcal;
     final goalKcal = storedGoalKcal <= 0
         ? storedGoalKcal
-        : math.max<double>(0, baseGoalKcal + includedCarryoverKcal);
+        : baseGoalKcal + includedCarryoverKcal;
     return CalorieClassicBudgetBreakdown(
       baseGoalKcal: storedGoalKcal,
       activityDeltaKcal: activityDeltaKcal,

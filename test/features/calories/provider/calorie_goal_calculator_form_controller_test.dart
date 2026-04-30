@@ -61,6 +61,31 @@ CalorieEntry _todayLunchEntry(DateTime now, {double totalKcal = 400}) {
   );
 }
 
+CalorieGoalSettings _learnedTdeeSettings(DateTime effectiveDate) {
+  return CalorieGoalSettings.single(
+    dailyKcalGoal: 1800,
+    calculatorProfile: const CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.female,
+      weightKg: 70,
+      heightCm: 170,
+      ageYears: 30,
+      activityLevel: 1.2,
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+    ),
+    effectiveDate: effectiveDate,
+    source: CalorieGoalSource.weeklyCheckIn,
+    weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: effectiveDate.subtract(const Duration(days: 7)),
+      windowEndDate: effectiveDate.subtract(const Duration(days: 1)),
+      trendWeightChangePerDay: -0.05,
+      calculatedTrueTdeeKcal: 2100,
+      averageActiveKcal: 120,
+      lowConfidence: false,
+    ),
+  );
+}
+
 void main() {
   group('CalorieGoalCalculatorFormState validation', () {
     test('sets empty errors for missing required fields', () {
@@ -358,6 +383,92 @@ void main() {
     );
 
     test(
+      'learned TDEE goal change starts same-day Burn Week as game week',
+      () async {
+        final now = DateTime(2026, 4, 22, 12);
+        final settingsRepository = _BlockingCalorieSettingsRepository(
+          initialSettings: _learnedTdeeSettings(
+            now.subtract(const Duration(days: 1)),
+          ),
+        );
+        final logRepository = FakeCalorieLogRepository();
+        final runStateRepository = _FakeBurnWeekRunStateRepository(
+          const BurnWeekRunState.initial(),
+        );
+        addTearDown(settingsRepository.dispose);
+        addTearDown(logRepository.dispose);
+        final container = _buildOnboardingSaveHarness(
+          settingsRepository: settingsRepository,
+          logRepository: logRepository,
+          runStateRepository: runStateRepository,
+        );
+        final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+        await _primeOnboardingSaveHarness(container);
+
+        final saved = await container
+            .read(provider.notifier)
+            .save(
+              goalStartDate: now,
+              allowFutureGoalStart: true,
+              syncBurnWeekForOnboarding: true,
+              now: now,
+            );
+
+        expect(saved, isTrue);
+        expect(runStateRepository.state.currentWeekStartDayKey, '2026-4-22');
+        expect(
+          runStateRepository.state.runWeekNumber,
+          burnWeekFirstGameRunWeekNumber,
+        );
+        expect(runStateRepository.state.heartCreditKcal, 0);
+      },
+    );
+
+    test(
+      'learned TDEE future goal change schedules game week start',
+      () async {
+        final now = DateTime(2026, 4, 22, 12);
+        final futureGoalStart = DateTime(2026, 4, 24, 9);
+        final settingsRepository = _BlockingCalorieSettingsRepository(
+          initialSettings: _learnedTdeeSettings(
+            now.subtract(const Duration(days: 1)),
+          ),
+        );
+        final logRepository = FakeCalorieLogRepository();
+        final runStateRepository = _FakeBurnWeekRunStateRepository(
+          const BurnWeekRunState.initial(),
+        );
+        addTearDown(settingsRepository.dispose);
+        addTearDown(logRepository.dispose);
+        final container = _buildOnboardingSaveHarness(
+          settingsRepository: settingsRepository,
+          logRepository: logRepository,
+          runStateRepository: runStateRepository,
+        );
+        final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+        await _primeOnboardingSaveHarness(container);
+
+        final saved = await container
+            .read(provider.notifier)
+            .save(
+              goalStartDate: futureGoalStart,
+              allowFutureGoalStart: true,
+              syncBurnWeekForOnboarding: true,
+              now: now,
+            );
+
+        expect(saved, isTrue);
+        expect(runStateRepository.state.currentWeekStartDayKey, '2026-4-24');
+        expect(
+          runStateRepository.state.runWeekNumber,
+          burnWeekFirstGameRunWeekNumber,
+        );
+      },
+    );
+
+    test(
       'onboarding same-day normal catch-up seeds Burn Week credit',
       () async {
         final settingsRepository = _BlockingCalorieSettingsRepository();
@@ -553,11 +664,12 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 
 class _BlockingCalorieSettingsRepository implements CalorieSettingsRepository {
   _BlockingCalorieSettingsRepository({
+    CalorieGoalSettings? initialSettings,
     this.saveBlocker,
     this.saveShouldFail = false,
-  });
+  }) : _settings = initialSettings ?? const CalorieGoalSettings.empty();
 
-  CalorieGoalSettings _settings = const CalorieGoalSettings.empty();
+  CalorieGoalSettings _settings;
   final StreamController<CalorieGoalSettings> _controller =
       StreamController<CalorieGoalSettings>.broadcast();
 
