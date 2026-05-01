@@ -3,13 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/core/utils/product_image_url.dart';
-import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
-import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_serving_suggestion_repository.dart';
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
@@ -23,11 +20,24 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_amount_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_hero.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_leading_icon.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_quick_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_quick_chip_scroller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_sheet_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_when_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-part 'inventory_item_eat_sheet_components.dart';
 part 'inventory_item_eat_sheet_display.dart';
 part 'inventory_item_eat_sheet_hero.dart';
 part 'inventory_item_eat_sheet_input_sections.dart';

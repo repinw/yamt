@@ -1,11 +1,28 @@
 import 'dart:developer' show log;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_amount_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_hero.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_quick_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_quick_chip_scroller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_sheet_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_when_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_nutrition_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+part 'prepared_meal_eat_sheet_widgets.dart';
 
 const _defaultPreparedMealPortions = 1;
 const _preparedMealDialogsLogName = 'PreparedMealDialogs';
@@ -44,14 +61,18 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   PreparedMeal meal, {
   bool useRootNavigator = false,
   PreparedMealDayPicker? pickLoggedDay,
+  Uint8List? imageBytes,
 }) {
-  return showDialog<PreparedMealEatDialogResult>(
+  return showModalBottomSheet<PreparedMealEatDialogResult>(
     context: context,
     useRootNavigator: useRootNavigator,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (dialogContext) {
-      return _PreparedMealEatDialog(
+      return _PreparedMealEatSheet(
         meal: meal,
         pickLoggedDay: pickLoggedDay ?? _showPreparedMealDayPicker,
+        imageBytes: imageBytes,
       );
     },
   );
@@ -73,28 +94,35 @@ Future<int?> showPreparedMealPortionDialog({
   );
 }
 
-class _PreparedMealEatDialog extends StatefulWidget {
-  const _PreparedMealEatDialog({
+class _PreparedMealEatSheet extends StatefulWidget {
+  const _PreparedMealEatSheet({
     required this.meal,
     required this.pickLoggedDay,
+    required this.imageBytes,
   });
 
   final PreparedMeal meal;
   final PreparedMealDayPicker pickLoggedDay;
+  final Uint8List? imageBytes;
 
   @override
-  State<_PreparedMealEatDialog> createState() => _PreparedMealEatDialogState();
+  State<_PreparedMealEatSheet> createState() => _PreparedMealEatSheetState();
 }
 
-class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
+class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
   late final TextEditingController _portionsController = TextEditingController(
     text: _defaultPreparedMealPortions.toString(),
   );
-  late DateTime _selectedDay = DateUtils.dateOnly(DateTime.now());
-  late MealType _selectedMealType = MealType.defaultForDateTime(DateTime.now());
+  late final FocusNode _portionsFocusNode = FocusNode();
+  late DateTime _selectedLoggedAt = DateTime.now();
+  late MealType _selectedMealType = MealType.defaultForDateTime(
+    _selectedLoggedAt,
+  );
+  String? _portionsErrorText;
 
   @override
   void dispose() {
+    _portionsFocusNode.dispose();
     _portionsController.dispose();
     super.dispose();
   }
@@ -103,102 +131,176 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final material = MaterialLocalizations.of(context);
+    final isLoggedAtToday = _isLoggedAtToday();
+    final loggedAtLabel = isLoggedAtToday
+        ? null
+        : material.formatMediumDate(_selectedLoggedAt);
+    final selectedPortions = _selectedQuickPortions();
+    final metrics = _buildNutritionMetrics(l10n, selectedPortions ?? 1);
 
-    return AlertDialog(
-      title: Text(l10n.preparedMealEatTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _portionsController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: l10n.preparedMealPortionsToUseLabel,
-              helperText: l10n.preparedMealPortionsRemaining(
-                widget.meal.remainingPortions,
-                widget.meal.totalPortions,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          DropdownButtonFormField<MealType>(
-            initialValue: _selectedMealType,
-            decoration: InputDecoration(labelText: l10n.caloriesEntryMealLabel),
-            items: MealType.sectionOrder
-                .map((mealType) {
-                  return DropdownMenuItem<MealType>(
-                    value: mealType,
-                    child: Text(mealType.localizedName(l10n)),
-                  );
-                })
-                .toList(growable: false),
-            onChanged: (value) {
-              if (value == null) {
-                return;
-              }
-              setState(() {
-                _selectedMealType = value;
-              });
-            },
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            l10n.preparedMealDiaryDayLabel,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _pickLoggedDay,
-              icon: const Icon(Icons.calendar_today_outlined),
-              label: Text(material.formatMediumDate(_selectedDay)),
-            ),
-          ),
-        ],
+    return InventoryEatFlowSheetScaffold(
+      viewInsetsBottom: MediaQuery.viewInsetsOf(context).bottom,
+      hero: _PreparedMealEatHero(
+        meal: widget.meal,
+        imageBytes: widget.imageBytes,
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-            Navigator.of(context).pop();
-          },
-          child: Text(l10n.inventoryReceiptReviewCancelAction),
+      confirmActionText: l10n.inventoryItemEatSheetConfirmAction,
+      confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
+      onConfirm: _submit,
+      children: [
+        if (metrics.isNotEmpty) ...[
+          NutritionMetricsStrip(
+            metrics: metrics,
+            highlightedMetricIndex: 0,
+            metricValueKeyPrefix: 'prepared_meal_nutrition_value',
+            metricLabelKeyPrefix: 'prepared_meal_nutrition_label',
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
+        _PreparedMealEatPortionsSection(
+          controller: _portionsController,
+          focusNode: _portionsFocusNode,
+          errorText: _portionsErrorText,
+          selectedPortions: selectedPortions,
+          quickOptions: _buildQuickOptions(l10n),
+          remainingLabel: l10n.preparedMealPortionsRemaining(
+            widget.meal.remainingPortions,
+            widget.meal.totalPortions,
+          ),
+          clearTooltip: l10n.inventoryItemEatSheetClearAmountAction,
+          onChanged: _clearPortionsError,
+          onClearAndFocus: _clearPortionsAndFocus,
+          onSubmitted: _dismissKeyboard,
+          onQuickOptionSelected: _selectPortions,
         ),
-        TextButton(
-          onPressed: () {
-            final portions = int.tryParse(_portionsController.text.trim());
-            if (portions == null ||
-                portions < 1 ||
-                portions > widget.meal.remainingPortions) {
-              _showInvalidPortionsSnackBar(
-                scaffoldContext: context,
-                message: l10n.preparedMealInvalidPortionsRange,
-              );
-              return;
-            }
-            FocusManager.instance.primaryFocus?.unfocus();
-            Navigator.of(context).pop(
-              PreparedMealEatDialogResult(
-                portions: portions,
-                mealType: _selectedMealType,
-                loggedDay: _selectedDay,
-              ),
-            );
-          },
-          child: Text(l10n.inventoryItemEatAction),
+        const SizedBox(height: AppSpacing.xxxl),
+        InventoryEatFlowWhenSection(
+          isToday: isLoggedAtToday,
+          label: loggedAtLabel,
+          selectedMealType: _selectedMealType,
+          loggedAtButtonKey: const Key('prepared_meal_logged_at_button'),
+          loggedAtCompactKey: const Key('prepared_meal_logged_at_compact'),
+          loggedAtLabeledKey: const Key('prepared_meal_logged_at_labeled'),
+          onPickLoggedAt: _pickLoggedDay,
+          onMealTypeSelected: _selectMealType,
         ),
       ],
     );
   }
 
+  List<NutritionMetric> _buildNutritionMetrics(
+    AppLocalizations l10n,
+    int portions,
+  ) {
+    if (widget.meal.totalPortions < 1) {
+      return const <NutritionMetric>[];
+    }
+
+    final multiplier = portions / widget.meal.totalPortions;
+    return [
+      NutritionMetric(
+        label: l10n.inventoryNutritionCaloriesShortLabel,
+        value: (widget.meal.totalKcal * multiplier).round().toString(),
+      ),
+      NutritionMetric(
+        label: l10n.inventoryNutritionCarbsShortLabel,
+        value:
+            '${formatInventoryNutritionValue(
+              widget.meal.totalCarbs * multiplier,
+            )}g',
+      ),
+      NutritionMetric(
+        label: l10n.caloriesProteinLabel,
+        value:
+            '${formatInventoryNutritionValue(
+              widget.meal.totalProtein * multiplier,
+            )}g',
+      ),
+      NutritionMetric(
+        label: l10n.caloriesFatLabel,
+        value:
+            '${formatInventoryNutritionValue(
+              widget.meal.totalFat * multiplier,
+            )}g',
+      ),
+    ];
+  }
+
+  List<_PreparedMealQuickOption> _buildQuickOptions(AppLocalizations l10n) {
+    final values = <int>{};
+    final options = <_PreparedMealQuickOption>[];
+
+    void addOption(int value, String label) {
+      if (value < 1 || value > widget.meal.remainingPortions) {
+        return;
+      }
+      if (!values.add(value)) {
+        return;
+      }
+      options.add(_PreparedMealQuickOption(label: label, value: value));
+    }
+
+    addOption(
+      widget.meal.remainingPortions,
+      l10n.inventoryItemEatSheetAllAction,
+    );
+    for (final value in const [1, 2, 3]) {
+      addOption(value, value.toString());
+    }
+    return options;
+  }
+
+  int? _selectedQuickPortions() {
+    return int.tryParse(_portionsController.text.trim());
+  }
+
+  void _clearPortionsError(String _) {
+    if (_portionsErrorText == null) {
+      return;
+    }
+    setState(() {
+      _portionsErrorText = null;
+    });
+  }
+
+  void _clearPortionsAndFocus() {
+    setState(() {
+      _portionsController.clear();
+      _portionsErrorText = null;
+    });
+    _portionsFocusNode.requestFocus();
+  }
+
+  void _selectPortions(int portions) {
+    setState(() {
+      _portionsController.text = portions.toString();
+      _portionsErrorText = null;
+    });
+  }
+
+  void _selectMealType(MealType mealType) {
+    setState(() {
+      _selectedMealType = mealType;
+    });
+  }
+
+  void _dismissKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  bool _isLoggedAtToday() {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final selectedDay = DateUtils.dateOnly(_selectedLoggedAt);
+    return selectedDay == today;
+  }
+
   Future<void> _pickLoggedDay() async {
     final firstDate = DateTime(2000);
     final lastDate = DateUtils.dateOnly(DateTime.now());
+    final selectedDay = DateUtils.dateOnly(_selectedLoggedAt);
     final pickedDate = await widget.pickLoggedDay(
       context: context,
-      initialDate: _selectedDay.isAfter(lastDate) ? lastDate : _selectedDay,
+      initialDate: selectedDay.isAfter(lastDate) ? lastDate : selectedDay,
       firstDate: firstDate,
       lastDate: lastDate,
     );
@@ -213,8 +315,41 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
     }
 
     setState(() {
-      _selectedDay = normalizedDate;
+      final now = DateTime.now();
+      _selectedLoggedAt = DateTime(
+        normalizedDate.year,
+        normalizedDate.month,
+        normalizedDate.day,
+        now.hour,
+        now.minute,
+      );
     });
+  }
+
+  void _submit() {
+    final l10n = AppLocalizations.of(context)!;
+    final portions = int.tryParse(_portionsController.text.trim());
+    if (portions == null ||
+        portions < 1 ||
+        portions > widget.meal.remainingPortions) {
+      log(
+        'showPreparedMealEatDialog(): invalid portions '
+        '"${_portionsController.text}" for meal ${widget.meal.id}',
+        name: _preparedMealDialogsLogName,
+      );
+      setState(() {
+        _portionsErrorText = l10n.preparedMealInvalidPortionsRange;
+      });
+      return;
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    Navigator.of(context).pop(
+      PreparedMealEatDialogResult(
+        portions: portions,
+        mealType: _selectedMealType,
+        loggedDay: _selectedLoggedAt,
+      ),
+    );
   }
 }
 

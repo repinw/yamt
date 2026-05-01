@@ -361,6 +361,7 @@ void main() {
       );
       final amountTextField = tester.widget<TextField>(amountField);
 
+      expect(find.byIcon(Icons.cleaning_services_outlined), findsOneWidget);
       expect(amountTextField.autofocus, isFalse);
       expect(amountTextField.focusNode?.hasFocus, isFalse);
       expect(amountTextField.controller?.text, '1');
