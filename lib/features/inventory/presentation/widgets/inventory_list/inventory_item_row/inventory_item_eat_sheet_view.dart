@@ -7,165 +7,53 @@ class _InventoryItemEatSheetView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          top: AppSpacing.lg,
-          bottom: data.viewInsetsBottom + AppSpacing.xxxl,
-        ),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 520,
-              maxHeight: MediaQuery.sizeOf(context).height * 0.92,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(
-                AppInventoryEditorial.cardRadius,
-              ),
-              child: DecoratedBox(
-                decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-                  colors,
-                  borderRadius: BorderRadius.circular(
-                    AppInventoryEditorial.cardRadius,
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _InventoryItemEatHero(
-                              itemName: data.hero.itemName,
-                              eyebrow: data.hero.eyebrow,
-                              imageUrl: data.hero.imageUrl,
-                            ),
-                            Padding(
-                              padding: AppInsets.card,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (data.nutritionMetrics.isNotEmpty) ...[
-                                    NutritionMetricsStrip(
-                                      metrics: [
-                                        for (final metric
-                                            in data.nutritionMetrics)
-                                          NutritionMetric(
-                                            label: metric.label,
-                                            value: metric.value,
-                                          ),
-                                      ],
-                                      highlightedMetricIndex: 0,
-                                      metricValueKeyPrefix:
-                                          'inventory_item_nutrition_value',
-                                      metricLabelKeyPrefix:
-                                          'inventory_item_nutrition_label',
-                                    ),
-                                    const SizedBox(height: AppSpacing.xxl),
-                                  ],
-                                  _InventoryItemEatAmountSection(
-                                    data: data.amountSection,
-                                  ),
-                                  if (data.manualPortionSection
-                                      case final manual?) ...[
-                                    const SizedBox(height: AppSpacing.md),
-                                    _InventoryItemEatManualSection(
-                                      data: manual,
-                                    ),
-                                  ],
-                                  const SizedBox(height: AppSpacing.xxxl),
-                                  _InventoryItemEatWhenSection(
-                                    data: data.whenSection,
-                                  ),
-                                  if (data.inedibleSection
-                                      case final inedible?) ...[
-                                    const SizedBox(height: AppSpacing.xxxl),
-                                    _InventoryItemEatInedibleAmountSection(
-                                      amountController: inedible.controller,
-                                      amountFocusNode: inedible.focusNode,
-                                      amountErrorText: inedible.errorText,
-                                      unitLabel: inedible.unitLabel,
-                                      summaryText: inedible.summaryText,
-                                      isExpanded: inedible.isExpanded,
-                                      onAmountChanged: inedible.onChanged,
-                                      onSubmitted: inedible.onSubmitted,
-                                      onToggleExpanded:
-                                          inedible.onToggleExpanded,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colors.surfaceContainerLowest,
-                        border: Border(
-                          top: BorderSide(
-                            color: AppInventoryEditorialSurfaces.ghostBorder(
-                              colors,
-                            ),
-                          ),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.xl,
-                          AppSpacing.lg,
-                          AppSpacing.xl,
-                          AppSpacing.xl,
-                        ),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                            key: const Key(
-                              'inventory_item_amount_dialog_confirm_button',
-                            ),
-                            onPressed: data.footer.onConfirm,
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: AppSpacing.xxl,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppRadius.xl,
-                                ),
-                              ),
-                              backgroundColor: colors.primary,
-                            ),
-                            child: Text(
-                              data.footer.confirmActionText,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: colors.onPrimary,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+    return InventoryEatFlowSheetScaffold(
+      viewInsetsBottom: data.viewInsetsBottom,
+      hero: _InventoryItemEatHero(
+        itemName: data.hero.itemName,
+        eyebrow: data.hero.eyebrow,
+        imageUrl: data.hero.imageUrl,
       ),
+      confirmActionText: data.footer.confirmActionText,
+      confirmButtonKey: const Key(
+        'inventory_item_amount_dialog_confirm_button',
+      ),
+      onConfirm: data.footer.onConfirm,
+      children: [
+        if (data.nutritionMetrics.isNotEmpty) ...[
+          NutritionMetricsStrip(
+            metrics: [
+              for (final metric in data.nutritionMetrics)
+                NutritionMetric(label: metric.label, value: metric.value),
+            ],
+            highlightedMetricIndex: 0,
+            metricValueKeyPrefix: 'inventory_item_nutrition_value',
+            metricLabelKeyPrefix: 'inventory_item_nutrition_label',
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
+        _InventoryItemEatAmountSection(data: data.amountSection),
+        if (data.manualPortionSection case final manual?) ...[
+          const SizedBox(height: AppSpacing.md),
+          _InventoryItemEatManualSection(data: manual),
+        ],
+        const SizedBox(height: AppSpacing.xxxl),
+        _InventoryItemEatWhenSection(data: data.whenSection),
+        if (data.inedibleSection case final inedible?) ...[
+          const SizedBox(height: AppSpacing.xxxl),
+          _InventoryItemEatInedibleAmountSection(
+            amountController: inedible.controller,
+            amountFocusNode: inedible.focusNode,
+            amountErrorText: inedible.errorText,
+            unitLabel: inedible.unitLabel,
+            summaryText: inedible.summaryText,
+            isExpanded: inedible.isExpanded,
+            onAmountChanged: inedible.onChanged,
+            onSubmitted: inedible.onSubmitted,
+            onToggleExpanded: inedible.onToggleExpanded,
+          ),
+        ],
+      ],
     );
   }
 }
@@ -182,28 +70,30 @@ class _InventoryItemEatAmountSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _InventoryItemEatAmountCard(
+        InventoryEatFlowAmountCard(
           controller: data.controller,
           focusNode: data.focusNode,
-          modeOptions: data.modeOptions,
-          selectedModeId: data.selectedModeId,
           errorText: data.errorText,
           allowFractionalInput: data.allowFractionalInput,
           clearTooltip: data.clearTooltip,
+          fieldKey: const Key('inventory_item_amount_dialog_field'),
+          clearButtonKey: const Key(
+            'inventory_item_amount_dialog_clear_button',
+          ),
+          trailing: _InventoryItemEatAmountModeSelector(data: data),
           onChanged: data.onChanged,
           onClearAndFocus: data.onClearAndFocus,
           onSubmitted: data.onSubmitted,
-          onModeSelected: data.onModeSelected,
         ),
         if (data.quickOptions.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
           Row(
             children: [
               Expanded(
-                child: _InventoryItemEatQuickChipScroller(
+                child: InventoryEatFlowQuickChipScroller(
                   children: [
                     for (final option in data.quickOptions)
-                      _InventoryItemEatQuickChip(
+                      InventoryEatFlowQuickChip(
                         label: option.label,
                         isSelected: data.selectedAmount == option.value,
                         onPressed: () {
@@ -267,10 +157,10 @@ class _InventoryItemEatManualSection extends StatelessWidget {
           ),
           if (data.suggestions.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.lg),
-            _InventoryItemEatQuickChipScroller(
+            InventoryEatFlowQuickChipScroller(
               children: [
                 for (final suggestion in data.suggestions)
-                  _InventoryItemEatQuickChip(
+                  InventoryEatFlowQuickChip(
                     label: suggestion.label,
                     isSelected:
                         data.selectedUnit == suggestion.unit &&
@@ -297,30 +187,54 @@ class _InventoryItemEatWhenSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        if (data.isToday)
-          _InventoryItemEatWhenCard(
-            label: data.label,
-            isToday: data.isToday,
-            onPressed: data.onPickLoggedAt,
-          )
-        else
-          Expanded(
-            child: _InventoryItemEatWhenCard(
-              label: data.label,
-              isToday: data.isToday,
-              onPressed: data.onPickLoggedAt,
-            ),
-          ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _InventoryItemEatMealTypeSelector(
-            selectedMealType: data.selectedMealType,
-            onMealTypeSelected: data.onMealTypeSelected,
-          ),
+    return InventoryEatFlowWhenSection(
+      isToday: data.isToday,
+      label: data.label,
+      selectedMealType: data.selectedMealType,
+      loggedAtButtonKey: const Key('inventory_item_logged_at_button'),
+      loggedAtCompactKey: const Key('inventory_item_logged_at_compact'),
+      loggedAtLabeledKey: const Key('inventory_item_logged_at_labeled'),
+      onPickLoggedAt: data.onPickLoggedAt,
+      onMealTypeSelected: data.onMealTypeSelected,
+    );
+  }
+}
+
+class _InventoryItemEatAmountModeSelector extends StatelessWidget {
+  const _InventoryItemEatAmountModeSelector({required this.data});
+
+  final _InventoryItemEatSheetAmountSectionData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        key: const Key('inventory_item_amount_mode_dropdown'),
+        value: data.selectedModeId,
+        isExpanded: true,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        dropdownColor: colors.surfaceContainerHigh,
+        icon: Icon(Icons.expand_more_rounded, color: colors.onSurfaceVariant),
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: colors.onSurface,
+          fontWeight: FontWeight.w700,
         ),
-      ],
+        items: [
+          for (final option in data.modeOptions)
+            DropdownMenuItem<String>(
+              value: option.id,
+              child: Text(option.label, overflow: TextOverflow.ellipsis),
+            ),
+        ],
+        onChanged: (value) {
+          if (value == null) {
+            return;
+          }
+          data.onModeSelected(value);
+        },
+      ),
     );
   }
 }

@@ -62,9 +62,14 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
 
   Future<void> _runEatFlow() async {
     final l10n = AppLocalizations.of(context)!;
+    final imageRef = maybeLocalImageAssetRef(widget.meal.imageAssetId);
+    final imageBytes = imageRef == null
+        ? null
+        : ref.read(localImageBytesProvider(imageRef)).asData?.value;
     final result = await showPreparedMealEatDialog(
       context,
       widget.meal,
+      imageBytes: imageBytes,
     );
     if (!mounted || result == null) {
       return;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -125,6 +126,13 @@ PreparedMeal _depletedMeal() {
   return _meal().copyWith(remainingPortions: 0);
 }
 
+Uint8List _pngBytes() {
+  return base64Decode(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8'
+    'z8BQDwAFgwJ/lR3pWQAAAABJRU5ErkJggg==',
+  );
+}
+
 InventoryItem _inventorySuggestion({required String id, required String name}) {
   return InventoryItem.create(
     id: id,
@@ -230,7 +238,10 @@ void main() {
     await tester.tap(find.byTooltip('Eat'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Eat prepared meal'), findsOneWidget);
+    expect(
+      find.byKey(const Key('prepared_meal_eat_sheet_hero_cover')),
+      findsOneWidget,
+    );
     expect(find.text('Portions to use'), findsOneWidget);
   });
 
@@ -610,6 +621,58 @@ void main() {
     expect(imageWidget.image, isA<MemoryImage>());
   });
 
+  testWidgets('PreparedMealCard passes local cover image into eat sheet', (
+    tester,
+  ) async {
+    final localImageStore = FakeLocalImageStore();
+    await localImageStore.saveBytes(
+      imageRef: localImageAssetRef('asset-meal-1'),
+      bytes: _pngBytes(),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [localImageStoreProvider.overrideWithValue(localImageStore)],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Eat'));
+    await tester.pumpAndSettle();
+
+    final heroImage = tester.widget<Image>(
+      find.descendant(
+        of: find.byKey(const Key('prepared_meal_eat_sheet_hero_cover')),
+        matching: find.byType(Image),
+      ),
+    );
+    expect(heroImage.image, isA<MemoryImage>());
+  });
+
   testWidgets('PreparedMealCard shows nutrition toggle and updates values', (
     tester,
   ) async {
@@ -817,7 +880,9 @@ void main() {
 
       await tester.tap(find.byTooltip('Eat'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Eat').last);
+      await tester.tap(
+        find.byKey(const Key('prepared_meal_eat_confirm_button')),
+      );
       await tester.pump();
       await tester.pump();
 
@@ -825,7 +890,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(invocationCount, 1);
-      expect(find.text('Eat prepared meal'), findsOneWidget);
+      expect(
+        find.byKey(const Key('prepared_meal_eat_sheet_hero_cover')),
+        findsOneWidget,
+      );
       firstAction.complete(true);
     },
   );

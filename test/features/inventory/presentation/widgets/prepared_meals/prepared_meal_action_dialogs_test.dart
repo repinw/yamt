@@ -78,13 +78,9 @@ class _ActionDialogsHarnessState extends State<_ActionDialogsHarness> {
 }
 
 void main() {
-  String formatTodayLabel(WidgetTester tester) {
-    final context = tester.element(find.byType(Scaffold).first);
-    final material = MaterialLocalizations.of(context);
-    return material.formatMediumDate(DateUtils.dateOnly(DateTime.now()));
-  }
-
-  testWidgets('eat dialog shows snackbar for invalid portions', (tester) async {
+  testWidgets('eat sheet shows validation for invalid portions', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
@@ -97,8 +93,11 @@ void main() {
     await tester.tap(find.text('Open eat'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField).first, '99');
-    await tester.tap(find.text('Eat'));
+    await tester.enterText(
+      find.byKey(const Key('prepared_meal_portions_field')),
+      '99',
+    );
+    await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
     await tester.pumpAndSettle();
 
     expect(
@@ -107,8 +106,73 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Eat prepared meal'), findsOneWidget);
-    expect(find.text('Diary day'), findsOneWidget);
+    expect(
+      find.byKey(const Key('prepared_meal_portions_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('prepared_meal_logged_at_compact')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('eat sheet clear button uses broom and focuses portions field', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(meal: _meal()),
+      ),
+    );
+
+    await tester.tap(find.text('Open eat'));
+    await tester.pumpAndSettle();
+
+    final portionsField = find.byKey(const Key('prepared_meal_portions_field'));
+    expect(find.byIcon(Icons.cleaning_services_outlined), findsOneWidget);
+
+    await tester.enterText(portionsField, '2');
+    await tester.tap(
+      find.byKey(const Key('prepared_meal_portions_clear_button')),
+    );
+    await tester.pump();
+
+    final textField = tester.widget<TextField>(portionsField);
+    expect(textField.controller?.text, isEmpty);
+    expect(textField.focusNode?.hasFocus, isTrue);
+  });
+
+  testWidgets('eat sheet quick chips update portions and nutrition metrics', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(meal: _meal()),
+      ),
+    );
+
+    await tester.tap(find.text('Open eat'));
+    await tester.pumpAndSettle();
+
+    final caloriesValue = find.byKey(
+      const Key('prepared_meal_nutrition_value_0'),
+    );
+    expect(tester.widget<Text>(caloriesValue).data, '133');
+
+    await tester.tap(find.text('All'));
+    await tester.pump();
+
+    final portionsField = tester.widget<TextField>(
+      find.byKey(const Key('prepared_meal_portions_field')),
+    );
+    expect(portionsField.controller?.text, '2');
+    expect(tester.widget<Text>(caloriesValue).data, '267');
   });
 
   testWidgets('eat dialog returns selected meal day on confirm', (
@@ -130,7 +194,7 @@ void main() {
     await tester.tap(find.text('Open eat'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Eat'));
+    await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('eat:1:'), findsOneWidget);
@@ -166,16 +230,21 @@ void main() {
     await tester.tap(find.text('Open eat'));
     await tester.pumpAndSettle();
 
-    final todayLabel = formatTodayLabel(tester);
-    expect(find.text(todayLabel), findsOneWidget);
+    expect(
+      find.byKey(const Key('prepared_meal_logged_at_compact')),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.text(todayLabel));
+    await tester.tap(find.byKey(const Key('prepared_meal_logged_at_button')));
     await tester.pumpAndSettle();
 
     expect(pickerCalls, 1);
-    expect(find.text(todayLabel), findsOneWidget);
+    expect(
+      find.byKey(const Key('prepared_meal_logged_at_compact')),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.text('Eat'));
+    await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
     await tester.pumpAndSettle();
 
     expect(
@@ -216,14 +285,19 @@ void main() {
     await tester.pumpAndSettle();
 
     final today = DateUtils.dateOnly(DateTime.now());
-    final todayLabel = formatTodayLabel(tester);
-    expect(find.text(todayLabel), findsOneWidget);
+    expect(
+      find.byKey(const Key('prepared_meal_logged_at_compact')),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.text(todayLabel));
+    await tester.tap(find.byKey(const Key('prepared_meal_logged_at_button')));
     await tester.pumpAndSettle();
 
     expect(capturedLastDate, today);
-    expect(find.text(todayLabel), findsOneWidget);
+    expect(
+      find.byKey(const Key('prepared_meal_logged_at_compact')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('portion dialog returns selected amount on confirm', (
