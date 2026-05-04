@@ -4135,6 +4135,18 @@ abstract class AppLocalizations {
   /// **'Left'**
   String get diaryBalanceLeftLabel;
 
+  /// No description provided for @diaryBalanceRealLeftLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Real {kcal}'**
+  String diaryBalanceRealLeftLabel(Object kcal);
+
+  /// No description provided for @diaryBalanceHeartAdjustmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart {kcal}'**
+  String diaryBalanceHeartAdjustmentLabel(Object kcal);
+
   /// No description provided for @diaryScrollToTopAction.
   ///
   /// In en, this message translates to:

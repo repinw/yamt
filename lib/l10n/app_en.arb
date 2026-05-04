@@ -1103,6 +1103,18 @@
   "diaryBalanceLoadFailed": "Balance could not be loaded",
   "diaryBalanceEatenLabel": "Eaten",
   "diaryBalanceLeftLabel": "Left",
+  "diaryBalanceRealLeftLabel": "Real {kcal}",
+  "@diaryBalanceRealLeftLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "diaryBalanceHeartAdjustmentLabel": "Heart {kcal}",
+  "@diaryBalanceHeartAdjustmentLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
   "diaryScrollToTopAction": "To top",
   "diaryJumpToMealsAction": "To diary",
   "diaryIntroBackAction": "Back",

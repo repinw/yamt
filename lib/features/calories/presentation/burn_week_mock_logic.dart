@@ -115,8 +115,9 @@ class BurnWeekMockMetrics {
     required this.safeZoneMaxKcal,
     required this.barMinKcal,
     required this.barMaxKcal,
+    double? actualConsumedKcal,
     this.plannedLaterKcal = 0,
-  });
+  }) : actualConsumedKcal = actualConsumedKcal ?? consumedKcal;
 
   /// The resolved daily goal used by the mock.
   final double dailyGoalKcal;
@@ -133,8 +134,11 @@ class BurnWeekMockMetrics {
   /// Target calories for current time.
   final double targetKcal;
 
-  /// Demo actual calories after button taps.
+  /// Effective kcal after heart credit is applied.
   final double consumedKcal;
+
+  /// Real logged kcal before virtual heart credit is applied.
+  final double actualConsumedKcal;
 
   /// Safe-zone lower bound.
   final double safeZoneMinKcal;
@@ -154,11 +158,16 @@ class BurnWeekMockMetrics {
   /// Target marker position inside visible bar.
   double get targetRatio => ratioForKcal(targetKcal);
 
-  /// Heart marker position inside visible bar.
+  /// Flame marker position inside visible bar.
   double get consumedRatio => ratioForKcal(consumedKcal);
 
+  /// Game-effective marker position inside visible bar.
+  double get effectiveConsumedRatio => ratioForKcal(consumedKcal);
+
   /// Planned-shadow end position inside visible bar.
-  double get plannedEndRatio => ratioForKcal(consumedKcal + plannedLaterKcal);
+  double get plannedEndRatio {
+    return ratioForKcal(consumedKcal + plannedLaterKcal);
+  }
 
   /// Safe-zone start position inside visible bar.
   double get safeZoneStartRatio => ratioForKcal(safeZoneMinKcal);

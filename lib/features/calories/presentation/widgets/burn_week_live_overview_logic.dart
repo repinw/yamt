@@ -52,21 +52,19 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
       .length;
   final elapsedWeekDays = completedDaysCount + dayProgress;
   final targetKcal = dailyGoalKcal * elapsedWeekDays;
-  final consumedKcal =
-      weekOverview.days.fold<double>(
-        0,
-        (sum, day) {
-          if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-            return sum;
-          }
-          if (isSameDiaryDay(day.date, todayOverview.date)) {
-            return sum +
-                math.max<double>(0, day.totalKcal - plannedLaterTodayKcal);
-          }
-          return sum + day.totalKcal;
-        },
-      ) +
-      heartCreditKcal;
+  final actualConsumedKcal = weekOverview.days.fold<double>(
+    0,
+    (sum, day) {
+      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+        return sum;
+      }
+      if (isSameDiaryDay(day.date, todayOverview.date)) {
+        return sum + math.max<double>(0, day.totalKcal - plannedLaterTodayKcal);
+      }
+      return sum + day.totalKcal;
+    },
+  );
+  final consumedKcal = actualConsumedKcal + heartCreditKcal;
 
   return BurnWeekMockMetrics(
     dailyGoalKcal: dailyGoalKcal,
@@ -75,6 +73,7 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
     paceRatio: (targetKcal / adjustedWeeklyGoalKcal).clamp(0.0, 1.0),
     targetKcal: targetKcal,
     consumedKcal: consumedKcal,
+    actualConsumedKcal: actualConsumedKcal,
     safeZoneMinKcal: targetKcal - (dailyGoalKcal * safeZoneMultiplier),
     safeZoneMaxKcal: targetKcal + (dailyGoalKcal * safeZoneMultiplier),
     barMinKcal: 0,

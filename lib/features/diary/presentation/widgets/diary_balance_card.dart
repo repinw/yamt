@@ -32,7 +32,7 @@ const _balanceProgressHeight = 24.0;
 const _balanceFlameIconSize = 24.0;
 const _balanceTargetMarkerWidth = 3.0;
 const _balanceProgressAreaHeight = 56.0;
-const _balanceStatTileHeight = 84.0;
+const _balanceStatTileHeight = 104.0;
 const _balanceGameHeaderHeight = 24.0;
 const _balanceCounterBadgeHeight = 22.0;
 const _balanceCounterIconSize = 14.0;
@@ -271,7 +271,20 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
       runState: runState,
     );
     final dayBudgetKcal = weekOverview.todayFlexibleGoalKcal;
-    final dayLeftKcal = dayBudgetKcal - selectedDayOverview.totalKcal;
+    final realDayLeftKcal = dayBudgetKcal - selectedDayOverview.totalKcal;
+    final heartAdjustmentKcal = -runState.heartCreditKcal;
+    final dayLeftKcal = realDayLeftKcal + heartAdjustmentKcal;
+    final leftSubtitle = heartAdjustmentKcal.round() == 0
+        ? null
+        : '${l10n.diaryBalanceRealLeftLabel(
+            _formatKcal(numberFormat, realDayLeftKcal, l10n.caloriesUnitKcal),
+          )} · ${l10n.diaryBalanceHeartAdjustmentLabel(
+            formatBurnWeekSignedKcal(
+              heartAdjustmentKcal,
+              numberFormat,
+              l10n.caloriesUnitKcal,
+            ),
+          )}';
     final showGameControls =
         isLiveDay &&
         !weekOverview.goalStartsInFuture &&
@@ -355,6 +368,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                     dayLeftKcal,
                     l10n.caloriesUnitKcal,
                   ),
+                  subtitle: leftSubtitle,
                   valueColor: dayLeftKcal < 0
                       ? colors.error
                       : const Color(0xFF116B5A),

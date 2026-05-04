@@ -127,10 +127,12 @@ class _DiaryBalanceStatTile extends StatelessWidget {
     required this.valueColor,
     required this.backgroundColor,
     required this.borderColor,
+    this.subtitle,
   });
 
   final String label;
   final String value;
+  final String? subtitle;
   final Color valueColor;
   final Color backgroundColor;
   final Color borderColor;
@@ -181,6 +183,22 @@ class _DiaryBalanceStatTile extends StatelessWidget {
               ),
             ),
           ),
+          if (subtitle case final subtitle?) ...[
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                subtitle,
+                maxLines: 1,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  height: 1.1,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

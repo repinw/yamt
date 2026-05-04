@@ -2275,6 +2275,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBalanceLeftLabel => 'Left';
 
   @override
+  String diaryBalanceRealLeftLabel(Object kcal) {
+    return 'Real $kcal';
+  }
+
+  @override
+  String diaryBalanceHeartAdjustmentLabel(Object kcal) {
+    return 'Heart $kcal';
+  }
+
+  @override
   String get diaryScrollToTopAction => 'To top';
 
   @override

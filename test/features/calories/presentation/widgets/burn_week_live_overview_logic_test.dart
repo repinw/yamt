@@ -199,6 +199,48 @@ void main() {
     expect(metrics.plannedLaterKcal, 500);
   });
 
+  test('heart credit moves the flame and keeps real food separate', () {
+    final now = DateTime(2026, 4, 21, 23, 59);
+    final metrics = resolveBurnWeekLiveMetrics(
+      now: now,
+      weekOverview: CalorieWeekOverview(
+        days: <CalorieWeekDayOverview>[
+          CalorieWeekDayOverview(
+            date: DateTime(2026, 4, 21),
+            totalKcal: 600,
+            goalKcal: 2000,
+            entryCount: 1,
+          ),
+        ],
+        totalConsumedKcal: 600,
+        totalGoalKcal: 2000,
+        remainingKcal: 1400,
+        balanceStartDate: DateTime(2026, 4, 21),
+        carryoverBeforeTodayKcal: 0,
+        todayFlexibleGoalKcal: 2000,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
+        futureGoalKcal: null,
+      ),
+      todayOverview: CalorieWeekDayOverview(
+        date: DateTime(2026, 4, 21),
+        totalKcal: 600,
+        goalKcal: 2000,
+        entryCount: 1,
+      ),
+      currentWeekStartDate: DateTime(2026, 4, 21),
+      previousWeekOverflowKcal: 0,
+      heartCreditKcal: 2000,
+      plannedLaterTodayKcal: 0,
+      safeZoneMultiplier: 1,
+    );
+
+    expect(metrics.actualConsumedKcal, 600);
+    expect(metrics.consumedKcal, 2600);
+    expect(metrics.consumedRatio, closeTo(2600 / 14000, 0.001));
+    expect(metrics.effectiveConsumedRatio, closeTo(2600 / 14000, 0.001));
+  });
+
   test('current day progress stays bounded on DST transition dates', () {
     final springForwardProgress = resolveBurnWeekCurrentDayProgress(
       DateTime(2026, 3, 29, 23, 30),

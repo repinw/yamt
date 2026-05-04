@@ -51,6 +51,37 @@ void main() {
     expect(safeZoneRect.width / trackRect.width, closeTo(2 / 7, 0.04));
   });
 
+  testWidgets('heart credit moves flame and adjusts left kcal', (
+    tester,
+  ) async {
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-4-27',
+        heartCreditKcal: 2000,
+      ),
+    );
+
+    final trackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.progressTrack),
+    );
+    final consumedRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.consumedMarker),
+    );
+
+    expect(
+      consumedRect.center.dxRatioWithin(trackRect),
+      closeTo(3 / 14, 0.035),
+    );
+    expect(find.text('-1,000 kcal'), findsOneWidget);
+    expect(find.text('Real 1,000 kcal · Heart -2,000 kcal'), findsOneWidget);
+  });
+
   testWidgets('opens below-zone dialog for under-target live metrics', (
     tester,
   ) async {
