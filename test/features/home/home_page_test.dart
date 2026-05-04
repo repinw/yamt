@@ -207,6 +207,7 @@ Widget _buildHarness({
   ReceiptCaptureFlowController? receiptCaptureFlowController,
   ReceiptBatchFlowController? receiptBatchFlowController,
   bool? isCameraSupported,
+  ThemeData? theme,
   ValueChanged<Object?>? onManualAddRouteExtra,
 }) {
   final today = normalizeDiaryDay(DateTime.now());
@@ -306,6 +307,7 @@ Widget _buildHarness({
     container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
+      theme: theme,
       routerConfig: router,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -445,6 +447,46 @@ void main() {
 
     expect(find.byType(InventoryActionFab), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('inventory snackbar lays out with expandable fab', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(384, 832));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        theme: ThemeData(
+          useMaterial3: true,
+          snackBarTheme: SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final homeContext = tester.element(find.byType(HomePage));
+    ScaffoldMessenger.of(homeContext).showSnackBar(
+      const SnackBar(content: Text('Saved')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Saved'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('inventory shell fab opens requested add actions', (

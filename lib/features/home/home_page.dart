@@ -258,34 +258,44 @@ class HomePage extends ConsumerWidget {
       HomeTabType.settings => null,
     };
 
-    return Scaffold(
-      extendBody: currentTab != HomeTabType.settings,
-      appBar: HomeTopBar(
-        title: topBarTitle,
-        subtitle: topBarSubtitle,
-        titleColor: colors.primary,
-        compact: compactHomeChrome,
-        preferredHeight: HomeTopBar.preferredHeightFor(
-          context,
-          compact: compactHomeChrome,
-          hasSubtitle: topBarSubtitle != null,
-        ),
-        actions: _buildActions(
-          context,
-          ref,
-          l10n,
-          selectionState,
-          compactHomeChrome,
-          diaryCalendarState,
-        ),
+    final theme = Theme.of(context);
+    final homeTheme = theme.copyWith(
+      snackBarTheme: theme.snackBarTheme.copyWith(
+        behavior: SnackBarBehavior.fixed,
       ),
-      body: navigationShell,
-      floatingActionButtonLocation: floatingActionButton is InventoryActionFab
-          ? ExpandableFab.location
-          : FloatingActionButtonLocation.endFloat,
-      floatingActionButton: floatingActionButton,
-      bottomNavigationBar: HomeBottomNavBar(
-        entries: _navEntries(context, l10n),
+    );
+
+    return Theme(
+      data: homeTheme,
+      child: Scaffold(
+        extendBody: currentTab != HomeTabType.settings,
+        appBar: HomeTopBar(
+          title: topBarTitle,
+          subtitle: topBarSubtitle,
+          titleColor: colors.primary,
+          compact: compactHomeChrome,
+          preferredHeight: HomeTopBar.preferredHeightFor(
+            context,
+            compact: compactHomeChrome,
+            hasSubtitle: topBarSubtitle != null,
+          ),
+          actions: _buildActions(
+            context,
+            ref,
+            l10n,
+            selectionState,
+            compactHomeChrome,
+            diaryCalendarState,
+          ),
+        ),
+        body: navigationShell,
+        floatingActionButtonLocation: floatingActionButton is InventoryActionFab
+            ? ExpandableFab.location
+            : FloatingActionButtonLocation.endFloat,
+        floatingActionButton: floatingActionButton,
+        bottomNavigationBar: HomeBottomNavBar(
+          entries: _navEntries(context, l10n),
+        ),
       ),
     );
   }
