@@ -1,8 +1,14 @@
-part of 'off_product_search_repository.dart';
+import 'dart:convert';
 
-class _OffProductSearchResponseParser {
-  const _OffProductSearchResponseParser();
+import 'package:yamt/features/inventory/data/off_product_search_result.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
+/// Parses OFF search responses from JSON or legacy text payloads.
+class OffProductSearchResponseParser {
+  /// Creates an OFF product search response parser.
+  const OffProductSearchResponseParser();
+
+  /// Parses an OFF search response body into product search results.
   List<OffProductSearchResult> parse(String body) {
     final trimmed = body.trim();
     if (trimmed.isEmpty) {

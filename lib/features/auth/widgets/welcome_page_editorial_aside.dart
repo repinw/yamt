@@ -1,8 +1,14 @@
-part of 'package:yamt/features/auth/welcome_page.dart';
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/auth/auth_ui_constants.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-class _EditorialAside extends StatelessWidget {
-  const _EditorialAside({required this.isLoginMode});
+/// Editorial side panel for the wide auth welcome layout.
+class EditorialAside extends StatelessWidget {
+  /// Creates the editorial side panel.
+  const EditorialAside({required this.isLoginMode, super.key});
 
+  /// Whether the parent welcome page is showing login mode.
   final bool isLoginMode;
 
   @override

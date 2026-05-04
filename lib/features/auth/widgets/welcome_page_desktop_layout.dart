@@ -1,23 +1,41 @@
-part of 'package:yamt/features/auth/welcome_page.dart';
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/auth/auth_ui_constants.dart';
+import 'package:yamt/features/auth/widgets/auth_card.dart';
+import 'package:yamt/features/auth/widgets/auth_footer_prompt.dart';
+import 'package:yamt/features/auth/widgets/auth_header.dart';
+import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
+import 'package:yamt/features/auth/widgets/welcome_page_editorial_aside.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-class _DesktopAuthLayout extends StatelessWidget {
-  const _DesktopAuthLayout({
+/// Wide auth welcome layout.
+class DesktopAuthLayout extends StatelessWidget {
+  /// Creates the wide auth welcome layout.
+  const DesktopAuthLayout({
     required this.isLoginMode,
     required this.onShowLoginMode,
     required this.onShowRegisterMode,
     required this.metrics,
+    super.key,
   });
 
+  /// Whether login mode is active.
   final bool isLoginMode;
+
+  /// Switches to login mode.
   final VoidCallback onShowLoginMode;
+
+  /// Switches to register mode.
   final VoidCallback onShowRegisterMode;
-  final _AuthLayoutMetrics metrics;
+
+  /// Current layout metrics.
+  final AuthLayoutMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _EditorialAside(isLoginMode: isLoginMode)),
+        Expanded(child: EditorialAside(isLoginMode: isLoginMode)),
         const SizedBox(width: AppSpacing.xxxxl),
         SizedBox(
           width: AppAuthUi.maxContentWidth,
@@ -25,13 +43,13 @@ class _DesktopAuthLayout extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _AuthHeader(
+              AuthHeader(
                 isLoginMode: isLoginMode,
                 isWide: true,
                 metrics: metrics,
               ),
               SizedBox(height: metrics.headerSpacing),
-              _AuthCard(
+              AuthCard(
                 isLoginMode: isLoginMode,
                 onShowLoginMode: onShowLoginMode,
                 onShowRegisterMode: onShowRegisterMode,
@@ -39,7 +57,7 @@ class _DesktopAuthLayout extends StatelessWidget {
               ),
               if (isLoginMode) ...[
                 SizedBox(height: metrics.footerSpacing),
-                _AuthFooterPrompt(
+                AuthFooterPrompt(
                   prefixText: AppLocalizations.of(
                     context,
                   )!.authFooterNoAccountPrefix,
