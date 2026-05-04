@@ -121,6 +121,7 @@ class InventoryReceiptManualProductResult {
     this.selectedGlobalFoodItemId,
     this.requiresGlobalPersistence = true,
     this.globalPackageWeight,
+    this.skipMissingBarcodePrompt = false,
   });
 
   /// The item.
@@ -140,6 +141,9 @@ class InventoryReceiptManualProductResult {
 
   /// The package weight to persist on the global product.
   final String? globalPackageWeight;
+
+  /// Whether missing barcode prompt should be skipped.
+  final bool skipMissingBarcodePrompt;
 }
 
 bool _shouldOpenEditorImmediately({
@@ -295,6 +299,7 @@ class _InventoryReceiptManualProductLauncherPageState
         item: result.item,
         action: result.action,
         globalPackageWeight: result.globalPackageWeight,
+        skipMissingBarcodePrompt: true,
       ),
     );
   }
@@ -404,7 +409,7 @@ class _InventoryReceiptManualProductLauncherPageState
         return FractionallySizedBox(
           heightFactor: 1,
           child: InventoryBarcodeScannerPage(
-            title: l10n.inventoryBarcodeMissingPromptScanNow,
+            title: l10n.inventoryManualAddScanBarcodeAction,
             showActionButtons: widget.showEatImmediatelyOption,
             onProductSelected: (candidate, scannedBarcode, action) async {
               Navigator.of(sheetContext).pop(
@@ -1112,7 +1117,7 @@ class _InventoryReceiptManualProductEditorPageState
         return FractionallySizedBox(
           heightFactor: 1,
           child: InventoryBarcodeScannerPage(
-            title: l10n.inventoryBarcodeMissingPromptScanNow,
+            title: l10n.inventoryManualAddScanBarcodeAction,
             showActionButtons: widget.showEatImmediatelyOption,
             onProductSelected: (candidate, scannedBarcode, action) async {
               Navigator.of(sheetContext).pop(
@@ -1242,6 +1247,7 @@ class _InventoryReceiptManualProductEditorPageState
       item: result.item,
       action: result.action,
       globalPackageWeight: result.globalPackageWeight,
+      skipMissingBarcodePrompt: true,
     );
     if (widget.closeCurrentEditorOnSave) {
       _closePage(wrappedResult);

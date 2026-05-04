@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/'
@@ -391,7 +390,6 @@ ShoppingListItem _shoppingItem(
 Widget _buildTestApp(
   InventoryItemRepository repository, {
   List<Override> overrides = const <Override>[],
-  bool includeDefaultBarcodeFlagsOverride = true,
   GoRoute? calorieEntryRoute,
   InventoryDiscardEventRepository? discardEventRepository,
   Widget Function(Widget child)? shellBuilder,
@@ -418,13 +416,6 @@ Widget _buildTestApp(
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
         discardEventRepository ?? _FakeInventoryDiscardEventRepository(),
       ),
-      if (includeDefaultBarcodeFlagsOverride)
-        barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-          const BarcodeBackfillFeatureFlags(
-            showInventoryBarcodeMarkers: false,
-            enableQueueBackfill: false,
-          ),
-        ),
       ...overrides,
     ],
     child: MaterialApp.router(
@@ -715,70 +706,6 @@ void main() {
     expect(_stockLabel('500g / 1000g'), findsOneWidget);
   });
 
-  testWidgets('shows barcode missing marker when feature flag is enabled', (
-    tester,
-  ) async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[
-        _item('a'),
-      ],
-    );
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        includeDefaultBarcodeFlagsOverride: false,
-        overrides: <Override>[
-          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-            const BarcodeBackfillFeatureFlags(
-              showInventoryBarcodeMarkers: true,
-              enableQueueBackfill: false,
-            ),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-    await _scrollUntilVisible(tester, find.text('Barcode missing'));
-
-    expect(find.text('Barcode missing'), findsOneWidget);
-  });
-
-  testWidgets('shows barcode uncertainty marker when flag is set', (
-    tester,
-  ) async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[
-        _item('a').copyWith(
-          barcode: '4006381333931',
-          barcodeResolvedAt: DateTime.parse('2026-02-20T10:05:00Z'),
-          barcodeLookupUncertain: true,
-        ),
-      ],
-    );
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        includeDefaultBarcodeFlagsOverride: false,
-        overrides: <Override>[
-          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-            const BarcodeBackfillFeatureFlags(
-              showInventoryBarcodeMarkers: true,
-              enableQueueBackfill: false,
-            ),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-    await _scrollUntilVisible(tester, find.text('Not sure'));
-
-    expect(find.text('Not sure'), findsOneWidget);
-  });
-
   testWidgets('swap candidate opens picker and persists the selected item', (
     tester,
   ) async {
@@ -811,14 +738,7 @@ void main() {
     await tester.pumpWidget(
       _buildTestApp(
         repository,
-        includeDefaultBarcodeFlagsOverride: false,
         overrides: <Override>[
-          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-            const BarcodeBackfillFeatureFlags(
-              showInventoryBarcodeMarkers: true,
-              enableQueueBackfill: false,
-            ),
-          ),
           globalFoodItemRepositoryProvider.overrideWithValue(globalRepository),
           globalFoodItemMatcherProvider.overrideWithValue(matcher),
         ],
@@ -1128,15 +1048,8 @@ void main() {
     await tester.pumpWidget(
       _buildTestApp(
         repository,
-        includeDefaultBarcodeFlagsOverride: false,
         overrides: <Override>[
           inventoryItemsControllerProvider.overrideWith(() => controller),
-          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-            const BarcodeBackfillFeatureFlags(
-              showInventoryBarcodeMarkers: false,
-              enableQueueBackfill: true,
-            ),
-          ),
         ],
       ),
     );

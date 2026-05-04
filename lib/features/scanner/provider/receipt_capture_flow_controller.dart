@@ -2,11 +2,6 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_barcode_backfill_repository.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_barcode_backfill_repository_contract.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/application/'
     'receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
@@ -230,9 +225,6 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
       final result = await resolutionService.persistReviewedItems(
         reviewedItems,
       );
-      if (result.saved && result.itemsNeedingEnrichment.isNotEmpty) {
-        unawaited(_enqueueBatchBarcodeLookup(result.itemsNeedingEnrichment));
-      }
       return result.saved;
     } on Object catch (error, stackTrace) {
       log(
@@ -243,40 +235,5 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
       );
       return false;
     }
-  }
-
-  Future<void> _enqueueBatchBarcodeLookup(List<InventoryItem> items) async {
-    final pendingItems = items
-        .where((item) => item.normalizedBarcode == null)
-        .map(
-          (item) => BarcodeLookupBatchItem(
-            itemId: item.id,
-            fingerprint: item.resolvedFoodFingerprint,
-            itemName: item.name,
-            brand: item.brand,
-            storeName: item.storeName,
-            weight: item.weight,
-          ),
-        )
-        .toList(growable: false);
-    if (pendingItems.isEmpty) {
-      return;
-    }
-
-    final backfillRepository = ref.read(
-      calorieBarcodeBackfillRepositoryProvider,
-    );
-    final queued = await backfillRepository.enqueueBatchLookup(
-      items: pendingItems,
-      trigger: 'receipt_upload',
-    );
-    if (queued) {
-      return;
-    }
-    log(
-      'Receipt barcode batch lookup request failed.',
-      name: 'ReceiptCaptureFlowController',
-      error: StateError('batch_lookup_enqueue_failed'),
-    );
   }
 }

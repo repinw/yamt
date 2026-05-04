@@ -50,7 +50,6 @@ class InventoryItemRow extends ConsumerStatefulWidget {
     required this.expansionStorageKey,
     required this.item,
     required this.l10n,
-    required this.showBarcodeMarkers,
     required this.isAlreadyInShoppingList,
     required this.onDeletePressed,
     required this.onEatPressed,
@@ -70,9 +69,6 @@ class InventoryItemRow extends ConsumerStatefulWidget {
 
   /// The l10n.
   final AppLocalizations l10n;
-
-  /// The show barcode markers.
-  final bool showBarcodeMarkers;
 
   /// Whether already in shopping list.
   final bool isAlreadyInShoppingList;
@@ -150,7 +146,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     final layoutData = _buildLayoutData(
       context,
       isAlreadyInShoppingList: widget.isAlreadyInShoppingList,
-      showBarcodeMarkers: widget.showBarcodeMarkers,
       isSelectionMode: widget.isSelectionMode,
     );
     final onPrimaryActionPressed = _buildPrimaryActionPressed(layoutData);
@@ -205,7 +200,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   _InventoryItemRowLayoutData _buildLayoutData(
     BuildContext context, {
     required bool isAlreadyInShoppingList,
-    required bool showBarcodeMarkers,
     required bool isSelectionMode,
   }) {
     final item = widget.item;
@@ -217,7 +211,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       hasAdjustableAmount: hasAdjustableAmount,
       isWorking: _isWorking,
       isAlreadyInShoppingList: isAlreadyInShoppingList,
-      showBarcodeMarkers: showBarcodeMarkers,
       isSelectionMode: isSelectionMode,
     );
   }
@@ -647,7 +640,6 @@ class _InventoryItemRowLayoutData {
     required bool hasAdjustableAmount,
     required bool isWorking,
     required bool isAlreadyInShoppingList,
-    required bool showBarcodeMarkers,
     required bool isSelectionMode,
   }) {
     final colors = Theme.of(context).colorScheme;
@@ -669,14 +661,6 @@ class _InventoryItemRowLayoutData {
     final isQuickShoppingListActionEnabled =
         canRunSecondaryActions && !isAlreadyInShoppingList;
 
-    final marker = showBarcodeMarkers
-        ? _barcodeStatusMarker(
-            l10n: l10n,
-            colorScheme: colors,
-            status: item.barcodeStatus,
-          )
-        : null;
-
     return _InventoryItemRowLayoutData(
       colorScheme: colors,
       snapshot: InventoryItemRowSnapshot.fromItem(item),
@@ -693,8 +677,6 @@ class _InventoryItemRowLayoutData {
                 ),
         hasBrand: hasBrand,
         brand: brand,
-        statusText: marker?.text,
-        statusColor: marker?.color,
         remainingRatio: progress.remainingRatio,
         remainingLabel: progress.remainingLabel,
         segmentedByUnits: progress.segmentedByUnits,
@@ -786,28 +768,6 @@ List<InventoryNutritionMetric> _buildNutritionMetrics(
         value: '${formatInventoryNutritionValue(nutrition.per100Fat!)}g',
       ),
   ];
-}
-
-({String text, Color color})? _barcodeStatusMarker({
-  required AppLocalizations l10n,
-  required ColorScheme colorScheme,
-  required InventoryBarcodeStatus status,
-}) {
-  return switch (status) {
-    InventoryBarcodeStatus.resolved => null,
-    InventoryBarcodeStatus.uncertain => (
-      text: l10n.inventoryBarcodeStatusUncertain,
-      color: colorScheme.secondary,
-    ),
-    InventoryBarcodeStatus.pending => (
-      text: l10n.inventoryBarcodeStatusPending,
-      color: colorScheme.tertiary,
-    ),
-    InventoryBarcodeStatus.missing => (
-      text: l10n.inventoryBarcodeStatusMissing,
-      color: colorScheme.error,
-    ),
-  };
 }
 
 class _InventoryItemRowCard extends StatelessWidget {

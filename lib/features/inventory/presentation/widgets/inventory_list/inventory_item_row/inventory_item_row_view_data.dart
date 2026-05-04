@@ -9,8 +9,6 @@ class InventoryItemRowViewData {
     required this.nameTextStyle,
     required this.hasBrand,
     required this.brand,
-    required this.statusText,
-    required this.statusColor,
     required this.remainingRatio,
     required this.remainingLabel,
     required this.segmentedByUnits,
@@ -49,12 +47,6 @@ class InventoryItemRowViewData {
 
   /// The brand.
   final String brand;
-
-  /// The status text.
-  final String? statusText;
-
-  /// The status color.
-  final Color? statusColor;
 
   /// The remaining ratio.
   final double remainingRatio;

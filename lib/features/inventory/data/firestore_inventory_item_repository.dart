@@ -193,10 +193,6 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
       globalFoodItemId: item.globalFoodItemId.trim(),
       barcode: barcode,
       foodFingerprint: item.resolvedFoodFingerprint,
-      barcodeLookupUncertain: !(barcode == null) && item.barcodeLookupUncertain,
-      barcodeResolvedAt: barcode == null
-          ? null
-          : (item.barcodeResolvedAt ?? DateTime.now()),
     );
   }
 

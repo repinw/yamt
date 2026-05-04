@@ -64,10 +64,7 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
     useSafeArea: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) {
-      return InventoryReceiptCandidatePickerSheet(
-        draft: draft,
-        showAiEnrichmentAction: false,
-      );
+      return InventoryReceiptCandidatePickerSheet(draft: draft);
     },
   );
   if (!context.mounted || selection == null) {
@@ -85,7 +82,6 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
       item: item,
       matcher: matcher,
     ),
-    ReceiptCandidatePickerSelectionKind.aiEnrichment => null,
   };
 }
 

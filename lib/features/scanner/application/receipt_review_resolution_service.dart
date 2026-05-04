@@ -40,7 +40,6 @@ class ReceiptReviewPersistResult {
   const ReceiptReviewPersistResult({
     required this.saved,
     required this.inventoryItems,
-    this.itemsNeedingEnrichment = const <InventoryItem>[],
   });
 
   /// The saved.
@@ -48,9 +47,6 @@ class ReceiptReviewPersistResult {
 
   /// The inventory items.
   final List<InventoryItem> inventoryItems;
-
-  /// The items needing enrichment.
-  final List<InventoryItem> itemsNeedingEnrichment;
 }
 
 /// Receipt review resolution service.
@@ -154,9 +150,7 @@ class ReceiptReviewResolutionService {
               draft: draft,
               now: now,
               status: selectedCandidate == null
-                  ? (draft.requestAiEnrichment
-                        ? GlobalFoodItemStatus.candidate
-                        : GlobalFoodItemStatus.active)
+                  ? GlobalFoodItemStatus.active
                   : GlobalFoodItemStatus.candidate,
               selectedProduct: selectedCandidate?.item,
             );
@@ -196,11 +190,6 @@ class ReceiptReviewResolutionService {
           ),
         )
         .toList(growable: false);
-    final itemsNeedingEnrichment = <InventoryItem>[
-      for (final item in resolvedItems.indexed)
-        if (item.$2.sourceDraft.requestAiEnrichment)
-          inventoryItemsToSave[item.$1],
-    ];
 
     final inventorySaved = await _inventoryItemRepository.appendAll(
       inventoryItemsToSave,
@@ -222,9 +211,6 @@ class ReceiptReviewResolutionService {
       saved: inventorySaved,
       inventoryItems: inventorySaved
           ? inventoryItemsToSave
-          : const <InventoryItem>[],
-      itemsNeedingEnrichment: inventorySaved
-          ? itemsNeedingEnrichment
           : const <InventoryItem>[],
     );
   }

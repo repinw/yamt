@@ -27,10 +27,10 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -94,8 +94,12 @@ class _LoadingPreparedMealsController extends PreparedMealsController {
 
 class _RecordingReceiptCaptureFlowController
     extends ReceiptCaptureFlowController {
-  int runCallCount = 0;
-  ReceiptInputSource? lastSource;
+  int _runCallCount = 0;
+  ReceiptInputSource? _lastSource;
+
+  int recordedRunCallCount() => _runCallCount;
+
+  ReceiptInputSource? recordedLastSource() => _lastSource;
 
   @override
   FutureOr<ReceiptCaptureFlowResult?> build() {
@@ -106,14 +110,16 @@ class _RecordingReceiptCaptureFlowController
   Future<ReceiptCaptureFlowResult> run({
     required ReceiptInputSource source,
   }) async {
-    runCallCount += 1;
-    lastSource = source;
+    _runCallCount += 1;
+    _lastSource = source;
     return ReceiptCaptureFlowResult.inputCanceled(source: source);
   }
 }
 
 class _RecordingReceiptBatchFlowController extends ReceiptBatchFlowController {
-  int runFileBatchCallCount = 0;
+  int _runFileBatchCallCount = 0;
+
+  int recordedRunFileBatchCallCount() => _runFileBatchCallCount;
 
   @override
   ReceiptBatchFlowState build() {
@@ -122,7 +128,7 @@ class _RecordingReceiptBatchFlowController extends ReceiptBatchFlowController {
 
   @override
   Future<void> runFileBatch() async {
-    runFileBatchCallCount += 1;
+    _runFileBatchCallCount += 1;
     state = const ReceiptBatchFlowState(
       status: ReceiptBatchFlowStatus.inputCanceled,
     );
@@ -201,6 +207,7 @@ Widget _buildHarness({
   ReceiptCaptureFlowController? receiptCaptureFlowController,
   ReceiptBatchFlowController? receiptBatchFlowController,
   bool? isCameraSupported,
+  ThemeData? theme,
   ValueChanged<Object?>? onManualAddRouteExtra,
 }) {
   final today = normalizeDiaryDay(DateTime.now());
@@ -300,6 +307,7 @@ Widget _buildHarness({
     container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
+      theme: theme,
       routerConfig: router,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -441,6 +449,46 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
+  testWidgets('inventory snackbar lays out with expandable fab', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(384, 832));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        theme: ThemeData(
+          useMaterial3: true,
+          snackBarTheme: SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final homeContext = tester.element(find.byType(HomePage));
+    ScaffoldMessenger.of(homeContext).showSnackBar(
+      const SnackBar(content: Text('Saved')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Saved'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('inventory shell fab opens requested add actions', (
     tester,
   ) async {
@@ -529,7 +577,7 @@ void main() {
     await tester.tap(find.text('Upload image/PDF'));
     await tester.pumpAndSettle();
 
-    expect(batchController.runFileBatchCallCount, 1);
+    expect(batchController.recordedRunFileBatchCallCount(), 1);
   });
 
   testWidgets('inventory shell fab starts camera flow when enabled', (
@@ -557,8 +605,8 @@ void main() {
     await tester.tap(find.text('Camera'));
     await tester.pumpAndSettle();
 
-    expect(captureController.runCallCount, 1);
-    expect(captureController.lastSource, ReceiptInputSource.camera);
+    expect(captureController.recordedRunCallCount(), 1);
+    expect(captureController.recordedLastSource(), ReceiptInputSource.camera);
   });
 
   testWidgets('inventory shell fab disables camera when unsupported', (
@@ -586,7 +634,7 @@ void main() {
     await tester.tap(find.text('Camera'));
     await tester.pumpAndSettle();
 
-    expect(captureController.runCallCount, 0);
+    expect(captureController.recordedRunCallCount(), 0);
   });
 
   testWidgets('inventory tab shows shell fab when only prepared meals exist', (

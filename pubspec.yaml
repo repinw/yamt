@@ -10,7 +10,6 @@ dependencies:
   android_intent_plus: ^6.0.0
   cached_network_image: ^3.4.1
   cloud_firestore: ^6.0.3
-  cloud_functions: ^6.0.0
   collection: ^1.19.1
   file_picker: ^10.3.3
   file_share_intent: ^3.0.3
@@ -18,7 +17,6 @@ dependencies:
   firebase_app_check: ^0.4.1+5
   firebase_auth: ^6.1.4
   firebase_core: ^4.4.0
-  firebase_remote_config: ^6.1.4
   fl_chart: ^1.2.0
   flutter:
     sdk: flutter

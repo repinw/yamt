@@ -713,11 +713,6 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    match /barcode_enrichment_jobs/{fingerprint} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if false;
-    }
-
     match /global_food_items/{itemId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn()
@@ -907,39 +902,6 @@ service cloud.firestore {
         && request.resource.data.candidate_id == resource.data.candidate_id
         && request.resource.data.created_at == resource.data.created_at;
       allow delete: if isOwner(uid);
-    }
-
-    match /users/{uid}/barcode_enrichment_requests/{fingerprint} {
-      allow read: if isOwner(uid);
-      allow create, update: if isOwner(uid)
-        && request.resource.data.keys().hasOnly([
-          'user_id',
-          'fingerprint',
-          'item_name',
-          'brand',
-          'trigger',
-          'status',
-          'requested_at',
-          'updated_at',
-          'priority',
-          'provided_barcode',
-          'force_retry',
-        ])
-        && request.resource.data.user_id == uid
-        && request.resource.data.fingerprint == fingerprint
-        && request.resource.data.item_name is string
-        && isOptionalString(request.resource.data, 'brand')
-        && request.resource.data.trigger is string
-        && request.resource.data.status is string
-        && request.resource.data.requested_at is timestamp
-        && request.resource.data.updated_at is timestamp
-        && (!( 'priority' in request.resource.data) ||
-            request.resource.data.priority is string)
-        && (!( 'provided_barcode' in request.resource.data) ||
-            request.resource.data.provided_barcode is string)
-        && (!( 'force_retry' in request.resource.data) ||
-            request.resource.data.force_retry is bool);
-      allow delete: if false;
     }
 
     // TODO: Replace this generic owner-based rule once all collection

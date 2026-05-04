@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
@@ -65,12 +64,6 @@ Widget _buildInventoryTestApp({
         overrides: [
           if (preferences != null)
             appPreferencesProvider.overrideWithValue(preferences),
-          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-            const BarcodeBackfillFeatureFlags(
-              showInventoryBarcodeMarkers: false,
-              enableQueueBackfill: false,
-            ),
-          ),
           householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
           inventoryItemsControllerProvider.overrideWith(
             () => _StaticInventoryItemsController(items),
@@ -961,12 +954,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         appPreferencesProvider.overrideWithValue(preferences),
-        barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-          const BarcodeBackfillFeatureFlags(
-            showInventoryBarcodeMarkers: false,
-            enableQueueBackfill: false,
-          ),
-        ),
         householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
         inventoryItemsControllerProvider.overrideWith(
           () => _StaticInventoryItemsController(const <InventoryItem>[]),
@@ -1220,12 +1207,6 @@ void main() {
         ProviderScope(
           overrides: [
             appPreferencesProvider.overrideWithValue(preferences),
-            barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-              const BarcodeBackfillFeatureFlags(
-                showInventoryBarcodeMarkers: false,
-                enableQueueBackfill: false,
-              ),
-            ),
             activeShoppingListItemKeysProvider.overrideWithValue(
               const <ShoppingListItemMatchKey>{},
             ),
@@ -1321,12 +1302,6 @@ void main() {
         ProviderScope(
           overrides: [
             appPreferencesProvider.overrideWithValue(preferences),
-            barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-              const BarcodeBackfillFeatureFlags(
-                showInventoryBarcodeMarkers: false,
-                enableQueueBackfill: false,
-              ),
-            ),
             activeShoppingListItemKeysProvider.overrideWithValue(
               const <ShoppingListItemMatchKey>{},
             ),

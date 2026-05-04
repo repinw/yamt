@@ -138,7 +138,12 @@ class _InventoryManualAddPageState
       }
       itemToSave = resolvedEatItem;
     }
-    final promptResult = await _resolveMissingBarcode(itemToSave);
+    final promptResult = result.skipMissingBarcodePrompt
+        ? _ManualBarcodePromptResult(
+            item: itemToSave,
+            barcode: itemToSave.normalizedBarcode,
+          )
+        : await _resolveMissingBarcode(itemToSave);
     if (!mounted || promptResult == null) {
       return;
     }
@@ -301,8 +306,6 @@ class _InventoryManualAddPageState
       nutrition: globalProduct.nutrition,
       weight: inventoryWeight,
       foodFingerprint: globalProduct.resolvedFoodFingerprint,
-      barcodeCandidates: barcode == null ? const <String>[] : <String>[barcode],
-      barcodeResolvedAt: barcode == null ? null : now,
     ).withDerivedAmount(weight: inventoryWeight, quantity: 1);
 
     final inventorySaved = await ref

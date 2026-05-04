@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -205,11 +204,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final showBarcodeMarkers = ref.watch(
-      barcodeBackfillFeatureFlagsProvider.select(
-        (flags) => flags.showInventoryBarcodeMarkers,
-      ),
-    );
     final activeShoppingListItemKeys = ref.watch(
       activeShoppingListItemKeysProvider,
     );
@@ -316,7 +310,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           InventoryReceiptGroupsSliver(
             groups: groupInventoryItemsByReceipt(filteredItems),
             dateFormat: DateFormat.yMMMd(locale),
-            showBarcodeMarkers: showBarcodeMarkers,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
             actions: ReceiptGroupTileActions(
               onDeleteItem: widget.onDeleteItem,
@@ -334,7 +327,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           InventoryAllItemsSliver(
             items: filteredItems,
             l10n: l10n,
-            showBarcodeMarkers: showBarcodeMarkers,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
             sortMode: _inventoryItemSortMode,
             onDeleteItem: widget.onDeleteItem,

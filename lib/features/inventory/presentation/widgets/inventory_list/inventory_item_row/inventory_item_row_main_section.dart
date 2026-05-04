@@ -59,8 +59,6 @@ class InventoryItemRowMainSection extends StatelessWidget {
       badgeText: viewData.hasBrand ? viewData.brand : null,
       title: item.name,
       titleStyle: viewData.nameTextStyle,
-      statusText: viewData.statusText,
-      statusColor: viewData.statusColor,
       progressRatio: viewData.remainingRatio,
       progressLabel: viewData.remainingLabel,
       segmentedByUnits: viewData.segmentedByUnits,

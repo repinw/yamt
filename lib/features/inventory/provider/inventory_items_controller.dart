@@ -712,27 +712,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
-  /// Mark barcode lookup requested.
-  Future<bool> markBarcodeLookupRequested(String itemId) {
-    return _runItemsMutation((currentItems) {
-      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-      if (itemIndex < 0) {
-        return null;
-      }
-
-      final current = currentItems[itemIndex];
-      final now = DateTime.now();
-      final updated = current.copyWith(
-        barcodeLookupRequestedAt: now,
-        barcodeCandidates: const <String>[],
-        barcodeLookupUncertain: false,
-      );
-      final nextItems = List<InventoryItem>.from(currentItems);
-      nextItems[itemIndex] = updated;
-      return nextItems;
-    });
-  }
-
   /// Set item barcode.
   Future<bool> setItemBarcode({
     required String itemId,
@@ -750,13 +729,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       }
 
       final current = currentItems[itemIndex];
-      final now = DateTime.now();
-      final updated = current.copyWith(
-        barcode: normalized,
-        barcodeCandidates: <String>[normalized],
-        barcodeResolvedAt: now,
-        barcodeLookupUncertain: false,
-      );
+      final updated = current.copyWith(barcode: normalized);
       final nextItems = List<InventoryItem>.from(currentItems);
       nextItems[itemIndex] = updated;
       return nextItems;
