@@ -68,6 +68,7 @@ Widget _buildTestApp({
   required VoiceSearchService voiceSearchService,
   TextVoiceSearchController? voiceSearchController,
   List<Widget> trailingActions = const <Widget>[],
+  double? searchBarWidth,
 }) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -75,15 +76,18 @@ Widget _buildTestApp({
     home: Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: TextVoiceSearchBar(
-          controller: textController,
-          label: 'Search',
-          fieldKey: const Key('shared_search_field'),
-          voiceButtonKey: const Key('shared_voice_button'),
-          clearButtonKey: const Key('shared_clear_button'),
-          voiceSearchService: voiceSearchService,
-          voiceSearchController: voiceSearchController,
-          trailingActions: trailingActions,
+        child: SizedBox(
+          width: searchBarWidth,
+          child: TextVoiceSearchBar(
+            controller: textController,
+            label: 'Search',
+            fieldKey: const Key('shared_search_field'),
+            voiceButtonKey: const Key('shared_voice_button'),
+            clearButtonKey: const Key('shared_clear_button'),
+            voiceSearchService: voiceSearchService,
+            voiceSearchController: voiceSearchController,
+            trailingActions: trailingActions,
+          ),
         ),
       ),
     ),
@@ -108,6 +112,37 @@ void main() {
 
     expect(voiceSearchService.cancelCallCount, 1);
     textController.dispose();
+  });
+
+  testWidgets('search field grows downward for long search text', (
+    tester,
+  ) async {
+    final textController = TextEditingController();
+    final voiceSearchService = _FakeVoiceSearchService();
+
+    addTearDown(textController.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        textController: textController,
+        voiceSearchService: voiceSearchService,
+        searchBarWidth: 260,
+      ),
+    );
+
+    final fieldFinder = find.byKey(const Key('shared_search_field'));
+    final initialTop = tester.getTopLeft(fieldFinder).dy;
+    final initialHeight = tester.getSize(fieldFinder).height;
+
+    await tester.enterText(
+      fieldFinder,
+      'organic whole grain oat milk with vanilla and extra calcium for '
+      'breakfast smoothies',
+    );
+    await tester.pump();
+
+    expect(tester.getTopLeft(fieldFinder).dy, initialTop);
+    expect(tester.getSize(fieldFinder).height, greaterThan(initialHeight));
   });
 
   testWidgets('unmount during pending startListening does not throw', (
