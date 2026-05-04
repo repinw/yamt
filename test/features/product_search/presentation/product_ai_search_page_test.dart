@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/data/'
@@ -10,6 +11,8 @@ import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'product_ai_search_page.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _FakeProductAiSearchRepository extends FirebaseProductAiSearchRepository {
@@ -65,6 +68,93 @@ class _FakeAiSpeechService implements VoiceSearchService {
     _onResult?.call(
       VoiceSearchRecognition(transcript: transcript, isFinal: isFinal),
     );
+  }
+}
+
+ProductAiSearchDraft _doenerDraft() {
+  return const ProductAiSearchDraft(
+    name: 'Doener Haehnchen',
+    ingredients: <ProductAiSearchIngredientRow>[
+      ProductAiSearchIngredientRow(
+        label: 'Fladenbrot',
+        amountText: '100 g',
+        amountGrams: 100,
+        kcalMin: 250,
+        kcalMax: 300,
+      ),
+      ProductAiSearchIngredientRow(
+        label: 'Haehnchen',
+        amountText: '150 g',
+        amountGrams: 150,
+        kcalMin: 250,
+        kcalMax: 320,
+      ),
+      ProductAiSearchIngredientRow(
+        label: 'Cocktailsauce',
+        amountText: '40 g',
+        amountGrams: 40,
+        kcalMin: 180,
+        kcalMax: 220,
+      ),
+    ],
+    totalWeightGrams: 380,
+    totalKcalMin: 800,
+    totalKcalMax: 950,
+    defaultKcal: 880,
+    portionNutrition: ProductAiSearchNutritionEstimate(
+      kcal: 880,
+      protein: 42,
+      carbs: 68,
+      fat: 38,
+      salt: 2.8,
+    ),
+  );
+}
+
+InventoryItem _placeholderItem() {
+  return InventoryItem.create(
+    id: 'item-1',
+    name: 'Placeholder',
+    entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
+    storeName: 'Rewe',
+    quantity: 1,
+  );
+}
+
+DateTime _targetLoggedAtDate() {
+  final today = DateUtils.dateOnly(DateTime.now());
+  if (today.day > 1) {
+    return today.subtract(const Duration(days: 1));
+  }
+  return today.subtract(const Duration(days: 2));
+}
+
+Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
+  final loggedAtButton = find.byKey(
+    const Key('inventory_item_logged_at_button'),
+  );
+  await tester.ensureVisible(loggedAtButton);
+  await tester.tap(loggedAtButton);
+  await tester.pumpAndSettle();
+
+  final today = DateUtils.dateOnly(DateTime.now());
+  if (targetDate.year != today.year || targetDate.month != today.month) {
+    final previousMonthButton = find.byTooltip('Previous month');
+    await tester.ensureVisible(previousMonthButton);
+    await tester.tap(previousMonthButton);
+    await tester.pumpAndSettle();
+  }
+
+  final dayButton = find.text('${targetDate.day}').last;
+  await tester.ensureVisible(dayButton);
+  await tester.tap(dayButton);
+  await tester.pumpAndSettle();
+
+  final okButton = find.text('OK');
+  if (okButton.evaluate().isNotEmpty) {
+    await tester.ensureVisible(okButton.last);
+    await tester.tap(okButton.last);
+    await tester.pumpAndSettle();
   }
 }
 
@@ -299,6 +389,121 @@ void main() {
       GlobalFoodNutritionQualityStatus.unverified,
     );
     expect(pageResult!.item.nutrition?.per100Kcal, closeTo(240, 0.01));
+  });
+
+  testWidgets('ai eat now returns inline date and meal request', (
+    tester,
+  ) async {
+    ManualProductAiSearchResult? pageResult;
+    final repository = _FakeProductAiSearchRepository(
+      onGenerateFoodFromText: (_) async => _doenerDraft(),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          productAiSearchRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: Center(
+                  child: FilledButton(
+                    onPressed: () async {
+                      pageResult = await Navigator.of(context).push(
+                        MaterialPageRoute<ManualProductAiSearchResult>(
+                          builder: (_) => ManualProductAiSearchPage(
+                            item: _placeholderItem(),
+                            initialPrompt: 'doener haehnchen',
+                            showEatImmediatelyOption: true,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('open'),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('manual_product_ai_generate_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('inventory_item_logged_at_button')),
+      findsNothing,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('inventory_item_logged_at_button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_inventory_action_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('inventory_item_logged_at_button')),
+      findsNothing,
+    );
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+    await tester.pumpAndSettle();
+
+    final targetDate = _targetLoggedAtDate();
+    await _pickLoggedAtDate(tester, targetDate);
+
+    expect(
+      find.byKey(const Key('inventory_item_logged_at_labeled')),
+      findsOneWidget,
+    );
+
+    final mealTypeDropdown = find.byType(DropdownButton<MealType>);
+    await tester.ensureVisible(mealTypeDropdown);
+    await tester.tap(mealTypeDropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dinner').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const Key('manual_product_ai_save_button')),
+    );
+    await tester.tap(find.byKey(const Key('manual_product_ai_save_button')));
+    await tester.pumpAndSettle();
+
+    expect(pageResult, isNotNull);
+    expect(pageResult?.action, InventoryReceiptManualProductAction.eatNow);
+    expect(pageResult?.eatRequest, isNotNull);
+    expect(pageResult?.eatRequest?.inventoryAmount, 380);
+    expect(pageResult?.eatRequest?.mealType, MealType.dinner);
+    expect(
+      DateUtils.dateOnly(pageResult!.eatRequest!.loggedAt),
+      targetDate,
+    );
   });
 
   testWidgets(

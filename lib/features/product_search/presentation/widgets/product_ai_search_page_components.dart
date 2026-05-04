@@ -9,7 +9,12 @@ class _ManualProductAiSearchBody extends StatelessWidget {
     required this.weightErrorText,
     required this.selectedAction,
     required this.showEatImmediatelyOption,
+    required this.isLoggedAtToday,
+    required this.loggedAtLabel,
+    required this.selectedMealType,
     required this.onActionChanged,
+    required this.onPickLoggedAt,
+    required this.onMealTypeSelected,
     required this.onWeightChanged,
     required this.onPer100KcalChanged,
     required this.onSave,
@@ -22,7 +27,12 @@ class _ManualProductAiSearchBody extends StatelessWidget {
   final String? weightErrorText;
   final InventoryReceiptManualProductAction selectedAction;
   final bool showEatImmediatelyOption;
+  final bool isLoggedAtToday;
+  final String? loggedAtLabel;
+  final MealType selectedMealType;
   final ValueChanged<InventoryReceiptManualProductAction> onActionChanged;
+  final VoidCallback onPickLoggedAt;
+  final ValueChanged<MealType> onMealTypeSelected;
   final ValueChanged<String> onWeightChanged;
   final ValueChanged<double> onPer100KcalChanged;
   final VoidCallback? onSave;
@@ -100,6 +110,20 @@ class _ManualProductAiSearchBody extends StatelessWidget {
             ManualProductActionSelector(
               selectedAction: selectedAction,
               onChanged: onActionChanged,
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+          if (showEatImmediatelyOption &&
+              selectedAction == InventoryReceiptManualProductAction.eatNow) ...[
+            InventoryEatFlowWhenSection(
+              isToday: isLoggedAtToday,
+              label: loggedAtLabel,
+              selectedMealType: selectedMealType,
+              loggedAtButtonKey: const Key('inventory_item_logged_at_button'),
+              loggedAtCompactKey: const Key('inventory_item_logged_at_compact'),
+              loggedAtLabeledKey: const Key('inventory_item_logged_at_labeled'),
+              onPickLoggedAt: onPickLoggedAt,
+              onMealTypeSelected: onMealTypeSelected,
             ),
             const SizedBox(height: AppSpacing.md),
           ],

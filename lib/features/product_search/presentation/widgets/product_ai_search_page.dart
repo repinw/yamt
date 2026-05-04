@@ -8,9 +8,14 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_when_section.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
@@ -32,6 +37,7 @@ class ManualProductAiSearchResult {
     required this.item,
     required this.action,
     required this.globalPackageWeight,
+    this.eatRequest,
   });
 
   /// Built inventory item.
@@ -42,6 +48,9 @@ class ManualProductAiSearchResult {
 
   /// Package weight to persist globally.
   final String globalPackageWeight;
+
+  /// Eat request to complete directly after saving.
+  final InventoryItemEatRequest? eatRequest;
 }
 
 /// Read-only AI food creation page with limited user adjustments.
@@ -86,6 +95,10 @@ class _ManualProductAiSearchPageState
   String? _errorText;
   double? _weightGrams;
   double? _selectedPer100Kcal;
+  late DateTime _selectedLoggedAt = DateTime.now();
+  late MealType _selectedMealType = MealType.defaultForDateTime(
+    _selectedLoggedAt,
+  );
 
   @override
   void initState() {
@@ -110,6 +123,12 @@ class _ManualProductAiSearchPageState
     final weightErrorText = _hasWeightError
         ? l10n.inventoryManualAddAiSearchWeightRequired
         : null;
+    final isLoggedAtToday = _isLoggedAtToday();
+    final loggedAtLabel = isLoggedAtToday
+        ? null
+        : MaterialLocalizations.of(context).formatMediumDate(
+            _selectedLoggedAt,
+          );
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -162,11 +181,18 @@ class _ManualProductAiSearchPageState
           weightErrorText: weightErrorText,
           selectedAction: _selectedAction,
           showEatImmediatelyOption: widget.showEatImmediatelyOption,
+          isLoggedAtToday: isLoggedAtToday,
+          loggedAtLabel: loggedAtLabel,
+          selectedMealType: _selectedMealType,
           onActionChanged: (action) {
             setState(() {
               _selectedAction = action;
             });
           },
+          onPickLoggedAt: () {
+            unawaited(_pickLoggedAt());
+          },
+          onMealTypeSelected: _selectMealType,
           onWeightChanged: _handleWeightChanged,
           onPer100KcalChanged: (value) {
             setState(() {
@@ -265,8 +291,23 @@ class _ManualProductAiSearchPageState
       item: _buildResultItem(selection),
       action: _selectedAction,
       globalPackageWeight: selection.weightLabel,
+      eatRequest: _buildEatRequest(selection),
     );
     _closePage(result);
+  }
+
+  InventoryItemEatRequest? _buildEatRequest(
+    _AiNutritionSelection selection,
+  ) {
+    if (_selectedAction != InventoryReceiptManualProductAction.eatNow) {
+      return null;
+    }
+
+    return InventoryItemEatRequest(
+      inventoryAmount: selection.weightGrams.round(),
+      loggedAt: _selectedLoggedAt,
+      mealType: _selectedMealType,
+    );
   }
 
   InventoryItem _buildResultItem(_AiNutritionSelection selection) {
@@ -345,6 +386,43 @@ class _ManualProductAiSearchPageState
 
   double _roundToWholeNumber(double value) {
     return value.roundToDouble();
+  }
+
+  bool _isLoggedAtToday() {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final selectedDay = DateUtils.dateOnly(_selectedLoggedAt);
+    return selectedDay == today;
+  }
+
+  Future<void> _pickLoggedAt() async {
+    final initialDate = DateUtils.dateOnly(_selectedLoggedAt);
+    final lastDate = DateUtils.dateOnly(DateTime.now());
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate.isAfter(lastDate) ? lastDate : initialDate,
+      firstDate: DateTime(2000),
+      lastDate: lastDate,
+    );
+    if (!mounted || pickedDate == null) {
+      return;
+    }
+
+    final now = DateTime.now();
+    setState(() {
+      _selectedLoggedAt = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        now.hour,
+        now.minute,
+      );
+    });
+  }
+
+  void _selectMealType(MealType mealType) {
+    setState(() {
+      _selectedMealType = mealType;
+    });
   }
 
   void _closePage<T extends Object?>([T? result]) {

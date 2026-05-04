@@ -14,6 +14,8 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -122,6 +124,7 @@ class InventoryReceiptManualProductResult {
     this.requiresGlobalPersistence = true,
     this.globalPackageWeight,
     this.skipMissingBarcodePrompt = false,
+    this.eatRequest,
   });
 
   /// The item.
@@ -144,6 +147,9 @@ class InventoryReceiptManualProductResult {
 
   /// Whether missing barcode prompt should be skipped.
   final bool skipMissingBarcodePrompt;
+
+  /// Eat request to complete directly after saving.
+  final InventoryItemEatRequest? eatRequest;
 }
 
 bool _shouldOpenEditorImmediately({
@@ -300,6 +306,7 @@ class _InventoryReceiptManualProductLauncherPageState
         action: result.action,
         globalPackageWeight: result.globalPackageWeight,
         skipMissingBarcodePrompt: true,
+        eatRequest: result.eatRequest,
       ),
     );
   }
@@ -1248,6 +1255,7 @@ class _InventoryReceiptManualProductEditorPageState
       action: result.action,
       globalPackageWeight: result.globalPackageWeight,
       skipMissingBarcodePrompt: true,
+      eatRequest: result.eatRequest,
     );
     if (widget.closeCurrentEditorOnSave) {
       _closePage(wrappedResult);
