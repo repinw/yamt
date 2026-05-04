@@ -1436,7 +1436,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryManualAddAiSearchPromptHint.
   ///
   /// In en, this message translates to:
-  /// **'For example: Doener Haehnchen'**
+  /// **'For example: Chicken kebab'**
   String get inventoryManualAddAiSearchPromptHint;
 
   /// No description provided for @inventoryManualAddAiSearchGenerateAction.

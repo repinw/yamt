@@ -1,9 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _textVoiceSearchMaxLines = 3;
+final _textVoiceSearchInputFormatters = <TextInputFormatter>[
+  FilteringTextInputFormatter.deny(
+    RegExp(r'[\r\n]+'),
+    replacementString: ' ',
+  ),
+];
 
 /// Controller for interacting with [TextVoiceSearchBar] without a [GlobalKey].
 class TextVoiceSearchController {
@@ -444,6 +453,9 @@ class _TextVoiceSearchField extends StatelessWidget {
           readOnly: readOnly,
           autofocus: autofocus,
           enabled: enabled,
+          minLines: 1,
+          maxLines: _textVoiceSearchMaxLines,
+          inputFormatters: _textVoiceSearchInputFormatters,
           onTap: onTap,
           onChanged: onChanged,
           textInputAction: TextInputAction.search,

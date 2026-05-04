@@ -299,7 +299,7 @@
   "inventoryManualAddAiSearchAction": "KI-Vorschlag",
   "inventoryManualAddAiSearchTitle": "Lebensmittel mit KI erstellen",
   "inventoryManualAddAiSearchPromptLabel": "Lebensmittelbeschreibung",
-  "inventoryManualAddAiSearchPromptHint": "Zum Beispiel: Doener Haehnchen",
+  "inventoryManualAddAiSearchPromptHint": "Zum Beispiel: Döner Hähnchen",
   "inventoryManualAddAiSearchGenerateAction": "Schätzung erstellen",
   "inventoryManualAddAiSearchPromptRequired":
       "Bitte gib eine Lebensmittelbeschreibung ein.",

@@ -68,6 +68,8 @@ Widget _buildTestApp({
   required VoiceSearchService voiceSearchService,
   TextVoiceSearchController? voiceSearchController,
   List<Widget> trailingActions = const <Widget>[],
+  double? searchBarWidth,
+  ValueChanged<String>? onChanged,
 }) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -75,15 +77,19 @@ Widget _buildTestApp({
     home: Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: TextVoiceSearchBar(
-          controller: textController,
-          label: 'Search',
-          fieldKey: const Key('shared_search_field'),
-          voiceButtonKey: const Key('shared_voice_button'),
-          clearButtonKey: const Key('shared_clear_button'),
-          voiceSearchService: voiceSearchService,
-          voiceSearchController: voiceSearchController,
-          trailingActions: trailingActions,
+        child: SizedBox(
+          width: searchBarWidth,
+          child: TextVoiceSearchBar(
+            controller: textController,
+            label: 'Search',
+            fieldKey: const Key('shared_search_field'),
+            voiceButtonKey: const Key('shared_voice_button'),
+            clearButtonKey: const Key('shared_clear_button'),
+            voiceSearchService: voiceSearchService,
+            voiceSearchController: voiceSearchController,
+            trailingActions: trailingActions,
+            onChanged: onChanged,
+          ),
         ),
       ),
     ),
@@ -108,6 +114,128 @@ void main() {
 
     expect(voiceSearchService.cancelCallCount, 1);
     textController.dispose();
+  });
+
+  testWidgets('search field grows downward for long search text', (
+    tester,
+  ) async {
+    final textController = TextEditingController();
+    final voiceSearchService = _FakeVoiceSearchService();
+
+    addTearDown(textController.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        textController: textController,
+        voiceSearchService: voiceSearchService,
+        searchBarWidth: 260,
+      ),
+    );
+
+    final fieldFinder = find.byKey(const Key('shared_search_field'));
+    final initialTop = tester.getTopLeft(fieldFinder).dy;
+    final initialHeight = tester.getSize(fieldFinder).height;
+
+    await tester.enterText(
+      fieldFinder,
+      'organic whole grain oat milk with vanilla and extra calcium for '
+      'breakfast smoothies',
+    );
+    await tester.pump();
+
+    expect(tester.getTopLeft(fieldFinder).dy, initialTop);
+    expect(tester.getSize(fieldFinder).height, greaterThan(initialHeight));
+  });
+
+  testWidgets('search field keeps search keyboard action while wrapping', (
+    tester,
+  ) async {
+    final textController = TextEditingController();
+    final voiceSearchService = _FakeVoiceSearchService();
+
+    addTearDown(textController.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        textController: textController,
+        voiceSearchService: voiceSearchService,
+      ),
+    );
+
+    final field = tester.widget<TextField>(
+      find.byKey(const Key('shared_search_field')),
+    );
+
+    expect(field.keyboardType, TextInputType.text);
+    expect(field.textInputAction, TextInputAction.search);
+    expect(field.minLines, 1);
+    expect(field.maxLines, 3);
+  });
+
+  testWidgets('search field height stops growing after three lines', (
+    tester,
+  ) async {
+    final textController = TextEditingController();
+    final voiceSearchService = _FakeVoiceSearchService();
+
+    addTearDown(textController.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        textController: textController,
+        voiceSearchService: voiceSearchService,
+        searchBarWidth: 260,
+      ),
+    );
+
+    final fieldFinder = find.byKey(const Key('shared_search_field'));
+    final initialHeight = tester.getSize(fieldFinder).height;
+
+    await tester.enterText(
+      fieldFinder,
+      List.filled(20, 'breakfast').join(' '),
+    );
+    await tester.pump();
+    final threeLineHeight = tester.getSize(fieldFinder).height;
+
+    await tester.enterText(
+      fieldFinder,
+      List.filled(60, 'breakfast').join(' '),
+    );
+    await tester.pump();
+
+    expect(threeLineHeight, greaterThan(initialHeight));
+    expect(tester.getSize(fieldFinder).height, threeLineHeight);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('search field normalizes pasted line breaks to spaces', (
+    tester,
+  ) async {
+    final textController = TextEditingController();
+    final voiceSearchService = _FakeVoiceSearchService();
+    var changedValue = '';
+
+    addTearDown(textController.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        textController: textController,
+        voiceSearchService: voiceSearchService,
+        onChanged: (value) {
+          changedValue = value;
+        },
+      ),
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('shared_search_field')),
+      'milk\noats\r\nbananas',
+    );
+    await tester.pump();
+
+    expect(textController.text, 'milk oats bananas');
+    expect(changedValue, 'milk oats bananas');
   });
 
   testWidgets('unmount during pending startListening does not throw', (
