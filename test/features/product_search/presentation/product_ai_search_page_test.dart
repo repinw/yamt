@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/data/'
@@ -131,7 +130,7 @@ DateTime _targetLoggedAtDate() {
 
 Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
   final loggedAtButton = find.byKey(
-    const Key('inventory_item_logged_at_button'),
+    const Key('manual_product_ai_logged_at_button'),
   );
   await tester.ensureVisible(loggedAtButton);
   await tester.tap(loggedAtButton);
@@ -442,7 +441,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.byKey(const Key('inventory_item_logged_at_button')),
+      find.byKey(const Key('manual_product_ai_logged_at_button')),
       findsNothing,
     );
 
@@ -455,7 +454,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.byKey(const Key('inventory_item_logged_at_button')),
+      find.byKey(const Key('manual_product_ai_logged_at_button')),
       findsOneWidget,
     );
 
@@ -465,7 +464,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.byKey(const Key('inventory_item_logged_at_button')),
+      find.byKey(const Key('manual_product_ai_logged_at_button')),
       findsNothing,
     );
 
@@ -478,11 +477,11 @@ void main() {
     await _pickLoggedAtDate(tester, targetDate);
 
     expect(
-      find.byKey(const Key('inventory_item_logged_at_labeled')),
+      find.byKey(const Key('manual_product_ai_logged_at_labeled')),
       findsOneWidget,
     );
 
-    final mealTypeDropdown = find.byType(DropdownButton<MealType>);
+    final mealTypeDropdown = find.byType(DropdownButton<String>);
     await tester.ensureVisible(mealTypeDropdown);
     await tester.tap(mealTypeDropdown);
     await tester.pumpAndSettle();
@@ -497,11 +496,11 @@ void main() {
 
     expect(pageResult, isNotNull);
     expect(pageResult?.action, InventoryReceiptManualProductAction.eatNow);
-    expect(pageResult?.eatRequest, isNotNull);
-    expect(pageResult?.eatRequest?.inventoryAmount, 380);
-    expect(pageResult?.eatRequest?.mealType, MealType.dinner);
+    expect(pageResult?.eatSelection, isNotNull);
+    expect(pageResult?.eatSelection?.inventoryAmount, 380);
+    expect(pageResult?.eatSelection?.mealType, 'dinner');
     expect(
-      DateUtils.dateOnly(pageResult!.eatRequest!.loggedAt),
+      DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt),
       targetDate,
     );
   });

@@ -8,16 +8,13 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_when_section.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
+import 'package:yamt/features/product_search/domain/'
+    'manual_product_eat_selection.dart';
 import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -37,7 +34,7 @@ class ManualProductAiSearchResult {
     required this.item,
     required this.action,
     required this.globalPackageWeight,
-    this.eatRequest,
+    this.eatSelection,
   });
 
   /// Built inventory item.
@@ -49,8 +46,8 @@ class ManualProductAiSearchResult {
   /// Package weight to persist globally.
   final String globalPackageWeight;
 
-  /// Eat request to complete directly after saving.
-  final InventoryItemEatRequest? eatRequest;
+  /// Generic eat selection for callers that continue into an eat flow.
+  final ManualProductEatSelection? eatSelection;
 }
 
 /// Read-only AI food creation page with limited user adjustments.
@@ -96,7 +93,7 @@ class _ManualProductAiSearchPageState
   double? _weightGrams;
   double? _selectedPer100Kcal;
   late DateTime _selectedLoggedAt = DateTime.now();
-  late MealType _selectedMealType = MealType.defaultForDateTime(
+  late String _selectedMealType = _defaultMealTypeForDateTime(
     _selectedLoggedAt,
   );
 
@@ -291,19 +288,19 @@ class _ManualProductAiSearchPageState
       item: _buildResultItem(selection),
       action: _selectedAction,
       globalPackageWeight: selection.weightLabel,
-      eatRequest: _buildEatRequest(selection),
+      eatSelection: _buildEatSelection(selection),
     );
     _closePage(result);
   }
 
-  InventoryItemEatRequest? _buildEatRequest(
+  ManualProductEatSelection? _buildEatSelection(
     _AiNutritionSelection selection,
   ) {
     if (_selectedAction != InventoryReceiptManualProductAction.eatNow) {
       return null;
     }
 
-    return InventoryItemEatRequest(
+    return ManualProductEatSelection(
       inventoryAmount: selection.weightGrams.round(),
       loggedAt: _selectedLoggedAt,
       mealType: _selectedMealType,
@@ -419,7 +416,7 @@ class _ManualProductAiSearchPageState
     });
   }
 
-  void _selectMealType(MealType mealType) {
+  void _selectMealType(String mealType) {
     setState(() {
       _selectedMealType = mealType;
     });
@@ -438,6 +435,31 @@ class _ManualProductAiSearchPageState
     Navigator.of(context).pop(result);
   }
 }
+
+String _defaultMealTypeForDateTime(DateTime dateTime) {
+  final hour = dateTime.hour;
+  if (hour >= 5 && hour < 11) {
+    return _manualProductAiMealTypeBreakfast;
+  }
+  if (hour >= 11 && hour < 16) {
+    return _manualProductAiMealTypeLunch;
+  }
+  if (hour >= 16 && hour < 22) {
+    return _manualProductAiMealTypeDinner;
+  }
+  return _manualProductAiMealTypeSnack;
+}
+
+const _manualProductAiMealTypeBreakfast = 'breakfast';
+const _manualProductAiMealTypeLunch = 'lunch';
+const _manualProductAiMealTypeDinner = 'dinner';
+const _manualProductAiMealTypeSnack = 'snack';
+const _manualProductAiMealTypes = <String>[
+  _manualProductAiMealTypeBreakfast,
+  _manualProductAiMealTypeLunch,
+  _manualProductAiMealTypeDinner,
+  _manualProductAiMealTypeSnack,
+];
 
 class _AiNutritionSelection {
   const _AiNutritionSelection({

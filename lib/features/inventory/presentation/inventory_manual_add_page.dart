@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
@@ -24,6 +25,8 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/product_search/domain/'
+    'manual_product_eat_selection.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
 import 'package:yamt/features/product_search/provider/'
@@ -63,6 +66,10 @@ int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
 
 /// Complete inventory manual-add eat flow.
 @visibleForTesting
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 Future<void> completeInventoryManualAddEatFlow({
   required BuildContext context,
   required WidgetRef ref,
@@ -232,7 +239,7 @@ class _InventoryManualAddPageState
     }
 
     if (result.action == InventoryReceiptManualProductAction.eatNow) {
-      final eatRequest = result.eatRequest;
+      final eatRequest = _eatRequestFromAiSelection(result.eatSelection);
       if (eatRequest == null) {
         await _openImmediateEatFlow(
           savedItem,
@@ -279,6 +286,33 @@ class _InventoryManualAddPageState
       parsedAmount: parsedAmount,
       quantity: item.quantity,
     );
+  }
+
+  InventoryItemEatRequest? _eatRequestFromAiSelection(
+    ManualProductEatSelection? selection,
+  ) {
+    if (selection == null) {
+      return null;
+    }
+    final mealType = _mealTypeFromAiSelection(selection.mealType);
+    if (mealType == null) {
+      return null;
+    }
+    return InventoryItemEatRequest(
+      inventoryAmount: selection.inventoryAmount,
+      loggedAt: selection.loggedAt,
+      mealType: mealType,
+    );
+  }
+
+  MealType? _mealTypeFromAiSelection(String mealType) {
+    return switch (mealType) {
+      'breakfast' => MealType.breakfast,
+      'lunch' => MealType.lunch,
+      'dinner' => MealType.dinner,
+      'snack' => MealType.snack,
+      _ => null,
+    };
   }
 
   Future<_ManualBarcodePromptResult?> _resolveMissingBarcode(

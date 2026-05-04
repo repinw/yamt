@@ -207,7 +207,9 @@ class _FailingStageInventoryItemsController extends InventoryItemsController {
 }
 
 class _RecordingStageInventoryItemsController extends InventoryItemsController {
-  int stageCallCount = 0;
+  _RecordingStageInventoryItemsController(this._stageRecorder);
+
+  final _StageCallRecorder _stageRecorder;
 
   @override
   Future<List<InventoryItem>> build() async {
@@ -219,13 +221,17 @@ class _RecordingStageInventoryItemsController extends InventoryItemsController {
     String itemId,
     int amount,
   ) async {
-    stageCallCount += 1;
+    _stageRecorder.count += 1;
     return PendingInventoryConsumption(
-      id: 'pending-$stageCallCount',
+      id: 'pending-${_stageRecorder.count}',
       itemId: itemId,
       amount: amount,
     );
   }
+}
+
+class _StageCallRecorder {
+  int count = 0;
 }
 
 class _RecordingOffProductSearchRepository
@@ -2072,11 +2078,11 @@ void main() {
       await _pumpUi(tester);
 
       expect(
-        find.byKey(const Key('inventory_item_logged_at_button')),
+        find.byKey(const Key('manual_product_ai_logged_at_button')),
         findsOneWidget,
       );
 
-      final mealTypeDropdown = find.byType(DropdownButton<MealType>);
+      final mealTypeDropdown = find.byType(DropdownButton<String>);
       await tester.ensureVisible(mealTypeDropdown);
       await tester.tap(mealTypeDropdown);
       await tester.pumpAndSettle();
@@ -2103,7 +2109,10 @@ void main() {
   testWidgets(
     'immediate eat flow rejects invalid amount before staging consumption',
     (tester) async {
-      final inventoryController = _RecordingStageInventoryItemsController();
+      final stageRecorder = _StageCallRecorder();
+      final inventoryController = _RecordingStageInventoryItemsController(
+        stageRecorder,
+      );
       final item = InventoryItem.create(
         id: 'item-1',
         name: 'Milk',
@@ -2164,7 +2173,7 @@ void main() {
       await tester.tap(find.text('complete'));
       await tester.pumpAndSettle();
 
-      expect(inventoryController.stageCallCount, 0);
+      expect(stageRecorder.count, 0);
       expect(find.text('Action failed. Please try again.'), findsOneWidget);
     },
   );
