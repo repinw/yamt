@@ -12,6 +12,10 @@
   "inventoryActionUploadFile": "Upload receipt (image/PDF)",
   "inventoryActionCameraUnsupported": "Camera is not supported on this platform.",
   "inventoryActionManualAdd": "Add food manually",
+  "inventoryActionManualSearch": "Manual search",
+  "inventoryActionAiSuggestion": "AI suggestion",
+  "inventoryActionUploadImagePdf": "Upload image/PDF",
+  "inventoryActionCamera": "Camera",
   "inventorySharedReceiptConfirmTitle": "Scan shared receipt?",
   "inventorySharedReceiptConfirmSingleMessage":
       "Do you want to scan this shared file as a receipt?",

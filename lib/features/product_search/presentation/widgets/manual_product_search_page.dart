@@ -27,6 +27,18 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _manualProductRecentItemLimit = 6;
 const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
 
+/// Initial action for the manual product launcher.
+enum InventoryReceiptManualProductInitialIntent {
+  /// Show the launcher without opening a child flow.
+  launcher,
+
+  /// Open the text search editor immediately.
+  manualSearch,
+
+  /// Open the AI suggestion page immediately.
+  aiSuggestion,
+}
+
 /// Defines inventory receipt manual product page.
 @Dependencies([inventoryItemRepository])
 class InventoryReceiptManualProductPage extends StatelessWidget {
@@ -39,6 +51,7 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
     this.includeWeightInSearch = true,
     this.showEatImmediatelyOption = false,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
+    this.initialIntent = InventoryReceiptManualProductInitialIntent.launcher,
     this.onSaved,
   });
 
@@ -59,6 +72,9 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
 
   /// The initial action.
   final InventoryReceiptManualProductAction initialAction;
+
+  /// The initial launcher intent.
+  final InventoryReceiptManualProductInitialIntent initialIntent;
 
   /// Documented member.
   final Future<void> Function(InventoryReceiptManualProductResult result)?
@@ -89,6 +105,7 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
     return _InventoryReceiptManualProductLauncherPage(
       config: config,
       showEatImmediatelyOption: showEatImmediatelyOption,
+      initialIntent: initialIntent,
       onSaved: onSaved,
     );
   }
@@ -140,11 +157,13 @@ class _InventoryReceiptManualProductLauncherPage
   const _InventoryReceiptManualProductLauncherPage({
     required this.config,
     required this.showEatImmediatelyOption,
+    required this.initialIntent,
     this.onSaved,
   });
 
   final InventoryReceiptManualProductConfig config;
   final bool showEatImmediatelyOption;
+  final InventoryReceiptManualProductInitialIntent initialIntent;
   final Future<void> Function(InventoryReceiptManualProductResult result)?
   onSaved;
 
@@ -165,6 +184,22 @@ class _InventoryReceiptManualProductLauncherPageState
       text: buildManualProductInitialSearchQuery(widget.config) ?? '',
     );
     unawaited(_loadRecentItems());
+    if (widget.initialIntent !=
+        InventoryReceiptManualProductInitialIntent.launcher) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        switch (widget.initialIntent) {
+          case InventoryReceiptManualProductInitialIntent.manualSearch:
+            unawaited(_openSearchEditor());
+          case InventoryReceiptManualProductInitialIntent.aiSuggestion:
+            unawaited(_openAiSearchPage());
+          case InventoryReceiptManualProductInitialIntent.launcher:
+            break;
+        }
+      });
+    }
   }
 
   @override

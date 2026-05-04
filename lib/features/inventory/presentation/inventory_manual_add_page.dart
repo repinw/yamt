@@ -32,6 +32,18 @@ const _inventoryManualAddItemId = Uuid();
 const _inventoryManualAddGlobalFoodItemId = Uuid();
 const _inventoryAmountParser = InventoryAmountParser();
 
+/// Initial action for inventory manual add route.
+enum InventoryManualAddInitialAction {
+  /// Show the manual add launcher.
+  launcher,
+
+  /// Open manual search immediately.
+  manualSearch,
+
+  /// Open AI suggestion immediately.
+  aiSuggestion,
+}
+
 /// Resolve inventory manual add eat flow max amount.
 @visibleForTesting
 int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
@@ -55,7 +67,13 @@ int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
 ])
 class InventoryManualAddPage extends ConsumerStatefulWidget {
   /// The inventory manual add page.
-  const InventoryManualAddPage({super.key});
+  const InventoryManualAddPage({
+    super.key,
+    this.initialAction = InventoryManualAddInitialAction.launcher,
+  });
+
+  /// Initial action for the manual add flow.
+  final InventoryManualAddInitialAction initialAction;
 
   @override
   ConsumerState<InventoryManualAddPage> createState() {
@@ -87,8 +105,22 @@ class _InventoryManualAddPageState
     return InventoryReceiptManualProductPage(
       item: _draftItem,
       showEatImmediatelyOption: true,
+      initialIntent: _initialIntentFor(widget.initialAction),
       onSaved: _saveSheetResult,
     );
+  }
+
+  InventoryReceiptManualProductInitialIntent _initialIntentFor(
+    InventoryManualAddInitialAction action,
+  ) {
+    return switch (action) {
+      InventoryManualAddInitialAction.launcher =>
+        InventoryReceiptManualProductInitialIntent.launcher,
+      InventoryManualAddInitialAction.manualSearch =>
+        InventoryReceiptManualProductInitialIntent.manualSearch,
+      InventoryManualAddInitialAction.aiSuggestion =>
+        InventoryReceiptManualProductInitialIntent.aiSuggestion,
+    };
   }
 
   Future<void> _saveSheetResult(

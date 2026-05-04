@@ -45,6 +45,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryActionManualAdd => 'Lebensmittel manuell hinzufügen';
 
   @override
+  String get inventoryActionManualSearch => 'Manuelle Suche';
+
+  @override
+  String get inventoryActionAiSuggestion => 'KI-Vorschlag';
+
+  @override
+  String get inventoryActionUploadImagePdf => 'Bild/PDF hochladen';
+
+  @override
+  String get inventoryActionCamera => 'Kamera';
+
+  @override
   String get inventorySharedReceiptConfirmTitle => 'Geteilten Beleg scannen?';
 
   @override

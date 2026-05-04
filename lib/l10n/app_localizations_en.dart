@@ -45,6 +45,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryActionManualAdd => 'Add food manually';
 
   @override
+  String get inventoryActionManualSearch => 'Manual search';
+
+  @override
+  String get inventoryActionAiSuggestion => 'AI suggestion';
+
+  @override
+  String get inventoryActionUploadImagePdf => 'Upload image/PDF';
+
+  @override
+  String get inventoryActionCamera => 'Camera';
+
+  @override
   String get inventorySharedReceiptConfirmTitle => 'Scan shared receipt?';
 
   @override

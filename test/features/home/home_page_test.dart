@@ -19,6 +19,8 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -155,6 +157,7 @@ Widget _buildHarness({
   PreparedMealRepository? preparedMealRepository,
   InventoryItemsController? inventoryItemsController,
   PreparedMealsController? preparedMealsController,
+  ValueChanged<Object?>? onManualAddRouteExtra,
 }) {
   final today = normalizeDiaryDay(DateTime.now());
   final router = GoRouter(
@@ -198,6 +201,13 @@ Widget _buildHarness({
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.homeInventoryManualAdd,
+        builder: (context, state) {
+          onManualAddRouteExtra?.call(state.extra);
+          return const SizedBox();
+        },
       ),
     ],
   );
@@ -373,6 +383,42 @@ void main() {
 
     expect(find.byType(InventoryActionFab), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('inventory shell fab opens requested add actions', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    Object? manualAddRouteExtra;
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        onManualAddRouteExtra: (extra) => manualAddRouteExtra = extra,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Manual search'), findsOneWidget);
+    expect(find.text('AI suggestion'), findsOneWidget);
+    expect(find.text('Upload image/PDF'), findsOneWidget);
+    expect(find.text('Camera'), findsOneWidget);
+
+    await tester.tap(find.text('Manual search'));
+    await tester.pumpAndSettle();
+
+    expect(
+      manualAddRouteExtra,
+      InventoryManualAddInitialAction.manualSearch,
+    );
   });
 
   testWidgets('inventory tab shows shell fab when only prepared meals exist', (
