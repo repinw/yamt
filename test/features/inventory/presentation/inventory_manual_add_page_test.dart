@@ -339,6 +339,8 @@ Widget _buildHarness({
   required OffProductSearchRepository offRepository,
   required InventoryItemRepository inventoryRepository,
   required GlobalFoodItemRepository globalFoodRepository,
+  InventoryManualAddInitialAction initialAction =
+      InventoryManualAddInitialAction.launcher,
   GlobalBarcodeCandidateRepository? barcodeCandidateRepository,
   FirebaseProductAiSearchRepository? productAiSearchRepository,
   FirebaseAuth? auth,
@@ -356,7 +358,9 @@ Widget _buildHarness({
       ),
       GoRoute(
         path: AppRoutes.homeInventoryManualAdd,
-        builder: (context, state) => const InventoryManualAddPage(),
+        builder: (context, state) {
+          return InventoryManualAddPage(initialAction: initialAction);
+        },
       ),
     ],
   );
@@ -543,6 +547,51 @@ ProductAiSearchDraft _aiDraft() {
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
+  testWidgets('manual add route maps manual search initial action', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        offRepository: _RecordingOffProductSearchRepository(
+          const <OffProductSearchResult>[],
+        ),
+        inventoryRepository: _RecordingInventoryItemRepository(),
+        globalFoodRepository: _RecordingGlobalFoodItemRepository(),
+        initialAction: InventoryManualAddInitialAction.manualSearch,
+      ),
+    );
+    await _pumpUi(tester);
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('manual add route maps ai suggestion initial action', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        offRepository: _RecordingOffProductSearchRepository(
+          const <OffProductSearchResult>[],
+        ),
+        inventoryRepository: _RecordingInventoryItemRepository(),
+        globalFoodRepository: _RecordingGlobalFoodItemRepository(),
+        productAiSearchRepository: _FakeProductAiSearchRepository(
+          onGenerateFoodFromText: (_) async => _aiDraft(),
+        ),
+        initialAction: InventoryManualAddInitialAction.aiSuggestion,
+      ),
+    );
+    await _pumpUi(tester);
+
+    expect(
+      find.byKey(const Key('manual_product_ai_prompt_field')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('single barcode result needs explicit confirmation before save', (
     tester,
   ) async {

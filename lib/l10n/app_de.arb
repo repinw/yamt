@@ -12,6 +12,10 @@
   "inventoryActionUploadFile": "Beleg hochladen (Bild/PDF)",
   "inventoryActionCameraUnsupported": "Kamera wird auf dieser Plattform nicht unterstützt.",
   "inventoryActionManualAdd": "Lebensmittel manuell hinzufügen",
+  "inventoryActionManualSearch": "Manuelle Suche",
+  "inventoryActionAiSuggestion": "KI-Vorschlag",
+  "inventoryActionUploadImagePdf": "Bild/PDF hochladen",
+  "inventoryActionCamera": "Kamera",
   "inventorySharedReceiptConfirmTitle": "Geteilten Beleg scannen?",
   "inventorySharedReceiptConfirmSingleMessage":
       "Möchtest du diese geteilte Datei als Beleg scannen?",

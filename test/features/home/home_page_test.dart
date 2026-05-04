@@ -19,6 +19,8 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -26,7 +28,11 @@ import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
+import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
@@ -83,6 +89,43 @@ class _LoadingPreparedMealsController extends PreparedMealsController {
   @override
   FutureOr<List<PreparedMeal>> build() {
     return Completer<List<PreparedMeal>>().future;
+  }
+}
+
+class _RecordingReceiptCaptureFlowController
+    extends ReceiptCaptureFlowController {
+  int runCallCount = 0;
+  ReceiptInputSource? lastSource;
+
+  @override
+  FutureOr<ReceiptCaptureFlowResult?> build() {
+    return null;
+  }
+
+  @override
+  Future<ReceiptCaptureFlowResult> run({
+    required ReceiptInputSource source,
+  }) async {
+    runCallCount += 1;
+    lastSource = source;
+    return ReceiptCaptureFlowResult.inputCanceled(source: source);
+  }
+}
+
+class _RecordingReceiptBatchFlowController extends ReceiptBatchFlowController {
+  int runFileBatchCallCount = 0;
+
+  @override
+  ReceiptBatchFlowState build() {
+    return const ReceiptBatchFlowState();
+  }
+
+  @override
+  Future<void> runFileBatch() async {
+    runFileBatchCallCount += 1;
+    state = const ReceiptBatchFlowState(
+      status: ReceiptBatchFlowStatus.inputCanceled,
+    );
   }
 }
 
@@ -155,6 +198,10 @@ Widget _buildHarness({
   PreparedMealRepository? preparedMealRepository,
   InventoryItemsController? inventoryItemsController,
   PreparedMealsController? preparedMealsController,
+  ReceiptCaptureFlowController? receiptCaptureFlowController,
+  ReceiptBatchFlowController? receiptBatchFlowController,
+  bool? isCameraSupported,
+  ValueChanged<Object?>? onManualAddRouteExtra,
 }) {
   final today = normalizeDiaryDay(DateTime.now());
   final router = GoRouter(
@@ -199,6 +246,13 @@ Widget _buildHarness({
           ),
         ],
       ),
+      GoRoute(
+        path: AppRoutes.homeInventoryManualAdd,
+        builder: (context, state) {
+          onManualAddRouteExtra?.call(state.extra);
+          return const SizedBox();
+        },
+      ),
     ],
   );
 
@@ -226,6 +280,18 @@ Widget _buildHarness({
       if (preparedMealsController != null)
         preparedMealsControllerProvider.overrideWith(
           () => preparedMealsController,
+        ),
+      if (receiptCaptureFlowController != null)
+        receiptCaptureFlowControllerProvider.overrideWith(
+          () => receiptCaptureFlowController,
+        ),
+      if (receiptBatchFlowController != null)
+        receiptBatchFlowControllerProvider.overrideWith(
+          () => receiptBatchFlowController,
+        ),
+      if (isCameraSupported != null)
+        receiptCameraSupportedProvider.overrideWith(
+          (ref) => isCameraSupported,
         ),
     ],
   );
@@ -373,6 +439,154 @@ void main() {
 
     expect(find.byType(InventoryActionFab), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('inventory shell fab opens requested add actions', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    Object? manualAddRouteExtra;
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        onManualAddRouteExtra: (extra) => manualAddRouteExtra = extra,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Manual search'), findsOneWidget);
+    expect(find.text('AI suggestion'), findsOneWidget);
+    expect(find.text('Upload image/PDF'), findsOneWidget);
+    expect(find.text('Camera'), findsOneWidget);
+
+    await tester.tap(find.text('Manual search'));
+    await tester.pumpAndSettle();
+
+    expect(
+      manualAddRouteExtra,
+      InventoryManualAddInitialAction.manualSearch,
+    );
+  });
+
+  testWidgets('inventory shell fab opens ai suggestion route', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    Object? manualAddRouteExtra;
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        onManualAddRouteExtra: (extra) => manualAddRouteExtra = extra,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('AI suggestion'));
+    await tester.pumpAndSettle();
+
+    expect(
+      manualAddRouteExtra,
+      InventoryManualAddInitialAction.aiSuggestion,
+    );
+  });
+
+  testWidgets('inventory shell fab starts upload flow', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final batchController = _RecordingReceiptBatchFlowController();
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        receiptBatchFlowController: batchController,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Upload image/PDF'));
+    await tester.pumpAndSettle();
+
+    expect(batchController.runFileBatchCallCount, 1);
+  });
+
+  testWidgets('inventory shell fab starts camera flow when enabled', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final captureController = _RecordingReceiptCaptureFlowController();
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        receiptCaptureFlowController: captureController,
+        isCameraSupported: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Camera'));
+    await tester.pumpAndSettle();
+
+    expect(captureController.runCallCount, 1);
+    expect(captureController.lastSource, ReceiptInputSource.camera);
+  });
+
+  testWidgets('inventory shell fab disables camera when unsupported', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final captureController = _RecordingReceiptCaptureFlowController();
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        receiptCaptureFlowController: captureController,
+        isCameraSupported: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Camera'));
+    await tester.pumpAndSettle();
+
+    expect(captureController.runCallCount, 0);
   });
 
   testWidgets('inventory tab shows shell fab when only prepared meals exist', (

@@ -34,6 +34,8 @@ Widget _wrapPage({
   bool showEatImmediatelyOption = false,
   InventoryReceiptManualProductAction initialAction =
       InventoryReceiptManualProductAction.addToInventory,
+  InventoryReceiptManualProductInitialIntent initialIntent =
+      InventoryReceiptManualProductInitialIntent.launcher,
   Future<void> Function(InventoryReceiptManualProductResult result)? onSaved,
   Locale locale = const Locale('de'),
 }) {
@@ -60,6 +62,7 @@ Widget _wrapPage({
         includeWeightInSearch: includeWeightInSearch,
         showEatImmediatelyOption: showEatImmediatelyOption,
         initialAction: initialAction,
+        initialIntent: initialIntent,
         onSaved: onSaved,
       ),
     ),
@@ -317,6 +320,49 @@ FormBuilderDropdown<T> _manualFormDropdown<T>(
 
 @Dependencies([inventoryItemRepository])
 void main() {
+  testWidgets('initial manual search intent opens search editor', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        initialIntent: InventoryReceiptManualProductInitialIntent.manualSearch,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('initial ai suggestion intent opens ai page', (tester) async {
+    final speechService = _FakeManualProductSpeechService();
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        speechService: speechService,
+        initialIntent: InventoryReceiptManualProductInitialIntent.aiSuggestion,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('manual_product_ai_prompt_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      findsNothing,
+    );
+  });
+
   testWidgets(
     'selected product preview shows image data and nutrition values',
     (tester) async {

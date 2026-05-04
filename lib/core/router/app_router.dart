@@ -177,7 +177,13 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.homeInventoryManualAdd,
-        builder: (context, state) => const InventoryManualAddPage(),
+        builder: (context, state) {
+          final extra = state.extra;
+          final initialAction = extra is InventoryManualAddInitialAction
+              ? extra
+              : InventoryManualAddInitialAction.launcher;
+          return InventoryManualAddPage(initialAction: initialAction);
+        },
       ),
       GoRoute(
         path: AppRoutes.homeInventoryReceiptReview,

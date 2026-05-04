@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
@@ -279,7 +280,9 @@ class HomePage extends ConsumerWidget {
         ),
       ),
       body: navigationShell,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: floatingActionButton is InventoryActionFab
+          ? ExpandableFab.location
+          : FloatingActionButtonLocation.endFloat,
       floatingActionButton: floatingActionButton,
       bottomNavigationBar: HomeBottomNavBar(
         entries: _navEntries(context, l10n),

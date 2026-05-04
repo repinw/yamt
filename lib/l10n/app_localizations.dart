@@ -167,6 +167,30 @@ abstract class AppLocalizations {
   /// **'Add food manually'**
   String get inventoryActionManualAdd;
 
+  /// No description provided for @inventoryActionManualSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual search'**
+  String get inventoryActionManualSearch;
+
+  /// No description provided for @inventoryActionAiSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'AI suggestion'**
+  String get inventoryActionAiSuggestion;
+
+  /// No description provided for @inventoryActionUploadImagePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload image/PDF'**
+  String get inventoryActionUploadImagePdf;
+
+  /// No description provided for @inventoryActionCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get inventoryActionCamera;
+
   /// No description provided for @inventorySharedReceiptConfirmTitle.
   ///
   /// In en, this message translates to:

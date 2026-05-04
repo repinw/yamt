@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dart';
@@ -24,6 +26,48 @@ import 'package:yamt/l10n/app_localizations.dart';
 ])
 class InventoryActionSheetFlow {
   const InventoryActionSheetFlow._();
+
+  /// Open manual search.
+  static Future<void> openManualSearch({
+    required BuildContext context,
+    required AppLocalizations l10n,
+  }) {
+    return _openManualAddPage(
+      context,
+      l10n,
+      initialAction: InventoryManualAddInitialAction.manualSearch,
+    );
+  }
+
+  /// Open AI suggestion.
+  static Future<void> openAiSuggestion({
+    required BuildContext context,
+    required AppLocalizations l10n,
+  }) {
+    return _openManualAddPage(
+      context,
+      l10n,
+      initialAction: InventoryManualAddInitialAction.aiSuggestion,
+    );
+  }
+
+  /// Scan receipt with camera.
+  static Future<void> scanCamera({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations l10n,
+  }) {
+    return _runFlow(context, ref, l10n, ReceiptInputSource.camera);
+  }
+
+  /// Upload receipt file.
+  static Future<void> uploadFile({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations l10n,
+  }) {
+    return _runBatchFlow(context, ref, l10n);
+  }
 
   /// Open action sheet.
   static Future<void> openActionSheet({
@@ -58,9 +102,14 @@ class InventoryActionSheetFlow {
 
   static Future<void> _openManualAddPage(
     BuildContext context,
-    AppLocalizations l10n,
-  ) async {
-    final saved = await context.push<bool>(AppRoutes.homeInventoryManualAdd);
+    AppLocalizations l10n, {
+    InventoryManualAddInitialAction initialAction =
+        InventoryManualAddInitialAction.launcher,
+  }) async {
+    final saved = await context.push<bool>(
+      AppRoutes.homeInventoryManualAdd,
+      extra: initialAction,
+    );
     if (!context.mounted || saved != true) {
       return;
     }
