@@ -10,6 +10,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
@@ -31,6 +32,8 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -165,6 +168,7 @@ class _RecordingGlobalBarcodeCandidateRepository
 
 class _RecordingInventoryCalorieEntryCommitStore
     implements InventoryCalorieEntryCommitStore {
+  CalorieEntry? entry;
   PendingInventoryConsumption? pendingConsumption;
 
   @override
@@ -172,6 +176,7 @@ class _RecordingInventoryCalorieEntryCommitStore
     required CalorieEntry entry,
     required PendingInventoryConsumption pendingConsumption,
   }) async {
+    this.entry = entry;
     this.pendingConsumption = pendingConsumption;
     return InventoryCalorieEntryCommitResult(
       itemId: pendingConsumption.itemId,
@@ -199,6 +204,34 @@ class _FailingStageInventoryItemsController extends InventoryItemsController {
   ) async {
     return null;
   }
+}
+
+class _RecordingStageInventoryItemsController extends InventoryItemsController {
+  _RecordingStageInventoryItemsController(this._stageRecorder);
+
+  final _StageCallRecorder _stageRecorder;
+
+  @override
+  Future<List<InventoryItem>> build() async {
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<PendingInventoryConsumption?> stagePendingConsumption(
+    String itemId,
+    int amount,
+  ) async {
+    _stageRecorder.count += 1;
+    return PendingInventoryConsumption(
+      id: 'pending-${_stageRecorder.count}',
+      itemId: itemId,
+      amount: amount,
+    );
+  }
+}
+
+class _StageCallRecorder {
+  int count = 0;
 }
 
 class _RecordingOffProductSearchRepository
@@ -1999,7 +2032,170 @@ void main() {
     },
   );
 
+  testWidgets(
+    'ai eat now uses inline date and meal selection without next eat sheet',
+    (tester) async {
+      final auth = _MockFirebaseAuth();
+      final user = _MockUser();
+      when(() => auth.currentUser).thenReturn(user);
+      when(() => user.uid).thenReturn('user-1');
+
+      final offRepository = _RecordingOffProductSearchRepository(
+        const <OffProductSearchResult>[],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+      final aiRepository = _FakeProductAiSearchRepository(
+        onGenerateFoodFromText: (_) async => _aiDraft(),
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(calorieLogRepository.dispose);
+      final calorieProductCacheRepository = FakeCalorieProductCacheRepository();
+      final inventoryCommitStore = _RecordingInventoryCalorieEntryCommitStore();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          productAiSearchRepository: aiRepository,
+          auth: auth,
+          calorieLogRepository: calorieLogRepository,
+          calorieProductCacheRepository: calorieProductCacheRepository,
+          inventoryCommitStore: inventoryCommitStore,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await _openAiManualResult(tester);
+      await tester.ensureVisible(
+        find.byKey(const Key('receipt_review_manual_eat_action_button')),
+      );
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_eat_action_button')),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('manual_product_ai_logged_at_button')),
+        findsOneWidget,
+      );
+
+      final mealTypeDropdown = find.byType(DropdownButton<MealType>);
+      await tester.ensureVisible(mealTypeDropdown);
+      await tester.tap(mealTypeDropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Dinner').last);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(
+        find.byKey(const Key('manual_product_ai_save_button')),
+      );
+      await tester.tap(find.byKey(const Key('manual_product_ai_save_button')));
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        findsNothing,
+      );
+      expect(inventoryCommitStore.pendingConsumption, isNotNull);
+      expect(inventoryCommitStore.pendingConsumption?.amount, 380);
+      expect(inventoryCommitStore.entry?.mealType, MealType.dinner);
+      expect(find.text('Added to diary'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'immediate eat flow rejects invalid amount before staging consumption',
+    (tester) async {
+      final stageRecorder = _StageCallRecorder();
+      final inventoryController = _RecordingStageInventoryItemsController(
+        stageRecorder,
+      );
+      final item = InventoryItem.create(
+        id: 'item-1',
+        name: 'Milk',
+        entryDate: DateTime.parse('2026-04-13T10:00:00Z'),
+        storeName: 'Added manually',
+        quantity: 1,
+        initialAmount: 100,
+        currentAmount: 100,
+        amountUnit: InventoryAmountUnit.gram,
+        nutrition: const GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 64,
+          per100Protein: 3.4,
+          per100Carbs: 4.8,
+          per100Fat: 3.6,
+        ),
+      );
+      final request = InventoryItemEatRequest(
+        inventoryAmount: 101,
+        loggedAt: DateTime.parse('2026-04-13T20:00:00Z'),
+        mealType: MealType.dinner,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            inventoryItemsControllerProvider.overrideWith(() {
+              return inventoryController;
+            }),
+          ],
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, _) {
+                  return FilledButton(
+                    onPressed: () {
+                      unawaited(
+                        completeInventoryManualAddEatFlow(
+                          context: context,
+                          ref: ref,
+                          item: item,
+                          request: request,
+                        ),
+                      );
+                    },
+                    child: const Text('complete'),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('complete'));
+      await tester.pumpAndSettle();
+
+      expect(stageRecorder.count, 0);
+      expect(find.text('Action failed. Please try again.'), findsOneWidget);
+    },
+  );
+
   test('resolveInventoryManualAddEatFlowMaxAmount guards invalid items', () {
+    final stockedQuantityItem = InventoryItem.create(
+      id: 'item-stocked',
+      name: 'Yogurt',
+      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+      storeName: 'Added manually',
+      quantity: 3,
+    );
+    final stockedAmountItem = InventoryItem.create(
+      id: 'item-amount',
+      name: 'Milk',
+      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+      storeName: 'Added manually',
+      quantity: 1,
+      initialAmount: 1000,
+      currentAmount: 750,
+      amountUnit: InventoryAmountUnit.milliliter,
+    );
     final quantitylessItem = InventoryItem.create(
       id: 'item-0',
       name: 'Nothing',
@@ -2017,6 +2213,8 @@ void main() {
       amountUnit: InventoryAmountUnit.milliliter,
     );
 
+    expect(resolveInventoryManualAddEatFlowMaxAmount(stockedQuantityItem), 3);
+    expect(resolveInventoryManualAddEatFlowMaxAmount(stockedAmountItem), 750);
     expect(resolveInventoryManualAddEatFlowMaxAmount(quantitylessItem), isNull);
     expect(
       resolveInventoryManualAddEatFlowMaxAmount(depletedAmountItem),

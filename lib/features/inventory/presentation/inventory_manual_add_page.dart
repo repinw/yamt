@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
@@ -19,6 +20,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_dialogs.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -57,6 +60,62 @@ int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
     return null;
   }
   return item.quantity;
+}
+
+/// Complete inventory manual-add eat flow.
+@visibleForTesting
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
+Future<void> completeInventoryManualAddEatFlow({
+  required BuildContext context,
+  required WidgetRef ref,
+  required InventoryItem item,
+  required InventoryItemEatRequest request,
+}) async {
+  final l10n = AppLocalizations.of(context)!;
+  final maxAmount = resolveInventoryManualAddEatFlowMaxAmount(item);
+  if (maxAmount == null ||
+      request.inventoryAmount < 1 ||
+      request.inventoryAmount > maxAmount) {
+    _showInventoryManualAddSnackBar(
+      context: context,
+      message: l10n.inventoryItemActionFailed,
+    );
+    return;
+  }
+
+  final inventoryController = ref.read(
+    inventoryItemsControllerProvider.notifier,
+  );
+  final pendingConsumption = await inventoryController.stagePendingConsumption(
+    item.id,
+    request.inventoryAmount,
+  );
+  if (pendingConsumption == null) {
+    if (context.mounted) {
+      _showInventoryManualAddSnackBar(
+        context: context,
+        message: l10n.inventoryItemActionFailed,
+      );
+    }
+    return;
+  }
+  if (!context.mounted) {
+    await inventoryController.discardPendingConsumption(
+      pendingConsumption.id,
+    );
+    return;
+  }
+
+  await InventoryItemEatFlow.complete(
+    context: context,
+    ref: ref,
+    itemBeforeMutation: item,
+    request: request,
+    pendingConsumptionId: pendingConsumption.id,
+  );
 }
 
 /// Defines inventory manual add page.
@@ -178,10 +237,15 @@ class _InventoryManualAddPageState
     }
 
     if (result.action == InventoryReceiptManualProductAction.eatNow) {
-      await _openImmediateEatFlow(
-        savedItem,
-        initialEatWeight: savedItem.weight,
-      );
+      final eatRequest = _eatRequestFromAiSelection(result.eatSelection);
+      if (eatRequest == null) {
+        await _openImmediateEatFlow(
+          savedItem,
+          initialEatWeight: savedItem.weight,
+        );
+      } else {
+        await _completeImmediateEatFlow(savedItem, eatRequest);
+      }
       if (!mounted) {
         return;
       }
@@ -219,6 +283,19 @@ class _InventoryManualAddPageState
       weight: weight,
       parsedAmount: parsedAmount,
       quantity: item.quantity,
+    );
+  }
+
+  InventoryItemEatRequest? _eatRequestFromAiSelection(
+    EatSelection? selection,
+  ) {
+    if (selection == null) {
+      return null;
+    }
+    return InventoryItemEatRequest(
+      inventoryAmount: selection.inventoryAmount,
+      loggedAt: selection.loggedAt,
+      mealType: selection.mealType,
     );
   }
 
@@ -443,37 +520,23 @@ class _InventoryManualAddPageState
       return;
     }
 
-    final inventoryController = ref.read(
-      inventoryItemsControllerProvider.notifier,
-    );
-    final pendingConsumption = await inventoryController
-        .stagePendingConsumption(item.id, request.inventoryAmount);
-    if (pendingConsumption == null) {
-      if (mounted) {
-        _showSnackBar(l10n.inventoryItemActionFailed);
-      }
-      return;
-    }
-    if (!mounted) {
-      await inventoryController.discardPendingConsumption(
-        pendingConsumption.id,
-      );
-      return;
-    }
+    await _completeImmediateEatFlow(item, request);
+  }
 
-    await InventoryItemEatFlow.complete(
+  Future<void> _completeImmediateEatFlow(
+    InventoryItem item,
+    InventoryItemEatRequest request,
+  ) async {
+    await completeInventoryManualAddEatFlow(
       context: context,
       ref: ref,
-      itemBeforeMutation: item,
+      item: item,
       request: request,
-      pendingConsumptionId: pendingConsumption.id,
     );
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    _showInventoryManualAddSnackBar(context: context, message: message);
   }
 
   InventoryAmountUnit _defaultEatAmountUnit(InventoryItem item) {
@@ -525,6 +588,15 @@ class _InventoryManualAddPageState
     }
     return parsed.amount;
   }
+}
+
+void _showInventoryManualAddSnackBar({
+  required BuildContext context,
+  required String message,
+}) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(message)));
 }
 
 class _ManualBarcodePromptResult {

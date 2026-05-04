@@ -9,7 +9,12 @@ class _ManualProductAiSearchBody extends StatelessWidget {
     required this.weightErrorText,
     required this.selectedAction,
     required this.showEatImmediatelyOption,
+    required this.isLoggedAtToday,
+    required this.loggedAtLabel,
+    required this.selectedMealType,
     required this.onActionChanged,
+    required this.onPickLoggedAt,
+    required this.onMealTypeSelected,
     required this.onWeightChanged,
     required this.onPer100KcalChanged,
     required this.onSave,
@@ -22,7 +27,12 @@ class _ManualProductAiSearchBody extends StatelessWidget {
   final String? weightErrorText;
   final InventoryReceiptManualProductAction selectedAction;
   final bool showEatImmediatelyOption;
+  final bool isLoggedAtToday;
+  final String? loggedAtLabel;
+  final MealType selectedMealType;
   final ValueChanged<InventoryReceiptManualProductAction> onActionChanged;
+  final VoidCallback onPickLoggedAt;
+  final ValueChanged<MealType> onMealTypeSelected;
   final ValueChanged<String> onWeightChanged;
   final ValueChanged<double> onPer100KcalChanged;
   final VoidCallback? onSave;
@@ -103,6 +113,17 @@ class _ManualProductAiSearchBody extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
           ],
+          if (showEatImmediatelyOption &&
+              selectedAction == InventoryReceiptManualProductAction.eatNow) ...[
+            _AiEatWhenSection(
+              isToday: isLoggedAtToday,
+              label: loggedAtLabel,
+              selectedMealType: selectedMealType,
+              onPickLoggedAt: onPickLoggedAt,
+              onMealTypeSelected: onMealTypeSelected,
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -126,6 +147,211 @@ class _ManualProductAiSearchBody extends StatelessWidget {
       ],
     );
   }
+}
+
+class _AiEatWhenSection extends StatelessWidget {
+  const _AiEatWhenSection({
+    required this.isToday,
+    required this.label,
+    required this.selectedMealType,
+    required this.onPickLoggedAt,
+    required this.onMealTypeSelected,
+  });
+
+  final bool isToday;
+  final String? label;
+  final MealType selectedMealType;
+  final VoidCallback onPickLoggedAt;
+  final ValueChanged<MealType> onMealTypeSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        if (isToday)
+          _AiEatWhenCard(
+            label: label,
+            isToday: isToday,
+            onPressed: onPickLoggedAt,
+          )
+        else
+          Expanded(
+            child: _AiEatWhenCard(
+              label: label,
+              isToday: isToday,
+              onPressed: onPickLoggedAt,
+            ),
+          ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: _AiMealTypeSelector(
+            selectedMealType: selectedMealType,
+            onMealTypeSelected: onMealTypeSelected,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AiEatWhenCard extends StatelessWidget {
+  const _AiEatWhenCard({
+    required this.label,
+    required this.isToday,
+    required this.onPressed,
+  });
+
+  final String? label;
+  final bool isToday;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final hasLabel = !isToday && label != null;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: const Key('manual_product_ai_logged_at_button'),
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: colors.outlineVariant),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 66),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.lg,
+              ),
+              child: hasLabel
+                  ? Row(
+                      key: const Key('manual_product_ai_logged_at_labeled'),
+                      children: [
+                        Icon(
+                          Icons.calendar_today_rounded,
+                          color: colors.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(
+                            label!,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ],
+                    )
+                  : Row(
+                      key: const Key('manual_product_ai_logged_at_compact'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.calendar_today_rounded,
+                          color: colors.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AiMealTypeSelector extends StatelessWidget {
+  const _AiMealTypeSelector({
+    required this.selectedMealType,
+    required this.onMealTypeSelected,
+  });
+
+  final MealType selectedMealType;
+  final ValueChanged<MealType> onMealTypeSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      constraints: const BoxConstraints(minHeight: 66),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.restaurant_rounded, color: colors.onSurfaceVariant),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<MealType>(
+                value: selectedMealType,
+                isDense: true,
+                isExpanded: true,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                dropdownColor: colors.surfaceContainerHigh,
+                icon: Icon(
+                  Icons.expand_more_rounded,
+                  color: colors.onSurfaceVariant,
+                ),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+                items: MealType.sectionOrder
+                    .map((mealType) {
+                      return DropdownMenuItem<MealType>(
+                        value: mealType,
+                        child: Text(
+                          _manualProductAiMealTypeLabel(context, mealType),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    })
+                    .toList(growable: false),
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  onMealTypeSelected(value);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _manualProductAiMealTypeLabel(BuildContext context, MealType mealType) {
+  final l10n = AppLocalizations.of(context)!;
+  return switch (mealType) {
+    MealType.breakfast => l10n.caloriesMealBreakfast,
+    MealType.lunch => l10n.caloriesMealLunch,
+    MealType.dinner => l10n.caloriesMealDinner,
+    MealType.snack => l10n.caloriesMealSnack,
+  };
 }
 
 class _AiHeadlineCard extends StatelessWidget {

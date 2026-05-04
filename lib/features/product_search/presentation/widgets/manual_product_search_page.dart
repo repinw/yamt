@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
@@ -122,6 +123,7 @@ class InventoryReceiptManualProductResult {
     this.requiresGlobalPersistence = true,
     this.globalPackageWeight,
     this.skipMissingBarcodePrompt = false,
+    this.eatSelection,
   });
 
   /// The item.
@@ -144,6 +146,9 @@ class InventoryReceiptManualProductResult {
 
   /// Whether missing barcode prompt should be skipped.
   final bool skipMissingBarcodePrompt;
+
+  /// Generic eat selection to complete after saving.
+  final EatSelection? eatSelection;
 }
 
 bool _shouldOpenEditorImmediately({
@@ -300,6 +305,7 @@ class _InventoryReceiptManualProductLauncherPageState
         action: result.action,
         globalPackageWeight: result.globalPackageWeight,
         skipMissingBarcodePrompt: true,
+        eatSelection: result.eatSelection,
       ),
     );
   }
@@ -1248,6 +1254,7 @@ class _InventoryReceiptManualProductEditorPageState
       action: result.action,
       globalPackageWeight: result.globalPackageWeight,
       skipMissingBarcodePrompt: true,
+      eatSelection: result.eatSelection,
     );
     if (widget.closeCurrentEditorOnSave) {
       _closePage(wrappedResult);
