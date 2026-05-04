@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_scraper/recipe_scraper.dart';
-import 'package:yamt/features/inventory/data/'
-    'prepared_meal_recipe_import_formatter.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_recipe_import_formatter.dart';
 
 /// Defines prepared meal recipe import.
 class PreparedMealRecipeImport {

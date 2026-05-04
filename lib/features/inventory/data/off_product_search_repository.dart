@@ -1,62 +1,16 @@
-import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/config/off_product_search_config.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/data/off_product_search_response_parser.dart';
+import 'package:yamt/features/inventory/data/off_product_search_result.dart';
+
+export 'package:yamt/features/inventory/data/off_product_search_result.dart';
 
 part 'off_product_search_repository.g.dart';
-part 'off_product_search_response_parser.dart';
 
 const _offProductSearchLogName = 'OffProductSearchRepository';
-
-/// Defines off product search result.
-class OffProductSearchResult {
-  /// The off product search result.
-  const OffProductSearchResult({
-    required this.code,
-    required this.name,
-    required this.score,
-    this.brand,
-    this.imageUrl,
-    this.packageWeight,
-    this.servingSize,
-    this.servingQuantity,
-    this.servingQuantityUnit,
-    this.nutrition,
-  });
-
-  /// The code.
-  final String code;
-
-  /// The name.
-  final String name;
-
-  /// The score.
-  final double score;
-
-  /// The brand.
-  final String? brand;
-
-  /// The image url.
-  final String? imageUrl;
-
-  /// The package weight.
-  final String? packageWeight;
-
-  /// The serving size.
-  final String? servingSize;
-
-  /// The serving quantity.
-  final double? servingQuantity;
-
-  /// The serving quantity unit.
-  final String? servingQuantityUnit;
-
-  /// The nutrition.
-  final GlobalFoodNutrition? nutrition;
-}
 
 /// Defines off product search repository.
 abstract interface class OffProductSearchRepository {
@@ -96,11 +50,11 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     required Uri searchUri,
   }) : _client = client,
        _searchUri = searchUri,
-       _responseParser = const _OffProductSearchResponseParser();
+       _responseParser = const OffProductSearchResponseParser();
 
   final http.Client _client;
   final Uri _searchUri;
-  final _OffProductSearchResponseParser _responseParser;
+  final OffProductSearchResponseParser _responseParser;
 
   @override
   Future<List<OffProductSearchResult>> search({

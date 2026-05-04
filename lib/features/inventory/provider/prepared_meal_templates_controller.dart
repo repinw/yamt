@@ -8,8 +8,7 @@ import 'package:yamt/features/household/provider/'
     'household_access_recovery_utils.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
-import 'package:yamt/features/inventory/data/'
-    'prepared_meal_recipe_url_parser.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
