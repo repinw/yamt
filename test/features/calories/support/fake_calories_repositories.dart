@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_product_lookup_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -439,26 +437,6 @@ class FakeCalorieProductCacheRepository
     }
     overrides[profile.barcode] = profile;
     savedOverrideReasons.add(reason);
-    return true;
-  }
-}
-
-class FakeCalorieProductLookupRepository
-    implements CalorieProductLookupRepositoryContract {
-  FakeCalorieProductLookupRepository({required this.onLookupByBarcode});
-
-  final Future<CalorieLookupOutcome> Function(String barcode) onLookupByBarcode;
-  final List<CalorieProductProfile> persistedProfiles =
-      <CalorieProductProfile>[];
-
-  @override
-  Future<CalorieLookupOutcome> lookupByBarcode(String rawBarcode) {
-    return onLookupByBarcode(rawBarcode);
-  }
-
-  @override
-  Future<bool> persistGlobalProduct(CalorieProductProfile profile) async {
-    persistedProfiles.add(profile);
     return true;
   }
 }
