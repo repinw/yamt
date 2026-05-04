@@ -29,10 +29,10 @@ class _ManualProductAiSearchBody extends StatelessWidget {
   final bool showEatImmediatelyOption;
   final bool isLoggedAtToday;
   final String? loggedAtLabel;
-  final String selectedMealType;
+  final MealType selectedMealType;
   final ValueChanged<InventoryReceiptManualProductAction> onActionChanged;
   final VoidCallback onPickLoggedAt;
-  final ValueChanged<String> onMealTypeSelected;
+  final ValueChanged<MealType> onMealTypeSelected;
   final ValueChanged<String> onWeightChanged;
   final ValueChanged<double> onPer100KcalChanged;
   final VoidCallback? onSave;
@@ -160,9 +160,9 @@ class _AiEatWhenSection extends StatelessWidget {
 
   final bool isToday;
   final String? label;
-  final String selectedMealType;
+  final MealType selectedMealType;
   final VoidCallback onPickLoggedAt;
-  final ValueChanged<String> onMealTypeSelected;
+  final ValueChanged<MealType> onMealTypeSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -280,8 +280,8 @@ class _AiMealTypeSelector extends StatelessWidget {
     required this.onMealTypeSelected,
   });
 
-  final String selectedMealType;
-  final ValueChanged<String> onMealTypeSelected;
+  final MealType selectedMealType;
+  final ValueChanged<MealType> onMealTypeSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -304,7 +304,7 @@ class _AiMealTypeSelector extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
+              child: DropdownButton<MealType>(
                 value: selectedMealType,
                 isDense: true,
                 isExpanded: true,
@@ -318,9 +318,9 @@ class _AiMealTypeSelector extends StatelessWidget {
                   color: colors.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
-                items: _manualProductAiMealTypes
+                items: MealType.sectionOrder
                     .map((mealType) {
-                      return DropdownMenuItem<String>(
+                      return DropdownMenuItem<MealType>(
                         value: mealType,
                         child: Text(
                           _manualProductAiMealTypeLabel(context, mealType),
@@ -344,14 +344,13 @@ class _AiMealTypeSelector extends StatelessWidget {
   }
 }
 
-String _manualProductAiMealTypeLabel(BuildContext context, String mealType) {
+String _manualProductAiMealTypeLabel(BuildContext context, MealType mealType) {
   final l10n = AppLocalizations.of(context)!;
   return switch (mealType) {
-    _manualProductAiMealTypeBreakfast => l10n.caloriesMealBreakfast,
-    _manualProductAiMealTypeLunch => l10n.caloriesMealLunch,
-    _manualProductAiMealTypeDinner => l10n.caloriesMealDinner,
-    _manualProductAiMealTypeSnack => l10n.caloriesMealSnack,
-    _ => mealType,
+    MealType.breakfast => l10n.caloriesMealBreakfast,
+    MealType.lunch => l10n.caloriesMealLunch,
+    MealType.dinner => l10n.caloriesMealDinner,
+    MealType.snack => l10n.caloriesMealSnack,
   };
 }
 

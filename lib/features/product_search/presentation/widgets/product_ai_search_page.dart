@@ -8,6 +8,7 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -93,7 +94,7 @@ class _ManualProductAiSearchPageState
   double? _weightGrams;
   double? _selectedPer100Kcal;
   late DateTime _selectedLoggedAt = DateTime.now();
-  late String _selectedMealType = _defaultMealTypeForDateTime(
+  late MealType _selectedMealType = MealType.defaultForDateTime(
     _selectedLoggedAt,
   );
 
@@ -416,7 +417,7 @@ class _ManualProductAiSearchPageState
     });
   }
 
-  void _selectMealType(String mealType) {
+  void _selectMealType(MealType mealType) {
     setState(() {
       _selectedMealType = mealType;
     });
@@ -435,31 +436,6 @@ class _ManualProductAiSearchPageState
     Navigator.of(context).pop(result);
   }
 }
-
-String _defaultMealTypeForDateTime(DateTime dateTime) {
-  final hour = dateTime.hour;
-  if (hour >= 5 && hour < 11) {
-    return _manualProductAiMealTypeBreakfast;
-  }
-  if (hour >= 11 && hour < 16) {
-    return _manualProductAiMealTypeLunch;
-  }
-  if (hour >= 16 && hour < 22) {
-    return _manualProductAiMealTypeDinner;
-  }
-  return _manualProductAiMealTypeSnack;
-}
-
-const _manualProductAiMealTypeBreakfast = 'breakfast';
-const _manualProductAiMealTypeLunch = 'lunch';
-const _manualProductAiMealTypeDinner = 'dinner';
-const _manualProductAiMealTypeSnack = 'snack';
-const _manualProductAiMealTypes = <String>[
-  _manualProductAiMealTypeBreakfast,
-  _manualProductAiMealTypeLunch,
-  _manualProductAiMealTypeDinner,
-  _manualProductAiMealTypeSnack,
-];
 
 class _AiNutritionSelection {
   const _AiNutritionSelection({

@@ -12,21 +12,22 @@ void main() {
   });
 
   test('defaultForDateTime maps hour ranges correctly', () {
-    expect(
-      MealType.defaultForDateTime(DateTime(2026, 2, 1, 6)),
-      MealType.breakfast,
-    );
-    expect(
-      MealType.defaultForDateTime(DateTime(2026, 2, 1, 12)),
-      MealType.lunch,
-    );
-    expect(
-      MealType.defaultForDateTime(DateTime(2026, 2, 1, 18)),
-      MealType.dinner,
-    );
-    expect(
-      MealType.defaultForDateTime(DateTime(2026, 2, 1, 2)),
-      MealType.snack,
-    );
+    final cases = <({int hour, MealType mealType})>[
+      (hour: 4, mealType: MealType.snack),
+      (hour: 5, mealType: MealType.breakfast),
+      (hour: 10, mealType: MealType.breakfast),
+      (hour: 11, mealType: MealType.lunch),
+      (hour: 15, mealType: MealType.lunch),
+      (hour: 16, mealType: MealType.dinner),
+      (hour: 21, mealType: MealType.dinner),
+      (hour: 22, mealType: MealType.snack),
+    ];
+
+    for (final entry in cases) {
+      expect(
+        MealType.defaultForDateTime(DateTime(2026, 2, 1, entry.hour)),
+        entry.mealType,
+      );
+    }
   });
 }

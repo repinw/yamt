@@ -2082,7 +2082,7 @@ void main() {
         findsOneWidget,
       );
 
-      final mealTypeDropdown = find.byType(DropdownButton<String>);
+      final mealTypeDropdown = find.byType(DropdownButton<MealType>);
       await tester.ensureVisible(mealTypeDropdown);
       await tester.tap(mealTypeDropdown);
       await tester.pumpAndSettle();
@@ -2179,6 +2179,23 @@ void main() {
   );
 
   test('resolveInventoryManualAddEatFlowMaxAmount guards invalid items', () {
+    final stockedQuantityItem = InventoryItem.create(
+      id: 'item-stocked',
+      name: 'Yogurt',
+      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+      storeName: 'Added manually',
+      quantity: 3,
+    );
+    final stockedAmountItem = InventoryItem.create(
+      id: 'item-amount',
+      name: 'Milk',
+      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+      storeName: 'Added manually',
+      quantity: 1,
+      initialAmount: 1000,
+      currentAmount: 750,
+      amountUnit: InventoryAmountUnit.milliliter,
+    );
     final quantitylessItem = InventoryItem.create(
       id: 'item-0',
       name: 'Nothing',
@@ -2196,6 +2213,8 @@ void main() {
       amountUnit: InventoryAmountUnit.milliliter,
     );
 
+    expect(resolveInventoryManualAddEatFlowMaxAmount(stockedQuantityItem), 3);
+    expect(resolveInventoryManualAddEatFlowMaxAmount(stockedAmountItem), 750);
     expect(resolveInventoryManualAddEatFlowMaxAmount(quantitylessItem), isNull);
     expect(
       resolveInventoryManualAddEatFlowMaxAmount(depletedAmountItem),

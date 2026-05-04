@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -16,6 +17,10 @@ import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
+import 'package:yamt/features/product_search/data/'
+    'product_ai_search_repository.dart';
+import 'package:yamt/features/product_search/domain/'
+    'product_ai_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
 import 'package:yamt/features/product_search/provider/'
@@ -26,6 +31,7 @@ Widget _wrapPage({
   required InventoryItem item,
   OffProductSearchResult? selectedProduct,
   OffProductSearchRepository? offRepository,
+  FirebaseProductAiSearchRepository? productAiSearchRepository,
   NutritionLabelOcrRepository? ocrRepository,
   InventoryItemRepository? inventoryRepository,
   VoiceSearchService? speechService,
@@ -46,6 +52,10 @@ Widget _wrapPage({
       ),
       if (offRepository != null)
         offProductSearchRepositoryProvider.overrideWithValue(offRepository),
+      if (productAiSearchRepository != null)
+        productAiSearchRepositoryProvider.overrideWithValue(
+          productAiSearchRepository,
+        ),
       if (ocrRepository != null)
         nutritionLabelOcrRepositoryProvider.overrideWithValue(ocrRepository),
       if (speechService != null)
@@ -187,6 +197,20 @@ class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
   }
 }
 
+class _FakeProductAiSearchRepository extends FirebaseProductAiSearchRepository {
+  _FakeProductAiSearchRepository({required this.onGenerateFoodFromText});
+
+  final Future<ProductAiSearchDraft?> Function(String prompt)
+  onGenerateFoodFromText;
+
+  @override
+  Future<ProductAiSearchDraft?> generateFoodFromText({
+    required String prompt,
+  }) {
+    return onGenerateFoodFromText(prompt);
+  }
+}
+
 class _FakeManualProductSpeechService implements VoiceSearchService {
   VoiceSearchFailure? startFailure;
   int startCallCount = 0;
@@ -260,6 +284,46 @@ InventoryItem _item() {
     entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
     storeName: 'Kaufland',
     quantity: 1,
+  );
+}
+
+ProductAiSearchDraft _doenerDraft() {
+  return const ProductAiSearchDraft(
+    name: 'Doener Haehnchen',
+    ingredients: <ProductAiSearchIngredientRow>[
+      ProductAiSearchIngredientRow(
+        label: 'Fladenbrot',
+        amountText: '100 g',
+        amountGrams: 100,
+        kcalMin: 250,
+        kcalMax: 300,
+      ),
+      ProductAiSearchIngredientRow(
+        label: 'Haehnchen',
+        amountText: '150 g',
+        amountGrams: 150,
+        kcalMin: 250,
+        kcalMax: 320,
+      ),
+      ProductAiSearchIngredientRow(
+        label: 'Cocktailsauce',
+        amountText: '40 g',
+        amountGrams: 40,
+        kcalMin: 180,
+        kcalMax: 220,
+      ),
+    ],
+    totalWeightGrams: 380,
+    totalKcalMin: 800,
+    totalKcalMax: 950,
+    defaultKcal: 880,
+    portionNutrition: ProductAiSearchNutritionEstimate(
+      kcal: 880,
+      protein: 42,
+      carbs: 68,
+      fat: 38,
+      salt: 2.8,
+    ),
   );
 }
 
@@ -360,6 +424,67 @@ void main() {
     expect(
       find.byKey(const Key('receipt_review_manual_launcher_search_field')),
       findsNothing,
+    );
+  });
+
+  testWidgets('launcher ai eat now forwards inline eat selection', (
+    tester,
+  ) async {
+    InventoryReceiptManualProductResult? savedResult;
+    final aiRepository = _FakeProductAiSearchRepository(
+      onGenerateFoodFromText: (_) async => _doenerDraft(),
+    );
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        productAiSearchRepository: aiRepository,
+        showEatImmediatelyOption: true,
+        onSaved: (result) async {
+          savedResult = result;
+        },
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_ai_search_button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('manual_product_ai_prompt_field')),
+      'Doener Haehnchen',
+    );
+    await tester.tap(
+      find.byKey(const Key('manual_product_ai_generate_button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const Key('manual_product_ai_save_button')),
+    );
+    await tester.tap(find.byKey(const Key('manual_product_ai_save_button')));
+    await tester.pumpAndSettle();
+
+    final result = savedResult;
+    expect(result, isNotNull);
+    expect(result?.action, InventoryReceiptManualProductAction.eatNow);
+    expect(result?.skipMissingBarcodePrompt, isTrue);
+    final eatSelection = result!.eatSelection;
+    expect(eatSelection, isNotNull);
+    expect(eatSelection?.inventoryAmount, 380);
+    expect(
+      eatSelection?.mealType,
+      MealType.defaultForDateTime(eatSelection!.loggedAt),
     );
   });
 

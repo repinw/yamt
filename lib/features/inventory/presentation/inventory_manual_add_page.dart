@@ -5,7 +5,6 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
@@ -294,25 +293,11 @@ class _InventoryManualAddPageState
     if (selection == null) {
       return null;
     }
-    final mealType = _mealTypeFromAiSelection(selection.mealType);
-    if (mealType == null) {
-      return null;
-    }
     return InventoryItemEatRequest(
       inventoryAmount: selection.inventoryAmount,
       loggedAt: selection.loggedAt,
-      mealType: mealType,
+      mealType: selection.mealType,
     );
-  }
-
-  MealType? _mealTypeFromAiSelection(String mealType) {
-    return switch (mealType) {
-      'breakfast' => MealType.breakfast,
-      'lunch' => MealType.lunch,
-      'dinner' => MealType.dinner,
-      'snack' => MealType.snack,
-      _ => null,
-    };
   }
 
   Future<_ManualBarcodePromptResult?> _resolveMissingBarcode(

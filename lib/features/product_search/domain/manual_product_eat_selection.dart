@@ -1,3 +1,5 @@
+import 'package:yamt/features/calories/domain/meal_type.dart';
+
 /// Generic eat selection returned by manual product flows.
 class ManualProductEatSelection {
   /// Creates a generic eat selection.
@@ -13,6 +15,6 @@ class ManualProductEatSelection {
   /// Date/time selected for logging.
   final DateTime loggedAt;
 
-  /// Generic meal type id.
-  final String mealType;
+  /// Selected meal type.
+  final MealType mealType;
 }

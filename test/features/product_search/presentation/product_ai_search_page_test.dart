@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/data/'
@@ -155,6 +156,36 @@ Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
     await tester.tap(okButton.last);
     await tester.pumpAndSettle();
   }
+}
+
+Future<void> _cancelLoggedAtDateChange(
+  WidgetTester tester,
+  DateTime targetDate,
+) async {
+  final loggedAtButton = find.byKey(
+    const Key('manual_product_ai_logged_at_button'),
+  );
+  await tester.ensureVisible(loggedAtButton);
+  await tester.tap(loggedAtButton);
+  await tester.pumpAndSettle();
+
+  final today = DateUtils.dateOnly(DateTime.now());
+  if (targetDate.year != today.year || targetDate.month != today.month) {
+    final previousMonthButton = find.byTooltip('Previous month');
+    await tester.ensureVisible(previousMonthButton);
+    await tester.tap(previousMonthButton);
+    await tester.pumpAndSettle();
+  }
+
+  final dayButton = find.text('${targetDate.day}').last;
+  await tester.ensureVisible(dayButton);
+  await tester.tap(dayButton);
+  await tester.pumpAndSettle();
+
+  final cancelButton = find.text('Cancel');
+  await tester.ensureVisible(cancelButton.last);
+  await tester.tap(cancelButton.last);
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -481,7 +512,7 @@ void main() {
       findsOneWidget,
     );
 
-    final mealTypeDropdown = find.byType(DropdownButton<String>);
+    final mealTypeDropdown = find.byType(DropdownButton<MealType>);
     await tester.ensureVisible(mealTypeDropdown);
     await tester.tap(mealTypeDropdown);
     await tester.pumpAndSettle();
@@ -498,10 +529,93 @@ void main() {
     expect(pageResult?.action, InventoryReceiptManualProductAction.eatNow);
     expect(pageResult?.eatSelection, isNotNull);
     expect(pageResult?.eatSelection?.inventoryAmount, 380);
-    expect(pageResult?.eatSelection?.mealType, 'dinner');
+    expect(pageResult?.eatSelection?.mealType, MealType.dinner);
     expect(
       DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt),
       targetDate,
+    );
+  });
+
+  testWidgets('ai date picker cancel keeps logged day unchanged', (
+    tester,
+  ) async {
+    ManualProductAiSearchResult? pageResult;
+    final repository = _FakeProductAiSearchRepository(
+      onGenerateFoodFromText: (_) async => _doenerDraft(),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          productAiSearchRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: Center(
+                  child: FilledButton(
+                    onPressed: () async {
+                      pageResult = await Navigator.of(context).push(
+                        MaterialPageRoute<ManualProductAiSearchResult>(
+                          builder: (_) => ManualProductAiSearchPage(
+                            item: _placeholderItem(),
+                            initialPrompt: 'doener haehnchen',
+                            showEatImmediatelyOption: true,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('open'),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('manual_product_ai_generate_button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+    await tester.pumpAndSettle();
+
+    final today = DateUtils.dateOnly(DateTime.now());
+    await _cancelLoggedAtDateChange(tester, _targetLoggedAtDate());
+
+    expect(
+      find.byKey(const Key('manual_product_ai_logged_at_compact')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('manual_product_ai_logged_at_labeled')),
+      findsNothing,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const Key('manual_product_ai_save_button')),
+    );
+    await tester.tap(find.byKey(const Key('manual_product_ai_save_button')));
+    await tester.pumpAndSettle();
+
+    expect(pageResult, isNotNull);
+    expect(
+      DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt),
+      today,
     );
   });
 
