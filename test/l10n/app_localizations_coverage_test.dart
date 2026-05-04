@@ -367,17 +367,12 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.caloriesConsumedLabel,
     l10n.caloriesGoalLabel,
     l10n.caloriesRemainingLabel,
-    l10n.caloriesTodayWeightPromptTitle,
-    l10n.caloriesTodayWeightPromptBody,
-    l10n.caloriesTodayWeightPromptAddAction,
-    l10n.caloriesTodayWeightPromptDismissAction,
     l10n.caloriesDebugDumpAction,
     l10n.caloriesDebugDumpPrinted(3),
     l10n.caloriesDebugDumpFailed,
     l10n.caloriesProteinLabel,
     l10n.caloriesCarbsLabel,
     l10n.caloriesFatLabel,
-    l10n.caloriesSectionEmptyState,
     l10n.caloriesDeleteEntryDialogTitle,
     l10n.caloriesDeleteEntryDialogMessage('Milk'),
     l10n.caloriesDeleteEntryConfirmAction,
@@ -510,10 +505,6 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.authErrorProviderAlreadyLinked,
     l10n.authErrorGoogleSignInCanceled,
     l10n.authErrorGoogleIdTokenMissing,
-    l10n.caloriesActivityTodayVsUsualLabel,
-    l10n.caloriesActivityVsUsualLabel,
-    l10n.caloriesActivityWorkoutBonusLabel,
-    l10n.caloriesActivityLearningHint,
   ];
 
   expect(values.every((text) => text.isNotEmpty), isTrue);

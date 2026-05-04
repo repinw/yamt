@@ -1358,18 +1358,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorWeightInvalid => 'Please enter a valid weight.';
 
   @override
-  String get caloriesTodayWeightPromptTitle => 'Add today\'s weight?';
-
-  @override
-  String get caloriesTodayWeightPromptBody => 'Optional: today\'s weight helps health trends and weekly check-ins stay accurate.';
-
-  @override
-  String get caloriesTodayWeightPromptAddAction => 'Add weight';
-
-  @override
-  String get caloriesTodayWeightPromptDismissAction => 'Not now';
-
-  @override
   String get caloriesCalculatorHeightLabel => 'Height (cm)';
 
   @override
@@ -1590,18 +1578,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogNewTargetLabel => 'New target';
 
   @override
-  String get caloriesActivityTodayVsUsualLabel => 'Today vs usual';
-
-  @override
-  String get caloriesActivityVsUsualLabel => 'Activity vs usual';
-
-  @override
-  String get caloriesActivityWorkoutBonusLabel => 'Activity bonus';
-
-  @override
-  String get caloriesActivityLearningHint => 'We are still learning your activity pattern.';
-
-  @override
   String get caloriesWeeklyCheckInDialogLowConfidence => 'Low confidence: only start and end weights were available.';
 
   @override
@@ -1687,15 +1663,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesRemainingLabel => 'Remaining';
-
-  @override
-  String get caloriesSummaryViewClassic => 'Classic';
-
-  @override
-  String get caloriesSummaryViewBalance => 'Balance';
-
-  @override
-  String get caloriesOpenBurnWeekMockAction => 'Open Burn Week mock';
 
   @override
   String get caloriesDebugDumpAction => 'Print calorie debug table';
@@ -1787,43 +1754,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get burnWeekZoneAboveRunOverMessage => 'You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.';
 
   @override
-  String get calorieBudgetDetailsInfoTooltip => 'Show calorie details';
-
-  @override
   String get calorieBudgetDetailsActualLabel => 'Actual (you)';
 
   @override
   String get calorieBudgetDetailsTargetLabel => 'Target (goal)';
 
   @override
-  String get calorieBudgetDetailsConsumedLabel => 'Consumed';
-
-  @override
-  String get calorieBudgetDetailsBudgetLabel => 'Budget';
-
-  @override
-  String get calorieBudgetDetailsClassicTitle => 'Classic details';
-
-  @override
-  String get calorieBudgetDetailsClassicExplanation => 'Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run. Classic lets you switch activity and carryover off for this view; Balance keeps them on automatically.';
-
-  @override
-  String get calorieBudgetDetailsBalanceExplanation => 'Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run. Classic lets you switch activity and carryover off for this view; Balance keeps them on automatically.';
-
-  @override
-  String get calorieBudgetDetailsBaseGoal => 'Base goal';
-
-  @override
-  String get calorieBudgetDetailsActivityIncluded => 'Activity included';
-
-  @override
-  String get calorieBudgetDetailsActivityAvailable => 'Activity available';
-
-  @override
-  String get calorieBudgetDetailsCarryoverIncluded => 'Carryover included';
-
-  @override
-  String get calorieBudgetDetailsCarryoverAvailable => 'Carryover available';
+  String get calorieBudgetDetailsBalanceExplanation => 'Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run.';
 
   @override
   String get calorieBudgetDetailsTodayBudget => 'Today budget';
@@ -1833,15 +1770,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calorieBudgetDetailsRemaining => 'Remaining';
-
-  @override
-  String get calorieBudgetDetailsMinimumFloor => 'Minimum floor';
-
-  @override
-  String get calorieBudgetDetailsCarryoverRule => 'Carryover rule';
-
-  @override
-  String get calorieBudgetDetailsCarryoverRuleValue => 'Carryover uses finished days with their full available goals, including activity bonus, then spreads the result across the remaining run days.';
 
   @override
   String get burnWeekDetailsTitle => 'Burn Week details';
@@ -1898,97 +1826,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get burnWeekDetailsSafeZone => 'Safe zone';
 
   @override
-  String get burnWeekInfoTooltip => 'Show Burn Week details';
-
-  @override
   String burnWeekWeekDayLabel(int week, int day) {
     return 'Week $week day $day';
   }
-
-  @override
-  String get burnWeekStatEaten => 'Eaten';
-
-  @override
-  String get burnWeekStatTodayLeft => 'Today left';
-
-  @override
-  String get burnWeekStatDayLeft => 'Day left';
-
-  @override
-  String get caloriesBalanceCarryoverNoteLabel => 'Carryover';
-
-  @override
-  String get caloriesBalanceFlexGoalLabel => 'Flex goal';
-
-  @override
-  String get caloriesBalanceScaleBufferLabel => 'Deficit';
-
-  @override
-  String get caloriesBalanceScaleOnTrackLabel => 'On track';
-
-  @override
-  String get caloriesBalanceScaleOverLabel => 'Surplus';
-
-  @override
-  String get caloriesBalanceStatusBalancedNow => 'Well balanced for now';
-
-  @override
-  String caloriesBalanceStatusEatNow(int kcal) {
-    return 'Eat about $kcal kcal now';
-  }
-
-  @override
-  String get caloriesBalanceStatusWaitNow => 'Wait a bit before eating again';
-
-  @override
-  String caloriesBalanceStatusWaitUntil(String time) {
-    return 'Back on pace around $time';
-  }
-
-  @override
-  String get caloriesBalanceStatusWaitRestOfDay => 'Likely off pace for the rest of today';
-
-  @override
-  String get caloriesBalanceStatusRecommendFast => 'Recommendation: fast today';
-
-  @override
-  String get caloriesBalanceStatusRecommendFastRestOfDay => 'Recommendation: fast for the rest of today';
-
-  @override
-  String get caloriesBalanceStatusFinishedOnTrack => 'The day ended on target';
-
-  @override
-  String caloriesBalanceStatusFinishedBuffer(int kcal) {
-    return '$kcal kcal under the flex target';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedOver(int kcal) {
-    return '$kcal kcal over the flex target';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedLoseUnder(int kcal) {
-    return 'Ended with a $kcal kcal buffer for weight loss';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedLoseOver(int kcal) {
-    return 'Ended $kcal kcal over the flex target for weight loss';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedGainUnder(int kcal) {
-    return 'Ended $kcal kcal under the flex target for weight gain';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedGainOver(int kcal) {
-    return 'Ended with $kcal kcal extra for weight gain';
-  }
-
-  @override
-  String get caloriesBalanceUnavailable => 'Balance view is unavailable right now.';
 
   @override
   String get caloriesProteinLabel => 'Protein';
@@ -1998,45 +1838,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesFatLabel => 'Fat';
-
-  @override
-  String get caloriesActivitiesTitle => 'Activity';
-
-  @override
-  String get caloriesActivitiesSubtitle => 'Daily steps and estimated burned calories from workouts.';
-
-  @override
-  String get caloriesActivitiesStepsDuringWorkoutsLabel => 'Steps during workouts';
-
-  @override
-  String get caloriesActivitiesStepsOutsideWorkoutsLabel => 'Steps outside workouts';
-
-  @override
-  String get caloriesActivitiesCaloriesBurnedLabel => 'Calories burned';
-
-  @override
-  String get caloriesWorkoutsTitle => 'Workouts';
-
-  @override
-  String get caloriesWorkoutsSubtitle => 'Sessions imported from Health Connect for selected diary day.';
-
-  @override
-  String get caloriesWorkoutsEmpty => 'No workouts found for this day.';
-
-  @override
-  String get caloriesWorkoutsFallbackTitle => 'Workout';
-
-  @override
-  String get caloriesWorkoutsSourceLabel => 'Source';
-
-  @override
-  String get caloriesWorkoutsMinuteUnit => 'min';
-
-  @override
-  String get caloriesWeekBufferTitle => 'Weekly balance';
-
-  @override
-  String get caloriesWeekBalanceTodayLabel => 'Today';
 
   @override
   String get caloriesHealthTrendsPageTitle => 'Health trends';
@@ -2102,9 +1903,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesHealthTrendsWeightMissing => 'No weight yet';
-
-  @override
-  String get caloriesSectionEmptyState => 'No entries yet.';
 
   @override
   String get caloriesDeleteEntryDialogTitle => 'Delete entry?';

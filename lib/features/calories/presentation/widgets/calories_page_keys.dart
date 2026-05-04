@@ -1,72 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-/// Defines calories page keys.
+/// Defines shared calorie feature keys.
 abstract final class CaloriesPageKeys {
-  /// The app bar menu button.
-  static const appBarMenuButton = Key('calories_app_bar_menu_button');
-
-  /// The app bar menu calculator action.
-  static const appBarMenuCalculatorAction = Key(
-    'calories_app_bar_calculator_action',
-  );
-
-  /// The app bar menu shift goal start action.
-  static const appBarMenuShiftGoalStartAction = Key(
-    'calories_app_bar_shift_goal_start_action',
-  );
-
-  /// The week strip.
-  static const weekStrip = Key('calories_week_strip');
-
-  /// The diary page list.
-  static const diaryList = Key('calories_diary_list');
-
-  /// The week buffer card.
-  static const weekBufferCard = Key('calories_week_buffer_card');
-
-  /// The week balance chart.
-  static const weekBalanceChart = Key('calories_week_balance_chart');
-
-  /// The summary card.
-  static const summaryCard = Key('calories_summary_card');
-
-  /// The summary mode toggle.
-  static const summaryModeToggle = Key('calories_summary_mode_toggle');
-
-  /// The summary balance bar.
-  static const summaryBalanceBar = Key('calories_summary_balance_bar');
-
-  /// The summary activity delta note.
-  static const summaryActivityDeltaNote = Key(
-    'calories_summary_activity_delta_note',
-  );
-
-  /// The summary activity hint.
-  static const summaryActivityHint = Key(
-    'calories_summary_activity_hint',
-  );
-
-  /// The summary carryover note.
-  static const summaryCarryoverNote = Key(
-    'calories_summary_carryover_note',
-  );
-
-  /// The summary meta section.
-  static const summaryMetaSection = Key('calories_summary_meta_section');
-
-  /// The summary activity delta toggle.
-  static const summaryActivityDeltaToggle = Key(
-    'calories_summary_activity_delta_toggle',
-  );
-
-  /// The summary carryover toggle.
-  static const summaryCarryoverToggle = Key(
-    'calories_summary_carryover_toggle',
-  );
-
-  /// Opens Burn Week mock page.
-  static const burnWeekMockOpenButton = Key('calories_burn_week_open_button');
-
   /// Prints calorie debug dump.
   static const calorieDebugDumpButton = Key('calories_debug_dump_button');
 
@@ -85,14 +20,6 @@ abstract final class CaloriesPageKeys {
   static const burnWeekMockTargetValue = Key(
     'calories_burn_week_target_value',
   );
-
-  /// The reload progress indicator.
-  static const reloadProgressIndicator = Key(
-    'calories_reload_progress_indicator',
-  );
-
-  /// The retry button.
-  static const retryButton = Key('calories_retry_button');
 
   /// The weekly check in hint card.
   static const weeklyCheckInHintCard = Key('calories_weekly_checkin_hint_card');
@@ -117,37 +44,6 @@ abstract final class CaloriesPageKeys {
     'calories_weekly_checkin_skip_day_button',
   );
 
-  /// Today's weight prompt card.
-  static const todayWeightPromptCard = Key(
-    'calories_today_weight_prompt_card',
-  );
-
-  /// Today's weight prompt add button.
-  static const todayWeightPromptAddButton = Key(
-    'calories_today_weight_prompt_add_button',
-  );
-
-  /// Today's weight prompt dismiss button.
-  static const todayWeightPromptDismissButton = Key(
-    'calories_today_weight_prompt_dismiss_button',
-  );
-
-  /// The add options manual button.
-  static const addOptionsManualButton = Key('calories_add_options_manual');
-
-  /// The add options barcode button.
-  static const addOptionsBarcodeButton = Key('calories_add_options_barcode');
-
-  /// Section card.
-  static Key sectionCard(String mealType) {
-    return Key('calories_section_card_$mealType');
-  }
-
-  /// Entry tile.
-  static Key entryTile(String entryId) {
-    return Key('calories_entry_tile_$entryId');
-  }
-
   /// Entry image.
   static Key entryImage(String entryId) {
     return Key('calories_entry_image_$entryId');
@@ -156,16 +52,6 @@ abstract final class CaloriesPageKeys {
   /// Bundle component image.
   static Key bundleComponentImage(String entryId, int index) {
     return Key('calories_bundle_component_image_${entryId}_$index');
-  }
-
-  /// Section add button.
-  static Key sectionAddButton(String mealType) {
-    return Key('calories_section_add_$mealType');
-  }
-
-  /// Summary mode option.
-  static Key summaryModeOption(String mode) {
-    return Key('calories_summary_mode_$mode');
   }
 
   /// Summary macro card.
@@ -186,31 +72,6 @@ abstract final class CaloriesPageKeys {
   /// Burn Week mock quick action.
   static Key burnWeekMockQuickAction(String delta) {
     return Key('calories_burn_week_quick_action_$delta');
-  }
-
-  /// Week balance day column.
-  static Key weekBalanceDayColumn(String dayKey) {
-    return Key('calories_week_balance_day_$dayKey');
-  }
-
-  /// Week balance bar.
-  static Key weekBalanceBar(String dayKey) {
-    return Key('calories_week_balance_bar_$dayKey');
-  }
-
-  /// Day navigation preview.
-  static Key dayNavigationPreview(String dayKey) {
-    return Key('calories_day_navigation_preview_$dayKey');
-  }
-
-  /// Day navigation preview goal line.
-  static Key dayNavigationPreviewGoalLine(String dayKey) {
-    return Key('calories_day_navigation_preview_goal_line_$dayKey');
-  }
-
-  /// Day navigation preview bar.
-  static Key dayNavigationPreviewBar(String dayKey) {
-    return Key('calories_day_navigation_preview_bar_$dayKey');
   }
 }
 

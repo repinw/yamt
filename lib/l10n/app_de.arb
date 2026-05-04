@@ -728,11 +728,6 @@
   "caloriesCalculatorWeightEmpty": "Bitte gib dein Gewicht ein.",
   "caloriesCalculatorWeightInvalid":
       "Bitte gib ein gültiges Gewicht ein.",
-  "caloriesTodayWeightPromptTitle": "Gewicht für heute eintragen?",
-  "caloriesTodayWeightPromptBody":
-      "Optional: Dein heutiges Gewicht hilft, Gesundheitstrends und Wochen-Check-ins genauer zu machen.",
-  "caloriesTodayWeightPromptAddAction": "Gewicht eintragen",
-  "caloriesTodayWeightPromptDismissAction": "Nicht jetzt",
   "caloriesCalculatorHeightLabel": "Größe (cm)",
   "caloriesCalculatorHeightEmpty": "Bitte gib deine Größe ein.",
   "caloriesCalculatorHeightInvalid":
@@ -850,11 +845,6 @@
   "caloriesWeeklyCheckInDialogTrendLabel": "Gewichtstrend",
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Gelernter TDEE",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
-  "caloriesActivityTodayVsUsualLabel": "Heute vs. üblich",
-  "caloriesActivityVsUsualLabel": "Aktivität vs. üblich",
-  "caloriesActivityWorkoutBonusLabel": "Aktivitätsbonus",
-  "caloriesActivityLearningHint":
-      "Wir lernen dein Aktivitätsmuster noch.",
   "caloriesWeeklyCheckInDialogLowConfidence":
       "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
   "caloriesWeeklyCheckInBlockedUnstableWeight":
@@ -915,9 +905,6 @@
   "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
   "caloriesRemainingLabel": "Verbleibend",
-  "caloriesSummaryViewClassic": "Klassisch",
-  "caloriesSummaryViewBalance": "Balance",
-  "caloriesOpenBurnWeekMockAction": "Burn-Week-Mock öffnen",
   "caloriesDebugDumpAction": "Kalorien-Debug-Tabelle ausgeben",
   "caloriesDebugDumpPrinted":
       "Kalorien-Debug-Tabelle ausgegeben ({rowCount} Zeilen).",
@@ -981,28 +968,13 @@
       "Du liegst weit über dem Wochenlimit. 1 Herz nutzen, um einen ganzen Burn-Tag an Kalorien zu entfernen?",
   "burnWeekZoneAboveRunOverMessage":
       "Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.",
-  "calorieBudgetDetailsInfoTooltip": "Kalorien-Details anzeigen",
   "calorieBudgetDetailsActualLabel": "Ist (du)",
   "calorieBudgetDetailsTargetLabel": "Soll (Ziel)",
-  "calorieBudgetDetailsConsumedLabel": "Gegessen",
-  "calorieBudgetDetailsBudgetLabel": "Budget",
-  "calorieBudgetDetailsClassicTitle": "Klassisch-Details",
-  "calorieBudgetDetailsClassicExplanation":
-      "Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs. Klassisch kann Aktivität und Übertrag in dieser Ansicht ausblenden; Balance rechnet beides automatisch ein.",
   "calorieBudgetDetailsBalanceExplanation":
-      "Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs. Klassisch kann Aktivität und Übertrag in dieser Ansicht ausblenden; Balance rechnet beides automatisch ein.",
-  "calorieBudgetDetailsBaseGoal": "Basisziel",
-  "calorieBudgetDetailsActivityIncluded": "Aktivität eingerechnet",
-  "calorieBudgetDetailsActivityAvailable": "Aktivität verfügbar",
-  "calorieBudgetDetailsCarryoverIncluded": "Übertrag eingerechnet",
-  "calorieBudgetDetailsCarryoverAvailable": "Übertrag verfügbar",
+      "Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs.",
   "calorieBudgetDetailsTodayBudget": "Heutiges Budget",
   "calorieBudgetDetailsFoodToday": "Essen heute",
   "calorieBudgetDetailsRemaining": "Verbleibend",
-  "calorieBudgetDetailsMinimumFloor": "Mindestgrenze",
-  "calorieBudgetDetailsCarryoverRule": "Übertrag-Regel",
-  "calorieBudgetDetailsCarryoverRuleValue":
-      "Übertrag nutzt abgeschlossene Tage mit ihrem ganzen verfügbaren Ziel inklusive Aktivitätsbonus und verteilt das Ergebnis auf die übrigen Run-Tage.",
   "burnWeekDetailsTitle": "Burn-Week-Details",
   "burnWeekDetailsHowCalculated": "So wird es berechnet",
   "burnWeekDetailsDailyGoal": "Tagesziel",
@@ -1022,7 +994,6 @@
   "burnWeekDetailsSportCountingValue":
       "Erwartete Aktivität steckt bereits im Basisziel. Die Hälfte der Aktivität über dieser Erwartung wird als essbare kcal addiert.",
   "burnWeekDetailsSafeZone": "Sicherheitszone",
-  "burnWeekInfoTooltip": "Burn-Week-Details anzeigen",
   "burnWeekWeekDayLabel": "Woche {week} Tag {day}",
   "@burnWeekWeekDayLabel": {
     "placeholders": {
@@ -1034,118 +1005,9 @@
       }
     }
   },
-  "burnWeekStatEaten": "Gegessen",
-  "burnWeekStatTodayLeft": "Heute übrig",
-  "burnWeekStatDayLeft": "Tag übrig",
-  "caloriesBalanceCarryoverNoteLabel": "Übertrag",
-  "caloriesBalanceFlexGoalLabel": "Flex-Ziel",
-  "caloriesBalanceScaleBufferLabel": "Defizit",
-  "caloriesBalanceScaleOnTrackLabel": "Im Takt",
-  "caloriesBalanceScaleOverLabel": "Überschuss",
-  "caloriesBalanceStatusBalancedNow": "Für jetzt gut ausbalanciert",
-  "caloriesBalanceStatusEatNow":
-      "Nimm jetzt etwa {kcal} kcal zu dir",
-  "@caloriesBalanceStatusEatNow": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusWaitNow":
-      "Gedulde dich noch etwas mit dem Essen",
-  "caloriesBalanceStatusWaitUntil":
-      "Wieder im Takt ab etwa {time} Uhr",
-  "@caloriesBalanceStatusWaitUntil": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "caloriesBalanceStatusWaitRestOfDay":
-      "Heute vermutlich nicht mehr im Takt",
-  "caloriesBalanceStatusRecommendFast":
-      "Empfehlung: heute fasten",
-  "caloriesBalanceStatusRecommendFastRestOfDay":
-      "Empfehlung: restlichen Tag fasten",
-  "caloriesBalanceStatusFinishedOnTrack": "Der Tag endete im Zielkorridor",
-  "caloriesBalanceStatusFinishedBuffer":
-      "{kcal} kcal unter dem Flex-Ziel beendet",
-  "@caloriesBalanceStatusFinishedBuffer": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusFinishedOver":
-      "{kcal} kcal über dem Flex-Ziel beendet",
-  "@caloriesBalanceStatusFinishedOver": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusFinishedLoseUnder":
-      "Mit {kcal} kcal Puffer fürs Abnehmen beendet",
-  "@caloriesBalanceStatusFinishedLoseUnder": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusFinishedLoseOver":
-      "{kcal} kcal über dem Flex-Ziel fürs Abnehmen beendet",
-  "@caloriesBalanceStatusFinishedLoseOver": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusFinishedGainUnder":
-      "{kcal} kcal unter dem Flex-Ziel fürs Zunehmen beendet",
-  "@caloriesBalanceStatusFinishedGainUnder": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusFinishedGainOver":
-      "Mit {kcal} kcal Extra fürs Zunehmen beendet",
-  "@caloriesBalanceStatusFinishedGainOver": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceUnavailable":
-      "Die Balance-Ansicht ist gerade nicht verfügbar.",
   "caloriesProteinLabel": "Eiweiß",
   "caloriesCarbsLabel": "Kohlenhydrate",
   "caloriesFatLabel": "Fett",
-  "caloriesActivitiesTitle": "Aktivität",
-  "caloriesActivitiesSubtitle":
-      "Tägliche Schritte und geschätzte verbrannte Kalorien aus Workouts.",
-  "caloriesActivitiesStepsDuringWorkoutsLabel":
-      "Schritte während Workouts",
-  "caloriesActivitiesStepsOutsideWorkoutsLabel":
-      "Schritte außerhalb von Workouts",
-  "caloriesActivitiesCaloriesBurnedLabel": "Verbrannte Kalorien",
-  "caloriesWorkoutsTitle": "Workouts",
-  "caloriesWorkoutsSubtitle":
-      "Aus Health Connect importierte Sessions für den gewählten Tagebuch-Tag.",
-  "caloriesWorkoutsEmpty": "Keine Workouts für diesen Tag gefunden.",
-  "caloriesWorkoutsFallbackTitle": "Workout",
-  "caloriesWorkoutsSourceLabel": "Quelle",
-  "caloriesWorkoutsMinuteUnit": "Min",
-  "caloriesWeekBufferTitle": "Wochenbilanz",
-  "caloriesWeekBalanceTodayLabel": "Heu",
   "caloriesHealthTrendsPageTitle": "Gesundheitstrends",
   "caloriesHealthTrendsChartTitle": "7-Tage-Gesundheitschart",
   "caloriesHealthTrendsChartSubtitle":
@@ -1180,7 +1042,6 @@
   "caloriesHealthTrendsWeightSourceHealthConnect": "Health Connect",
   "caloriesHealthTrendsWeightSourceAppleHealth": "Apple Health",
   "caloriesHealthTrendsWeightMissing": "Noch kein Gewicht",
-  "caloriesSectionEmptyState": "Noch keine Einträge.",
   "caloriesDeleteEntryDialogTitle": "Eintrag löschen?",
   "caloriesDeleteEntryDialogMessage":
       "\"{name}\" für diesen Tag löschen?",

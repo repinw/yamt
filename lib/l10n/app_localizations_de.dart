@@ -1358,18 +1358,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorWeightInvalid => 'Bitte gib ein gültiges Gewicht ein.';
 
   @override
-  String get caloriesTodayWeightPromptTitle => 'Gewicht für heute eintragen?';
-
-  @override
-  String get caloriesTodayWeightPromptBody => 'Optional: Dein heutiges Gewicht hilft, Gesundheitstrends und Wochen-Check-ins genauer zu machen.';
-
-  @override
-  String get caloriesTodayWeightPromptAddAction => 'Gewicht eintragen';
-
-  @override
-  String get caloriesTodayWeightPromptDismissAction => 'Nicht jetzt';
-
-  @override
   String get caloriesCalculatorHeightLabel => 'Größe (cm)';
 
   @override
@@ -1590,18 +1578,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogNewTargetLabel => 'Neues Ziel';
 
   @override
-  String get caloriesActivityTodayVsUsualLabel => 'Heute vs. üblich';
-
-  @override
-  String get caloriesActivityVsUsualLabel => 'Aktivität vs. üblich';
-
-  @override
-  String get caloriesActivityWorkoutBonusLabel => 'Aktivitätsbonus';
-
-  @override
-  String get caloriesActivityLearningHint => 'Wir lernen dein Aktivitätsmuster noch.';
-
-  @override
   String get caloriesWeeklyCheckInDialogLowConfidence => 'Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.';
 
   @override
@@ -1687,15 +1663,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesRemainingLabel => 'Verbleibend';
-
-  @override
-  String get caloriesSummaryViewClassic => 'Klassisch';
-
-  @override
-  String get caloriesSummaryViewBalance => 'Balance';
-
-  @override
-  String get caloriesOpenBurnWeekMockAction => 'Burn-Week-Mock öffnen';
 
   @override
   String get caloriesDebugDumpAction => 'Kalorien-Debug-Tabelle ausgeben';
@@ -1787,43 +1754,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekZoneAboveRunOverMessage => 'Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.';
 
   @override
-  String get calorieBudgetDetailsInfoTooltip => 'Kalorien-Details anzeigen';
-
-  @override
   String get calorieBudgetDetailsActualLabel => 'Ist (du)';
 
   @override
   String get calorieBudgetDetailsTargetLabel => 'Soll (Ziel)';
 
   @override
-  String get calorieBudgetDetailsConsumedLabel => 'Gegessen';
-
-  @override
-  String get calorieBudgetDetailsBudgetLabel => 'Budget';
-
-  @override
-  String get calorieBudgetDetailsClassicTitle => 'Klassisch-Details';
-
-  @override
-  String get calorieBudgetDetailsClassicExplanation => 'Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs. Klassisch kann Aktivität und Übertrag in dieser Ansicht ausblenden; Balance rechnet beides automatisch ein.';
-
-  @override
-  String get calorieBudgetDetailsBalanceExplanation => 'Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs. Klassisch kann Aktivität und Übertrag in dieser Ansicht ausblenden; Balance rechnet beides automatisch ein.';
-
-  @override
-  String get calorieBudgetDetailsBaseGoal => 'Basisziel';
-
-  @override
-  String get calorieBudgetDetailsActivityIncluded => 'Aktivität eingerechnet';
-
-  @override
-  String get calorieBudgetDetailsActivityAvailable => 'Aktivität verfügbar';
-
-  @override
-  String get calorieBudgetDetailsCarryoverIncluded => 'Übertrag eingerechnet';
-
-  @override
-  String get calorieBudgetDetailsCarryoverAvailable => 'Übertrag verfügbar';
+  String get calorieBudgetDetailsBalanceExplanation => 'Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs.';
 
   @override
   String get calorieBudgetDetailsTodayBudget => 'Heutiges Budget';
@@ -1833,15 +1770,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get calorieBudgetDetailsRemaining => 'Verbleibend';
-
-  @override
-  String get calorieBudgetDetailsMinimumFloor => 'Mindestgrenze';
-
-  @override
-  String get calorieBudgetDetailsCarryoverRule => 'Übertrag-Regel';
-
-  @override
-  String get calorieBudgetDetailsCarryoverRuleValue => 'Übertrag nutzt abgeschlossene Tage mit ihrem ganzen verfügbaren Ziel inklusive Aktivitätsbonus und verteilt das Ergebnis auf die übrigen Run-Tage.';
 
   @override
   String get burnWeekDetailsTitle => 'Burn-Week-Details';
@@ -1898,97 +1826,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekDetailsSafeZone => 'Sicherheitszone';
 
   @override
-  String get burnWeekInfoTooltip => 'Burn-Week-Details anzeigen';
-
-  @override
   String burnWeekWeekDayLabel(int week, int day) {
     return 'Woche $week Tag $day';
   }
-
-  @override
-  String get burnWeekStatEaten => 'Gegessen';
-
-  @override
-  String get burnWeekStatTodayLeft => 'Heute übrig';
-
-  @override
-  String get burnWeekStatDayLeft => 'Tag übrig';
-
-  @override
-  String get caloriesBalanceCarryoverNoteLabel => 'Übertrag';
-
-  @override
-  String get caloriesBalanceFlexGoalLabel => 'Flex-Ziel';
-
-  @override
-  String get caloriesBalanceScaleBufferLabel => 'Defizit';
-
-  @override
-  String get caloriesBalanceScaleOnTrackLabel => 'Im Takt';
-
-  @override
-  String get caloriesBalanceScaleOverLabel => 'Überschuss';
-
-  @override
-  String get caloriesBalanceStatusBalancedNow => 'Für jetzt gut ausbalanciert';
-
-  @override
-  String caloriesBalanceStatusEatNow(int kcal) {
-    return 'Nimm jetzt etwa $kcal kcal zu dir';
-  }
-
-  @override
-  String get caloriesBalanceStatusWaitNow => 'Gedulde dich noch etwas mit dem Essen';
-
-  @override
-  String caloriesBalanceStatusWaitUntil(String time) {
-    return 'Wieder im Takt ab etwa $time Uhr';
-  }
-
-  @override
-  String get caloriesBalanceStatusWaitRestOfDay => 'Heute vermutlich nicht mehr im Takt';
-
-  @override
-  String get caloriesBalanceStatusRecommendFast => 'Empfehlung: heute fasten';
-
-  @override
-  String get caloriesBalanceStatusRecommendFastRestOfDay => 'Empfehlung: restlichen Tag fasten';
-
-  @override
-  String get caloriesBalanceStatusFinishedOnTrack => 'Der Tag endete im Zielkorridor';
-
-  @override
-  String caloriesBalanceStatusFinishedBuffer(int kcal) {
-    return '$kcal kcal unter dem Flex-Ziel beendet';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedOver(int kcal) {
-    return '$kcal kcal über dem Flex-Ziel beendet';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedLoseUnder(int kcal) {
-    return 'Mit $kcal kcal Puffer fürs Abnehmen beendet';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedLoseOver(int kcal) {
-    return '$kcal kcal über dem Flex-Ziel fürs Abnehmen beendet';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedGainUnder(int kcal) {
-    return '$kcal kcal unter dem Flex-Ziel fürs Zunehmen beendet';
-  }
-
-  @override
-  String caloriesBalanceStatusFinishedGainOver(int kcal) {
-    return 'Mit $kcal kcal Extra fürs Zunehmen beendet';
-  }
-
-  @override
-  String get caloriesBalanceUnavailable => 'Die Balance-Ansicht ist gerade nicht verfügbar.';
 
   @override
   String get caloriesProteinLabel => 'Eiweiß';
@@ -1998,45 +1838,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesFatLabel => 'Fett';
-
-  @override
-  String get caloriesActivitiesTitle => 'Aktivität';
-
-  @override
-  String get caloriesActivitiesSubtitle => 'Tägliche Schritte und geschätzte verbrannte Kalorien aus Workouts.';
-
-  @override
-  String get caloriesActivitiesStepsDuringWorkoutsLabel => 'Schritte während Workouts';
-
-  @override
-  String get caloriesActivitiesStepsOutsideWorkoutsLabel => 'Schritte außerhalb von Workouts';
-
-  @override
-  String get caloriesActivitiesCaloriesBurnedLabel => 'Verbrannte Kalorien';
-
-  @override
-  String get caloriesWorkoutsTitle => 'Workouts';
-
-  @override
-  String get caloriesWorkoutsSubtitle => 'Aus Health Connect importierte Sessions für den gewählten Tagebuch-Tag.';
-
-  @override
-  String get caloriesWorkoutsEmpty => 'Keine Workouts für diesen Tag gefunden.';
-
-  @override
-  String get caloriesWorkoutsFallbackTitle => 'Workout';
-
-  @override
-  String get caloriesWorkoutsSourceLabel => 'Quelle';
-
-  @override
-  String get caloriesWorkoutsMinuteUnit => 'Min';
-
-  @override
-  String get caloriesWeekBufferTitle => 'Wochenbilanz';
-
-  @override
-  String get caloriesWeekBalanceTodayLabel => 'Heu';
 
   @override
   String get caloriesHealthTrendsPageTitle => 'Gesundheitstrends';
@@ -2102,9 +1903,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesHealthTrendsWeightMissing => 'Noch kein Gewicht';
-
-  @override
-  String get caloriesSectionEmptyState => 'Noch keine Einträge.';
 
   @override
   String get caloriesDeleteEntryDialogTitle => 'Eintrag löschen?';
