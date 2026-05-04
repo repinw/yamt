@@ -8,7 +8,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
-import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
