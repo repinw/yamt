@@ -292,7 +292,7 @@
   "inventoryManualAddAiSearchAction": "Create with AI",
   "inventoryManualAddAiSearchTitle": "Create food with AI",
   "inventoryManualAddAiSearchPromptLabel": "Food description",
-  "inventoryManualAddAiSearchPromptHint": "For example: Doener Haehnchen",
+  "inventoryManualAddAiSearchPromptHint": "For example: Döner Hähnchen",
   "inventoryManualAddAiSearchGenerateAction": "Generate estimate",
   "inventoryManualAddAiSearchPromptRequired":
       "Please enter a food description.",

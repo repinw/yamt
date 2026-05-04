@@ -688,7 +688,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddAiSearchPromptLabel => 'Lebensmittelbeschreibung';
 
   @override
-  String get inventoryManualAddAiSearchPromptHint => 'Zum Beispiel: Doener Haehnchen';
+  String get inventoryManualAddAiSearchPromptHint => 'Zum Beispiel: Döner Hähnchen';
 
   @override
   String get inventoryManualAddAiSearchGenerateAction => 'Schätzung erstellen';

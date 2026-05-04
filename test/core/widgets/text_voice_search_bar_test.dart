@@ -145,6 +145,38 @@ void main() {
     expect(tester.getSize(fieldFinder).height, greaterThan(initialHeight));
   });
 
+  testWidgets('search field height stops growing after three lines', (
+    tester,
+  ) async {
+    final textController = TextEditingController();
+    final voiceSearchService = _FakeVoiceSearchService();
+
+    addTearDown(textController.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        textController: textController,
+        voiceSearchService: voiceSearchService,
+        searchBarWidth: 260,
+      ),
+    );
+
+    final fieldFinder = find.byKey(const Key('shared_search_field'));
+
+    await tester.enterText(fieldFinder, 'milk\noats\nbananas');
+    await tester.pump();
+    final threeLineHeight = tester.getSize(fieldFinder).height;
+
+    await tester.enterText(
+      fieldFinder,
+      'milk\noats\nbananas\napples\nyogurt\ncinnamon',
+    );
+    await tester.pump();
+
+    expect(tester.getSize(fieldFinder).height, threeLineHeight);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('unmount during pending startListening does not throw', (
     tester,
   ) async {
