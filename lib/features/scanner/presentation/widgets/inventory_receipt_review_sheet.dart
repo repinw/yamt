@@ -270,10 +270,6 @@ class _InventoryReceiptReviewSheetState
         });
       case ReceiptCandidatePickerSelectionKind.manualEntry:
         await _openManualProductEntry(itemId);
-      case ReceiptCandidatePickerSelectionKind.aiEnrichment:
-        _replaceDraftByItemId(itemId, (draft) {
-          return _prepareDraftForReview(draft.markForAiEnrichment());
-        });
     }
   }
 
@@ -325,7 +321,6 @@ class _InventoryReceiptReviewSheetState
             item: result.item,
             candidates: mergedCandidates,
             selectionNeedsReview: false,
-            requestAiEnrichment: false,
           )
           .selectCandidate(scannedCandidate.item.id);
       return _prepareDraftForReview(updatedDraft);

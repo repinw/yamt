@@ -62,7 +62,8 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en')
+    Locale('en'),
   ];
 
   /// No description provided for @homeInventory.
@@ -592,18 +595,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please select a product, scan a barcode, or add nutrition.'**
   String get inventoryReceiptReviewManualDataRequired;
-
-  /// No description provided for @inventoryReceiptReviewRequestEnrichmentAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Let AI enrich it later'**
-  String get inventoryReceiptReviewRequestEnrichmentAction;
-
-  /// No description provided for @inventoryReceiptReviewRequestEnrichmentHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Saves the item now and marks it for later AI enrichment.'**
-  String get inventoryReceiptReviewRequestEnrichmentHint;
 
   /// No description provided for @inventoryReceiptReviewSwitchAction.
   ///
@@ -1175,54 +1166,6 @@ abstract class AppLocalizations {
   /// **'Action failed. Please try again.'**
   String get inventoryItemActionFailed;
 
-  /// No description provided for @inventoryBarcodeStatusPending.
-  ///
-  /// In en, this message translates to:
-  /// **'Barcode lookup pending'**
-  String get inventoryBarcodeStatusPending;
-
-  /// No description provided for @inventoryBarcodeStatusUncertain.
-  ///
-  /// In en, this message translates to:
-  /// **'Not sure'**
-  String get inventoryBarcodeStatusUncertain;
-
-  /// No description provided for @inventoryBarcodeStatusMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Barcode missing'**
-  String get inventoryBarcodeStatusMissing;
-
-  /// No description provided for @inventoryBarcodeMissingPromptTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Barcode missing'**
-  String get inventoryBarcodeMissingPromptTitle;
-
-  /// No description provided for @inventoryBarcodeMissingPromptMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan now to log calories immediately, or continue and let AI backfill it.'**
-  String get inventoryBarcodeMissingPromptMessage;
-
-  /// No description provided for @inventoryBarcodeMissingPromptScanNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan barcode now'**
-  String get inventoryBarcodeMissingPromptScanNow;
-
-  /// No description provided for @inventoryBarcodeMissingPromptLater.
-  ///
-  /// In en, this message translates to:
-  /// **'Later'**
-  String get inventoryBarcodeMissingPromptLater;
-
-  /// No description provided for @inventoryBarcodeLookupQueued.
-  ///
-  /// In en, this message translates to:
-  /// **'Barcode search finished. The result is saved on the inventory item.'**
-  String get inventoryBarcodeLookupQueued;
-
   /// No description provided for @inventoryBarcodeScanUnsupported.
   ///
   /// In en, this message translates to:
@@ -1240,6 +1183,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan a barcode. Then you can review the product, save it, or add nutrition values.'**
   String get inventoryManualAddHint;
+
+  /// No description provided for @inventoryManualAddScanBarcodeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode'**
+  String get inventoryManualAddScanBarcodeAction;
 
   /// No description provided for @inventoryManualAddResolving.
   ///
@@ -2253,13 +2202,20 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Amount per {sourceUnit} ({unit})'**
-  String preparedMealTemplateDetailSelectionConversionLabel(String sourceUnit, String unit);
+  String preparedMealTemplateDetailSelectionConversionLabel(
+    String sourceUnit,
+    String unit,
+  );
 
   /// No description provided for @preparedMealTemplateDetailSelectionConversionHint.
   ///
   /// In en, this message translates to:
   /// **'How much {unit} does 1 {sourceUnit} of \"{ingredient}\" use?'**
-  String preparedMealTemplateDetailSelectionConversionHint(String sourceUnit, String unit, String ingredient);
+  String preparedMealTemplateDetailSelectionConversionHint(
+    String sourceUnit,
+    String unit,
+    String ingredient,
+  );
 
   /// No description provided for @preparedMealTemplateDetailSelectionConversionError.
   ///
@@ -2271,7 +2227,11 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'1 {sourceUnit} = {amount} {unit}'**
-  String preparedMealTemplateDetailConversionSummary(String sourceUnit, int amount, String unit);
+  String preparedMealTemplateDetailConversionSummary(
+    String sourceUnit,
+    int amount,
+    String unit,
+  );
 
   /// No description provided for @preparedMealTemplateDetailListAction.
   ///
@@ -5730,7 +5690,8 @@ abstract class AppLocalizations {
   String get commonNotImplementedYet;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -5739,25 +5700,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de': return AppLocalizationsDe();
-    case 'en': return AppLocalizationsEn();
+    case 'de':
+      return AppLocalizationsDe();
+    case 'en':
+      return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

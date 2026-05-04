@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -94,7 +93,6 @@ Widget _buildHarness({
   final tile = ReceiptGroupTile(
     group: group,
     dateFormat: DateFormat.yMMMd(const Locale('en').toLanguageTag()),
-    showBarcodeMarkers: false,
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
     actions: ReceiptGroupTileActions(
       onDeleteItem: onDeleteItem ?? (_) async => true,
@@ -128,16 +126,7 @@ Widget _buildHarness({
     ],
   );
 
-  final container = ProviderContainer(
-    overrides: [
-      barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-        const BarcodeBackfillFeatureFlags(
-          showInventoryBarcodeMarkers: false,
-          enableQueueBackfill: true,
-        ),
-      ),
-    ],
-  );
+  final container = ProviderContainer();
   addTearDown(container.dispose);
   return UncontrolledProviderScope(
     container: container,

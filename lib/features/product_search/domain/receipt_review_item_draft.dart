@@ -15,7 +15,6 @@ class ReceiptReviewItemDraft {
     this.selectionNeedsReview = false,
     this.isConfirmed = false,
     this.weightNeedsAttention = false,
-    this.requestAiEnrichment = false,
     this.shouldSaveReceiptAlias = false,
     this.ocrName,
     this.receiptTimeText,
@@ -42,9 +41,6 @@ class ReceiptReviewItemDraft {
   /// The weight needs attention.
   final bool weightNeedsAttention;
 
-  /// The request ai enrichment.
-  final bool requestAiEnrichment;
-
   /// Whether save receipt alias.
   final bool shouldSaveReceiptAlias;
 
@@ -63,7 +59,6 @@ class ReceiptReviewItemDraft {
     bool? selectionNeedsReview,
     bool? isConfirmed,
     bool? weightNeedsAttention,
-    bool? requestAiEnrichment,
     bool? shouldSaveReceiptAlias,
     Object? ocrName = _keepValue,
     Object? receiptTimeText = _keepValue,
@@ -81,7 +76,6 @@ class ReceiptReviewItemDraft {
       selectionNeedsReview: selectionNeedsReview ?? this.selectionNeedsReview,
       isConfirmed: isConfirmed ?? this.isConfirmed,
       weightNeedsAttention: weightNeedsAttention ?? this.weightNeedsAttention,
-      requestAiEnrichment: requestAiEnrichment ?? this.requestAiEnrichment,
       shouldSaveReceiptAlias:
           shouldSaveReceiptAlias ?? this.shouldSaveReceiptAlias,
       ocrName: ocrName == _keepValue ? this.ocrName : ocrName as String?,
@@ -110,7 +104,6 @@ class ReceiptReviewItemDraft {
       selectedGlobalFoodItemId: globalFoodItemId,
       selectionNeedsReview: false,
       isConfirmed: false,
-      requestAiEnrichment: false,
       shouldSaveReceiptAlias:
           globalFoodItemId != initialSelectedGlobalFoodItemId,
     );
@@ -122,19 +115,7 @@ class ReceiptReviewItemDraft {
       selectedGlobalFoodItemId: null,
       selectionNeedsReview: false,
       isConfirmed: false,
-      requestAiEnrichment: false,
       shouldSaveReceiptAlias: true,
-    );
-  }
-
-  /// Mark for ai enrichment.
-  ReceiptReviewItemDraft markForAiEnrichment() {
-    return copyWith(
-      selectedGlobalFoodItemId: null,
-      selectionNeedsReview: false,
-      isConfirmed: false,
-      requestAiEnrichment: true,
-      shouldSaveReceiptAlias: false,
     );
   }
 
@@ -183,7 +164,6 @@ class ReceiptReviewItemDraft {
             other.selectionNeedsReview == selectionNeedsReview &&
             other.isConfirmed == isConfirmed &&
             other.weightNeedsAttention == weightNeedsAttention &&
-            other.requestAiEnrichment == requestAiEnrichment &&
             other.shouldSaveReceiptAlias == shouldSaveReceiptAlias &&
             other.ocrName == ocrName &&
             other.receiptTimeText == receiptTimeText;
@@ -199,7 +179,6 @@ class ReceiptReviewItemDraft {
       selectionNeedsReview,
       isConfirmed,
       weightNeedsAttention,
-      requestAiEnrichment,
       shouldSaveReceiptAlias,
       ocrName,
       receiptTimeText,

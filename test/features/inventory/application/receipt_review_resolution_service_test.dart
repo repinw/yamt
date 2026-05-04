@@ -824,40 +824,6 @@ void main() {
     );
   });
 
-  test(
-    'persistReviewedItems returns items needing enrichment when flagged',
-    () async {
-      final globalRepository = _RecordingGlobalFoodItemRepository();
-      final inventoryRepository = _RecordingInventoryItemRepository();
-      final service = ReceiptReviewResolutionService(
-        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-        matcher: _FakeMatcher(
-          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-          defaultSelections: const <String, String?>{},
-        ),
-        globalFoodItemRepository: globalRepository,
-        inventoryItemRepository: inventoryRepository,
-        globalFoodItemIdGenerator: () => 'global-food-fixed',
-      );
-
-      final result = await service.persistReviewedItems(
-        <ReceiptReviewItemDraft>[
-          ReceiptReviewItemDraft(
-            item: _item(id: 'draft-1', name: 'Unknown Product'),
-          ).markForAiEnrichment(),
-        ],
-      );
-
-      expect(result.saved, isTrue);
-      expect(result.itemsNeedingEnrichment, hasLength(1));
-      expect(result.itemsNeedingEnrichment.single.name, 'Unknown Product');
-      expect(
-        globalRepository.appendedItems.single.status,
-        GlobalFoodItemStatus.candidate,
-      );
-    },
-  );
-
   test('persistReviewedItems skips review-only drafts', () async {
     final globalRepository = _RecordingGlobalFoodItemRepository();
     final inventoryRepository = _RecordingInventoryItemRepository();

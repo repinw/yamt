@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_lookup_repository.dart';
 import 'package:yamt/features/calories/domain/'
@@ -43,6 +47,103 @@ CalorieProductProfile _profile({
 }
 
 void main() {
+  test('HttpCalorieOffLookupClient parses Open Food Facts product', () async {
+    final client = HttpCalorieOffLookupClient(
+      client: MockClient((request) async {
+        expect(request.url.host, 'world.openfoodfacts.org');
+        expect(request.url.path, '/api/v2/product/4006381333931.json');
+        expect(request.url.queryParameters['fields'], contains('nutriments'));
+        expect(request.headers['User-Agent'], startsWith('YAMT/'));
+        return http.Response(
+          jsonEncode(<String, Object?>{
+            'status': 1,
+            'product': <String, Object?>{
+              'code': '4006381333931',
+              'product_name': 'Bio Milk',
+              'brands': 'YAMT Dairy',
+              'nutriments': <String, Object?>{
+                'energy-kcal_100g': '64,5',
+                'proteins_100g': 3.3,
+                'carbohydrates_100g': 4.8,
+                'fat_100g': 3.6,
+              },
+              'selected_images': <String, Object?>{
+                'front': <String, Object?>{
+                  'small': <String, Object?>{
+                    'de': 'https://images.openfoodfacts.org/milk.jpg',
+                  },
+                },
+              },
+            },
+          }),
+          200,
+        );
+      }),
+    );
+
+    final result = await client.lookupByBarcode('4006381333931');
+
+    expect(result.status, CalorieOffLookupStatus.found);
+    expect(result.product?.barcode, '4006381333931');
+    expect(result.product?.name, 'Bio Milk');
+    expect(result.product?.brand, 'YAMT Dairy');
+    expect(result.product?.per100Kcal, 64.5);
+    expect(result.product?.per100Protein, 3.3);
+    expect(result.product?.per100Carbs, 4.8);
+    expect(result.product?.per100Fat, 3.6);
+    expect(
+      result.product?.imageUrl,
+      'https://images.openfoodfacts.org/milk.jpg',
+    );
+  });
+
+  test('HttpCalorieOffLookupClient maps Open Food Facts miss', () async {
+    final client = HttpCalorieOffLookupClient(
+      client: MockClient(
+        (_) async =>
+            http.Response(jsonEncode(<String, Object>{'status': 0}), 200),
+      ),
+    );
+
+    final result = await client.lookupByBarcode('4006381333931');
+
+    expect(result.status, CalorieOffLookupStatus.notFound);
+  });
+
+  test(
+    'HttpCalorieOffLookupClient accepts sparse 100ml product data',
+    () async {
+      final client = HttpCalorieOffLookupClient(
+        client: MockClient((_) async {
+          return http.Response(
+            jsonEncode(<String, Object?>{
+              'status': 1,
+              'product': <String, Object?>{
+                'code': '4006381333931',
+                'nutriments': <String, Object?>{
+                  'energy-kcal_100ml': 42,
+                  'proteins_100ml': '0,2',
+                  'carbohydrates_100ml': 10.1,
+                  'fat_100ml': 0,
+                },
+              },
+            }),
+            200,
+          );
+        }),
+      );
+
+      final result = await client.lookupByBarcode('4006381333931');
+
+      expect(result.status, CalorieOffLookupStatus.found);
+      expect(result.product?.name, '4006381333931');
+      expect(result.product?.per100Kcal, 42);
+      expect(result.product?.per100Protein, 0.2);
+      expect(result.product?.per100Carbs, 10.1);
+      expect(result.product?.per100Fat, 0);
+    },
+  );
+
   test(
     'lookupByBarcode prefers user override over cache and backend',
     () async {

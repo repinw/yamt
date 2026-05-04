@@ -15,21 +15,6 @@ export 'package:yamt/features/inventory/domain/inventory_amount_parser.dart'
         inventoryPieceAmountScale,
         parseInventoryAmountInput;
 
-/// Defines inventory barcode status.
-enum InventoryBarcodeStatus {
-  /// Resolved.
-  resolved,
-
-  /// Uncertain.
-  uncertain,
-
-  /// Pending.
-  pending,
-
-  /// Missing.
-  missing,
-}
-
 /// Defines inventory item origin.
 enum InventoryItemOrigin {
   /// Standard.
@@ -75,10 +60,6 @@ class InventoryItem {
     this.currentAmount = 0,
     this.amountScale = 1,
     this.amountUnit,
-    this.barcodeCandidates = const <String>[],
-    this.barcodeLookupRequestedAt,
-    this.barcodeResolvedAt,
-    this.barcodeLookupUncertain = false,
     this.discounts = const <String, double>{},
     this.receiptId,
     this.receiptDate,
@@ -106,11 +87,7 @@ class InventoryItem {
     int amountScale = 1,
     InventoryAmountUnit? amountUnit,
     String? barcode,
-    List<String> barcodeCandidates = const <String>[],
     String? foodFingerprint,
-    DateTime? barcodeLookupRequestedAt,
-    DateTime? barcodeResolvedAt,
-    bool barcodeLookupUncertain = false,
     String? brand,
     String? category,
     String? imageUrl,
@@ -160,10 +137,6 @@ class InventoryItem {
       currentAmount: currentAmount,
       amountScale: amountScale,
       amountUnit: amountUnit,
-      barcodeCandidates: barcodeCandidates,
-      barcodeLookupRequestedAt: barcodeLookupRequestedAt,
-      barcodeResolvedAt: barcodeResolvedAt,
-      barcodeLookupUncertain: barcodeLookupUncertain,
       discounts: discounts,
       receiptId: receiptId,
       receiptDate: receiptDate,
@@ -207,13 +180,6 @@ class InventoryItem {
       currentAmount: amountData.currentAmount,
       amountScale: amountData.amountScale,
       amountUnit: amountUnit,
-      barcodeCandidates: _readStringList(json['barcode_candidates']),
-      barcodeLookupRequestedAt: _readDateTime(
-        json['barcode_lookup_requested_at'],
-      ),
-      barcodeResolvedAt: _readDateTime(json['barcode_resolved_at']),
-      barcodeLookupUncertain:
-          _readBool(json['barcode_lookup_uncertain']) ?? false,
       discounts: _readDiscounts(json['discounts']),
       receiptId: _readTrimmedString(json['receipt_id']),
       receiptDate: _readDateTime(json['receipt_date']),
@@ -230,7 +196,8 @@ class InventoryItem {
     int initialAmount,
     int currentAmount,
     int amountScale,
-  }) _resolvePersistedAmountData({
+  })
+  _resolvePersistedAmountData({
     required InventoryAmountUnit? amountUnit,
     required int storedInitialAmount,
     required int storedCurrentAmount,
@@ -302,18 +269,6 @@ class InventoryItem {
   /// The amount unit.
   final InventoryAmountUnit? amountUnit;
 
-  /// The barcode candidates.
-  final List<String> barcodeCandidates;
-
-  /// The barcode lookup requested at.
-  final DateTime? barcodeLookupRequestedAt;
-
-  /// The barcode resolved at.
-  final DateTime? barcodeResolvedAt;
-
-  /// The barcode lookup uncertain.
-  final bool barcodeLookupUncertain;
-
   /// The discounts.
   final Map<String, double> discounts;
 
@@ -358,11 +313,6 @@ class InventoryItem {
       'current_amount': currentAmount,
       'amount_scale': amountScale,
       'amount_unit': amountUnit?.code,
-      'barcode_candidates': barcodeCandidates,
-      'barcode_lookup_requested_at': barcodeLookupRequestedAt
-          ?.toIso8601String(),
-      'barcode_resolved_at': barcodeResolvedAt?.toIso8601String(),
-      'barcode_lookup_uncertain': barcodeLookupUncertain,
       'discounts': discounts,
       'receipt_id': receiptId,
       'receipt_date': receiptDate?.toIso8601String(),
@@ -401,10 +351,6 @@ class InventoryItem {
     int? currentAmount,
     int? amountScale,
     Object? amountUnit = _keepValue,
-    List<String>? barcodeCandidates,
-    Object? barcodeLookupRequestedAt = _keepValue,
-    Object? barcodeResolvedAt = _keepValue,
-    bool? barcodeLookupUncertain,
     Map<String, double>? discounts,
     Object? receiptId = _keepValue,
     Object? receiptDate = _keepValue,
@@ -448,15 +394,6 @@ class InventoryItem {
       amountUnit: amountUnit == _keepValue
           ? this.amountUnit
           : amountUnit as InventoryAmountUnit?,
-      barcodeCandidates: barcodeCandidates ?? this.barcodeCandidates,
-      barcodeLookupRequestedAt: barcodeLookupRequestedAt == _keepValue
-          ? this.barcodeLookupRequestedAt
-          : barcodeLookupRequestedAt as DateTime?,
-      barcodeResolvedAt: barcodeResolvedAt == _keepValue
-          ? this.barcodeResolvedAt
-          : barcodeResolvedAt as DateTime?,
-      barcodeLookupUncertain:
-          barcodeLookupUncertain ?? this.barcodeLookupUncertain,
       discounts: discounts ?? this.discounts,
       receiptId: receiptId == _keepValue
           ? this.receiptId
@@ -579,20 +516,6 @@ class InventoryItem {
     return productSnapshot.normalizedBarcode;
   }
 
-  /// The barcode status.
-  InventoryBarcodeStatus get barcodeStatus {
-    if (normalizedBarcode != null) {
-      if (barcodeLookupUncertain) {
-        return InventoryBarcodeStatus.uncertain;
-      }
-      return InventoryBarcodeStatus.resolved;
-    }
-    if (barcodeLookupRequestedAt != null) {
-      return InventoryBarcodeStatus.pending;
-    }
-    return InventoryBarcodeStatus.missing;
-  }
-
   /// Whether consumed.
   bool get isConsumed {
     final progress = _consumptionProgress;
@@ -639,13 +562,6 @@ class InventoryItem {
             other.currentAmount == currentAmount &&
             other.amountScale == amountScale &&
             other.amountUnit == amountUnit &&
-            const ListEquality<String>().equals(
-              other.barcodeCandidates,
-              barcodeCandidates,
-            ) &&
-            other.barcodeLookupRequestedAt == barcodeLookupRequestedAt &&
-            other.barcodeResolvedAt == barcodeResolvedAt &&
-            other.barcodeLookupUncertain == barcodeLookupUncertain &&
             const MapEquality<String, double>().equals(
               other.discounts,
               discounts,
@@ -677,10 +593,6 @@ class InventoryItem {
       currentAmount,
       amountScale,
       amountUnit,
-      const ListEquality<String>().hash(barcodeCandidates),
-      barcodeLookupRequestedAt,
-      barcodeResolvedAt,
-      barcodeLookupUncertain,
       const MapEquality<String, double>().hash(discounts),
       receiptId,
       receiptDate,
@@ -690,8 +602,8 @@ class InventoryItem {
       isDeposit,
       isDiscount,
       origin,
-  ]);
-}
+    ]);
+  }
 }
 
 class _ConsumptionProgress {
@@ -779,17 +691,6 @@ InventoryAmountUnit? _readAmountUnit(Object? value) {
     }
   }
   return null;
-}
-
-List<String> _readStringList(Object? value) {
-  if (value is! List) {
-    return const <String>[];
-  }
-  return value
-      .whereType<String>()
-      .map((entry) => entry.trim())
-      .where((entry) => entry.isNotEmpty)
-      .toList(growable: false);
 }
 
 Map<String, double> _readDiscounts(Object? value) {

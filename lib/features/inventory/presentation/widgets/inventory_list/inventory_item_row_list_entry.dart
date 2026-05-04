@@ -21,7 +21,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
     required this.keyPrefix,
     required this.bottomSpacing,
     required this.l10n,
-    required this.showBarcodeMarkers,
     required this.activeShoppingListItemKeys,
     required this.onDeleteItem,
     required this.onEatItem,
@@ -44,9 +43,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
 
   /// The l10n.
   final AppLocalizations l10n;
-
-  /// The show barcode markers.
-  final bool showBarcodeMarkers;
 
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
@@ -96,7 +92,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
           expansionStorageKey: '${keyPrefix}_${item.id}',
           item: item,
           l10n: l10n,
-          showBarcodeMarkers: showBarcodeMarkers,
           isAlreadyInShoppingList: isAlreadyInShoppingList,
           onDeletePressed: onDeleteItem,
           onEatPressed: onEatItem,

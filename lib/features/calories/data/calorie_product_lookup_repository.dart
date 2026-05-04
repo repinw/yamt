@@ -2,11 +2,10 @@
 // ignore_for_file: one_member_abstracts
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' show log;
 
-import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/calories/data/'
@@ -24,55 +23,19 @@ part 'calorie_product_lookup_repository.g.dart';
 const _lookupLogName = 'CalorieProductLookupRepository';
 const _lookupErrorInvalidBarcode = 'invalid_barcode';
 const _lookupErrorRequestFailed = 'off_request_failed';
-const _lookupErrorUnavailable = 'off_lookup_unavailable';
-const _lookupErrorUnauthenticated = 'unauthenticated';
-const _functionsRegion = 'europe-west1';
-const _lookupCallableName = 'resolveOffProductByBarcode';
-const _useFunctionsEmulator = bool.fromEnvironment(
-  'USE_FUNCTIONS_EMULATOR',
-);
-const _functionsEmulatorHostFromDefine = String.fromEnvironment(
-  'FUNCTIONS_EMULATOR_HOST',
-);
-const _functionsEmulatorPort = int.fromEnvironment(
-  'FUNCTIONS_EMULATOR_PORT',
-  defaultValue: 5001,
-);
-
-/// Calorie lookup functions.
-@riverpod
-FirebaseFunctions? calorieLookupFunctions(Ref ref) {
-  try {
-    final functions = FirebaseFunctions.instanceFor(region: _functionsRegion);
-    if (_useFunctionsEmulator) {
-      final host = _resolveFunctionsEmulatorHost();
-      functions.useFunctionsEmulator(host, _functionsEmulatorPort);
-      log(
-        'Functions emulator enabled for calorie lookup: '
-        '$host:$_functionsEmulatorPort (region=$_functionsRegion).',
-        name: _lookupLogName,
-      );
-    }
-    return functions;
-  } on Object catch (error, stackTrace) {
-    log(
-      'FirebaseFunctions not available for calorie lookup.',
-      name: _lookupLogName,
-      error: error,
-      stackTrace: stackTrace,
-    );
-    return null;
-  }
-}
+const _offHost = 'world.openfoodfacts.org';
+const _offUserAgent = 'YAMT/1.0 (repin@mailbox.org)';
+const _offRequestTimeout = Duration(seconds: 12);
+const _offFields =
+    'code,product_name,brands,nutriments,status,'
+    'image_front_small_url,image_front_url,image_url,selected_images';
 
 /// Calorie off lookup client.
 @riverpod
 CalorieOffLookupClient calorieOffLookupClient(Ref ref) {
-  final functions = ref.watch(calorieLookupFunctionsProvider);
-  if (functions == null) {
-    return const _UnavailableCalorieOffLookupClient();
-  }
-  return _FirebaseCallableCalorieOffLookupClient(functions: functions);
+  final client = http.Client();
+  ref.onDispose(client.close);
+  return HttpCalorieOffLookupClient(client: client);
 }
 
 /// Calorie product lookup repository.
@@ -131,51 +94,47 @@ class CalorieOffLookupResult {
   final String? errorCode;
 }
 
-class _FirebaseCallableCalorieOffLookupClient
-    implements CalorieOffLookupClient {
-  const _FirebaseCallableCalorieOffLookupClient({
-    required FirebaseFunctions functions,
-  }) : _functions = functions;
+/// HTTP-backed Open Food Facts lookup client.
+class HttpCalorieOffLookupClient implements CalorieOffLookupClient {
+  /// Creates a client.
+  const HttpCalorieOffLookupClient({required http.Client client})
+    : _client = client;
 
-  final FirebaseFunctions _functions;
+  final http.Client _client;
 
   @override
   Future<CalorieOffLookupResult> lookupByBarcode(String barcode) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
-      log(
-        'Skipping callable OFF lookup without authenticated Firebase user.',
-        name: _lookupLogName,
-      );
-      return const CalorieOffLookupResult.failed(
-        errorCode: _lookupErrorUnauthenticated,
-      );
-    }
-
+    final uri = Uri.https(
+      _offHost,
+      '/api/v2/product/$barcode.json',
+      <String, String>{'fields': _offFields},
+    );
     try {
-      final callable = _functions.httpsCallable(_lookupCallableName);
-      final result = await callable.call<Object?>(<String, Object?>{
-        'barcode': barcode,
-      });
-      final payload = _normalizeStringMap(result.data);
+      final response = await _client
+          .get(
+            uri,
+            headers: const <String, String>{'User-Agent': _offUserAgent},
+          )
+          .timeout(_offRequestTimeout);
+      if (response.statusCode == 404) {
+        return const CalorieOffLookupResult.notFound();
+      }
+      if (response.statusCode != 200) {
+        return const CalorieOffLookupResult.failed(
+          errorCode: _lookupErrorRequestFailed,
+        );
+      }
+
+      final payload = _normalizeStringMap(jsonDecode(response.body));
       if (payload == null) {
         return const CalorieOffLookupResult.failed(
           errorCode: _lookupErrorRequestFailed,
         );
       }
 
-      final success = payload['success'] == true;
-      final found = payload['found'] == true;
-      if (!success) {
-        return CalorieOffLookupResult.failed(
-          errorCode: _readString(payload['error']) ?? _lookupErrorRequestFailed,
-        );
-      }
-
-      if (!found) {
+      if (payload['status'] != 1 && payload['status'] != true) {
         return const CalorieOffLookupResult.notFound();
       }
-
       final productMap = _normalizeStringMap(payload['product']);
       if (productMap == null) {
         return const CalorieOffLookupResult.failed(
@@ -183,31 +142,20 @@ class _FirebaseCallableCalorieOffLookupClient
         );
       }
 
-      final normalizedProduct = <String, dynamic>{...productMap}
-        ..putIfAbsent(
-          'source',
-          () => CalorieProductSource.offBarcode.jsonValue,
+      final profile = _parseProduct(
+        barcode: barcode,
+        product: productMap,
+        now: DateTime.now(),
+      );
+      if (profile == null) {
+        return const CalorieOffLookupResult.failed(
+          errorCode: _lookupErrorRequestFailed,
         );
-      final nowIso = DateTime.now().toIso8601String();
-      normalizedProduct
-        ..putIfAbsent('created_at', () => nowIso)
-        ..putIfAbsent('updated_at', () => nowIso);
-
-      final profile = CalorieProductProfile.fromJson(normalizedProduct);
+      }
       return CalorieOffLookupResult.found(profile);
-    } on FirebaseFunctionsException catch (error, stackTrace) {
-      log(
-        'Callable OFF lookup failed for barcode $barcode.',
-        name: _lookupLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return CalorieOffLookupResult.failed(
-        errorCode: error.code.isEmpty ? _lookupErrorRequestFailed : error.code,
-      );
     } on Object catch (error, stackTrace) {
       log(
-        'Unexpected callable OFF lookup failure for barcode $barcode.',
+        'Open Food Facts lookup failed for barcode $barcode.',
         name: _lookupLogName,
         error: error,
         stackTrace: stackTrace,
@@ -216,6 +164,133 @@ class _FirebaseCallableCalorieOffLookupClient
         errorCode: _lookupErrorRequestFailed,
       );
     }
+  }
+
+  CalorieProductProfile? _parseProduct({
+    required String barcode,
+    required Map<String, dynamic> product,
+    required DateTime now,
+  }) {
+    final nutriments = _normalizeStringMap(product['nutriments']);
+    final name = _readString(product['product_name']) ?? barcode;
+    final per100Kcal = _readDouble(
+      _readNutritionValue(
+        nutriments: nutriments,
+        product: product,
+        keys: const <String>[
+          'energy-kcal_100g',
+          'energy_kcal_100g',
+          'energy-kcal_100ml',
+          'energy_kcal_100ml',
+        ],
+      ),
+    );
+    if (per100Kcal == null) {
+      return null;
+    }
+
+    return CalorieProductProfile(
+      barcode: _readString(product['code']) ?? barcode,
+      name: name,
+      brand: _readString(product['brands']),
+      per100Kcal: per100Kcal,
+      per100Protein:
+          _readDouble(
+            _readNutritionValue(
+              nutriments: nutriments,
+              product: product,
+              keys: const <String>['proteins_100g', 'proteins_100ml'],
+            ),
+          ) ??
+          0,
+      per100Carbs:
+          _readDouble(
+            _readNutritionValue(
+              nutriments: nutriments,
+              product: product,
+              keys: const <String>[
+                'carbohydrates_100g',
+                'carbohydrates_100ml',
+              ],
+            ),
+          ) ??
+          0,
+      per100Fat:
+          _readDouble(
+            _readNutritionValue(
+              nutriments: nutriments,
+              product: product,
+              keys: const <String>['fat_100g', 'fat_100ml'],
+            ),
+          ) ??
+          0,
+      source: CalorieProductSource.offBarcode,
+      offProductId: _readString(product['_id']) ?? _readString(product['code']),
+      imageUrl: _readImageUrl(product),
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  Object? _readNutritionValue({
+    required Map<String, dynamic>? nutriments,
+    required Map<String, dynamic> product,
+    required List<String> keys,
+  }) {
+    for (final key in keys) {
+      final value = nutriments?[key] ?? product[key];
+      if (value != null) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  String? _readImageUrl(Map<String, dynamic> product) {
+    return _readString(product['image_front_small_url']) ??
+        _readString(product['image_front_url']) ??
+        _readString(product['image_url']) ??
+        _readSelectedImageUrl(product['selected_images']);
+  }
+
+  String? _readSelectedImageUrl(Object? rawValue) {
+    final selectedImages = _normalizeStringMap(rawValue);
+    final front = _normalizeStringMap(selectedImages?['front']);
+    for (final size in const <String>['small', 'display', 'thumb']) {
+      final localized = _normalizeStringMap(front?[size]);
+      final imageUrl =
+          _readString(localized?['de']) ??
+          _readString(localized?['en']) ??
+          _firstStringValue(localized);
+      if (imageUrl != null) {
+        return imageUrl;
+      }
+    }
+    return null;
+  }
+
+  String? _firstStringValue(Map<String, dynamic>? value) {
+    if (value == null) {
+      return null;
+    }
+    for (final entry in value.values) {
+      final text = _readString(entry);
+      if (text != null) {
+        return text;
+      }
+    }
+    return null;
+  }
+
+  double? _readDouble(Object? value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+    final raw = value?.toString().trim();
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    return double.tryParse(raw.replaceAll(',', '.'));
   }
 
   String? _readString(Object? value) {
@@ -231,17 +306,6 @@ class _FirebaseCallableCalorieOffLookupClient
     }
     return raw.map<String, dynamic>(
       (key, value) => MapEntry<String, dynamic>(key.toString(), value),
-    );
-  }
-}
-
-class _UnavailableCalorieOffLookupClient implements CalorieOffLookupClient {
-  const _UnavailableCalorieOffLookupClient();
-
-  @override
-  Future<CalorieOffLookupResult> lookupByBarcode(String barcode) async {
-    return const CalorieOffLookupResult.failed(
-      errorCode: _lookupErrorUnavailable,
     );
   }
 }
@@ -350,15 +414,4 @@ class OffBackedCalorieProductLookupRepository
       imageUrl: normalizeCalorieProductImageUrl(profile.imageUrl),
     );
   }
-}
-
-String _resolveFunctionsEmulatorHost() {
-  final hostFromDefine = _functionsEmulatorHostFromDefine.trim();
-  if (hostFromDefine.isNotEmpty) {
-    return hostFromDefine;
-  }
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    return '10.0.2.2';
-  }
-  return '127.0.0.1';
 }

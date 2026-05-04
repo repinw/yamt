@@ -48,7 +48,6 @@ class _InventoryItemRowHost extends StatelessWidget {
                         expansionStorageKey: 'inventory_item_row_milk',
                         item: item ?? _buildItem(),
                         l10n: AppLocalizations.of(context)!,
-                        showBarcodeMarkers: false,
                         isAlreadyInShoppingList: false,
                         onDeletePressed: (itemId) async => true,
                         onEatPressed: (itemId, amount) async => true,

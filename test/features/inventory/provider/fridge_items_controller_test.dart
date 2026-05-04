@@ -1402,30 +1402,6 @@ void main() {
     expect(repository.savedItems, isEmpty);
   });
 
-  test('markBarcodeLookupRequested sets pending timestamp', () async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[_item('a')],
-    );
-    addTearDown(repository.dispose);
-    final container = ProviderContainer(
-      overrides: [
-        inventoryItemRepositoryProvider.overrideWithValue(repository),
-      ],
-    );
-    addTearDown(container.dispose);
-    final controllerSubscription = _keepControllerAlive(container);
-    addTearDown(controllerSubscription.close);
-
-    await container.read(inventoryItemsControllerProvider.future);
-    final updated = await container
-        .read(inventoryItemsControllerProvider.notifier)
-        .markBarcodeLookupRequested('a');
-
-    expect(updated, isTrue);
-    expect(repository.savedItems, hasLength(1));
-    expect(repository.savedItems.single.barcodeLookupRequestedAt, isNotNull);
-  });
-
   test('restoreConsumedItem increases quantity-based stock again', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
@@ -1483,7 +1459,7 @@ void main() {
     expect(repository.savedItems.single.quantity, 2);
   });
 
-  test('setItemBarcode stores barcode and resolved timestamp', () async {
+  test('setItemBarcode stores barcode', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_item('a')],
     );
@@ -1505,6 +1481,5 @@ void main() {
     expect(updated, isTrue);
     expect(repository.savedItems, hasLength(1));
     expect(repository.savedItems.single.barcode, '4006381333931');
-    expect(repository.savedItems.single.barcodeResolvedAt, isNotNull);
   });
 }

@@ -14,9 +14,6 @@ enum ReceiptCandidatePickerSelectionKind {
 
   /// Documented member.
   manualEntry,
-
-  /// Documented member.
-  aiEnrichment,
 }
 
 /// Defines receipt candidate picker selection.
@@ -37,10 +34,6 @@ class ReceiptCandidatePickerSelection {
   const ReceiptCandidatePickerSelection.manualEntry()
     : this._(kind: ReceiptCandidatePickerSelectionKind.manualEntry);
 
-  /// Creates a [ReceiptCandidatePickerSelection] for ai enrichment.
-  const ReceiptCandidatePickerSelection.aiEnrichment()
-    : this._(kind: ReceiptCandidatePickerSelectionKind.aiEnrichment);
-
   /// The kind.
   final ReceiptCandidatePickerSelectionKind kind;
 
@@ -54,14 +47,10 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
   const InventoryReceiptCandidatePickerSheet({
     required this.draft,
     super.key,
-    this.showAiEnrichmentAction = true,
   });
 
   /// The draft.
   final ReceiptReviewItemDraft draft;
-
-  /// The show ai enrichment action.
-  final bool showAiEnrichmentAction;
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +93,7 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   _FallbackSelectionTile(
                     icon: Icons.edit_note,
-                    isSelected:
-                        draft.selectedGlobalFoodItemId == null &&
-                        !draft.requestAiEnrichment,
+                    isSelected: draft.selectedGlobalFoodItemId == null,
                     onTap: () {
                       Navigator.of(context).pop(
                         const ReceiptCandidatePickerSelection.manualEntry(),
@@ -115,21 +102,6 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
                     title: l10n.inventoryReceiptReviewManualDataAction,
                     subtitle: l10n.inventoryReceiptReviewManualDataHint,
                   ),
-                  if (showAiEnrichmentAction) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    _FallbackSelectionTile(
-                      icon: Icons.auto_awesome,
-                      isSelected: draft.requestAiEnrichment,
-                      onTap: () {
-                        Navigator.of(context).pop(
-                          const ReceiptCandidatePickerSelection.aiEnrichment(),
-                        );
-                      },
-                      title: l10n.inventoryReceiptReviewRequestEnrichmentAction,
-                      subtitle:
-                          l10n.inventoryReceiptReviewRequestEnrichmentHint,
-                    ),
-                  ],
                 ],
               ),
             ),

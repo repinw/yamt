@@ -28,7 +28,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
   const InventoryAllItemsSliver({
     required this.items,
     required this.l10n,
-    required this.showBarcodeMarkers,
 
     /// Documented member.
     required this.activeShoppingListItemKeys,
@@ -60,9 +59,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
   /// The l10n.
   final AppLocalizations l10n;
-
-  /// The show barcode markers.
-  final bool showBarcodeMarkers;
 
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
@@ -149,7 +145,6 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
             keyPrefix: 'inventory_item_row',
             bottomSpacing: AppSpacing.xl,
             l10n: widget.l10n,
-            showBarcodeMarkers: widget.showBarcodeMarkers,
             activeShoppingListItemKeys: widget.activeShoppingListItemKeys,
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,

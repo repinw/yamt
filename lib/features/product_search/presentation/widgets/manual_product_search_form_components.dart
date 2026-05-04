@@ -406,7 +406,7 @@ class ManualProductQuickActionsRow extends StatelessWidget {
             key: const Key('receipt_review_manual_scan_button'),
             onPressed: onScanBarcode,
             icon: const Icon(Icons.qr_code_scanner_rounded),
-            label: Text(l10n.inventoryBarcodeMissingPromptScanNow),
+            label: Text(l10n.inventoryManualAddScanBarcodeAction),
           ),
         ),
       ],

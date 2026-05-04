@@ -106,10 +106,6 @@
   "inventoryReceiptReviewManualDataSaveAction": "Übernehmen",
   "inventoryReceiptReviewManualDataRequired":
       "Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.",
-  "inventoryReceiptReviewRequestEnrichmentAction":
-      "Später per KI ermitteln lassen",
-  "inventoryReceiptReviewRequestEnrichmentHint":
-      "Speichert den Artikel jetzt und markiert ihn für spätere KI-Anreicherung.",
   "inventoryReceiptReviewSwitchAction": "Wechseln",
   "inventoryReceiptReviewCancelAction": "Abbrechen",
   "inventoryReceiptReviewSaveAction": "Speichern",
@@ -242,21 +238,12 @@
   "inventoryItemSwapCandidateRequiresFullItem":
       "Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.",
   "inventoryItemActionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
-  "inventoryBarcodeStatusPending": "Barcode-Abgleich läuft",
-  "inventoryBarcodeStatusUncertain": "Nicht sicher",
-  "inventoryBarcodeStatusMissing": "Barcode fehlt",
-  "inventoryBarcodeMissingPromptTitle": "Barcode fehlt",
-  "inventoryBarcodeMissingPromptMessage":
-      "Jetzt scannen für sofortiges Kalorien-Logging oder später per KI ergänzen lassen.",
-  "inventoryBarcodeMissingPromptScanNow": "Barcode",
-  "inventoryBarcodeMissingPromptLater": "Später",
-  "inventoryBarcodeLookupQueued":
-      "Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.",
   "inventoryBarcodeScanUnsupported":
       "Barcode-Scan wird aktuell auf Android und iOS unterstützt.",
   "inventoryManualAddTitle": "Lebensmittel manuell hinzufügen",
   "inventoryManualAddHint":
       "Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.",
+  "inventoryManualAddScanBarcodeAction": "Barcode scannen",
   "inventoryManualAddResolving": "Barcode wird gesucht...",
   "inventoryManualAddCandidateTitle": "Produkt auswählen",
   "inventoryManualAddCandidateSubtitle":

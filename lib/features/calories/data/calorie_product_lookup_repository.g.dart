@@ -8,59 +8,6 @@ part of 'calorie_product_lookup_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Calorie lookup functions.
-
-@ProviderFor(calorieLookupFunctions)
-final calorieLookupFunctionsProvider = CalorieLookupFunctionsProvider._();
-
-/// Calorie lookup functions.
-
-final class CalorieLookupFunctionsProvider
-    extends
-        $FunctionalProvider<
-          FirebaseFunctions?,
-          FirebaseFunctions?,
-          FirebaseFunctions?
-        >
-    with $Provider<FirebaseFunctions?> {
-  /// Calorie lookup functions.
-  CalorieLookupFunctionsProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'calorieLookupFunctionsProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$calorieLookupFunctionsHash();
-
-  @$internal
-  @override
-  $ProviderElement<FirebaseFunctions?> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  FirebaseFunctions? create(Ref ref) {
-    return calorieLookupFunctions(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FirebaseFunctions? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<FirebaseFunctions?>(value),
-    );
-  }
-}
-
-String _$calorieLookupFunctionsHash() =>
-    r'2a7ac80b68eac6a9106b6836d0116ab69eac7f1b';
-
 /// Calorie off lookup client.
 
 @ProviderFor(calorieOffLookupClient)

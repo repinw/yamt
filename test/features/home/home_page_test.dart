@@ -27,10 +27,10 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -94,8 +94,12 @@ class _LoadingPreparedMealsController extends PreparedMealsController {
 
 class _RecordingReceiptCaptureFlowController
     extends ReceiptCaptureFlowController {
-  int runCallCount = 0;
-  ReceiptInputSource? lastSource;
+  int _runCallCount = 0;
+  ReceiptInputSource? _lastSource;
+
+  int recordedRunCallCount() => _runCallCount;
+
+  ReceiptInputSource? recordedLastSource() => _lastSource;
 
   @override
   FutureOr<ReceiptCaptureFlowResult?> build() {
@@ -106,14 +110,16 @@ class _RecordingReceiptCaptureFlowController
   Future<ReceiptCaptureFlowResult> run({
     required ReceiptInputSource source,
   }) async {
-    runCallCount += 1;
-    lastSource = source;
+    _runCallCount += 1;
+    _lastSource = source;
     return ReceiptCaptureFlowResult.inputCanceled(source: source);
   }
 }
 
 class _RecordingReceiptBatchFlowController extends ReceiptBatchFlowController {
-  int runFileBatchCallCount = 0;
+  int _runFileBatchCallCount = 0;
+
+  int recordedRunFileBatchCallCount() => _runFileBatchCallCount;
 
   @override
   ReceiptBatchFlowState build() {
@@ -122,7 +128,7 @@ class _RecordingReceiptBatchFlowController extends ReceiptBatchFlowController {
 
   @override
   Future<void> runFileBatch() async {
-    runFileBatchCallCount += 1;
+    _runFileBatchCallCount += 1;
     state = const ReceiptBatchFlowState(
       status: ReceiptBatchFlowStatus.inputCanceled,
     );
@@ -529,7 +535,7 @@ void main() {
     await tester.tap(find.text('Upload image/PDF'));
     await tester.pumpAndSettle();
 
-    expect(batchController.runFileBatchCallCount, 1);
+    expect(batchController.recordedRunFileBatchCallCount(), 1);
   });
 
   testWidgets('inventory shell fab starts camera flow when enabled', (
@@ -557,8 +563,8 @@ void main() {
     await tester.tap(find.text('Camera'));
     await tester.pumpAndSettle();
 
-    expect(captureController.runCallCount, 1);
-    expect(captureController.lastSource, ReceiptInputSource.camera);
+    expect(captureController.recordedRunCallCount(), 1);
+    expect(captureController.recordedLastSource(), ReceiptInputSource.camera);
   });
 
   testWidgets('inventory shell fab disables camera when unsupported', (
@@ -586,7 +592,7 @@ void main() {
     await tester.tap(find.text('Camera'));
     await tester.pumpAndSettle();
 
-    expect(captureController.runCallCount, 0);
+    expect(captureController.recordedRunCallCount(), 0);
   });
 
   testWidgets('inventory tab shows shell fab when only prepared meals exist', (

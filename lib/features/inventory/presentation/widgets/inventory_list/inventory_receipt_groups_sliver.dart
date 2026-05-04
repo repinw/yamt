@@ -22,7 +22,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
   const InventoryReceiptGroupsSliver({
     required this.groups,
     required this.dateFormat,
-    required this.showBarcodeMarkers,
     required this.activeShoppingListItemKeys,
     required this.actions,
     required this.selection,
@@ -34,9 +33,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
 
   /// The date format.
   final DateFormat dateFormat;
-
-  /// The show barcode markers.
-  final bool showBarcodeMarkers;
 
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
@@ -66,7 +62,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
             child: ReceiptGroupTile(
               group: group,
               dateFormat: dateFormat,
-              showBarcodeMarkers: showBarcodeMarkers,
               activeShoppingListItemKeys: activeShoppingListItemKeys,
               actions: actions,
               selection: selection,
