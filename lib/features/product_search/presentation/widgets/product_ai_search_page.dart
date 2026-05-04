@@ -6,16 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/domain/eat_selection.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
-import 'package:yamt/features/product_search/domain/'
-    'manual_product_eat_selection.dart';
 import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -48,7 +47,7 @@ class ManualProductAiSearchResult {
   final String globalPackageWeight;
 
   /// Generic eat selection for callers that continue into an eat flow.
-  final ManualProductEatSelection? eatSelection;
+  final EatSelection? eatSelection;
 }
 
 /// Read-only AI food creation page with limited user adjustments.
@@ -294,14 +293,14 @@ class _ManualProductAiSearchPageState
     _closePage(result);
   }
 
-  ManualProductEatSelection? _buildEatSelection(
+  EatSelection? _buildEatSelection(
     _AiNutritionSelection selection,
   ) {
     if (_selectedAction != InventoryReceiptManualProductAction.eatNow) {
       return null;
     }
 
-    return ManualProductEatSelection(
+    return EatSelection(
       inventoryAmount: selection.weightGrams.round(),
       loggedAt: _selectedLoggedAt,
       mealType: _selectedMealType,

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
@@ -16,8 +17,6 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
-import 'package:yamt/features/product_search/domain/'
-    'manual_product_eat_selection.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -149,7 +148,7 @@ class InventoryReceiptManualProductResult {
   final bool skipMissingBarcodePrompt;
 
   /// Generic eat selection to complete after saving.
-  final ManualProductEatSelection? eatSelection;
+  final EatSelection? eatSelection;
 }
 
 bool _shouldOpenEditorImmediately({

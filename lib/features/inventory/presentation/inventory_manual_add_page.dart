@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
@@ -24,8 +25,6 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/product_search/domain/'
-    'manual_product_eat_selection.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
 import 'package:yamt/features/product_search/provider/'
@@ -288,7 +287,7 @@ class _InventoryManualAddPageState
   }
 
   InventoryItemEatRequest? _eatRequestFromAiSelection(
-    ManualProductEatSelection? selection,
+    EatSelection? selection,
   ) {
     if (selection == null) {
       return null;

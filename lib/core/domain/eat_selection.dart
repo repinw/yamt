@@ -1,9 +1,9 @@
-import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 
-/// Generic eat selection returned by manual product flows.
-class ManualProductEatSelection {
+/// Generic eat selection returned by product add flows.
+class EatSelection {
   /// Creates a generic eat selection.
-  const ManualProductEatSelection({
+  const EatSelection({
     required this.inventoryAmount,
     required this.loggedAt,
     required this.mealType,

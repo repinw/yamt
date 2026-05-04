@@ -1,5 +1,5 @@
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 
 /// Defines inventory item eat request.
 class InventoryItemEatRequest {
