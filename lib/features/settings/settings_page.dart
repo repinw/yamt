@@ -12,6 +12,8 @@ import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart'
+    show userProfileProvider;
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -21,76 +23,433 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-TextStyle? _settingsDropdownTextStyle(BuildContext context) {
-  final colors = Theme.of(context).colorScheme;
-  return Theme.of(
-    context,
-  ).textTheme.labelLarge?.copyWith(color: colors.primary);
-}
+const _settingsMaxWidth = 560.0;
+const _settingsSectionRadius = 18.0;
+const _settingsTileIconSize = 34.0;
 
 /// Defines settings page.
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends ConsumerWidget {
   /// The settings page.
   const SettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final panelRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
-    final tiles = <Widget>[
-      _HouseholdTile(l10n: l10n),
-      _AccountTile(l10n: l10n),
-      const _HealthConnectTile(),
-      const _CalorieGoalStartTile(),
-      const _CalorieGoalCalculatorTile(),
-      const _ThemeModeTile(),
-      const _SeedColorTile(),
-      _NotImplementedTile(
-        icon: Icons.language_outlined,
-        title: l10n.settingsLanguageTitle,
-        subtitle: l10n.settingsLanguageSubtitle,
-        message: l10n.commonNotImplementedYet,
-      ),
-      _NotImplementedTile(
-        icon: Icons.notifications_outlined,
-        title: l10n.settingsNotificationsTitle,
-        subtitle: l10n.settingsNotificationsSubtitle,
-        message: l10n.commonNotImplementedYet,
-      ),
-      const _AboutTile(),
-    ];
+    final pageColor = Color.alphaBlend(
+      colors.primary.withValues(alpha: 0.035),
+      colors.surface,
+    );
 
-    return Padding(
-      padding: responsivePagePadding(
-        context,
-        top: AppSpacing.xl,
-        bottom: AppSpacing.xl,
-      ),
-      child: DecoratedBox(
-        decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-          colors,
-          borderRadius: panelRadius,
+    return ColoredBox(
+      color: pageColor,
+      child: ListView(
+        padding: responsivePagePadding(
+          context,
+          top: AppSpacing.xl,
+          bottom: AppSpacing.xxxl,
         ),
-        child: ClipRRect(
-          borderRadius: panelRadius,
-          child: Material(
-            color: Colors.transparent,
-            child: ListTileTheme(
-              iconColor: colors.primary,
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                itemCount: tiles.length,
-                itemBuilder: (context, index) => tiles[index],
-                separatorBuilder: (context, index) => Divider(
-                  height: 1,
-                  color: AppInventoryEditorialSurfaces.ghostBorder(colors),
-                ),
+        children: [
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _settingsMaxWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SettingsHeader(l10n: l10n),
+                  const SizedBox(height: AppSpacing.lg),
+                  const _SettingsProfileCard(),
+                  const SizedBox(height: AppSpacing.lg),
+                  _SettingsSection(
+                    title: l10n.settingsAccountHouseholdSectionTitle,
+                    children: [
+                      _HouseholdTile(l10n: l10n),
+                      _AccountTile(l10n: l10n),
+                    ],
+                  ),
+                  _SettingsSection(
+                    title: l10n.settingsHealthGoalsSectionTitle,
+                    children: const [
+                      _HealthConnectTile(),
+                      _CalorieGoalStartTile(),
+                      _CalorieGoalCalculatorTile(),
+                    ],
+                  ),
+                  _SettingsSection(
+                    title: l10n.settingsAppearanceSectionTitle,
+                    children: const [
+                      _ThemeModeTile(),
+                      _SeedColorTile(),
+                      _LanguageTile(),
+                    ],
+                  ),
+                  _SettingsSection(
+                    title: l10n.settingsAppSectionTitle,
+                    children: [
+                      _NotImplementedTile(
+                        icon: Icons.notifications_none_rounded,
+                        title: l10n.settingsNotificationsTitle,
+                        subtitle: l10n.settingsNotificationsSubtitle,
+                        message: l10n.commonNotImplementedYet,
+                      ),
+                      _NotImplementedTile(
+                        icon: Icons.lock_outline_rounded,
+                        title: l10n.settingsPrivacyTitle,
+                        subtitle: l10n.settingsPrivacySubtitle,
+                        message: l10n.commonNotImplementedYet,
+                      ),
+                      const _AboutTile(),
+                    ],
+                  ),
+                ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsHeader extends StatelessWidget {
+  const _SettingsHeader({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.homeSettings,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: colors.primary,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          l10n.settingsManagePreferencesSubtitle,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsProfileCard extends ConsumerWidget {
+  const _SettingsProfileCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final profile = ref.watch(userProfileProvider).asData?.value;
+    final name =
+        profile?.displayName ?? profile?.email ?? l10n.accountPageGuestTitle;
+    final subtitle = profile?.email ?? l10n.settingsProfileGuestSubtitle;
+
+    return _SettingsCard(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(_settingsSectionRadius),
+          onTap: () => context.push(AppRoutes.homeSettingsAccount),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                _SettingsAvatar(name: name),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const _SettingsChevron(),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SettingsAvatar extends StatelessWidget {
+  const _SettingsAvatar({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: colors.primary.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: colors.primary,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              left: AppSpacing.xs,
+              bottom: AppSpacing.sm,
+            ),
+            child: Text(
+              title.toUpperCase(),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colors.primary,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+          _SettingsCard(
+            child: Column(
+              children: [
+                for (var index = 0; index < children.length; index += 1) ...[
+                  children[index],
+                  if (index < children.length - 1)
+                    Divider(
+                      height: 1,
+                      indent: 58,
+                      color: colors.outlineVariant.withValues(alpha: 0.34),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsCard extends StatelessWidget {
+  const _SettingsCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isDark ? colors.surfaceContainerLow : colors.surface,
+        borderRadius: BorderRadius.circular(_settingsSectionRadius),
+        border: Border.all(
+          color: colors.outlineVariant.withValues(alpha: isDark ? 0.24 : 0.18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadow.withValues(alpha: isDark ? 0.18 : 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_settingsSectionRadius),
+        child: child,
+      ),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+    this.enabled = true,
+    this.showChevron = true,
+    this.iconColor,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final bool enabled;
+  final bool showChevron;
+  final Color? iconColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final resolvedIconColor = iconColor ?? colors.primary;
+    final effectiveOnTap = enabled ? onTap : null;
+    final opacity = enabled ? 1.0 : 0.45;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: effectiveOnTap,
+        child: Opacity(
+          opacity: opacity,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: _settingsTileIconSize,
+                  height: _settingsTileIconSize,
+                  decoration: BoxDecoration(
+                    color: resolvedIconColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(icon, color: resolvedIconColor, size: 18),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      if (subtitle case final subtitle?) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: colors.onSurfaceVariant,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (trailing case final trailing?) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  trailing,
+                ],
+                if (showChevron) const _SettingsChevron(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsChevron extends StatelessWidget {
+  const _SettingsChevron();
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      Icons.chevron_right_rounded,
+      color: Theme.of(context).colorScheme.primary,
+      size: 22,
+    );
+  }
+}
+
+class _SettingsTrailingValue extends StatelessWidget {
+  const _SettingsTrailingValue({required this.value, this.swatchColor});
+
+  final String value;
+  final Color? swatchColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (swatchColor case final swatchColor?) ...[
+          Container(
+            width: 11,
+            height: 11,
+            decoration: BoxDecoration(
+              color: swatchColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+        ],
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: colors.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -110,14 +469,12 @@ class _CalorieGoalStartTile extends ConsumerWidget {
     final initialGoalStartDate =
         latestGoal?.effectiveCountingStartDate ?? DateTime.now();
 
-    return ListTile(
-      leading: const Icon(Icons.event_outlined),
-      title: Text(l10n.caloriesShiftGoalStartAction),
-      subtitle: Text(
-        hasGoal
-            ? dateFormat.format(initialGoalStartDate)
-            : l10n.settingsDiaryGoalSetGoalFirst,
-      ),
+    return _SettingsTile(
+      icon: Icons.event_note_rounded,
+      title: l10n.caloriesShiftGoalStartAction,
+      subtitle: hasGoal
+          ? dateFormat.format(initialGoalStartDate)
+          : l10n.settingsDiaryGoalSetGoalFirst,
       enabled: hasGoal && !settingsState.isLoading,
       onTap: !hasGoal || settingsState.isLoading
           ? null
@@ -145,10 +502,10 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
     final settingsState = ref.watch(calorieGoalControllerProvider);
     final settings = settingsState.asData?.value;
 
-    return ListTile(
-      leading: const Icon(Icons.calculate_outlined),
-      title: Text(l10n.caloriesCalculatorAction),
-      subtitle: Text(l10n.caloriesCalculatorOnboardingSubtitle),
+    return _SettingsTile(
+      icon: Icons.track_changes_rounded,
+      title: l10n.caloriesCalculatorAction,
+      subtitle: l10n.caloriesCalculatorOnboardingSubtitle,
       enabled: settings != null && !settingsState.isLoading,
       onTap: settings == null || settingsState.isLoading
           ? null
@@ -169,17 +526,13 @@ class _AboutTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final version = ref.watch(appVersionProvider);
-    final theme = Theme.of(context);
 
-    return ListTile(
-      leading: const Icon(Icons.info_outline),
-      title: Text(l10n.settingsAboutTitle),
-      subtitle: Text(l10n.settingsAboutSubtitle),
+    return _SettingsTile(
+      icon: Icons.info_outline_rounded,
+      title: l10n.settingsAboutTitle,
+      subtitle: l10n.settingsAboutSubtitle,
       trailing: switch (version) {
-        AsyncData(:final value) => Text(
-          value,
-          style: theme.textTheme.bodySmall,
-        ),
+        AsyncData(:final value) => _SettingsTrailingValue(value: value),
         AsyncLoading() => const SizedBox(
           width: 16,
           height: 16,
@@ -187,6 +540,7 @@ class _AboutTile extends ConsumerWidget {
         ),
         AsyncError() => null,
       },
+      showChevron: version is! AsyncLoading,
     );
   }
 }
@@ -198,10 +552,10 @@ class _HouseholdTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.group_outlined),
-      title: Text(l10n.settingsHouseholdTitle),
-      subtitle: Text(l10n.settingsHouseholdSubtitle),
+    return _SettingsTile(
+      icon: Icons.groups_2_outlined,
+      title: l10n.settingsHouseholdTitle,
+      subtitle: l10n.settingsHouseholdSubtitle,
       onTap: () => context.push(AppRoutes.homeSettingsHousehold),
     );
   }
@@ -214,10 +568,10 @@ class _AccountTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.person_outline),
-      title: Text(l10n.settingsAccountTitle),
-      subtitle: Text(l10n.settingsAccountSubtitle),
+    return _SettingsTile(
+      icon: Icons.person_outline_rounded,
+      title: l10n.settingsAccountTitle,
+      subtitle: l10n.settingsAccountSubtitle,
       onTap: () => context.push(AppRoutes.homeSettingsAccount),
     );
   }
@@ -230,35 +584,56 @@ class _ThemeModeTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final themeMode = ref.watch(themeModeControllerProvider);
-    final dropdownTextStyle = _settingsDropdownTextStyle(context);
 
-    return ListTile(
-      leading: const Icon(Icons.palette_outlined),
-      title: Text(l10n.settingsThemeTitle),
-      subtitle: Text(localizedThemeModeLabel(l10n, themeMode)),
-      trailing: DropdownButtonHideUnderline(
-        child: DropdownButton<ThemeMode>(
-          value: themeMode,
-          iconEnabledColor: Theme.of(context).colorScheme.primary,
-          style: dropdownTextStyle,
-          onChanged: (selectedMode) {
-            if (selectedMode == null) {
-              return;
-            }
-            unawaited(
-              ref
-                  .read(themeModeControllerProvider.notifier)
-                  .setThemeMode(selectedMode),
-            );
-          },
-          items: [
-            for (final mode in ThemeMode.values)
-              DropdownMenuItem<ThemeMode>(
-                value: mode,
-                child: Text(localizedThemeModeLabel(l10n, mode)),
+    return _SettingsTile(
+      icon: Icons.palette_outlined,
+      title: l10n.settingsThemeTitle,
+      subtitle: localizedThemeModeLabel(l10n, themeMode),
+      trailing: _SettingsTrailingValue(
+        value: localizedThemeModeLabel(l10n, themeMode),
+      ),
+      onTap: () => _showThemeModeSheet(context, ref, themeMode),
+    );
+  }
+
+  void _showThemeModeSheet(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode selectedMode,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (sheetContext) {
+          return SafeArea(
+            child: RadioGroup<ThemeMode>(
+              groupValue: selectedMode,
+              onChanged: (mode) {
+                if (mode == null) {
+                  return;
+                }
+                unawaited(
+                  ref
+                      .read(themeModeControllerProvider.notifier)
+                      .setThemeMode(mode),
+                );
+                Navigator.of(sheetContext).pop();
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final mode in ThemeMode.values)
+                    RadioListTile<ThemeMode>(
+                      value: mode,
+                      title: Text(localizedThemeModeLabel(l10n, mode)),
+                    ),
+                ],
               ),
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -271,36 +646,89 @@ class _SeedColorTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final seedColor = ref.watch(seedColorControllerProvider);
-    final dropdownTextStyle = _settingsDropdownTextStyle(context);
 
-    return ListTile(
-      leading: const Icon(Icons.format_paint_outlined),
-      title: Text(l10n.settingsColorTitle),
-      subtitle: Text(localizedSeedColorLabel(l10n, seedColor)),
-      trailing: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: seedColor.toARGB32(),
-          iconEnabledColor: Theme.of(context).colorScheme.primary,
-          style: dropdownTextStyle,
-          onChanged: (selectedColorValue) {
-            if (selectedColorValue == null) {
-              return;
-            }
-            unawaited(
-              ref
-                  .read(seedColorControllerProvider.notifier)
-                  .setSeedColor(Color(selectedColorValue)),
-            );
-          },
-          items: [
-            for (final color in AppSeedColors.values)
-              DropdownMenuItem<int>(
-                value: color.toARGB32(),
-                child: Text(localizedSeedColorLabel(l10n, color)),
-              ),
-          ],
-        ),
+    return _SettingsTile(
+      icon: Icons.format_paint_outlined,
+      title: l10n.settingsColorTitle,
+      subtitle: localizedSeedColorLabel(l10n, seedColor),
+      trailing: _SettingsTrailingValue(
+        value: localizedSeedColorLabel(l10n, seedColor),
+        swatchColor: seedColor,
       ),
+      iconColor: seedColor,
+      onTap: () => _showSeedColorSheet(context, ref, seedColor),
+    );
+  }
+
+  void _showSeedColorSheet(
+    BuildContext context,
+    WidgetRef ref,
+    Color selectedColor,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (sheetContext) {
+          return SafeArea(
+            child: RadioGroup<int>(
+              groupValue: selectedColor.toARGB32(),
+              onChanged: (colorValue) {
+                if (colorValue == null) {
+                  return;
+                }
+                unawaited(
+                  ref
+                      .read(seedColorControllerProvider.notifier)
+                      .setSeedColor(Color(colorValue)),
+                );
+                Navigator.of(sheetContext).pop();
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final color in AppSeedColors.values)
+                    RadioListTile<int>(
+                      value: color.toARGB32(),
+                      title: Text(localizedSeedColorLabel(l10n, color)),
+                      secondary: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _LanguageTile extends StatelessWidget {
+  const _LanguageTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final language = switch (languageCode) {
+      'de' => l10n.settingsLanguageGerman,
+      _ => l10n.settingsLanguageEnglish,
+    };
+
+    return _SettingsTile(
+      icon: Icons.language_rounded,
+      title: l10n.settingsLanguageTitle,
+      subtitle: language,
+      onTap: () =>
+          _showNotImplementedSnackBar(context, l10n.commonNotImplementedYet),
     );
   }
 }
@@ -326,39 +754,33 @@ class _HealthConnectTile extends ConsumerWidget {
     final shouldOpenAppPermissionSettings =
         status?.errorMessage == healthActivityRecognitionPermissionErrorMessage;
 
-    return ListTile(
-      leading: Icon(
-        isUnsupported
-            ? Icons.block_outlined
-            : showsInstall
-            ? Icons.download_for_offline_outlined
-            : showsConnect
-            ? Icons.favorite_outline
-            : Icons.link_off,
-      ),
-      title: Text(_tileTitle(l10n, status)),
-      subtitle: Text(
-        isUnsupported
-            ? l10n.healthUnsupportedHint
-            : showsInstall
-            ? l10n.settingsHealthInstallSubtitle
-            : showsConnect
-            ? needsHistoryOnly
-                  ? l10n.settingsHealthHistorySubtitle
-                  : _connectSubtitle(l10n, status)
-            : _disconnectSubtitle(l10n, status),
-      ),
+    return _SettingsTile(
+      icon: isUnsupported
+          ? Icons.block_outlined
+          : showsInstall
+          ? Icons.download_for_offline_outlined
+          : showsConnect
+          ? Icons.favorite_border_rounded
+          : Icons.link_off_rounded,
+      title: _tileTitle(l10n, status),
+      subtitle: isUnsupported
+          ? l10n.healthUnsupportedHint
+          : showsInstall
+          ? l10n.settingsHealthInstallSubtitle
+          : showsConnect
+          ? needsHistoryOnly
+                ? l10n.settingsHealthHistorySubtitle
+                : _connectSubtitle(l10n, status)
+          : _disconnectSubtitle(l10n, status),
       trailing: statusAsync.isLoading
           ? const SizedBox(
-              width: 20,
-              height: 20,
+              width: 18,
+              height: 18,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : null,
-      enabled: !statusAsync.isLoading,
-      onTap: statusAsync.isLoading
-          ? null
-          : isUnsupported
+      enabled: !statusAsync.isLoading && !isUnsupported,
+      onTap: statusAsync.isLoading || isUnsupported
           ? null
           : showsInstall
           ? () => _installHealthConnect(ref)
@@ -528,17 +950,17 @@ class _NotImplementedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      onTap: () => _showNotImplementedSnackBar(context),
+    return _SettingsTile(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      onTap: () => _showNotImplementedSnackBar(context, message),
     );
   }
+}
 
-  void _showNotImplementedSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
+void _showNotImplementedSnackBar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
 }

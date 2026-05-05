@@ -2491,10 +2491,35 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeSettingsActionContextPlaceholder => 'Einstellungsaktion folgt bald.';
 
   @override
+  String get settingsManagePreferencesSubtitle =>
+      'Verwalte deine Einstellungen';
+
+  @override
+  String get settingsProfileGuestSubtitle => 'Gastmodus';
+
+  @override
+  String get settingsAccountHouseholdSectionTitle => 'Konto & Haushalt';
+
+  @override
+  String get settingsHealthGoalsSectionTitle => 'Health & Ziele';
+
+  @override
+  String get settingsAppearanceSectionTitle => 'Darstellung';
+
+  @override
+  String get settingsAppSectionTitle => 'App';
+
+  @override
   String get settingsLanguageTitle => 'Sprache';
 
   @override
   String get settingsLanguageSubtitle => 'App-Sprache auswählen';
+
+  @override
+  String get settingsLanguageEnglish => 'Englisch';
+
+  @override
+  String get settingsLanguageGerman => 'Deutsch';
 
   @override
   String get settingsThemeTitle => 'Design';
@@ -2540,6 +2565,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsNotificationsSubtitle => 'Erinnerungen und Hinweise verwalten';
+
+  @override
+  String get settingsPrivacyTitle => 'Datenschutz';
+
+  @override
+  String get settingsPrivacySubtitle => 'Berechtigungen und Daten verwalten';
 
   @override
   String get settingsHouseholdTitle => 'Haushalt';

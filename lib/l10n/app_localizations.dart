@@ -4823,6 +4823,42 @@ abstract class AppLocalizations {
   /// **'Settings action coming soon.'**
   String get homeSettingsActionContextPlaceholder;
 
+  /// No description provided for @settingsManagePreferencesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your preferences'**
+  String get settingsManagePreferencesSubtitle;
+
+  /// No description provided for @settingsProfileGuestSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest mode'**
+  String get settingsProfileGuestSubtitle;
+
+  /// No description provided for @settingsAccountHouseholdSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & Household'**
+  String get settingsAccountHouseholdSectionTitle;
+
+  /// No description provided for @settingsHealthGoalsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health & Goals'**
+  String get settingsHealthGoalsSectionTitle;
+
+  /// No description provided for @settingsAppearanceSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearanceSectionTitle;
+
+  /// No description provided for @settingsAppSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get settingsAppSectionTitle;
+
   /// No description provided for @settingsLanguageTitle.
   ///
   /// In en, this message translates to:
@@ -4834,6 +4870,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose app language'**
   String get settingsLanguageSubtitle;
+
+  /// No description provided for @settingsLanguageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// No description provided for @settingsLanguageGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get settingsLanguageGerman;
 
   /// No description provided for @settingsThemeTitle.
   ///
@@ -4924,6 +4972,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manage reminders and alerts'**
   String get settingsNotificationsSubtitle;
+
+  /// No description provided for @settingsPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsPrivacyTitle;
+
+  /// No description provided for @settingsPrivacySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions and data controls'**
+  String get settingsPrivacySubtitle;
 
   /// No description provided for @settingsHouseholdTitle.
   ///
