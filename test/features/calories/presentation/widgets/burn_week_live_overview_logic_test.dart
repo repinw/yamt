@@ -199,6 +199,49 @@ void main() {
     expect(metrics.plannedLaterKcal, 500);
   });
 
+  test('current heart day counts as a complete perfect day', () {
+    final now = DateTime(2026, 4, 21, 12);
+    final metrics = resolveBurnWeekLiveMetrics(
+      now: now,
+      weekOverview: CalorieWeekOverview(
+        days: <CalorieWeekDayOverview>[
+          CalorieWeekDayOverview(
+            date: DateTime(2026, 4, 21),
+            totalKcal: 5000,
+            goalKcal: 2000,
+            entryCount: 3,
+            isHeartDay: true,
+          ),
+        ],
+        totalConsumedKcal: 2000,
+        totalGoalKcal: 2000,
+        remainingKcal: 0,
+        balanceStartDate: DateTime(2026, 4, 21),
+        carryoverBeforeTodayKcal: 0,
+        todayFlexibleGoalKcal: 2000,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
+        futureGoalKcal: null,
+      ),
+      todayOverview: CalorieWeekDayOverview(
+        date: DateTime(2026, 4, 21),
+        totalKcal: 5000,
+        goalKcal: 2000,
+        entryCount: 3,
+        isHeartDay: true,
+      ),
+      currentWeekStartDate: DateTime(2026, 4, 21),
+      previousWeekOverflowKcal: 0,
+      heartCreditKcal: 0,
+      plannedLaterTodayKcal: 0,
+      safeZoneMultiplier: 1,
+    );
+
+    expect(metrics.actualConsumedKcal, 2000);
+    expect(metrics.consumedKcal, 2000);
+    expect(metrics.targetKcal, 2000);
+  });
+
   test('heart credit moves the flame and keeps real food separate', () {
     final now = DateTime(2026, 4, 21, 23, 59);
     final metrics = resolveBurnWeekLiveMetrics(

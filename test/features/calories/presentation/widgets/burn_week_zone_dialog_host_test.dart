@@ -78,12 +78,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AlertDialog), findsNothing);
-    expect(controller.positiveHeartCalls, isEmpty);
-    expect(controller.negativeHeartCalls, isEmpty);
+    expect(controller.positiveHeartCalls(), isEmpty);
   });
 
   testWidgets(
-    'showBurnWeekZoneUseHeartDialog adds heart and resets zone status',
+    'showBurnWeekZoneUseHeartDialog uses heart day and resets zone status',
     (tester) async {
       final key = GlobalKey<_TestBurnWeekZoneDialogHostState>();
       final controller = _FakeBurnWeekRunController();
@@ -100,36 +99,17 @@ void main() {
         runState: const BurnWeekRunState.initial(),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('+1 day kcal'));
+      await tester.tap(find.text('Use heart'));
       await tester.pumpAndSettle();
       await dialogFuture;
 
-      expect(controller.positiveHeartCalls, [2000]);
-      expect(controller.negativeHeartCalls, isEmpty);
+      expect(controller.positiveHeartCalls(), [2000]);
       expect(
         key.currentState!.debugLastZoneStatus,
         BurnWeekZoneStatus.inside,
       );
     },
   );
-
-  testWidgets('showBurnWeekZoneUseHeartDialog removes heart', (tester) async {
-    final key = GlobalKey<_TestBurnWeekZoneDialogHostState>();
-    final controller = _FakeBurnWeekRunController();
-    await _pumpHost(tester, key: key, controller: controller);
-
-    final dialogFuture = key.currentState!.showBurnWeekZoneUseHeartDialog(
-      dailyGoalKcal: 2000,
-      runState: const BurnWeekRunState.initial(),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('-1 day kcal'));
-    await tester.pumpAndSettle();
-    await dialogFuture;
-
-    expect(controller.negativeHeartCalls, [2000]);
-    expect(controller.positiveHeartCalls, isEmpty);
-  });
 
   testWidgets('below-zone use heart spends positive heart and resets status', (
     tester,
@@ -153,15 +133,14 @@ void main() {
     await tester.tap(find.text('Use heart'));
     await tester.pumpAndSettle();
 
-    expect(controller.positiveHeartCalls, [2000]);
-    expect(controller.negativeHeartCalls, isEmpty);
+    expect(controller.positiveHeartCalls(), [2000]);
     expect(
       key.currentState!.debugLastZoneStatus,
       BurnWeekZoneStatus.inside,
     );
   });
 
-  testWidgets('below-zone without hearts shows run over and restarts', (
+  testWidgets('below-zone without hearts can continue current run', (
     tester,
   ) async {
     final key = GlobalKey<_TestBurnWeekZoneDialogHostState>();
@@ -175,14 +154,38 @@ void main() {
       controller: controller,
     );
     await _pumpQueuedDialog(tester);
-    expect(find.text('Run over'), findsOneWidget);
+    expect(find.text('Run cannot finish perfectly'), findsOneWidget);
 
-    await tester.tap(find.text('Close'));
+    await tester.tap(find.text('Continue anyway'));
     await tester.pumpAndSettle();
 
-    expect(controller.restartRunFromCalls, hasLength(1));
-    expect(controller.positiveHeartCalls, isEmpty);
-    expect(controller.negativeHeartCalls, isEmpty);
+    expect(controller.continueRunCallCount(), 1);
+    expect(controller.restartRunFromCalls(), isEmpty);
+    expect(controller.positiveHeartCalls(), isEmpty);
+  });
+
+  testWidgets('below-zone without hearts starts new run when chosen', (
+    tester,
+  ) async {
+    final key = GlobalKey<_TestBurnWeekZoneDialogHostState>();
+    final controller = _FakeBurnWeekRunController();
+    await _pumpHost(
+      tester,
+      key: key,
+      queueOnBuild: true,
+      metrics: _belowNeedsHeartMetrics,
+      runState: const BurnWeekRunState.initial().copyWith(heartCount: 0),
+      controller: controller,
+    );
+    await _pumpQueuedDialog(tester);
+    expect(find.text('Run cannot finish perfectly'), findsOneWidget);
+
+    await tester.tap(find.text('Start new run'));
+    await tester.pumpAndSettle();
+
+    expect(controller.continueRunCallCount(), 0);
+    expect(controller.restartRunFromCalls(), hasLength(1));
+    expect(controller.positiveHeartCalls(), isEmpty);
   });
 }
 
@@ -294,9 +297,15 @@ class _TestBurnWeekZoneDialogHostState
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
-  final positiveHeartCalls = <double>[];
-  final negativeHeartCalls = <double>[];
-  final restartRunFromCalls = <DateTime>[];
+  final _positiveHeartCalls = <double>[];
+  final _restartRunFromCalls = <DateTime>[];
+  var _continueRunCallCount = 0;
+
+  List<double> positiveHeartCalls() => _positiveHeartCalls;
+
+  List<DateTime> restartRunFromCalls() => _restartRunFromCalls;
+
+  int continueRunCallCount() => _continueRunCallCount;
 
   @override
   Future<BurnWeekRunState> build() async {
@@ -305,12 +314,7 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
 
   @override
   Future<void> usePositiveHeart(double dailyGoalKcal) async {
-    positiveHeartCalls.add(dailyGoalKcal);
-  }
-
-  @override
-  Future<void> useNegativeHeart(double dailyGoalKcal) async {
-    negativeHeartCalls.add(dailyGoalKcal);
+    _positiveHeartCalls.add(dailyGoalKcal);
   }
 
   @override
@@ -318,7 +322,12 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
     required DateTime weekStartDate,
     int? runWeekNumber,
   }) async {
-    restartRunFromCalls.add(weekStartDate);
+    _restartRunFromCalls.add(weekStartDate);
+  }
+
+  @override
+  Future<void> continueRunAfterLimitWarning() async {
+    _continueRunCallCount += 1;
   }
 }
 

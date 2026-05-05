@@ -16,8 +16,10 @@ void main() {
         fat: Color(0xFF000008),
         meal: Color(0xFF000009),
         today: Color(0xFF00000A),
-        steps: Color(0xFF00000B),
-        stepsDark: Color(0xFF00000C),
+        heart: Color(0xFF00000B),
+        heartDark: Color(0xFF00000C),
+        steps: Color(0xFF00000D),
+        stepsDark: Color(0xFF00000E),
       );
 
       final unchanged = original.copyWith();
@@ -35,8 +37,10 @@ void main() {
         fat: const Color(0xFF100008),
         meal: const Color(0xFF100009),
         today: const Color(0xFF10000A),
-        steps: const Color(0xFF10000B),
-        stepsDark: const Color(0xFF10000C),
+        heart: const Color(0xFF10000B),
+        heartDark: const Color(0xFF10000C),
+        steps: const Color(0xFF10000D),
+        stepsDark: const Color(0xFF10000E),
       );
 
       expect(changed.activity, const Color(0xFF100001));
@@ -49,8 +53,10 @@ void main() {
       expect(changed.fat, const Color(0xFF100008));
       expect(changed.meal, const Color(0xFF100009));
       expect(changed.today, const Color(0xFF10000A));
-      expect(changed.steps, const Color(0xFF10000B));
-      expect(changed.stepsDark, const Color(0xFF10000C));
+      expect(changed.heart, const Color(0xFF10000B));
+      expect(changed.heartDark, const Color(0xFF10000C));
+      expect(changed.steps, const Color(0xFF10000D));
+      expect(changed.stepsDark, const Color(0xFF10000E));
     });
 
     test('lerp interpolates every color field', () {
@@ -65,8 +71,10 @@ void main() {
         fat: Color(0xFF700000),
         meal: Color(0xFF800000),
         today: Color(0xFF900000),
-        steps: Color(0xFFA00000),
-        stepsDark: Color(0xFFB00000),
+        heart: Color(0xFFA00000),
+        heartDark: Color(0xFFB00000),
+        steps: Color(0xFFC00000),
+        stepsDark: Color(0xFFD00000),
       );
       const end = DiaryAccentColors(
         activity: Color(0xFFFFFFFF),
@@ -79,8 +87,10 @@ void main() {
         fat: Color(0xFFFF9090),
         meal: Color(0xFFFF8080),
         today: Color(0xFFFF7070),
-        steps: Color(0xFFFF6060),
-        stepsDark: Color(0xFFFF5050),
+        heart: Color(0xFFFF6060),
+        heartDark: Color(0xFFFF5050),
+        steps: Color(0xFFFF4040),
+        stepsDark: Color(0xFFFF3030),
       );
 
       final result = begin.lerp(end, 0.5);
@@ -104,6 +114,11 @@ void main() {
       expect(result.fat, Color.lerp(begin.fat, end.fat, 0.5));
       expect(result.meal, Color.lerp(begin.meal, end.meal, 0.5));
       expect(result.today, Color.lerp(begin.today, end.today, 0.5));
+      expect(result.heart, Color.lerp(begin.heart, end.heart, 0.5));
+      expect(
+        result.heartDark,
+        Color.lerp(begin.heartDark, end.heartDark, 0.5),
+      );
       expect(result.steps, Color.lerp(begin.steps, end.steps, 0.5));
       expect(result.stepsDark, Color.lerp(begin.stepsDark, end.stepsDark, 0.5));
     });

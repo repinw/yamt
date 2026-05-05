@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
@@ -35,10 +37,24 @@ void main() {
         ),
       );
       addTearDown(settingsRepository.dispose);
+      final runStateRepository = _FakeBurnWeekRunStateRepository(
+        const BurnWeekRunState(
+          currentWeekStartDayKey: '2026-4-8',
+          runWeekNumber: 2,
+          starCount: 1,
+          heartCount: 0,
+          heartCreditKcal: 0,
+          starBrokeThisWeek: true,
+          missedTrackingThisWeek: false,
+        ),
+      );
       final container = ProviderContainer(
         overrides: [
           calorieSettingsRepositoryProvider.overrideWithValue(
             settingsRepository,
+          ),
+          burnWeekRunStateRepositoryProvider.overrideWithValue(
+            runStateRepository,
           ),
         ],
       );
@@ -70,6 +86,7 @@ void main() {
       final snapshot = settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot;
       expect(snapshot?.windowStartDate, goalStart);
       expect(snapshot?.windowEndDate, DateTime(2026, 4, 14));
+      expect(runStateRepository.state.heartCount, burnWeekInitialHeartCount);
     },
   );
 
@@ -344,6 +361,21 @@ void main() {
       2665.82,
     );
   });
+}
+
+class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
+  _FakeBurnWeekRunStateRepository(this.state);
+
+  BurnWeekRunState state;
+
+  @override
+  Future<BurnWeekRunState> readState() async => state;
+
+  @override
+  Future<bool> saveState(BurnWeekRunState nextState) async {
+    state = nextState;
+    return true;
+  }
 }
 
 CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({

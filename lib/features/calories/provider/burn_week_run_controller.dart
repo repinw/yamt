@@ -161,9 +161,12 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
 
   /// Resets whole Burn Week run back to fresh state.
   Future<void> resetRun() {
+    final current = state.asData?.value;
     return _save(
-      const BurnWeekRunState.initial(),
-      previous: state.asData?.value,
+      const BurnWeekRunState.initial().copyWith(
+        heartDayKeys: current?.heartDayKeys,
+      ),
+      previous: current,
     );
   }
 
@@ -179,6 +182,7 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: resolvedRunWeekNumber,
+        heartDayKeys: current.heartDayKeys,
       ),
       previous: current,
     );
@@ -189,34 +193,37 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
     required DateTime weekStartDate,
     required double heartCreditKcal,
     int runWeekNumber = burnWeekLearningRunWeekNumber,
-  }) {
+  }) async {
+    final current = await future;
     return _save(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: runWeekNumber,
         heartCreditKcal: heartCreditKcal,
+        heartDayKeys: current.heartDayKeys,
       ),
-      previous: state.asData?.value,
+      previous: current,
     );
   }
 
-  /// Uses one heart to add one daily-goal worth of kcal.
+  /// Uses one heart to protect today as a heart day.
   Future<void> usePositiveHeart(double dailyGoalKcal) {
-    return _consumeHeart(kcalDelta: dailyGoalKcal);
+    return useHeartForDay(DateTime.now());
   }
 
-  /// Uses one heart to remove one daily-goal worth of kcal.
-  Future<void> useNegativeHeart(double dailyGoalKcal) {
-    return _consumeHeart(kcalDelta: -dailyGoalKcal);
-  }
-
-  Future<void> _consumeHeart({required double kcalDelta}) async {
+  /// Uses one heart to protect [day] from Burn Week and learning math.
+  Future<void> useHeartForDay(DateTime day) async {
     final current = await future;
+    final normalizedDay = normalizeDiaryDay(day);
+    final dayKey = diaryDayKey(normalizedDay);
+    if (current.heartDayKeys.contains(dayKey)) {
+      return;
+    }
     final spendResult = resolveBurnWeekHeartSpend(
       starCount: current.starCount,
       heartCount: current.heartCount,
       heartCreditKcal: current.heartCreditKcal,
-      kcalDelta: kcalDelta,
+      kcalDelta: 0,
     );
     if (spendResult.heartCount == current.heartCount &&
         !spendResult.didBreakStar &&
@@ -235,7 +242,52 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         heartCreditKcal: spendResult.heartCreditKcal,
         starBrokeThisWeek:
             current.starBrokeThisWeek || spendResult.didBreakStar,
+        heartDayKeys: _addHeartDayKey(current.heartDayKeys, dayKey),
       ),
+      previous: current,
+    );
+  }
+
+  /// Removes heart-day protection and refunds one heart.
+  Future<void> unmarkHeartDay(DateTime day) async {
+    final current = await future;
+    if (!current.canUnmarkHeartDay(day)) {
+      return;
+    }
+    final dayKey = diaryDayKey(normalizeDiaryDay(day));
+    await _save(
+      current.copyWith(
+        heartCount: current.heartCount + 1,
+        heartDayKeys: _removeHeartDayKey(current.heartDayKeys, dayKey),
+      ),
+      previous: current,
+    );
+  }
+
+  /// Keeps current run alive after an unrecoverable limit warning.
+  Future<void> continueRunAfterLimitWarning() async {
+    final current = await future;
+    if (current.starBrokeThisWeek) {
+      return;
+    }
+    await _save(
+      current.copyWith(starBrokeThisWeek: true),
+      previous: current,
+    );
+  }
+
+  /// Refills hearts after the user completes a weekly check-in.
+  Future<void> refillHeartsForWeeklyCheckIn() async {
+    final current = await future;
+    final minimumHearts = resolveBurnWeekMockDifficulty(
+      current.starCount,
+    ).minimumHearts;
+    final nextHeartCount = math.max(current.heartCount, minimumHearts);
+    if (nextHeartCount == current.heartCount) {
+      return;
+    }
+    await _save(
+      current.copyWith(heartCount: nextHeartCount),
       previous: current,
     );
   }
@@ -257,18 +309,15 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       missedTrackingThisWeek: current.missedTrackingThisWeek,
     );
     final nextStarCount = current.starCount + (earnedStar ? 1 : 0);
-    final nextHeartCount = math.max(
-      current.heartCount,
-      resolveBurnWeekMockDifficulty(nextStarCount).minimumHearts,
-    );
     return current.copyWith(
       currentWeekStartDayKey: nextWeekStartDayKey,
       runWeekNumber: current.runWeekNumber + 1,
       starCount: nextStarCount,
-      heartCount: nextHeartCount,
+      heartCount: current.heartCount,
       heartCreditKcal: 0,
       starBrokeThisWeek: false,
       missedTrackingThisWeek: false,
+      heartDayKeys: current.heartDayKeys,
     );
   }
 
@@ -312,7 +361,8 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         left.heartCount == right.heartCount &&
         left.heartCreditKcal == right.heartCreditKcal &&
         left.starBrokeThisWeek == right.starBrokeThisWeek &&
-        left.missedTrackingThisWeek == right.missedTrackingThisWeek;
+        left.missedTrackingThisWeek == right.missedTrackingThisWeek &&
+        _sameStringList(left.heartDayKeys, right.heartDayKeys);
   }
 
   bool _shouldReplayBackfilledClosedWeeks({
@@ -325,7 +375,7 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         currentWeekStartDayKey == weekStartDayKey &&
         current.runWeekNumber == burnWeekLearningRunWeekNumber &&
         current.starCount == 0 &&
-        current.heartCount == 3 &&
+        current.heartCount == burnWeekInitialHeartCount &&
         current.heartCreditKcal == 0 &&
         !current.starBrokeThisWeek;
   }
@@ -361,4 +411,26 @@ DateTime? _parseBurnWeekDayKey(String? dayKey) {
     return null;
   }
   return normalizeDiaryDay(DateTime(year, month, day));
+}
+
+List<String> _addHeartDayKey(List<String> current, String dayKey) {
+  final next = <String>{...current, dayKey}.toList()..sort();
+  return List<String>.unmodifiable(next);
+}
+
+List<String> _removeHeartDayKey(List<String> current, String dayKey) {
+  final next = current.where((key) => key != dayKey).toList();
+  return List<String>.unmodifiable(next);
+}
+
+bool _sameStringList(List<String> left, List<String> right) {
+  if (left.length != right.length) {
+    return false;
+  }
+  for (var index = 0; index < left.length; index += 1) {
+    if (left[index] != right[index]) {
+      return false;
+    }
+  }
+  return true;
 }

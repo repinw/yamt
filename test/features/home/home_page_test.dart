@@ -6,13 +6,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
+import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -89,6 +93,37 @@ class _LoadingPreparedMealsController extends PreparedMealsController {
   @override
   FutureOr<List<PreparedMeal>> build() {
     return Completer<List<PreparedMeal>>().future;
+  }
+}
+
+class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
+  _FakeBurnWeekRunStateRepository(this.state);
+
+  BurnWeekRunState state;
+
+  @override
+  Future<BurnWeekRunState> readState() async => state;
+
+  @override
+  Future<bool> saveState(BurnWeekRunState state) async {
+    this.state = state;
+    return true;
+  }
+}
+
+class _TestDiaryCalendarController extends DiaryCalendarController {
+  _TestDiaryCalendarController(this.selectedDay);
+
+  final DateTime selectedDay;
+
+  @override
+  DiaryCalendarState build() {
+    final today = normalizeDiaryDay(DateTime.now());
+    return DiaryCalendarState(
+      today: today,
+      selectedDay: normalizeDiaryDay(selectedDay),
+      todayRequest: 0,
+    );
   }
 }
 
@@ -206,6 +241,8 @@ Widget _buildHarness({
   PreparedMealsController? preparedMealsController,
   ReceiptCaptureFlowController? receiptCaptureFlowController,
   ReceiptBatchFlowController? receiptBatchFlowController,
+  BurnWeekRunStateRepository? burnWeekRunStateRepository,
+  DateTime? selectedDiaryDay,
   bool? isCameraSupported,
   ThemeData? theme,
   ValueChanged<Object?>? onManualAddRouteExtra,
@@ -266,6 +303,12 @@ Widget _buildHarness({
   final container = ProviderContainer(
     overrides: [
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      burnWeekRunStateRepositoryProvider.overrideWithValue(
+        burnWeekRunStateRepository ??
+            _FakeBurnWeekRunStateRepository(
+              const BurnWeekRunState.initial(),
+            ),
+      ),
       calorieWeekOverviewForWindowProvider(today).overrideWith(
         (ref) => _weekOverview(today),
       ),
@@ -295,6 +338,10 @@ Widget _buildHarness({
       if (receiptBatchFlowController != null)
         receiptBatchFlowControllerProvider.overrideWith(
           () => receiptBatchFlowController,
+        ),
+      if (selectedDiaryDay != null)
+        diaryCalendarControllerProvider.overrideWith(
+          () => _TestDiaryCalendarController(selectedDiaryDay),
         ),
       if (isCameraSupported != null)
         receiptCameraSupportedProvider.overrideWith(
@@ -364,6 +411,78 @@ void main() {
     final topBar = tester.widget<HomeTopBar>(find.byType(HomeTopBar));
     expect(topBar.preferredSize.height, greaterThan(96));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('hides heart counter during learning week', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomeHeartCounterButton), findsNothing);
+    expect(find.text('x 1'), findsNothing);
+  });
+
+  testWidgets('shows heart counter on non-diary tabs after learning week', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial().copyWith(
+        runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        heartCount: 2,
+      ),
+    );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        burnWeekRunStateRepository: runStateRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomeHeartCounterButton), findsOneWidget);
+    expect(find.text('x 2'), findsOneWidget);
+  });
+
+  testWidgets('heart counter spends heart on selected old diary day', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final oldDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 3)),
+    );
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-04-27',
+        runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        heartCount: 1,
+      ),
+    );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        burnWeekRunStateRepository: runStateRepository,
+        selectedDiaryDay: oldDay,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(HomeHeartCounterButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Use heart'));
+    await tester.pumpAndSettle();
+
+    expect(runStateRepository.state.heartCount, 0);
+    expect(runStateRepository.state.heartDayKeys, <String>[
+      diaryDayKey(oldDay),
+    ]);
   });
 
   testWidgets('inventory tab hides shell fab when inventory is empty', (

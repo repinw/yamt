@@ -134,6 +134,36 @@ abstract class AppLocalizations {
   /// **'Quick action'**
   String get homeQuickActionTooltip;
 
+  /// No description provided for @homeHeartCounterUseTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Use heart for {day}'**
+  String homeHeartCounterUseTooltip(String day);
+
+  /// No description provided for @homeHeartCounterActiveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} is already a heart day'**
+  String homeHeartCounterActiveTooltip(String day);
+
+  /// No description provided for @homeHeartCounterEmptyTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'No hearts left'**
+  String get homeHeartCounterEmptyTooltip;
+
+  /// No description provided for @homeHeartUseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use heart day?'**
+  String get homeHeartUseTitle;
+
+  /// No description provided for @homeHeartUseMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Spend 1 heart to ignore {day}. Logged food stays in the diary, but this day counts as perfect and is skipped for weekly learning.'**
+  String homeHeartUseMessage(String day);
+
   /// No description provided for @inventoryFabTooltip.
   ///
   /// In en, this message translates to:
@@ -3292,13 +3322,13 @@ abstract class AppLocalizations {
   /// No description provided for @burnWeekUseHeartTitle.
   ///
   /// In en, this message translates to:
-  /// **'Use heart?'**
+  /// **'Use heart day?'**
   String get burnWeekUseHeartTitle;
 
   /// No description provided for @burnWeekUseHeartMessage.
   ///
   /// In en, this message translates to:
-  /// **'1 heart can add or remove one full Burn day of calories ({dayKcal} kcal).'**
+  /// **'Spend 1 heart to ignore today. Logged food stays in the diary, but today counts as a perfect Burn day and is skipped for weekly learning ({dayKcal} kcal day).'**
   String burnWeekUseHeartMessage(int dayKcal);
 
   /// No description provided for @burnWeekActionCancel.
@@ -3319,23 +3349,29 @@ abstract class AppLocalizations {
   /// **'No'**
   String get burnWeekActionNo;
 
-  /// No description provided for @burnWeekActionRemoveDayKcal.
-  ///
-  /// In en, this message translates to:
-  /// **'-1 day kcal'**
-  String get burnWeekActionRemoveDayKcal;
-
-  /// No description provided for @burnWeekActionAddDayKcal.
-  ///
-  /// In en, this message translates to:
-  /// **'+1 day kcal'**
-  String get burnWeekActionAddDayKcal;
-
   /// No description provided for @burnWeekRunOverTitle.
   ///
   /// In en, this message translates to:
   /// **'Run over'**
   String get burnWeekRunOverTitle;
+
+  /// No description provided for @burnWeekRunLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Run cannot finish perfectly'**
+  String get burnWeekRunLimitTitle;
+
+  /// No description provided for @burnWeekRunLimitContinueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue anyway'**
+  String get burnWeekRunLimitContinueAction;
+
+  /// No description provided for @burnWeekRunLimitStartNewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start new run'**
+  String get burnWeekRunLimitStartNewAction;
 
   /// No description provided for @burnWeekRunRestartsOn.
   ///
@@ -3364,7 +3400,7 @@ abstract class AppLocalizations {
   /// No description provided for @burnWeekZoneBelowRecoverMessage.
   ///
   /// In en, this message translates to:
-  /// **'You are below target. Use a heart for one full Burn day leap, or eat more to get back in target.'**
+  /// **'You are below target. Use a heart to protect today as a perfect heart day, or eat more to get back in target.'**
   String get burnWeekZoneBelowRecoverMessage;
 
   /// No description provided for @burnWeekZoneBelowRecoverNoHeartsMessage.
@@ -3382,13 +3418,13 @@ abstract class AppLocalizations {
   /// No description provided for @burnWeekZoneBelowNeedsHeartMessage.
   ///
   /// In en, this message translates to:
-  /// **'There are not enough calories left in this week to recover by eating. Use 1 heart to restore?'**
+  /// **'There are not enough calories left in this week to recover by eating. Use 1 heart to protect today as a perfect heart day?'**
   String get burnWeekZoneBelowNeedsHeartMessage;
 
   /// No description provided for @burnWeekZoneBelowRunOverMessage.
   ///
   /// In en, this message translates to:
-  /// **'There are not enough calories left in this week to recover by eating. No hearts left, so a fresh run starts next day.'**
+  /// **'There are not enough calories left in this week to recover by eating, and no hearts are left. Continue this run anyway, or start a fresh run tomorrow.'**
   String get burnWeekZoneBelowRunOverMessage;
 
   /// No description provided for @burnWeekZoneEatMoreTitle.
@@ -3424,13 +3460,13 @@ abstract class AppLocalizations {
   /// No description provided for @burnWeekZoneAboveNeedsHeartMessage.
   ///
   /// In en, this message translates to:
-  /// **'You are way over weekly limit. Use 1 heart to reduce one full Burn day of calories?'**
+  /// **'You are way over weekly limit. Use 1 heart to protect today as a perfect heart day?'**
   String get burnWeekZoneAboveNeedsHeartMessage;
 
   /// No description provided for @burnWeekZoneAboveRunOverMessage.
   ///
   /// In en, this message translates to:
-  /// **'You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.'**
+  /// **'You are way over weekly limit and have no hearts left. This run cannot finish perfectly. Continue this run anyway, or start a fresh run tomorrow.'**
   String get burnWeekZoneAboveRunOverMessage;
 
   /// No description provided for @calorieBudgetDetailsActualLabel.
@@ -3508,7 +3544,7 @@ abstract class AppLocalizations {
   /// No description provided for @burnWeekDetailsHeartKcalUsed.
   ///
   /// In en, this message translates to:
-  /// **'Heart kcal used'**
+  /// **'Heart adjustment'**
   String get burnWeekDetailsHeartKcalUsed;
 
   /// No description provided for @burnWeekDetailsWeekRatio.
@@ -4146,6 +4182,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Heart {kcal}'**
   String diaryBalanceHeartAdjustmentLabel(Object kcal);
+
+  /// No description provided for @diaryBalanceHeartDayValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart day'**
+  String get diaryBalanceHeartDayValue;
+
+  /// No description provided for @diaryBalanceHeartDaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored for learning'**
+  String get diaryBalanceHeartDaySubtitle;
+
+  /// No description provided for @diaryBalanceRevertHeartDayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Revert heart day'**
+  String get diaryBalanceRevertHeartDayAction;
 
   /// No description provided for @diaryScrollToTopAction.
   ///

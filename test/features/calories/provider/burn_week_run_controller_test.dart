@@ -156,7 +156,7 @@ void main() {
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
     expect(repository.state.lastActiveDayKey, '2026-4-21');
     expect(repository.state.starCount, 0);
-    expect(repository.state.heartCount, 3);
+    expect(repository.state.heartCount, burnWeekInitialHeartCount);
     expect(repository.state.runWeekNumber, 1);
   });
 
@@ -192,7 +192,7 @@ void main() {
           lastActiveDayKey: '2026-4-26',
           runWeekNumber: 1,
           starCount: 0,
-          heartCount: 3,
+          heartCount: burnWeekInitialHeartCount,
         ),
       );
       final container = buildContainer(repository);
@@ -341,7 +341,7 @@ void main() {
     },
   );
 
-  test('usePositiveHeart spends heart and adds heart credit', () async {
+  test('useHeartForDay spends heart and marks day', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       buildState(
         currentWeekStartDayKey: '2026-04-21',
@@ -355,10 +355,51 @@ void main() {
     await container.read(burnWeekRunControllerProvider.future);
     await container
         .read(burnWeekRunControllerProvider.notifier)
-        .usePositiveHeart(500);
+        .useHeartForDay(DateTime(2026, 4, 21));
 
     expect(repository.state.heartCount, 2);
-    expect(repository.state.heartCreditKcal, 500);
+    expect(repository.state.heartCreditKcal, 0);
+    expect(repository.state.heartDayKeys, <String>['2026-4-21']);
+  });
+
+  test('unmarkHeartDay removes day and refunds heart', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-04-21',
+        runWeekNumber: 2,
+        starCount: 0,
+        heartCount: 0,
+      ).copyWith(heartDayKeys: <String>['2026-4-21']),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .unmarkHeartDay(DateTime(2026, 4, 21));
+
+    expect(repository.state.heartCount, 1);
+    expect(repository.state.heartDayKeys, isEmpty);
+  });
+
+  test('unmarkHeartDay ignores passed week heart day', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-04-28',
+        runWeekNumber: 3,
+        starCount: 0,
+        heartCount: 0,
+      ).copyWith(heartDayKeys: <String>['2026-4-21']),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .unmarkHeartDay(DateTime(2026, 4, 21));
+
+    expect(repository.state.heartCount, 0);
+    expect(repository.state.heartDayKeys, <String>['2026-4-21']);
   });
 
   test('usePositiveHeart with zero hearts keeps the state unchanged', () async {
@@ -379,7 +420,7 @@ void main() {
     await container.read(burnWeekRunControllerProvider.future);
     await container
         .read(burnWeekRunControllerProvider.notifier)
-        .usePositiveHeart(500);
+        .useHeartForDay(DateTime(2026, 4, 21));
 
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
     expect(repository.state.lastActiveDayKey, '2026-4-21');
@@ -388,6 +429,7 @@ void main() {
     expect(repository.state.heartCount, 0);
     expect(repository.state.heartCreditKcal, 150);
     expect(repository.state.starBrokeThisWeek, isTrue);
+    expect(repository.state.heartDayKeys, isEmpty);
   });
 
   test('bootstrapRunFrom seeds a fresh onboarding position', () async {
@@ -407,7 +449,7 @@ void main() {
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
     expect(repository.state.runWeekNumber, burnWeekLearningRunWeekNumber);
     expect(repository.state.starCount, 0);
-    expect(repository.state.heartCount, 3);
+    expect(repository.state.heartCount, burnWeekInitialHeartCount);
     expect(repository.state.heartCreditKcal, 875);
   });
 
@@ -458,7 +500,7 @@ void main() {
 
       final consumeFuture = container
           .read(burnWeekRunControllerProvider.notifier)
-          .usePositiveHeart(500);
+          .useHeartForDay(DateTime(2026, 4, 21));
       await Future<void>.delayed(Duration.zero);
 
       await container
@@ -472,12 +514,13 @@ void main() {
       await consumeFuture;
 
       expect(repository.state.heartCount, 2);
-      expect(repository.state.heartCreditKcal, 500);
+      expect(repository.state.heartCreditKcal, 0);
+      expect(repository.state.heartDayKeys, <String>['2026-4-21']);
       expect(repository.state.lastActiveDayKey, '2026-4-21');
     },
   );
 
-  test('using last heart breaks star and restores hearts', () async {
+  test('using last heart breaks star and decrements counter', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState(
         currentWeekStartDayKey: '2026-04-21',
@@ -494,16 +537,17 @@ void main() {
     await container.read(burnWeekRunControllerProvider.future);
     await container
         .read(burnWeekRunControllerProvider.notifier)
-        .useNegativeHeart(700);
+        .useHeartForDay(DateTime(2026, 4, 21));
 
     expect(repository.state.starCount, 1);
-    expect(repository.state.heartCount, 3);
-    expect(repository.state.heartCreditKcal, -700);
+    expect(repository.state.heartCount, 0);
+    expect(repository.state.heartCreditKcal, 0);
     expect(repository.state.starBrokeThisWeek, isTrue);
+    expect(repository.state.heartDayKeys, <String>['2026-4-21']);
   });
 
   test(
-    'breaking a star restores hearts to the next difficulty minimum',
+    'breaking a star keeps the spent heart removed',
     () async {
       final repository = _FakeBurnWeekRunStateRepository(
         const BurnWeekRunState(
@@ -521,17 +565,18 @@ void main() {
       await container.read(burnWeekRunControllerProvider.future);
       await container
           .read(burnWeekRunControllerProvider.notifier)
-          .usePositiveHeart(500);
+          .useHeartForDay(DateTime(2026, 4, 21));
 
       expect(repository.state.starCount, 4);
-      expect(repository.state.heartCount, 2);
-      expect(repository.state.heartCreditKcal, 500);
+      expect(repository.state.heartCount, 0);
+      expect(repository.state.heartCreditKcal, 0);
       expect(repository.state.starBrokeThisWeek, isTrue);
+      expect(repository.state.heartDayKeys, <String>['2026-4-21']);
     },
   );
 
   test(
-    'using last heart with no stars applies credit and keeps run alive',
+    'using last heart with no stars marks day and keeps run alive',
     () async {
       const expectedWeekStartKey = '2026-04-21';
       final repository = _FakeBurnWeekRunStateRepository(
@@ -550,7 +595,7 @@ void main() {
       await container.read(burnWeekRunControllerProvider.future);
       await container
           .read(burnWeekRunControllerProvider.notifier)
-          .usePositiveHeart(500);
+          .useHeartForDay(DateTime(2026, 4, 21));
 
       expect(
         repository.state.currentWeekStartDayKey,
@@ -559,8 +604,9 @@ void main() {
       expect(repository.state.runWeekNumber, 5);
       expect(repository.state.starCount, 0);
       expect(repository.state.heartCount, 0);
-      expect(repository.state.heartCreditKcal, 700);
+      expect(repository.state.heartCreditKcal, 200);
       expect(repository.state.starBrokeThisWeek, isTrue);
+      expect(repository.state.heartDayKeys, <String>['2026-4-21']);
     },
   );
 
@@ -624,6 +670,81 @@ void main() {
     expect(repository.state.runWeekNumber, burnWeekLearningRunWeekNumber);
   });
 
+  test('continueRunAfterLimitWarning keeps run and blocks star', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState(
+        currentWeekStartDayKey: '2026-4-15',
+        runWeekNumber: 3,
+        starCount: 2,
+        heartCount: 0,
+        heartCreditKcal: 0,
+        starBrokeThisWeek: false,
+        missedTrackingThisWeek: false,
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .continueRunAfterLimitWarning();
+
+    expect(repository.state.currentWeekStartDayKey, '2026-4-15');
+    expect(repository.state.runWeekNumber, 3);
+    expect(repository.state.starCount, 2);
+    expect(repository.state.heartCount, 0);
+    expect(repository.state.starBrokeThisWeek, isTrue);
+  });
+
+  test('syncForWeek does not refill hearts on week rollover', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-4-14',
+        runWeekNumber: 2,
+        starCount: 1,
+        heartCount: 0,
+        starBrokeThisWeek: true,
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await syncWeek(
+      container,
+      currentDay: DateTime(2026, 4, 21),
+      weekStartDate: DateTime(2026, 4, 21),
+      missedTrackingThisWeek: false,
+      missedTrackingForClosedWeeks: const <bool>[false],
+    );
+
+    expect(repository.state.currentWeekStartDayKey, '2026-4-21');
+    expect(repository.state.runWeekNumber, 3);
+    expect(repository.state.starCount, 1);
+    expect(repository.state.heartCount, 0);
+    expect(repository.state.starBrokeThisWeek, isFalse);
+  });
+
+  test('refillHeartsForWeeklyCheckIn restores minimum heart', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-4-21',
+        runWeekNumber: 3,
+        starCount: 1,
+        heartCount: 0,
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .refillHeartsForWeeklyCheckIn();
+
+    expect(repository.state.currentWeekStartDayKey, '2026-4-21');
+    expect(repository.state.runWeekNumber, 3);
+    expect(repository.state.starCount, 1);
+    expect(repository.state.heartCount, burnWeekInitialHeartCount);
+  });
+
   test('restartRunFrom resets progress into first game week', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState(
@@ -646,7 +767,7 @@ void main() {
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
     expect(repository.state.runWeekNumber, burnWeekFirstGameRunWeekNumber);
     expect(repository.state.starCount, 0);
-    expect(repository.state.heartCount, 3);
+    expect(repository.state.heartCount, burnWeekInitialHeartCount);
     expect(repository.state.heartCreditKcal, 0);
   });
 }

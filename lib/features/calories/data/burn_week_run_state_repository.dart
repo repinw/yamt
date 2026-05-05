@@ -1,15 +1,15 @@
-import 'dart:convert';
 import 'dart:developer' show log;
 
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/data/firestore_json_normalizer.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 
-/// App-preferences storage key for Burn Week run state.
-const burnWeekRunStatePreferenceKey = 'burn_week_run_state_v2';
 const _logName = 'BurnWeekRunStateRepository';
+const _usersCollection = 'users';
+const _burnWeekRunStateField = 'burn_week_run_state';
 
 /// Persistent store for Burn Week run state.
 abstract interface class BurnWeekRunStateRepository {
@@ -20,9 +20,9 @@ abstract interface class BurnWeekRunStateRepository {
   Future<bool> saveState(BurnWeekRunState state);
 }
 
-class _PendingAuthBurnWeekRunStateRepository
+class _UnavailableBurnWeekRunStateRepository
     implements BurnWeekRunStateRepository {
-  const _PendingAuthBurnWeekRunStateRepository();
+  const _UnavailableBurnWeekRunStateRepository();
 
   @override
   Future<BurnWeekRunState> readState() async {
@@ -35,36 +35,40 @@ class _PendingAuthBurnWeekRunStateRepository
   }
 }
 
-/// App-preferences-backed Burn Week run state repository.
-class AppPreferencesBurnWeekRunStateRepository
+/// Firestore-backed Burn Week state stored on the user profile document.
+class FirestoreBurnWeekRunStateRepository
     implements BurnWeekRunStateRepository {
   /// Creates repository.
-  const AppPreferencesBurnWeekRunStateRepository({
-    required AppPreferences preferences,
-    this.storageKey = burnWeekRunStatePreferenceKey,
-  }) : _preferences = preferences;
+  const FirestoreBurnWeekRunStateRepository({
+    required FirebaseFirestore firestore,
+    required String? currentUserId,
+  }) : _firestore = firestore,
+       _currentUserId = currentUserId;
 
-  final AppPreferences _preferences;
-
-  /// Storage key.
-  final String storageKey;
+  final FirebaseFirestore _firestore;
+  final String? _currentUserId;
 
   @override
   Future<BurnWeekRunState> readState() async {
-    final raw = await _preferences.getString(storageKey);
-    if (raw == null || raw.isEmpty) {
+    final userId = _normalizedUserId();
+    if (userId == null) {
       return const BurnWeekRunState.initial();
     }
 
     try {
-      final decoded = jsonDecode(raw);
-      if (decoded is! Map<String, dynamic>) {
+      final snapshot = await _document(userId).get();
+      final rawState = snapshot.data()?[_burnWeekRunStateField];
+      if (rawState is! Map) {
         return const BurnWeekRunState.initial();
       }
-      return BurnWeekRunState.fromJson(decoded);
+      final normalizedState = normalizeFirestoreValue(rawState);
+      if (normalizedState is! Map<String, dynamic>) {
+        return const BurnWeekRunState.initial();
+      }
+      return BurnWeekRunState.fromJson(normalizedState);
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to decode Burn Week run state.',
+        'Failed to read Burn Week state for user $userId.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
@@ -74,8 +78,39 @@ class AppPreferencesBurnWeekRunStateRepository
   }
 
   @override
-  Future<bool> saveState(BurnWeekRunState state) {
-    return _preferences.setString(storageKey, jsonEncode(state.toJson()));
+  Future<bool> saveState(BurnWeekRunState state) async {
+    final userId = _normalizedUserId();
+    if (userId == null) {
+      return false;
+    }
+
+    try {
+      await _document(userId).set(
+        <String, dynamic>{_burnWeekRunStateField: state.toJson()},
+        SetOptions(merge: true),
+      );
+      return true;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to save Burn Week state for user $userId.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  String? _normalizedUserId() {
+    final userId = _currentUserId?.trim();
+    if (userId == null || userId.isEmpty) {
+      return null;
+    }
+    return userId;
+  }
+
+  DocumentReference<Map<String, dynamic>> _document(String userId) {
+    return _firestore.collection(_usersCollection).doc(userId);
   }
 }
 
@@ -86,43 +121,13 @@ final burnWeekRunStateRepositoryProvider = Provider<BurnWeekRunStateRepository>(
     final currentUserId =
         authState.asData?.value?.uid ??
         ref.watch(firebaseAuthProvider).currentUser?.uid;
-    final storageKey = resolveBurnWeekRunStateStorageKey(
-      authStateIsLoading: authState.isLoading,
-      currentUserId: currentUserId,
-    );
-    if (storageKey == null) {
-      return const _PendingAuthBurnWeekRunStateRepository();
+    final firestore = ref.watch(firebaseFirestoreProvider);
+    if (firestore == null) {
+      return const _UnavailableBurnWeekRunStateRepository();
     }
-    return AppPreferencesBurnWeekRunStateRepository(
-      preferences: ref.watch(appPreferencesProvider),
-      storageKey: storageKey,
+    return FirestoreBurnWeekRunStateRepository(
+      firestore: firestore,
+      currentUserId: currentUserId,
     );
   },
 );
-
-/// Resolves the storage key for current auth state.
-///
-/// Returns `null` while auth is still loading and no user id is available yet,
-/// so Burn state cannot accidentally write into the guest slot.
-@visibleForTesting
-String? resolveBurnWeekRunStateStorageKey({
-  required bool authStateIsLoading,
-  required String? currentUserId,
-}) {
-  final normalizedUserId = currentUserId?.trim();
-  if (normalizedUserId != null && normalizedUserId.isNotEmpty) {
-    return _burnWeekRunStatePreferenceKeyForUser(normalizedUserId);
-  }
-  if (authStateIsLoading) {
-    return null;
-  }
-  return _burnWeekRunStatePreferenceKeyForUser(null);
-}
-
-String _burnWeekRunStatePreferenceKeyForUser(String? userId) {
-  final normalizedUserId = userId?.trim();
-  if (normalizedUserId == null || normalizedUserId.isEmpty) {
-    return '$burnWeekRunStatePreferenceKey::guest';
-  }
-  return '$burnWeekRunStatePreferenceKey::$normalizedUserId';
-}

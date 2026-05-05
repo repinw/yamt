@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_day_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
@@ -22,6 +23,7 @@ class DiaryCalendarStrip extends StatefulWidget {
     required this.today,
     required this.selectedDay,
     required this.todayRequest,
+    required this.heartDayKeys,
     required this.onSelectDay,
     super.key,
   });
@@ -34,6 +36,9 @@ class DiaryCalendarStrip extends StatefulWidget {
 
   /// Changes when the parent asks the strip to scroll back to today.
   final int todayRequest;
+
+  /// Diary day keys protected by spent hearts.
+  final Set<String> heartDayKeys;
 
   /// Called when a day is selected.
   final ValueChanged<DateTime> onSelectDay;
@@ -125,7 +130,11 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
                       widget.selectedDay,
                     ),
                     isToday: isSameDiaryCalendarDay(day, widget.today),
+                    isHeartDay: widget.heartDayKeys.contains(
+                      diaryDayKey(day),
+                    ),
                     activeColor: accentColors.today,
+                    heartColor: accentColors.heartFor(colors.brightness),
                     inactiveTextColor: colors.onSurfaceVariant,
                     onTap: () {
                       unawaited(HapticFeedback.lightImpact());

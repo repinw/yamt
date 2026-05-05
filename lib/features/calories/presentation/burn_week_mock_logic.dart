@@ -22,7 +22,7 @@ class BurnWeekMockDifficulty {
   /// User-facing tier label.
   final String label;
 
-  /// Minimum hearts restored at week start or after star break.
+  /// Minimum hearts restored at week start.
   final int minimumHearts;
 
   /// Multiplier applied to one-day safe-zone width.
@@ -210,27 +210,27 @@ BurnWeekMockDifficulty resolveBurnWeekMockDifficulty(int starCount) {
   if (starCount >= 6) {
     return const BurnWeekMockDifficulty(
       label: 'Elite',
-      minimumHearts: 2,
+      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.55,
     );
   }
   if (starCount >= 4) {
     return const BurnWeekMockDifficulty(
       label: 'Solid',
-      minimumHearts: 2,
+      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.7,
     );
   }
   if (starCount >= 2) {
     return const BurnWeekMockDifficulty(
       label: 'Steady',
-      minimumHearts: 3,
+      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.85,
     );
   }
   return const BurnWeekMockDifficulty(
     label: 'Learning',
-    minimumHearts: 3,
+    minimumHearts: burnWeekInitialHeartCount,
     safeZoneMultiplier: 1,
   );
 }
@@ -313,12 +313,9 @@ BurnWeekHeartSpendResult resolveBurnWeekHeartSpend({
   }
 
   if (starCount > 0) {
-    final nextStarCount = starCount - 1;
     return BurnWeekHeartSpendResult(
-      starCount: nextStarCount,
-      heartCount: resolveBurnWeekMockDifficulty(
-        nextStarCount,
-      ).minimumHearts,
+      starCount: starCount - 1,
+      heartCount: remainingHearts,
       heartCreditKcal: nextHeartCreditKcal,
       didBreakStar: true,
       didResetRun: false,

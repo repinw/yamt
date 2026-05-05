@@ -6,6 +6,33 @@
   "homeCalories": "Tagebuch",
   "homeSettings": "Einstellungen",
   "homeQuickActionTooltip": "Schnellaktion",
+  "homeHeartCounterUseTooltip": "Herz für {day} nutzen",
+  "@homeHeartCounterUseTooltip": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "homeHeartCounterActiveTooltip": "{day} ist bereits ein Herztag",
+  "@homeHeartCounterActiveTooltip": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "homeHeartCounterEmptyTooltip": "Keine Herzen übrig",
+  "homeHeartUseTitle": "Herztag nutzen?",
+  "homeHeartUseMessage":
+      "Gib 1 Herz aus, um {day} zu ignorieren. Erfasstes Essen bleibt im Tagebuch, aber der Tag zählt als perfekt und wird beim Wochenlernen übersprungen.",
+  "@homeHeartUseMessage": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryFabTooltip": "Belegaktionen",
   "inventoryPageTitle": "Mein Vorrat",
   "inventoryActionScanCamera": "Beleg scannen (Kamera)",
@@ -908,9 +935,9 @@
   },
   "caloriesDebugDumpFailed":
       "Kalorien-Debug-Tabelle konnte nicht ausgegeben werden.",
-  "burnWeekUseHeartTitle": "Herz einsetzen?",
+  "burnWeekUseHeartTitle": "Herztag nutzen?",
   "burnWeekUseHeartMessage":
-      "1 Herz kann einen ganzen Burn-Tag an Kalorien hinzufügen oder abziehen ({dayKcal} kcal).",
+      "Setze 1 Herz ein, um heute zu ignorieren. Eingetragenes Essen bleibt im Tagebuch, aber heute zählt als perfekter Burn-Tag und wird beim wöchentlichen Lernen übersprungen ({dayKcal} kcal Tag).",
   "@burnWeekUseHeartMessage": {
     "placeholders": {
       "dayKcal": {
@@ -921,9 +948,10 @@
   "burnWeekActionCancel": "Abbrechen",
   "burnWeekActionYes": "Ja",
   "burnWeekActionNo": "Nein",
-  "burnWeekActionRemoveDayKcal": "-1 Tages-kcal",
-  "burnWeekActionAddDayKcal": "+1 Tages-kcal",
   "burnWeekRunOverTitle": "Run beendet",
+  "burnWeekRunLimitTitle": "Run kann nicht perfekt enden",
+  "burnWeekRunLimitContinueAction": "Trotzdem weitermachen",
+  "burnWeekRunLimitStartNewAction": "Neuen Run starten",
   "burnWeekRunRestartsOn": "Frischer Run startet am {date}.",
   "@burnWeekRunRestartsOn": {
     "placeholders": {
@@ -940,14 +968,14 @@
   },
   "burnWeekZoneOutOfSafeZoneTitle": "Außerhalb der Sicherheitszone",
   "burnWeekZoneBelowRecoverMessage":
-      "Du liegst unter dem Ziel. Nutze 1 Herz für einen ganzen Burn-Tag-Sprung oder iss mehr, um wieder ins Ziel zu kommen.",
+      "Du liegst unter dem Ziel. Nutze 1 Herz, um heute als perfekten Herztag zu markieren, oder iss mehr, um wieder ins Ziel zu kommen.",
   "burnWeekZoneBelowRecoverNoHeartsMessage":
       "Du liegst unter dem Ziel. Keine Herzen mehr übrig. Iss mehr, um wieder ins Ziel zu kommen.",
   "burnWeekZoneBelowNeedsHeartTitle": "Zu weit unter dem Ziel",
   "burnWeekZoneBelowNeedsHeartMessage":
-      "In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. 1 Herz zur Wiederherstellung nutzen?",
+      "In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. 1 Herz nutzen und heute als perfekten Herztag markieren?",
   "burnWeekZoneBelowRunOverMessage":
-      "In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. Keine Herzen mehr übrig, daher startet am nächsten Tag ein frischer Run.",
+      "In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen, und keine Herzen sind übrig. Mach trotzdem weiter oder starte morgen einen frischen Run.",
   "burnWeekZoneEatMoreTitle": "Mehr essen",
   "burnWeekZoneEatMoreAction": "Mehr essen",
   "burnWeekZoneEatMoreMessage":
@@ -956,9 +984,9 @@
   "burnWeekZoneAboveFastMessage":
       "Du hast zu viel getrackt. Fasten hilft dir, wieder in Spur zu kommen.",
   "burnWeekZoneAboveNeedsHeartMessage":
-      "Du liegst weit über dem Wochenlimit. 1 Herz nutzen, um einen ganzen Burn-Tag an Kalorien zu entfernen?",
+      "Du liegst weit über dem Wochenlimit. 1 Herz nutzen und heute als perfekten Herztag markieren?",
   "burnWeekZoneAboveRunOverMessage":
-      "Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.",
+      "Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run kann nicht perfekt enden. Mach trotzdem weiter oder starte morgen einen frischen Run.",
   "calorieBudgetDetailsActualLabel": "Ist (du)",
   "calorieBudgetDetailsTargetLabel": "Soll (Ziel)",
   "calorieBudgetDetailsBalanceExplanation":
@@ -972,7 +1000,7 @@
   "burnWeekDetailsWeekTarget": "Wochenziel",
   "burnWeekDetailsCurrentTime": "Aktuelle Zeit",
   "burnWeekDetailsStarsHearts": "Sterne / Herzen",
-  "burnWeekDetailsHeartKcalUsed": "Verbrauchte Herz-kcal",
+  "burnWeekDetailsHeartKcalUsed": "Herz-Anpassung",
   "burnWeekDetailsWeekRatio": "Wochenfortschritt",
   "burnWeekDetailsTargetFormula": "Zielformel",
   "burnWeekDetailsLoggedFoodSoFar": "Bisher erfasstes Essen",
@@ -1155,6 +1183,9 @@
       "kcal": {}
     }
   },
+  "diaryBalanceHeartDayValue": "Herztag",
+  "diaryBalanceHeartDaySubtitle": "Für Lernen ignoriert",
+  "diaryBalanceRevertHeartDayAction": "Herztag zurücknehmen",
   "diaryScrollToTopAction": "Nach oben",
   "diaryJumpToMealsAction": "Zum Tagebuch",
   "diaryIntroBackAction": "Zurück",

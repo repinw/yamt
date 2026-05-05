@@ -10,15 +10,22 @@ void main() {
     expect(usesBurnWeekMockFallbackGoal(2200), isFalse);
   });
 
-  test('difficulty tiers shrink hearts and safe zone at higher stars', () {
-    expect(resolveBurnWeekMockDifficulty(0).label, 'Learning');
-    expect(resolveBurnWeekMockDifficulty(2).label, 'Steady');
-    expect(resolveBurnWeekMockDifficulty(4).label, 'Solid');
-    expect(resolveBurnWeekMockDifficulty(6).label, 'Elite');
-    expect(resolveBurnWeekMockDifficulty(8).label, 'Master');
-    expect(resolveBurnWeekMockDifficulty(8).minimumHearts, 1);
-    expect(resolveBurnWeekMockDifficulty(8).safeZoneMultiplier, 0.4);
-  });
+  test(
+    'difficulty tiers keep one heart and shrink safe zone at higher stars',
+    () {
+      expect(resolveBurnWeekMockDifficulty(0).label, 'Learning');
+      expect(resolveBurnWeekMockDifficulty(2).label, 'Steady');
+      expect(resolveBurnWeekMockDifficulty(4).label, 'Solid');
+      expect(resolveBurnWeekMockDifficulty(6).label, 'Elite');
+      expect(resolveBurnWeekMockDifficulty(8).label, 'Master');
+      expect(resolveBurnWeekMockDifficulty(0).minimumHearts, 1);
+      expect(resolveBurnWeekMockDifficulty(2).minimumHearts, 1);
+      expect(resolveBurnWeekMockDifficulty(4).minimumHearts, 1);
+      expect(resolveBurnWeekMockDifficulty(6).minimumHearts, 1);
+      expect(resolveBurnWeekMockDifficulty(8).minimumHearts, 1);
+      expect(resolveBurnWeekMockDifficulty(8).safeZoneMultiplier, 0.4);
+    },
+  );
 
   test('metrics use cumulative weekly target and full week bar', () {
     final metrics = resolveBurnWeekMockMetrics(
@@ -111,7 +118,7 @@ void main() {
     );
   });
 
-  test('heart spend breaks star or spends the last heart', () {
+  test('heart spend decrements counter and may break star', () {
     final breakResult = resolveBurnWeekHeartSpend(
       starCount: 2,
       heartCount: 1,
@@ -126,7 +133,7 @@ void main() {
     );
 
     expect(breakResult.starCount, 1);
-    expect(breakResult.heartCount, 3);
+    expect(breakResult.heartCount, 0);
     expect(breakResult.heartCreditKcal, -200);
     expect(breakResult.didBreakStar, isTrue);
     expect(breakResult.didResetRun, isFalse);

@@ -27,6 +27,27 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeQuickActionTooltip => 'Schnellaktion';
 
   @override
+  String homeHeartCounterUseTooltip(String day) {
+    return 'Herz für $day nutzen';
+  }
+
+  @override
+  String homeHeartCounterActiveTooltip(String day) {
+    return '$day ist bereits ein Herztag';
+  }
+
+  @override
+  String get homeHeartCounterEmptyTooltip => 'Keine Herzen übrig';
+
+  @override
+  String get homeHeartUseTitle => 'Herztag nutzen?';
+
+  @override
+  String homeHeartUseMessage(String day) {
+    return 'Gib 1 Herz aus, um $day zu ignorieren. Erfasstes Essen bleibt im Tagebuch, aber der Tag zählt als perfekt und wird beim Wochenlernen übersprungen.';
+  }
+
+  @override
   String get inventoryFabTooltip => 'Belegaktionen';
 
   @override
@@ -1849,11 +1870,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Kalorien-Debug-Tabelle konnte nicht ausgegeben werden.';
 
   @override
-  String get burnWeekUseHeartTitle => 'Herz einsetzen?';
+  String get burnWeekUseHeartTitle => 'Herztag nutzen?';
 
   @override
   String burnWeekUseHeartMessage(int dayKcal) {
-    return '1 Herz kann einen ganzen Burn-Tag an Kalorien hinzufügen oder abziehen ($dayKcal kcal).';
+    return 'Setze 1 Herz ein, um heute zu ignorieren. Eingetragenes Essen bleibt im Tagebuch, aber heute zählt als perfekter Burn-Tag und wird beim wöchentlichen Lernen übersprungen ($dayKcal kcal Tag).';
   }
 
   @override
@@ -1866,13 +1887,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekActionNo => 'Nein';
 
   @override
-  String get burnWeekActionRemoveDayKcal => '-1 Tages-kcal';
-
-  @override
-  String get burnWeekActionAddDayKcal => '+1 Tages-kcal';
-
-  @override
   String get burnWeekRunOverTitle => 'Run beendet';
+
+  @override
+  String get burnWeekRunLimitTitle => 'Run kann nicht perfekt enden';
+
+  @override
+  String get burnWeekRunLimitContinueAction => 'Trotzdem weitermachen';
+
+  @override
+  String get burnWeekRunLimitStartNewAction => 'Neuen Run starten';
 
   @override
   String burnWeekRunRestartsOn(Object date) {
@@ -1892,7 +1916,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get burnWeekZoneBelowRecoverMessage =>
-      'Du liegst unter dem Ziel. Nutze 1 Herz für einen ganzen Burn-Tag-Sprung oder iss mehr, um wieder ins Ziel zu kommen.';
+      'Du liegst unter dem Ziel. Nutze 1 Herz, um heute als perfekten Herztag zu markieren, oder iss mehr, um wieder ins Ziel zu kommen.';
 
   @override
   String get burnWeekZoneBelowRecoverNoHeartsMessage =>
@@ -1903,11 +1927,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get burnWeekZoneBelowNeedsHeartMessage =>
-      'In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. 1 Herz zur Wiederherstellung nutzen?';
+      'In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. 1 Herz nutzen und heute als perfekten Herztag markieren?';
 
   @override
   String get burnWeekZoneBelowRunOverMessage =>
-      'In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. Keine Herzen mehr übrig, daher startet am nächsten Tag ein frischer Run.';
+      'In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen, und keine Herzen sind übrig. Mach trotzdem weiter oder starte morgen einen frischen Run.';
 
   @override
   String get burnWeekZoneEatMoreTitle => 'Mehr essen';
@@ -1928,11 +1952,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get burnWeekZoneAboveNeedsHeartMessage =>
-      'Du liegst weit über dem Wochenlimit. 1 Herz nutzen, um einen ganzen Burn-Tag an Kalorien zu entfernen?';
+      'Du liegst weit über dem Wochenlimit. 1 Herz nutzen und heute als perfekten Herztag markieren?';
 
   @override
   String get burnWeekZoneAboveRunOverMessage =>
-      'Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.';
+      'Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run kann nicht perfekt enden. Mach trotzdem weiter oder starte morgen einen frischen Run.';
 
   @override
   String get calorieBudgetDetailsActualLabel => 'Ist (du)';
@@ -1972,7 +1996,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekDetailsStarsHearts => 'Sterne / Herzen';
 
   @override
-  String get burnWeekDetailsHeartKcalUsed => 'Verbrauchte Herz-kcal';
+  String get burnWeekDetailsHeartKcalUsed => 'Herz-Anpassung';
 
   @override
   String get burnWeekDetailsWeekRatio => 'Wochenfortschritt';
@@ -2327,6 +2351,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String diaryBalanceHeartAdjustmentLabel(Object kcal) {
     return 'Herz $kcal';
   }
+
+  @override
+  String get diaryBalanceHeartDayValue => 'Herztag';
+
+  @override
+  String get diaryBalanceHeartDaySubtitle => 'Für Lernen ignoriert';
+
+  @override
+  String get diaryBalanceRevertHeartDayAction => 'Herztag zurücknehmen';
 
   @override
   String get diaryScrollToTopAction => 'Nach oben';

@@ -110,6 +110,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     required this.actions,
     super.key,
     this.compact = false,
+    this.middle,
     this.preferredHeight,
     this.titleColor,
     this.titleIcon,
@@ -124,6 +125,9 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Whether to use compact spacing for tight layouts.
   final bool compact;
+
+  /// Optional widget shown between title and actions.
+  final Widget? middle;
 
   /// Optional precomputed preferred height for context-dependent layouts.
   final double? preferredHeight;
@@ -259,6 +263,10 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
                         ],
                       ),
                     ),
+                    if (middle != null) ...[
+                      SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
+                      middle!,
+                    ],
                     if (actions.isNotEmpty)
                       SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
                     ...actions,

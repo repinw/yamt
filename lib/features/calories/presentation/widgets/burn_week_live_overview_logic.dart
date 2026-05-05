@@ -24,7 +24,9 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
   required double plannedLaterTodayKcal,
   required double safeZoneMultiplier,
 }) {
-  final dayProgress = resolveBurnWeekCurrentDayProgress(now);
+  final dayProgress = todayOverview.isHeartDay
+      ? 1.0
+      : resolveBurnWeekCurrentDayProgress(now);
   final fallbackDailyGoalKcal = resolveBurnWeekMockGoalKcal(
     todayOverview.goalKcal,
   );
@@ -59,9 +61,12 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
         return sum;
       }
       if (isSameDiaryDay(day.date, todayOverview.date)) {
+        if (day.isHeartDay) {
+          return sum + day.goalKcal;
+        }
         return sum + math.max<double>(0, day.totalKcal - plannedLaterTodayKcal);
       }
-      return sum + day.totalKcal;
+      return sum + day.countedTotalKcal;
     },
   );
   final consumedKcal = actualConsumedKcal + heartCreditKcal;
@@ -123,7 +128,7 @@ double resolveBurnWeekCarryoverBeforeTodayKcal({
         .map(
           (day) => CalorieCarryoverDay(
             goalKcal: day.baseGoalKcal,
-            consumedKcal: day.totalKcal,
+            consumedKcal: day.countedBaseTotalKcal,
           ),
         ),
   );
@@ -275,6 +280,7 @@ bool resolveBurnWeekLiveMissedTrackingThisWeek({
   required DateTime currentWeekStartDate,
   required DateTime today,
   required CalorieGoalSettings settings,
+  required Set<String> heartDayKeys,
 }) {
   return weekOverview.days.any((day) {
     final normalizedDay = normalizeDiaryDay(day.date);
@@ -287,6 +293,9 @@ bool resolveBurnWeekLiveMissedTrackingThisWeek({
     if (settings.isSkippedIntakeDay(normalizedDay)) {
       return false;
     }
+    if (heartDayKeys.contains(diaryDayKey(normalizedDay))) {
+      return false;
+    }
     return day.entryCount == 0;
   });
 }
@@ -297,6 +306,7 @@ bool resolveBurnWeekLiveMissedTrackingForStoredWeek({
   required DateTime storedWeekStartDate,
   required DateTime today,
   required CalorieGoalSettings settings,
+  required Set<String> heartDayKeys,
 }) {
   return storedWeekSnapshot.days.any((day) {
     final normalizedDay = normalizeDiaryDay(day.date);
@@ -307,6 +317,9 @@ bool resolveBurnWeekLiveMissedTrackingForStoredWeek({
       return false;
     }
     if (settings.isSkippedIntakeDay(normalizedDay)) {
+      return false;
+    }
+    if (heartDayKeys.contains(diaryDayKey(normalizedDay))) {
       return false;
     }
     return day.entryCount == 0;

@@ -4,8 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
+import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
@@ -245,6 +248,10 @@ class HomePage extends ConsumerWidget {
     final diaryCalendarState = currentTab == HomeTabType.diary
         ? ref.watch(diaryCalendarControllerProvider)
         : null;
+    final burnWeekRunState = ref
+        .watch(burnWeekRunControllerProvider)
+        .asData
+        ?.value;
     final topBarTitle = _titleForTab(
       l10n,
       selectionState,
@@ -272,6 +279,7 @@ class HomePage extends ConsumerWidget {
         appBar: HomeTopBar(
           title: topBarTitle,
           subtitle: topBarSubtitle,
+          middle: _buildMiddle(burnWeekRunState),
           titleColor: colors.primary,
           compact: compactHomeChrome,
           preferredHeight: HomeTopBar.preferredHeightFor(
@@ -310,6 +318,14 @@ class HomePage extends ConsumerWidget {
       return null;
     }
     return const InventoryActionFab();
+  }
+
+  Widget? _buildMiddle(BurnWeekRunState? runState) {
+    if (runState == null ||
+        runState.runWeekNumber <= burnWeekLearningRunWeekNumber) {
+      return null;
+    }
+    return HomeHeartCounterButton(runState: runState);
   }
 
   void _showSnackBar(BuildContext context, String message) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -56,6 +57,23 @@ void main() {
 
     expect(find.text('27'), findsOneWidget);
   });
+
+  testWidgets('calendar strip colors heart days', (tester) async {
+    final today = DateTime(2026, 4, 27);
+
+    await _pumpCalendarStrip(
+      tester,
+      today: today,
+      selectedDay: today,
+      todayRequest: 0,
+      heartDayKeys: const <String>{'2026-4-28'},
+      onSelectDay: (_) {},
+    );
+
+    final heartDayText = tester.widget<Text>(find.text('28'));
+
+    expect(heartDayText.style?.color, DiaryAccentColors.fallback.heart);
+  });
 }
 
 Future<void> _pumpCalendarStrip(
@@ -64,6 +82,7 @@ Future<void> _pumpCalendarStrip(
   required DateTime selectedDay,
   required int todayRequest,
   required ValueChanged<DateTime> onSelectDay,
+  Set<String> heartDayKeys = const <String>{},
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -78,6 +97,7 @@ Future<void> _pumpCalendarStrip(
               today: today,
               selectedDay: selectedDay,
               todayRequest: todayRequest,
+              heartDayKeys: heartDayKeys,
               onSelectDay: onSelectDay,
             ),
           ),
