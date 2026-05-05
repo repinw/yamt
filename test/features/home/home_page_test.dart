@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -231,6 +232,7 @@ CalorieWeekOverview _weekOverview(DateTime selectedDay) {
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
 ])
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
@@ -367,6 +369,7 @@ Widget _buildHarness({
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
 ])
 void main() {
   testWidgets('diary tab does not show the context fab', (tester) async {
@@ -532,6 +535,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(InventoryActionFab), findsNothing);
+    expect(find.byType(ExpandableFab), findsNothing);
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
@@ -577,6 +581,19 @@ void main() {
 
     expect(find.byType(InventoryActionFab), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
+    final expandableFab = tester.widget<ExpandableFab>(
+      find.byType(ExpandableFab),
+    );
+    final scaffoldFinder = find.ancestor(
+      of: find.byType(InventoryActionFab),
+      matching: find.byType(Scaffold),
+    );
+    final scaffold = tester.widget<Scaffold>(scaffoldFinder.first);
+    expect(expandableFab.duration, Duration.zero);
+    expect(
+      scaffold.floatingActionButtonAnimator,
+      FloatingActionButtonAnimator.noAnimation,
+    );
   });
 
   testWidgets('inventory tab shows shell fab when only inventory items exist', (
@@ -600,7 +617,7 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('inventory snackbar lays out with expandable fab', (
+  testWidgets('inventory snackbar lays out with inventory fab', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(384, 832));

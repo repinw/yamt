@@ -18,6 +18,7 @@ import 'package:yamt/features/inventory/provider/'
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -31,6 +32,7 @@ const _settingsBranchIndex = 3;
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
 ])
 class HomePage extends ConsumerWidget {
   /// The home page.
@@ -300,6 +302,9 @@ class HomePage extends ConsumerWidget {
         floatingActionButtonLocation: floatingActionButton is InventoryActionFab
             ? ExpandableFab.location
             : FloatingActionButtonLocation.endFloat,
+        floatingActionButtonAnimator: floatingActionButton is InventoryActionFab
+            ? FloatingActionButtonAnimator.noAnimation
+            : null,
         floatingActionButton: floatingActionButton,
         bottomNavigationBar: HomeBottomNavBar(
           entries: _navEntries(context, l10n),

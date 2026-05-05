@@ -42,6 +42,7 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -385,6 +386,7 @@ ShoppingListItem _shoppingItem(
   preparedMealImagePicker,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 Widget _buildTestApp(
@@ -457,6 +459,7 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   preparedMealImagePicker,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
@@ -480,6 +483,14 @@ void main() {
       find.byKey(const Key('inventory_empty_state_fab_highlight')),
       findsOneWidget,
     );
+    final highlightCenter = tester.getCenter(
+      find.byKey(const Key('inventory_empty_state_fab_highlight')),
+    );
+    final fabCenter = tester.getCenter(
+      find.byKey(const Key('inventory_action_fab_button')),
+    );
+    expect(fabCenter.dx, moreOrLessEquals(highlightCenter.dx));
+    expect(fabCenter.dy, moreOrLessEquals(highlightCenter.dy));
   });
 
   testWidgets('empty state card stays above fab overlay chrome', (

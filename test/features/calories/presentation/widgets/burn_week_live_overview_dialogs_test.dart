@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -11,13 +13,15 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekSimpleDialog(
-          context: context,
-          title: 'Mock warning',
-          message: 'Mock body',
-          onRouteReady: (_, _) {
-            routeReadyCount += 1;
-          },
+        unawaited(
+          showBurnWeekSimpleDialog(
+            context: context,
+            title: 'Mock warning',
+            message: 'Mock body',
+            onRouteReady: (_, _) {
+              routeReadyCount += 1;
+            },
+          ),
         );
       },
     );
@@ -40,11 +44,13 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekUseHeartDialog(context: context, dayKcal: 2000).then((
-          action,
-        ) {
-          result = action;
-        });
+        unawaited(
+          showBurnWeekUseHeartDialog(context: context, dayKcal: 2000).then((
+            action,
+          ) {
+            result = action;
+          }),
+        );
       },
     );
 
@@ -65,12 +71,14 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekBelowRecoverDialog(
-          context: context,
-          hasHearts: true,
-        ).then((action) {
-          eatMoreResult = action;
-        });
+        unawaited(
+          showBurnWeekBelowRecoverDialog(
+            context: context,
+            hasHearts: true,
+          ).then((action) {
+            eatMoreResult = action;
+          }),
+        );
       },
     );
 
@@ -84,12 +92,14 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekBelowRecoverDialog(
-          context: context,
-          hasHearts: true,
-        ).then((action) {
-          heartResult = action;
-        });
+        unawaited(
+          showBurnWeekBelowRecoverDialog(
+            context: context,
+            hasHearts: true,
+          ).then((action) {
+            heartResult = action;
+          }),
+        );
       },
     );
 
@@ -107,9 +117,11 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekBelowRecoverDialog(
-          context: context,
-          hasHearts: false,
+        unawaited(
+          showBurnWeekBelowRecoverDialog(
+            context: context,
+            hasHearts: false,
+          ),
         );
       },
     );
@@ -128,9 +140,11 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekBelowNeedsHeartDialog(context).then((confirmed) {
-          belowResult = confirmed;
-        });
+        unawaited(
+          showBurnWeekBelowNeedsHeartDialog(context).then((confirmed) {
+            belowResult = confirmed;
+          }),
+        );
       },
     );
 
@@ -144,9 +158,11 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekAboveNeedsHeartDialog(context).then((confirmed) {
-          aboveResult = confirmed;
-        });
+        unawaited(
+          showBurnWeekAboveNeedsHeartDialog(context).then((confirmed) {
+            aboveResult = confirmed;
+          }),
+        );
       },
     );
 
@@ -165,12 +181,14 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekRunLimitDialog(
-          context: context,
-          message: 'Cannot recover this week.',
-        ).then((action) {
-          continueResult = action;
-        });
+        unawaited(
+          showBurnWeekRunLimitDialog(
+            context: context,
+            message: 'Cannot recover this week.',
+          ).then((action) {
+            continueResult = action;
+          }),
+        );
       },
     );
 
@@ -184,12 +202,14 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekRunLimitDialog(
-          context: context,
-          message: 'Cannot recover this week.',
-        ).then((action) {
-          restartResult = action;
-        });
+        unawaited(
+          showBurnWeekRunLimitDialog(
+            context: context,
+            message: 'Cannot recover this week.',
+          ).then((action) {
+            restartResult = action;
+          }),
+        );
       },
     );
 
@@ -207,29 +227,31 @@ void main() {
     await _pumpDialogLauncher(
       tester,
       onPressed: (context) {
-        showBurnWeekDetailsDialog(
-          context: context,
-          data: const BurnWeekLiveDetailsData(
-            actualText: '123 kcal',
-            targetText: '456 kcal',
-            dailyGoalText: '2000 kcal',
-            weeklyGoalText: '14000 kcal',
-            currentTimeLabel: 'day 3 noon',
-            weekRatioText: '0.42',
-            targetFormulaText: 'goal x time',
-            weekEatenSoFarText: '4000 kcal',
-            plannedLaterTodayText: '300 kcal',
-            todayBudgetText: '2100 kcal',
-            todayFoodText: '900 kcal',
-            todayLeftText: '1200 kcal',
-            weekActivityBonusText: '80 kcal',
-            weekCarryoverText: '-40 kcal',
-            previousWeekOverflowText: '20 kcal',
-            weekRemainingAfterFoodText: '10000 kcal',
-            safeMinText: '1700 kcal',
-            safeMaxText: '2300 kcal',
-            starsHeartsText: '2 / 1',
-            heartCreditText: '0 kcal',
+        unawaited(
+          showBurnWeekDetailsDialog(
+            context: context,
+            data: const BurnWeekLiveDetailsData(
+              actualText: '123 kcal',
+              targetText: '456 kcal',
+              dailyGoalText: '2000 kcal',
+              weeklyGoalText: '14000 kcal',
+              currentTimeLabel: 'day 3 noon',
+              weekRatioText: '0.42',
+              targetFormulaText: 'goal x time',
+              weekEatenSoFarText: '4000 kcal',
+              plannedLaterTodayText: '300 kcal',
+              todayBudgetText: '2100 kcal',
+              todayFoodText: '900 kcal',
+              todayLeftText: '1200 kcal',
+              weekActivityBonusText: '80 kcal',
+              weekCarryoverText: '-40 kcal',
+              previousWeekOverflowText: '20 kcal',
+              weekRemainingAfterFoodText: '10000 kcal',
+              safeMinText: '1700 kcal',
+              safeMaxText: '2300 kcal',
+              starsHeartsText: '2 / 1',
+              heartCreditText: '0 kcal',
+            ),
           ),
         );
       },

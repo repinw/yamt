@@ -23,6 +23,7 @@ import 'package:yamt/l10n/app_localizations.dart';
   InventoryItemsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
 ])
 class InventoryActionSheetFlow {
   const InventoryActionSheetFlow._();

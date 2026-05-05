@@ -8,12 +8,12 @@ part of 'daily_learned_tdee_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Resolve optional daily learned TDEE override for [day].
+/// Resolve optional learned TDEE override for [day].
 
 @ProviderFor(dailyLearnedTdeeGoalForDay)
 final dailyLearnedTdeeGoalForDayProvider = DailyLearnedTdeeGoalForDayFamily._();
 
-/// Resolve optional daily learned TDEE override for [day].
+/// Resolve optional learned TDEE override for [day].
 
 final class DailyLearnedTdeeGoalForDayProvider
     extends
@@ -25,7 +25,7 @@ final class DailyLearnedTdeeGoalForDayProvider
     with
         $FutureModifier<DailyLearnedTdeeGoalData?>,
         $FutureProvider<DailyLearnedTdeeGoalData?> {
-  /// Resolve optional daily learned TDEE override for [day].
+  /// Resolve optional learned TDEE override for [day].
   DailyLearnedTdeeGoalForDayProvider._({
     required DailyLearnedTdeeGoalForDayFamily super.from,
     required ({DateTime day, DateTime today, double storedGoalKcal})
@@ -80,9 +80,9 @@ final class DailyLearnedTdeeGoalForDayProvider
 }
 
 String _$dailyLearnedTdeeGoalForDayHash() =>
-    r'ccb01331690a522dca4586dc0f2d51da0cabbf8d';
+    r'cb828d019ce440c58082f7d92347b16fc2ce7f3d';
 
-/// Resolve optional daily learned TDEE override for [day].
+/// Resolve optional learned TDEE override for [day].
 
 final class DailyLearnedTdeeGoalForDayFamily extends $Family
     with
@@ -99,7 +99,7 @@ final class DailyLearnedTdeeGoalForDayFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Resolve optional daily learned TDEE override for [day].
+  /// Resolve optional learned TDEE override for [day].
 
   DailyLearnedTdeeGoalForDayProvider call({
     required DateTime day,
