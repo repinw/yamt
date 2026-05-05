@@ -16,6 +16,191 @@ import '../support/fake_calories_repositories.dart';
 
 void main() {
   test(
+    'syncPendingWeeklyCheckIn skips save when same pending exists',
+    () async {
+      final pendingWeeklyCheckIn = _pendingWeeklyCheckIn();
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: _settingsWithGoal().copyWithPendingWeeklyCheckIn(
+          pendingWeeklyCheckIn,
+        ),
+      )..saveShouldFail = true;
+      addTearDown(settingsRepository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(calorieGoalControllerProvider.future);
+
+      final synced = await container
+          .read(calorieWeeklyCheckInControllerProvider.notifier)
+          .syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
+
+      expect(synced, isTrue);
+      final settings = await settingsRepository.readSettings();
+      expect(
+        settings.pendingWeeklyCheckIn?.windowKey,
+        pendingWeeklyCheckIn.windowKey,
+      );
+    },
+  );
+
+  test('dismissPendingWeeklyCheckIn syncs and dismisses pending', () async {
+    final pendingWeeklyCheckIn = _pendingWeeklyCheckIn();
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: _settingsWithGoal(),
+    );
+    addTearDown(settingsRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final dismissed = await container
+        .read(calorieWeeklyCheckInControllerProvider.notifier)
+        .dismissPendingWeeklyCheckIn(pendingWeeklyCheckIn);
+
+    expect(dismissed, isTrue);
+    final settings = await settingsRepository.readSettings();
+    expect(settings.pendingWeeklyCheckIn?.isDismissed, isTrue);
+    expect(
+      container.read(calorieWeeklyCheckInControllerProvider).hasError,
+      isFalse,
+    );
+  });
+
+  test('dismissPendingWeeklyCheckIn reports sync failure', () async {
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: _settingsWithGoal(),
+    )..saveShouldFail = true;
+    addTearDown(settingsRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final dismissed = await container
+        .read(calorieWeeklyCheckInControllerProvider.notifier)
+        .dismissPendingWeeklyCheckIn(_pendingWeeklyCheckIn());
+
+    expect(dismissed, isFalse);
+    expect(
+      container.read(calorieWeeklyCheckInControllerProvider).hasError,
+      isTrue,
+    );
+  });
+
+  test(
+    'syncLearnedTdeeCache ignores blocked or incomplete view models',
+    () async {
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: _settingsWithGoal(),
+      )..saveShouldFail = true;
+      addTearDown(settingsRepository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final controller = container.read(
+        calorieWeeklyCheckInControllerProvider.notifier,
+      );
+      final incomplete = await controller.syncLearnedTdeeCache(
+        _weeklyCheckInViewModel(
+          pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
+          withoutCalculation: true,
+        ),
+      );
+      final blocked = await controller.syncLearnedTdeeCache(
+        _weeklyCheckInViewModel(
+          pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
+          blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
+        ),
+      );
+
+      expect(incomplete, isTrue);
+      expect(blocked, isTrue);
+      expect((await settingsRepository.readSettings()).hasLearnedTdee, isFalse);
+    },
+  );
+
+  test('applyWeeklyCheckIn reports learned cache save failure', () async {
+    final pendingWeeklyCheckIn = _pendingWeeklyCheckIn();
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: _settingsWithGoal().copyWithPendingWeeklyCheckIn(
+        pendingWeeklyCheckIn,
+      ),
+    )..saveShouldFail = true;
+    addTearDown(settingsRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final applied = await container
+        .read(calorieWeeklyCheckInControllerProvider.notifier)
+        .applyWeeklyCheckIn(
+          _weeklyCheckInViewModel(
+            pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+          ),
+        );
+
+    expect(applied, isFalse);
+    expect(
+      container.read(calorieWeeklyCheckInControllerProvider).hasError,
+      isTrue,
+    );
+  });
+
+  test('applyWeeklyCheckIn returns false for blocked view model', () async {
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: _settingsWithGoal(),
+    );
+    addTearDown(settingsRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final applied = await container
+        .read(calorieWeeklyCheckInControllerProvider.notifier)
+        .applyWeeklyCheckIn(
+          _weeklyCheckInViewModel(
+            pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
+            blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
+          ),
+        );
+
+    expect(applied, isFalse);
+  });
+
+  test(
     'applyWeeklyCheckIn stores learned cache without changing active goal',
     () async {
       final goalStart = DateTime(2026, 4, 8);
@@ -381,6 +566,9 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
   PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
   PendingCalorieGoalWeeklyCheckIn? cacheWeeklyCheckIn,
+  bool withoutCalculation = false,
+  CalorieWeeklyCheckInCalculation? calculation,
+  CalorieWeeklyCheckInBlockedReason? blockedReason,
 }) {
   assert(
     pendingWeeklyCheckIn != null || cacheWeeklyCheckIn != null,
@@ -391,18 +579,10 @@ CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
     cacheWeeklyCheckIn: cacheWeeklyCheckIn,
     shouldAutoOpen: false,
     days: const <CalorieWeeklyCheckInWindowDay>[],
-    calculation: const CalorieWeeklyCheckInCalculation(
-      trendWeightChangePerDay: -0.10893,
-      averageIntakeKcal: 2460.85,
-      measuredTrueTdeeKcal: 3223.35,
-      calculatedTrueTdeeKcal: 2665.82,
-      newGoalKcal: 2626.875,
-      lastWeekAverageActiveKcal: 300,
-      todayActiveKcal: 8,
-      activityDeltaKcal: 0,
-      dynamicGoalTodayKcal: 2626.875,
-    ),
-    blockedReason: null,
+    calculation: withoutCalculation
+        ? null
+        : calculation ?? _defaultWeeklyCheckInCalculation,
+    blockedReason: blockedReason,
     missingIntakeDays: const <DateTime>[],
     missingWeightDays: const <DateTime>[],
     freshness: CalorieLearnedTdeeFreshness.none,
@@ -410,3 +590,41 @@ CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
     lowConfidence: false,
   );
 }
+
+PendingCalorieGoalWeeklyCheckIn _pendingWeeklyCheckIn() {
+  final goalStart = DateTime(2026, 4, 8);
+  return PendingCalorieGoalWeeklyCheckIn(
+    windowStartDate: goalStart,
+    windowEndDate: DateTime(2026, 4, 14),
+    dueDate: DateTime(2026, 4, 15),
+  );
+}
+
+CalorieGoalSettings _settingsWithGoal() {
+  return CalorieGoalSettings.single(
+    dailyKcalGoal: 2426.875,
+    calculatorProfile: const CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.male,
+      weightKg: 84,
+      heightCm: 172,
+      ageYears: 31,
+      activityLevel: 1.375,
+      goalMode: CalorieGoalMode.maintain,
+      goalSpeedKgPerWeek: 0,
+    ),
+    effectiveDate: DateTime(2026, 4, 8),
+    source: CalorieGoalSource.calculator,
+  );
+}
+
+const _defaultWeeklyCheckInCalculation = CalorieWeeklyCheckInCalculation(
+  trendWeightChangePerDay: -0.10893,
+  averageIntakeKcal: 2460.85,
+  measuredTrueTdeeKcal: 3223.35,
+  calculatedTrueTdeeKcal: 2665.82,
+  newGoalKcal: 2626.875,
+  lastWeekAverageActiveKcal: 300,
+  todayActiveKcal: 8,
+  activityDeltaKcal: 0,
+  dynamicGoalTodayKcal: 2626.875,
+);
