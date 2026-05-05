@@ -20,8 +20,14 @@ import 'package:yamt/l10n/app_localizations.dart';
   ReceiptBatchFlowController,
 ])
 class InventoryActionFab extends ConsumerStatefulWidget {
-  /// The inventory action fab.
-  const InventoryActionFab({super.key});
+  /// The inventory action fab for the shell Scaffold slot.
+  const InventoryActionFab({super.key}) : embedded = false;
+
+  /// The inventory action fab for inline empty-state placement.
+  const InventoryActionFab.embedded({super.key}) : embedded = true;
+
+  /// Whether to render inside normal content instead of Scaffold FAB chrome.
+  final bool embedded;
 
   @override
   ConsumerState<InventoryActionFab> createState() => _InventoryActionFabState();
@@ -41,10 +47,27 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
         flowState.isLoading ||
         batchState.status == ReceiptBatchFlowStatus.running;
 
+    if (widget.embedded) {
+      return _InventoryMainFabButton(
+        buttonKey: const Key('inventory_action_fab_button'),
+        isBusy: isBusy,
+        icon: Icons.add_rounded,
+        tooltip: l10n.inventoryFabTooltip,
+        onPressed: isBusy
+            ? null
+            : () => _showActionsSheet(
+                context: context,
+                l10n: l10n,
+                isCameraEnabled: isCameraEnabled,
+              ),
+      );
+    }
+
     return ExpandableFab(
       key: _fabKey,
       type: ExpandableFabType.up,
       distance: 64,
+      duration: Duration.zero,
       childrenAnimation: ExpandableFabAnimation.none,
       overlayStyle: ExpandableFabOverlayStyle(
         color: colors.scrim.withValues(alpha: 0.08),
@@ -53,6 +76,7 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
         size: AppInventoryEditorial.contextFabSize,
         builder: (context, onPressed, progress) {
           return _InventoryMainFabButton(
+            buttonKey: const Key('inventory_action_fab_button'),
             isBusy: isBusy,
             icon: Icons.add_rounded,
             tooltip: l10n.inventoryFabTooltip,
@@ -141,6 +165,64 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
     _fabKey.currentState?.close();
     unawaited(action());
   }
+
+  void _showActionsSheet({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required bool isCameraEnabled,
+  }) {
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        useRootNavigator: true,
+        useSafeArea: true,
+        sheetAnimationStyle: AnimationStyle.noAnimation,
+        builder: (sheetContext) {
+          return _InventoryFabActionSheet(
+            isCameraEnabled: isCameraEnabled,
+            onManualSearch: () => _closeAndRun(
+              sheetContext,
+              () => InventoryActionSheetFlow.openManualSearch(
+                context: context,
+                l10n: l10n,
+              ),
+            ),
+            onAiSuggestion: () => _closeAndRun(
+              sheetContext,
+              () => InventoryActionSheetFlow.openAiSuggestion(
+                context: context,
+                l10n: l10n,
+              ),
+            ),
+            onUploadFile: () => _closeAndRun(
+              sheetContext,
+              () => InventoryActionSheetFlow.uploadFile(
+                context: context,
+                ref: ref,
+                l10n: l10n,
+              ),
+            ),
+            onScanCamera: () => _closeAndRun(
+              sheetContext,
+              () => InventoryActionSheetFlow.scanCamera(
+                context: context,
+                ref: ref,
+                l10n: l10n,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _closeAndRun(
+    BuildContext sheetContext,
+    Future<void> Function() action,
+  ) {
+    Navigator.of(sheetContext).pop();
+    unawaited(action());
+  }
 }
 
 class _InventoryMainFabButton extends StatelessWidget {
@@ -149,12 +231,14 @@ class _InventoryMainFabButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.buttonKey,
   });
 
   final bool isBusy;
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
+  final Key? buttonKey;
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +254,7 @@ class _InventoryMainFabButton extends StatelessWidget {
         border: Border.all(color: colors.primary),
       ),
       child: SizedBox.square(
+        key: buttonKey,
         dimension: AppInventoryEditorial.contextFabSize,
         child: Material(
           color: Colors.transparent,
@@ -256,6 +341,91 @@ class _InventoryFabMenuAction extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _InventoryFabActionSheet extends StatelessWidget {
+  const _InventoryFabActionSheet({
+    required this.isCameraEnabled,
+    required this.onManualSearch,
+    required this.onAiSuggestion,
+    required this.onUploadFile,
+    required this.onScanCamera,
+  });
+
+  final bool isCameraEnabled;
+  final VoidCallback onManualSearch;
+  final VoidCallback onAiSuggestion;
+  final VoidCallback onUploadFile;
+  final VoidCallback onScanCamera;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _InventoryFabActionTile(
+              key: const Key('inventory_action_manual_search_fab'),
+              icon: Icons.search_rounded,
+              label: l10n.inventoryActionManualSearch,
+              onPressed: onManualSearch,
+            ),
+            _InventoryFabActionTile(
+              key: const Key('inventory_action_ai_suggestion_fab'),
+              icon: Icons.auto_awesome_rounded,
+              label: l10n.inventoryActionAiSuggestion,
+              onPressed: onAiSuggestion,
+            ),
+            _InventoryFabActionTile(
+              key: const Key('inventory_action_upload_image_pdf_fab'),
+              icon: Icons.upload_file_rounded,
+              label: l10n.inventoryActionUploadImagePdf,
+              onPressed: onUploadFile,
+            ),
+            _InventoryFabActionTile(
+              key: const Key('inventory_action_camera_fab'),
+              icon: Icons.photo_camera_rounded,
+              label: l10n.inventoryActionCamera,
+              subtitle: isCameraEnabled
+                  ? null
+                  : l10n.inventoryActionCameraUnsupported,
+              onPressed: isCameraEnabled ? onScanCamera : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InventoryFabActionTile extends StatelessWidget {
+  const _InventoryFabActionTile({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    super.key,
+    this.subtitle,
+  });
+
+  final IconData icon;
+  final String label;
+  final String? subtitle;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(label),
+      subtitle: subtitle == null ? null : Text(subtitle!),
+      enabled: onPressed != null,
+      onTap: onPressed,
     );
   }
 }

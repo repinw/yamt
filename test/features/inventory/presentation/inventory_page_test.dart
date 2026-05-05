@@ -480,6 +480,14 @@ void main() {
       find.byKey(const Key('inventory_empty_state_fab_highlight')),
       findsOneWidget,
     );
+    final highlightCenter = tester.getCenter(
+      find.byKey(const Key('inventory_empty_state_fab_highlight')),
+    );
+    final fabCenter = tester.getCenter(
+      find.byKey(const Key('inventory_action_fab_button')),
+    );
+    expect(fabCenter.dx, moreOrLessEquals(highlightCenter.dx));
+    expect(fabCenter.dy, moreOrLessEquals(highlightCenter.dy));
   });
 
   testWidgets('empty state card stays above fab overlay chrome', (

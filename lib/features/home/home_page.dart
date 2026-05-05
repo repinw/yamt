@@ -300,6 +300,9 @@ class HomePage extends ConsumerWidget {
         floatingActionButtonLocation: floatingActionButton is InventoryActionFab
             ? ExpandableFab.location
             : FloatingActionButtonLocation.endFloat,
+        floatingActionButtonAnimator: floatingActionButton is InventoryActionFab
+            ? FloatingActionButtonAnimator.noAnimation
+            : null,
         floatingActionButton: floatingActionButton,
         bottomNavigationBar: HomeBottomNavBar(
           entries: _navEntries(context, l10n),

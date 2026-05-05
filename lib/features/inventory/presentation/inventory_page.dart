@@ -102,7 +102,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       items: items,
       preparedMeals: meals,
       expandedPreparedMealId: widget.expandedPreparedMealId,
-      emptyStateActionButton: const InventoryActionFab(),
+      emptyStateActionButton: const InventoryActionFab.embedded(),
       onDeleteItem: (itemId) =>
           _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
       onEatItem: (itemId, request) => _eatItemWithCalorieBridge(
