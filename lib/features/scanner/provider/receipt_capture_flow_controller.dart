@@ -15,7 +15,9 @@ import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 part 'receipt_capture_flow_controller.g.dart';
 
 /// Defines receipt capture flow controller.
-@Riverpod(dependencies: [receiptReviewResolutionService])
+@Riverpod(
+  dependencies: [receiptReviewResolutionService, receiptCameraSupported],
+)
 class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
   Future<ReceiptCaptureFlowResult>? _activeRun;
 

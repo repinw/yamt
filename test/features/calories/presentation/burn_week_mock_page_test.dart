@@ -156,7 +156,7 @@ void main() {
       _buildHarness(settingsRepository: settingsRepository),
     );
     await tester.pump();
-    tester.widget<Slider>(find.byType(Slider)).onChanged!(12.0);
+    tester.widget<Slider>(find.byType(Slider)).onChanged!(12);
     await tester.pump();
 
     await tester.pump(const Duration(seconds: 2));

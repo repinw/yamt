@@ -33,6 +33,7 @@ import 'package:yamt/features/inventory/provider/'
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _deleteUndoSnackBarDuration = Duration(seconds: 5);
@@ -46,6 +47,7 @@ const _preparedMealImageAssetUuid = Uuid();
   preparedMealImagePicker,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class InventoryPage extends ConsumerStatefulWidget {

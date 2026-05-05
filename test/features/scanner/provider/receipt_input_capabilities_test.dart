@@ -1,16 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
-bool _readSupportedFor(TargetPlatform platform) {
-  debugDefaultTargetPlatformOverride = platform;
-  final container = ProviderContainer();
-  final value = container.read(receiptCameraSupportedProvider);
-  container.dispose();
-  return value;
-}
-
+@Dependencies([receiptCameraSupported])
 void main() {
   tearDown(() {
     debugDefaultTargetPlatformOverride = null;
@@ -30,4 +24,13 @@ void main() {
     expect(_readSupportedFor(TargetPlatform.linux), isFalse);
     expect(_readSupportedFor(TargetPlatform.fuchsia), isFalse);
   });
+}
+
+@Dependencies([receiptCameraSupported])
+bool _readSupportedFor(TargetPlatform platform) {
+  debugDefaultTargetPlatformOverride = platform;
+  final container = ProviderContainer();
+  final value = container.read(receiptCameraSupportedProvider);
+  container.dispose();
+  return value;
 }

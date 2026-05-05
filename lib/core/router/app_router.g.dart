@@ -143,6 +143,7 @@ final class AppRouterProvider
           preparedMealImagePickerProvider,
           receiptCaptureFlowControllerProvider,
           receiptBatchFlowControllerProvider,
+          receiptCameraSupportedProvider,
         ],
         $allTransitiveDependencies: <ProviderOrFamily>{
           AppRouterProvider.$allTransitiveDependencies0,
@@ -154,6 +155,7 @@ final class AppRouterProvider
           AppRouterProvider.$allTransitiveDependencies6,
           AppRouterProvider.$allTransitiveDependencies7,
           AppRouterProvider.$allTransitiveDependencies8,
+          AppRouterProvider.$allTransitiveDependencies9,
         },
       );
 
@@ -170,7 +172,9 @@ final class AppRouterProvider
       receiptCaptureFlowControllerProvider;
   static final $allTransitiveDependencies7 =
       ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies8 = receiptBatchFlowControllerProvider;
+  static final $allTransitiveDependencies8 =
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies9 = receiptBatchFlowControllerProvider;
 
   @override
   String debugGetCreateSourceHash() => _$appRouterHash();
@@ -194,4 +198,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'ecfff8df1fea923c7444c5a0f116d4424baeeb1d';
+String _$appRouterHash() => r'088ae6ff7044c0f3eaabd1a6feea9357fded01a1';

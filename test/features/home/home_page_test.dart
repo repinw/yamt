@@ -232,6 +232,7 @@ CalorieWeekOverview _weekOverview(DateTime selectedDay) {
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
 ])
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
@@ -368,6 +369,7 @@ Widget _buildHarness({
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
 ])
 void main() {
   testWidgets('diary tab does not show the context fab', (tester) async {

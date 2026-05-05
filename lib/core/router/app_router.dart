@@ -43,6 +43,7 @@ import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
@@ -86,6 +87,7 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     preparedMealImagePicker,
     ReceiptCaptureFlowController,
     ReceiptBatchFlowController,
+    receiptCameraSupported,
   ],
 )
 Raw<GoRouter> appRouter(Ref ref) {

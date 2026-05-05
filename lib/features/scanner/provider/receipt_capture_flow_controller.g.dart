@@ -31,10 +31,12 @@ final class ReceiptCaptureFlowControllerProvider
         isAutoDispose: true,
         dependencies: <ProviderOrFamily>[
           receiptReviewResolutionServiceProvider,
+          receiptCameraSupportedProvider,
         ],
         $allTransitiveDependencies: <ProviderOrFamily>[
           ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0,
           ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies1,
+          ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2,
         ],
       );
 
@@ -42,6 +44,7 @@ final class ReceiptCaptureFlowControllerProvider
       receiptReviewResolutionServiceProvider;
   static final $allTransitiveDependencies1 =
       ReceiptReviewResolutionServiceProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies2 = receiptCameraSupportedProvider;
 
   @override
   String debugGetCreateSourceHash() => _$receiptCaptureFlowControllerHash();
@@ -52,7 +55,7 @@ final class ReceiptCaptureFlowControllerProvider
 }
 
 String _$receiptCaptureFlowControllerHash() =>
-    r'f35fa7a74a1e35aff73f1aeb71642533e1f16b58';
+    r'6681349f51549e6180aaf4b43571fdbf9b1c7591';
 
 /// Defines receipt capture flow controller.
 

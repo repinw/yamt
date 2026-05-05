@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'receipt_input_capabilities.g.dart';
 
 /// Receipt camera supported.
-@riverpod
+@Riverpod(dependencies: [])
 bool receiptCameraSupported(Ref ref) {
   if (kIsWeb) {
     return false;

@@ -18,6 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
   InventoryItemsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  receiptCameraSupported,
 ])
 class InventoryActionFab extends ConsumerStatefulWidget {
   /// The inventory action fab for the shell Scaffold slot.
@@ -35,6 +36,7 @@ class InventoryActionFab extends ConsumerStatefulWidget {
 
 class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
   final _fabKey = GlobalKey<ExpandableFabState>();
+  bool _isSheetOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +55,7 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
         isBusy: isBusy,
         icon: Icons.add_rounded,
         tooltip: l10n.inventoryFabTooltip,
-        onPressed: isBusy
+        onPressed: isBusy || _isSheetOpen
             ? null
             : () => _showActionsSheet(
                 context: context,
@@ -171,6 +173,12 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
     required AppLocalizations l10n,
     required bool isCameraEnabled,
   }) {
+    if (_isSheetOpen) {
+      return;
+    }
+    setState(() {
+      _isSheetOpen = true;
+    });
     unawaited(
       showModalBottomSheet<void>(
         context: context,
@@ -212,7 +220,13 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
             ),
           );
         },
-      ),
+      ).whenComplete(() {
+        if (mounted) {
+          setState(() {
+            _isSheetOpen = false;
+          });
+        }
+      }),
     );
   }
 
