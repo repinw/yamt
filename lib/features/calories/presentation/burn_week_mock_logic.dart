@@ -22,7 +22,7 @@ class BurnWeekMockDifficulty {
   /// User-facing tier label.
   final String label;
 
-  /// Minimum hearts restored at week start or after star break.
+  /// Minimum hearts restored at week start.
   final int minimumHearts;
 
   /// Multiplier applied to one-day safe-zone width.
@@ -115,8 +115,9 @@ class BurnWeekMockMetrics {
     required this.safeZoneMaxKcal,
     required this.barMinKcal,
     required this.barMaxKcal,
+    double? actualConsumedKcal,
     this.plannedLaterKcal = 0,
-  });
+  }) : actualConsumedKcal = actualConsumedKcal ?? consumedKcal;
 
   /// The resolved daily goal used by the mock.
   final double dailyGoalKcal;
@@ -133,8 +134,11 @@ class BurnWeekMockMetrics {
   /// Target calories for current time.
   final double targetKcal;
 
-  /// Demo actual calories after button taps.
+  /// Effective kcal after heart credit is applied.
   final double consumedKcal;
+
+  /// Real logged kcal before virtual heart credit is applied.
+  final double actualConsumedKcal;
 
   /// Safe-zone lower bound.
   final double safeZoneMinKcal;
@@ -154,11 +158,16 @@ class BurnWeekMockMetrics {
   /// Target marker position inside visible bar.
   double get targetRatio => ratioForKcal(targetKcal);
 
-  /// Heart marker position inside visible bar.
+  /// Flame marker position inside visible bar.
   double get consumedRatio => ratioForKcal(consumedKcal);
 
+  /// Game-effective marker position inside visible bar.
+  double get effectiveConsumedRatio => ratioForKcal(consumedKcal);
+
   /// Planned-shadow end position inside visible bar.
-  double get plannedEndRatio => ratioForKcal(consumedKcal + plannedLaterKcal);
+  double get plannedEndRatio {
+    return ratioForKcal(consumedKcal + plannedLaterKcal);
+  }
 
   /// Safe-zone start position inside visible bar.
   double get safeZoneStartRatio => ratioForKcal(safeZoneMinKcal);
@@ -201,27 +210,27 @@ BurnWeekMockDifficulty resolveBurnWeekMockDifficulty(int starCount) {
   if (starCount >= 6) {
     return const BurnWeekMockDifficulty(
       label: 'Elite',
-      minimumHearts: 2,
+      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.55,
     );
   }
   if (starCount >= 4) {
     return const BurnWeekMockDifficulty(
       label: 'Solid',
-      minimumHearts: 2,
+      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.7,
     );
   }
   if (starCount >= 2) {
     return const BurnWeekMockDifficulty(
       label: 'Steady',
-      minimumHearts: 3,
+      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.85,
     );
   }
   return const BurnWeekMockDifficulty(
     label: 'Learning',
-    minimumHearts: 3,
+    minimumHearts: burnWeekInitialHeartCount,
     safeZoneMultiplier: 1,
   );
 }
@@ -304,12 +313,9 @@ BurnWeekHeartSpendResult resolveBurnWeekHeartSpend({
   }
 
   if (starCount > 0) {
-    final nextStarCount = starCount - 1;
     return BurnWeekHeartSpendResult(
-      starCount: nextStarCount,
-      heartCount: resolveBurnWeekMockDifficulty(
-        nextStarCount,
-      ).minimumHearts,
+      starCount: starCount - 1,
+      heartCount: remainingHearts,
       heartCreditKcal: nextHeartCreditKcal,
       didBreakStar: true,
       didResetRun: false,

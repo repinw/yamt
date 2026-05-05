@@ -9,11 +9,8 @@ typedef BurnWeekDialogRouteReady =
 
 /// Heart actions available from live Burn Week dialog.
 enum BurnWeekLiveHeartAction {
-  /// Add one Burn day worth of kcal.
+  /// Protect today as a heart day.
   add,
-
-  /// Remove one Burn day worth of kcal.
-  remove,
 }
 
 /// Recovery actions for below-target live Burn Week dialog.
@@ -23,6 +20,15 @@ enum BurnWeekLiveBelowZoneAction {
 
   /// User will recover by spending one heart.
   useHeart,
+}
+
+/// Actions for an unrecoverable Burn Week limit state.
+enum BurnWeekRunLimitAction {
+  /// Keep current run alive, but this week cannot earn a star.
+  continueRun,
+
+  /// Start a fresh run.
+  startNewRun,
 }
 
 /// Preformatted details shown in live Burn Week info dialog.
@@ -154,17 +160,11 @@ Future<BurnWeekLiveHeartAction?> showBurnWeekUseHeartDialog({
             onPressed: () => Navigator.of(context).pop(),
             child: Text(l10n.burnWeekActionCancel),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(BurnWeekLiveHeartAction.remove);
-            },
-            child: Text(l10n.burnWeekActionRemoveDayKcal),
-          ),
           FilledButton(
             onPressed: () {
               Navigator.of(context).pop(BurnWeekLiveHeartAction.add);
             },
-            child: Text(l10n.burnWeekActionAddDayKcal),
+            child: Text(l10n.burnWeekZoneUseHeartAction),
           ),
         ],
       );
@@ -259,6 +259,39 @@ Future<bool?> showBurnWeekAboveNeedsHeartDialog(
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(l10n.burnWeekActionYes),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// Shows dialog when the run can no longer finish perfectly.
+Future<BurnWeekRunLimitAction?> showBurnWeekRunLimitDialog({
+  required BuildContext context,
+  required String message,
+  BurnWeekDialogRouteReady? onRouteReady,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+  return _showBurnWeekDialog<BurnWeekRunLimitAction>(
+    context: context,
+    onRouteReady: onRouteReady,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(l10n.burnWeekRunLimitTitle),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(BurnWeekRunLimitAction.continueRun);
+            },
+            child: Text(l10n.burnWeekRunLimitContinueAction),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop(BurnWeekRunLimitAction.startNewRun);
+            },
+            child: Text(l10n.burnWeekRunLimitStartNewAction),
           ),
         ],
       );

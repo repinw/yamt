@@ -6,6 +6,35 @@
   "homeCalories": "Diary",
   "homeSettings": "Settings",
   "homeQuickActionTooltip": "Quick action",
+  "homeHeartCounterUseTooltip": "Use heart for {day}",
+  "@homeHeartCounterUseTooltip": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "homeHeartCounterActiveTooltip": "{day} is already a heart day",
+  "@homeHeartCounterActiveTooltip": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "homeHeartCounterEmptyTooltip": "No hearts left",
+  "homeHeartCounterUnavailableTooltip":
+      "Hearts can only be used during the current Burn Week",
+  "homeHeartUseTitle": "Use heart day?",
+  "homeHeartUseMessage":
+      "Spend 1 heart to ignore {day}. Logged food stays in the diary, but this day counts as perfect and is skipped for weekly learning.",
+  "@homeHeartUseMessage": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryFabTooltip": "Receipt actions",
   "inventoryPageTitle": "My inventory",
   "inventoryActionScanCamera": "Scan receipt (camera)",
@@ -875,9 +904,9 @@
     }
   },
   "caloriesDebugDumpFailed": "Could not print calorie debug table.",
-  "burnWeekUseHeartTitle": "Use heart?",
+  "burnWeekUseHeartTitle": "Use heart day?",
   "burnWeekUseHeartMessage":
-      "1 heart can add or remove one full Burn day of calories ({dayKcal} kcal).",
+      "Spend 1 heart to ignore today. Logged food stays in the diary, but today counts as a perfect Burn day and is skipped for weekly learning ({dayKcal} kcal day).",
   "@burnWeekUseHeartMessage": {
     "placeholders": {
       "dayKcal": {
@@ -888,9 +917,10 @@
   "burnWeekActionCancel": "Cancel",
   "burnWeekActionYes": "Yes",
   "burnWeekActionNo": "No",
-  "burnWeekActionRemoveDayKcal": "-1 day kcal",
-  "burnWeekActionAddDayKcal": "+1 day kcal",
   "burnWeekRunOverTitle": "Run over",
+  "burnWeekRunLimitTitle": "Run cannot finish perfectly",
+  "burnWeekRunLimitContinueAction": "Continue anyway",
+  "burnWeekRunLimitStartNewAction": "Start new run",
   "burnWeekRunRestartsOn": "Fresh run starts on {date}.",
   "@burnWeekRunRestartsOn": {
     "placeholders": {
@@ -907,14 +937,14 @@
   },
   "burnWeekZoneOutOfSafeZoneTitle": "Out of safe zone",
   "burnWeekZoneBelowRecoverMessage":
-      "You are below target. Use a heart for one full Burn day leap, or eat more to get back in target.",
+      "You are below target. Use a heart to protect today as a perfect heart day, or eat more to get back in target.",
   "burnWeekZoneBelowRecoverNoHeartsMessage":
       "You are below target. No hearts left. Eat more to get back in target.",
   "burnWeekZoneBelowNeedsHeartTitle": "Too far below target",
   "burnWeekZoneBelowNeedsHeartMessage":
-      "There are not enough calories left in this week to recover by eating. Use 1 heart to restore?",
+      "There are not enough calories left in this week to recover by eating. Use 1 heart to protect today as a perfect heart day?",
   "burnWeekZoneBelowRunOverMessage":
-      "There are not enough calories left in this week to recover by eating. No hearts left, so a fresh run starts next day.",
+      "There are not enough calories left in this week to recover by eating, and no hearts are left. Continue this run anyway, or start a fresh run tomorrow.",
   "burnWeekZoneEatMoreTitle": "Eat more",
   "burnWeekZoneEatMoreAction": "Eat more",
   "burnWeekZoneEatMoreMessage": "Eat more to get back in target.",
@@ -922,9 +952,9 @@
   "burnWeekZoneAboveFastMessage":
       "You tracked too much. Fasting will help to get on track.",
   "burnWeekZoneAboveNeedsHeartMessage":
-      "You are way over weekly limit. Use 1 heart to reduce one full Burn day of calories?",
+      "You are way over weekly limit. Use 1 heart to protect today as a perfect heart day?",
   "burnWeekZoneAboveRunOverMessage":
-      "You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.",
+      "You are way over weekly limit and have no hearts left. This run cannot finish perfectly. Continue this run anyway, or start a fresh run tomorrow.",
   "calorieBudgetDetailsActualLabel": "Actual (you)",
   "calorieBudgetDetailsTargetLabel": "Target (goal)",
   "calorieBudgetDetailsBalanceExplanation":
@@ -938,7 +968,7 @@
   "burnWeekDetailsWeekTarget": "Week target",
   "burnWeekDetailsCurrentTime": "Current time",
   "burnWeekDetailsStarsHearts": "Stars / Hearts",
-  "burnWeekDetailsHeartKcalUsed": "Heart kcal used",
+  "burnWeekDetailsHeartKcalUsed": "Heart adjustment",
   "burnWeekDetailsWeekRatio": "Week ratio",
   "burnWeekDetailsTargetFormula": "Target formula",
   "burnWeekDetailsLoggedFoodSoFar": "Logged food so far",
@@ -1103,6 +1133,21 @@
   "diaryBalanceLoadFailed": "Balance could not be loaded",
   "diaryBalanceEatenLabel": "Eaten",
   "diaryBalanceLeftLabel": "Left",
+  "diaryBalanceRealLeftLabel": "Real {kcal}",
+  "@diaryBalanceRealLeftLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "diaryBalanceHeartAdjustmentLabel": "Heart {kcal}",
+  "@diaryBalanceHeartAdjustmentLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "diaryBalanceHeartDayValue": "Heart day",
+  "diaryBalanceHeartDaySubtitle": "Ignored for learning",
+  "diaryBalanceRevertHeartDayAction": "Revert heart day",
   "diaryScrollToTopAction": "To top",
   "diaryJumpToMealsAction": "To diary",
   "diaryIntroBackAction": "Back",

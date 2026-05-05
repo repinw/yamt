@@ -10,6 +10,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
@@ -65,6 +66,7 @@ class CalorieWeekDayOverview {
     required this.goalKcal,
     required this.entryCount,
     double? baseGoalKcal,
+    this.isHeartDay = false,
   }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
 
   /// The date.
@@ -82,14 +84,23 @@ class CalorieWeekDayOverview {
   /// The entry count.
   final int entryCount;
 
+  /// Whether this day is protected by a spent heart.
+  final bool isHeartDay;
+
   /// Whether entries.
   bool get hasEntries => entryCount > 0;
 
+  /// Kcal counted by Burn Week/carryover math.
+  double get countedTotalKcal => isHeartDay ? goalKcal : totalKcal;
+
+  /// Base-goal kcal counted by Burn Week carryover math.
+  double get countedBaseTotalKcal => isHeartDay ? baseGoalKcal : totalKcal;
+
   /// Whether within goal.
-  bool get isWithinGoal => hasEntries && totalKcal <= goalKcal;
+  bool get isWithinGoal => isHeartDay || (hasEntries && totalKcal <= goalKcal);
 
   /// Whether over goal.
-  bool get isOverGoal => hasEntries && totalKcal > goalKcal;
+  bool get isOverGoal => !isHeartDay && hasEntries && totalKcal > goalKcal;
 }
 
 /// Overview for the rolling 7-day diary strip ending at the visible window end.
@@ -212,6 +223,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
   final repository = ref.watch(calorieLogRepositoryProvider);
   final goalState = ref.watch(calorieGoalControllerProvider);
   final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
+  final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
   final resolvedGoals = await Future.wait(
     snapshot.days.map(
       (day) => ref.watch(resolvedCalorieGoalForDayProvider(day.date).future),
@@ -230,6 +242,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
           goalKcal: resolvedGoals[entry.key].goalKcal,
           baseGoalKcal: resolvedGoals[entry.key].storedGoalKcal,
           entryCount: entry.value.entryCount,
+          isHeartDay: runState?.isHeartDay(entry.value.date) ?? false,
         ),
       )
       .toList(growable: false);
@@ -287,6 +300,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
           goalKcal: overview.goalKcal,
           baseGoalKcal: overview.baseGoalKcal,
           entryCount: overview.entryCount,
+          isHeartDay: overview.isHeartDay,
         ),
       )
       .toList(growable: false);
@@ -294,6 +308,8 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     cycleStartDate: carryoverStartDate,
     today: today,
     historicalCarryoverDays: historicalCarryoverDays,
+    historicalDays: historicalDays,
+    heartDayKeys: runState?.heartDayKeys.toSet() ?? const <String>{},
     visibleOverviews: adjustedOverviews,
   );
   final hasActiveGoalToday = settings.goalEntryForDay(today)?.hasGoal == true;
@@ -337,6 +353,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
   ref.watch(calorieOverviewRevisionProvider);
   final normalizedDay = normalizeDiaryDay(day);
   final repository = ref.watch(calorieLogRepositoryProvider);
+  final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
   final entries = await _readEntriesForDaySafely(repository, normalizedDay);
   final totalKcal = entries.fold<double>(
     0,
@@ -351,6 +368,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
     goalKcal: resolvedGoal.goalKcal,
     baseGoalKcal: resolvedGoal.storedGoalKcal,
     entryCount: entries.length,
+    isHeartDay: runState?.isHeartDay(normalizedDay) ?? false,
   );
 }
 
@@ -405,6 +423,8 @@ _calculateCycleTotals({
   required DateTime cycleStartDate,
   required DateTime today,
   required List<CalorieCarryoverDay> historicalCarryoverDays,
+  required List<DateTime> historicalDays,
+  required Set<String> heartDayKeys,
   required List<CalorieWeekDayOverview> visibleOverviews,
 }) {
   var totalConsumedKcal = 0.0;
@@ -412,20 +432,25 @@ _calculateCycleTotals({
   var carryoverBeforeTodayKcal = 0.0;
 
   if (!cycleStartDate.isAfter(today)) {
-    for (final day in historicalCarryoverDays) {
-      totalConsumedKcal += day.consumedKcal;
+    for (var index = 0; index < historicalCarryoverDays.length; index += 1) {
+      final day = historicalCarryoverDays[index];
+      final isHeartDay =
+          index < historicalDays.length &&
+          heartDayKeys.contains(diaryDayKey(historicalDays[index]));
+      final consumedKcal = isHeartDay ? day.goalKcal : day.consumedKcal;
+      totalConsumedKcal += consumedKcal;
       totalGoalKcal += day.goalKcal;
-      carryoverBeforeTodayKcal += day.goalKcal - day.consumedKcal;
+      carryoverBeforeTodayKcal += day.goalKcal - consumedKcal;
     }
 
     for (final day in visibleOverviews) {
       if (_isBeforeDay(day.date, cycleStartDate)) {
         continue;
       }
-      totalConsumedKcal += day.totalKcal;
+      totalConsumedKcal += day.countedTotalKcal;
       totalGoalKcal += day.goalKcal;
       if (_isBeforeDay(day.date, today)) {
-        carryoverBeforeTodayKcal += day.goalKcal - day.totalKcal;
+        carryoverBeforeTodayKcal += day.goalKcal - day.countedTotalKcal;
       }
     }
   }

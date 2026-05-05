@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -22,6 +24,18 @@ import 'package:yamt/features/health/provider/health_weight_service_provider.dar
 import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
 
 import '../support/fake_calories_repositories.dart';
+
+class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
+  const _FakeBurnWeekRunStateRepository(this.state);
+
+  final BurnWeekRunState state;
+
+  @override
+  Future<BurnWeekRunState> readState() async => state;
+
+  @override
+  Future<bool> saveState(BurnWeekRunState state) async => true;
+}
 
 const _notReadyStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,
@@ -63,6 +77,7 @@ ProviderContainer _createContainer({
   HealthConnectionService? healthConnectionService,
   FakeHealthWeightService? healthWeightService,
   DiaryHealthService? diaryHealthService,
+  BurnWeekRunState burnWeekRunState = const BurnWeekRunState.initial(),
 }) {
   return ProviderContainer(
     overrides: [
@@ -72,6 +87,9 @@ ProviderContainer _createContainer({
       ),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      burnWeekRunStateRepositoryProvider.overrideWithValue(
+        _FakeBurnWeekRunStateRepository(burnWeekRunState),
+      ),
       healthConnectionServiceProvider.overrideWith(
         (ref) =>
             healthConnectionService ??
@@ -147,6 +165,78 @@ void main() {
     expect(viewModel.lowConfidence, isTrue);
     expect(viewModel.calculation?.newGoalKcal, greaterThan(0));
   });
+
+  test(
+    'heart day extends check-in window and excludes logged intake',
+    () async {
+      final today = DateTime(2026, 4, 16);
+      final goalStart = DateTime(2026, 4, 8);
+      final heartDay = DateTime(2026, 4, 10);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+          effectiveDate: goalStart,
+        ),
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 8; index += 1)
+            _entry(
+              'entry-$index',
+              goalStart.add(Duration(days: index, hours: 8)),
+              index == 2 ? 8000 : 2100,
+            ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+          ManualHealthWeightEntry(
+            day: goalStart.add(const Duration(days: 7)),
+            weightKg: 81.4,
+          ),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+        burnWeekRunState: const BurnWeekRunState.initial().copyWith(
+          heartDayKeys: <String>['2026-4-10'],
+        ),
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(viewModel.isReady, isTrue);
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        DateTime(2026, 4, 8),
+      );
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        DateTime(2026, 4, 15),
+      );
+      expect(viewModel.days, hasLength(8));
+
+      final heartWindowDay = viewModel.days.firstWhere(
+        (day) => day.day == heartDay,
+      );
+      expect(heartWindowDay.isHeartDay, isTrue);
+      expect(heartWindowDay.hasEntries, isFalse);
+      expect(heartWindowDay.loggedIntakeKcal, 8000);
+      expect(heartWindowDay.resolvedIntakeKcal, isNull);
+      expect(viewModel.calculation?.averageIntakeKcal, closeTo(2100, 0.01));
+    },
+  );
 
   test(
     'same-day starter creates first check-in after 6 normal tracked days',

@@ -32,7 +32,7 @@ const _balanceProgressHeight = 24.0;
 const _balanceFlameIconSize = 24.0;
 const _balanceTargetMarkerWidth = 3.0;
 const _balanceProgressAreaHeight = 56.0;
-const _balanceStatTileHeight = 84.0;
+const _balanceStatTileHeight = 104.0;
 const _balanceGameHeaderHeight = 24.0;
 const _balanceCounterBadgeHeight = 22.0;
 const _balanceCounterIconSize = 14.0;
@@ -271,7 +271,29 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
       runState: runState,
     );
     final dayBudgetKcal = weekOverview.todayFlexibleGoalKcal;
-    final dayLeftKcal = dayBudgetKcal - selectedDayOverview.totalKcal;
+    final realDayLeftKcal = dayBudgetKcal - selectedDayOverview.totalKcal;
+    final heartAdjustmentKcal = -runState.heartCreditKcal;
+    final isHeartDay = runState.isHeartDay(selectedDayOverview.date);
+    final canRevertHeartDay = runState.canUnmarkHeartDay(
+      selectedDayOverview.date,
+    );
+    final dayLeftKcal = isHeartDay
+        ? 0.0
+        : realDayLeftKcal + heartAdjustmentKcal;
+    final leftSubtitle = heartAdjustmentKcal.round() == 0
+        ? null
+        : '${l10n.diaryBalanceRealLeftLabel(
+            _formatKcal(numberFormat, realDayLeftKcal, l10n.caloriesUnitKcal),
+          )} · ${l10n.diaryBalanceHeartAdjustmentLabel(
+            formatBurnWeekSignedKcal(
+              heartAdjustmentKcal,
+              numberFormat,
+              l10n.caloriesUnitKcal,
+            ),
+          )}';
+    final resolvedLeftSubtitle = isHeartDay
+        ? l10n.diaryBalanceHeartDaySubtitle
+        : leftSubtitle;
     final showGameControls =
         isLiveDay &&
         !weekOverview.goalStartsInFuture &&
@@ -290,7 +312,8 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     );
     if (showGameControls &&
         selectedDayEntriesLoaded &&
-        !widget.hasAutoOpeningWeeklyCheckIn) {
+        !widget.hasAutoOpeningWeeklyCheckIn &&
+        !isHeartDay) {
       queueBurnWeekZoneDialogIfNeeded(metrics: metrics, runState: runState);
     }
 
@@ -302,7 +325,8 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
             label: weekDayLabel,
             starCount: showGameControls ? runState.starCount : null,
             heartCount: showGameControls ? runState.heartCount : null,
-            onHeartTap: showGameControls && runState.heartCount > 0
+            onHeartTap:
+                showGameControls && runState.heartCount > 0 && !isHeartDay
                 ? () => showBurnWeekZoneUseHeartDialog(
                     dailyGoalKcal: metrics.dailyGoalKcal,
                     runState: runState,
@@ -350,11 +374,14 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
               Expanded(
                 child: _DiaryBalanceStatTile(
                   label: l10n.diaryBalanceLeftLabel,
-                  value: _formatKcal(
-                    numberFormat,
-                    dayLeftKcal,
-                    l10n.caloriesUnitKcal,
-                  ),
+                  value: isHeartDay
+                      ? l10n.diaryBalanceHeartDayValue
+                      : _formatKcal(
+                          numberFormat,
+                          dayLeftKcal,
+                          l10n.caloriesUnitKcal,
+                        ),
+                  subtitle: resolvedLeftSubtitle,
                   valueColor: dayLeftKcal < 0
                       ? colors.error
                       : const Color(0xFF116B5A),
@@ -369,6 +396,23 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
               ),
             ],
           ),
+          if (canRevertHeartDay) ...[
+            const SizedBox(height: AppSpacing.md),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () {
+                  unawaited(
+                    ref
+                        .read(burnWeekRunControllerProvider.notifier)
+                        .unmarkHeartDay(selectedDayOverview.date),
+                  );
+                },
+                icon: const Icon(Icons.undo_rounded),
+                label: Text(l10n.diaryBalanceRevertHeartDayAction),
+              ),
+            ),
+          ],
         ],
       ),
     );

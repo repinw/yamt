@@ -430,6 +430,9 @@ void main() {
           effectiveDate: selectedDay,
         ),
       ),
+      overrides: [
+        burnWeekLiveSyncProvider.overrideWith((ref) => null),
+      ],
     );
     await _advanceIntroToActivityPage(tester);
 
@@ -529,6 +532,15 @@ void main() {
           effectiveDate: selectedDay,
         ),
       ),
+      overrides: [
+        burnWeekLiveSyncProvider.overrideWith((ref) => null),
+      ],
+    );
+
+    await tester.scrollUntilVisible(
+      find.byKey(DiaryIntroDialogKeys.replayButton),
+      240,
+      scrollable: find.byType(Scrollable).first,
     );
 
     expect(find.byKey(DiaryIntroDialogKeys.replayButton), findsOneWidget);

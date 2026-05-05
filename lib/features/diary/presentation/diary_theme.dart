@@ -14,6 +14,8 @@ class DiaryAccentColors extends ThemeExtension<DiaryAccentColors> {
     required this.fat,
     required this.meal,
     required this.today,
+    required this.heart,
+    required this.heartDark,
     required this.steps,
     required this.stepsDark,
   });
@@ -30,6 +32,8 @@ class DiaryAccentColors extends ThemeExtension<DiaryAccentColors> {
     fat: Color(0xFFEAB308),
     meal: Color(0xFF059669),
     today: Color(0xFF10B981),
+    heart: Color(0xFFE11D48),
+    heartDark: Color(0xFFFB7185),
     steps: Color(0xFF6366F1),
     stepsDark: Color(0xFF818CF8),
   );
@@ -52,6 +56,11 @@ class DiaryAccentColors extends ThemeExtension<DiaryAccentColors> {
   /// Steps accent color adapted for brightness.
   Color stepsFor(Brightness brightness) {
     return brightness == Brightness.dark ? stepsDark : steps;
+  }
+
+  /// Heart-day accent color adapted for brightness.
+  Color heartFor(Brightness brightness) {
+    return brightness == Brightness.dark ? heartDark : heart;
   }
 
   /// Activity.
@@ -84,6 +93,12 @@ class DiaryAccentColors extends ThemeExtension<DiaryAccentColors> {
   /// Today/current day.
   final Color today;
 
+  /// Heart day.
+  final Color heart;
+
+  /// Heart day in dark mode.
+  final Color heartDark;
+
   /// Steps.
   final Color steps;
 
@@ -102,6 +117,8 @@ class DiaryAccentColors extends ThemeExtension<DiaryAccentColors> {
     Color? fat,
     Color? meal,
     Color? today,
+    Color? heart,
+    Color? heartDark,
     Color? steps,
     Color? stepsDark,
   }) {
@@ -116,6 +133,8 @@ class DiaryAccentColors extends ThemeExtension<DiaryAccentColors> {
       fat: fat ?? this.fat,
       meal: meal ?? this.meal,
       today: today ?? this.today,
+      heart: heart ?? this.heart,
+      heartDark: heartDark ?? this.heartDark,
       steps: steps ?? this.steps,
       stepsDark: stepsDark ?? this.stepsDark,
     );
@@ -141,6 +160,8 @@ class DiaryAccentColors extends ThemeExtension<DiaryAccentColors> {
       fat: Color.lerp(fat, other.fat, t)!,
       meal: Color.lerp(meal, other.meal, t)!,
       today: Color.lerp(today, other.today, t)!,
+      heart: Color.lerp(heart, other.heart, t)!,
+      heartDark: Color.lerp(heartDark, other.heartDark, t)!,
       steps: Color.lerp(steps, other.steps, t)!,
       stepsDark: Color.lerp(stepsDark, other.stepsDark, t)!,
     );

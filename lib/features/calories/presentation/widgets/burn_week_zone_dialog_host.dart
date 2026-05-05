@@ -109,12 +109,7 @@ mixin BurnWeekZoneDialogHost<T extends ConsumerStatefulWidget>
       return;
     }
 
-    switch (action) {
-      case BurnWeekLiveHeartAction.add:
-        await controller.usePositiveHeart(dailyGoalKcal);
-      case BurnWeekLiveHeartAction.remove:
-        await controller.useNegativeHeart(dailyGoalKcal);
-    }
+    await controller.usePositiveHeart(dailyGoalKcal);
     if (!mounted) {
       return;
     }
@@ -268,20 +263,25 @@ mixin BurnWeekZoneDialogHost<T extends ConsumerStatefulWidget>
       onRouteReady: _rememberZoneDialogRoute,
     );
     if (shouldUseHeart == true && mounted) {
-      await controller.useNegativeHeart(metrics.dailyGoalKcal);
+      await controller.usePositiveHeart(metrics.dailyGoalKcal);
       _markZoneInside();
     }
   }
 
   Future<void> _showRunOverDialog({required String message}) async {
-    final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(burnWeekRunControllerProvider.notifier);
-    await showBurnWeekSimpleDialog(
+    final action = await showBurnWeekRunLimitDialog(
       context: context,
-      title: l10n.burnWeekRunOverTitle,
       message: message,
       onRouteReady: _rememberZoneDialogRoute,
     );
+    if (!mounted || action == null) {
+      return;
+    }
+    if (action == BurnWeekRunLimitAction.continueRun) {
+      await controller.continueRunAfterLimitWarning();
+      return;
+    }
     if (!mounted) {
       return;
     }

@@ -640,7 +640,7 @@ void main() {
         expect(runStateRepository.state.lastActiveDayKey, isNull);
         expect(runStateRepository.state.runWeekNumber, 1);
         expect(runStateRepository.state.starCount, 0);
-        expect(runStateRepository.state.heartCount, 3);
+        expect(runStateRepository.state.heartCount, burnWeekInitialHeartCount);
         expect(runStateRepository.state.heartCreditKcal, 0);
       },
     );

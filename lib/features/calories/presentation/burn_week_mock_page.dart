@@ -53,17 +53,17 @@ class BurnWeekMockPage extends ConsumerStatefulWidget {
 
 class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
   static const int _startingStarCount = 0;
-  static const int _startingHeartCount = 3;
+  static const int _startingHeartCount = burnWeekInitialHeartCount;
 
   Timer? _ticker;
   late int _elapsedDebugSeconds;
   final List<_BurnWeekActionEvent> _events = <_BurnWeekActionEvent>[];
   final Set<int> _trackedDayNumbers = <int>{};
+  final Set<int> _heartDayNumbers = <int>{};
   final Set<int> _resolvedDayNumbers = <int>{};
   int _currentWeekNumber = 1;
   int _starCount = _startingStarCount;
   int _heartCount = _startingHeartCount;
-  double _heartCreditKcal = 0;
   double _timeSpeedIndex = 0;
   bool _starBrokeThisWeek = false;
   bool _didResetRunDuringTick = false;
@@ -162,7 +162,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
             title: const Text('Too far below target'),
             content: const Text(
               'There are not enough calories left in this week to recover by '
-              'eating. Use 1 heart to restore?',
+              'eating. Use 1 heart to protect today as a perfect heart day?',
             ),
             actions: [
               TextButton(
@@ -179,7 +179,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
       );
 
       if (shouldUseHeart == true && mounted) {
-        _useHeart(metrics.dailyGoalKcal);
+        _useHeart();
       }
       return;
     }
@@ -191,8 +191,8 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
           title: const Text('Out of safe zone'),
           content: Text(
             _heartCount > 0
-                ? 'You are below target. Use a heart for one full Burn day '
-                      'leap, or eat more to get back in target.'
+                ? 'You are below target. Use a heart to protect today as a '
+                      'perfect heart day, or eat more to get back in target.'
                 : 'You are below target. No hearts left. Eat more to get '
                       'back in target.',
           ),
@@ -220,7 +220,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     }
 
     if (action == _BelowZoneAction.useHeart) {
-      _useHeart(metrics.dailyGoalKcal);
+      _useHeart();
       return;
     }
 
@@ -263,7 +263,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     required String goalEquationText,
     required String weeklyGoalText,
     required String safeZoneText,
-    required String heartCreditText,
+    required String heartDayText,
   }) {
     final colors = Theme.of(context).colorScheme;
     return showDialog<void>(
@@ -338,8 +338,8 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
                             value: safeZoneText,
                           ),
                           _InfoLine(
-                            label: 'Heart kcal used',
-                            value: heartCreditText,
+                            label: 'Heart days used',
+                            value: heartDayText,
                           ),
                           _InfoLine(
                             label: 'Week target',
@@ -400,10 +400,10 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Use heart?'),
+          title: const Text('Use heart day?'),
           content: const Text(
-            'You are way over weekly limit. Use 1 heart to reduce one full '
-            'Burn day of calories?',
+            'You are way over weekly limit. Use 1 heart to protect today as a '
+            'perfect heart day?',
           ),
           actions: [
             TextButton(
@@ -420,7 +420,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     );
 
     if (shouldUseHeart == true && mounted) {
-      _useHeartToReduce(metrics.dailyGoalKcal);
+      _useHeart();
     }
   }
 
@@ -436,7 +436,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     });
   }
 
-  void _useHeart(double dailyGoalKcal) {
+  void _useHeart() {
     if (_heartCount <= 0) {
       return;
     }
@@ -445,40 +445,16 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
       _didResetRunDuringTick = false;
       _lastZoneStatus = BurnWeekZoneStatus.inside;
       _trackedDayNumbers.add(_currentDebugDayNumber);
+      _heartDayNumbers.add(_currentDebugDayNumber);
       _spendHeart(
         simpleMessage:
-            'Used 1 heart for +1 Burn day leap. It counts like one full '
-            'Burn day of calories.',
+            'Used 1 heart day. Today counts as a perfect Burn day and no '
+            'more mock tracking is needed.',
       );
-      if (_didResetRunDuringTick) {
-        return;
-      }
-      _heartCreditKcal += dailyGoalKcal;
     });
   }
 
-  void _useHeartToReduce(double dailyGoalKcal) {
-    if (_heartCount <= 0) {
-      return;
-    }
-
-    setState(() {
-      _didResetRunDuringTick = false;
-      _lastZoneStatus = BurnWeekZoneStatus.inside;
-      _trackedDayNumbers.add(_currentDebugDayNumber);
-      _spendHeart(
-        simpleMessage:
-            'Used 1 heart to remove 1 Burn day of calories and get closer '
-            'to weekly target.',
-      );
-      if (_didResetRunDuringTick) {
-        return;
-      }
-      _heartCreditKcal -= dailyGoalKcal;
-    });
-  }
-
-  Future<void> _confirmUseHeart(double dailyGoalKcal) async {
+  Future<void> _confirmUseHeart() async {
     if (_heartCount <= 0) {
       return;
     }
@@ -487,12 +463,11 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Use heart?'),
+          title: const Text('Use heart day?'),
           content: const Text(
-            'Using a heart adds one full Burn day of calories to your run. '
-            'If hearts hit 0, one star can break and restore more hearts. '
-            'If no stars are left, leaving the safe zone with 0 hearts '
-            'will restart the run.',
+            'Using a heart protects today. The mock treats today as a '
+            'perfect Burn day and you can stop tracking for this day. If '
+            'hearts hit 0, one star can break and restore more hearts.',
           ),
           actions: [
             TextButton(
@@ -509,7 +484,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     );
 
     if (shouldUseHeart == true && mounted) {
-      _useHeart(dailyGoalKcal);
+      _useHeart();
     }
   }
 
@@ -558,6 +533,9 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     if (_trackedDayNumbers.contains(dayNumber)) {
       return;
     }
+    if (_heartDayNumbers.contains(dayNumber)) {
+      return;
+    }
     // Mock stays debug-friendly: missing tracking should not block
     // week rollover progression while testing stars/hearts.
     _weekMessage =
@@ -569,7 +547,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     final spendResult = resolveBurnWeekHeartSpend(
       starCount: _starCount,
       heartCount: _heartCount,
-      heartCreditKcal: _heartCreditKcal,
+      heartCreditKcal: 0,
       kcalDelta: 0,
     );
     if (spendResult.heartCount == _heartCount &&
@@ -587,7 +565,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     if (spendResult.didBreakStar) {
       _starBrokeThisWeek = true;
       _weekMessage =
-          'A star broke and restored $_heartCount hearts. '
+          'A star broke. Heart spent, $_heartCount hearts left. '
           'This week can still survive, but it will not gain a star.';
       return;
     }
@@ -612,8 +590,8 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     _elapsedDebugSeconds = 0;
     _events.clear();
     _trackedDayNumbers.clear();
+    _heartDayNumbers.clear();
     _resolvedDayNumbers.clear();
-    _heartCreditKcal = 0;
     _starBrokeThisWeek = false;
     _heartCount = math.max(_heartCount, _currentDifficulty.minimumHearts);
     _weekMessage = earnedStar
@@ -622,28 +600,54 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
         : 'Saved week. Run continues, but no new star this time.';
   }
 
-  void _resetRun({
-    String message = 'Run over. Restarted at Week 1 with 3 hearts.',
-  }) {
+  void _resetRun({String? message}) {
     _currentWeekNumber = 1;
     _starCount = _startingStarCount;
     _heartCount = _startingHeartCount;
     _elapsedDebugSeconds = 0;
     _events.clear();
     _trackedDayNumbers.clear();
+    _heartDayNumbers.clear();
     _resolvedDayNumbers.clear();
-    _heartCreditKcal = 0;
     _starBrokeThisWeek = false;
     _didResetRunDuringTick = true;
-    _weekMessage = message;
+    _weekMessage =
+        message ??
+        'Run over. Restarted at Week 1 with $burnWeekInitialHeartCount heart.';
   }
 
   int get _selectedTimeSpeed {
     return _timeSpeedOptions[_timeSpeedIndex.round()];
   }
 
-  double get _totalConsumedKcal {
-    return _events.fold<double>(0, (sum, event) => sum + event.deltaKcal);
+  double _heartAdjustedConsumedKcal(double dailyGoalKcal) {
+    var total = 0.0;
+    final currentDayNumber = _currentDebugDayNumber;
+    for (var dayNumber = 1; dayNumber <= currentDayNumber; dayNumber += 1) {
+      if (_heartDayNumbers.contains(dayNumber)) {
+        total += dailyGoalKcal;
+        continue;
+      }
+      total += _events
+          .where(
+            (event) =>
+                _resolveDebugDayNumber(event.elapsedDebugSeconds) == dayNumber,
+          )
+          .fold<double>(0, (sum, event) => sum + event.deltaKcal);
+    }
+    return total;
+  }
+
+  int get _heartAdjustedElapsedDebugSeconds {
+    if (!_heartDayNumbers.contains(_currentDebugDayNumber)) {
+      return _elapsedDebugSeconds;
+    }
+    return math
+        .max(
+          _elapsedDebugSeconds,
+          _currentDebugDayNumber * _debugSecondsPerDay,
+        )
+        .clamp(0, burnWeekMockSecondsPerWeek);
   }
 
   int get _currentDebugDayNumber {
@@ -685,6 +689,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     final selectedDay = ref.watch(calorieDayControllerProvider);
     final settings = ref.watch(calorieGoalControllerProvider).asData?.value;
     final dailyGoalKcal = settings?.goalKcalForDay(selectedDay);
+    final resolvedDailyGoalKcal = resolveBurnWeekMockGoalKcal(dailyGoalKcal);
     final calculatorProfile = settings?.calculatorProfile;
     final learnedTdeeKcal = settings?.latestLearnedTdeeKcal;
     final calorieCalculation = calculatorProfile == null
@@ -692,9 +697,12 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
         : CalorieGoalCalculator.calculate(calculatorProfile);
     final difficulty = _currentDifficulty;
     final weekDayLabel = 'Week $_currentWeekNumber day $_currentDebugDayNumber';
-    final effectiveConsumedKcal = _totalConsumedKcal + _heartCreditKcal;
+    final isCurrentHeartDay = _heartDayNumbers.contains(_currentDebugDayNumber);
+    final effectiveConsumedKcal = _heartAdjustedConsumedKcal(
+      resolvedDailyGoalKcal,
+    );
     final metrics = resolveBurnWeekMockMetrics(
-      elapsedDebugSeconds: _elapsedDebugSeconds,
+      elapsedDebugSeconds: _heartAdjustedElapsedDebugSeconds,
       goalKcal: dailyGoalKcal,
       consumedKcal: effectiveConsumedKcal,
       safeZoneMultiplier: difficulty.safeZoneMultiplier,
@@ -702,7 +710,9 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
     _queueZoneDialogIfNeeded(metrics);
     const kcalUnit = 'kcal';
     final currentDayBudgetKcal = _currentDebugDayNumber * metrics.dailyGoalKcal;
-    final todayLeftKcal = currentDayBudgetKcal - effectiveConsumedKcal;
+    final todayLeftKcal = isCurrentHeartDay
+        ? 0.0
+        : currentDayBudgetKcal - effectiveConsumedKcal;
     final todayActualText =
         '${numberFormat.format(_todayConsumedKcal.round())} $kcalUnit';
     final todayLeftText =
@@ -717,8 +727,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
         '${numberFormat.format(metrics.safeZoneMinKcal.round())} $kcalUnit';
     final safeMaxText =
         '${numberFormat.format(metrics.safeZoneMaxKcal.round())} $kcalUnit';
-    final heartCreditText =
-        '${numberFormat.format(_heartCreditKcal.round())} $kcalUnit';
+    final heartDayText = numberFormat.format(_heartDayNumbers.length);
     final expectedActivityKcal = calorieCalculation == null
         ? null
         : calorieCalculation.tdeeKcal - calorieCalculation.bmrKcal;
@@ -874,9 +883,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
             barKey: CaloriesPageKeys.burnWeekMockBar,
             starCount: _starCount,
             heartCount: _heartCount,
-            onHeartTap: _heartCount > 0
-                ? () => _confirmUseHeart(metrics.dailyGoalKcal)
-                : null,
+            onHeartTap: _heartCount > 0 ? _confirmUseHeart : null,
             onInfoPressed: () {
               unawaited(
                 _showBurnWeekDetailsDialog(
@@ -889,7 +896,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
                   goalEquationText: goalEquationText,
                   weeklyGoalText: weeklyGoalText,
                   safeZoneText: safeZoneExplanationText,
-                  heartCreditText: heartCreditText,
+                  heartDayText: heartDayText,
                 ),
               );
             },

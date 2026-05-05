@@ -116,6 +116,7 @@ final Provider<Object?> burnWeekLiveSyncProvider =
         currentWeekStartDate: currentWeekStartDate,
         today: todayOverviewValue.date,
         settings: settings,
+        heartDayKeys: runState.heartDayKeys.toSet(),
       );
       final closedWeekStartDates = <DateTime>[];
       var closedWeekStartDate =
@@ -172,6 +173,7 @@ final Provider<Object?> burnWeekLiveSyncProvider =
               ),
             ),
             settings: settings,
+            heartDayKeys: runState.heartDayKeys.toSet(),
           ),
       ];
       _queueRunSync(
@@ -264,7 +266,7 @@ bool _isInitialBurnWeekRunState(BurnWeekRunState state) {
       state.lastActiveDayKey == null &&
       state.runWeekNumber == burnWeekLearningRunWeekNumber &&
       state.starCount == 0 &&
-      state.heartCount == 3 &&
+      state.heartCount == burnWeekInitialHeartCount &&
       state.heartCreditKcal == 0 &&
       !state.starBrokeThisWeek &&
       !state.missedTrackingThisWeek;
@@ -312,7 +314,7 @@ bool _shouldRepairBackfilledInitialRun({
 bool _looksLikeFreshRun(BurnWeekRunState state) {
   return state.runWeekNumber == burnWeekLearningRunWeekNumber &&
       state.starCount == 0 &&
-      state.heartCount == 3 &&
+      state.heartCount == burnWeekInitialHeartCount &&
       state.heartCreditKcal == 0 &&
       !state.starBrokeThisWeek;
 }
@@ -326,7 +328,7 @@ bool _isScheduledFutureGameRun({
       _isSameDiaryDay(storedWeekStartDate, expectedWeekStartDate) &&
       runState.runWeekNumber == burnWeekFirstGameRunWeekNumber &&
       runState.starCount == 0 &&
-      runState.heartCount == 3 &&
+      runState.heartCount == burnWeekInitialHeartCount &&
       runState.heartCreditKcal == 0 &&
       !runState.starBrokeThisWeek &&
       !runState.missedTrackingThisWeek;

@@ -8,7 +8,9 @@ class DiaryCalendarDayButton extends StatelessWidget {
     required this.day,
     required this.isActive,
     required this.isToday,
+    required this.isHeartDay,
     required this.activeColor,
+    required this.heartColor,
     required this.inactiveTextColor,
     required this.onTap,
     super.key,
@@ -23,8 +25,14 @@ class DiaryCalendarDayButton extends StatelessWidget {
   /// Whether this day is today.
   final bool isToday;
 
+  /// Whether this day is protected by a spent heart.
+  final bool isHeartDay;
+
   /// The active day color.
   final Color activeColor;
+
+  /// The heart day color.
+  final Color heartColor;
 
   /// The inactive text color.
   final Color inactiveTextColor;
@@ -34,7 +42,12 @@ class DiaryCalendarDayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isActive ? Colors.white : inactiveTextColor;
+    final resolvedActiveColor = isHeartDay ? heartColor : activeColor;
+    final textColor = isActive
+        ? Colors.white
+        : isHeartDay
+        ? heartColor
+        : inactiveTextColor;
     final localeName = Localizations.localeOf(context).toLanguageTag();
 
     return Padding(
@@ -48,12 +61,19 @@ class DiaryCalendarDayButton extends StatelessWidget {
             duration: const Duration(milliseconds: 300),
             height: 64,
             decoration: BoxDecoration(
-              color: isActive ? activeColor : Colors.transparent,
+              color: isActive
+                  ? resolvedActiveColor
+                  : isHeartDay
+                  ? heartColor.withValues(alpha: 0.14)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(19),
+              border: isHeartDay && !isActive
+                  ? Border.all(color: heartColor.withValues(alpha: 0.38))
+                  : null,
               boxShadow: isActive
                   ? [
                       BoxShadow(
-                        color: activeColor.withValues(alpha: 0.28),
+                        color: resolvedActiveColor.withValues(alpha: 0.28),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -71,6 +91,8 @@ class DiaryCalendarDayButton extends StatelessWidget {
                       style: TextStyle(
                         color: isActive
                             ? Colors.white.withValues(alpha: 0.9)
+                            : isHeartDay
+                            ? heartColor
                             : inactiveTextColor,
                         fontSize: 10,
                         fontWeight: isActive
@@ -99,7 +121,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
                       width: 4,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: activeColor,
+                        color: isHeartDay ? heartColor : activeColor,
                         shape: BoxShape.circle,
                       ),
                     ),

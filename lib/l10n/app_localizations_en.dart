@@ -27,6 +27,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickActionTooltip => 'Quick action';
 
   @override
+  String homeHeartCounterUseTooltip(String day) {
+    return 'Use heart for $day';
+  }
+
+  @override
+  String homeHeartCounterActiveTooltip(String day) {
+    return '$day is already a heart day';
+  }
+
+  @override
+  String get homeHeartCounterEmptyTooltip => 'No hearts left';
+
+  @override
+  String get homeHeartCounterUnavailableTooltip =>
+      'Hearts can only be used during the current Burn Week';
+
+  @override
+  String get homeHeartUseTitle => 'Use heart day?';
+
+  @override
+  String homeHeartUseMessage(String day) {
+    return 'Spend 1 heart to ignore $day. Logged food stays in the diary, but this day counts as perfect and is skipped for weekly learning.';
+  }
+
+  @override
   String get inventoryFabTooltip => 'Receipt actions';
 
   @override
@@ -1811,11 +1836,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesDebugDumpFailed => 'Could not print calorie debug table.';
 
   @override
-  String get burnWeekUseHeartTitle => 'Use heart?';
+  String get burnWeekUseHeartTitle => 'Use heart day?';
 
   @override
   String burnWeekUseHeartMessage(int dayKcal) {
-    return '1 heart can add or remove one full Burn day of calories ($dayKcal kcal).';
+    return 'Spend 1 heart to ignore today. Logged food stays in the diary, but today counts as a perfect Burn day and is skipped for weekly learning ($dayKcal kcal day).';
   }
 
   @override
@@ -1828,13 +1853,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get burnWeekActionNo => 'No';
 
   @override
-  String get burnWeekActionRemoveDayKcal => '-1 day kcal';
-
-  @override
-  String get burnWeekActionAddDayKcal => '+1 day kcal';
-
-  @override
   String get burnWeekRunOverTitle => 'Run over';
+
+  @override
+  String get burnWeekRunLimitTitle => 'Run cannot finish perfectly';
+
+  @override
+  String get burnWeekRunLimitContinueAction => 'Continue anyway';
+
+  @override
+  String get burnWeekRunLimitStartNewAction => 'Start new run';
 
   @override
   String burnWeekRunRestartsOn(Object date) {
@@ -1854,7 +1882,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get burnWeekZoneBelowRecoverMessage =>
-      'You are below target. Use a heart for one full Burn day leap, or eat more to get back in target.';
+      'You are below target. Use a heart to protect today as a perfect heart day, or eat more to get back in target.';
 
   @override
   String get burnWeekZoneBelowRecoverNoHeartsMessage =>
@@ -1865,11 +1893,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get burnWeekZoneBelowNeedsHeartMessage =>
-      'There are not enough calories left in this week to recover by eating. Use 1 heart to restore?';
+      'There are not enough calories left in this week to recover by eating. Use 1 heart to protect today as a perfect heart day?';
 
   @override
   String get burnWeekZoneBelowRunOverMessage =>
-      'There are not enough calories left in this week to recover by eating. No hearts left, so a fresh run starts next day.';
+      'There are not enough calories left in this week to recover by eating, and no hearts are left. Continue this run anyway, or start a fresh run tomorrow.';
 
   @override
   String get burnWeekZoneEatMoreTitle => 'Eat more';
@@ -1889,11 +1917,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get burnWeekZoneAboveNeedsHeartMessage =>
-      'You are way over weekly limit. Use 1 heart to reduce one full Burn day of calories?';
+      'You are way over weekly limit. Use 1 heart to protect today as a perfect heart day?';
 
   @override
   String get burnWeekZoneAboveRunOverMessage =>
-      'You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.';
+      'You are way over weekly limit and have no hearts left. This run cannot finish perfectly. Continue this run anyway, or start a fresh run tomorrow.';
 
   @override
   String get calorieBudgetDetailsActualLabel => 'Actual (you)';
@@ -1933,7 +1961,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get burnWeekDetailsStarsHearts => 'Stars / Hearts';
 
   @override
-  String get burnWeekDetailsHeartKcalUsed => 'Heart kcal used';
+  String get burnWeekDetailsHeartKcalUsed => 'Heart adjustment';
 
   @override
   String get burnWeekDetailsWeekRatio => 'Week ratio';
@@ -2273,6 +2301,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryBalanceLeftLabel => 'Left';
+
+  @override
+  String diaryBalanceRealLeftLabel(Object kcal) {
+    return 'Real $kcal';
+  }
+
+  @override
+  String diaryBalanceHeartAdjustmentLabel(Object kcal) {
+    return 'Heart $kcal';
+  }
+
+  @override
+  String get diaryBalanceHeartDayValue => 'Heart day';
+
+  @override
+  String get diaryBalanceHeartDaySubtitle => 'Ignored for learning';
+
+  @override
+  String get diaryBalanceRevertHeartDayAction => 'Revert heart day';
 
   @override
   String get diaryScrollToTopAction => 'To top';
