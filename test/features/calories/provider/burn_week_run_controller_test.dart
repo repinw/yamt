@@ -362,6 +362,28 @@ void main() {
     expect(repository.state.heartDayKeys, <String>['2026-4-21']);
   });
 
+  test('useHeartForDay ignores practice days before run starts', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final futureStartDay = addDiaryDays(today, 3);
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: diaryDayKey(futureStartDay),
+        runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        starCount: 0,
+        heartCount: 1,
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .useHeartForDay(today);
+
+    expect(repository.state.heartCount, 1);
+    expect(repository.state.heartDayKeys, isEmpty);
+  });
+
   test('unmarkHeartDay removes day and refunds heart', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       buildState(
@@ -400,6 +422,62 @@ void main() {
 
     expect(repository.state.heartCount, 0);
     expect(repository.state.heartDayKeys, <String>['2026-4-21']);
+  });
+
+  test('unmarkHeartDay restores star broken by heart spend', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-04-21',
+        runWeekNumber: 3,
+        starCount: 1,
+        heartCount: 0,
+        starBrokeThisWeek: true,
+      ).copyWith(
+        heartDayKeys: <String>['2026-4-21'],
+        heartStarBreakDayKeys: <String>['2026-4-21'],
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .unmarkHeartDay(DateTime(2026, 4, 21));
+
+    expect(repository.state.starCount, 2);
+    expect(repository.state.heartCount, 1);
+    expect(repository.state.starBrokeThisWeek, isFalse);
+    expect(repository.state.heartDayKeys, isEmpty);
+    expect(repository.state.heartStarBreakDayKeys, isEmpty);
+  });
+
+  test('unmarkHeartDay keeps limit warning after restoring star', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-04-21',
+        runWeekNumber: 3,
+        starCount: 1,
+        heartCount: 0,
+        starBrokeThisWeek: true,
+      ).copyWith(
+        heartDayKeys: <String>['2026-4-21'],
+        heartStarBreakDayKeys: <String>['2026-4-21'],
+        runLimitWarningThisWeek: true,
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .unmarkHeartDay(DateTime(2026, 4, 21));
+
+    expect(repository.state.starCount, 2);
+    expect(repository.state.heartCount, 1);
+    expect(repository.state.starBrokeThisWeek, isTrue);
+    expect(repository.state.runLimitWarningThisWeek, isTrue);
+    expect(repository.state.heartDayKeys, isEmpty);
+    expect(repository.state.heartStarBreakDayKeys, isEmpty);
   });
 
   test('usePositiveHeart with zero hearts keeps the state unchanged', () async {
@@ -544,6 +622,7 @@ void main() {
     expect(repository.state.heartCreditKcal, 0);
     expect(repository.state.starBrokeThisWeek, isTrue);
     expect(repository.state.heartDayKeys, <String>['2026-4-21']);
+    expect(repository.state.heartStarBreakDayKeys, <String>['2026-4-21']);
   });
 
   test(
@@ -572,6 +651,7 @@ void main() {
       expect(repository.state.heartCreditKcal, 0);
       expect(repository.state.starBrokeThisWeek, isTrue);
       expect(repository.state.heartDayKeys, <String>['2026-4-21']);
+      expect(repository.state.heartStarBreakDayKeys, <String>['2026-4-21']);
     },
   );
 
@@ -694,6 +774,7 @@ void main() {
     expect(repository.state.starCount, 2);
     expect(repository.state.heartCount, 0);
     expect(repository.state.starBrokeThisWeek, isTrue);
+    expect(repository.state.runLimitWarningThisWeek, isTrue);
   });
 
   test('syncForWeek does not refill hearts on week rollover', () async {

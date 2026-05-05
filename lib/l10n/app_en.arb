@@ -23,6 +23,8 @@
     }
   },
   "homeHeartCounterEmptyTooltip": "No hearts left",
+  "homeHeartCounterUnavailableTooltip":
+      "Hearts can only be used during the current Burn Week",
   "homeHeartUseTitle": "Use heart day?",
   "homeHeartUseMessage":
       "Spend 1 heart to ignore {day}. Logged food stays in the diary, but this day counts as perfect and is skipped for weekly learning.",

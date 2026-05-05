@@ -25,22 +25,24 @@ class HomeHeartCounterButton extends ConsumerWidget {
     final dayLabel = formatDiaryHeaderDate(selectedDay, localeName);
     final isHeartDay = runState.isHeartDay(selectedDay);
     final hasHearts = runState.heartCount > 0;
+    final canUseHeart = runState.canUseHeartForDay(selectedDay);
     final tooltip = _tooltip(
       l10n: l10n,
       dayLabel: dayLabel,
       isHeartDay: isHeartDay,
       hasHearts: hasHearts,
+      canUseHeart: canUseHeart,
     );
 
     return Tooltip(
       message: tooltip,
       child: Semantics(
-        button: hasHearts && !isHeartDay,
+        button: canUseHeart,
         label: tooltip,
         child: _HomeHeartCounterPill(
           count: runState.heartCount,
           isHeartDay: isHeartDay,
-          onPressed: hasHearts && !isHeartDay
+          onPressed: canUseHeart
               ? () => _confirmAndUseHeart(
                   context: context,
                   ref: ref,
@@ -58,12 +60,16 @@ class HomeHeartCounterButton extends ConsumerWidget {
     required String dayLabel,
     required bool isHeartDay,
     required bool hasHearts,
+    required bool canUseHeart,
   }) {
     if (isHeartDay) {
       return l10n.homeHeartCounterActiveTooltip(dayLabel);
     }
     if (!hasHearts) {
       return l10n.homeHeartCounterEmptyTooltip;
+    }
+    if (!canUseHeart) {
+      return l10n.homeHeartCounterUnavailableTooltip;
     }
     return l10n.homeHeartCounterUseTooltip(dayLabel);
   }

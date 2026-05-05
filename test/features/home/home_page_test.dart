@@ -485,6 +485,38 @@ void main() {
     ]);
   });
 
+  testWidgets('heart counter blocks practice days before run starts', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final selectedDay = normalizeDiaryDay(DateTime.now());
+    final futureStartDay = addDiaryDays(selectedDay, 3);
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(futureStartDay),
+        runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        heartCount: 1,
+      ),
+    );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        burnWeekRunStateRepository: runStateRepository,
+        selectedDiaryDay: selectedDay,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(HomeHeartCounterButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Use heart day?'), findsNothing);
+    expect(runStateRepository.state.heartCount, 1);
+    expect(runStateRepository.state.heartDayKeys, isEmpty);
+  });
+
   testWidgets('inventory tab hides shell fab when inventory is empty', (
     tester,
   ) async {

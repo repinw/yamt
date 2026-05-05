@@ -23,6 +23,8 @@
     }
   },
   "homeHeartCounterEmptyTooltip": "Keine Herzen übrig",
+  "homeHeartCounterUnavailableTooltip":
+      "Herzen können nur in der aktuellen Burn Week genutzt werden",
   "homeHeartUseTitle": "Herztag nutzen?",
   "homeHeartUseMessage":
       "Gib 1 Herz aus, um {day} zu ignorieren. Erfasstes Essen bleibt im Tagebuch, aber der Tag zählt als perfekt und wird beim Wochenlernen übersprungen.",

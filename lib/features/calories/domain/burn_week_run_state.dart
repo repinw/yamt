@@ -27,6 +27,8 @@ class BurnWeekRunState {
     required this.starBrokeThisWeek,
     required this.missedTrackingThisWeek,
     this.heartDayKeys = const <String>[],
+    this.heartStarBreakDayKeys = const <String>[],
+    this.runLimitWarningThisWeek = false,
     this.lastActiveDayKey,
   });
 
@@ -40,7 +42,9 @@ class BurnWeekRunState {
       heartCreditKcal = 0,
       starBrokeThisWeek = false,
       missedTrackingThisWeek = false,
-      heartDayKeys = const <String>[];
+      heartDayKeys = const <String>[],
+      heartStarBreakDayKeys = const <String>[],
+      runLimitWarningThisWeek = false;
 
   /// Decodes from persisted json.
   factory BurnWeekRunState.fromJson(Map<String, dynamic> json) {
@@ -61,6 +65,11 @@ class BurnWeekRunState {
       missedTrackingThisWeek:
           json['missed_tracking_this_week'] as bool? ?? false,
       heartDayKeys: _decodeHeartDayKeys(json['heart_day_keys']),
+      heartStarBreakDayKeys: _decodeHeartDayKeys(
+        json['heart_star_break_day_keys'],
+      ),
+      runLimitWarningThisWeek:
+          json['run_limit_warning_this_week'] as bool? ?? false,
     );
   }
 
@@ -91,9 +100,36 @@ class BurnWeekRunState {
   /// Diary days protected by a spent heart.
   final List<String> heartDayKeys;
 
+  /// Heart days that spent the last heart and broke one star.
+  final List<String> heartStarBreakDayKeys;
+
+  /// Whether user chose to continue an unrecoverable limit week.
+  final bool runLimitWarningThisWeek;
+
   /// Whether [day] is protected by a spent heart.
   bool isHeartDay(DateTime day) {
     return heartDayKeys.contains(diaryDayKey(day));
+  }
+
+  /// Whether [day] can spend a heart in the current active run week.
+  bool canUseHeartForDay(DateTime day, {DateTime? today}) {
+    if (runWeekNumber <= burnWeekLearningRunWeekNumber ||
+        heartCount <= 0 ||
+        isHeartDay(day)) {
+      return false;
+    }
+    final weekStartDate = _parseBurnWeekDayKey(currentWeekStartDayKey);
+    if (weekStartDate == null) {
+      return false;
+    }
+    final normalizedToday = normalizeDiaryDay(today ?? DateTime.now());
+    if (weekStartDate.isAfter(normalizedToday)) {
+      return false;
+    }
+    final normalizedDay = normalizeDiaryDay(day);
+    final weekEndDate = addDiaryDays(weekStartDate, burnWeekDaysPerWeek);
+    return !normalizedDay.isBefore(weekStartDate) &&
+        normalizedDay.isBefore(weekEndDate);
   }
 
   /// Whether [day] can still be reverted and refunded.
@@ -124,6 +160,8 @@ class BurnWeekRunState {
       'star_broke_this_week': starBrokeThisWeek,
       'missed_tracking_this_week': missedTrackingThisWeek,
       'heart_day_keys': heartDayKeys,
+      'heart_star_break_day_keys': heartStarBreakDayKeys,
+      'run_limit_warning_this_week': runLimitWarningThisWeek,
     };
   }
 
@@ -138,6 +176,8 @@ class BurnWeekRunState {
     bool? starBrokeThisWeek,
     bool? missedTrackingThisWeek,
     List<String>? heartDayKeys,
+    List<String>? heartStarBreakDayKeys,
+    bool? runLimitWarningThisWeek,
   }) {
     return BurnWeekRunState(
       currentWeekStartDayKey: currentWeekStartDayKey == _keepValue
@@ -154,6 +194,10 @@ class BurnWeekRunState {
       missedTrackingThisWeek:
           missedTrackingThisWeek ?? this.missedTrackingThisWeek,
       heartDayKeys: heartDayKeys ?? this.heartDayKeys,
+      heartStarBreakDayKeys:
+          heartStarBreakDayKeys ?? this.heartStarBreakDayKeys,
+      runLimitWarningThisWeek:
+          runLimitWarningThisWeek ?? this.runLimitWarningThisWeek,
     );
   }
 }

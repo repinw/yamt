@@ -40,6 +40,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeHeartCounterEmptyTooltip => 'No hearts left';
 
   @override
+  String get homeHeartCounterUnavailableTooltip =>
+      'Hearts can only be used during the current Burn Week';
+
+  @override
   String get homeHeartUseTitle => 'Use heart day?';
 
   @override

@@ -165,6 +165,7 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
     return _save(
       const BurnWeekRunState.initial().copyWith(
         heartDayKeys: current?.heartDayKeys,
+        heartStarBreakDayKeys: current?.heartStarBreakDayKeys,
       ),
       previous: current,
     );
@@ -183,6 +184,7 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: resolvedRunWeekNumber,
         heartDayKeys: current.heartDayKeys,
+        heartStarBreakDayKeys: current.heartStarBreakDayKeys,
       ),
       previous: current,
     );
@@ -201,6 +203,7 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         runWeekNumber: runWeekNumber,
         heartCreditKcal: heartCreditKcal,
         heartDayKeys: current.heartDayKeys,
+        heartStarBreakDayKeys: current.heartStarBreakDayKeys,
       ),
       previous: current,
     );
@@ -215,10 +218,10 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
   Future<void> useHeartForDay(DateTime day) async {
     final current = await future;
     final normalizedDay = normalizeDiaryDay(day);
-    final dayKey = diaryDayKey(normalizedDay);
-    if (current.heartDayKeys.contains(dayKey)) {
+    if (!current.canUseHeartForDay(normalizedDay)) {
       return;
     }
+    final dayKey = diaryDayKey(normalizedDay);
     final spendResult = resolveBurnWeekHeartSpend(
       starCount: current.starCount,
       heartCount: current.heartCount,
@@ -243,6 +246,9 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         starBrokeThisWeek:
             current.starBrokeThisWeek || spendResult.didBreakStar,
         heartDayKeys: _addHeartDayKey(current.heartDayKeys, dayKey),
+        heartStarBreakDayKeys: spendResult.didBreakStar
+            ? _addHeartDayKey(current.heartStarBreakDayKeys, dayKey)
+            : current.heartStarBreakDayKeys,
       ),
       previous: current,
     );
@@ -255,10 +261,20 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       return;
     }
     final dayKey = diaryDayKey(normalizeDiaryDay(day));
+    final didBreakStar = current.heartStarBreakDayKeys.contains(dayKey);
+    final nextStarBreakDayKeys = _removeHeartDayKey(
+      current.heartStarBreakDayKeys,
+      dayKey,
+    );
     await _save(
       current.copyWith(
+        starCount: current.starCount + (didBreakStar ? 1 : 0),
         heartCount: current.heartCount + 1,
+        starBrokeThisWeek: didBreakStar
+            ? current.runLimitWarningThisWeek || nextStarBreakDayKeys.isNotEmpty
+            : current.starBrokeThisWeek,
         heartDayKeys: _removeHeartDayKey(current.heartDayKeys, dayKey),
+        heartStarBreakDayKeys: nextStarBreakDayKeys,
       ),
       previous: current,
     );
@@ -271,7 +287,10 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       return;
     }
     await _save(
-      current.copyWith(starBrokeThisWeek: true),
+      current.copyWith(
+        starBrokeThisWeek: true,
+        runLimitWarningThisWeek: true,
+      ),
       previous: current,
     );
   }
@@ -318,6 +337,8 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       starBrokeThisWeek: false,
       missedTrackingThisWeek: false,
       heartDayKeys: current.heartDayKeys,
+      heartStarBreakDayKeys: current.heartStarBreakDayKeys,
+      runLimitWarningThisWeek: false,
     );
   }
 
@@ -362,7 +383,12 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         left.heartCreditKcal == right.heartCreditKcal &&
         left.starBrokeThisWeek == right.starBrokeThisWeek &&
         left.missedTrackingThisWeek == right.missedTrackingThisWeek &&
-        _sameStringList(left.heartDayKeys, right.heartDayKeys);
+        left.runLimitWarningThisWeek == right.runLimitWarningThisWeek &&
+        _sameStringList(left.heartDayKeys, right.heartDayKeys) &&
+        _sameStringList(
+          left.heartStarBreakDayKeys,
+          right.heartStarBreakDayKeys,
+        );
   }
 
   bool _shouldReplayBackfilledClosedWeeks({

@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'No hearts left'**
   String get homeHeartCounterEmptyTooltip;
 
+  /// No description provided for @homeHeartCounterUnavailableTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Hearts can only be used during the current Burn Week'**
+  String get homeHeartCounterUnavailableTooltip;
+
   /// No description provided for @homeHeartUseTitle.
   ///
   /// In en, this message translates to:
