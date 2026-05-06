@@ -65,7 +65,7 @@ class _DiaryBalanceScheduledRestartCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final dateFormat = DateFormat.yMMMd(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final colors = Theme.of(context).colorScheme;
 

@@ -2338,7 +2338,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryMealsEmpty => 'Noch nichts eingetragen';
 
   @override
+  String get diaryMealsLoadFailed => 'Mahlzeiten konnten nicht geladen werden';
+
+  @override
   String get diaryBalanceLoadFailed => 'Balance konnte nicht geladen werden';
+
+  @override
+  String get diaryNutritionLoadFailed =>
+      'Nährwerte konnten nicht geladen werden';
 
   @override
   String get diaryBalanceEatenLabel => 'Gegessen';
@@ -2443,6 +2450,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryActivityEmpty => 'Keine Aktivität';
+
+  @override
+  String get diaryActivityWeightLoadFailed =>
+      'Aktivität und Gewicht konnten nicht geladen werden';
 
   @override
   String diaryActiveMinutesLabel(String minutes) {

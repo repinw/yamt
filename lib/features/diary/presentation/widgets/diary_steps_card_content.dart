@@ -20,7 +20,7 @@ class _StepsCardContent extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final isDark = colors.brightness == Brightness.dark;
     final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
     final clampedProgress = progress.clamp(0.0, 1.0);

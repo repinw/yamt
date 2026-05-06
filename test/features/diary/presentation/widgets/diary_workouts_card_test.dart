@@ -5,6 +5,7 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_workouts_card.dart';
+import 'package:yamt/features/diary/provider/diary_steps_summary_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -43,6 +44,42 @@ void main() {
 
     expect(find.text('WORKOUTS'), findsOneWidget);
     expect(find.text('No workouts'), findsOneWidget);
+  });
+
+  testWidgets('shows retry and reloads after workouts load error', (
+    tester,
+  ) async {
+    var shouldFail = true;
+    await _pumpDiaryWidget(
+      tester,
+      DiaryWorkoutsCard(selectedDay: selectedDay),
+      overrides: [
+        diaryStepsSummaryProvider(selectedDay).overrideWith((ref) async {
+          if (shouldFail) {
+            throw StateError('load failed');
+          }
+          return _summary(selectedDay, [
+            _workout(
+              selectedDay,
+              activityLabel: 'Cycling',
+              durationMinutes: 42,
+              totalCalories: 320,
+              sourceName: 'Health Connect',
+            ),
+          ]);
+        }),
+      ],
+    );
+
+    expect(find.text('Workouts could not be loaded'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
+
+    shouldFail = false;
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Workouts could not be loaded'), findsNothing);
+    expect(find.text('Cycling'), findsOneWidget);
   });
 }
 

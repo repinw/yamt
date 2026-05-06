@@ -123,10 +123,7 @@ class _WeightDetailsContent extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dateFormat = DateFormat.MMMEd(locale);
     final accentColors = DiaryAccentColors.of(context);
-    final weightFormat = NumberFormat(
-      '0.#',
-      Localizations.localeOf(context).toString(),
-    );
+    final weightFormat = NumberFormat('0.#', locale);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

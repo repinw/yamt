@@ -1130,7 +1130,9 @@
   },
   "diaryMealsTitle": "Diary",
   "diaryMealsEmpty": "Nothing logged yet",
+  "diaryMealsLoadFailed": "Meals could not be loaded",
   "diaryBalanceLoadFailed": "Balance could not be loaded",
+  "diaryNutritionLoadFailed": "Nutrition could not be loaded",
   "diaryBalanceEatenLabel": "Eaten",
   "diaryBalanceLeftLabel": "Left",
   "diaryBalanceRealLeftLabel": "Real {kcal}",
@@ -1214,6 +1216,7 @@
   "diaryIntroBetterDataBody": "After 7 days, the estimate is better than the start value. After 14 consistent days, YAMT sees your metabolism more clearly.",
   "diaryActivityTitle": "Activity",
   "diaryActivityEmpty": "No activity",
+  "diaryActivityWeightLoadFailed": "Activity and weight could not be loaded",
   "diaryActiveMinutesLabel": "{minutes} min active",
   "@diaryActiveMinutesLabel": {
     "placeholders": {

@@ -1,73 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_summary_card_macros.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
+import 'package:yamt/features/diary/provider/diary_entries_provider.dart';
+import 'package:yamt/features/diary/provider/diary_nutrition_bars_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Data for the diary nutrition bars.
-class DiaryNutritionBarsData {
-  /// Creates diary nutrition bars data.
-  const DiaryNutritionBarsData({
-    required this.carbs,
-    required this.protein,
-    required this.fat,
-    required this.goals,
-  });
-
-  /// Consumed carbs in grams.
-  final double carbs;
-
-  /// Consumed protein in grams.
-  final double protein;
-
-  /// Consumed fat in grams.
-  final double fat;
-
-  /// Target macro grams.
-  final CaloriesSummaryMacroGoals goals;
+/// Stable keys for diary nutrition bar tests.
+abstract final class DiaryNutritionBarsKeys {
+  /// Retry button key.
+  static const retryButton = ValueKey<String>(
+    'diary-nutrition-bars-retry-button',
+  );
 }
-
-/// Provides real macro totals and targets for one diary day.
-final FutureProviderFamily<DiaryNutritionBarsData, DateTime>
-diaryNutritionBarsDataProvider =
-    FutureProvider.family<DiaryNutritionBarsData, DateTime>((ref, day) async {
-      ref.watch(calorieOverviewRevisionProvider);
-      final normalizedDay = normalizeDiaryDay(day);
-      final repository = ref.watch(calorieLogRepositoryProvider);
-      final resolvedGoal = await ref.watch(
-        resolvedCalorieGoalForDayProvider(normalizedDay).future,
-      );
-      final entries = await repository.readEntriesForDay(normalizedDay);
-
-      var carbs = 0.0;
-      var protein = 0.0;
-      var fat = 0.0;
-      for (final entry in entries) {
-        carbs += entry.totalCarbs;
-        protein += entry.totalProtein;
-        fat += entry.totalFat;
-      }
-
-      return DiaryNutritionBarsData(
-        carbs: carbs,
-        protein: protein,
-        fat: fat,
-        goals: CaloriesSummaryMacroGoals.fromGoalKcal(
-          resolvedGoal.goalKcal,
-        ),
-      );
-    });
 
 /// Macro nutrition bars for the diary page.
 class DiaryNutritionBars extends ConsumerStatefulWidget {
@@ -92,23 +42,40 @@ class _DiaryNutritionBarsState extends ConsumerState<DiaryNutritionBars>
   Widget build(BuildContext context) {
     super.build(context);
 
+    final normalizedDay = normalizeDiaryDay(widget.selectedDay);
     final dataState = ref.watch(
-      diaryNutritionBarsDataProvider(widget.selectedDay),
+      diaryNutritionBarsDataProvider(normalizedDay),
     );
     final loadedData = dataState.asData?.value;
     if (loadedData != null) {
       _lastData = loadedData;
     }
     final data = loadedData ?? _lastData;
+    final l10n = AppLocalizations.of(context)!;
+    final showError = data == null && dataState.hasError;
 
     return DiaryDetailCardShell(
       child: IconTheme.merge(
         data: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
-        child: data == null
+        child: showError
+            ? DiaryErrorRetryContent(
+                message: l10n.diaryNutritionLoadFailed,
+                retryLabel: l10n.caloriesRetryAction,
+                retryButtonKey: DiaryNutritionBarsKeys.retryButton,
+                onRetry: () => _retryNutritionBars(normalizedDay),
+              )
+            : data == null
             ? const _NutritionBarsSkeleton()
             : _NutritionBarsContent(data: data),
       ),
     );
+  }
+
+  void _retryNutritionBars(DateTime normalizedDay) {
+    ref
+      ..invalidate(diaryEntriesForDayProvider(normalizedDay))
+      ..invalidate(resolvedCalorieGoalForDayProvider(normalizedDay))
+      ..invalidate(diaryNutritionBarsDataProvider(normalizedDay));
   }
 }
 
@@ -120,7 +87,7 @@ class _NutritionBarsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
     final accentColors = DiaryAccentColors.of(context);

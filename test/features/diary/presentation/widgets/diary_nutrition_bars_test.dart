@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card_macros.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars.dart';
+import 'package:yamt/features/diary/provider/diary_nutrition_bars_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
@@ -111,6 +112,58 @@ void main() {
       expect(data.goals.fat, 0);
     },
   );
+
+  testWidgets('shows retry and reloads after nutrition load error', (
+    tester,
+  ) async {
+    var shouldFail = true;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          diaryNutritionBarsDataProvider(selectedDay).overrideWith((ref) async {
+            if (shouldFail) {
+              throw StateError('load failed');
+            }
+            return const DiaryNutritionBarsData(
+              carbs: 24,
+              protein: 18,
+              fat: 9,
+              goals: CaloriesSummaryMacroGoals(
+                carbs: 120,
+                protein: 90,
+                fat: 45,
+              ),
+            );
+          }),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: DiaryNutritionBars(selectedDay: selectedDay),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nutrition could not be loaded'), findsOneWidget);
+    expect(find.byKey(DiaryNutritionBarsKeys.retryButton), findsOneWidget);
+
+    shouldFail = false;
+    await tester.tap(find.byKey(DiaryNutritionBarsKeys.retryButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nutrition could not be loaded'), findsNothing);
+    expect(
+      find.textContaining('24 / 120g', findRichText: true),
+      findsOneWidget,
+    );
+  });
 }
 
 Future<void> _pumpNutritionBars(

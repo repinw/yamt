@@ -19,7 +19,7 @@ class _DiaryMealCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final isDark = colors.brightness == Brightness.dark;
     final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
     final accentColors = DiaryAccentColors.of(context);
@@ -152,7 +152,7 @@ class _CollapsedMealBody extends StatelessWidget {
 
     final colors = Theme.of(context).colorScheme;
     final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
 
@@ -293,7 +293,7 @@ class _ExpandedMealEntry extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final isDark = colors.brightness == Brightness.dark;
     final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
     final accentColors = DiaryAccentColors.of(context);

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
+import 'package:yamt/features/diary/provider/diary_steps_summary_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -19,12 +20,19 @@ class DiaryWorkoutsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summaryState = ref.watch(diaryStepsSummaryProvider(selectedDay));
+    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final summaryState = ref.watch(diaryStepsSummaryProvider(normalizedDay));
 
     return summaryState.when(
       loading: () => const DiaryDetailCardShell(child: _WorkoutsSkeleton()),
       error: (_, _) => DiaryDetailCardShell(
-        child: Text(AppLocalizations.of(context)!.diaryWorkoutsLoadFailed),
+        child: DiaryErrorRetryContent(
+          message: AppLocalizations.of(context)!.diaryWorkoutsLoadFailed,
+          retryLabel: AppLocalizations.of(context)!.caloriesRetryAction,
+          onRetry: () => ref.invalidate(
+            diaryStepsSummaryProvider(normalizedDay),
+          ),
+        ),
       ),
       data: (summary) {
         if (summary.accessState != HealthDataAccessState.ready) {
@@ -116,7 +124,7 @@ class _WorkoutRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final locale = Localizations.localeOf(context).toString();
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final numberFormat = NumberFormat.decimalPattern(locale);
     final timeFormat = DateFormat.Hm(locale);
     final l10n = AppLocalizations.of(context)!;

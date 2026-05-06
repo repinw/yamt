@@ -3,10 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -17,9 +15,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_zone_dialog_host.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/diary/provider/diary_entries_provider.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 part 'diary_balance_header.dart';
@@ -70,16 +68,10 @@ abstract final class DiaryBalanceCardKeys {
 
   /// Practice day card key.
   static const practiceDay = ValueKey<String>('diary-balance-practice-day');
-}
 
-final FutureProviderFamily<List<CalorieEntry>, DateTime>
-_diaryBalanceEntriesForDayProvider =
-    FutureProvider.family<List<CalorieEntry>, DateTime>((ref, day) {
-      ref.watch(calorieOverviewRevisionProvider);
-      return ref
-          .watch(calorieLogRepositoryProvider)
-          .readEntriesForDay(normalizeDiaryDay(day));
-    });
+  /// Retry button key.
+  static const retryButton = ValueKey<String>('diary-balance-retry-button');
+}
 
 /// Weekly calorie balance card for the diary page.
 class DiaryBalanceCard extends ConsumerStatefulWidget {
@@ -159,15 +151,16 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
 
     ref.watch(burnWeekLiveSyncProvider);
 
+    final normalizedSelectedDay = normalizeDiaryDay(widget.selectedDay);
     final isLiveDay = _isLiveDay(widget.selectedDay);
     final weekOverviewState = ref.watch(
-      calorieWeekOverviewForWindowProvider(widget.selectedDay),
+      calorieWeekOverviewForWindowProvider(normalizedSelectedDay),
     );
     final selectedDayState = ref.watch(
-      calorieWeekDayOverviewForDateProvider(widget.selectedDay),
+      calorieWeekDayOverviewForDateProvider(normalizedSelectedDay),
     );
     final dayEntriesState = isLiveDay
-        ? ref.watch(_diaryBalanceEntriesForDayProvider(widget.selectedDay))
+        ? ref.watch(diaryEntriesForDayProvider(normalizedSelectedDay))
         : null;
     final dayEntries = dayEntriesState?.asData?.value ?? const <CalorieEntry>[];
     final dayEntriesLoaded = !isLiveDay || dayEntriesState?.hasValue == true;
@@ -209,20 +202,30 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
       );
     }
 
-    if (weekOverviewState.hasError || selectedDayState.hasError) {
+    final hasError =
+        weekOverviewState.hasError ||
+        selectedDayState.hasError ||
+        dayEntriesState?.hasError == true;
+    if (hasError) {
       final l10n = AppLocalizations.of(context)!;
       return _DiaryBalanceShell(
-        child: Text(
-          l10n.diaryBalanceLoadFailed,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
-          ),
+        child: DiaryErrorRetryContent(
+          message: l10n.diaryBalanceLoadFailed,
+          retryLabel: l10n.caloriesRetryAction,
+          retryButtonKey: DiaryBalanceCardKeys.retryButton,
+          onRetry: () => _retryBalance(normalizedSelectedDay),
         ),
       );
     }
 
     return const _DiaryBalanceLoading();
+  }
+
+  void _retryBalance(DateTime normalizedSelectedDay) {
+    ref
+      ..invalidate(calorieWeekOverviewForWindowProvider(normalizedSelectedDay))
+      ..invalidate(calorieWeekDayOverviewForDateProvider(normalizedSelectedDay))
+      ..invalidate(diaryEntriesForDayProvider(normalizedSelectedDay));
   }
 
   Widget _buildLoaded(
@@ -236,7 +239,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   }) {
     final colors = Theme.of(context).colorScheme;
     final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
     final scheduledRestartDate = _scheduledRestartDate(
