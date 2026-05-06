@@ -287,7 +287,7 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
     if (ref.mounted) {
       await ref
           .read(calorieGoalControllerProvider.notifier)
-          .invalidateWeeklyCheckInSnapshotsFromDay(day);
+          .invalidateWeeklyCheckInSnapshotsFromDay(normalizeDiaryDay(day));
     }
   }
 

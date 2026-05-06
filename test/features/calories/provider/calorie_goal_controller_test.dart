@@ -1108,6 +1108,38 @@ void main() {
     },
   );
 
+  test(
+    'invalidateWeeklyCheckInSnapshotsFromDay ignores days before snapshot',
+    () {
+      final settings = const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: DateTime(2026, 4, 15),
+        dailyKcalGoal: 2300,
+        calculatorProfile: null,
+        source: CalorieGoalSource.weeklyCheckIn,
+        weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+          windowStartDate: DateTime(2026, 4, 8),
+          windowEndDate: DateTime(2026, 4, 14),
+          trendWeightChangePerDay: 0,
+          calculatedTrueTdeeKcal: 2300,
+          averageActiveKcal: 0,
+          lowConfidence: false,
+          inputHash: 'v1:first',
+        ),
+      );
+
+      final nextSettings = settings.invalidateWeeklyCheckInSnapshotsFromDay(
+        day: DateTime(2026, 4, 7),
+        invalidatedAt: DateTime(2026, 4, 20),
+      );
+
+      expect(identical(nextSettings, settings), isTrue);
+      expect(
+        nextSettings.goalHistory.single.weeklyCheckInSnapshot?.inputHash,
+        'v1:first',
+      );
+    },
+  );
+
   test('saveLearnedTdeeGoal uses learned TDEE and goal speed', () async {
     final initialSettings = const CalorieGoalSettings.empty()
         .applyGoalChange(

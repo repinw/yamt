@@ -3,9 +3,8 @@ import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -211,20 +210,15 @@ class ManualHealthWeightEntriesController
       return;
     }
     try {
-      final settingsRepository = ref.read(calorieSettingsRepositoryProvider);
-      final CalorieGoalSettings settings = await settingsRepository
-          .readSettings();
+      await ref.read(calorieGoalControllerProvider.future);
       if (!ref.mounted) {
         return;
       }
-      final nextSettings = settings.invalidateWeeklyCheckInSnapshotsFromDay(
-        day: day,
-        invalidatedAt: DateTime.now(),
-      );
-      if (identical(settings, nextSettings)) {
-        return;
-      }
-      final saved = await settingsRepository.saveSettings(nextSettings);
+      final goalController = ref.read(calorieGoalControllerProvider.notifier);
+      final saved = await goalController
+          .invalidateWeeklyCheckInSnapshotsFromDay(
+            day,
+          );
       if (!saved) {
         log(
           'Failed to dirty weekly check-in snapshots after weight change.',

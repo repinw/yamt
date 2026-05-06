@@ -125,8 +125,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         ? null
         : rawWeeklyCheckIn;
     final hasAutoOpeningWeeklyCheckIn =
-        weeklyCheckIn?.pendingWeeklyCheckIn != null &&
-        weeklyCheckIn?.shouldAutoOpen == true;
+        weeklyCheckInState.isLoading ||
+        (weeklyCheckIn?.pendingWeeklyCheckIn != null &&
+            weeklyCheckIn?.shouldAutoOpen == true);
     final goalSettings = ref.watch(calorieGoalControllerProvider).value;
     final latestGoalHistoryEntry = _latestGoalHistoryEntry(goalSettings);
     final referenceNow = DateTime.now();

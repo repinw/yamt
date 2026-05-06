@@ -868,9 +868,12 @@ CalorieGoalHistoryEntry _dirtyGoalHistoryEntrySnapshot({
   required void Function() didInvalidate,
 }) {
   final snapshot = entry.weeklyCheckInSnapshot;
-  if (snapshot == null ||
-      snapshot.isInputDirty ||
-      snapshot.windowEndDate.isBefore(day)) {
+  if (snapshot == null || snapshot.isInputDirty) {
+    return entry;
+  }
+  final windowStartDate = normalizeDiaryDay(snapshot.windowStartDate);
+  final windowEndDate = normalizeDiaryDay(snapshot.windowEndDate);
+  if (day.isBefore(windowStartDate) || day.isAfter(windowEndDate)) {
     return entry;
   }
   didInvalidate();

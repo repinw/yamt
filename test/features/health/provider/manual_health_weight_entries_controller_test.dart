@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
@@ -358,6 +359,13 @@ void main() {
         .weeklyCheckInSnapshot!;
     expect(snapshot.inputHash, isNull);
     expect(snapshot.invalidatedAt, isNotNull);
+    final controllerSettings = container
+        .read(calorieGoalControllerProvider)
+        .requireValue;
+    expect(
+      controllerSettings.goalHistory.single.weeklyCheckInSnapshot?.inputHash,
+      isNull,
+    );
   });
 
   test('saveEntry falls back to repository when health save fails', () async {
