@@ -269,7 +269,6 @@ CalorieWeeklyCheckInViewModel _emptyWeeklyCheckInViewModel({
     freshness: freshness,
     latestLearnedTdeeAt: latestLearnedTdeeAt,
     lowConfidence: false,
-    inputHash: null,
   );
 }
 

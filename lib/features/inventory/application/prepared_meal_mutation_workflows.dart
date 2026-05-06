@@ -109,6 +109,9 @@ class PreparedMealMutationWorkflows {
     required String name,
     required bool imageChanged,
     required String? imageAssetId,
+    int? totalPortions,
+    List<PreparedMealItemInput>? items,
+    InventoryItemRepository? inventoryRepository,
   }) {
     return PreparedMealEditingWorkflows(
       context: _context,
@@ -117,6 +120,9 @@ class PreparedMealMutationWorkflows {
       name: name,
       imageChanged: imageChanged,
       imageAssetId: imageAssetId,
+      totalPortions: totalPortions,
+      items: items,
+      inventoryRepository: inventoryRepository,
     );
   }
 

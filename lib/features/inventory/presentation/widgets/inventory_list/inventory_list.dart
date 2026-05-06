@@ -76,6 +76,7 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.onIgnorePendingPreparedMealIngredient,
     required this.onUnbundlePreparedMeal,
     required this.onEditPreparedMeal,
+    required this.onSelectPreparedMealEditIngredients,
     required this.onSavePreparedMealTemplate,
     required this.isSelectionMode,
     required this.selectedItemIds,
@@ -83,6 +84,7 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.onSelectionToggle,
     super.key,
     this.expandedPreparedMealId,
+    this.inventorySelectionFocusToken = 0,
   });
 
   /// The items.
@@ -93,6 +95,9 @@ class InventoryList extends ConsumerStatefulWidget {
 
   /// The expanded prepared meal id.
   final String? expandedPreparedMealId;
+
+  /// Token used to focus the inventory item list for selection.
+  final int inventorySelectionFocusToken;
 
   /// The empty state action button.
   final Widget emptyStateActionButton;
@@ -131,6 +136,10 @@ class InventoryList extends ConsumerStatefulWidget {
   /// The on edit prepared meal.
   final PreparedMealEditCallback onEditPreparedMeal;
 
+  /// The on select prepared meal edit ingredients.
+  final PreparedMealEditIngredientSelectionCallback
+  onSelectPreparedMealEditIngredients;
+
   /// The on save prepared meal template.
   final PreparedMealSaveTemplateCallback onSavePreparedMealTemplate;
 
@@ -155,6 +164,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   static const _preparedMealSorter = PreparedMealSorter();
   static const _viewPreferencesStore = InventoryListViewPreferencesStore();
   final _voiceSearchController = TextVoiceSearchController();
+  final GlobalKey _recentItemsHeaderKey = GlobalKey();
   InventoryListMode _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
   InventoryItemSortMode _inventoryItemSortMode =
@@ -190,6 +200,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     if (!listEquals(oldWidget.items, widget.items) ||
         !listEquals(oldWidget.preparedMeals, widget.preparedMeals)) {
       _recomputeVisibleContent();
+    }
+    if (oldWidget.inventorySelectionFocusToken !=
+        widget.inventorySelectionFocusToken) {
+      _focusInventoryItemsForSelection();
     }
   }
 
@@ -261,6 +275,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
                   widget.onIgnorePendingPreparedMealIngredient,
               onUnbundlePreparedMeal: widget.onUnbundlePreparedMeal,
               onEditPreparedMeal: widget.onEditPreparedMeal,
+              onSelectPreparedMealEditIngredients:
+                  widget.onSelectPreparedMealEditIngredients,
               onSavePreparedMealTemplate: widget.onSavePreparedMealTemplate,
             ),
             l10n: l10n,
@@ -275,6 +291,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             ),
             sliver: SliverToBoxAdapter(
               child: InventorySectionHeader(
+                key: _recentItemsHeaderKey,
                 title: l10n.inventoryRecentSectionTitle,
                 subtitle: _inventoryItemSortModeLabel(l10n),
                 trailing: Row(
@@ -351,6 +368,28 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     _isRecentItemsSectionExpanded = preferences.isRecentItemsSectionExpanded;
     _isPreparedMealsSectionExpanded =
         preferences.isPreparedMealsSectionExpanded;
+  }
+
+  void _focusInventoryItemsForSelection() {
+    setState(() {
+      _mode = InventoryListMode.allItems;
+      _isRecentItemsSectionExpanded = true;
+      _isPreparedMealsSectionExpanded = false;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = _recentItemsHeaderKey.currentContext;
+      if (context == null || !mounted) {
+        return;
+      }
+      unawaited(
+        Scrollable.ensureVisible(
+          context,
+          alignment: 0.05,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+        ),
+      );
+    });
   }
 
   Future<void> _persistViewPreferences() {

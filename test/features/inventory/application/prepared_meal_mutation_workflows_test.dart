@@ -295,6 +295,186 @@ void main() {
     );
 
     test(
+      'updatePreparedMealDetails skips inventory when only metadata changes',
+      () async {
+        final rice = _measuredItem(
+          id: 'rice',
+          name: 'Rice',
+          currentAmount: 100,
+          initialAmount: 100,
+          initialQuantity: 1,
+        );
+        final harness = _WorkflowHarness(
+          meals: <PreparedMeal>[
+            _meal(
+              id: 'meal-1',
+              name: 'Rice Bowl',
+              totalPortions: 2,
+              remainingPortions: 2,
+              components: <PreparedMealComponent>[
+                _component(item: rice, usedAmount: 100),
+              ],
+            ),
+          ],
+        );
+        final inventoryRepository = _FakeInventoryItemRepository();
+
+        final saved = await harness.workflows.updatePreparedMealDetails(
+          mealId: 'meal-1',
+          name: 'Updated Rice Bowl',
+          imageChanged: false,
+          imageAssetId: null,
+          totalPortions: 2,
+          items: const <PreparedMealItemInput>[
+            PreparedMealItemInput(itemId: 'rice', usedAmount: 100),
+          ],
+          inventoryRepository: inventoryRepository,
+        );
+
+        expect(saved, isTrue);
+        expect(inventoryRepository.readCount, 0);
+        expect(inventoryRepository.saveCount, 0);
+        expect(harness.lastSavedMeals.single.name, 'Updated Rice Bowl');
+      },
+    );
+
+    test(
+      'updatePreparedMealDetails reconciles edited ingredients with inventory',
+      () async {
+        final rice = _measuredItem(
+          id: 'rice',
+          name: 'Rice',
+          currentAmount: 100,
+          initialAmount: 100,
+          initialQuantity: 1,
+        );
+        final beans = _measuredItem(
+          id: 'beans',
+          name: 'Beans',
+          currentAmount: 100,
+          initialAmount: 100,
+          initialQuantity: 1,
+        );
+        final harness = _WorkflowHarness(
+          meals: <PreparedMeal>[
+            _meal(
+              id: 'meal-1',
+              name: 'Rice Bowl',
+              totalPortions: 2,
+              remainingPortions: 2,
+              totalKcal: 100,
+              components: <PreparedMealComponent>[
+                _component(item: rice, usedAmount: 100, totalKcal: 100),
+              ],
+            ),
+          ],
+        );
+        final inventoryRepository = _FakeInventoryItemRepository(
+          items: <InventoryItem>[beans],
+        );
+
+        final saved = await harness.workflows.updatePreparedMealDetails(
+          mealId: 'meal-1',
+          name: 'Bean Bowl',
+          imageChanged: false,
+          imageAssetId: null,
+          totalPortions: 3,
+          items: const <PreparedMealItemInput>[
+            PreparedMealItemInput(itemId: 'beans', usedAmount: 90),
+          ],
+          inventoryRepository: inventoryRepository,
+        );
+
+        expect(saved, isTrue);
+        expect(inventoryRepository.saveCount, 1);
+        expect(
+          inventoryRepository.lastSavedItems
+              .singleWhere((item) => item.id == 'beans')
+              .currentAmount,
+          10,
+        );
+        expect(
+          inventoryRepository.lastSavedItems
+              .singleWhere((item) => item.id == 'rice')
+              .currentAmount,
+          100,
+        );
+        expect(harness.lastSavedMeals.single.name, 'Bean Bowl');
+        expect(harness.lastSavedMeals.single.totalPortions, 3);
+        expect(harness.lastSavedMeals.single.remainingPortions, 3);
+        expect(harness.lastSavedMeals.single.components.single.name, 'Beans');
+        expect(harness.lastSavedMeals.single.totalKcal, 90);
+      },
+    );
+
+    test(
+      'updatePreparedMealDetails reconciles pending recipe data on edit',
+      () async {
+        final rice = _measuredItem(
+          id: 'rice',
+          name: 'Rice',
+          currentAmount: 100,
+          initialAmount: 100,
+          initialQuantity: 1,
+        );
+        final beans = _measuredItem(
+          id: 'beans',
+          name: 'Beans',
+          currentAmount: 100,
+          initialAmount: 100,
+          initialQuantity: 1,
+        );
+        final harness = _WorkflowHarness(
+          meals: <PreparedMeal>[
+            _meal(
+              id: 'meal-1',
+              name: 'Rice Bowl',
+              totalPortions: 2,
+              remainingPortions: 2,
+              recipeIngredients: const <String>[
+                '100 g rice',
+                '50 g peas',
+              ],
+              pendingRecipeIngredients: const <String>[
+                '100 g rice',
+                '50 g peas',
+              ],
+              components: <PreparedMealComponent>[
+                _component(item: beans, usedAmount: 50),
+              ],
+            ),
+          ],
+        );
+        final inventoryRepository = _FakeInventoryItemRepository(
+          items: <InventoryItem>[rice],
+        );
+
+        final saved = await harness.workflows.updatePreparedMealDetails(
+          mealId: 'meal-1',
+          name: 'Rice Bowl',
+          imageChanged: false,
+          imageAssetId: null,
+          totalPortions: 2,
+          items: const <PreparedMealItemInput>[
+            PreparedMealItemInput(itemId: 'beans', usedAmount: 50),
+            PreparedMealItemInput(itemId: 'rice', usedAmount: 100),
+          ],
+          inventoryRepository: inventoryRepository,
+        );
+
+        expect(saved, isTrue);
+        expect(
+          harness.lastSavedMeals.single.pendingRecipeIngredients,
+          const <String>['50 g peas'],
+        );
+        expect(
+          harness.lastSavedMeals.single.recipeIngredients,
+          const <String>['100 g rice', '50 g peas'],
+        );
+      },
+    );
+
+    test(
       'fillPreparedMealPendingIngredient updates inventory and meal',
       () async {
         final harness = _WorkflowHarness(

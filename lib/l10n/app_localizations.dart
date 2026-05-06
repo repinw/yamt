@@ -1682,6 +1682,24 @@ abstract class AppLocalizations {
   /// **'Ingredients'**
   String get preparedMealIngredientsTitle;
 
+  /// No description provided for @preparedMealAddIngredientAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add ingredient'**
+  String get preparedMealAddIngredientAction;
+
+  /// No description provided for @preparedMealRemoveIngredientAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove ingredient'**
+  String get preparedMealRemoveIngredientAction;
+
+  /// No description provided for @preparedMealEmptyIngredientsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one ingredient before saving.'**
+  String get preparedMealEmptyIngredientsMessage;
+
   /// No description provided for @preparedMealCreateAction.
   ///
   /// In en, this message translates to:

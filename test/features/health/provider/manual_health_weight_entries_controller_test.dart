@@ -165,8 +165,8 @@ class _FakeManualHealthWeightRepository
 
 class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
   _FakeCalorieSettingsRepository({
-    CalorieGoalSettings settings = const CalorieGoalSettings.empty(),
-  }) : settings = settings;
+    this.settings = const CalorieGoalSettings.empty(),
+  });
 
   CalorieGoalSettings settings;
   int saveCallCount = 0;

@@ -106,7 +106,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
   @override
   Widget build(BuildContext context) {
-    ref..listen<DiaryIntroTrigger?>(
+    ref.listen<DiaryIntroTrigger?>(
       diaryIntroTriggerProvider,
       _handleDiaryIntroTrigger,
     );

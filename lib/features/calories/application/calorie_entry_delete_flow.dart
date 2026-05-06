@@ -164,9 +164,9 @@ class CalorieEntryDeleteFlow {
       required int discardedPortions,
     })
     rollbackRestoredPreparedMeal,
+    required Future<bool> Function(String mealId) sourcePreparedMealExists,
     Future<bool> Function(DateTime day) invalidateSnapshotsFromDay =
         _noopInvalidateSnapshotsFromDay,
-    required Future<bool> Function(String mealId) sourcePreparedMealExists,
   }) : _deleteEntryById = deleteEntryById,
        _restoreConsumedItem = restoreConsumedItem,
        _rollbackRestoredItem = rollbackRestoredItem,

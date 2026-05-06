@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -12,6 +10,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_edit_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -52,14 +52,11 @@ typedef PreparedMealIdCallback = Future<bool> Function(String mealId);
 
 /// Callback used to edit prepared meal metadata.
 typedef PreparedMealEditCallback =
-    Future<bool> Function(
-      String mealId,
-      String name,
-      // Callback mirrors PreparedMealEditSheetResult shape.
-      // ignore: avoid_positional_boolean_parameters
-      bool imageChanged,
-      Uint8List? imageBytes,
-    );
+    Future<bool> Function(String mealId, PreparedMealEditSheetResult result);
+
+/// Callback used to select more ingredients for an active meal edit.
+typedef PreparedMealEditIngredientSelectionCallback =
+    Future<bool> Function(String mealId, PreparedMealEditSheetResult result);
 
 /// Callback used to save a prepared meal as a template.
 typedef PreparedMealSaveTemplateCallback =
@@ -77,6 +74,7 @@ class PreparedMealSectionActions {
     required this.onIgnorePendingPreparedMealIngredient,
     required this.onUnbundlePreparedMeal,
     required this.onEditPreparedMeal,
+    required this.onSelectPreparedMealEditIngredients,
     required this.onSavePreparedMealTemplate,
   });
 
@@ -98,6 +96,10 @@ class PreparedMealSectionActions {
 
   /// The on edit prepared meal.
   final PreparedMealEditCallback onEditPreparedMeal;
+
+  /// The on select prepared meal edit ingredients.
+  final PreparedMealEditIngredientSelectionCallback
+  onSelectPreparedMealEditIngredients;
 
   /// The on save prepared meal template.
   final PreparedMealSaveTemplateCallback onSavePreparedMealTemplate;
@@ -209,6 +211,8 @@ class InventoryPreparedMealsSection extends StatelessWidget {
                         actions.onIgnorePendingPreparedMealIngredient,
                     onUnbundlePressed: actions.onUnbundlePreparedMeal,
                     onEditPressed: actions.onEditPreparedMeal,
+                    onSelectEditIngredientsPressed:
+                        actions.onSelectPreparedMealEditIngredients,
                     onSaveTemplatePressed: actions.onSavePreparedMealTemplate,
                   ),
                 );

@@ -211,7 +211,7 @@ void main() {
     expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsNothing);
 
     saveCompleter.complete();
-    await _pumpFrames(tester, count: 8);
+    await _pumpFrames(tester);
   });
 
   testWidgets('debug dump shows success snackbar', (tester) async {

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_workouts_card.dart';
 import 'package:yamt/features/diary/provider/diary_steps_summary_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';

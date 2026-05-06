@@ -147,6 +147,15 @@ class HomePage extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
     if (_currentTab() == HomeTabType.inventory &&
         selectionState.isSelectionMode) {
+      final isAddingIngredients = selectionState.isAddingIngredientsToMeal;
+      final selectionActionLabel = isAddingIngredients
+          ? l10n.preparedMealAddIngredientAction
+          : l10n.preparedMealBindAction;
+      final selectionActionIcon = isAddingIngredients
+          ? Icons.add_rounded
+          : Icons.restaurant_menu_rounded;
+      final canConfirmSelection =
+          selectionState.selectedCount >= (isAddingIngredients ? 1 : 2);
       if (useCompactSelectionActions) {
         return [
           IconButton(
@@ -159,15 +168,15 @@ class HomePage extends ConsumerWidget {
             icon: const Icon(Icons.close_rounded),
           ),
           IconButton.filledTonal(
-            tooltip: l10n.preparedMealBindAction,
-            onPressed: selectionState.selectedCount >= 2
+            tooltip: selectionActionLabel,
+            onPressed: canConfirmSelection
                 ? () {
                     ref
                         .read(preparedMealSelectionControllerProvider.notifier)
-                        .requestCreateMeal();
+                        .confirmSelection();
                   }
                 : null,
-            icon: const Icon(Icons.restaurant_menu_rounded),
+            icon: Icon(selectionActionIcon),
           ),
         ];
       }
@@ -182,15 +191,15 @@ class HomePage extends ConsumerWidget {
           child: Text(l10n.inventoryReceiptReviewCancelAction),
         ),
         FilledButton.tonalIcon(
-          onPressed: selectionState.selectedCount >= 2
+          onPressed: canConfirmSelection
               ? () {
                   ref
                       .read(preparedMealSelectionControllerProvider.notifier)
-                      .requestCreateMeal();
+                      .confirmSelection();
                 }
               : null,
-          icon: const Icon(Icons.restaurant_menu_rounded),
-          label: Text(l10n.preparedMealBindAction),
+          icon: Icon(selectionActionIcon),
+          label: Text(selectionActionLabel),
         ),
       ];
     }

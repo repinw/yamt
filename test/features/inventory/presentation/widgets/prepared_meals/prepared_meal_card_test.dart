@@ -176,8 +176,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -223,8 +222,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -267,8 +265,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -315,8 +312,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -355,8 +351,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -402,8 +397,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -449,8 +443,7 @@ void main() {
                       }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
-                  onEditPressed:
-                      (mealId, name, imageChanged, imageBytes) async => true,
+                  onEditPressed: (mealId, result) async => true,
                   onSaveTemplatePressed: (meal) async => true,
                 ),
               ),
@@ -498,8 +491,7 @@ void main() {
                   unbundledMealId = mealId;
                   return true;
                 },
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -547,8 +539,7 @@ void main() {
                   return true;
                 },
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -606,8 +597,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -650,8 +640,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -695,8 +684,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -802,8 +790,7 @@ void main() {
                       }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
-                  onEditPressed:
-                      (mealId, name, imageChanged, imageBytes) async => true,
+                  onEditPressed: (mealId, result) async => true,
                   onSaveTemplatePressed: (meal) async => true,
                 ),
               ),
@@ -865,9 +852,7 @@ void main() {
                       onThrowAwayPressed: (mealId, portions, reason) async =>
                           true,
                       onUnbundlePressed: (mealId) async => true,
-                      onEditPressed:
-                          (mealId, name, imageChanged, imageBytes) async =>
-                              true,
+                      onEditPressed: (mealId, result) async => true,
                       onSaveTemplatePressed: (meal) async => true,
                     ),
                   );
@@ -964,8 +949,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
               ),
             ),
@@ -1004,8 +988,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
                 onFillPendingIngredientPressed:
                     (mealId, ingredient, inventoryItemIds) async => true,
@@ -1067,8 +1050,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
                 onFillPendingIngredientPressed:
                     (mealId, ingredient, inventoryItemIds) async {
@@ -1126,8 +1108,7 @@ void main() {
                     }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
-                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                    true,
+                onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
                 onFillPendingIngredientPressed:
                     (mealId, ingredient, inventoryItemIds) async => true,

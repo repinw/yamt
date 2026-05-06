@@ -1112,7 +1112,6 @@ void main() {
                 calculatedTrueTdeeKcal: 2580,
                 averageActiveKcal: 0,
                 lowConfidence: false,
-                inputHash: null,
                 invalidatedAt: DateTime(2026, 4, 20),
               ),
             ),

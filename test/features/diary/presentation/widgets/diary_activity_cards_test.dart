@@ -18,11 +18,11 @@ import 'package:yamt/features/diary/presentation/widgets/diary_activity_details_
 import 'package:yamt/features/diary/presentation/widgets/diary_activity_weight_cards.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_workouts_card.dart';
 import 'package:yamt/features/diary/provider/'
     'diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/diary/provider/diary_meal_sections_provider.dart';
 import 'package:yamt/features/diary/provider/diary_steps_summary_provider.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_workouts_card.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';

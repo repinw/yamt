@@ -67,6 +67,7 @@ class PreparedMealCard extends ConsumerStatefulWidget {
     super.key,
     this.onFillPendingIngredientPressed,
     this.onIgnorePendingIngredientPressed,
+    this.onSelectEditIngredientsPressed,
     this.initiallyExpanded = false,
     this.enabled = true,
   });
@@ -107,15 +108,15 @@ class PreparedMealCard extends ConsumerStatefulWidget {
   final Future<bool> Function(String mealId) onUnbundlePressed;
 
   /// The on edit pressed.
+  final Future<bool> Function(String mealId, PreparedMealEditSheetResult result)
+  onEditPressed;
+
+  /// The on select edit ingredients pressed.
   final Future<bool> Function(
     String mealId,
-    String name,
-    // Callback mirrors PreparedMealEditSheetResult shape.
-    // ignore: avoid_positional_boolean_parameters
-    bool imageChanged,
-    Uint8List? imageBytes,
-  )
-  onEditPressed;
+    PreparedMealEditSheetResult result,
+  )?
+  onSelectEditIngredientsPressed;
 
   /// The on save template pressed.
   final Future<bool> Function(PreparedMeal meal) onSaveTemplatePressed;

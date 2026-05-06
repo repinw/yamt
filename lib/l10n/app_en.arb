@@ -378,6 +378,10 @@
   "preparedMealImagePickFailed": "Could not pick the meal image.",
   "preparedMealImageTooLarge": "The selected image is too large.",
   "preparedMealIngredientsTitle": "Ingredients",
+  "preparedMealAddIngredientAction": "Add ingredient",
+  "preparedMealRemoveIngredientAction": "Remove ingredient",
+  "preparedMealEmptyIngredientsMessage":
+      "Add at least one ingredient before saving.",
   "preparedMealCreateAction": "Create meal",
   "preparedMealBindAction": "Bind meal",
   "preparedMealUsedAmountLabel": "Used amount",
