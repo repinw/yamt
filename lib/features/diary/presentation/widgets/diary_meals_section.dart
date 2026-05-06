@@ -70,7 +70,7 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
     final sectionsState = ref.watch(
       diaryMealSectionsProvider(normalizedDay),
     );
-    final loadedSections = sectionsState.asData?.value;
+    final loadedSections = sectionsState.value;
     if (loadedSections != null) {
       _lastSections = loadedSections;
     }

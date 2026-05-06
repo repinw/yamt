@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -71,6 +72,7 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
     inventoryItemsControllerProvider.notifier,
   );
   final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);
+  final goalController = ref.read(calorieGoalControllerProvider.notifier);
   final preparedMealRepository = ref.read(preparedMealRepositoryProvider);
   final preparedMealsController = ref.read(
     preparedMealsControllerProvider.notifier,
@@ -114,6 +116,8 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
               discardedPortions: discardedPortions,
               reason: InventoryDiscardReason.other,
             ),
+    invalidateSnapshotsFromDay:
+        goalController.invalidateWeeklyCheckInSnapshotsFromDay,
     sourcePreparedMealExists: (mealId) async {
       final normalizedMealId = mealId.trim();
       if (normalizedMealId.isEmpty) {
@@ -160,6 +164,8 @@ class CalorieEntryDeleteFlow {
       required int discardedPortions,
     })
     rollbackRestoredPreparedMeal,
+    Future<bool> Function(DateTime day) invalidateSnapshotsFromDay =
+        _noopInvalidateSnapshotsFromDay,
     required Future<bool> Function(String mealId) sourcePreparedMealExists,
   }) : _deleteEntryById = deleteEntryById,
        _restoreConsumedItem = restoreConsumedItem,
@@ -167,6 +173,7 @@ class CalorieEntryDeleteFlow {
        _sourceInventoryItemExists = sourceInventoryItemExists,
        _restorePreparedMealPortions = restorePreparedMealPortions,
        _rollbackRestoredPreparedMeal = rollbackRestoredPreparedMeal,
+       _invalidateSnapshotsFromDay = invalidateSnapshotsFromDay,
        _sourcePreparedMealExists = sourcePreparedMealExists;
 
   final Future<bool> Function(String entryId) _deleteEntryById;
@@ -181,6 +188,7 @@ class CalorieEntryDeleteFlow {
     required int discardedPortions,
   })
   _rollbackRestoredPreparedMeal;
+  final Future<bool> Function(DateTime day) _invalidateSnapshotsFromDay;
   final Future<bool> Function(String mealId) _sourcePreparedMealExists;
 
   /// Whether the entry's inventory restore source still exists.
@@ -219,7 +227,7 @@ class CalorieEntryDeleteFlow {
       name: _deleteFlowLogName,
     );
     if (!restoreToInventory) {
-      final deleted = await _deleteEntryById(entry.id);
+      final deleted = await _deleteDiaryEntry(entry);
       if (!deleted) {
         log(
           'deleteEntry(): diary delete failed without inventory restore '
@@ -268,7 +276,7 @@ class CalorieEntryDeleteFlow {
       );
     }
 
-    final deleted = await _deleteEntryById(entry.id);
+    final deleted = await _deleteDiaryEntry(entry);
     if (deleted) {
       return const CalorieEntryDeleteResult.success(restoredToInventory: true);
     }
@@ -347,7 +355,7 @@ class CalorieEntryDeleteFlow {
       );
     }
 
-    final deleted = await _deleteEntryById(entry.id);
+    final deleted = await _deleteDiaryEntry(entry);
     if (deleted) {
       log(
         '_returnPreparedMealToInventory(): restore and diary delete '
@@ -385,4 +393,16 @@ class CalorieEntryDeleteFlow {
       CalorieEntryDeleteFailureReason.deleteFailed,
     );
   }
+
+  Future<bool> _deleteDiaryEntry(CalorieEntry entry) async {
+    final deleted = await _deleteEntryById(entry.id);
+    if (deleted) {
+      await _invalidateSnapshotsFromDay(entry.loggedAt);
+    }
+    return deleted;
+  }
+}
+
+Future<bool> _noopInvalidateSnapshotsFromDay(DateTime day) async {
+  return true;
 }

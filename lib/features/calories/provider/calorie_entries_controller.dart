@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
@@ -147,11 +148,6 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       () => ref
           .read(calorieGoalControllerProvider.notifier)
           .clearSkippedIntakeDay(entry.loggedAt),
-      () => ref.read(calorieEntryPostPersistHookProvider)(
-        entry: entry,
-        inventoryContext: inventoryContext,
-        scannedSourceRef: scannedSourceRef,
-      ),
       if (scannedSourceRef != null)
         () => _saveUserProductOverride(
           entry: entry,
@@ -194,9 +190,20 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         return saved;
       },
       failureLogMessage: 'Failed to persist calorie entry ${entry.id}.',
-      onPersisted: postPersistCallbacks.isEmpty
-          ? null
-          : () => _runPostPersistCallbacks(postPersistCallbacks),
+      onPersisted: (previousEntries, _) {
+        return _runPostPersistCallbacks([
+          ...postPersistCallbacks,
+          () => _invalidateSnapshotsForSavedEntry(
+            entry: entry,
+            previousEntries: previousEntries,
+          ),
+          () => ref.read(calorieEntryPostPersistHookProvider)(
+            entry: entry,
+            inventoryContext: inventoryContext,
+            scannedSourceRef: scannedSourceRef,
+          ),
+        ]);
+      },
     ).whenComplete(keepAliveLink.close);
   }
 
@@ -212,6 +219,12 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       persist: () =>
           ref.read(calorieLogRepositoryProvider).deleteEntry(entryId),
       failureLogMessage: 'Failed to delete calorie entry $entryId.',
+      onPersisted: (previousEntries, _) {
+        return _invalidateSnapshotsForDeletedEntry(
+          entryId: entryId,
+          previousEntries: previousEntries,
+        );
+      },
     ).whenComplete(keepAliveLink.close);
   }
 
@@ -220,7 +233,11 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     buildNextEntries,
     required Future<bool> Function() persist,
     required String failureLogMessage,
-    Future<void> Function()? onPersisted,
+    Future<void> Function(
+      List<CalorieEntry> previousEntries,
+      List<CalorieEntry> nextEntries,
+    )?
+    onPersisted,
   }) {
     return _runSerializedMutation(() async {
       final previousEntries = await _currentEntries();
@@ -256,7 +273,9 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       }
 
       if (onPersisted != null) {
-        await _runAfterPersistCallback(onPersisted);
+        await _runAfterPersistCallback(
+          () => onPersisted(previousEntries, nextEntries),
+        );
       }
 
       return true;
@@ -284,6 +303,37 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     for (final callback in callbacks) {
       await _runAfterPersistCallback(callback);
     }
+  }
+
+  Future<void> _invalidateSnapshotsForSavedEntry({
+    required CalorieEntry entry,
+    required List<CalorieEntry> previousEntries,
+  }) {
+    final previousEntry = previousEntries
+        .where((existingEntry) => existingEntry.id == entry.id)
+        .firstOrNull;
+    final invalidationDay = _earliestDiaryDay(
+      entry.loggedAt,
+      previousEntry?.loggedAt,
+    );
+    return ref
+        .read(calorieGoalControllerProvider.notifier)
+        .invalidateWeeklyCheckInSnapshotsFromDay(invalidationDay);
+  }
+
+  Future<void> _invalidateSnapshotsForDeletedEntry({
+    required String entryId,
+    required List<CalorieEntry> previousEntries,
+  }) async {
+    final deletedEntry = previousEntries
+        .where((existingEntry) => existingEntry.id == entryId)
+        .firstOrNull;
+    if (deletedEntry == null) {
+      return;
+    }
+    await ref
+        .read(calorieGoalControllerProvider.notifier)
+        .invalidateWeeklyCheckInSnapshotsFromDay(deletedEntry.loggedAt);
   }
 
   void _restoreEntries(List<CalorieEntry> entries) {
@@ -471,6 +521,18 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       );
     }
   }
+}
+
+DateTime _earliestDiaryDay(DateTime day, DateTime? otherDay) {
+  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedOtherDay = otherDay == null
+      ? null
+      : normalizeDiaryDay(otherDay);
+  if (normalizedOtherDay == null ||
+      normalizedDay.isBefore(normalizedOtherDay)) {
+    return normalizedDay;
+  }
+  return normalizedOtherDay;
 }
 
 /// Calorie entry by id.

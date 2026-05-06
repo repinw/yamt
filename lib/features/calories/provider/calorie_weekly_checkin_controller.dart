@@ -96,6 +96,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       weeklyCheckIn: cacheWeeklyCheckIn,
       calculation: calculation,
       lowConfidence: viewModel.lowConfidence,
+      inputHash: viewModel.inputHash,
     );
     final settings = await ref.read(calorieGoalControllerProvider.future);
     if (!ref.mounted) {
@@ -214,7 +215,9 @@ bool _hasMatchingWeeklyCheckInSnapshot({
         _sameDouble(
           snapshot.averageActiveKcal,
           weeklyCheckInSnapshot.averageActiveKcal,
-        );
+        ) &&
+        snapshot.inputHash == weeklyCheckInSnapshot.inputHash &&
+        snapshot.invalidatedAt == weeklyCheckInSnapshot.invalidatedAt;
     if (!matches) {
       return false;
     }
@@ -241,6 +244,7 @@ CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
   required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
   required CalorieWeeklyCheckInCalculation calculation,
   required bool lowConfidence,
+  required String? inputHash,
 }) {
   return CalorieGoalWeeklyCheckInSnapshot(
     windowStartDate: weeklyCheckIn.windowStartDate,
@@ -249,5 +253,6 @@ CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
     calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
     averageActiveKcal: calculation.lastWeekAverageActiveKcal,
     lowConfidence: lowConfidence,
+    inputHash: inputHash,
   );
 }

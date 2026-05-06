@@ -162,13 +162,13 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     final dayEntriesState = isLiveDay
         ? ref.watch(diaryEntriesForDayProvider(normalizedSelectedDay))
         : null;
-    final dayEntries = dayEntriesState?.asData?.value ?? const <CalorieEntry>[];
+    final dayEntries = dayEntriesState?.value ?? const <CalorieEntry>[];
     final dayEntriesLoaded = !isLiveDay || dayEntriesState?.hasValue == true;
     final runState =
-        ref.watch(burnWeekRunControllerProvider).asData?.value ??
+        ref.watch(burnWeekRunControllerProvider).value ??
         const BurnWeekRunState.initial();
-    final weekOverview = weekOverviewState.asData?.value;
-    final selectedDayOverview = selectedDayState.asData?.value;
+    final weekOverview = weekOverviewState.value;
+    final selectedDayOverview = selectedDayState.value;
 
     if (weekOverview != null && selectedDayOverview != null) {
       _lastWeekOverview = weekOverview;

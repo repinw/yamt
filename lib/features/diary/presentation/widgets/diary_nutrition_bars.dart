@@ -46,7 +46,7 @@ class _DiaryNutritionBarsState extends ConsumerState<DiaryNutritionBars>
     final dataState = ref.watch(
       diaryNutritionBarsDataProvider(normalizedDay),
     );
-    final loadedData = dataState.asData?.value;
+    final loadedData = dataState.value;
     if (loadedData != null) {
       _lastData = loadedData;
     }

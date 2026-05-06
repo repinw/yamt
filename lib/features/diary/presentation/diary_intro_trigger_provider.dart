@@ -13,16 +13,15 @@ import 'package:yamt/features/health/provider/health_connection_controller.dart'
 final Provider<DiaryIntroTrigger?>
 diaryIntroTriggerProvider = Provider.autoDispose<DiaryIntroTrigger?>((ref) {
   final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
-  final weeklyCheckIn = weeklyCheckInState.asData?.value;
+  final weeklyCheckIn = weeklyCheckInState.value;
   final hasAutoOpeningWeeklyCheckIn =
-      weeklyCheckInState.isLoading ||
-      (weeklyCheckIn?.pendingWeeklyCheckIn != null &&
-          weeklyCheckIn?.shouldAutoOpen == true);
+      weeklyCheckIn?.pendingWeeklyCheckIn != null &&
+      weeklyCheckIn?.shouldAutoOpen == true;
   if (hasAutoOpeningWeeklyCheckIn) {
     return null;
   }
 
-  final settings = ref.watch(calorieGoalControllerProvider).asData?.value;
+  final settings = ref.watch(calorieGoalControllerProvider).value;
   final healthConnectionState = ref.watch(healthConnectionControllerProvider);
   if (settings == null || healthConnectionState.isLoading) {
     return null;
@@ -39,7 +38,7 @@ diaryIntroTriggerProvider = Provider.autoDispose<DiaryIntroTrigger?>((ref) {
   return DiaryIntroTrigger(
     preferences: preferences,
     introData: DiaryIntroData.fromSettings(settings),
-    healthStatus: healthConnectionState.asData?.value,
+    healthStatus: healthConnectionState.value,
   );
 });
 

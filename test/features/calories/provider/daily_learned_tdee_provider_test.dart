@@ -532,6 +532,64 @@ void main() {
     },
   );
 
+  test(
+    'does not let dirty learned snapshot block legacy fallback',
+    () async {
+      final startDay = DateTime(2026, 4, 8);
+      final weekTwoStart = DateTime(2026, 4, 15);
+      final today = DateTime(2026, 4, 22);
+      final settings = _baseSettings(startDay: startDay)
+          .applyGoalChange(
+            changedAt: weekTwoStart,
+            dailyKcalGoal: 2580,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: startDay,
+              windowEndDate: DateTime(2026, 4, 14),
+              trendWeightChangePerDay: 0,
+              calculatedTrueTdeeKcal: 2580,
+              averageActiveKcal: 0,
+              lowConfidence: false,
+              invalidatedAt: DateTime(2026, 4, 20),
+            ),
+          )
+          .applyGoalChange(
+            changedAt: today,
+            dailyKcalGoal: 2650,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: weekTwoStart,
+              windowEndDate: DateTime(2026, 4, 21),
+              trendWeightChangePerDay: 0,
+              calculatedTrueTdeeKcal: 2650,
+              averageActiveKcal: 0,
+              lowConfidence: false,
+            ),
+          );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: _dailyEntries(
+          startDay: weekTwoStart,
+          count: weeklyCheckInWindowLengthDays,
+          kcalForIndex: (_) => 2600,
+        ),
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          HealthWeightSample(recordedAt: weekTwoStart, weightKg: 80),
+          HealthWeightSample(recordedAt: today, weightKg: 80),
+        ],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNotNull);
+      expect(result!.calculatedTrueTdeeKcal, 2650);
+    },
+  );
+
   test('seeds same-day learned goal from anchor snapshot', () async {
     final startDay = DateTime(2026, 4, 8);
     final today = DateTime(2026, 4, 15);

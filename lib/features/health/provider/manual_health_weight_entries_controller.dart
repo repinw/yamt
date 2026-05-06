@@ -3,6 +3,8 @@ import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
@@ -82,6 +84,10 @@ class ManualHealthWeightEntriesController
       if (!deleted && ref.mounted) {
         state = AsyncData(previousEntries);
       }
+      if (!deleted) {
+        return false;
+      }
+      await _invalidateWeeklyCheckInSnapshotsForDay(normalizedDay);
       return deleted;
     } on Object catch (error, stackTrace) {
       log(
@@ -143,6 +149,7 @@ class ManualHealthWeightEntriesController
           name: _logName,
         );
       }
+      await _invalidateWeeklyCheckInSnapshotsForDay(normalizedDay);
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -180,7 +187,11 @@ class ManualHealthWeightEntriesController
       if (!saved && ref.mounted) {
         state = AsyncData(previousEntries);
       }
-      return saved;
+      if (!saved) {
+        return false;
+      }
+      await _invalidateWeeklyCheckInSnapshotsForDay(entry.day);
+      return true;
     } on Object catch (error, stackTrace) {
       log(
         'Failed to save fallback weight entry.',
@@ -192,6 +203,41 @@ class ManualHealthWeightEntriesController
         state = AsyncData(previousEntries);
       }
       return false;
+    }
+  }
+
+  Future<void> _invalidateWeeklyCheckInSnapshotsForDay(DateTime day) async {
+    if (!ref.mounted) {
+      return;
+    }
+    try {
+      final settingsRepository = ref.read(calorieSettingsRepositoryProvider);
+      final CalorieGoalSettings settings = await settingsRepository
+          .readSettings();
+      if (!ref.mounted) {
+        return;
+      }
+      final nextSettings = settings.invalidateWeeklyCheckInSnapshotsFromDay(
+        day: day,
+        invalidatedAt: DateTime.now(),
+      );
+      if (identical(settings, nextSettings)) {
+        return;
+      }
+      final saved = await settingsRepository.saveSettings(nextSettings);
+      if (!saved) {
+        log(
+          'Failed to dirty weekly check-in snapshots after weight change.',
+          name: _logName,
+        );
+      }
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to dirty weekly check-in snapshots after weight change.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 

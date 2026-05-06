@@ -77,6 +77,7 @@ class _DiaryStepsCardState extends ConsumerState<DiaryStepsCard>
             borderRadius: BorderRadius.circular(24),
             child: DiaryDetailCardShell(
               child: summaryState.when(
+                skipLoadingOnReload: true,
                 loading: () => _StepsCardSkeleton(
                   showChevron: canExpand,
                   isExpanded: _isExpanded,

@@ -30,7 +30,7 @@ diaryActivityWeightDataProvider = FutureProvider.autoDispose
 
       return service.load(
         day: selectedDay,
-        goalSettings: goalState.asData?.value,
+        goalSettings: goalState.value,
         healthStatus: status,
         manualEntries: manualEntries,
         diaryHealthService: diaryHealthService,

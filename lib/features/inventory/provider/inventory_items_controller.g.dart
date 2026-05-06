@@ -42,7 +42,7 @@ final class InventoryItemsControllerProvider
 }
 
 String _$inventoryItemsControllerHash() =>
-    r'0c0ca3a2a79f10dfb3b732b3125a68c295330a58';
+    r'3e25977b776500b00799759d48705650840c33f9';
 
 /// Defines inventory items controller.
 

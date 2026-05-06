@@ -44,7 +44,7 @@ final class ManualHealthWeightEntriesControllerProvider
 }
 
 String _$manualHealthWeightEntriesControllerHash() =>
-    r'b7ad22b94b8ce7b3bbf7d06a1f977f7cff9b11fe';
+    r'8fca1d7e3c72de4f81844febecf8de3c88b5c0b2';
 
 /// Defines manual health weight entries controller.
 

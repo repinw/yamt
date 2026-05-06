@@ -211,6 +211,7 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
   CalorieGoalSettings _settings;
   final _controller = StreamController<CalorieGoalSettings>.broadcast();
   bool saveShouldFail = false;
+  Future<void> Function(CalorieGoalSettings settings)? onSaveSettings;
 
   @override
   Stream<CalorieGoalSettings> watchSettings() {
@@ -236,6 +237,10 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
   Future<bool> saveSettings(CalorieGoalSettings settings) async {
     if (saveShouldFail) {
       return false;
+    }
+    final onSaveSettings = this.onSaveSettings;
+    if (onSaveSettings != null) {
+      await onSaveSettings(settings);
     }
 
     _settings = settings;

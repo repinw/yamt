@@ -66,10 +66,16 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   final DiaryWeeklyCheckInDialogScheduler _weeklyCheckInDialogs =
       DiaryWeeklyCheckInDialogScheduler();
   bool _didQueueDiaryIntro = false;
+  String? _hiddenWeeklyCheckInWindowKey;
 
   @override
   void initState() {
     super.initState();
+    ref.listenManual(
+      calorieWeeklyCheckInViewModelProvider,
+      _cacheWeeklyCheckInView,
+      fireImmediately: true,
+    );
     WidgetsBinding.instance.addObserver(this);
     _diaryScrollController.addListener(_refreshScrollActions);
   }
@@ -90,20 +96,17 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       return;
     }
     ref.read(diaryCalendarControllerProvider.notifier).refreshToday();
-    ref.invalidate(healthConnectionControllerProvider);
+    ref
+      ..invalidate(healthConnectionControllerProvider)
+      ..invalidate(calorieWeeklyCheckInViewModelProvider);
   }
 
   @override
   Widget build(BuildContext context) {
-    ref
-      ..listen(
-        calorieWeeklyCheckInViewModelProvider,
-        _cacheWeeklyCheckInView,
-      )
-      ..listen<DiaryIntroTrigger?>(
-        diaryIntroTriggerProvider,
-        _handleDiaryIntroTrigger,
-      );
+    ref..listen<DiaryIntroTrigger?>(
+      diaryIntroTriggerProvider,
+      _handleDiaryIntroTrigger,
+    );
 
     final calendarState = ref.watch(diaryCalendarControllerProvider);
     final calendarController = ref.read(
@@ -111,16 +114,17 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     );
     final selectedDayOverview = ref
         .watch(calorieWeekDayOverviewForDateProvider(calendarState.selectedDay))
-        .asData
-        ?.value;
+        .value;
     final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
-    final weeklyCheckIn =
-        weeklyCheckInState.asData?.value ?? _weeklyCheckInDialogs.lastViewModel;
+    final rawWeeklyCheckIn =
+        weeklyCheckInState.value ?? _weeklyCheckInDialogs.lastViewModel;
+    final weeklyCheckIn = _isHiddenWeeklyCheckIn(rawWeeklyCheckIn)
+        ? null
+        : rawWeeklyCheckIn;
     final hasAutoOpeningWeeklyCheckIn =
-        weeklyCheckInState.isLoading ||
-        (weeklyCheckIn?.pendingWeeklyCheckIn != null &&
-            weeklyCheckIn?.shouldAutoOpen == true);
-    final goalSettings = ref.watch(calorieGoalControllerProvider).asData?.value;
+        weeklyCheckIn?.pendingWeeklyCheckIn != null &&
+        weeklyCheckIn?.shouldAutoOpen == true;
+    final goalSettings = ref.watch(calorieGoalControllerProvider).value;
     final latestGoalHistoryEntry = _latestGoalHistoryEntry(goalSettings);
     final referenceNow = DateTime.now();
     final showWeeklySuccessCard =
@@ -130,10 +134,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
           referenceNow,
         );
     final healthConnectionState = ref.watch(healthConnectionControllerProvider);
-    final healthStatus = healthConnectionState.asData?.value;
+    final healthStatus = healthConnectionState.value;
     final showActivityTrackingWidgets =
         healthStatus?.accessState == HealthDataAccessState.ready;
-    final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
+    final runState = ref.watch(burnWeekRunControllerProvider).value;
     final showIntroReplayButton =
         runState?.runWeekNumber == burnWeekLearningRunWeekNumber &&
         goalSettings != null &&
@@ -227,6 +231,24 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                     AppLocalizations.of(context)!.caloriesDebugDumpAction,
                   ),
                 ),
+                const SizedBox(height: AppSpacing.xs),
+                FilledButton.tonalIcon(
+                  key: CaloriesPageKeys.calorieSettingsDebugDumpButton,
+                  onPressed: () {
+                    unawaited(_printCalorieSettingsDebugDump());
+                  },
+                  icon: const Icon(Icons.data_object_rounded),
+                  label: const Text('Print calorie settings JSON'),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                FilledButton.tonalIcon(
+                  key: CaloriesPageKeys.calorieWeeklyCheckInDebugDumpButton,
+                  onPressed: () {
+                    unawaited(_printCalorieWeeklyCheckInDebugDump());
+                  },
+                  icon: const Icon(Icons.rule_rounded),
+                  label: const Text('Print weekly check-in state'),
+                ),
               ],
               const SizedBox(height: AppSpacing.xl),
               DiaryNutritionBars(selectedDay: calendarState.selectedDay),
@@ -279,9 +301,14 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     AsyncValue<CalorieWeeklyCheckInViewModel>? previous,
     AsyncValue<CalorieWeeklyCheckInViewModel> next,
   ) {
-    final viewModel = next.asData?.value;
+    final viewModel = next.value;
     if (viewModel == null) {
       return;
+    }
+    if (_hiddenWeeklyCheckInWindowKey != null &&
+        viewModel.pendingWeeklyCheckIn?.windowKey !=
+            _hiddenWeeklyCheckInWindowKey) {
+      _hiddenWeeklyCheckInWindowKey = null;
     }
     final controller = ref.read(
       calorieWeeklyCheckInControllerProvider.notifier,
@@ -311,11 +338,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     final resolvedPending = pending!;
 
     try {
-      await controller.syncPendingWeeklyCheckIn(resolvedPending);
-      if (!mounted) {
-        return;
-      }
-
       final action = await showCalorieWeeklyCheckInDialog(
         context,
         viewModel: viewModel,
@@ -326,10 +348,12 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
       switch (action) {
         case CalorieWeeklyCheckInDialogAction.apply:
+          _hideWeeklyCheckInHint(resolvedPending);
           final saved = await controller.applyWeeklyCheckIn(viewModel);
           if (!mounted || saved) {
             return;
           }
+          _showWeeklyCheckInHintAgain(resolvedPending);
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.caloriesWeeklyCheckInApplyFailed)),
@@ -357,6 +381,36 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     }
   }
 
+  bool _isHiddenWeeklyCheckIn(CalorieWeeklyCheckInViewModel? viewModel) {
+    final hiddenWindowKey = _hiddenWeeklyCheckInWindowKey;
+    if (hiddenWindowKey == null) {
+      return false;
+    }
+    return viewModel?.pendingWeeklyCheckIn?.windowKey == hiddenWindowKey;
+  }
+
+  void _hideWeeklyCheckInHint(
+    PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+  ) {
+    if (_hiddenWeeklyCheckInWindowKey == pendingWeeklyCheckIn.windowKey) {
+      return;
+    }
+    setState(() {
+      _hiddenWeeklyCheckInWindowKey = pendingWeeklyCheckIn.windowKey;
+    });
+  }
+
+  void _showWeeklyCheckInHintAgain(
+    PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+  ) {
+    if (_hiddenWeeklyCheckInWindowKey != pendingWeeklyCheckIn.windowKey) {
+      return;
+    }
+    setState(() {
+      _hiddenWeeklyCheckInWindowKey = null;
+    });
+  }
+
   Future<void> _printCalorieDebugDump() async {
     final controller = ref.read(caloriePageActionControllerProvider.notifier);
     final result = await controller.printDebugDump(DateTime.now());
@@ -364,6 +418,30 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       return;
     }
     showCalorieDebugDumpResultSnackBar(context: context, result: result);
+  }
+
+  Future<void> _printCalorieSettingsDebugDump() async {
+    final controller = ref.read(caloriePageActionControllerProvider.notifier);
+    final result = await controller.printSettingsDebugDump();
+    if (!mounted) {
+      return;
+    }
+    showCalorieSettingsDebugDumpResultSnackBar(
+      context: context,
+      result: result,
+    );
+  }
+
+  Future<void> _printCalorieWeeklyCheckInDebugDump() async {
+    final controller = ref.read(caloriePageActionControllerProvider.notifier);
+    final result = await controller.printWeeklyCheckInDebugDump();
+    if (!mounted) {
+      return;
+    }
+    showCalorieWeeklyCheckInDebugDumpResultSnackBar(
+      context: context,
+      result: result,
+    );
   }
 
   Future<void> _toggleSkippedCalorieIntakeDay({

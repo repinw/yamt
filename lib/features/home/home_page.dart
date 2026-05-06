@@ -281,7 +281,7 @@ class HomePage extends ConsumerWidget {
         appBar: HomeTopBar(
           title: topBarTitle,
           subtitle: topBarSubtitle,
-          middle: _buildMiddle(burnWeekRunState),
+          middle: _buildMiddle(currentTab, burnWeekRunState),
           titleColor: colors.primary,
           compact: compactHomeChrome,
           preferredHeight: HomeTopBar.preferredHeightFor(
@@ -325,7 +325,10 @@ class HomePage extends ConsumerWidget {
     return const InventoryActionFab();
   }
 
-  Widget? _buildMiddle(BurnWeekRunState? runState) {
+  Widget? _buildMiddle(HomeTabType currentTab, BurnWeekRunState? runState) {
+    if (currentTab != HomeTabType.diary) {
+      return null;
+    }
     if (runState == null ||
         runState.runWeekNumber <= burnWeekLearningRunWeekNumber) {
       return null;

@@ -9,8 +9,8 @@ class _HealthConnectMetricCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statusState = ref.watch(healthConnectionControllerProvider);
     final controller = ref.read(healthConnectionControllerProvider.notifier);
-    final status = statusState.asData?.value;
-    final latestAccessState = statusState.asData?.value.accessState;
+    final status = statusState.value;
+    final latestAccessState = status?.accessState;
     final hasConnectionError = status?.errorMessage != null;
     final needsAppPermissionSettings =
         status?.errorMessage == healthActivityRecognitionPermissionErrorMessage;
