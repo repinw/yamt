@@ -960,8 +960,10 @@ void main() {
     expect(saved, isTrue);
     final settings = await repository.readSettings();
     expect(settings.dailyKcalGoal, 2200);
+    expect(settings.calculatorProfile?.weightKg, 80);
     expect(settings.hasLearnedTdee, isTrue);
     expect(settings.latestLearnedTdeeKcal, 2315);
+    expect(settings.latestLearnedTdeeEntry?.calculatorProfile, isNull);
     expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
     expect(settings.goalKcalForDay(DateTime(2026, 4, 14)), 2200);
     expect(settings.goalKcalForDay(DateTime(2026, 4, 15)), 2200);
@@ -1026,6 +1028,12 @@ void main() {
     expect(snapshots, hasLength(2));
     expect(snapshots.first.windowStartDate, DateTime(2026, 4, 8));
     expect(snapshots.last.windowStartDate, DateTime(2026, 4, 15));
+    expect(
+      settings.goalHistory
+          .where((entry) => entry.isWeeklyCheckIn)
+          .every((entry) => entry.calculatorProfile == null),
+      isTrue,
+    );
     expect(settings.latestGoalEntry?.dailyKcalGoal, 2200);
     expect(settings.latestLearnedTdeeEntry?.dailyKcalGoal, 2250);
   });

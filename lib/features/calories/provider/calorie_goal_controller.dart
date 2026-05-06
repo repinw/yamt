@@ -390,7 +390,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     final snapshotSettings = previousSettings.applyGoalChange(
       changedAt: completedAt,
       dailyKcalGoal: dailyKcalGoal,
-      calculatorProfile: previousSettings.calculatorProfile,
+      calculatorProfile: null,
       expectedActivityKcal: weeklyCheckInSnapshot.averageActiveKcal,
       source: CalorieGoalSource.weeklyCheckIn,
       weeklyCheckInSnapshot: weeklyCheckInSnapshot,
