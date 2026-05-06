@@ -16,8 +16,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
-import 'package:yamt/features/diary/provider/diary_entries_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
+import 'package:yamt/features/diary/provider/diary_entries_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 part 'diary_balance_header.dart';

@@ -18,12 +18,12 @@ void main() {
   test('shares one entries fetch across diary day consumers', () async {
     final entriesCompleter = Completer<List<CalorieEntry>>();
     var readCount = 0;
-    final repository = FakeCalorieLogRepository();
-    repository.onReadEntriesForDay = (day) {
-      readCount += 1;
-      expect(day, selectedDay);
-      return entriesCompleter.future;
-    };
+    final repository = FakeCalorieLogRepository()
+      ..onReadEntriesForDay = (day) {
+        readCount += 1;
+        expect(day, selectedDay);
+        return entriesCompleter.future;
+      };
     final container = ProviderContainer(
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(repository),
@@ -76,11 +76,11 @@ void main() {
 
   test('autoDispose clears entries cache after last listener closes', () async {
     var readCount = 0;
-    final repository = FakeCalorieLogRepository();
-    repository.onReadEntriesForDay = (_) async {
-      readCount += 1;
-      return const <CalorieEntry>[];
-    };
+    final repository = FakeCalorieLogRepository()
+      ..onReadEntriesForDay = (_) async {
+        readCount += 1;
+        return const <CalorieEntry>[];
+      };
     final container = ProviderContainer(
       overrides: [calorieLogRepositoryProvider.overrideWithValue(repository)],
     );

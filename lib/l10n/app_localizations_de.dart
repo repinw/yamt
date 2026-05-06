@@ -896,6 +896,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealIngredientsTitle => 'Zutaten';
 
   @override
+  String get preparedMealAddIngredientAction => 'Zutat hinzufügen';
+
+  @override
+  String get preparedMealRemoveIngredientAction => 'Zutat entfernen';
+
+  @override
+  String get preparedMealEmptyIngredientsMessage =>
+      'Füge vor dem Speichern mindestens eine Zutat hinzu.';
+
+  @override
   String get preparedMealCreateAction => 'Mahlzeit erstellen';
 
   @override

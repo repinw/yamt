@@ -388,6 +388,10 @@
       "Das Mahlzeitenbild konnte nicht ausgewählt werden.",
   "preparedMealImageTooLarge": "Das ausgewählte Bild ist zu groß.",
   "preparedMealIngredientsTitle": "Zutaten",
+  "preparedMealAddIngredientAction": "Zutat hinzufügen",
+  "preparedMealRemoveIngredientAction": "Zutat entfernen",
+  "preparedMealEmptyIngredientsMessage":
+      "Füge vor dem Speichern mindestens eine Zutat hinzu.",
   "preparedMealCreateAction": "Mahlzeit erstellen",
   "preparedMealBindAction": "Als Mahlzeit binden",
   "preparedMealUsedAmountLabel": "Verwendete Menge",

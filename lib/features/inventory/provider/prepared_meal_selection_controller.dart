@@ -4,6 +4,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'prepared_meal_selection_controller.g.dart';
 
+/// Defines why inventory items are being selected.
+enum PreparedMealSelectionPurpose {
+  /// Create a new prepared meal from selected inventory items.
+  createMeal,
+
+  /// Add selected inventory items to an existing prepared meal edit.
+  addIngredientsToMeal,
+}
+
 /// Defines prepared meal selection state.
 @immutable
 class PreparedMealSelectionState {
@@ -11,6 +20,7 @@ class PreparedMealSelectionState {
   const PreparedMealSelectionState({
     this.selectedItemIds = const <String>{},
     this.bindRequestToken = 0,
+    this.purpose = PreparedMealSelectionPurpose.createMeal,
   });
 
   /// The selected item ids.
@@ -19,8 +29,19 @@ class PreparedMealSelectionState {
   /// The bind request token.
   final int bindRequestToken;
 
+  /// The current selection purpose.
+  final PreparedMealSelectionPurpose purpose;
+
   /// Whether selection mode.
-  bool get isSelectionMode => selectedItemIds.isNotEmpty;
+  bool get isSelectionMode {
+    return selectedItemIds.isNotEmpty ||
+        purpose == PreparedMealSelectionPurpose.addIngredientsToMeal;
+  }
+
+  /// Whether selecting ingredients for an existing meal edit.
+  bool get isAddingIngredientsToMeal {
+    return purpose == PreparedMealSelectionPurpose.addIngredientsToMeal;
+  }
 
   /// The selected count.
   int get selectedCount => selectedItemIds.length;
@@ -29,10 +50,12 @@ class PreparedMealSelectionState {
   PreparedMealSelectionState copyWith({
     Set<String>? selectedItemIds,
     int? bindRequestToken,
+    PreparedMealSelectionPurpose? purpose,
   }) {
     return PreparedMealSelectionState(
       selectedItemIds: selectedItemIds ?? this.selectedItemIds,
       bindRequestToken: bindRequestToken ?? this.bindRequestToken,
+      purpose: purpose ?? this.purpose,
     );
   }
 
@@ -44,7 +67,8 @@ class PreparedMealSelectionState {
               other.selectedItemIds,
               selectedItemIds,
             ) &&
-            other.bindRequestToken == bindRequestToken;
+            other.bindRequestToken == bindRequestToken &&
+            other.purpose == purpose;
   }
 
   @override
@@ -52,6 +76,7 @@ class PreparedMealSelectionState {
     return Object.hash(
       const SetEquality<String>().hash(selectedItemIds),
       bindRequestToken,
+      purpose,
     );
   }
 }
@@ -77,6 +102,14 @@ class PreparedMealSelectionController
     );
   }
 
+  /// Start ingredient selection for an existing meal edit.
+  void startAddIngredientsToMealSelection() {
+    state = PreparedMealSelectionState(
+      bindRequestToken: state.bindRequestToken,
+      purpose: PreparedMealSelectionPurpose.addIngredientsToMeal,
+    );
+  }
+
   /// Toggle selection.
   void toggleSelection(String itemId) {
     final trimmedItemId = itemId.trim();
@@ -92,14 +125,21 @@ class PreparedMealSelectionController
 
   /// Clear selection.
   void clearSelection() {
-    if (state.selectedItemIds.isEmpty) {
+    if (!state.isSelectionMode) {
       return;
     }
-    state = state.copyWith(selectedItemIds: const <String>{});
+    state = PreparedMealSelectionState(
+      bindRequestToken: state.bindRequestToken,
+    );
   }
 
   /// Request create meal.
   void requestCreateMeal() {
+    state = state.copyWith(bindRequestToken: state.bindRequestToken + 1);
+  }
+
+  /// Request the active selection action.
+  void confirmSelection() {
     state = state.copyWith(bindRequestToken: state.bindRequestToken + 1);
   }
 }

@@ -87,21 +87,33 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
   }
 
   Future<void> _runEditFlow() async {
+    final inventoryItems =
+        ref.read(inventoryItemsControllerProvider).asData?.value ??
+        const <InventoryItem>[];
     final result = await showPreparedMealEditSheet(
       context: context,
       meal: widget.meal,
+      inventoryItems: inventoryItems,
     );
     if (!mounted || result == null) {
       return;
     }
 
+    if (result.requestIngredientSelection) {
+      final onSelectEditIngredientsPressed =
+          widget.onSelectEditIngredientsPressed;
+      if (onSelectEditIngredientsPressed == null) {
+        return;
+      }
+      await _runAction(
+        () => onSelectEditIngredientsPressed(widget.meal.id, result),
+        failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
+      );
+      return;
+    }
+
     await _runAction(
-      () => widget.onEditPressed(
-        widget.meal.id,
-        result.name,
-        result.imageChanged,
-        result.imageBytes,
-      ),
+      () => widget.onEditPressed(widget.meal.id, result),
       failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
     );
   }

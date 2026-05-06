@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer' as developer;
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +24,8 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_edit_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
@@ -62,6 +63,9 @@ class InventoryPage extends ConsumerStatefulWidget {
 }
 
 class _InventoryPageState extends ConsumerState<InventoryPage> {
+  _PendingPreparedMealEditSelection? _pendingEditSelection;
+  var _inventorySelectionFocusToken = 0;
+
   @override
   Widget build(BuildContext context) {
     ref
@@ -70,7 +74,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         preparedMealSelectionControllerProvider.select(
           (state) => state.bindRequestToken,
         ),
-        _onCreatePreparedMealRequested,
+        _onSelectionConfirmed,
       );
 
     final l10n = AppLocalizations.of(context)!;
@@ -104,6 +108,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       items: items,
       preparedMeals: meals,
       expandedPreparedMealId: widget.expandedPreparedMealId,
+      inventorySelectionFocusToken: _inventorySelectionFocusToken,
       emptyStateActionButton: const InventoryActionFab.embedded(),
       onDeleteItem: (itemId) =>
           _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
@@ -152,14 +157,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       onUnbundlePreparedMeal: ref
           .read(preparedMealsControllerProvider.notifier)
           .unbundlePreparedMeal,
-      onEditPreparedMeal: (mealId, name, imageChanged, imageBytes) =>
-          _updatePreparedMeal(
-            context: context,
-            ref: ref,
+      onEditPreparedMeal: (mealId, result) => _updatePreparedMeal(
+        context: context,
+        ref: ref,
+        mealId: mealId,
+        result: result,
+      ),
+      onSelectPreparedMealEditIngredients: (mealId, result) =>
+          _startPreparedMealEditIngredientSelection(
             mealId: mealId,
-            name: name,
-            imageChanged: imageChanged,
-            imageBytes: imageBytes,
+            result: result,
           ),
       onSavePreparedMealTemplate: (meal) =>
           _savePreparedMealTemplate(context: context, ref: ref, meal: meal),
@@ -178,11 +185,112 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     );
   }
 
-  Future<void> _onCreatePreparedMealRequested(int? previous, int next) async {
+  Future<void> _onSelectionConfirmed(int? previous, int next) async {
     if (previous == next || next < 1) {
       return;
     }
+    final selectionState = ref.read(preparedMealSelectionControllerProvider);
+    if (selectionState.isAddingIngredientsToMeal) {
+      await _continuePreparedMealEditWithSelectedIngredients(selectionState);
+      return;
+    }
     await runPreparedMealCreationFlow(context: context, ref: ref);
+  }
+
+  Future<bool> _startPreparedMealEditIngredientSelection({
+    required String mealId,
+    required PreparedMealEditSheetResult result,
+  }) async {
+    _pendingEditSelection = _PendingPreparedMealEditSelection(
+      mealId: mealId,
+      result: result.copyWith(requestIngredientSelection: false),
+    );
+    ref
+        .read(preparedMealSelectionControllerProvider.notifier)
+        .startAddIngredientsToMealSelection();
+    setState(() {
+      _inventorySelectionFocusToken += 1;
+    });
+    return true;
+  }
+
+  Future<void> _continuePreparedMealEditWithSelectedIngredients(
+    PreparedMealSelectionState selectionState,
+  ) async {
+    final pendingSelection = _pendingEditSelection;
+    if (pendingSelection == null || selectionState.selectedItemIds.isEmpty) {
+      return;
+    }
+
+    final items = ref.read(inventoryItemsControllerProvider).asData?.value;
+    final meals = ref.read(preparedMealsControllerProvider).asData?.value;
+    if (items == null || meals == null || !context.mounted) {
+      return;
+    }
+
+    final meal = _findPreparedMeal(meals, pendingSelection.mealId);
+    if (meal == null) {
+      _pendingEditSelection = null;
+      ref
+          .read(preparedMealSelectionControllerProvider.notifier)
+          .clearSelection();
+      return;
+    }
+
+    final nextResult = _addSelectedItemsToEditResult(
+      result: pendingSelection.result,
+      inventoryItems: items,
+      selectedItemIds: selectionState.selectedItemIds,
+    );
+    _pendingEditSelection = null;
+    ref.read(preparedMealSelectionControllerProvider.notifier).clearSelection();
+
+    final editResult = await showPreparedMealEditSheet(
+      context: context,
+      meal: meal,
+      inventoryItems: items,
+      initialValue: nextResult,
+    );
+    if (!mounted || editResult == null) {
+      return;
+    }
+    if (editResult.requestIngredientSelection) {
+      await _startPreparedMealEditIngredientSelection(
+        mealId: meal.id,
+        result: editResult,
+      );
+      return;
+    }
+    await _updatePreparedMeal(
+      context: context,
+      ref: ref,
+      mealId: meal.id,
+      result: editResult,
+    );
+  }
+
+  PreparedMealEditSheetResult _addSelectedItemsToEditResult({
+    required PreparedMealEditSheetResult result,
+    required List<InventoryItem> inventoryItems,
+    required Set<String> selectedItemIds,
+  }) {
+    final existingItemIds = result.items.map((item) => item.itemId).toSet();
+    final addedInputs = inventoryItems
+        .where((item) => selectedItemIds.contains(item.id))
+        .where((item) => !existingItemIds.contains(item.id))
+        .where((item) => _defaultInventoryItemAmount(item) > 0)
+        .map((item) {
+          return PreparedMealItemInput(
+            itemId: item.id,
+            usedAmount: _defaultInventoryItemAmount(item),
+          );
+        })
+        .toList(growable: false);
+
+    return result.copyWith(
+      items: <PreparedMealItemInput>[...result.items, ...addedInputs],
+      requestIngredientSelection: false,
+    );
   }
 
   Future<bool> _savePreparedMealTemplate({
@@ -213,26 +321,26 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     required BuildContext context,
     required WidgetRef ref,
     required String mealId,
-    required String name,
-    required bool imageChanged,
-    required Uint8List? imageBytes,
+    required PreparedMealEditSheetResult result,
   }) async {
     String? imageAssetId;
-    if (imageChanged && imageBytes != null) {
+    if (result.imageChanged && result.imageBytes != null) {
       imageAssetId = _preparedMealImageAssetUuid.v4();
       final imageRef = localImageAssetRef(imageAssetId);
       await ref
           .read(localImageStoreProvider)
-          .saveBytes(imageRef: imageRef, bytes: imageBytes);
+          .saveBytes(imageRef: imageRef, bytes: result.imageBytes!);
       ref.invalidate(localImageBytesProvider(imageRef));
     }
     final saved = await ref
         .read(preparedMealsControllerProvider.notifier)
         .updatePreparedMealDetails(
           mealId: mealId,
-          name: name,
-          imageChanged: imageChanged,
+          name: result.name,
+          imageChanged: result.imageChanged,
           imageAssetId: imageAssetId,
+          totalPortions: result.totalPortions,
+          items: result.items,
         );
     if (!saved || !context.mounted) {
       return saved;
@@ -384,6 +492,32 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     );
     return true;
   }
+}
+
+class _PendingPreparedMealEditSelection {
+  const _PendingPreparedMealEditSelection({
+    required this.mealId,
+    required this.result,
+  });
+
+  final String mealId;
+  final PreparedMealEditSheetResult result;
+}
+
+PreparedMeal? _findPreparedMeal(List<PreparedMeal> meals, String mealId) {
+  for (final meal in meals) {
+    if (meal.id == mealId) {
+      return meal;
+    }
+  }
+  return null;
+}
+
+int _defaultInventoryItemAmount(InventoryItem item) {
+  if (item.usesAmountProgress) {
+    return item.currentAmount;
+  }
+  return item.quantity;
 }
 
 class _InventoryLoadingView extends StatelessWidget {

@@ -139,6 +139,8 @@ class PreparedMealsController extends _$PreparedMealsController {
     required String name,
     bool imageChanged = false,
     String? imageAssetId,
+    int? totalPortions,
+    List<PreparedMealItemInput>? items,
   }) {
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(
@@ -147,6 +149,9 @@ class PreparedMealsController extends _$PreparedMealsController {
         name: name,
         imageChanged: imageChanged,
         imageAssetId: imageAssetId,
+        totalPortions: totalPortions,
+        items: items,
+        inventoryRepository: ref.read(inventoryItemRepositoryProvider),
       ),
     ).whenComplete(keepAliveLink.close);
   }

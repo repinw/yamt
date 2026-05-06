@@ -879,6 +879,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealIngredientsTitle => 'Ingredients';
 
   @override
+  String get preparedMealAddIngredientAction => 'Add ingredient';
+
+  @override
+  String get preparedMealRemoveIngredientAction => 'Remove ingredient';
+
+  @override
+  String get preparedMealEmptyIngredientsMessage =>
+      'Add at least one ingredient before saving.';
+
+  @override
   String get preparedMealCreateAction => 'Create meal';
 
   @override
