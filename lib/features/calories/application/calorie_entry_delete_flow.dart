@@ -2,8 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -67,12 +67,12 @@ class CalorieEntryDeleteResult {
 )
 CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
   final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
+  final calorieSettingsRepository = ref.read(calorieSettingsRepositoryProvider);
   final inventoryItemRepository = ref.read(inventoryItemRepositoryProvider);
   final inventoryController = ref.read(
     inventoryItemsControllerProvider.notifier,
   );
   final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);
-  final goalController = ref.read(calorieGoalControllerProvider.notifier);
   final preparedMealRepository = ref.read(preparedMealRepositoryProvider);
   final preparedMealsController = ref.read(
     preparedMealsControllerProvider.notifier,
@@ -116,8 +116,11 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
               discardedPortions: discardedPortions,
               reason: InventoryDiscardReason.other,
             ),
-    invalidateSnapshotsFromDay:
-        goalController.invalidateWeeklyCheckInSnapshotsFromDay,
+    invalidateSnapshotsFromDay: (day) =>
+        _invalidateWeeklyCheckInSnapshotsFromDay(
+          day: day,
+          settingsRepository: calorieSettingsRepository,
+        ),
     sourcePreparedMealExists: (mealId) async {
       final normalizedMealId = mealId.trim();
       if (normalizedMealId.isEmpty) {
@@ -405,4 +408,29 @@ class CalorieEntryDeleteFlow {
 
 Future<bool> _noopInvalidateSnapshotsFromDay(DateTime day) async {
   return true;
+}
+
+Future<bool> _invalidateWeeklyCheckInSnapshotsFromDay({
+  required DateTime day,
+  required CalorieSettingsRepository settingsRepository,
+}) async {
+  try {
+    final previous = await settingsRepository.readSettings();
+    final nextSettings = previous.invalidateWeeklyCheckInSnapshotsFromDay(
+      day: day,
+      invalidatedAt: DateTime.now(),
+    );
+    if (identical(previous, nextSettings)) {
+      return true;
+    }
+    return settingsRepository.saveSettings(nextSettings);
+  } on Object catch (error, stackTrace) {
+    log(
+      'Failed to invalidate weekly check-in snapshots.',
+      name: _deleteFlowLogName,
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return false;
+  }
 }
