@@ -65,13 +65,15 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   final DiaryWeeklyCheckInDialogScheduler _weeklyCheckInDialogs =
       DiaryWeeklyCheckInDialogScheduler();
+  ProviderSubscription<AsyncValue<CalorieWeeklyCheckInViewModel>>?
+  _weeklyCheckInSubscription;
   bool _didQueueDiaryIntro = false;
   String? _hiddenWeeklyCheckInWindowKey;
 
   @override
   void initState() {
     super.initState();
-    ref.listenManual(
+    _weeklyCheckInSubscription = ref.listenManual(
       calorieWeeklyCheckInViewModelProvider,
       _cacheWeeklyCheckInView,
       fireImmediately: true,
@@ -82,6 +84,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
   @override
   void dispose() {
+    _weeklyCheckInSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     _diaryScrollController
       ..removeListener(_refreshScrollActions)
