@@ -25,6 +25,10 @@ CalorieGoalWeeklyCheckInSnapshot _$CalorieGoalWeeklyCheckInSnapshotFromJson(
     json['average_active_kcal'],
   ),
   lowConfidence: json['low_confidence'] as bool,
+  inputHash: json['input_hash'] as String?,
+  invalidatedAt: const NullableFlexibleDateTimeConverter().fromJson(
+    json['invalidated_at'],
+  ),
 );
 
 Map<String, dynamic> _$CalorieGoalWeeklyCheckInSnapshotToJson(
@@ -46,6 +50,10 @@ Map<String, dynamic> _$CalorieGoalWeeklyCheckInSnapshotToJson(
     instance.averageActiveKcal,
   ),
   'low_confidence': instance.lowConfidence,
+  'input_hash': ?instance.inputHash,
+  'invalidated_at': ?const NullableFlexibleDateTimeConverter().toJson(
+    instance.invalidatedAt,
+  ),
 };
 
 PendingCalorieGoalWeeklyCheckIn _$PendingCalorieGoalWeeklyCheckInFromJson(

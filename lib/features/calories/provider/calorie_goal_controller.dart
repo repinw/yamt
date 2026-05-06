@@ -110,7 +110,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       expectedActivityKcal: calculation.expectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
-      weeklyCheckInSnapshot: currentGoalEntry?.weeklyCheckInSnapshot,
+      weeklyCheckInSnapshot: currentGoalEntry?.learnedTdeeSnapshot,
       replaceFutureHistory: true,
     );
     final saved = await _persistSettings(nextSettings);
@@ -172,8 +172,8 @@ class CalorieGoalController extends _$CalorieGoalController {
       countingStartDate: normalizedGoalStartDate,
       source: currentSource,
       weeklyCheckInSnapshot:
-          currentGoalEntry?.weeklyCheckInSnapshot ??
-          previousSettings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot,
+          currentGoalEntry?.learnedTdeeSnapshot ??
+          previousSettings.latestLearnedTdeeEntry?.learnedTdeeSnapshot,
       replaceFutureHistory: true,
     );
     return _persistSettings(nextSettings);
@@ -227,10 +227,18 @@ class CalorieGoalController extends _$CalorieGoalController {
       }
     }
     final previous = await _currentSettings();
-    final nextSettings = previous.setSkippedIntakeDay(
-      day: day,
-      isSkipped: isSkipped,
-    );
+    if (previous.isSkippedIntakeDay(day) == isSkipped) {
+      return true;
+    }
+    final nextSettings = previous
+        .setSkippedIntakeDay(
+          day: day,
+          isSkipped: isSkipped,
+        )
+        .invalidateWeeklyCheckInSnapshotsFromDay(
+          day: day,
+          invalidatedAt: DateTime.now(),
+        );
     return _persistSettings(nextSettings);
   }
 
@@ -241,6 +249,19 @@ class CalorieGoalController extends _$CalorieGoalController {
       return Future<bool>.value(true);
     }
     return setSkippedIntakeDay(day: day, isSkipped: false);
+  }
+
+  /// Mark weekly check-in snapshots dirty from a changed diary day.
+  Future<bool> invalidateWeeklyCheckInSnapshotsFromDay(DateTime day) async {
+    final previous = await _currentSettings();
+    final nextSettings = previous.invalidateWeeklyCheckInSnapshotsFromDay(
+      day: day,
+      invalidatedAt: DateTime.now(),
+    );
+    if (identical(previous, nextSettings)) {
+      return true;
+    }
+    return _persistSettings(nextSettings);
   }
 
   /// Mark health activity tracking as active from a day.
@@ -315,12 +336,12 @@ class CalorieGoalController extends _$CalorieGoalController {
           isLosing: goalMode == CalorieGoalMode.lose,
           isGaining: goalMode == CalorieGoalMode.gain,
         );
+    final currentLearnedSnapshot = currentGoalEntry?.learnedTdeeSnapshot;
+    final latestLearnedSnapshot =
+        previousSettings.latestLearnedTdeeEntry?.learnedTdeeSnapshot;
     final nextExpectedActivityKcal =
-        currentGoalEntry?.weeklyCheckInSnapshot?.averageActiveKcal ??
-        previousSettings
-            .latestLearnedTdeeEntry
-            ?.weeklyCheckInSnapshot
-            ?.averageActiveKcal ??
+        currentLearnedSnapshot?.averageActiveKcal ??
+        latestLearnedSnapshot?.averageActiveKcal ??
         currentGoalEntry?.expectedActivityKcal ??
         previousSettings.expectedActivityKcal;
     final expectedActivityChanged =
@@ -352,9 +373,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       expectedActivityKcal: nextExpectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
-      weeklyCheckInSnapshot:
-          currentGoalEntry?.weeklyCheckInSnapshot ??
-          previousSettings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot,
+      weeklyCheckInSnapshot: currentLearnedSnapshot ?? latestLearnedSnapshot,
       replaceFutureHistory: true,
     );
     final saved = await _persistSettings(nextSettings);
@@ -371,7 +390,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     final snapshotSettings = previousSettings.applyGoalChange(
       changedAt: completedAt,
       dailyKcalGoal: dailyKcalGoal,
-      calculatorProfile: previousSettings.calculatorProfile,
+      calculatorProfile: null,
       expectedActivityKcal: weeklyCheckInSnapshot.averageActiveKcal,
       source: CalorieGoalSource.weeklyCheckIn,
       weeklyCheckInSnapshot: weeklyCheckInSnapshot,

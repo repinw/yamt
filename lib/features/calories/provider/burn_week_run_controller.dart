@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart'
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 const int _maxWeekSyncAdvances = 1000;
 
@@ -252,6 +253,11 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       ),
       previous: current,
     );
+    if (ref.mounted) {
+      await ref
+          .read(calorieGoalControllerProvider.notifier)
+          .invalidateWeeklyCheckInSnapshotsFromDay(normalizedDay);
+    }
   }
 
   /// Removes heart-day protection and refunds one heart.
@@ -278,6 +284,11 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       ),
       previous: current,
     );
+    if (ref.mounted) {
+      await ref
+          .read(calorieGoalControllerProvider.notifier)
+          .invalidateWeeklyCheckInSnapshotsFromDay(normalizeDiaryDay(day));
+    }
   }
 
   /// Keeps current run alive after an unrecoverable limit warning.

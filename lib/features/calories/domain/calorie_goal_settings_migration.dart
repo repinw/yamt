@@ -43,7 +43,7 @@ CalorieGoalSettings migrateCalorieGoalSettingsToCurrentMath({
     countingStartDate: migrationDay,
     updatedAt: now,
     source: goalEntry.source,
-    weeklyCheckInSnapshot: goalEntry.weeklyCheckInSnapshot,
+    weeklyCheckInSnapshot: goalEntry.learnedTdeeSnapshot,
   );
 }
 
@@ -99,8 +99,8 @@ double? _resolveExpectedActivityKcal({
   required CalorieCalculatorProfile? calculatorProfile,
 }) {
   final learnedActivityKcal =
-      goalEntry.weeklyCheckInSnapshot?.averageActiveKcal ??
-      settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot?.averageActiveKcal;
+      goalEntry.learnedTdeeSnapshot?.averageActiveKcal ??
+      settings.latestLearnedTdeeEntry?.learnedTdeeSnapshot?.averageActiveKcal;
   if (learnedActivityKcal != null) {
     return learnedActivityKcal;
   }

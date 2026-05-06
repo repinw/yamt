@@ -427,7 +427,7 @@ void main() {
     expect(find.text('x 1'), findsNothing);
   });
 
-  testWidgets('shows heart counter on non-diary tabs after learning week', (
+  testWidgets('hides heart counter on inventory tab after learning week', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -448,8 +448,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(HomeHeartCounterButton), findsOneWidget);
-    expect(find.text('x 2'), findsOneWidget);
+    expect(find.byType(HomeHeartCounterButton), findsNothing);
+    expect(find.text('x 2'), findsNothing);
   });
 
   testWidgets('heart counter spends heart on selected old diary day', (

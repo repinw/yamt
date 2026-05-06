@@ -5,6 +5,16 @@ abstract final class CaloriesPageKeys {
   /// Prints calorie debug dump.
   static const calorieDebugDumpButton = Key('calories_debug_dump_button');
 
+  /// Prints calorie settings debug dump.
+  static const calorieSettingsDebugDumpButton = Key(
+    'calories_settings_debug_dump_button',
+  );
+
+  /// Prints calorie weekly check-in debug dump.
+  static const calorieWeeklyCheckInDebugDumpButton = Key(
+    'calories_weekly_checkin_debug_dump_button',
+  );
+
   /// Burn Week mock bar.
   static const burnWeekMockBar = Key('calories_burn_week_bar');
 

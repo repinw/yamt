@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
@@ -92,6 +95,42 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('keeps previous data visible while steps reload', (tester) async {
+    final reloadTokenProvider = StateProvider<int>((ref) => 0);
+    final reloadCompleter = Completer<DiaryActivitySummary>();
+    final container = ProviderContainer(
+      overrides: [
+        diaryStepsSummaryProvider(selectedDay).overrideWith((ref) async {
+          final reloadToken = ref.watch(reloadTokenProvider);
+          if (reloadToken == 0) {
+            return _summary(selectedDay, totalSteps: 6500);
+          }
+          return reloadCompleter.future;
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await _pumpDiaryWidgetWithContainer(
+      tester,
+      container: container,
+      child: DiaryStepsCard(selectedDay: selectedDay),
+    );
+
+    expect(
+      find.textContaining('6,500 / 10,000', findRichText: true),
+      findsOneWidget,
+    );
+
+    container.read(reloadTokenProvider.notifier).state = 1;
+    await tester.pump();
+
+    expect(
+      find.textContaining('6,500 / 10,000', findRichText: true),
+      findsOneWidget,
+    );
+  });
 }
 
 Future<void> _pumpStepsCard(
@@ -130,6 +169,30 @@ Future<void> _pumpDiaryWidget(
   await tester.pumpWidget(
     ProviderScope(
       overrides: overrides,
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: child,
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _pumpDiaryWidgetWithContainer(
+  WidgetTester tester, {
+  required ProviderContainer container,
+  required Widget child,
+}) async {
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
       child: MaterialApp(
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,

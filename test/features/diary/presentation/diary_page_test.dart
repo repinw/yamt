@@ -22,6 +22,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -134,6 +135,21 @@ void main() {
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
   });
 
+  testWidgets('auto-opens already loaded weekly check-in dialog', (
+    tester,
+  ) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      preloadedWeeklyCheckIn: _weeklyCheckInViewModel(
+        windowStartDate: DateTime(2026, 4, 20),
+      ),
+    );
+
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
+  });
+
   testWidgets('defers a second weekly check-in while a dialog is open', (
     tester,
   ) async {
@@ -163,6 +179,39 @@ void main() {
 
     expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
+  });
+
+  testWidgets('hides weekly check-in hint immediately while apply saves', (
+    tester,
+  ) async {
+    final saveCompleter = Completer<void>();
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+      ),
+    )..onSaveSettings = (_) => saveCompleter.future;
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      settingsRepository: settingsRepository,
+      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+        windowStartDate: DateTime(2026, 4, 20),
+      ),
+    );
+
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+
+    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton));
+    await _pumpFrames(tester, count: 4);
+
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsNothing);
+
+    saveCompleter.complete();
+    await _pumpFrames(tester, count: 8);
   });
 
   testWidgets('debug dump shows success snackbar', (tester) async {
@@ -598,6 +647,40 @@ void main() {
     expect(state.selectedDay, DateTime(2026, 4, 28));
     expect(state.todayRequest, 1);
   });
+
+  testWidgets('auto-opens weekly check-in after resume into due day', (
+    tester,
+  ) async {
+    var now = DateTime(2026, 4, 14, 10);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4, 8),
+      ),
+    );
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: DateTime(2026, 4, 14),
+      settingsRepository: settingsRepository,
+      overrideWeeklyCheckInProvider: false,
+      overrides: [
+        diaryCalendarNowProvider.overrideWithValue(() => now),
+        calorieBalanceNowProvider.overrideWithValue(() => now),
+      ],
+    );
+
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsNothing);
+
+    now = DateTime(2026, 4, 15, 8);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await _pumpFrames(tester);
+
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.text('Apr 8 - Apr 14'), findsOneWidget);
+  });
 }
 
 Future<ProviderContainer> _pumpDiaryPage(
@@ -605,6 +688,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   required DateTime selectedDay,
   Locale locale = const Locale('en'),
   CalorieWeeklyCheckInViewModel? initialWeeklyCheckIn,
+  CalorieWeeklyCheckInViewModel? preloadedWeeklyCheckIn,
   FakeCalorieLogRepository? logRepository,
   FakeCalorieSettingsRepository? settingsRepository,
   HealthConnectionService? healthConnectionService,
@@ -613,6 +697,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   Map<String, DiaryHealthDayData> healthDataByDay =
       const <String, DiaryHealthDayData>{},
   List<Override> overrides = const [],
+  bool overrideWeeklyCheckInProvider = true,
 }) async {
   final resolvedLogRepository = logRepository ?? FakeCalorieLogRepository();
   final resolvedSettingsRepository =
@@ -661,12 +746,17 @@ Future<ProviderContainer> _pumpDiaryPage(
       manualHealthWeightRepositoryProvider.overrideWithValue(
         FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[]),
       ),
-      calorieWeeklyCheckInViewModelProvider.overrideWith(
-        (ref) => ref.watch(_weeklyCheckInViewModelStateProvider),
-      ),
+      if (overrideWeeklyCheckInProvider)
+        calorieWeeklyCheckInViewModelProvider.overrideWith(
+          (ref) => ref.watch(_weeklyCheckInViewModelStateProvider),
+        ),
       ...overrides,
     ],
   );
+  if (preloadedWeeklyCheckIn != null) {
+    container.read(_weeklyCheckInViewModelStateProvider.notifier).state =
+        preloadedWeeklyCheckIn;
+  }
   addTearDown(() async {
     await resolvedLogRepository.dispose();
     await resolvedSettingsRepository.dispose();

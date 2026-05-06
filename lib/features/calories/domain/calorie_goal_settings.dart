@@ -46,6 +46,8 @@ class CalorieGoalWeeklyCheckInSnapshot {
     required this.calculatedTrueTdeeKcal,
     required this.averageActiveKcal,
     required this.lowConfidence,
+    this.inputHash,
+    this.invalidatedAt,
   });
 
   /// Creates a [CalorieGoalWeeklyCheckInSnapshot] for from json.
@@ -75,6 +77,42 @@ class CalorieGoalWeeklyCheckInSnapshot {
 
   /// The low confidence.
   final bool lowConfidence;
+
+  /// Stable hash of diary inputs used for this snapshot.
+  @JsonKey(includeIfNull: false)
+  final String? inputHash;
+
+  /// When the snapshot was marked dirty by a later diary edit.
+  @JsonKey(includeIfNull: false)
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? invalidatedAt;
+
+  /// Whether inputs changed after this snapshot was saved.
+  bool get isInputDirty => invalidatedAt != null;
+
+  /// Whether this snapshot can seed later weekly calculations directly.
+  bool get isInputTrusted => inputHash != null && !isInputDirty;
+
+  /// Copy with.
+  CalorieGoalWeeklyCheckInSnapshot copyWith({
+    Object? inputHash = _keepValue,
+    Object? invalidatedAt = _keepValue,
+  }) {
+    return CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: windowStartDate,
+      windowEndDate: windowEndDate,
+      trendWeightChangePerDay: trendWeightChangePerDay,
+      calculatedTrueTdeeKcal: calculatedTrueTdeeKcal,
+      averageActiveKcal: averageActiveKcal,
+      lowConfidence: lowConfidence,
+      inputHash: inputHash == _keepValue
+          ? this.inputHash
+          : inputHash as String?,
+      invalidatedAt: invalidatedAt == _keepValue
+          ? this.invalidatedAt
+          : invalidatedAt as DateTime?,
+    );
+  }
 
   /// To json.
   Map<String, dynamic> toJson() {
@@ -211,7 +249,16 @@ class CalorieGoalHistoryEntry {
   bool get isWeeklyCheckIn => source == CalorieGoalSource.weeklyCheckIn;
 
   /// Whether learned tdee.
-  bool get hasLearnedTdee => weeklyCheckInSnapshot != null;
+  bool get hasLearnedTdee => learnedTdeeSnapshot != null;
+
+  /// The learned TDEE snapshot if its inputs are still valid.
+  CalorieGoalWeeklyCheckInSnapshot? get learnedTdeeSnapshot {
+    final snapshot = weeklyCheckInSnapshot;
+    if (snapshot == null || snapshot.isInputDirty) {
+      return null;
+    }
+    return snapshot;
+  }
 
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieGoalHistoryEntryToJson(this);
@@ -367,9 +414,7 @@ class CalorieGoalSettings {
 
   /// The latest learned tdee kcal.
   double? get latestLearnedTdeeKcal {
-    return latestLearnedTdeeEntry
-        ?.weeklyCheckInSnapshot
-        ?.calculatedTrueTdeeKcal;
+    return latestLearnedTdeeEntry?.learnedTdeeSnapshot?.calculatedTrueTdeeKcal;
   }
 
   /// The latest learned tdee changed at.
@@ -713,6 +758,38 @@ class CalorieGoalSettings {
     );
   }
 
+  /// Mark weekly check-in snapshots dirty from a changed diary day.
+  CalorieGoalSettings invalidateWeeklyCheckInSnapshotsFromDay({
+    required DateTime day,
+    required DateTime invalidatedAt,
+  }) {
+    final normalizedDay = normalizeDiaryDay(day);
+    var didInvalidate = false;
+    final nextEntries = <CalorieGoalHistoryEntry>[
+      for (final entry in goalHistory)
+        _dirtyGoalHistoryEntrySnapshot(
+          entry: entry,
+          day: normalizedDay,
+          invalidatedAt: invalidatedAt,
+          didInvalidate: () => didInvalidate = true,
+        ),
+    ];
+    if (!didInvalidate) {
+      return this;
+    }
+    return CalorieGoalSettings(
+      dailyKcalGoal: dailyKcalGoal,
+      calculatorProfile: calculatorProfile,
+      calorieMathVersion: calorieMathVersion,
+      expectedActivityKcal: expectedActivityKcal,
+      activityTrackingStartDate: activityTrackingStartDate,
+      updatedAt: invalidatedAt,
+      goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextEntries),
+      pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+      skippedIntakeDayKeys: skippedIntakeDayKeys,
+    );
+  }
+
   /// Copy with.
   CalorieGoalSettings copyWith({
     double? dailyKcalGoal,
@@ -782,6 +859,37 @@ bool _sameWeeklyCheckInWindow(
 ) {
   return _isSameDay(left.windowStartDate, right.windowStartDate) &&
       _isSameDay(left.windowEndDate, right.windowEndDate);
+}
+
+CalorieGoalHistoryEntry _dirtyGoalHistoryEntrySnapshot({
+  required CalorieGoalHistoryEntry entry,
+  required DateTime day,
+  required DateTime invalidatedAt,
+  required void Function() didInvalidate,
+}) {
+  final snapshot = entry.weeklyCheckInSnapshot;
+  if (snapshot == null || snapshot.isInputDirty) {
+    return entry;
+  }
+  final windowStartDate = normalizeDiaryDay(snapshot.windowStartDate);
+  final windowEndDate = normalizeDiaryDay(snapshot.windowEndDate);
+  if (day.isBefore(windowStartDate) || day.isAfter(windowEndDate)) {
+    return entry;
+  }
+  didInvalidate();
+  return CalorieGoalHistoryEntry(
+    dailyKcalGoal: entry.dailyKcalGoal,
+    calculatorProfile: entry.calculatorProfile,
+    expectedActivityKcal: entry.expectedActivityKcal,
+    effectiveDate: entry.effectiveDate,
+    changedAt: entry.changedAt,
+    countingStartDate: entry.countingStartDate,
+    source: entry.source,
+    weeklyCheckInSnapshot: snapshot.copyWith(
+      inputHash: null,
+      invalidatedAt: invalidatedAt,
+    ),
+  );
 }
 
 DateTime _resolveNormalizedCountingStartDate({

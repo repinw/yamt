@@ -156,7 +156,7 @@ class _DiaryActivityWeightCardsState
     final dataState = ref.watch(
       diaryActivityWeightDataProvider(normalizedDay),
     );
-    final loadedData = dataState.asData?.value;
+    final loadedData = dataState.value;
     if (loadedData != null) {
       _lastData = loadedData;
     }

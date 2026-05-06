@@ -24,6 +24,7 @@ class DiaryWorkoutsCard extends ConsumerWidget {
     final summaryState = ref.watch(diaryStepsSummaryProvider(normalizedDay));
 
     return summaryState.when(
+      skipLoadingOnReload: true,
       loading: () => const DiaryDetailCardShell(child: _WorkoutsSkeleton()),
       error: (_, _) => DiaryDetailCardShell(
         child: DiaryErrorRetryContent(

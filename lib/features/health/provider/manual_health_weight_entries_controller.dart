@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -82,6 +83,10 @@ class ManualHealthWeightEntriesController
       if (!deleted && ref.mounted) {
         state = AsyncData(previousEntries);
       }
+      if (!deleted) {
+        return false;
+      }
+      await _invalidateWeeklyCheckInSnapshotsForDay(normalizedDay);
       return deleted;
     } on Object catch (error, stackTrace) {
       log(
@@ -143,6 +148,7 @@ class ManualHealthWeightEntriesController
           name: _logName,
         );
       }
+      await _invalidateWeeklyCheckInSnapshotsForDay(normalizedDay);
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -180,7 +186,11 @@ class ManualHealthWeightEntriesController
       if (!saved && ref.mounted) {
         state = AsyncData(previousEntries);
       }
-      return saved;
+      if (!saved) {
+        return false;
+      }
+      await _invalidateWeeklyCheckInSnapshotsForDay(entry.day);
+      return true;
     } on Object catch (error, stackTrace) {
       log(
         'Failed to save fallback weight entry.',
@@ -192,6 +202,36 @@ class ManualHealthWeightEntriesController
         state = AsyncData(previousEntries);
       }
       return false;
+    }
+  }
+
+  Future<void> _invalidateWeeklyCheckInSnapshotsForDay(DateTime day) async {
+    if (!ref.mounted) {
+      return;
+    }
+    try {
+      await ref.read(calorieGoalControllerProvider.future);
+      if (!ref.mounted) {
+        return;
+      }
+      final goalController = ref.read(calorieGoalControllerProvider.notifier);
+      final saved = await goalController
+          .invalidateWeeklyCheckInSnapshotsFromDay(
+            day,
+          );
+      if (!saved) {
+        log(
+          'Failed to dirty weekly check-in snapshots after weight change.',
+          name: _logName,
+        );
+      }
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to dirty weekly check-in snapshots after weight change.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 

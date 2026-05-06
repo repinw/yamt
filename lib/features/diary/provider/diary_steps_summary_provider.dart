@@ -17,9 +17,8 @@ diaryStepsSummaryProvider = FutureProvider.autoDispose
       final normalizedDay = normalizeDiaryDay(day);
       final userHeightCm = ref
           .watch(calorieGoalControllerProvider)
-          .asData
-          ?.value
-          .calculatorProfile
+          .value
+          ?.calculatorProfile
           ?.heightCm;
       final statusFuture = ref.watch(healthConnectionControllerProvider.future);
       final diaryHealthService = ref.watch(diaryHealthServiceProvider);

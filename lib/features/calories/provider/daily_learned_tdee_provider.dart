@@ -98,7 +98,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     throw StateError('Weekly learned TDEE disposed.');
   }
   final snapshotEntry = settings.learnedTdeeEntryForDay(normalizedDay);
-  final snapshot = snapshotEntry?.weeklyCheckInSnapshot;
+  final snapshot = snapshotEntry?.learnedTdeeSnapshot;
   final snapshotFallback = _snapshotLearnedGoalForEntry(
     learnedEntry: snapshotEntry,
     storedGoalKcal: storedGoalKcal,
@@ -266,7 +266,7 @@ bool _hasLearnedSnapshotForWindow({
   required _WeeklyLearnedWindow window,
 }) {
   for (final entry in settings.sortedGoalHistory) {
-    final snapshot = entry.weeklyCheckInSnapshot;
+    final snapshot = entry.learnedTdeeSnapshot;
     if (snapshot == null) {
       continue;
     }
@@ -295,7 +295,7 @@ DailyLearnedTdeeGoalData? _snapshotLearnedGoalForEntry({
   required CalorieGoalHistoryEntry? learnedEntry,
   required double storedGoalKcal,
 }) {
-  final snapshot = learnedEntry?.weeklyCheckInSnapshot;
+  final snapshot = learnedEntry?.learnedTdeeSnapshot;
   if (snapshot == null) {
     return null;
   }
@@ -595,13 +595,13 @@ double _learnedTdeeSeed({
   final learnedTdeeKcal = _latestLearnedBeforeDay(
     settings: settings,
     day: day,
-  )?.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal;
+  )?.learnedTdeeSnapshot?.calculatedTrueTdeeKcal;
   if (learnedTdeeKcal != null) {
     return learnedTdeeKcal;
   }
   final anchorLearnedTdeeKcal = settings
       .activeGoalEntryForDay(day)
-      ?.weeklyCheckInSnapshot
+      ?.learnedTdeeSnapshot
       ?.calculatedTrueTdeeKcal;
   if (anchorLearnedTdeeKcal != null) {
     return anchorLearnedTdeeKcal;

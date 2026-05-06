@@ -19,6 +19,38 @@ void showCalorieDebugDumpResultSnackBar({
     ..showSnackBar(SnackBar(content: Text(message)));
 }
 
+/// Shows the calorie settings debug dump result.
+void showCalorieSettingsDebugDumpResultSnackBar({
+  required BuildContext context,
+  required CalorieSettingsDebugDumpPrintResult result,
+}) {
+  final message = switch (result) {
+    CalorieSettingsDebugDumpPrintSuccess(:final entryCount) =>
+      'Printed calorie settings debug dump ($entryCount goal entries).',
+    CalorieSettingsDebugDumpPrintFailure() =>
+      'Could not print calorie settings debug dump.',
+  };
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(message)));
+}
+
+/// Shows the calorie weekly check-in debug dump result.
+void showCalorieWeeklyCheckInDebugDumpResultSnackBar({
+  required BuildContext context,
+  required CalorieWeeklyCheckInDebugDumpPrintResult result,
+}) {
+  final message = switch (result) {
+    CalorieWeeklyCheckInDebugDumpPrintSuccess() =>
+      'Printed weekly check-in debug dump.',
+    CalorieWeeklyCheckInDebugDumpPrintFailure() =>
+      'Could not print weekly check-in debug dump.',
+  };
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(message)));
+}
+
 /// Shows skipped-intake save failure.
 void showSkippedCalorieIntakeSaveFailedSnackBar(BuildContext context) {
   final l10n = AppLocalizations.of(context)!;

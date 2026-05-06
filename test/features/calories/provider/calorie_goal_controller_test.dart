@@ -960,8 +960,10 @@ void main() {
     expect(saved, isTrue);
     final settings = await repository.readSettings();
     expect(settings.dailyKcalGoal, 2200);
+    expect(settings.calculatorProfile?.weightKg, 80);
     expect(settings.hasLearnedTdee, isTrue);
     expect(settings.latestLearnedTdeeKcal, 2315);
+    expect(settings.latestLearnedTdeeEntry?.calculatorProfile, isNull);
     expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
     expect(settings.goalKcalForDay(DateTime(2026, 4, 14)), 2200);
     expect(settings.goalKcalForDay(DateTime(2026, 4, 15)), 2200);
@@ -1026,9 +1028,125 @@ void main() {
     expect(snapshots, hasLength(2));
     expect(snapshots.first.windowStartDate, DateTime(2026, 4, 8));
     expect(snapshots.last.windowStartDate, DateTime(2026, 4, 15));
+    expect(
+      settings.goalHistory
+          .where((entry) => entry.isWeeklyCheckIn)
+          .every((entry) => entry.calculatorProfile == null),
+      isTrue,
+    );
     expect(settings.latestGoalEntry?.dailyKcalGoal, 2200);
     expect(settings.latestLearnedTdeeEntry?.dailyKcalGoal, 2250);
   });
+
+  test(
+    'invalidateWeeklyCheckInSnapshotsFromDay dirties affected snapshots',
+    () async {
+      final repository = FakeCalorieSettingsRepository(
+        initialSettings: const CalorieGoalSettings.empty()
+            .applyGoalChange(
+              changedAt: DateTime(2026, 4, 8),
+              dailyKcalGoal: 2200,
+              calculatorProfile: null,
+            )
+            .applyGoalChange(
+              changedAt: DateTime(2026, 4, 15),
+              dailyKcalGoal: 2300,
+              calculatorProfile: null,
+              source: CalorieGoalSource.weeklyCheckIn,
+              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+                windowStartDate: DateTime(2026, 4, 8),
+                windowEndDate: DateTime(2026, 4, 14),
+                trendWeightChangePerDay: 0,
+                calculatedTrueTdeeKcal: 2300,
+                averageActiveKcal: 0,
+                lowConfidence: false,
+                inputHash: 'v1:first',
+              ),
+            )
+            .applyGoalChange(
+              changedAt: DateTime(2026, 4, 22),
+              dailyKcalGoal: 2350,
+              calculatorProfile: null,
+              source: CalorieGoalSource.weeklyCheckIn,
+              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+                windowStartDate: DateTime(2026, 4, 15),
+                windowEndDate: DateTime(2026, 4, 21),
+                trendWeightChangePerDay: 0,
+                calculatedTrueTdeeKcal: 2350,
+                averageActiveKcal: 0,
+                lowConfidence: false,
+                inputHash: 'v1:second',
+              ),
+            ),
+      );
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+
+      final saved = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .invalidateWeeklyCheckInSnapshotsFromDay(DateTime(2026, 4, 16));
+
+      expect(saved, isTrue);
+      final settings = await repository.readSettings();
+      final snapshots = settings.goalHistory
+          .map((entry) => entry.weeklyCheckInSnapshot)
+          .whereType<CalorieGoalWeeklyCheckInSnapshot>()
+          .toList(growable: false);
+      expect(snapshots, hasLength(2));
+      expect(snapshots.first.inputHash, 'v1:first');
+      expect(snapshots.first.invalidatedAt, isNull);
+      expect(snapshots.last.inputHash, isNull);
+      expect(snapshots.last.invalidatedAt, isNotNull);
+      expect(settings.latestLearnedTdeeKcal, 2300);
+      expect(
+        settings
+            .learnedTdeeEntryForDay(DateTime(2026, 4, 23))
+            ?.weeklyCheckInSnapshot
+            ?.windowEndDate,
+        DateTime(2026, 4, 14),
+      );
+    },
+  );
+
+  test(
+    'invalidateWeeklyCheckInSnapshotsFromDay ignores days before snapshot',
+    () {
+      final settings = const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: DateTime(2026, 4, 15),
+        dailyKcalGoal: 2300,
+        calculatorProfile: null,
+        source: CalorieGoalSource.weeklyCheckIn,
+        weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+          windowStartDate: DateTime(2026, 4, 8),
+          windowEndDate: DateTime(2026, 4, 14),
+          trendWeightChangePerDay: 0,
+          calculatedTrueTdeeKcal: 2300,
+          averageActiveKcal: 0,
+          lowConfidence: false,
+          inputHash: 'v1:first',
+        ),
+      );
+
+      final nextSettings = settings.invalidateWeeklyCheckInSnapshotsFromDay(
+        day: DateTime(2026, 4, 7),
+        invalidatedAt: DateTime(2026, 4, 20),
+      );
+
+      expect(identical(nextSettings, settings), isTrue);
+      expect(
+        nextSettings.goalHistory.single.weeklyCheckInSnapshot?.inputHash,
+        'v1:first',
+      );
+    },
+  );
 
   test('saveLearnedTdeeGoal uses learned TDEE and goal speed', () async {
     final initialSettings = const CalorieGoalSettings.empty()
