@@ -30,12 +30,9 @@ class DiaryBalancePracticeDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final dateFormat = DateFormat.yMMMd(
-      Localizations.localeOf(context).toString(),
-    );
-    final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
-    );
+    final localeName = Localizations.localeOf(context).toLanguageTag();
+    final dateFormat = DateFormat.yMMMd(localeName);
+    final numberFormat = NumberFormat.decimalPattern(localeName);
     final colors = Theme.of(context).colorScheme;
     final futureGoalText = futureGoalKcal == null
         ? null

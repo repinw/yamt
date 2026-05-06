@@ -249,7 +249,7 @@ class _DiaryIntroDialogState extends State<DiaryIntroDialog> {
     BuildContext context,
     AppLocalizations l10n,
   ) {
-    final locale = Localizations.localeOf(context).toString();
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final speedFormat = NumberFormat.decimalPattern(locale)
       ..minimumFractionDigits = 0
       ..maximumFractionDigits = 2;

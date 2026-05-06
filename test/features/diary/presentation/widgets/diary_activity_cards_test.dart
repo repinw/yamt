@@ -18,6 +18,10 @@ import 'package:yamt/features/diary/presentation/widgets/diary_activity_details_
 import 'package:yamt/features/diary/presentation/widgets/diary_activity_weight_cards.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
+import 'package:yamt/features/diary/provider/'
+    'diary_activity_weight_data_provider.dart';
+import 'package:yamt/features/diary/provider/diary_meal_sections_provider.dart';
+import 'package:yamt/features/diary/provider/diary_steps_summary_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_workouts_card.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -95,6 +99,38 @@ void main() {
     expect(find.text('Schritte außerhalb'), findsOneWidget);
     expect(find.text('1.500'), findsOneWidget);
     expect(find.text('5.000'), findsOneWidget);
+  });
+
+  testWidgets('step details card retries after load error', (tester) async {
+    var shouldFail = true;
+    await _pumpDiaryWidget(
+      tester,
+      DiaryActivityDetailsCard(selectedDay: selectedDay),
+      overrides: [
+        diaryStepsSummaryProvider(selectedDay).overrideWith((ref) async {
+          if (shouldFail) {
+            throw StateError('load failed');
+          }
+          return _activitySummary(
+            selectedDay,
+            totalSteps: 6500,
+            stepsDuringWorkouts: 1500,
+            stepsOutsideWorkouts: 5000,
+          );
+        }),
+      ],
+    );
+
+    expect(find.text('Schritte konnten nicht geladen werden'), findsOneWidget);
+    expect(find.text('Erneut versuchen'), findsOneWidget);
+
+    shouldFail = false;
+    await tester.tap(find.text('Erneut versuchen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Schritte konnten nicht geladen werden'), findsNothing);
+    expect(find.text('SCHRITTE DETAILS'), findsOneWidget);
+    expect(find.text('1.500'), findsOneWidget);
   });
 
   testWidgets('workouts card renders tracked workout rows', (tester) async {
@@ -184,6 +220,52 @@ void main() {
     expect(find.text('Gewicht eintragen'), findsOneWidget);
     expect(find.textContaining('78,4 kg'), findsWidgets);
     expect(find.byIcon(Icons.close_rounded), findsNWidgets(2));
+  });
+
+  testWidgets('activity and weight cards retry after load error', (
+    tester,
+  ) async {
+    var shouldFail = true;
+    await _pumpDiaryWidget(
+      tester,
+      DiaryActivityWeightCards(selectedDay: selectedDay),
+      overrides: [
+        ..._commonOverrides(),
+        diaryActivityWeightDataProvider(selectedDay).overrideWith((ref) async {
+          if (shouldFail) {
+            throw StateError('load failed');
+          }
+          return _activityWeightData(
+            selectedDay,
+            activityKcal: 450,
+            activeMinutes: 45,
+            selectedWeightKg: 78.4,
+            hasSelectedDayWeight: true,
+          );
+        }),
+      ],
+    );
+
+    expect(
+      find.text('Aktivität und Gewicht konnten nicht geladen werden'),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(DiaryActivityWeightCardsKeys.retryButton),
+      findsOneWidget,
+    );
+
+    shouldFail = false;
+    await tester.tap(find.byKey(DiaryActivityWeightCardsKeys.retryButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Aktivität und Gewicht konnten nicht geladen werden'),
+      findsNothing,
+    );
+    expect(find.text('AKTIVITÄT'), findsOneWidget);
+    expect(find.text('GEWICHT'), findsOneWidget);
+    expect(find.textContaining('450 kcal', findRichText: true), findsOneWidget);
   });
 
   testWidgets('weight card shows missing-weight prompt until dismissed', (

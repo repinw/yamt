@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
+import 'package:yamt/features/diary/provider/diary_meal_sections_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
@@ -149,6 +150,51 @@ void main() {
     expect(find.text('12g'), findsNothing);
     expect(find.text('2g'), findsNothing);
     expect(find.text('5g'), findsNothing);
+  });
+
+  testWidgets('shows retry and reloads after meals load error', (
+    tester,
+  ) async {
+    var shouldFail = true;
+    await _pumpDiaryWidget(
+      tester,
+      DiaryMealsSection(selectedDay: selectedDay),
+      overrides: [
+        diaryMealSectionsProvider(selectedDay).overrideWith((ref) async {
+          if (shouldFail) {
+            throw StateError('load failed');
+          }
+          return [
+            _mealSection(MealType.breakfast, [
+              _entry(
+                id: 'oats',
+                day: selectedDay,
+                mealType: MealType.breakfast,
+                name: 'Oats',
+                kcal: 100,
+                protein: 8,
+                carbs: 40,
+                fat: 6,
+              ),
+            ]),
+            _mealSection(MealType.lunch, const []),
+            _mealSection(MealType.dinner, const []),
+            _mealSection(MealType.snack, const []),
+          ];
+        }),
+      ],
+    );
+
+    expect(find.text('Meals could not be loaded'), findsOneWidget);
+    expect(find.byKey(DiaryMealsSectionKeys.retryButton), findsOneWidget);
+
+    shouldFail = false;
+    await tester.tap(find.byKey(DiaryMealsSectionKeys.retryButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Meals could not be loaded'), findsNothing);
+    expect(find.text('Breakfast'), findsOneWidget);
+    expect(find.text('Oats'), findsOneWidget);
   });
 }
 

@@ -122,3 +122,54 @@ class DiarySkeletonBlock extends StatelessWidget {
     );
   }
 }
+
+/// Compact retry content for diary cards.
+class DiaryErrorRetryContent extends StatelessWidget {
+  /// Creates retry content.
+  const DiaryErrorRetryContent({
+    required this.message,
+    required this.retryLabel,
+    required this.onRetry,
+    this.retryButtonKey,
+    super.key,
+  });
+
+  /// Localized error message.
+  final String message;
+
+  /// Localized retry action label.
+  final String retryLabel;
+
+  /// Called when retry is tapped.
+  final VoidCallback onRetry;
+
+  /// Optional retry button key for tests.
+  final Key? retryButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.error_outline_rounded, color: colors.error),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          message,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: colors.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        FilledButton.tonalIcon(
+          key: retryButtonKey,
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh_rounded),
+          label: Text(retryLabel),
+        ),
+      ],
+    );
+  }
+}

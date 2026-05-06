@@ -1170,7 +1170,9 @@
   },
   "diaryMealsTitle": "Tagebuch",
   "diaryMealsEmpty": "Noch nichts eingetragen",
+  "diaryMealsLoadFailed": "Mahlzeiten konnten nicht geladen werden",
   "diaryBalanceLoadFailed": "Balance konnte nicht geladen werden",
+  "diaryNutritionLoadFailed": "Nährwerte konnten nicht geladen werden",
   "diaryBalanceEatenLabel": "Gegessen",
   "diaryBalanceLeftLabel": "Übrig",
   "diaryBalanceRealLeftLabel": "Echt {kcal}",
@@ -1254,6 +1256,8 @@
   "diaryIntroBetterDataBody": "Nach 7 Tagen ist die Schätzung besser als der Startwert. Nach 14 konsequenten Tagen sieht YAMT deinen Stoffwechsel deutlich klarer.",
   "diaryActivityTitle": "Aktivität",
   "diaryActivityEmpty": "Keine Aktivität",
+  "diaryActivityWeightLoadFailed":
+      "Aktivität und Gewicht konnten nicht geladen werden",
   "diaryActiveMinutesLabel": "{minutes} Min. aktiv",
   "@diaryActiveMinutesLabel": {
     "placeholders": {

@@ -3,13 +3,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_health_weight_dialog.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_health_trend_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_today_weight_prompt_dismissal_controller.dart';
@@ -19,9 +17,10 @@ import 'package:yamt/features/diary/application/diary_activity_weight_service.da
 import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_workouts_card.dart';
+import 'package:yamt/features/diary/provider/'
+    'diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
 import 'package:yamt/features/health/provider/'
@@ -35,27 +34,13 @@ part 'diary_health_connect_metric_card.dart';
 part 'diary_weight_details_card.dart';
 part 'diary_activity_metric_shells.dart';
 
-/// Provides real activity and weight data for the selected diary day.
-final FutureProviderFamily<DiaryActivityWeightData, DateTime>
-diaryActivityWeightDataProvider =
-    FutureProvider.family<DiaryActivityWeightData, DateTime>((ref, day) async {
-      final selectedDay = normalizeDiaryDay(day);
-      final goalState = ref.watch(calorieGoalControllerProvider);
-      final status = await ref.watch(healthConnectionControllerProvider.future);
-      final manualEntries = await ref.watch(
-        manualHealthWeightEntriesControllerProvider.future,
-      );
-      final service = ref.watch(diaryActivityWeightServiceProvider);
-
-      return service.load(
-        day: selectedDay,
-        goalSettings: goalState.asData?.value,
-        healthStatus: status,
-        manualEntries: manualEntries,
-        diaryHealthService: ref.watch(diaryHealthServiceProvider),
-        healthWeightService: ref.watch(healthWeightServiceProvider),
-      );
-    });
+/// Stable keys for diary activity and weight card tests.
+abstract final class DiaryActivityWeightCardsKeys {
+  /// Retry button key.
+  static const retryButton = ValueKey<String>(
+    'diary-activity-weight-retry-button',
+  );
+}
 
 final _diaryWeightActionsProvider = Provider<_DiaryWeightActions>((ref) {
   return _DiaryWeightActions(
@@ -167,14 +152,28 @@ class _DiaryActivityWeightCardsState
 
   @override
   Widget build(BuildContext context) {
+    final normalizedDay = normalizeDiaryDay(widget.selectedDay);
     final dataState = ref.watch(
-      diaryActivityWeightDataProvider(widget.selectedDay),
+      diaryActivityWeightDataProvider(normalizedDay),
     );
     final loadedData = dataState.asData?.value;
     if (loadedData != null) {
       _lastData = loadedData;
     }
     final data = loadedData ?? _lastData;
+    if (data == null && dataState.hasError) {
+      final l10n = AppLocalizations.of(context)!;
+      return DiaryDetailCardShell(
+        child: DiaryErrorRetryContent(
+          message: l10n.diaryActivityWeightLoadFailed,
+          retryLabel: l10n.caloriesRetryAction,
+          retryButtonKey: DiaryActivityWeightCardsKeys.retryButton,
+          onRetry: () => ref.invalidate(
+            diaryActivityWeightDataProvider(normalizedDay),
+          ),
+        ),
+      );
+    }
 
     final showActivityTrainings =
         _isActivityExpanded &&
@@ -266,7 +265,7 @@ class _ActivityMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
     final accentColors = DiaryAccentColors.of(context);
@@ -329,12 +328,12 @@ class _WeightMetricCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final numberFormat = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
     final weightFormat = NumberFormat(
       '0.#',
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).toLanguageTag(),
     );
     final accentColors = DiaryAccentColors.of(context);
     final normalizedSelectedDay = normalizeDiaryDay(selectedDay);

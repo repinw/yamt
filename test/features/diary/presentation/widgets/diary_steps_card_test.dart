@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
+import 'package:yamt/features/diary/provider/diary_steps_summary_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -51,6 +52,45 @@ void main() {
       find.byKey(DiaryStepsCardKeys.progressFill),
     );
     expect(fillRect.width, 0);
+  });
+
+  testWidgets('shows retry and reloads after steps load error', (
+    tester,
+  ) async {
+    var shouldFail = true;
+    await _pumpDiaryWidget(
+      tester,
+      DiaryStepsCard(
+        selectedDay: selectedDay,
+        expandedContent: const Text('expanded step details'),
+      ),
+      overrides: [
+        diaryStepsSummaryProvider(selectedDay).overrideWith((ref) async {
+          if (shouldFail) {
+            throw StateError('load failed');
+          }
+          return _summary(selectedDay, totalSteps: 6500);
+        }),
+      ],
+    );
+
+    expect(find.text('Steps could not be loaded'), findsOneWidget);
+    expect(find.byKey(DiaryStepsCardKeys.retryButton), findsOneWidget);
+
+    await tester.tap(find.text('Steps could not be loaded'));
+    await tester.pumpAndSettle();
+    expect(find.text('expanded step details'), findsNothing);
+
+    shouldFail = false;
+    await tester.tap(find.byKey(DiaryStepsCardKeys.retryButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Steps could not be loaded'), findsNothing);
+    expect(find.text('Steps'), findsOneWidget);
+    expect(
+      find.textContaining('6,500 / 10,000', findRichText: true),
+      findsOneWidget,
+    );
   });
 }
 

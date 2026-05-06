@@ -4159,11 +4159,23 @@ abstract class AppLocalizations {
   /// **'Nothing logged yet'**
   String get diaryMealsEmpty;
 
+  /// No description provided for @diaryMealsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals could not be loaded'**
+  String get diaryMealsLoadFailed;
+
   /// No description provided for @diaryBalanceLoadFailed.
   ///
   /// In en, this message translates to:
   /// **'Balance could not be loaded'**
   String get diaryBalanceLoadFailed;
+
+  /// No description provided for @diaryNutritionLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition could not be loaded'**
+  String get diaryNutritionLoadFailed;
 
   /// No description provided for @diaryBalanceEatenLabel.
   ///
@@ -4338,6 +4350,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No activity'**
   String get diaryActivityEmpty;
+
+  /// No description provided for @diaryActivityWeightLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity and weight could not be loaded'**
+  String get diaryActivityWeightLoadFailed;
 
   /// No description provided for @diaryActiveMinutesLabel.
   ///
