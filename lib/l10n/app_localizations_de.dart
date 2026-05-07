@@ -2560,6 +2560,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryStepsDuringWorkoutsLabel => 'Schritte im Training';
 
   @override
+  String get diaryStepsDuringOtherActivityLabel => 'Sonstige aktive Schritte';
+
+  @override
   String get diaryStepsOutsideWorkoutsLabel => 'Schritte außerhalb';
 
   @override

@@ -7,6 +7,7 @@ import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -57,6 +58,41 @@ void main() {
     expect(data.weightTrend[5], 77.4);
     expect(data.weightTrend.last, 76.8);
     expect(data.weightDays.last.canDeleteWeight, isTrue);
+  });
+
+  test('includes unassigned active energy in activity totals', () async {
+    final data = await service.load(
+      day: selectedDay,
+      goalSettings: _settings(selectedDay),
+      healthStatus: _readyStatus,
+      manualEntries: const <ManualHealthWeightEntry>[],
+      diaryHealthService: _FakeDiaryHealthService({
+        diaryDayKey(selectedDay): DiaryHealthDayData(
+          totalSteps: 5000,
+          workouts: [_workout(selectedDay, totalCalories: 150)],
+          unassignedActiveEnergySegments: [
+            HealthEnergySegment(
+              id: 'energy-1',
+              start: selectedDay.add(const Duration(hours: 12)),
+              endExclusive: selectedDay.add(
+                const Duration(hours: 12, minutes: 20),
+              ),
+              durationMinutes: 20,
+              sourceName: 'Health Connect',
+              totalCalories: 90,
+              totalSteps: 800,
+            ),
+          ],
+        ),
+      }),
+      healthWeightService: _FakeHealthWeightService(
+        const <HealthWeightSample>[],
+      ),
+    );
+
+    expect(data.activityKcal, 368);
+    expect(data.activeMinutes, 50);
+    expect(data.activityTrend.last, 368);
   });
 
   test('uses Health Connect weights when manual entries are empty', () async {

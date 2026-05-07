@@ -643,6 +643,8 @@ int _resolveActiveKcal({
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
+        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+            .map((segment) => segment.totalCalories),
       ) ??
       0;
 }

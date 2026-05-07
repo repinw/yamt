@@ -1,6 +1,7 @@
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
 /// The diary activity step goal.
@@ -18,8 +19,10 @@ class DiaryActivitySummary {
     required this.accessState,
     required this.totalSteps,
     required this.stepsDuringWorkouts,
+    this.stepsDuringUnassignedActiveEnergy = 0,
     required this.stepsOutsideWorkouts,
     required this.workouts,
+    this.unassignedActiveEnergySegments = const <HealthEnergySegment>[],
   });
 
   /// Creates a [DiaryActivitySummary] for locked.
@@ -34,8 +37,10 @@ class DiaryActivitySummary {
       accessState: accessState,
       totalSteps: null,
       stepsDuringWorkouts: null,
+      stepsDuringUnassignedActiveEnergy: 0,
       stepsOutsideWorkouts: null,
       workouts: const <HealthWorkoutSession>[],
+      unassignedActiveEnergySegments: const <HealthEnergySegment>[],
     );
   }
 
@@ -54,11 +59,17 @@ class DiaryActivitySummary {
   /// The steps during workouts.
   final int? stepsDuringWorkouts;
 
+  /// The steps during unassigned active energy that counts as activity.
+  final int stepsDuringUnassignedActiveEnergy;
+
   /// The steps outside workouts.
   final int? stepsOutsideWorkouts;
 
   /// The workouts.
   final List<HealthWorkoutSession> workouts;
+
+  /// The active energy segments that count without a matching workout.
+  final List<HealthEnergySegment> unassignedActiveEnergySegments;
 
   /// The workout count.
   int get workoutCount => workouts.length;
@@ -99,8 +110,23 @@ DiaryActivitySummary buildDiaryActivitySummary({
     0,
     (sum, workout) => sum + (workout.totalSteps ?? 0),
   );
-  final stepsOutsideWorkouts = dayData.totalSteps >= stepsDuringWorkouts
-      ? dayData.totalSteps - stepsDuringWorkouts
+  final dayUnassignedActiveEnergySegments = dayData
+      .unassignedActiveEnergySegments
+      .where(
+        (segment) =>
+            segment.endExclusive.isAfter(normalizedDay) &&
+            segment.start.isBefore(dayEnd),
+      )
+      .toList(growable: false);
+  final stepsDuringUnassignedActiveEnergy = dayUnassignedActiveEnergySegments
+      .fold<int>(
+        0,
+        (sum, segment) => sum + (segment.totalSteps ?? 0),
+      );
+  final accountedSteps =
+      stepsDuringWorkouts + stepsDuringUnassignedActiveEnergy;
+  final stepsOutsideWorkouts = dayData.totalSteps >= accountedSteps
+      ? dayData.totalSteps - accountedSteps
       : 0;
 
   return DiaryActivitySummary(
@@ -109,8 +135,12 @@ DiaryActivitySummary buildDiaryActivitySummary({
     accessState: HealthDataAccessState.ready,
     totalSteps: dayData.totalSteps,
     stepsDuringWorkouts: stepsDuringWorkouts,
+    stepsDuringUnassignedActiveEnergy: stepsDuringUnassignedActiveEnergy,
     stepsOutsideWorkouts: stepsOutsideWorkouts,
     workouts: List<HealthWorkoutSession>.unmodifiable(dayWorkouts),
+    unassignedActiveEnergySegments: List<HealthEnergySegment>.unmodifiable(
+      dayUnassignedActiveEnergySegments,
+    ),
   );
 }
 
@@ -126,14 +156,22 @@ int estimateOutsideActivityStepCalories(int stepsOutsideWorkouts) {
 int? calculateDiaryBurnedCalories({
   required int? stepsOutsideWorkouts,
   required Iterable<int?> workoutCalories,
+  Iterable<int?> unassignedActiveEnergyCalories = const <int?>[],
 }) {
   final totalWorkoutCalories = workoutCalories.fold<int>(
     0,
     (sum, calories) => sum + (calories ?? 0),
   );
+  final totalUnassignedActiveEnergyCalories = unassignedActiveEnergyCalories
+      .fold<int>(
+        0,
+        (sum, calories) => sum + (calories ?? 0),
+      );
+  final totalTrackedCalories =
+      totalWorkoutCalories + totalUnassignedActiveEnergyCalories;
   if (stepsOutsideWorkouts == null) {
-    return totalWorkoutCalories > 0 ? totalWorkoutCalories : null;
+    return totalTrackedCalories > 0 ? totalTrackedCalories : null;
   }
-  return totalWorkoutCalories +
+  return totalTrackedCalories +
       estimateOutsideActivityStepCalories(stepsOutsideWorkouts);
 }

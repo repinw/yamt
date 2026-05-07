@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -50,6 +51,17 @@ void main() {
                 totalSteps: 7000,
               ),
             ],
+            unassignedActiveEnergySegments: <HealthEnergySegment>[
+              HealthEnergySegment(
+                id: 'energy-1',
+                start: day.add(const Duration(hours: 15)),
+                endExclusive: day.add(const Duration(hours: 15, minutes: 30)),
+                durationMinutes: 30,
+                sourceName: 'Health',
+                totalCalories: 120,
+                totalSteps: 800,
+              ),
+            ],
           ),
         },
       );
@@ -92,6 +104,8 @@ void main() {
       expect(result.table, contains('entries=1'));
       expect(result.table, contains('activity_day'));
       expect(result.table, contains('steps_total'));
+      expect(result.table, contains('unassigned_active_energy_segments=1'));
+      expect(result.table, contains('unassigned_active_energy_kcal=120'));
       expect(result.table, contains('Run'));
       expect(result.table, contains('manual_fallback'));
       expect(result.table, contains('health'));

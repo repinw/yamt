@@ -574,7 +574,7 @@ void main() {
   );
 
   test(
-    'loadDayData attaches interval steps to standalone active energy',
+    'loadDayData keeps unassigned active energy out of workouts',
     () async {
       final day = DateTime(2026, 4, 17);
       final dayEnd = day.add(const Duration(days: 1));
@@ -605,13 +605,16 @@ void main() {
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
+        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+            .map((segment) => segment.totalCalories),
       );
 
-      expect(dayData.workouts, hasLength(1));
-      expect(dayData.workouts.single.activityLabel, isNull);
-      expect(dayData.workouts.single.totalCalories, 500);
-      expect(dayData.workouts.single.totalSteps, 1000);
-      expect(summary.stepsDuringWorkouts, 1000);
+      expect(dayData.workouts, isEmpty);
+      expect(dayData.unassignedActiveEnergySegments, hasLength(1));
+      expect(dayData.unassignedActiveEnergySegments.single.totalCalories, 500);
+      expect(dayData.unassignedActiveEnergySegments.single.totalSteps, 1000);
+      expect(summary.stepsDuringWorkouts, 0);
+      expect(summary.stepsDuringUnassignedActiveEnergy, 1000);
       expect(summary.stepsOutsideWorkouts, 3000);
       expect(burnedCalories, 620);
     },
@@ -652,6 +655,67 @@ void main() {
 
       expect(dayData.workouts, hasLength(1));
       expect(dayData.workouts.single.totalCalories, 500);
+      expect(dayData.unassignedActiveEnergySegments, isEmpty);
+      expect(fakeHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+      ]);
+    },
+  );
+
+  test(
+    'loadDayData splits active energy around covered workout intervals',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 10));
+      final workoutEnd = day.add(const Duration(hours: 11));
+      final energyEnd = day.add(const Duration(hours: 12));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 999,
+              totalSteps: 1200,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+            _buildActiveEnergyPoint(
+              start: workoutStart,
+              end: energyEnd,
+              calories: 600,
+            ),
+          ],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 3000,
+          _intervalKey(workoutEnd, energyEnd): 500,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+        workoutCalories: summary.workouts.map(
+          (workout) => workout.totalCalories,
+        ),
+        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+            .map((segment) => segment.totalCalories),
+      );
+
+      expect(dayData.workouts.single.totalCalories, 300);
+      expect(dayData.unassignedActiveEnergySegments, hasLength(1));
+      expect(dayData.unassignedActiveEnergySegments.single.totalCalories, 300);
+      expect(dayData.unassignedActiveEnergySegments.single.totalSteps, 500);
+      expect(summary.stepsOutsideWorkouts, 1300);
+      expect(burnedCalories, 652);
+      expect(fakeHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+        _intervalKey(workoutEnd, energyEnd),
+      ]);
     },
   );
 
@@ -710,6 +774,93 @@ void main() {
         unorderedEquals(<int>[600, 300]),
       );
       expect(totalWorkoutCalories, 900);
+    },
+  );
+
+  test(
+    'loadDayData ignores low unassigned active energy without steps',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final energyStart = day.add(const Duration(hours: 12));
+      final energyEnd = day.add(const Duration(hours: 12, minutes: 30));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: const <HealthDataPoint>[],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+            _buildActiveEnergyPoint(
+              start: energyStart,
+              end: energyEnd,
+              calories: 30,
+            ),
+          ],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 0,
+          _intervalKey(energyStart, energyEnd): 0,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+        workoutCalories: summary.workouts.map(
+          (workout) => workout.totalCalories,
+        ),
+        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+            .map((segment) => segment.totalCalories),
+      );
+
+      expect(dayData.workouts, isEmpty);
+      expect(dayData.unassignedActiveEnergySegments, isEmpty);
+      expect(summary.stepsOutsideWorkouts, 0);
+      expect(burnedCalories, 0);
+    },
+  );
+
+  test(
+    'loadDayData keeps high unassigned active energy without steps',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final energyStart = day.add(const Duration(hours: 12));
+      final energyEnd = day.add(const Duration(hours: 13));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: const <HealthDataPoint>[],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+            _buildActiveEnergyPoint(
+              start: energyStart,
+              end: energyEnd,
+              calories: 300,
+            ),
+          ],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 0,
+          _intervalKey(energyStart, energyEnd): 0,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+        workoutCalories: summary.workouts.map(
+          (workout) => workout.totalCalories,
+        ),
+        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+            .map((segment) => segment.totalCalories),
+      );
+
+      expect(dayData.workouts, isEmpty);
+      expect(dayData.unassignedActiveEnergySegments, hasLength(1));
+      expect(dayData.unassignedActiveEnergySegments.single.totalCalories, 300);
+      expect(dayData.unassignedActiveEnergySegments.single.totalSteps, isNull);
+      expect(burnedCalories, 300);
     },
   );
 }

@@ -15,6 +15,7 @@ import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -200,6 +201,19 @@ void main() {
               totalSteps: 2000,
             ),
           ],
+          unassignedActiveEnergySegments: [
+            HealthEnergySegment(
+              id: 'energy-1',
+              start: windowEnd.add(const Duration(hours: 16)),
+              endExclusive: windowEnd.add(
+                const Duration(hours: 16, minutes: 30),
+              ),
+              durationMinutes: 30,
+              sourceName: 'Health',
+              totalCalories: 100,
+              totalSteps: 1000,
+            ),
+          ],
         ),
       });
       final weightService = _FakeHealthWeightService([
@@ -255,7 +269,7 @@ void main() {
         CalorieHealthTrendWeightSource.health,
       );
       expect(snapshot.points.last.intakeKcal, 900);
-      expect(snapshot.points.last.burnedKcal, 480);
+      expect(snapshot.points.last.burnedKcal, 540);
       expect(snapshot.points.last.weightKg, 70.8);
       expect(
         snapshot.points.last.weightSource,

@@ -1312,6 +1312,7 @@
   "diaryStepsLoadFailed": "Schritte konnten nicht geladen werden",
   "diaryStepDetailsTitle": "Schritte Details",
   "diaryStepsDuringWorkoutsLabel": "Schritte im Training",
+  "diaryStepsDuringOtherActivityLabel": "Sonstige aktive Schritte",
   "diaryStepsOutsideWorkoutsLabel": "Schritte außerhalb",
   "diaryWorkoutsTitle": "Trainings",
   "diaryWorkoutsLoadFailed": "Trainings konnten nicht geladen werden",

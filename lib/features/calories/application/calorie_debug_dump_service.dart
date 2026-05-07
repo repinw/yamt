@@ -922,6 +922,8 @@ int _resolveActiveKcal({
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
+        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+            .map((segment) => segment.totalCalories),
       ) ??
       0;
 }
@@ -1048,9 +1050,13 @@ List<_DebugDumpRow> _activityRows({
   required DateTime day,
   required DiaryHealthDayData data,
 }) {
-  if (data.totalSteps <= 0 && data.workouts.isEmpty) {
+  if (data.totalSteps <= 0 &&
+      data.workouts.isEmpty &&
+      data.unassignedActiveEnergySegments.isEmpty) {
     return const <_DebugDumpRow>[];
   }
+  final unassignedActiveEnergyKcal = data.unassignedActiveEnergySegments
+      .fold<int>(0, (sum, segment) => sum + segment.totalCalories);
 
   final rows = <_DebugDumpRow>[
     _DebugDumpRow(
@@ -1069,7 +1075,10 @@ List<_DebugDumpRow> _activityRows({
         data.totalSteps.toString(),
         '',
         'health',
-        'workouts=${data.workouts.length}',
+        'workouts=${data.workouts.length}; '
+            'unassigned_active_energy_segments='
+            '${data.unassignedActiveEnergySegments.length}; '
+            'unassigned_active_energy_kcal=$unassignedActiveEnergyKcal',
       ],
     ),
   ];

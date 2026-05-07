@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
 void main() {
@@ -80,4 +81,105 @@ void main() {
 
     expect(burnedCalories, 748);
   });
+
+  test(
+    'buildDiaryActivitySummary separates unassigned active energy steps',
+    () {
+      final day = DateTime(2026, 4, 15);
+      final summary = buildDiaryActivitySummary(
+        day: day,
+        dayData: DiaryHealthDayData(
+          totalSteps: 7200,
+          workouts: [
+            HealthWorkoutSession(
+              id: 'run-1',
+              start: day.add(const Duration(hours: 7)),
+              endExclusive: day.add(const Duration(hours: 8)),
+              durationMinutes: 60,
+              activityLabel: 'Running',
+              sourceName: 'health-connect',
+              totalCalories: 500,
+              totalSteps: 3100,
+            ),
+          ],
+          unassignedActiveEnergySegments: [
+            HealthEnergySegment(
+              id: 'energy-1',
+              start: day.add(const Duration(hours: 14)),
+              endExclusive: day.add(const Duration(hours: 14, minutes: 30)),
+              durationMinutes: 30,
+              sourceName: 'health-connect',
+              totalCalories: 160,
+              totalSteps: 900,
+            ),
+          ],
+        ),
+      );
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+        workoutCalories: summary.workouts.map(
+          (workout) => workout.totalCalories,
+        ),
+        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+            .map((segment) => segment.totalCalories),
+      );
+
+      expect(summary.stepsDuringWorkouts, 3100);
+      expect(summary.stepsDuringUnassignedActiveEnergy, 900);
+      expect(summary.stepsOutsideWorkouts, 3200);
+      expect(burnedCalories, 788);
+    },
+  );
+
+  test(
+    'buildDiaryActivitySummary filters unassigned energy to selected day',
+    () {
+      final day = DateTime(2026, 4, 15);
+      final summary = buildDiaryActivitySummary(
+        day: day,
+        dayData: DiaryHealthDayData(
+          totalSteps: 5000,
+          workouts: const <HealthWorkoutSession>[],
+          unassignedActiveEnergySegments: [
+            HealthEnergySegment(
+              id: 'outside-day',
+              start: day.subtract(const Duration(hours: 2)),
+              endExclusive: day.subtract(const Duration(hours: 1)),
+              durationMinutes: 60,
+              sourceName: 'health-connect',
+              totalCalories: 200,
+              totalSteps: 1000,
+            ),
+            HealthEnergySegment(
+              id: 'inside-day',
+              start: day.add(const Duration(hours: 12)),
+              endExclusive: day.add(const Duration(hours: 12, minutes: 30)),
+              durationMinutes: 30,
+              sourceName: 'health-connect',
+              totalCalories: 120,
+              totalSteps: 600,
+            ),
+          ],
+        ),
+      );
+
+      expect(summary.unassignedActiveEnergySegments, hasLength(1));
+      expect(summary.unassignedActiveEnergySegments.single.id, 'inside-day');
+      expect(summary.stepsDuringUnassignedActiveEnergy, 600);
+      expect(summary.stepsOutsideWorkouts, 4400);
+    },
+  );
+
+  test(
+    'calculateDiaryBurnedCalories keeps tracked kcal when steps are unknown',
+    () {
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: null,
+        workoutCalories: const <int?>[null],
+        unassignedActiveEnergyCalories: const <int?>[120, null],
+      );
+
+      expect(burnedCalories, 120);
+    },
+  );
 }
