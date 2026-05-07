@@ -31,6 +31,8 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
@@ -964,6 +966,99 @@ void main() {
     expect(inventoryCommitStore.pendingConsumption?.amount, 1000);
     expect(find.text('Added to diary'), findsOneWidget);
   });
+
+  testWidgets(
+    'eat now resizes inventory stock to the consumed amount',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      final auth = _MockFirebaseAuth();
+      final user = _MockUser();
+      when(() => auth.currentUser).thenReturn(user);
+      when(() => user.uid).thenReturn('user-1');
+
+      const milkProduct = OffProductSearchResult(
+        code: '4006381333931',
+        name: 'Milk',
+        brand: 'Brand',
+        score: 99,
+        packageWeight: '1 l',
+        imageUrl: 'https://example.com/milk.png',
+        nutrition: GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 42,
+          per100Fat: 1.5,
+          per100SaturatedFat: 1,
+          per100Carbs: 4.9,
+          per100Sugar: 4.9,
+          per100Protein: 3.4,
+          per100Salt: 0.1,
+        ),
+      );
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[milkProduct],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(calorieLogRepository.dispose);
+      final calorieProductCacheRepository = FakeCalorieProductCacheRepository();
+      final inventoryCommitStore = _RecordingInventoryCalorieEntryCommitStore();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          auth: auth,
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          calorieLogRepository: calorieLogRepository,
+          calorieProductCacheRepository: calorieProductCacheRepository,
+          inventoryCommitStore: inventoryCommitStore,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await _pumpUi(tester);
+
+      _fakeScannerPlatform().emitBarcode('4006381333931');
+      await _pumpUi(tester);
+
+      await tester.tap(
+        _barcodeCandidateActionButton(
+          InventoryBarcodeLookupCandidate.fromOffProduct(milkProduct),
+          InventoryBarcodeCandidateAction.eatNow,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        '300',
+      );
+      await _pumpUi(tester);
+
+      final logButton = find.text('Log');
+      await tester.ensureVisible(logButton);
+      await tester.tap(logButton);
+      await tester.pumpAndSettle();
+
+      final savedItems = await inventoryRepository.readAll();
+      expect(savedItems.single.weight, '300 ml');
+      expect(savedItems.single.initialAmount, 300);
+      expect(savedItems.single.currentAmount, 300);
+      expect(inventoryCommitStore.pendingConsumption?.amount, 300);
+      expect(inventoryCommitStore.entry?.consumedAmount, 300);
+      expect(
+        inventoryCommitStore.entry?.consumedUnit,
+        ConsumedUnit.milliliters,
+      );
+      expect(globalFoodRepository.appendedItems.single.packageWeight, '1 l');
+    },
+  );
 
   testWidgets(
     'saving a selected search result returns to search for another item',

@@ -1057,6 +1057,8 @@ List<_DebugDumpRow> _activityRows({
   }
   final unassignedActiveEnergyKcal = data.unassignedActiveEnergySegments
       .fold<int>(0, (sum, segment) => sum + segment.totalCalories);
+  final unassignedActiveEnergyCount =
+      data.unassignedActiveEnergySegments.length;
 
   final rows = <_DebugDumpRow>[
     _DebugDumpRow(
@@ -1075,10 +1077,11 @@ List<_DebugDumpRow> _activityRows({
         data.totalSteps.toString(),
         '',
         'health',
-        'workouts=${data.workouts.length}; '
-            'unassigned_active_energy_segments='
-            '${data.unassignedActiveEnergySegments.length}; '
-            'unassigned_active_energy_kcal=$unassignedActiveEnergyKcal',
+        [
+          'workouts=${data.workouts.length}',
+          'unassigned_active_energy_segments=$unassignedActiveEnergyCount',
+          'unassigned_active_energy_kcal=$unassignedActiveEnergyKcal',
+        ].join('; '),
       ],
     ),
   ];
