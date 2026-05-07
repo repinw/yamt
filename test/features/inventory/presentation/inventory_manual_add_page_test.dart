@@ -2272,48 +2272,4 @@ void main() {
       expect(find.text('Action failed. Please try again.'), findsOneWidget);
     },
   );
-
-  test('resolveInventoryManualAddEatFlowMaxAmount guards invalid items', () {
-    final stockedQuantityItem = InventoryItem.create(
-      id: 'item-stocked',
-      name: 'Yogurt',
-      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
-      storeName: 'Added manually',
-      quantity: 3,
-    );
-    final stockedAmountItem = InventoryItem.create(
-      id: 'item-amount',
-      name: 'Milk',
-      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
-      storeName: 'Added manually',
-      quantity: 1,
-      initialAmount: 1000,
-      currentAmount: 750,
-      amountUnit: InventoryAmountUnit.milliliter,
-    );
-    final quantitylessItem = InventoryItem.create(
-      id: 'item-0',
-      name: 'Nothing',
-      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
-      storeName: 'Added manually',
-      quantity: 0,
-    );
-    final depletedAmountItem = InventoryItem.create(
-      id: 'item-1',
-      name: 'Milk',
-      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
-      storeName: 'Added manually',
-      quantity: 1,
-      initialAmount: 1000,
-      amountUnit: InventoryAmountUnit.milliliter,
-    );
-
-    expect(resolveInventoryManualAddEatFlowMaxAmount(stockedQuantityItem), 3);
-    expect(resolveInventoryManualAddEatFlowMaxAmount(stockedAmountItem), 750);
-    expect(resolveInventoryManualAddEatFlowMaxAmount(quantitylessItem), isNull);
-    expect(
-      resolveInventoryManualAddEatFlowMaxAmount(depletedAmountItem),
-      isNull,
-    );
-  });
 }

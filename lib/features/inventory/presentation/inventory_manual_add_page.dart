@@ -4,20 +4,21 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_manual_add_product_factory.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_dialogs.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_product_builder.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -165,36 +166,22 @@ class _InventoryManualAddPageState
   }
 
   Future<InventoryItem?> _resolveEatItem(InventoryItem item) async {
-    if (!requiresInventoryManualAddEatAmountPrompt(item)) {
+    if (!requiresInventoryManualAddConsumedAmountPrompt(item)) {
       return item;
     }
 
     final eatAmount = await showInventoryManualAddEatAmountDialog(
       context: context,
-      initialUnit: defaultInventoryManualAddEatAmountUnit(item),
+      initialUnit: defaultInventoryManualAddConsumedAmountUnit(item),
     );
     if (!mounted || eatAmount == null) {
       return null;
     }
 
-    final amountScale = eatAmount.unit == InventoryAmountUnit.piece
-        ? inventoryPieceAmountScale
-        : 1;
-    final weight =
-        '${formatInventoryAmountValue(
-          amount: eatAmount.amount,
-          unit: eatAmount.unit,
-          scale: amountScale,
-        )} ${eatAmount.unit.code}';
-    final parsedAmount = InventoryAmountParseResult(
+    return resolveInventoryManualAddItemAmount(
+      item: item,
       amount: eatAmount.amount,
       unit: eatAmount.unit,
-      scale: amountScale,
-    );
-    return item.withResolvedAmount(
-      weight: weight,
-      parsedAmount: parsedAmount,
-      quantity: item.quantity,
     );
   }
 
@@ -281,7 +268,7 @@ class _InventoryManualAddPageState
     String? initialEatWeight,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    final maxAmount = resolveInventoryManualAddEatFlowMaxAmount(item);
+    final maxAmount = resolveInventoryManualAddConsumableAmount(item);
     if (maxAmount == null) {
       _showSnackBar(l10n.inventoryItemActionFailed);
       return;
@@ -292,7 +279,7 @@ class _InventoryManualAddPageState
       item: item,
       maxAmount: maxAmount,
       invalidAmountMessage: l10n.inventoryReceiptReviewInvalidNumber,
-      initialInventoryAmount: resolveInventoryManualAddInitialEatAmount(
+      initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
         item: item,
         rawWeight: initialEatWeight,
       ),
@@ -327,9 +314,9 @@ class _InventoryManualAddPageState
     required InventoryItem item,
     required InventoryItemEatRequest request,
   }) async {
-    final resizedItem = resizeInventoryManualAddItemToImmediateEatAmount(
+    final resizedItem = resizeInventoryManualAddItemToConsumedAmount(
       item: item,
-      request: request,
+      inventoryAmount: request.inventoryAmount,
     );
     if (resizedItem == item) {
       return item;
