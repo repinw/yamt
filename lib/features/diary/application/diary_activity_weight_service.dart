@@ -203,6 +203,8 @@ class DiaryActivityWeightService {
       workoutCalories: summary.workouts.map(
         (workout) => workout.totalCalories,
       ),
+      unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+          .map((segment) => segment.totalCalories),
     );
   }
 
@@ -249,10 +251,15 @@ class DiaryActivityWeightService {
   }
 
   int _resolveActiveMinutes(DiaryHealthDayData dayData) {
-    return dayData.workouts.fold<int>(
+    final workoutMinutes = dayData.workouts.fold<int>(
       0,
       (sum, workout) => sum + workout.durationMinutes.round(),
     );
+    final unassignedMinutes = dayData.unassignedActiveEnergySegments.fold<int>(
+      0,
+      (sum, segment) => sum + segment.durationMinutes.round(),
+    );
+    return workoutMinutes + unassignedMinutes;
   }
 
   Map<String, HealthWeightSample> _latestWeightByDay(

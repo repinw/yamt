@@ -77,6 +77,15 @@ class _ActivityDetailsContent extends StatelessWidget {
               ? '-'
               : numberFormat.format(summary.stepsDuringWorkouts),
         ),
+        if (summary.stepsDuringUnassignedActiveEnergy > 0) ...[
+          const SizedBox(height: AppSpacing.sm),
+          _DetailRow(
+            label: l10n.diaryStepsDuringOtherActivityLabel,
+            value: numberFormat.format(
+              summary.stepsDuringUnassignedActiveEnergy,
+            ),
+          ),
+        ],
         const SizedBox(height: AppSpacing.sm),
         _DetailRow(
           label: l10n.diaryStepsOutsideWorkoutsLabel,

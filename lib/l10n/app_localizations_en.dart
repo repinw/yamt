@@ -2515,6 +2515,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryStepsDuringWorkoutsLabel => 'Steps during workouts';
 
   @override
+  String get diaryStepsDuringOtherActivityLabel => 'Other active steps';
+
+  @override
   String get diaryStepsOutsideWorkoutsLabel => 'Steps outside';
 
   @override

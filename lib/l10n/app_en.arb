@@ -1271,6 +1271,7 @@
   "diaryStepsLoadFailed": "Steps could not be loaded",
   "diaryStepDetailsTitle": "Step details",
   "diaryStepsDuringWorkoutsLabel": "Steps during workouts",
+  "diaryStepsDuringOtherActivityLabel": "Other active steps",
   "diaryStepsOutsideWorkoutsLabel": "Steps outside",
   "diaryWorkoutsTitle": "Workouts",
   "diaryWorkoutsLoadFailed": "Workouts could not be loaded",

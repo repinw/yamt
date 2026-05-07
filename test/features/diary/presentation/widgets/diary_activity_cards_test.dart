@@ -101,6 +101,53 @@ void main() {
     expect(find.text('5.000'), findsOneWidget);
   });
 
+  testWidgets('step details card renders unassigned active steps', (
+    tester,
+  ) async {
+    await _pumpDiaryWidget(
+      tester,
+      DiaryActivityDetailsCard(selectedDay: selectedDay),
+      overrides: [
+        _stepsSummaryOverride(
+          selectedDay,
+          _activitySummary(
+            selectedDay,
+            totalSteps: 6500,
+            stepsDuringWorkouts: 1500,
+            stepsDuringUnassignedActiveEnergy: 800,
+            stepsOutsideWorkouts: 4200,
+          ),
+        ),
+      ],
+    );
+
+    expect(find.text('Sonstige aktive Schritte'), findsOneWidget);
+    expect(find.text('800'), findsOneWidget);
+    expect(find.text('4.200'), findsOneWidget);
+  });
+
+  testWidgets('step details card hides empty unassigned active steps', (
+    tester,
+  ) async {
+    await _pumpDiaryWidget(
+      tester,
+      DiaryActivityDetailsCard(selectedDay: selectedDay),
+      overrides: [
+        _stepsSummaryOverride(
+          selectedDay,
+          _activitySummary(
+            selectedDay,
+            totalSteps: 6500,
+            stepsDuringWorkouts: 1500,
+            stepsOutsideWorkouts: 5000,
+          ),
+        ),
+      ],
+    );
+
+    expect(find.text('Sonstige aktive Schritte'), findsNothing);
+  });
+
   testWidgets('step details card retries after load error', (tester) async {
     var shouldFail = true;
     await _pumpDiaryWidget(
@@ -556,6 +603,7 @@ DiaryActivitySummary _activitySummary(
   DateTime day, {
   required int totalSteps,
   required int stepsDuringWorkouts,
+  int stepsDuringUnassignedActiveEnergy = 0,
   required int stepsOutsideWorkouts,
   List<HealthWorkoutSession> workouts = const [],
 }) {
@@ -565,6 +613,7 @@ DiaryActivitySummary _activitySummary(
     accessState: HealthDataAccessState.ready,
     totalSteps: totalSteps,
     stepsDuringWorkouts: stepsDuringWorkouts,
+    stepsDuringUnassignedActiveEnergy: stepsDuringUnassignedActiveEnergy,
     stepsOutsideWorkouts: stepsOutsideWorkouts,
     workouts: workouts,
   );

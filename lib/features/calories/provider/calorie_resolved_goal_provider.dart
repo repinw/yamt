@@ -281,6 +281,8 @@ Future<_ResolvedDayActivityData> _loadDayActivityData(
           workoutCalories: summary.workouts.map(
             (workout) => workout.totalCalories,
           ),
+          unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
+              .map((segment) => segment.totalCalories),
         ) ??
         0,
     isTrackingActive: true,

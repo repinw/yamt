@@ -4549,6 +4549,12 @@ abstract class AppLocalizations {
   /// **'Steps during workouts'**
   String get diaryStepsDuringWorkoutsLabel;
 
+  /// No description provided for @diaryStepsDuringOtherActivityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Other active steps'**
+  String get diaryStepsDuringOtherActivityLabel;
+
   /// No description provided for @diaryStepsOutsideWorkoutsLabel.
   ///
   /// In en, this message translates to:

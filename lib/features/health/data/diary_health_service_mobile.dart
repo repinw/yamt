@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 import 'package:health/health.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
+import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
 const _logName = 'DiaryHealthService';
@@ -15,6 +16,7 @@ const _maxDiaryHealthCacheEntries = 30;
 const _defaultCalculatorProfileHeightCm = 180.0;
 const _minPersonalizedHeightCm = 120.0;
 const _maxPersonalizedHeightCm = 250.0;
+const _minimumUnassignedActivityKcalPerMinute = 3.0;
 const _stepBasedWorkoutTypes = <HealthWorkoutActivityType>{
   HealthWorkoutActivityType.HIKING,
   HealthWorkoutActivityType.RUNNING,
@@ -140,10 +142,10 @@ class MobileDiaryHealthService implements DiaryHealthService {
       workouts: baseWorkouts,
       activeEnergySamples: activeEnergySamples,
     );
-    final standaloneActiveEnergyWorkouts = <HealthWorkoutSession>[];
+    final unassignedActiveEnergySegments = <HealthEnergySegment>[];
     for (final point in activeEnergyPoints) {
-      standaloneActiveEnergyWorkouts.addAll(
-        await _buildStandaloneActiveEnergyWorkouts(
+      unassignedActiveEnergySegments.addAll(
+        await _buildUnassignedActiveEnergySegments(
           point: point,
           dayStart: dayStart,
           dayEnd: dayEnd,
@@ -151,10 +153,11 @@ class MobileDiaryHealthService implements DiaryHealthService {
         ),
       );
     }
-    final workouts = <HealthWorkoutSession>[
-      ...resolvedWorkouts,
-      ...standaloneActiveEnergyWorkouts,
-    ]..sort((left, right) => right.start.compareTo(left.start));
+    final workouts = resolvedWorkouts.toList(growable: false)
+      ..sort((left, right) => right.start.compareTo(left.start));
+    final activeEnergySegments = unassignedActiveEnergySegments.toList(
+      growable: false,
+    )..sort((left, right) => right.start.compareTo(left.start));
 
     _logHealthDayData(
       dayStart: dayStart,
@@ -162,11 +165,15 @@ class MobileDiaryHealthService implements DiaryHealthService {
       workoutPoints: workoutPoints,
       activeEnergyPoints: activeEnergyPoints,
       workouts: workouts,
+      unassignedActiveEnergySegments: activeEnergySegments,
     );
 
     return DiaryHealthDayData(
       totalSteps: totalSteps,
       workouts: List<HealthWorkoutSession>.unmodifiable(workouts),
+      unassignedActiveEnergySegments: List<HealthEnergySegment>.unmodifiable(
+        activeEnergySegments,
+      ),
     );
   }
 
@@ -180,6 +187,10 @@ class MobileDiaryHealthService implements DiaryHealthService {
       'steps=${data.totalSteps} '
       'workouts=${data.workouts.length} '
       'workout_kcal=${_sumWorkoutCalories(data.workouts)} '
+      'unassigned_active_energy_kcal='
+      '${_sumUnassignedActiveEnergyCalories(
+        data.unassignedActiveEnergySegments,
+      )} '
       'workout_steps=${_sumWorkoutSteps(data.workouts)}',
       name: _logName,
     );
@@ -191,6 +202,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
     required List<HealthDataPoint> workoutPoints,
     required List<HealthDataPoint> activeEnergyPoints,
     required List<HealthWorkoutSession> workouts,
+    required List<HealthEnergySegment> unassignedActiveEnergySegments,
   }) {
     log(
       'Read day data. '
@@ -200,6 +212,10 @@ class MobileDiaryHealthService implements DiaryHealthService {
       'active_energy_points=${activeEnergyPoints.length} '
       'workouts=${workouts.length} '
       'workout_kcal=${_sumWorkoutCalories(workouts)} '
+      'unassigned_active_energy_segments='
+      '${unassignedActiveEnergySegments.length} '
+      'unassigned_active_energy_kcal='
+      '${_sumUnassignedActiveEnergyCalories(unassignedActiveEnergySegments)} '
       'workout_steps=${_sumWorkoutSteps(workouts)} '
       'workout_sources=${_sourceNames(workoutPoints)} '
       'active_energy_sources=${_sourceNames(activeEnergyPoints)}',
@@ -226,6 +242,13 @@ class MobileDiaryHealthService implements DiaryHealthService {
     return workouts.fold<int>(
       0,
       (sum, workout) => sum + (workout.totalSteps ?? 0),
+    );
+  }
+
+  int _sumUnassignedActiveEnergyCalories(List<HealthEnergySegment> segments) {
+    return segments.fold<int>(
+      0,
+      (sum, segment) => sum + segment.totalCalories,
     );
   }
 
@@ -446,7 +469,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
     );
   }
 
-  Future<List<HealthWorkoutSession>> _buildStandaloneActiveEnergyWorkouts({
+  Future<List<HealthEnergySegment>> _buildUnassignedActiveEnergySegments({
     required HealthDataPoint point,
     required DateTime dayStart,
     required DateTime dayEnd,
@@ -454,7 +477,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
   }) async {
     final sample = _buildActiveEnergySample(point);
     if (sample == null) {
-      return const <HealthWorkoutSession>[];
+      return const <HealthEnergySegment>[];
     }
 
     final clippedStart = sample.startAt.isAfter(dayStart)
@@ -462,7 +485,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
         : dayStart;
     final clippedEnd = sample.endAt.isBefore(dayEnd) ? sample.endAt : dayEnd;
     if (!clippedEnd.isAfter(clippedStart)) {
-      return const <HealthWorkoutSession>[];
+      return const <HealthEnergySegment>[];
     }
 
     final overlappingWorkouts =
@@ -475,7 +498,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
             .toList(growable: false)
           ..sort((left, right) => left.start.compareTo(right.start));
 
-    final standaloneWorkouts = <HealthWorkoutSession>[];
+    final unassignedSegments = <HealthEnergySegment>[];
     var cursor = clippedStart;
     var segmentIndex = 0;
 
@@ -490,16 +513,15 @@ class MobileDiaryHealthService implements DiaryHealthService {
         continue;
       }
       if (overlapStart.isAfter(cursor)) {
-        final standaloneWorkout =
-            await _buildStandaloneActiveEnergyWorkoutSegment(
-              point: point,
-              sample: sample,
-              start: cursor,
-              endExclusive: overlapStart,
-              segmentIndex: segmentIndex,
-            );
-        if (standaloneWorkout != null) {
-          standaloneWorkouts.add(standaloneWorkout);
+        final segment = await _buildUnassignedActiveEnergySegment(
+          point: point,
+          sample: sample,
+          start: cursor,
+          endExclusive: overlapStart,
+          segmentIndex: segmentIndex,
+        );
+        if (segment != null) {
+          unassignedSegments.add(segment);
           segmentIndex += 1;
         }
       }
@@ -512,23 +534,22 @@ class MobileDiaryHealthService implements DiaryHealthService {
     }
 
     if (clippedEnd.isAfter(cursor)) {
-      final standaloneWorkout =
-          await _buildStandaloneActiveEnergyWorkoutSegment(
-            point: point,
-            sample: sample,
-            start: cursor,
-            endExclusive: clippedEnd,
-            segmentIndex: segmentIndex,
-          );
-      if (standaloneWorkout != null) {
-        standaloneWorkouts.add(standaloneWorkout);
+      final segment = await _buildUnassignedActiveEnergySegment(
+        point: point,
+        sample: sample,
+        start: cursor,
+        endExclusive: clippedEnd,
+        segmentIndex: segmentIndex,
+      );
+      if (segment != null) {
+        unassignedSegments.add(segment);
       }
     }
 
-    return standaloneWorkouts;
+    return unassignedSegments;
   }
 
-  Future<HealthWorkoutSession?> _buildStandaloneActiveEnergyWorkoutSegment({
+  Future<HealthEnergySegment?> _buildUnassignedActiveEnergySegment({
     required HealthDataPoint point,
     required HealthActiveEnergySample sample,
     required DateTime start,
@@ -547,9 +568,17 @@ class MobileDiaryHealthService implements DiaryHealthService {
       start,
       endExclusive,
     );
+    if (!_shouldCountUnassignedActiveEnergy(
+      calories: calories,
+      totalSteps: totalSteps,
+      start: start,
+      endExclusive: endExclusive,
+    )) {
+      return null;
+    }
 
-    return HealthWorkoutSession(
-      id: _standaloneActiveEnergyWorkoutId(
+    return HealthEnergySegment(
+      id: _unassignedActiveEnergySegmentId(
         point: point,
         start: start,
         segmentIndex: segmentIndex,
@@ -557,14 +586,35 @@ class MobileDiaryHealthService implements DiaryHealthService {
       start: start,
       endExclusive: endExclusive,
       durationMinutes: endExclusive.difference(start).inSeconds / 60,
-      activityLabel: null,
       sourceName: point.sourceName.isEmpty ? null : point.sourceName,
       totalCalories: calories.round(),
       totalSteps: _positiveStepCount(totalSteps),
     );
   }
 
-  String _standaloneActiveEnergyWorkoutId({
+  bool _shouldCountUnassignedActiveEnergy({
+    required double calories,
+    required int? totalSteps,
+    required DateTime start,
+    required DateTime endExclusive,
+  }) {
+    if (calories <= 0) {
+      return false;
+    }
+    if (totalSteps != null && totalSteps > 0) {
+      return true;
+    }
+
+    final durationMinutes =
+        endExclusive.difference(start).inMilliseconds / 60000;
+    if (durationMinutes <= 0) {
+      return false;
+    }
+    return calories / durationMinutes >=
+        _minimumUnassignedActivityKcalPerMinute;
+  }
+
+  String _unassignedActiveEnergySegmentId({
     required HealthDataPoint point,
     required DateTime start,
     required int segmentIndex,
@@ -572,7 +622,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
     final baseId = point.uuid.isNotEmpty
         ? point.uuid
         : '${point.sourceId}:${start.toUtc().millisecondsSinceEpoch}';
-    return 'active-energy:$baseId:$segmentIndex';
+    return 'unassigned-active-energy:$baseId:$segmentIndex';
   }
 
   int? _estimateStepsFromWorkoutDistance(
