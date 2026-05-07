@@ -19,9 +19,9 @@ class DiaryActivitySummary {
     required this.accessState,
     required this.totalSteps,
     required this.stepsDuringWorkouts,
-    this.stepsDuringUnassignedActiveEnergy = 0,
     required this.stepsOutsideWorkouts,
     required this.workouts,
+    this.stepsDuringUnassignedActiveEnergy = 0,
     this.unassignedActiveEnergySegments = const <HealthEnergySegment>[],
   });
 
@@ -37,10 +37,8 @@ class DiaryActivitySummary {
       accessState: accessState,
       totalSteps: null,
       stepsDuringWorkouts: null,
-      stepsDuringUnassignedActiveEnergy: 0,
       stepsOutsideWorkouts: null,
       workouts: const <HealthWorkoutSession>[],
-      unassignedActiveEnergySegments: const <HealthEnergySegment>[],
     );
   }
 

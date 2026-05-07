@@ -603,9 +603,9 @@ DiaryActivitySummary _activitySummary(
   DateTime day, {
   required int totalSteps,
   required int stepsDuringWorkouts,
-  int stepsDuringUnassignedActiveEnergy = 0,
   required int stepsOutsideWorkouts,
   List<HealthWorkoutSession> workouts = const [],
+  int stepsDuringUnassignedActiveEnergy = 0,
 }) {
   return DiaryActivitySummary(
     day: day,
