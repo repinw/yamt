@@ -16,6 +16,7 @@ import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -328,6 +329,55 @@ void main() {
       expect(resolvedGoal.isActivityTrackingActive, isTrue);
       expect(resolvedGoal.usedLearnedTdee, isFalse);
       expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
+    },
+  );
+
+  test(
+    'adds unassigned active energy to pre-learning activity delta',
+    () async {
+      final today = DateTime(2026, 4, 15);
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            dailyKcalGoal: 2100,
+            changedAt: DateTime(2026, 4, 14, 9),
+            calculatorProfile: null,
+            expectedActivityKcal: 200,
+          )
+          .copyWith(activityTrackingStartDate: today);
+
+      final container = _createContainer(
+        today: today,
+        settings: settings,
+        diaryHealthService: FakeDiaryHealthService(
+          <String, DiaryHealthDayData>{
+            diaryDayKey(today): DiaryHealthDayData(
+              totalSteps: 0,
+              workouts: const <HealthWorkoutSession>[],
+              unassignedActiveEnergySegments: [
+                HealthEnergySegment(
+                  id: 'unassigned-bike',
+                  start: today.add(const Duration(hours: 18)),
+                  endExclusive: today.add(const Duration(hours: 19)),
+                  durationMinutes: 60,
+                  sourceName: 'Health',
+                  totalCalories: 300,
+                  totalSteps: null,
+                ),
+              ],
+            ),
+          },
+        ),
+      );
+      addTearDown(container.dispose);
+
+      final resolvedGoal = await container.read(
+        resolvedCalorieGoalForDayProvider(today).future,
+      );
+
+      expect(resolvedGoal.todayActiveKcal, 300);
+      expect(resolvedGoal.activityComparisonKcal, 100);
+      expect(resolvedGoal.activityDeltaKcal, 50);
+      expect(resolvedGoal.goalKcal, 2150);
     },
   );
 

@@ -130,4 +130,56 @@ void main() {
       expect(burnedCalories, 788);
     },
   );
+
+  test(
+    'buildDiaryActivitySummary filters unassigned energy to selected day',
+    () {
+      final day = DateTime(2026, 4, 15);
+      final summary = buildDiaryActivitySummary(
+        day: day,
+        dayData: DiaryHealthDayData(
+          totalSteps: 5000,
+          workouts: const <HealthWorkoutSession>[],
+          unassignedActiveEnergySegments: [
+            HealthEnergySegment(
+              id: 'outside-day',
+              start: day.subtract(const Duration(hours: 2)),
+              endExclusive: day.subtract(const Duration(hours: 1)),
+              durationMinutes: 60,
+              sourceName: 'health-connect',
+              totalCalories: 200,
+              totalSteps: 1000,
+            ),
+            HealthEnergySegment(
+              id: 'inside-day',
+              start: day.add(const Duration(hours: 12)),
+              endExclusive: day.add(const Duration(hours: 12, minutes: 30)),
+              durationMinutes: 30,
+              sourceName: 'health-connect',
+              totalCalories: 120,
+              totalSteps: 600,
+            ),
+          ],
+        ),
+      );
+
+      expect(summary.unassignedActiveEnergySegments, hasLength(1));
+      expect(summary.unassignedActiveEnergySegments.single.id, 'inside-day');
+      expect(summary.stepsDuringUnassignedActiveEnergy, 600);
+      expect(summary.stepsOutsideWorkouts, 4400);
+    },
+  );
+
+  test(
+    'calculateDiaryBurnedCalories keeps tracked kcal when steps are unknown',
+    () {
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: null,
+        workoutCalories: const <int?>[null],
+        unassignedActiveEnergyCalories: const <int?>[120, null],
+      );
+
+      expect(burnedCalories, 120);
+    },
+  );
 }
