@@ -177,7 +177,7 @@ class CalorieGoalCalculatorFormController
     // ran after the save, ref.mounted would be false and the
     // heartCreditKcal from the onboarding estimate would be lost.
     if (syncBurnWeekForOnboarding) {
-      await _applyOnboardingBurnWeekStart(
+      final burnWeekStarted = await _applyOnboardingBurnWeekStart(
         goalStartDate: goalStartDate,
         now: referenceNow,
         dailyGoalKcal: calculation.finalGoalKcal,
@@ -185,6 +185,12 @@ class CalorieGoalCalculatorFormController
         catchUpEstimate: onboardingCatchUpEstimate,
         placeholderName: onboardingPlaceholderName,
       );
+      if (!burnWeekStarted) {
+        if (ref.mounted) {
+          state = state.copyWith(isSaving: false);
+        }
+        return false;
+      }
     }
     if (!ref.mounted) {
       return false;
@@ -218,7 +224,7 @@ class CalorieGoalCalculatorFormController
         : burnWeekLearningRunWeekNumber;
   }
 
-  Future<void> _applyOnboardingBurnWeekStart({
+  Future<bool> _applyOnboardingBurnWeekStart({
     required DateTime goalStartDate,
     required DateTime now,
     required double dailyGoalKcal,
@@ -235,23 +241,23 @@ class CalorieGoalCalculatorFormController
           weekStartDate: normalizedGoalStartDate,
           runWeekNumber: runWeekNumber,
         );
-        return;
+        return true;
       }
       await controller.resetRun();
-      return;
+      return true;
     }
     if (catchUpEstimate == null) {
       await controller.restartRunFrom(
         weekStartDate: normalizedGoalStartDate,
         runWeekNumber: runWeekNumber,
       );
-      return;
+      return true;
     }
 
     final repository = ref.read(calorieLogRepositoryProvider);
     final entries = await repository.readEntriesForDay(normalizedToday);
     if (!ref.mounted) {
-      return;
+      return false;
     }
     final loggedKcalSoFar = entries.fold<double>(0, (sum, entry) {
       if (entry.loggedAt.isAfter(now)) {
@@ -285,9 +291,14 @@ class CalorieGoalCalculatorFormController
           totalKcal: entry.value,
           loggedAt: mealMidpointForDay(entry.key, normalizedToday),
         );
-        await repository.saveEntryForCurrentUser(placeholder);
+        final placeholderSaved = await repository.saveEntryForCurrentUser(
+          placeholder,
+        );
+        if (!placeholderSaved) {
+          return false;
+        }
         if (!ref.mounted) {
-          return;
+          return false;
         }
       }
     }
@@ -299,5 +310,6 @@ class CalorieGoalCalculatorFormController
       heartCreditKcal: 0,
       runWeekNumber: runWeekNumber,
     );
+    return true;
   }
 }

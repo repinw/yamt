@@ -631,6 +631,49 @@ void main() {
     );
 
     test(
+      'onboarding aborts when catch-up placeholder save fails',
+      () async {
+        final settingsRepository = _BlockingCalorieSettingsRepository();
+        final now = DateTime(2026, 4, 22, 12);
+        final logRepository = FakeCalorieLogRepository(
+          initialEntries: <CalorieEntry>[
+            _todayLunchEntry(now),
+          ],
+        )..saveShouldFail = true;
+        final runStateRepository = _FakeBurnWeekRunStateRepository(
+          const BurnWeekRunState.initial(),
+        );
+        addTearDown(settingsRepository.dispose);
+        addTearDown(logRepository.dispose);
+        final container = _buildOnboardingSaveHarness(
+          settingsRepository: settingsRepository,
+          logRepository: logRepository,
+          runStateRepository: runStateRepository,
+        );
+        final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+        await _primeOnboardingSaveHarness(container);
+
+        final saved = await container
+            .read(provider.notifier)
+            .save(
+              goalStartDate: now,
+              allowFutureGoalStart: true,
+              syncBurnWeekForOnboarding: true,
+              onboardingCatchUpEstimate:
+                  CalorieGoalOnboardingCatchUpEstimate.normal,
+              onboardingPlaceholderName: 'Geschätzte Mahlzeit',
+              now: now,
+            );
+
+        expect(saved, isFalse);
+        expect(container.read(provider).isSaving, isFalse);
+        expect(settingsRepository.saveCallCount, 0);
+        expect(runStateRepository.state, const BurnWeekRunState.initial());
+      },
+    );
+
+    test(
       'onboarding same-day low catch-up creates fewer placeholder kcal',
       () async {
         final settingsRepository = _BlockingCalorieSettingsRepository();

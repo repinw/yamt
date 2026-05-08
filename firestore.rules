@@ -815,9 +815,7 @@ service cloud.firestore {
         || (isOwner(uid)
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['burn_week_run_state'])
-          && canWriteBurnWeekRunStateOnly(
-              request.resource.data.diff(resource.data)
-            ));
+          && isOptionalMap(request.resource.data, 'burn_week_run_state'));
       allow delete: if isOwner(uid);
     }
 

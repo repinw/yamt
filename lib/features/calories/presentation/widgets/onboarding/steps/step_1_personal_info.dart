@@ -163,7 +163,9 @@ class Step1PersonalInfo extends StatelessWidget {
                     TextFormField(
                       initialValue: state.heightCmText,
                       onChanged: notifier.updateHeightCm,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'cm',
                         errorText: _getHeightError(state.heightError, l10n),
