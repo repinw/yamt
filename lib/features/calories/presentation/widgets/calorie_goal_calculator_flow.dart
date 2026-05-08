@@ -94,7 +94,7 @@ class _CalorieGoalCalculatorFlowState
           'init source=$source '
           'hasGoal=${widget.initialSettings.hasGoal} '
           'dailyGoalKcal=${widget.initialSettings.dailyKcalGoal} '
-          'sex=${initialState.sex.name} '
+          'sex=${initialState.sex?.name ?? 'null'} '
           'weightKg=${initialState.weightKgText} '
           'heightCm=${initialState.heightCmText} '
           'ageYears=${initialState.ageYearsText} '
@@ -173,6 +173,7 @@ class _CalorieGoalCalculatorFlowState
       onboardingCatchUpEstimate: useOnboardingEstimate
           ? _onboardingCatchUpEstimate
           : null,
+      onboardingPlaceholderName: l10n.caloriesOnboardingPlaceholderName,
     );
     if (!mounted) {
       return;

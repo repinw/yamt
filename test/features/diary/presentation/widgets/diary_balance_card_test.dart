@@ -82,6 +82,29 @@ void main() {
     expect(find.text('Real 1,000 kcal · Heart -2,000 kcal'), findsOneWidget);
   });
 
+  testWidgets('live onboarding buffer appears in eaten tile', (tester) async {
+    final today = normalizeDiaryDay(DateTime.now());
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: today,
+      weekStartDate: today,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(today),
+        heartCreditKcal: 2000,
+      ),
+    );
+
+    expect(find.text('3,000 kcal'), findsOneWidget);
+    expect(
+      find.text('Real 1,000 kcal · Buffer +2,000 kcal'),
+      findsOneWidget,
+    );
+    expect(find.text('Buffer +2,000 kcal'), findsOneWidget);
+    expect(find.text('-1,000 kcal'), findsOneWidget);
+  });
+
   testWidgets('opens below-zone dialog for under-target live metrics', (
     tester,
   ) async {

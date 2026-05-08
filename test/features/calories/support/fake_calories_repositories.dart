@@ -120,6 +120,11 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntry(CalorieEntry entry) async {
+    return saveEntryForCurrentUser(entry);
+  }
+
+  @override
+  Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
     if (saveShouldFail) {
       return false;
     }

@@ -24,7 +24,8 @@ final class CalorieGoalCalculatorFormControllerProvider
   /// Defines calorie goal calculator form controller.
   CalorieGoalCalculatorFormControllerProvider._({
     required CalorieGoalCalculatorFormControllerFamily super.from,
-    required CalorieCalculatorProfile? super.argument,
+    required (CalorieCalculatorProfile?, {bool useEmptyDefaults})
+    super.argument,
   }) : super(
          retry: null,
          name: r'calorieGoalCalculatorFormControllerProvider',
@@ -41,7 +42,7 @@ final class CalorieGoalCalculatorFormControllerProvider
   String toString() {
     return r'calorieGoalCalculatorFormControllerProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -72,7 +73,7 @@ final class CalorieGoalCalculatorFormControllerProvider
 }
 
 String _$calorieGoalCalculatorFormControllerHash() =>
-    r'cfda3480827a10122902b1c965642c42acee10cd';
+    r'1ecb935b552a14e814169a9b821a109a25f25fcd';
 
 /// Defines calorie goal calculator form controller.
 
@@ -83,7 +84,7 @@ final class CalorieGoalCalculatorFormControllerFamily extends $Family
           CalorieGoalCalculatorFormState,
           CalorieGoalCalculatorFormState,
           CalorieGoalCalculatorFormState,
-          CalorieCalculatorProfile?
+          (CalorieCalculatorProfile?, {bool useEmptyDefaults})
         > {
   CalorieGoalCalculatorFormControllerFamily._()
     : super(
@@ -97,9 +98,10 @@ final class CalorieGoalCalculatorFormControllerFamily extends $Family
   /// Defines calorie goal calculator form controller.
 
   CalorieGoalCalculatorFormControllerProvider call(
-    CalorieCalculatorProfile? initialProfile,
-  ) => CalorieGoalCalculatorFormControllerProvider._(
-    argument: initialProfile,
+    CalorieCalculatorProfile? initialProfile, {
+    bool useEmptyDefaults = false,
+  }) => CalorieGoalCalculatorFormControllerProvider._(
+    argument: (initialProfile, useEmptyDefaults: useEmptyDefaults),
     from: this,
   );
 
@@ -111,12 +113,15 @@ final class CalorieGoalCalculatorFormControllerFamily extends $Family
 
 abstract class _$CalorieGoalCalculatorFormController
     extends $Notifier<CalorieGoalCalculatorFormState> {
-  late final _$args = ref.$arg as CalorieCalculatorProfile?;
-  CalorieCalculatorProfile? get initialProfile => _$args;
+  late final _$args =
+      ref.$arg as (CalorieCalculatorProfile?, {bool useEmptyDefaults});
+  CalorieCalculatorProfile? get initialProfile => _$args.$1;
+  bool get useEmptyDefaults => _$args.useEmptyDefaults;
 
   CalorieGoalCalculatorFormState build(
-    CalorieCalculatorProfile? initialProfile,
-  );
+    CalorieCalculatorProfile? initialProfile, {
+    bool useEmptyDefaults = false,
+  });
   @$mustCallSuper
   @override
   void runBuild() {
@@ -137,6 +142,9 @@ abstract class _$CalorieGoalCalculatorFormController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, () => build(_$args));
+    element.handleCreate(
+      ref,
+      () => build(_$args.$1, useEmptyDefaults: _$args.useEmptyDefaults),
+    );
   }
 }

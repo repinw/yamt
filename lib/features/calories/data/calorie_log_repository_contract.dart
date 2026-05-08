@@ -20,6 +20,9 @@ abstract interface class CalorieLogRepositoryContract {
   /// Save entry.
   Future<bool> saveEntry(CalorieEntry entry);
 
+  /// Save entry for current user, ignoring any user id on the draft entry.
+  Future<bool> saveEntryForCurrentUser(CalorieEntry entry);
+
   /// Delete entry.
   Future<bool> deleteEntry(String entryId);
 

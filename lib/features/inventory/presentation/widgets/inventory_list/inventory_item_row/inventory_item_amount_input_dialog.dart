@@ -63,8 +63,8 @@ class _InventoryItemAmountInputDialogState
   @override
   void initState() {
     super.initState();
-    final defaultAmount = widget.amountUnit == InventoryAmountUnit.piece &&
-            widget.amountScale > 1
+    final defaultAmount =
+        widget.amountUnit == InventoryAmountUnit.piece && widget.amountScale > 1
         ? widget.amountScale
         : 1;
     final initialAmount = widget.maxAmount < defaultAmount
@@ -103,7 +103,8 @@ class _InventoryItemAmountInputDialogState
           focusNode: _focusNode,
           autofocus: true,
           keyboardType: TextInputType.numberWithOptions(
-            decimal: widget.amountUnit != null &&
+            decimal:
+                widget.amountUnit != null &&
                 inventoryAmountAllowsFractionalInput(
                   unit: widget.amountUnit!,
                   scale: widget.amountScale,

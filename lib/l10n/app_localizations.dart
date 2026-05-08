@@ -62,8 +62,7 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en'),
+    Locale('en')
   ];
 
   /// No description provided for @homeInventory.
@@ -2256,20 +2253,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Amount per {sourceUnit} ({unit})'**
-  String preparedMealTemplateDetailSelectionConversionLabel(
-    String sourceUnit,
-    String unit,
-  );
+  String preparedMealTemplateDetailSelectionConversionLabel(String sourceUnit, String unit);
 
   /// No description provided for @preparedMealTemplateDetailSelectionConversionHint.
   ///
   /// In en, this message translates to:
   /// **'How much {unit} does 1 {sourceUnit} of \"{ingredient}\" use?'**
-  String preparedMealTemplateDetailSelectionConversionHint(
-    String sourceUnit,
-    String unit,
-    String ingredient,
-  );
+  String preparedMealTemplateDetailSelectionConversionHint(String sourceUnit, String unit, String ingredient);
 
   /// No description provided for @preparedMealTemplateDetailSelectionConversionError.
   ///
@@ -2281,11 +2271,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'1 {sourceUnit} = {amount} {unit}'**
-  String preparedMealTemplateDetailConversionSummary(
-    String sourceUnit,
-    int amount,
-    String unit,
-  );
+  String preparedMealTemplateDetailConversionSummary(String sourceUnit, int amount, String unit);
 
   /// No description provided for @preparedMealTemplateDetailListAction.
   ///
@@ -3024,6 +3010,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We place you safely into today\'s buffer zone.'**
   String get caloriesCalculatorOnboardingCatchUpHint;
+
+  /// No description provided for @caloriesOnboardingPlaceholderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated meal'**
+  String get caloriesOnboardingPlaceholderName;
 
   /// No description provided for @caloriesCalculatorMinimumGoalWarning.
   ///
@@ -4206,6 +4198,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Left'**
   String get diaryBalanceLeftLabel;
+
+  /// No description provided for @diaryBalanceRealEatenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Real {kcal}'**
+  String diaryBalanceRealEatenLabel(Object kcal);
+
+  /// No description provided for @diaryBalanceBufferAdjustmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Buffer {kcal}'**
+  String diaryBalanceBufferAdjustmentLabel(Object kcal);
 
   /// No description provided for @diaryBalanceRealLeftLabel.
   ///
@@ -5802,10 +5806,291 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not implemented yet'**
   String get commonNotImplementedYet;
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Glad you are here!'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget complicated calorie counting. We make it as easy as possible. To support you optimally, we just need a little bit of information about you.'**
+  String get onboardingWelcomeText;
+
+  /// No description provided for @onboardingWelcomeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s start'**
+  String get onboardingWelcomeAction;
+
+  /// No description provided for @onboardingNextAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNextAction;
+
+  /// No description provided for @onboardingNextActionStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'Sounds great, next!'**
+  String get onboardingNextActionStep5;
+
+  /// No description provided for @onboardingFinishAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go'**
+  String get onboardingFinishAction;
+
+  /// No description provided for @onboardingPersonalInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us something about yourself.'**
+  String get onboardingPersonalInfoTitle;
+
+  /// No description provided for @onboardingPersonalInfoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This data helps us calculate your basal metabolic rate – because every body burns energy differently!'**
+  String get onboardingPersonalInfoSubtitle;
+
+  /// No description provided for @onboardingActivityLevelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How active are you?'**
+  String get onboardingActivityLevelTitle;
+
+  /// No description provided for @onboardingActivityLevelSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your normal daily level (training comes later).'**
+  String get onboardingActivityLevelSubtitle;
+
+  /// No description provided for @onboardingActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Level'**
+  String get onboardingActivityTitle;
+
+  /// No description provided for @onboardingActivitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How active are you in your daily life?'**
+  String get onboardingActivitySubtitle;
+
+  /// No description provided for @onboardingGoalWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Goal'**
+  String get onboardingGoalWeightTitle;
+
+  /// No description provided for @onboardingGoalWeightSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s set your goal weight.'**
+  String get onboardingGoalWeightSubtitle;
+
+  /// No description provided for @onboardingGoalWeightStartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start weight (kg)'**
+  String get onboardingGoalWeightStartLabel;
+
+  /// No description provided for @onboardingGoalWeightTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal weight (kg)'**
+  String get onboardingGoalWeightTargetLabel;
+
+  /// No description provided for @onboardingGoalWeightLoseFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'You want to lose weight. A healthy goal!'**
+  String get onboardingGoalWeightLoseFeedback;
+
+  /// No description provided for @onboardingGoalWeightGainFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'You want to gain weight. Building muscle is great!'**
+  String get onboardingGoalWeightGainFeedback;
+
+  /// No description provided for @onboardingGoalWeightMaintainFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'You want to maintain your weight. Perfect!'**
+  String get onboardingGoalWeightMaintainFeedback;
+
+  /// No description provided for @onboardingPaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Pace'**
+  String get onboardingPaceTitle;
+
+  /// No description provided for @onboardingPaceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How fast do you want to reach your goal?'**
+  String get onboardingPaceSubtitle;
+
+  /// No description provided for @onboardingPaceMaintainMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Since you want to maintain your weight, we will simply calculate your maintenance calories. You don\'t need to set a pace.'**
+  String get onboardingPaceMaintainMessage;
+
+  /// No description provided for @onboardingPaceWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ambitious Pace'**
+  String get onboardingPaceWarningTitle;
+
+  /// No description provided for @onboardingPaceWarningLoseMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Losing more than 0.5 kg per week is quite high. Make sure you still get enough nutrients!'**
+  String get onboardingPaceWarningLoseMessage;
+
+  /// No description provided for @onboardingPaceWarningGainMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Gaining more than 0.5 kg per week is quite high. A more moderate pace helps build muscle without adding too much fat.'**
+  String get onboardingPaceWarningGainMessage;
+
+  /// No description provided for @onboardingPacePerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'{pace} kg / week'**
+  String onboardingPacePerWeek(String pace);
+
+  /// No description provided for @onboardingInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Plan is Ready! 🎉'**
+  String get onboardingInfoTitle;
+
+  /// No description provided for @onboardingInfoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A few things you should know.'**
+  String get onboardingInfoSubtitle;
+
+  /// No description provided for @onboardingInfoPoint1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Receipts'**
+  String get onboardingInfoPoint1Title;
+
+  /// No description provided for @onboardingInfoPoint1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'No more tedious typing.'**
+  String get onboardingInfoPoint1Body;
+
+  /// No description provided for @onboardingInfoPoint2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Recognition'**
+  String get onboardingInfoPoint2Title;
+
+  /// No description provided for @onboardingInfoPoint2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Just tell us what you ate.'**
+  String get onboardingInfoPoint2Body;
+
+  /// No description provided for @onboardingInfoPoint3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode Scanner'**
+  String get onboardingInfoPoint3Title;
+
+  /// No description provided for @onboardingInfoPoint3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'One scan, all nutrition facts.'**
+  String get onboardingInfoPoint3Body;
+
+  /// No description provided for @onboardingInfoBoxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The Learning Week'**
+  String get onboardingInfoBoxTitle;
+
+  /// No description provided for @onboardingInfoBoxBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first mission: Try not to force any changes in the next 7 days. Eat as usual and just track. Our smart algorithm learns your metabolism and creates your custom calorie goal!'**
+  String get onboardingInfoBoxBody;
+
+  /// No description provided for @onboardingStartDateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When to start?'**
+  String get onboardingStartDateTitle;
+
+  /// No description provided for @onboardingStartDateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When do you want to start tracking?'**
+  String get onboardingStartDateSubtitle;
+
+  /// No description provided for @onboardingStartDateNowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get onboardingStartDateNowLabel;
+
+  /// No description provided for @onboardingStartDateNowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'I will track everything today (or already did).'**
+  String get onboardingStartDateNowDesc;
+
+  /// No description provided for @onboardingStartDateNowQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How should we handle today?'**
+  String get onboardingStartDateNowQuestion;
+
+  /// No description provided for @onboardingStartDateNowExact.
+  ///
+  /// In en, this message translates to:
+  /// **'I will track the whole day exactly'**
+  String get onboardingStartDateNowExact;
+
+  /// No description provided for @onboardingStartDateNowEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'I will estimate what I ate so far'**
+  String get onboardingStartDateNowEstimate;
+
+  /// No description provided for @onboardingStartDateLaterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get onboardingStartDateLaterLabel;
+
+  /// No description provided for @onboardingStartDateLaterDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Today is almost over, I prefer to start fresh tomorrow.'**
+  String get onboardingStartDateLaterDesc;
+
+  /// No description provided for @onboardingReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All set!'**
+  String get onboardingReadyTitle;
+
+  /// No description provided for @onboardingReadySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile is ready. Let\'s get started!'**
+  String get onboardingReadySubtitle;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -5814,26 +6099,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de':
-      return AppLocalizationsDe();
-    case 'en':
-      return AppLocalizationsEn();
+    case 'de': return AppLocalizationsDe();
+    case 'en': return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }
