@@ -180,11 +180,13 @@ Raw<GoRouter> appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.homeInventoryManualAdd,
         builder: (context, state) {
-          final extra = state.extra;
-          final initialAction = extra is InventoryManualAddInitialAction
-              ? extra
-              : InventoryManualAddInitialAction.launcher;
-          return InventoryManualAddPage(initialAction: initialAction);
+          final args = resolveInventoryManualAddRouteArgs(state.extra);
+          return InventoryManualAddPage(
+            initialAction: args.initialAction,
+            quickEatOnly: args.quickEatOnly,
+            preselectedMealType: args.preselectedMealType,
+            preselectedLoggedAt: args.preselectedLoggedAt,
+          );
         },
       ),
       GoRoute(
@@ -277,6 +279,19 @@ Raw<GoRouter> appRouter(Ref ref) {
   );
   ref.onDispose(router.dispose);
   return router;
+}
+
+/// Resolves manual-add route extras while preserving legacy enum extras.
+@visibleForTesting
+InventoryManualAddRouteArgs resolveInventoryManualAddRouteArgs(Object? extra) {
+  if (extra is InventoryManualAddRouteArgs) {
+    return extra;
+  }
+  return InventoryManualAddRouteArgs(
+    initialAction: extra is InventoryManualAddInitialAction
+        ? extra
+        : InventoryManualAddInitialAction.launcher,
+  );
 }
 
 String? _redirectForState(Ref ref, GoRouterState state) {

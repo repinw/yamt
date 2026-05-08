@@ -269,7 +269,7 @@ class Step6StartDate extends StatelessWidget {
                 ),
               ],
             ),
-            if (child != null) child,
+            ?child,
           ],
         ),
       ),

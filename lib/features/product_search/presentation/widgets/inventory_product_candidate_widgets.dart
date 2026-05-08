@@ -109,6 +109,7 @@ class InventoryProductCandidateActions extends StatelessWidget {
     super.key,
     this.inventoryButtonKey,
     this.eatButtonKey,
+    this.showInventoryAction = true,
   });
 
   /// Inventory label.
@@ -129,6 +130,9 @@ class InventoryProductCandidateActions extends StatelessWidget {
   /// Optional eat button key.
   final Key? eatButtonKey;
 
+  /// Whether inventory action is visible.
+  final bool showInventoryAction;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -148,13 +152,15 @@ class InventoryProductCandidateActions extends StatelessWidget {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _InventoryCandidateActionButton(
-                  buttonKey: inventoryButtonKey,
-                  tooltip: inventoryLabel,
-                  icon: Icons.inventory_2_outlined,
-                  onPressed: onInventory,
-                ),
-                const SizedBox(height: AppSpacing.sm),
+                if (showInventoryAction) ...[
+                  _InventoryCandidateActionButton(
+                    buttonKey: inventoryButtonKey,
+                    tooltip: inventoryLabel,
+                    icon: Icons.inventory_2_outlined,
+                    onPressed: onInventory,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
                 _InventoryCandidateActionButton(
                   buttonKey: eatButtonKey,
                   tooltip: eatLabel,

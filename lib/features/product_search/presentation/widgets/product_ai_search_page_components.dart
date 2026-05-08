@@ -1,6 +1,6 @@
 part of 'product_ai_search_page.dart';
 
-class _ManualProductAiSearchBody extends StatelessWidget {
+class _ManualProductAiSearchBody extends ConsumerWidget {
   const _ManualProductAiSearchBody({
     required this.draft,
     required this.selection,
@@ -38,8 +38,11 @@ class _ManualProductAiSearchBody extends StatelessWidget {
   final VoidCallback? onSave;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final quickEatConfig = ref.watch(
+      inventoryManualAddQuickEatConfigProvider,
+    );
     final colors = Theme.of(context).colorScheme;
     final resolvedDraft = draft;
     final resolvedSelection = selection;
@@ -106,7 +109,7 @@ class _ManualProductAiSearchBody extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           _AiIngredientTable(draft: resolvedDraft),
           const SizedBox(height: AppSpacing.lg),
-          if (showEatImmediatelyOption) ...[
+          if (showEatImmediatelyOption && !quickEatConfig.quickEatOnly) ...[
             ManualProductActionSelector(
               selectedAction: selectedAction,
               onChanged: onActionChanged,

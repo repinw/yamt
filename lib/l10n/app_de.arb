@@ -1176,6 +1176,20 @@
   "diaryMealsTitle": "Tagebuch",
   "diaryMealsEmpty": "Noch nichts eingetragen",
   "diaryMealsLoadFailed": "Mahlzeiten konnten nicht geladen werden",
+  "diaryQuickEatAddTooltip": "Zu {meal} hinzufügen",
+  "@diaryQuickEatAddTooltip": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryQuickEatSourceInventory": "Vorrat",
+  "diaryQuickEatSourceBarcode": "Barcode",
+  "diaryQuickEatSourceManualSearch": "Suche",
+  "diaryQuickEatSourceAi": "KI",
+  "diaryQuickEatInventoryTitle": "Aus Vorrat essen",
+  "diaryQuickEatInventoryEmpty": "Kein verfügbares Essen im Vorrat.",
   "diaryBalanceLoadFailed": "Balance konnte nicht geladen werden",
   "diaryNutritionLoadFailed": "Nährwerte konnten nicht geladen werden",
   "diaryBalanceEatenLabel": "Gegessen",

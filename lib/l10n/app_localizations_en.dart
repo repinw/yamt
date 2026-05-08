@@ -2135,6 +2135,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryMealsLoadFailed => 'Meals could not be loaded';
 
   @override
+  String diaryQuickEatAddTooltip(String meal) {
+    return 'Add to $meal';
+  }
+
+  @override
+  String get diaryQuickEatSourceInventory => 'Inventory';
+
+  @override
+  String get diaryQuickEatSourceBarcode => 'Barcode';
+
+  @override
+  String get diaryQuickEatSourceManualSearch => 'Search';
+
+  @override
+  String get diaryQuickEatSourceAi => 'AI';
+
+  @override
+  String get diaryQuickEatInventoryTitle => 'Eat from inventory';
+
+  @override
+  String get diaryQuickEatInventoryEmpty => 'No available food in inventory.';
+
+  @override
   String get diaryBalanceLoadFailed => 'Balance could not be loaded';
 
   @override

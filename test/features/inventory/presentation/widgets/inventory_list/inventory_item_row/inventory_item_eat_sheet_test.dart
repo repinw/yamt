@@ -180,11 +180,15 @@ class _OpenEatSheetButton extends StatelessWidget {
     required this.item,
     required this.maxAmount,
     required this.onResult,
+    this.initialLoggedAt,
+    this.initialMealType,
   });
 
   final InventoryItem item;
   final int maxAmount;
   final ValueChanged<InventoryItemEatRequest?> onResult;
+  final DateTime? initialLoggedAt;
+  final MealType? initialMealType;
 
   @override
   Widget build(BuildContext context) {
@@ -195,6 +199,8 @@ class _OpenEatSheetButton extends StatelessWidget {
           item: item,
           maxAmount: maxAmount,
           invalidAmountMessage: 'Invalid amount',
+          initialLoggedAt: initialLoggedAt,
+          initialMealType: initialMealType,
         );
         onResult(result);
       },
@@ -208,6 +214,8 @@ Widget _buildTestApp({
   required int maxAmount,
   required ValueChanged<InventoryItemEatRequest?> onResult,
   GlobalFoodServingSuggestionRepository? servingSuggestionRepository,
+  DateTime? initialLoggedAt,
+  MealType? initialMealType,
 }) {
   return ProviderScope(
     overrides: [
@@ -226,6 +234,8 @@ Widget _buildTestApp({
             item: item,
             maxAmount: maxAmount,
             onResult: onResult,
+            initialLoggedAt: initialLoggedAt,
+            initialMealType: initialMealType,
           ),
         ),
       ),
@@ -454,6 +464,33 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       findsNothing,
     );
+  });
+
+  testWidgets('uses preselected logged-at date and meal type', (tester) async {
+    InventoryItemEatRequest? result;
+    final initialLoggedAt = DateTime(2026, 4, 27, 13, 45);
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItem(),
+        maxAmount: 1000,
+        initialLoggedAt: initialLoggedAt,
+        initialMealType: MealType.lunch,
+        onResult: (value) {
+          result = value;
+        },
+      ),
+    );
+
+    await _openSheet(tester);
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '120',
+    );
+    await _tapConfirmButton(tester);
+
+    expect(result, isNotNull);
+    expect(result?.mealType, MealType.lunch);
+    expect(result?.loggedAt, initialLoggedAt);
   });
 
   testWidgets(

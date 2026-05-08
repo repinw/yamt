@@ -15,6 +15,8 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -38,6 +40,9 @@ enum InventoryReceiptManualProductInitialIntent {
 
   /// Open the AI suggestion page immediately.
   aiSuggestion,
+
+  /// Open the barcode scanner immediately.
+  barcodeScan,
 }
 
 /// Defines inventory receipt manual product page.
@@ -204,6 +209,8 @@ class _InventoryReceiptManualProductLauncherPageState
             unawaited(_openSearchEditor());
           case InventoryReceiptManualProductInitialIntent.aiSuggestion:
             unawaited(_openAiSearchPage());
+          case InventoryReceiptManualProductInitialIntent.barcodeScan:
+            unawaited(_openBarcodeScanner());
           case InventoryReceiptManualProductInitialIntent.launcher:
             break;
         }
@@ -220,6 +227,9 @@ class _InventoryReceiptManualProductLauncherPageState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final quickEatConfig = ref.watch(
+      inventoryManualAddQuickEatConfigProvider,
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -241,7 +251,9 @@ class _InventoryReceiptManualProductLauncherPageState
           unawaited(_openRecentItemEditor(item));
         },
         onRecentItemStoreSelected: widget.showEatImmediatelyOption
-            ? _handleRecentItemStoreSelected
+            ? quickEatConfig.quickEatOnly
+                  ? null
+                  : _handleRecentItemStoreSelected
             : null,
         onRecentItemEatSelected: widget.showEatImmediatelyOption
             ? _handleRecentItemEatSelected
@@ -282,6 +294,7 @@ class _InventoryReceiptManualProductLauncherPageState
   }
 
   Future<void> _openAiSearchPage() async {
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     final result = await Navigator.of(context)
         .push<ManualProductAiSearchResult>(
           _NoAnimationMaterialPageRoute<ManualProductAiSearchResult>(
@@ -291,6 +304,9 @@ class _InventoryReceiptManualProductLauncherPageState
                 item: widget.config.item,
                 initialPrompt: _searchController.text,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
+                initialAction: quickEatConfig.quickEatOnly
+                    ? InventoryReceiptManualProductAction.eatNow
+                    : InventoryReceiptManualProductAction.addToInventory,
               );
             },
           ),
@@ -407,6 +423,7 @@ class _InventoryReceiptManualProductLauncherPageState
 
   Future<void> _openBarcodeScanner() async {
     final l10n = AppLocalizations.of(context)!;
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     final result = await showModalBottomSheet<_ManualBarcodeScanResult>(
       context: context,
       isScrollControlled: true,
@@ -435,6 +452,7 @@ class _InventoryReceiptManualProductLauncherPageState
               );
               return true;
             },
+            eatOnly: quickEatConfig.quickEatOnly,
           ),
         );
       },
@@ -732,6 +750,10 @@ class _InventoryReceiptManualProductEditorPageState
   void initState() {
     super.initState();
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
+    if (quickEatConfig.quickEatOnly) {
+      _selectedAction = InventoryReceiptManualProductAction.eatNow;
+    }
     _searchController = TextEditingController();
     final initialInfoMessage = widget.initialInfoMessage;
     if (initialInfoMessage != null) {
@@ -821,6 +843,9 @@ class _InventoryReceiptManualProductEditorPageState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(_provider);
+    final quickEatConfig = ref.watch(
+      inventoryManualAddQuickEatConfigProvider,
+    );
     final preview = _buildPreviewData();
     final canSave = _canSave(state);
 
@@ -863,11 +888,15 @@ class _InventoryReceiptManualProductEditorPageState
           unawaited(_openAiSearchPage());
         },
         showActionSelector:
-            widget.showEatImmediatelyOption && _showActionSelector,
+            widget.showEatImmediatelyOption &&
+            _showActionSelector &&
+            !quickEatConfig.quickEatOnly,
         selectedAction: _selectedAction,
         onSearchResultSelected: _handleSearchResultSelected,
         onSearchResultStoreSelected: widget.showEatImmediatelyOption
-            ? _handleSearchResultStoreSelected
+            ? quickEatConfig.quickEatOnly
+                  ? null
+                  : _handleSearchResultStoreSelected
             : null,
         onSearchResultEatSelected: widget.showEatImmediatelyOption
             ? _handleSearchResultEatSelected
@@ -933,10 +962,13 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   void _handleSearchResultSelected(OffProductSearchResult product) {
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     unawaited(
       _handleSearchResultActionSelected(
         product,
-        InventoryReceiptManualProductAction.addToInventory,
+        quickEatConfig.quickEatOnly
+            ? InventoryReceiptManualProductAction.eatNow
+            : InventoryReceiptManualProductAction.addToInventory,
       ),
     );
   }
@@ -967,14 +999,14 @@ class _InventoryReceiptManualProductEditorPageState
       context,
     )!.inventoryManualAddEatNowRequiresNutrition;
     await _voiceSearchController.stopVoiceSearchIfNeeded();
-    if (widget.autofocusSearch &&
-        action == InventoryReceiptManualProductAction.eatNow) {
+    if (action == InventoryReceiptManualProductAction.eatNow) {
       final didStartDirectEat = _startDirectEatFlowFromSearchResult(product);
       if (didStartDirectEat) {
         return;
       }
     }
-    if (widget.autofocusSearch) {
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
+    if (widget.autofocusSearch || quickEatConfig.quickEatOnly) {
       await _openSelectedProductEditor(
         product,
         action: action,
@@ -1115,6 +1147,7 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
     final l10n = AppLocalizations.of(context)!;
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     final result = await showModalBottomSheet<_ManualBarcodeScanResult>(
       context: context,
       isScrollControlled: true,
@@ -1143,6 +1176,7 @@ class _InventoryReceiptManualProductEditorPageState
               );
               return true;
             },
+            eatOnly: quickEatConfig.quickEatOnly,
           ),
         );
       },
@@ -1160,12 +1194,12 @@ class _InventoryReceiptManualProductEditorPageState
         final action = _manualProductActionFromBarcodeAction(result.action);
         final selectedProduct = candidate.externalProduct;
         if (selectedProduct != null &&
-            widget.autofocusSearch &&
             action == InventoryReceiptManualProductAction.eatNow &&
             _startDirectEatFlowFromSearchResult(selectedProduct)) {
           return;
         }
-        if (selectedProduct != null && widget.autofocusSearch) {
+        if (selectedProduct != null &&
+            (widget.autofocusSearch || quickEatConfig.quickEatOnly)) {
           await _openSelectedProductEditor(
             selectedProduct,
             action: action,
@@ -1199,8 +1233,7 @@ class _InventoryReceiptManualProductEditorPageState
           globalFoodItem: globalFoodItem,
           barcode: result.scannedBarcode ?? candidate.barcode,
         );
-        if (widget.autofocusSearch &&
-            action == InventoryReceiptManualProductAction.eatNow &&
+        if (action == InventoryReceiptManualProductAction.eatNow &&
             _startDirectEatFlowFromInventoryItem(
               selectedItem,
               selectedGlobalFoodItemId: candidate.globalFoodItemId,

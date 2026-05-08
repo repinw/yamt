@@ -5,6 +5,8 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_controller.dart';
 
 /// Product selection surface for manual inventory add.
 @Dependencies([inventoryItemRepository])
@@ -15,6 +17,7 @@ class InventoryManualAddProductPage extends StatelessWidget {
     required this.initialIntent,
     required this.onSaved,
     super.key,
+    this.initialAction = InventoryReceiptManualProductAction.addToInventory,
   });
 
   /// Draft inventory item used by the product search flow.
@@ -22,6 +25,9 @@ class InventoryManualAddProductPage extends StatelessWidget {
 
   /// Initial product-search launcher intent.
   final InventoryReceiptManualProductInitialIntent initialIntent;
+
+  /// Initial result action.
+  final InventoryReceiptManualProductAction initialAction;
 
   /// Called when the product flow returns a save result.
   final Future<void> Function(InventoryReceiptManualProductResult result)
@@ -33,6 +39,7 @@ class InventoryManualAddProductPage extends StatelessWidget {
       item: item,
       showEatImmediatelyOption: true,
       initialIntent: initialIntent,
+      initialAction: initialAction,
       onSaved: onSaved,
     );
   }

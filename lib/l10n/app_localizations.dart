@@ -4175,6 +4175,48 @@ abstract class AppLocalizations {
   /// **'Meals could not be loaded'**
   String get diaryMealsLoadFailed;
 
+  /// No description provided for @diaryQuickEatAddTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to {meal}'**
+  String diaryQuickEatAddTooltip(String meal);
+
+  /// No description provided for @diaryQuickEatSourceInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get diaryQuickEatSourceInventory;
+
+  /// No description provided for @diaryQuickEatSourceBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get diaryQuickEatSourceBarcode;
+
+  /// No description provided for @diaryQuickEatSourceManualSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get diaryQuickEatSourceManualSearch;
+
+  /// No description provided for @diaryQuickEatSourceAi.
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get diaryQuickEatSourceAi;
+
+  /// No description provided for @diaryQuickEatInventoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat from inventory'**
+  String get diaryQuickEatInventoryTitle;
+
+  /// No description provided for @diaryQuickEatInventoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No available food in inventory.'**
+  String get diaryQuickEatInventoryEmpty;
+
   /// No description provided for @diaryBalanceLoadFailed.
   ///
   /// In en, this message translates to:
