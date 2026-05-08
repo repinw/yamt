@@ -1136,6 +1136,20 @@
   "diaryMealsTitle": "Diary",
   "diaryMealsEmpty": "Nothing logged yet",
   "diaryMealsLoadFailed": "Meals could not be loaded",
+  "diaryQuickEatAddTooltip": "Add to {meal}",
+  "@diaryQuickEatAddTooltip": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryQuickEatSourceInventory": "Inventory",
+  "diaryQuickEatSourceBarcode": "Barcode",
+  "diaryQuickEatSourceManualSearch": "Search",
+  "diaryQuickEatSourceAi": "KI",
+  "diaryQuickEatInventoryTitle": "Eat from inventory",
+  "diaryQuickEatInventoryEmpty": "No available food in inventory.",
   "diaryBalanceLoadFailed": "Balance could not be loaded",
   "diaryNutritionLoadFailed": "Nutrition could not be loaded",
   "diaryBalanceEatenLabel": "Eaten",

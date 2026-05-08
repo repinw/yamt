@@ -52,6 +52,8 @@ Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
   required int maxAmount,
   required String invalidAmountMessage,
   int? initialInventoryAmount,
+  DateTime? initialLoggedAt,
+  MealType? initialMealType,
 }) {
   return showModalBottomSheet<InventoryItemEatRequest>(
     context: context,
@@ -64,6 +66,8 @@ Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
         maxAmount: maxAmount,
         invalidAmountMessage: invalidAmountMessage,
         initialInventoryAmount: initialInventoryAmount,
+        initialLoggedAt: initialLoggedAt,
+        initialMealType: initialMealType,
       );
     },
   );
@@ -75,12 +79,16 @@ class _InventoryItemEatSheet extends ConsumerStatefulWidget {
     required this.maxAmount,
     required this.invalidAmountMessage,
     this.initialInventoryAmount,
+    this.initialLoggedAt,
+    this.initialMealType,
   });
 
   final InventoryItem item;
   final int maxAmount;
   final String invalidAmountMessage;
   final int? initialInventoryAmount;
+  final DateTime? initialLoggedAt;
+  final MealType? initialMealType;
 
   @override
   ConsumerState<_InventoryItemEatSheet> createState() =>
@@ -105,10 +113,8 @@ class _InventoryItemEatSheetState
   late final TextEditingController _portionAmountController =
       TextEditingController();
   late final FocusNode _portionAmountFocusNode = FocusNode();
-  late DateTime _selectedLoggedAt = DateTime.now();
-  late MealType _selectedMealType = MealType.defaultForDateTime(
-    _selectedLoggedAt,
-  );
+  late DateTime _selectedLoggedAt;
+  late MealType _selectedMealType;
   ConsumedUnit _selectedPortionUnit = ConsumedUnit.grams;
   String? _inventoryAmountErrorText;
   String? _inedibleAmountErrorText;
@@ -175,6 +181,12 @@ class _InventoryItemEatSheetState
   @override
   void initState() {
     super.initState();
+    _selectedLoggedAt = widget.initialLoggedAt ?? DateTime.now();
+    _selectedMealType =
+        widget.initialMealType ??
+        MealType.defaultForDateTime(
+          _selectedLoggedAt,
+        );
     _eatController = InventoryItemEatSheetController(
       item: widget.item,
       maxAmount: widget.maxAmount,

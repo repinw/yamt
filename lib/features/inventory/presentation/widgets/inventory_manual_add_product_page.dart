@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_controller.dart';
 
 /// Product selection surface for manual inventory add.
 @Dependencies([inventoryItemRepository])
@@ -15,6 +18,10 @@ class InventoryManualAddProductPage extends StatelessWidget {
     required this.initialIntent,
     required this.onSaved,
     super.key,
+    this.initialAction = InventoryReceiptManualProductAction.addToInventory,
+    this.quickEatOnly = false,
+    this.preselectedMealType,
+    this.preselectedLoggedAt,
   });
 
   /// Draft inventory item used by the product search flow.
@@ -22,6 +29,18 @@ class InventoryManualAddProductPage extends StatelessWidget {
 
   /// Initial product-search launcher intent.
   final InventoryReceiptManualProductInitialIntent initialIntent;
+
+  /// Initial result action.
+  final InventoryReceiptManualProductAction initialAction;
+
+  /// Whether only eat flow actions should be shown.
+  final bool quickEatOnly;
+
+  /// Preselected meal type.
+  final MealType? preselectedMealType;
+
+  /// Preselected logged-at.
+  final DateTime? preselectedLoggedAt;
 
   /// Called when the product flow returns a save result.
   final Future<void> Function(InventoryReceiptManualProductResult result)
@@ -33,6 +52,10 @@ class InventoryManualAddProductPage extends StatelessWidget {
       item: item,
       showEatImmediatelyOption: true,
       initialIntent: initialIntent,
+      initialAction: initialAction,
+      quickEatOnly: quickEatOnly,
+      preselectedMealType: preselectedMealType,
+      preselectedLoggedAt: preselectedLoggedAt,
       onSaved: onSaved,
     );
   }

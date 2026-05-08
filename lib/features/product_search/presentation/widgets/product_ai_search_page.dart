@@ -59,6 +59,9 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
     this.initialPrompt = '',
     this.showEatImmediatelyOption = false,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
+    this.quickEatOnly = false,
+    this.preselectedMealType,
+    this.preselectedLoggedAt,
   });
 
   /// Base item to build from.
@@ -72,6 +75,15 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
 
   /// Initially selected action.
   final InventoryReceiptManualProductAction initialAction;
+
+  /// Whether only eat action is available.
+  final bool quickEatOnly;
+
+  /// Preselected meal type.
+  final MealType? preselectedMealType;
+
+  /// Preselected logged-at.
+  final DateTime? preselectedLoggedAt;
 
   @override
   ConsumerState<ManualProductAiSearchPage> createState() =>
@@ -92,10 +104,8 @@ class _ManualProductAiSearchPageState
   String? _errorText;
   double? _weightGrams;
   double? _selectedPer100Kcal;
-  late DateTime _selectedLoggedAt = DateTime.now();
-  late MealType _selectedMealType = MealType.defaultForDateTime(
-    _selectedLoggedAt,
-  );
+  late DateTime _selectedLoggedAt;
+  late MealType _selectedMealType;
 
   @override
   void initState() {
@@ -103,6 +113,12 @@ class _ManualProductAiSearchPageState
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
     _promptController = TextEditingController(text: widget.initialPrompt);
     _weightController = TextEditingController();
+    _selectedLoggedAt = widget.preselectedLoggedAt ?? DateTime.now();
+    _selectedMealType =
+        widget.preselectedMealType ??
+        MealType.defaultForDateTime(
+          _selectedLoggedAt,
+        );
   }
 
   @override
@@ -178,6 +194,7 @@ class _ManualProductAiSearchPageState
           weightErrorText: weightErrorText,
           selectedAction: _selectedAction,
           showEatImmediatelyOption: widget.showEatImmediatelyOption,
+          quickEatOnly: widget.quickEatOnly,
           isLoggedAtToday: isLoggedAtToday,
           loggedAtLabel: loggedAtLabel,
           selectedMealType: _selectedMealType,

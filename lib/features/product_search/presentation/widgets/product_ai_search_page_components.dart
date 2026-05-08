@@ -9,6 +9,7 @@ class _ManualProductAiSearchBody extends StatelessWidget {
     required this.weightErrorText,
     required this.selectedAction,
     required this.showEatImmediatelyOption,
+    required this.quickEatOnly,
     required this.isLoggedAtToday,
     required this.loggedAtLabel,
     required this.selectedMealType,
@@ -27,6 +28,7 @@ class _ManualProductAiSearchBody extends StatelessWidget {
   final String? weightErrorText;
   final InventoryReceiptManualProductAction selectedAction;
   final bool showEatImmediatelyOption;
+  final bool quickEatOnly;
   final bool isLoggedAtToday;
   final String? loggedAtLabel;
   final MealType selectedMealType;
@@ -106,7 +108,7 @@ class _ManualProductAiSearchBody extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           _AiIngredientTable(draft: resolvedDraft),
           const SizedBox(height: AppSpacing.lg),
-          if (showEatImmediatelyOption) ...[
+          if (showEatImmediatelyOption && !quickEatOnly) ...[
             ManualProductActionSelector(
               selectedAction: selectedAction,
               onChanged: onActionChanged,

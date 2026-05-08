@@ -48,6 +48,15 @@ Future<void> _pumpRouterTransition(WidgetTester tester) async {
   await tester.pump(_routerTransitionDuration);
 }
 
+Future<void> _tapCalorieOnboardingNext(WidgetTester tester) async {
+  final next = find.text('Next');
+  final soundsGreat = find.text('Sounds great, next!');
+  final button = next.evaluate().isNotEmpty ? next : soundsGreat;
+  await tester.ensureVisible(button);
+  await tester.tap(button);
+  await tester.pumpAndSettle();
+}
+
 UserMetadata _userMetadata({required bool isFirstSignIn}) {
   final metadata = _MockUserMetadata();
   final createdAt = DateTime.utc(2026, 1, 1, 9);
@@ -383,7 +392,7 @@ void main() {
         container.read(appRouterProvider).state.uri.path,
         AppRoutes.calorieGoalSetup,
       );
-      expect(find.text('Set your calorie goal'), findsOneWidget);
+      expect(find.text('Glad you are here!'), findsOneWidget);
     },
   );
 
@@ -404,29 +413,25 @@ void main() {
       AppRoutes.calorieGoalSetup,
     );
 
-    for (var index = 0; index < 6; index += 1) {
-      await tester.ensureVisible(
-        find.byKey(CalorieGoalCalculatorSheetKeys.nextButton),
-      );
-      await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.nextButton));
-      await tester.pumpAndSettle();
-    }
+    await tester.tap(find.text("Let's start"));
+    await tester.pumpAndSettle();
 
-    await tester.ensureVisible(
-      find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
-    );
-    await tester.tap(
-      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartNowOption),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingExactOption),
-    );
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(
-      find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
-    );
-    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+    await tester.tap(find.text('Female'));
+    await tester.enterText(find.byType(TextFormField).at(0), '30');
+    await tester.enterText(find.byType(TextFormField).at(1), '170');
+    await _tapCalorieOnboardingNext(tester);
+
+    await _tapCalorieOnboardingNext(tester);
+
+    await tester.enterText(find.byType(TextFormField).at(0), '70');
+    await tester.enterText(find.byType(TextFormField).at(1), '70');
+    await _tapCalorieOnboardingNext(tester);
+
+    await _tapCalorieOnboardingNext(tester);
+    await _tapCalorieOnboardingNext(tester);
+
+    await tester.ensureVisible(find.text("Let's go"));
+    await tester.tap(find.text("Let's go"));
     await tester.pump();
     await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);

@@ -44,6 +44,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
     super.key,
     this.onProductNotFound,
     this.showActionButtons = true,
+    this.eatOnly = false,
   });
 
   /// The title.
@@ -58,6 +59,9 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
   /// Whether candidate rows show explicit action buttons.
   final bool showActionButtons;
 
+  /// Whether only eat actions should be shown.
+  final bool eatOnly;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,6 +70,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
         onProductSelected: onProductSelected,
         onProductNotFound: onProductNotFound,
         showActionButtons: showActionButtons,
+        eatOnly: eatOnly,
       ),
     );
   }
@@ -79,6 +84,7 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
     super.key,
     this.onProductNotFound,
     this.showActionButtons = true,
+    this.eatOnly = false,
   });
 
   /// The on product selected.
@@ -89,6 +95,9 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
 
   /// Whether candidate rows show explicit action buttons.
   final bool showActionButtons;
+
+  /// Whether only eat actions should be shown.
+  final bool eatOnly;
 
   @override
   ConsumerState<InventoryBarcodeScannerView> createState() =>
@@ -295,6 +304,7 @@ class _InventoryBarcodeScannerViewState
         return InventoryBarcodeCandidatePickerSheet(
           candidates: candidates,
           showActionButtons: widget.showActionButtons,
+          eatOnly: widget.eatOnly,
           onSelect: (candidate, action) => _popRoute(
             sheetContext,
             _InventoryBarcodeCandidateSelection(

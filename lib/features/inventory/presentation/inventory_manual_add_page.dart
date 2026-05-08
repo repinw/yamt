@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_manual_add_product_factory.dart';
 import 'package:yamt/features/inventory/data/'
@@ -45,6 +46,32 @@ enum InventoryManualAddInitialAction {
 
   /// Open AI suggestion immediately.
   aiSuggestion,
+
+  /// Open barcode scanner immediately.
+  barcodeScan,
+}
+
+/// Route args for inventory manual add.
+class InventoryManualAddRouteArgs {
+  /// Creates route args.
+  const InventoryManualAddRouteArgs({
+    this.initialAction = InventoryManualAddInitialAction.launcher,
+    this.quickEatOnly = false,
+    this.preselectedMealType,
+    this.preselectedLoggedAt,
+  });
+
+  /// Initial action for the manual add flow.
+  final InventoryManualAddInitialAction initialAction;
+
+  /// Whether only eat actions should be shown.
+  final bool quickEatOnly;
+
+  /// Preselected meal type for eat flow.
+  final MealType? preselectedMealType;
+
+  /// Preselected logged-at for eat flow.
+  final DateTime? preselectedLoggedAt;
 }
 
 /// Defines inventory manual add page.
@@ -58,10 +85,22 @@ class InventoryManualAddPage extends ConsumerStatefulWidget {
   const InventoryManualAddPage({
     super.key,
     this.initialAction = InventoryManualAddInitialAction.launcher,
+    this.quickEatOnly = false,
+    this.preselectedMealType,
+    this.preselectedLoggedAt,
   });
 
   /// Initial action for the manual add flow.
   final InventoryManualAddInitialAction initialAction;
+
+  /// Whether only eat actions should be shown.
+  final bool quickEatOnly;
+
+  /// Preselected meal type.
+  final MealType? preselectedMealType;
+
+  /// Preselected logged-at.
+  final DateTime? preselectedLoggedAt;
 
   @override
   ConsumerState<InventoryManualAddPage> createState() {
@@ -95,6 +134,12 @@ class _InventoryManualAddPageState
     return InventoryManualAddProductPage(
       item: _draftItem,
       initialIntent: _initialIntentFor(widget.initialAction),
+      quickEatOnly: widget.quickEatOnly,
+      initialAction: widget.quickEatOnly
+          ? InventoryReceiptManualProductAction.eatNow
+          : InventoryReceiptManualProductAction.addToInventory,
+      preselectedMealType: widget.preselectedMealType,
+      preselectedLoggedAt: widget.preselectedLoggedAt,
       onSaved: _saveSheetResult,
     );
   }
@@ -283,6 +328,8 @@ class _InventoryManualAddPageState
         item: item,
         rawWeight: initialEatWeight,
       ),
+      initialLoggedAt: widget.preselectedLoggedAt,
+      initialMealType: widget.preselectedMealType,
     );
     if (!mounted || request == null) {
       return;
@@ -358,6 +405,8 @@ InventoryReceiptManualProductInitialIntent _initialIntentFor(
       InventoryReceiptManualProductInitialIntent.manualSearch,
     InventoryManualAddInitialAction.aiSuggestion =>
       InventoryReceiptManualProductInitialIntent.aiSuggestion,
+    InventoryManualAddInitialAction.barcodeScan =>
+      InventoryReceiptManualProductInitialIntent.barcodeScan,
   };
 }
 

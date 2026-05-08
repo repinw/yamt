@@ -20,6 +20,7 @@ class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
     required this.onSelect,
     super.key,
     this.showActionButtons = true,
+    this.eatOnly = false,
   });
 
   /// The candidates.
@@ -34,6 +35,9 @@ class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
 
   /// Whether candidate rows show explicit action buttons.
   final bool showActionButtons;
+
+  /// Whether only eat action should be shown.
+  final bool eatOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +76,7 @@ class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
                     return _BarcodeCandidateTile(
                       candidate: candidate,
                       showActionButtons: showActionButtons,
+                      eatOnly: eatOnly,
                       onSelect: onSelect,
                     );
                   },
@@ -145,11 +150,13 @@ class _BarcodeCandidateTile extends StatelessWidget {
   const _BarcodeCandidateTile({
     required this.candidate,
     required this.showActionButtons,
+    required this.eatOnly,
     required this.onSelect,
   });
 
   final InventoryBarcodeLookupCandidate candidate;
   final bool showActionButtons;
+  final bool eatOnly;
   final void Function(
     InventoryBarcodeLookupCandidate candidate,
     InventoryBarcodeCandidateAction action,
@@ -197,6 +204,7 @@ class _BarcodeCandidateTile extends StatelessWidget {
                 candidate,
                 InventoryBarcodeCandidateAction.eatNow,
               ),
+              showInventoryAction: !eatOnly,
             )
           : null,
     );

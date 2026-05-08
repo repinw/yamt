@@ -62,6 +62,8 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   bool useRootNavigator = false,
   PreparedMealDayPicker? pickLoggedDay,
   Uint8List? imageBytes,
+  DateTime? initialLoggedAt,
+  MealType? initialMealType,
 }) {
   return showModalBottomSheet<PreparedMealEatDialogResult>(
     context: context,
@@ -73,6 +75,8 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
         meal: meal,
         pickLoggedDay: pickLoggedDay ?? _showPreparedMealDayPicker,
         imageBytes: imageBytes,
+        initialLoggedAt: initialLoggedAt,
+        initialMealType: initialMealType,
       );
     },
   );
@@ -99,11 +103,15 @@ class _PreparedMealEatSheet extends StatefulWidget {
     required this.meal,
     required this.pickLoggedDay,
     required this.imageBytes,
+    this.initialLoggedAt,
+    this.initialMealType,
   });
 
   final PreparedMeal meal;
   final PreparedMealDayPicker pickLoggedDay;
   final Uint8List? imageBytes;
+  final DateTime? initialLoggedAt;
+  final MealType? initialMealType;
 
   @override
   State<_PreparedMealEatSheet> createState() => _PreparedMealEatSheetState();
@@ -114,11 +122,20 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     text: _defaultPreparedMealPortions.toString(),
   );
   late final FocusNode _portionsFocusNode = FocusNode();
-  late DateTime _selectedLoggedAt = DateTime.now();
-  late MealType _selectedMealType = MealType.defaultForDateTime(
-    _selectedLoggedAt,
-  );
+  late DateTime _selectedLoggedAt;
+  late MealType _selectedMealType;
   String? _portionsErrorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLoggedAt = widget.initialLoggedAt ?? DateTime.now();
+    _selectedMealType =
+        widget.initialMealType ??
+        MealType.defaultForDateTime(
+          _selectedLoggedAt,
+        );
+  }
 
   @override
   void dispose() {

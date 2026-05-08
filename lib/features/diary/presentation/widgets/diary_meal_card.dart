@@ -6,6 +6,7 @@ class _DiaryMealCard extends StatelessWidget {
     required this.isExpanded,
     required this.onToggle,
     required this.onTapEntry,
+    required this.onQuickAdd,
     super.key,
   });
 
@@ -13,6 +14,7 @@ class _DiaryMealCard extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onToggle;
   final ValueChanged<CalorieEntry> onTapEntry;
+  final ValueChanged<DiaryQuickEatSource> onQuickAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +80,11 @@ class _DiaryMealCard extends StatelessWidget {
                               ),
                         ),
                       ],
+                      const SizedBox(width: AppSpacing.xs),
+                      DiaryMealQuickAddMenu(
+                        mealType: section.mealType,
+                        onSelected: onQuickAdd,
+                      ),
                       const SizedBox(width: AppSpacing.xs),
                       AnimatedRotation(
                         turns: isExpanded ? 0.25 : 0,

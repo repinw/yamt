@@ -181,10 +181,19 @@ Raw<GoRouter> appRouter(Ref ref) {
         path: AppRoutes.homeInventoryManualAdd,
         builder: (context, state) {
           final extra = state.extra;
-          final initialAction = extra is InventoryManualAddInitialAction
+          final args = extra is InventoryManualAddRouteArgs
               ? extra
-              : InventoryManualAddInitialAction.launcher;
-          return InventoryManualAddPage(initialAction: initialAction);
+              : InventoryManualAddRouteArgs(
+                  initialAction: extra is InventoryManualAddInitialAction
+                      ? extra
+                      : InventoryManualAddInitialAction.launcher,
+                );
+          return InventoryManualAddPage(
+            initialAction: args.initialAction,
+            quickEatOnly: args.quickEatOnly,
+            preselectedMealType: args.preselectedMealType,
+            preselectedLoggedAt: args.preselectedLoggedAt,
+          );
         },
       ),
       GoRoute(

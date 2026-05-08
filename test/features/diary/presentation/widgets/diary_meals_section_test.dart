@@ -2,13 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/provider/diary_meal_sections_provider.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
@@ -112,6 +122,33 @@ void main() {
     );
   });
 
+  testWidgets('meal add button opens quick menu without expanding card', (
+    tester,
+  ) async {
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        for (final mealType in MealType.sectionOrder)
+          _mealSection(mealType, const []),
+      ],
+    );
+
+    await tester.tap(
+      find.byKey(const Key('diary_quick_add_button_lunch')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Inventory'), findsOneWidget);
+    expect(find.text('Barcode'), findsOneWidget);
+    expect(find.text('Search'), findsOneWidget);
+    expect(find.text('KI'), findsOneWidget);
+    expect(
+      find.byKey(DiaryMealsSectionKeys.expandedEmpty(MealType.lunch)),
+      findsNothing,
+    );
+  });
+
   testWidgets('expands and collapses meal entry details', (tester) async {
     await _pumpMealsSection(
       tester,
@@ -198,6 +235,11 @@ void main() {
   });
 }
 
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 Future<void> _pumpMealsSection(
   WidgetTester tester, {
   required DateTime selectedDay,
