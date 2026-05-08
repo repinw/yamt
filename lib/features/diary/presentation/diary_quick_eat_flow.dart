@@ -199,14 +199,14 @@ class DiaryQuickEatFlow {
     final meals =
         ref.read(preparedMealsControllerProvider).value ??
         const <PreparedMeal>[];
-    final selection = await showModalBottomSheet<_InventoryFoodSelection>(
+    final selection = await showModalBottomSheet<DiaryInventoryFoodSelection>(
       context: context,
       useRootNavigator: true,
       useSafeArea: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return _DiaryInventoryFoodPicker(
+        return DiaryInventoryFoodPicker(
           items: items.where(_canEatItem).toList(growable: false),
           meals: meals
               .where((meal) => !meal.isDepleted)
@@ -220,7 +220,7 @@ class DiaryQuickEatFlow {
       return;
     }
     switch (selection) {
-      case _InventoryItemFoodSelection(:final item):
+      case DiaryInventoryItemFoodSelection(:final item):
         await _eatInventoryItem(
           context: context,
           ref: ref,
@@ -228,7 +228,7 @@ class DiaryQuickEatFlow {
           mealType: mealType,
           loggedAt: loggedAt,
         );
-      case _PreparedMealFoodSelection(:final meal):
+      case DiaryPreparedMealFoodSelection(:final meal):
         await _eatPreparedMeal(
           context: context,
           ref: ref,
@@ -367,29 +367,43 @@ class DiaryQuickEatFlow {
   }
 }
 
-sealed class _InventoryFoodSelection {
-  const _InventoryFoodSelection();
+/// Food selected from the diary inventory quick-eat picker.
+sealed class DiaryInventoryFoodSelection {
+  /// Creates a diary inventory food selection.
+  const DiaryInventoryFoodSelection();
 }
 
-class _InventoryItemFoodSelection extends _InventoryFoodSelection {
-  const _InventoryItemFoodSelection(this.item);
+/// Inventory item selected from the diary quick-eat picker.
+class DiaryInventoryItemFoodSelection extends DiaryInventoryFoodSelection {
+  /// Creates an inventory item selection.
+  const DiaryInventoryItemFoodSelection(this.item);
 
+  /// Selected inventory item.
   final InventoryItem item;
 }
 
-class _PreparedMealFoodSelection extends _InventoryFoodSelection {
-  const _PreparedMealFoodSelection(this.meal);
+/// Prepared meal selected from the diary quick-eat picker.
+class DiaryPreparedMealFoodSelection extends DiaryInventoryFoodSelection {
+  /// Creates a prepared meal selection.
+  const DiaryPreparedMealFoodSelection(this.meal);
 
+  /// Selected prepared meal.
   final PreparedMeal meal;
 }
 
-class _DiaryInventoryFoodPicker extends ConsumerWidget {
-  const _DiaryInventoryFoodPicker({
+/// Inventory and prepared-meal picker used by diary quick eat.
+class DiaryInventoryFoodPicker extends ConsumerWidget {
+  /// Creates inventory and prepared-meal picker.
+  const DiaryInventoryFoodPicker({
     required this.items,
     required this.meals,
+    super.key,
   });
 
+  /// Available inventory items.
   final List<InventoryItem> items;
+
+  /// Available prepared meals.
   final List<PreparedMeal> meals;
 
   @override
@@ -433,32 +447,36 @@ class _DiaryInventoryFoodPicker extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.sizeOf(context).height * 0.62,
-                    ),
-                    child: visibleCount == 0
-                        ? Center(
-                            child: Padding(
-                              padding: AppInsets.card,
-                              child: Text(l10n.diaryQuickEatInventoryEmpty),
-                            ),
-                          )
-                        : ListView(
-                            shrinkWrap: true,
-                            children: [
-                              for (final item in items)
-                                _InventoryFoodTile(
-                                  fallbackIcon: Icons.kitchen_outlined,
-                                  imageUrl: item.imageUrl,
-                                  title: item.name,
-                                  subtitle: item.brand,
-                                  onTap: () => Navigator.of(context).pop(
-                                    _InventoryItemFoodSelection(item),
-                                  ),
-                                ),
-                              for (final meal in meals)
-                                _InventoryFoodTile(
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.sizeOf(context).height * 0.62,
+                      ),
+                      child: visibleCount == 0
+                          ? Center(
+                              child: Padding(
+                                padding: AppInsets.card,
+                                child: Text(l10n.diaryQuickEatInventoryEmpty),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: visibleCount,
+                              itemBuilder: (context, index) {
+                                if (index < items.length) {
+                                  final item = items[index];
+                                  return _InventoryFoodTile(
+                                    fallbackIcon: Icons.kitchen_outlined,
+                                    imageUrl: item.imageUrl,
+                                    title: item.name,
+                                    subtitle: item.brand,
+                                    onTap: () => Navigator.of(context).pop(
+                                      DiaryInventoryItemFoodSelection(item),
+                                    ),
+                                  );
+                                }
+
+                                final meal = meals[index - items.length];
+                                return _InventoryFoodTile(
                                   fallbackIcon: Icons.restaurant_menu_rounded,
                                   imageUrl: meal.imageUrl,
                                   imageBytes: _storedMealImageBytes(ref, meal),
@@ -468,11 +486,12 @@ class _DiaryInventoryFoodPicker extends ConsumerWidget {
                                     meal.totalPortions,
                                   ),
                                   onTap: () => Navigator.of(context).pop(
-                                    _PreparedMealFoodSelection(meal),
+                                    DiaryPreparedMealFoodSelection(meal),
                                   ),
-                                ),
-                            ],
-                          ),
+                                );
+                              },
+                            ),
+                    ),
                   ),
                 ],
               ),
