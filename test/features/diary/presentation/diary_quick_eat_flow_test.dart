@@ -187,6 +187,33 @@ void main() {
     expect(find.text('Empty progress food'), findsNothing);
   });
 
+  testWidgets('inventory quick eat waits for provider load before picker', (
+    tester,
+  ) async {
+    final inventoryGate = Completer<void>();
+    final mealsGate = Completer<void>();
+    await _pumpDelayedInventoryFlowHarness(
+      tester,
+      inventoryItems: [_inventoryItem(id: 'item-1', name: 'Loaded food')],
+      preparedMeals: const <PreparedMeal>[],
+      inventoryGate: inventoryGate,
+      mealsGate: mealsGate,
+    );
+
+    await tester.tap(find.byKey(_openInventoryFlowButtonKey));
+    await tester.pump();
+
+    expect(find.text('No available food in inventory.'), findsNothing);
+    expect(find.text('Loaded food'), findsNothing);
+
+    inventoryGate.complete();
+    mealsGate.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Loaded food'), findsOneWidget);
+    expect(find.text('No available food in inventory.'), findsNothing);
+  });
+
   testWidgets('inventory item stage failure shows action failed snackbar', (
     tester,
   ) async {
@@ -406,6 +433,40 @@ Future<void> _pumpInventoryFlowHarness(
   await tester.pumpAndSettle();
 }
 
+Future<void> _pumpDelayedInventoryFlowHarness(
+  WidgetTester tester, {
+  required List<InventoryItem> inventoryItems,
+  required List<PreparedMeal> preparedMeals,
+  required Completer<void> inventoryGate,
+  required Completer<void> mealsGate,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        inventoryItemsControllerProvider.overrideWith(
+          () => _DelayedInventoryItemsController(
+            inventoryItems,
+            gate: inventoryGate,
+          ),
+        ),
+        preparedMealsControllerProvider.overrideWith(
+          () => _DelayedPreparedMealsController(
+            preparedMeals,
+            gate: mealsGate,
+          ),
+        ),
+      ],
+      child: const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _InventoryFlowHarness(),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
@@ -443,7 +504,7 @@ class _TestInventoryItemsController extends InventoryItemsController {
   final bool failStage;
 
   @override
-  FutureOr<List<InventoryItem>> build() {
+  FutureOr<List<InventoryItem>> build() async {
     return _items;
   }
 
@@ -464,6 +525,19 @@ class _TestInventoryItemsController extends InventoryItemsController {
   }
 }
 
+class _DelayedInventoryItemsController extends InventoryItemsController {
+  _DelayedInventoryItemsController(this._items, {required this.gate});
+
+  final List<InventoryItem> _items;
+  final Completer<void> gate;
+
+  @override
+  FutureOr<List<InventoryItem>> build() async {
+    await gate.future;
+    return _items;
+  }
+}
+
 class _TestPreparedMealsController extends PreparedMealsController {
   _TestPreparedMealsController(this._meals, {required this.failConsume});
 
@@ -471,7 +545,7 @@ class _TestPreparedMealsController extends PreparedMealsController {
   final bool failConsume;
 
   @override
-  FutureOr<List<PreparedMeal>> build() {
+  FutureOr<List<PreparedMeal>> build() async {
     return _meals;
   }
 
@@ -483,6 +557,19 @@ class _TestPreparedMealsController extends PreparedMealsController {
     DateTime? loggedDay,
   }) async {
     return !failConsume;
+  }
+}
+
+class _DelayedPreparedMealsController extends PreparedMealsController {
+  _DelayedPreparedMealsController(this._meals, {required this.gate});
+
+  final List<PreparedMeal> _meals;
+  final Completer<void> gate;
+
+  @override
+  FutureOr<List<PreparedMeal>> build() async {
+    await gate.future;
+    return _meals;
   }
 }
 

@@ -258,7 +258,7 @@ void main() {
     await _pumpRouterTransition(tester);
     expect(
       container.read(appRouterProvider).state.uri.path,
-      AppRoutes.homeInventory,
+      AppRoutes.homeCalories,
     );
 
     container.read(appRouterProvider).go(AppRoutes.welcome);
@@ -266,7 +266,7 @@ void main() {
 
     expect(
       container.read(appRouterProvider).state.uri.path,
-      AppRoutes.homeInventory,
+      AppRoutes.homeCalories,
     );
   });
 
@@ -323,7 +323,7 @@ void main() {
 
     expect(
       container.read(appRouterProvider).state.uri.path,
-      AppRoutes.homeInventory,
+      AppRoutes.homeCalories,
     );
   });
 
@@ -373,7 +373,7 @@ void main() {
 
     expect(
       container.read(appRouterProvider).state.uri.path,
-      AppRoutes.homeInventory,
+      AppRoutes.homeCalories,
     );
   });
 
@@ -441,7 +441,7 @@ void main() {
 
     expect(
       container.read(appRouterProvider).state.uri.path,
-      AppRoutes.homeInventory,
+      AppRoutes.homeCalories,
     );
   });
 
@@ -466,7 +466,7 @@ void main() {
 
     expect(
       container.read(appRouterProvider).state.uri.path,
-      AppRoutes.homeInventory,
+      AppRoutes.homeCalories,
     );
     expect(
       container
@@ -584,7 +584,7 @@ void main() {
 
       expect(
         container.read(appRouterProvider).state.uri.path,
-        AppRoutes.homeInventory,
+        AppRoutes.homeCalories,
       );
     },
   );
@@ -607,13 +607,16 @@ void main() {
     await _pumpRouterTransition(tester);
 
     final router = container.read(appRouterProvider);
-    expect(router.state.uri.path, AppRoutes.homeInventory);
-    expect(find.text('My inventory'), findsOneWidget);
-    expect(find.text('STATISTICS'), findsOneWidget);
+    expect(router.state.uri.path, AppRoutes.homeCalories);
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('MORE'), findsOneWidget);
+    expect(find.text('STATISTICS'), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.insights_rounded).hitTestable());
+    await tester.tap(find.byIcon(Icons.more_horiz_rounded).hitTestable());
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.tap(find.text('Statistics').hitTestable());
+    await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeStatistics);
     expect(find.text('MVP note'), findsOneWidget);
 
@@ -637,7 +640,10 @@ void main() {
     expect(router.state.uri.path, AppRoutes.homeCalories);
     expect(find.text('Today'), findsOneWidget);
 
-    router.go(AppRoutes.homeSettings);
+    await tester.tap(find.byIcon(Icons.more_horiz_rounded).hitTestable());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.tap(find.text('Settings').hitTestable());
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettings);
     expect(find.text('Settings'), findsOneWidget);
@@ -648,9 +654,7 @@ void main() {
     expect(find.text('Sign out'), findsOneWidget);
   });
 
-  testWidgets('inventory clipboard button opens templates page', (
-    tester,
-  ) async {
+  testWidgets('cookbook menu entry opens templates page', (tester) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
@@ -664,14 +668,15 @@ void main() {
     await _pumpRouterTransition(tester);
 
     final router = container.read(appRouterProvider);
-    expect(router.state.uri.path, AppRoutes.homeInventory);
+    expect(router.state.uri.path, AppRoutes.homeCalories);
 
-    await tester.tap(find.byIcon(Icons.bookmarks_rounded).hitTestable());
+    await tester.tap(find.byIcon(Icons.auto_stories_rounded).hitTestable());
     await _pumpRouterTransition(tester);
 
     expect(router.state.uri.path, AppRoutes.homeInventoryTemplates);
-    expect(find.text('Templates'), findsOneWidget);
-    expect(find.byType(BackButton), findsOneWidget);
+    expect(find.text('Cookbook'), findsOneWidget);
+    expect(find.byIcon(Icons.add_link_rounded), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
   });
 
   testWidgets('route-level redirects for root and home routes are configured', (
@@ -700,11 +705,11 @@ void main() {
 
     expect(
       rootRoute.redirect?.call(context, router.state),
-      AppRoutes.homeInventory,
+      AppRoutes.homeCalories,
     );
     expect(
       homeRoute.redirect?.call(context, router.state),
-      AppRoutes.homeInventory,
+      AppRoutes.homeCalories,
     );
   });
 

@@ -48,6 +48,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -74,6 +76,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   final DiaryWeeklyCheckInDialogScheduler _weeklyCheckInDialogs =
       DiaryWeeklyCheckInDialogScheduler();
+  ProviderSubscription<AsyncValue<List<InventoryItem>>>?
+  _inventoryItemsSubscription;
+  ProviderSubscription<AsyncValue<List<PreparedMeal>>>?
+  _preparedMealsSubscription;
   ProviderSubscription<AsyncValue<CalorieWeeklyCheckInViewModel>>?
   _weeklyCheckInSubscription;
   bool _didQueueDiaryIntro = false;
@@ -87,12 +93,25 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       _cacheWeeklyCheckInView,
       fireImmediately: true,
     );
+    // Warm up inventory data for quick access from diary bottom sheets.
+    _inventoryItemsSubscription = ref.listenManual(
+      inventoryItemsControllerProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    _preparedMealsSubscription = ref.listenManual(
+      preparedMealsControllerProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     WidgetsBinding.instance.addObserver(this);
     _diaryScrollController.addListener(_refreshScrollActions);
   }
 
   @override
   void dispose() {
+    _preparedMealsSubscription?.close();
+    _inventoryItemsSubscription?.close();
     _weeklyCheckInSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     _diaryScrollController

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -27,17 +28,29 @@ import 'package:yamt/l10n/app_localizations.dart';
   receiptCameraSupported,
 ])
 Widget _buildHarness({
+  bool embedded = true,
   bool isCameraSupported = true,
   ValueChanged<Object?>? onManualAddRouteExtra,
 }) {
+  final routeObserver = RouteObserver<ModalRoute<void>>();
   final router = GoRouter(
+    observers: [routeObserver],
     routes: [
       GoRoute(
         path: AppRoutes.root,
         builder: (context, state) {
-          return const Scaffold(
-            body: Center(child: InventoryActionFab.embedded()),
+          return Scaffold(
+            body: Center(
+              child: embedded ? InventoryActionFab.embedded() : null,
+            ),
+            floatingActionButton: embedded ? null : const InventoryActionFab(),
           );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.homeShopping,
+        builder: (context, state) {
+          return const Scaffold(body: Text('Next route'));
         },
       ),
       GoRoute(
@@ -52,6 +65,7 @@ Widget _buildHarness({
 
   return ProviderScope(
     overrides: <Override>[
+      appRouteObserverProvider.overrideWithValue(routeObserver),
       receiptCaptureFlowControllerProvider.overrideWith(
         _RecordingReceiptCaptureFlowController.new,
       ),
@@ -81,6 +95,96 @@ Future<void> _openEmbeddedFabSheet(WidgetTester tester) async {
   receiptCameraSupported,
 ])
 void main() {
+  group('InventoryActionFab', () {
+    testWidgets('expands and closes from the floating button', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildHarness(embedded: false));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('inventory_action_fab_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.close_rounded), findsOneWidget);
+      expect(find.text('Manual search'), findsOneWidget);
+      expect(find.text('Barcode'), findsOneWidget);
+      expect(find.text('AI suggestion'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(const Key('inventory_action_fab_close_button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Manual search'), findsNothing);
+      expect(find.byIcon(Icons.close_rounded), findsNothing);
+    });
+
+    testWidgets('outside tap closes the expanded floating menu', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildHarness(embedded: false));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('inventory_action_fab_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Manual search'), findsOneWidget);
+
+      await tester.tapAt(const Offset(24, 24));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Manual search'), findsNothing);
+      expect(find.byIcon(Icons.close_rounded), findsNothing);
+    });
+
+    testWidgets('route push closes expanded floating menu overlay', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildHarness(embedded: false));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('inventory_action_fab_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Manual search'), findsOneWidget);
+
+      final context = tester.element(find.byType(InventoryActionFab));
+      unawaited(context.push(AppRoutes.homeShopping));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Next route'), findsOneWidget);
+      expect(find.text('Manual search'), findsNothing);
+      expect(find.byIcon(Icons.close_rounded), findsNothing);
+    });
+
+    testWidgets('action closes expanded menu before opening route', (
+      tester,
+    ) async {
+      Object? manualAddRouteExtra;
+
+      await tester.pumpWidget(
+        _buildHarness(
+          embedded: false,
+          onManualAddRouteExtra: (extra) => manualAddRouteExtra = extra,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('inventory_action_fab_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const Key('inventory_action_ai_suggestion_fab')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('AI suggestion'), findsNothing);
+      expect(
+        manualAddRouteExtra,
+        InventoryManualAddInitialAction.aiSuggestion,
+      );
+    });
+  });
+
   group('InventoryActionFab.embedded', () {
     testWidgets('opens sheet with all actions', (tester) async {
       await tester.pumpWidget(_buildHarness());
@@ -97,6 +201,10 @@ void main() {
         findsOneWidget,
       );
       expect(
+        find.byKey(const Key('inventory_action_barcode_fab')),
+        findsOneWidget,
+      );
+      expect(
         find.byKey(const Key('inventory_action_upload_image_pdf_fab')),
         findsOneWidget,
       );
@@ -105,6 +213,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Manual search'), findsOneWidget);
+      expect(find.text('Barcode'), findsOneWidget);
       expect(find.text('AI suggestion'), findsOneWidget);
       expect(find.text('Upload image/PDF'), findsOneWidget);
       expect(find.text('Camera'), findsOneWidget);
@@ -135,6 +244,32 @@ void main() {
       expect(
         manualAddRouteExtra,
         InventoryManualAddInitialAction.manualSearch,
+      );
+    });
+
+    testWidgets('barcode closes sheet and opens barcode route', (
+      tester,
+    ) async {
+      Object? manualAddRouteExtra;
+
+      await tester.pumpWidget(
+        _buildHarness(
+          onManualAddRouteExtra: (extra) => manualAddRouteExtra = extra,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _openEmbeddedFabSheet(tester);
+      await tester.tap(find.byKey(const Key('inventory_action_barcode_fab')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('inventory_action_barcode_fab')),
+        findsNothing,
+      );
+      expect(
+        manualAddRouteExtra,
+        InventoryManualAddInitialAction.barcodeScan,
       );
     });
 

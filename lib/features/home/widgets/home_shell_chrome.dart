@@ -10,6 +10,7 @@ const _regularHomeTopBarHeight = 76.0;
 const _compactHomeTopBarHeight = 88.0;
 const _regularHomeTopBarWithSubtitleHeight = 86.0;
 const _compactHomeTopBarWithSubtitleHeight = 96.0;
+const _bottomNavTopIndicatorWidth = 20.0;
 const double _homeTopBarTextVerticalPadding = AppSpacing.xxl;
 
 double _effectiveTextScale(
@@ -94,6 +95,9 @@ enum HomeTabType {
 
   /// Diary.
   diary,
+
+  /// Cookbook.
+  cookbook,
 
   /// Statistics.
   statistics,
@@ -300,6 +304,7 @@ class HomeNavEntry {
     required this.item,
     required this.isSelected,
     required this.onTap,
+    this.showTopIndicator = false,
   });
 
   /// The item.
@@ -307,6 +312,9 @@ class HomeNavEntry {
 
   /// Whether selected.
   final bool isSelected;
+
+  /// Whether to show a small top indicator above this entry.
+  final bool showTopIndicator;
 
   /// The on tap.
   final VoidCallback onTap;
@@ -325,7 +333,7 @@ class HomeBottomNavBar extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final compactChrome = shouldUseCompactHomeChrome(context);
     final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
-    final horizontalInset = compactChrome ? AppSpacing.lg : AppSpacing.xl;
+    final horizontalInset = compactChrome ? AppSpacing.xxs : AppSpacing.xs;
 
     return SafeArea(
       top: false,
@@ -368,7 +376,7 @@ class HomeBottomNavBar extends StatelessWidget {
                   builder: (context, constraints) {
                     final navHorizontalPadding = compactChrome
                         ? AppSpacing.xs
-                        : AppSpacing.sm;
+                        : AppSpacing.xs;
                     final showLabels = _shouldShowBottomNavLabels(
                       entries,
                       maxWidth: constraints.maxWidth,
@@ -389,6 +397,7 @@ class HomeBottomNavBar extends StatelessWidget {
                               child: _HomeBottomNavItemButton(
                                 item: entry.item,
                                 isSelected: entry.isSelected,
+                                showTopIndicator: entry.showTopIndicator,
                                 onTap: entry.onTap,
                                 showLabel: showLabels,
                               ),
@@ -413,12 +422,14 @@ class _HomeBottomNavItemButton extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
     required this.showLabel,
+    required this.showTopIndicator,
   });
 
   final HomeNavItem item;
   final bool isSelected;
   final VoidCallback onTap;
   final bool showLabel;
+  final bool showTopIndicator;
 
   @override
   Widget build(BuildContext context) {
@@ -449,6 +460,17 @@ class _HomeBottomNavItemButton extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                width: showTopIndicator ? _bottomNavTopIndicatorWidth : 0,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: showTopIndicator ? colors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+              ),
+              SizedBox(height: showTopIndicator ? AppSpacing.xs : 0),
               Icon(
                 item.icon,
                 color: foregroundColor,

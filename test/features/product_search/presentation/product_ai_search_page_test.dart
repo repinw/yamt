@@ -316,6 +316,7 @@ void main() {
     expect(find.byIcon(Icons.restaurant_outlined), findsOneWidget);
     expect(find.byIcon(Icons.inventory_2_outlined), findsNothing);
     expect(find.text('Eat'), findsWidgets);
+    expect(find.text('Inventory'), findsNothing);
   });
 
   testWidgets('ai page adjusts per-100 kcal and weight before save', (

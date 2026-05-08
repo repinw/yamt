@@ -115,12 +115,13 @@ class DiaryQuickEatFlow {
     required MealType mealType,
     required DateTime loggedAt,
   }) async {
-    final items =
-        ref.read(inventoryItemsControllerProvider).value ??
-        const <InventoryItem>[];
-    final meals =
-        ref.read(preparedMealsControllerProvider).value ??
-        const <PreparedMeal>[];
+    final itemsFuture = ref.read(inventoryItemsControllerProvider.future);
+    final mealsFuture = ref.read(preparedMealsControllerProvider.future);
+    final items = await itemsFuture;
+    final meals = await mealsFuture;
+    if (!context.mounted) {
+      return;
+    }
     final selection = await showModalBottomSheet<DiaryInventoryFoodSelection>(
       context: context,
       useRootNavigator: true,

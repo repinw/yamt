@@ -129,7 +129,7 @@ class _CalorieOnboardingWizardState
       if (context.canPop()) {
         context.pop();
       } else {
-        context.go(AppRoutes.homeInventory);
+        context.go(AppRoutes.homeDiary);
       }
     }
   }

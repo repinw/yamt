@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/inventory/presentation/inventory_action_sheet_flow.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_action_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_menu_action.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_main_fab_button.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
@@ -34,14 +37,57 @@ class InventoryActionFab extends ConsumerStatefulWidget {
   ConsumerState<InventoryActionFab> createState() => _InventoryActionFabState();
 }
 
-class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
-  final _fabKey = GlobalKey<ExpandableFabState>();
+class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
+    with RouteAware {
+  final LayerLink _fabLayerLink = LayerLink();
+  OverlayEntry? _expandedMenuEntry;
+  RouteObserver<ModalRoute<void>>? _subscribedObserver;
+  ModalRoute<void>? _subscribedRoute;
   bool _isSheetOpen = false;
+  bool _isExpanded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.embedded) {
+      return;
+    }
+    final observer = ref.read(appRouteObserverProvider);
+    final route = ModalRoute.of(context);
+    if (observer == _subscribedObserver && route == _subscribedRoute) {
+      return;
+    }
+    final previousObserver = _subscribedObserver;
+    if (previousObserver != null) {
+      previousObserver.unsubscribe(this);
+    }
+    if (route != null) {
+      observer.subscribe(this, route);
+    }
+    _subscribedObserver = observer;
+    _subscribedRoute = route;
+  }
+
+  @override
+  void didPushNext() {
+    _collapseExpandedMenu();
+  }
+
+  @override
+  void didPop() {
+    _collapseExpandedMenu();
+  }
+
+  @override
+  void dispose() {
+    _subscribedObserver?.unsubscribe(this);
+    _removeExpandedMenu();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
     final flowState = ref.watch(receiptCaptureFlowControllerProvider);
     final batchState = ref.watch(receiptBatchFlowControllerProvider);
     final isCameraEnabled = ref.watch(receiptCameraSupportedProvider);
@@ -50,7 +96,7 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
         batchState.status == ReceiptBatchFlowStatus.running;
 
     if (widget.embedded) {
-      return _InventoryMainFabButton(
+      return InventoryMainFabButton(
         buttonKey: const Key('inventory_action_fab_button'),
         isBusy: isBusy,
         icon: Icons.add_rounded,
@@ -65,107 +111,196 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
       );
     }
 
-    return ExpandableFab(
-      key: _fabKey,
-      type: ExpandableFabType.up,
-      distance: 64,
-      duration: Duration.zero,
-      childrenAnimation: ExpandableFabAnimation.none,
-      overlayStyle: ExpandableFabOverlayStyle(
-        color: colors.scrim.withValues(alpha: 0.08),
-      ),
-      openButtonBuilder: FloatingActionButtonBuilder(
-        size: AppInventoryEditorial.contextFabSize,
-        builder: (context, onPressed, progress) {
-          return _InventoryMainFabButton(
+    return PopScope(
+      canPop: !_isExpanded,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _collapseExpandedMenu();
+        }
+      },
+      child: CompositedTransformTarget(
+        link: _fabLayerLink,
+        child: Visibility(
+          visible: !_isExpanded,
+          maintainAnimation: true,
+          maintainSize: true,
+          maintainState: true,
+          child: InventoryMainFabButton(
             buttonKey: const Key('inventory_action_fab_button'),
             isBusy: isBusy,
             icon: Icons.add_rounded,
             tooltip: l10n.inventoryFabTooltip,
-            onPressed: isBusy ? null : onPressed,
-          );
-        },
+            onPressed: isBusy
+                ? null
+                : () => _showExpandedMenu(
+                    context: context,
+                    l10n: l10n,
+                    isCameraEnabled: isCameraEnabled,
+                  ),
+          ),
+        ),
       ),
-      closeButtonBuilder: FloatingActionButtonBuilder(
-        size: AppInventoryEditorial.contextFabSize,
-        builder: (context, onPressed, progress) {
-          return _InventoryMainFabButton(
-            isBusy: false,
-            icon: Icons.close_rounded,
-            tooltip: l10n.inventoryFabTooltip,
-            onPressed: onPressed,
-          );
-        },
-      ),
-      children: [
-        _InventoryFabMenuAction(
-          key: const Key('inventory_action_manual_search_fab'),
-          heroTag: 'inventory_action_manual_search_fab',
-          icon: Icons.search_rounded,
-          label: l10n.inventoryActionManualSearch,
-          onPressed: isBusy
-              ? null
-              : () => _runAction(
-                  () => InventoryActionSheetFlow.openManualSearch(
-                    context: context,
-                    l10n: l10n,
-                  ),
-                ),
-        ),
-        _InventoryFabMenuAction(
-          key: const Key('inventory_action_ai_suggestion_fab'),
-          heroTag: 'inventory_action_ai_suggestion_fab',
-          icon: Icons.auto_awesome_rounded,
-          label: l10n.inventoryActionAiSuggestion,
-          onPressed: isBusy
-              ? null
-              : () => _runAction(
-                  () => InventoryActionSheetFlow.openAiSuggestion(
-                    context: context,
-                    l10n: l10n,
-                  ),
-                ),
-        ),
-        _InventoryFabMenuAction(
-          key: const Key('inventory_action_upload_image_pdf_fab'),
-          heroTag: 'inventory_action_upload_image_pdf_fab',
-          icon: Icons.upload_file_rounded,
-          label: l10n.inventoryActionUploadImagePdf,
-          onPressed: isBusy
-              ? null
-              : () => _runAction(
-                  () => InventoryActionSheetFlow.uploadFile(
-                    context: context,
-                    ref: ref,
-                    l10n: l10n,
-                  ),
-                ),
-        ),
-        _InventoryFabMenuAction(
-          key: const Key('inventory_action_camera_fab'),
-          heroTag: 'inventory_action_camera_fab',
-          icon: Icons.photo_camera_rounded,
-          label: l10n.inventoryActionCamera,
-          tooltip: isCameraEnabled
-              ? l10n.inventoryActionCamera
-              : l10n.inventoryActionCameraUnsupported,
-          onPressed: isBusy || !isCameraEnabled
-              ? null
-              : () => _runAction(
-                  () => InventoryActionSheetFlow.scanCamera(
-                    context: context,
-                    ref: ref,
-                    l10n: l10n,
-                  ),
-                ),
-        ),
-      ],
     );
   }
 
   void _runAction(Future<void> Function() action) {
-    _fabKey.currentState?.close();
+    _collapseExpandedMenu();
     unawaited(action());
+  }
+
+  void _showExpandedMenu({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required bool isCameraEnabled,
+  }) {
+    if (_isExpanded) {
+      return;
+    }
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) {
+      return;
+    }
+    setState(() {
+      _isExpanded = true;
+    });
+    _expandedMenuEntry = OverlayEntry(
+      builder: (overlayContext) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                key: const Key('inventory_action_fab_overlay_dismiss'),
+                behavior: HitTestBehavior.opaque,
+                onTap: _collapseExpandedMenu,
+                child: const SizedBox.expand(),
+              ),
+            ),
+            CompositedTransformFollower(
+              link: _fabLayerLink,
+              showWhenUnlinked: false,
+              targetAnchor: Alignment.bottomRight,
+              followerAnchor: Alignment.bottomRight,
+              child: InventoryExpandedFabMenu(
+                actions: _buildActions(
+                  context: overlayContext,
+                  l10n: l10n,
+                  isCameraEnabled: isCameraEnabled,
+                ),
+                closeButton: InventoryMainFabButton(
+                  buttonKey: const Key('inventory_action_fab_close_button'),
+                  isBusy: false,
+                  icon: Icons.close_rounded,
+                  tooltip: l10n.inventoryFabTooltip,
+                  onPressed: _collapseExpandedMenu,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    overlay.insert(_expandedMenuEntry!);
+  }
+
+  void _collapseExpandedMenu() {
+    if (!_isExpanded) {
+      return;
+    }
+    _removeExpandedMenu();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isExpanded = false;
+    });
+  }
+
+  void _removeExpandedMenu() {
+    final entry = _expandedMenuEntry;
+    if (entry == null) {
+      return;
+    }
+    _expandedMenuEntry = null;
+    if (entry.mounted) {
+      entry.remove();
+    }
+    entry.dispose();
+  }
+
+  List<Widget> _buildActions({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required bool isCameraEnabled,
+  }) {
+    return [
+      InventoryFabMenuAction(
+        key: const Key('inventory_action_manual_search_fab'),
+        heroTag: 'inventory_action_manual_search_fab',
+        icon: Icons.search_rounded,
+        label: l10n.inventoryActionManualSearch,
+        onPressed: () => _runAction(
+          () => InventoryActionSheetFlow.openManualSearch(
+            context: context,
+            l10n: l10n,
+          ),
+        ),
+      ),
+      InventoryFabMenuAction(
+        key: const Key('inventory_action_barcode_fab'),
+        heroTag: 'inventory_action_barcode_fab',
+        icon: Icons.qr_code_scanner_rounded,
+        label: l10n.diaryQuickEatSourceBarcode,
+        onPressed: () => _runAction(
+          () => InventoryActionSheetFlow.openBarcodeScanner(
+            context: context,
+            l10n: l10n,
+          ),
+        ),
+      ),
+      InventoryFabMenuAction(
+        key: const Key('inventory_action_ai_suggestion_fab'),
+        heroTag: 'inventory_action_ai_suggestion_fab',
+        icon: Icons.auto_awesome_rounded,
+        label: l10n.inventoryActionAiSuggestion,
+        onPressed: () => _runAction(
+          () => InventoryActionSheetFlow.openAiSuggestion(
+            context: context,
+            l10n: l10n,
+          ),
+        ),
+      ),
+      InventoryFabMenuAction(
+        key: const Key('inventory_action_upload_image_pdf_fab'),
+        heroTag: 'inventory_action_upload_image_pdf_fab',
+        icon: Icons.upload_file_rounded,
+        label: l10n.inventoryActionUploadImagePdf,
+        onPressed: () => _runAction(
+          () => InventoryActionSheetFlow.uploadFile(
+            context: context,
+            ref: ref,
+            l10n: l10n,
+          ),
+        ),
+      ),
+      InventoryFabMenuAction(
+        key: const Key('inventory_action_camera_fab'),
+        heroTag: 'inventory_action_camera_fab',
+        icon: Icons.photo_camera_rounded,
+        label: l10n.inventoryActionCamera,
+        tooltip: isCameraEnabled
+            ? l10n.inventoryActionCamera
+            : l10n.inventoryActionCameraUnsupported,
+        onPressed: isCameraEnabled
+            ? () => _runAction(
+                () => InventoryActionSheetFlow.scanCamera(
+                  context: context,
+                  ref: ref,
+                  l10n: l10n,
+                ),
+              )
+            : null,
+      ),
+    ];
   }
 
   void _showActionsSheet({
@@ -186,11 +321,18 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
         useSafeArea: true,
         sheetAnimationStyle: AnimationStyle.noAnimation,
         builder: (sheetContext) {
-          return _InventoryFabActionSheet(
+          return InventoryFabActionSheet(
             isCameraEnabled: isCameraEnabled,
             onManualSearch: () => _closeAndRun(
               sheetContext,
               () => InventoryActionSheetFlow.openManualSearch(
+                context: context,
+                l10n: l10n,
+              ),
+            ),
+            onBarcodeScan: () => _closeAndRun(
+              sheetContext,
+              () => InventoryActionSheetFlow.openBarcodeScanner(
                 context: context,
                 l10n: l10n,
               ),
@@ -239,207 +381,46 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
   }
 }
 
-class _InventoryMainFabButton extends StatelessWidget {
-  const _InventoryMainFabButton({
-    required this.isBusy,
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-    this.buttonKey,
-  });
-
-  final bool isBusy;
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback? onPressed;
-  final Key? buttonKey;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final foregroundColor = onPressed == null && !isBusy
-        ? colors.onSurface.withValues(alpha: 0.38)
-        : colors.primary;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.primaryContainer,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: colors.primary),
-      ),
-      child: SizedBox.square(
-        key: buttonKey,
-        dimension: AppInventoryEditorial.contextFabSize,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            onTap: onPressed,
-            child: Tooltip(
-              message: tooltip,
-              child: Center(
-                child: _InventoryMainFabIcon(
-                  isBusy: isBusy,
-                  icon: icon,
-                  foregroundColor: foregroundColor,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InventoryMainFabIcon extends StatelessWidget {
-  const _InventoryMainFabIcon({
-    required this.isBusy,
-    required this.icon,
-    required this.foregroundColor,
-  });
-
-  final bool isBusy;
-  final IconData icon;
-  final Color foregroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!isBusy) {
-      return Icon(icon, color: foregroundColor, size: 36);
-    }
-
-    return SizedBox.square(
-      dimension: AppSizes.inlineProgressIndicator,
-      child: CircularProgressIndicator(
-        color: foregroundColor,
-        strokeWidth: AppSizes.progressStrokeWidth,
-      ),
-    );
-  }
-}
-
-class _InventoryFabMenuAction extends StatelessWidget {
-  const _InventoryFabMenuAction({
-    required this.heroTag,
-    required this.icon,
-    required this.label,
-    required this.onPressed,
+class InventoryExpandedFabMenu extends StatelessWidget {
+  const InventoryExpandedFabMenu({
+    required this.actions,
+    required this.closeButton,
     super.key,
-    String? tooltip,
-  }) : tooltip = tooltip ?? label;
-
-  final Object heroTag;
-  final IconData icon;
-  final String label;
-  final String tooltip;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final labelMaxWidth = (screenWidth - 128).clamp(120.0, 240.0);
-
-    return Tooltip(
-      message: tooltip,
-      child: FloatingActionButton.extended(
-        heroTag: heroTag,
-        onPressed: onPressed,
-        icon: Icon(icon),
-        label: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: labelMaxWidth),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InventoryFabActionSheet extends StatelessWidget {
-  const _InventoryFabActionSheet({
-    required this.isCameraEnabled,
-    required this.onManualSearch,
-    required this.onAiSuggestion,
-    required this.onUploadFile,
-    required this.onScanCamera,
   });
 
-  final bool isCameraEnabled;
-  final VoidCallback onManualSearch;
-  final VoidCallback onAiSuggestion;
-  final VoidCallback onUploadFile;
-  final VoidCallback onScanCamera;
+  final List<Widget> actions;
+  final Widget closeButton;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+    return Material(
+      color: Colors.transparent,
+      child: TweenAnimationBuilder<double>(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOutCubic,
+        tween: Tween<double>(begin: 0, end: 1),
+        builder: (context, progress, child) {
+          return Opacity(
+            opacity: progress,
+            child: Transform.scale(
+              alignment: Alignment.bottomRight,
+              scale: 0.94 + (progress * 0.06),
+              child: child,
+            ),
+          );
+        },
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _InventoryFabActionTile(
-              key: const Key('inventory_action_manual_search_fab'),
-              icon: Icons.search_rounded,
-              label: l10n.inventoryActionManualSearch,
-              onPressed: onManualSearch,
-            ),
-            _InventoryFabActionTile(
-              key: const Key('inventory_action_ai_suggestion_fab'),
-              icon: Icons.auto_awesome_rounded,
-              label: l10n.inventoryActionAiSuggestion,
-              onPressed: onAiSuggestion,
-            ),
-            _InventoryFabActionTile(
-              key: const Key('inventory_action_upload_image_pdf_fab'),
-              icon: Icons.upload_file_rounded,
-              label: l10n.inventoryActionUploadImagePdf,
-              onPressed: onUploadFile,
-            ),
-            _InventoryFabActionTile(
-              key: const Key('inventory_action_camera_fab'),
-              icon: Icons.photo_camera_rounded,
-              label: l10n.inventoryActionCamera,
-              subtitle: isCameraEnabled
-                  ? null
-                  : l10n.inventoryActionCameraUnsupported,
-              onPressed: isCameraEnabled ? onScanCamera : null,
-            ),
+            for (final action in actions) ...[
+              action,
+              const SizedBox(height: AppSpacing.sm),
+            ],
+            closeButton,
           ],
         ),
       ),
-    );
-  }
-}
-
-class _InventoryFabActionTile extends StatelessWidget {
-  const _InventoryFabActionTile({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    super.key,
-    this.subtitle,
-  });
-
-  final IconData icon;
-  final String label;
-  final String? subtitle;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(label),
-      subtitle: subtitle == null ? null : Text(subtitle!),
-      enabled: onPressed != null,
-      onTap: onPressed,
     );
   }
 }

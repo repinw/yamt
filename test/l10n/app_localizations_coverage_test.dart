@@ -10,6 +10,8 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.homeShopping,
     l10n.homeStatistics,
     l10n.homeCalories,
+    l10n.homeCookbook,
+    l10n.homeMore,
     l10n.homeSettings,
     l10n.homeQuickActionTooltip,
     l10n.inventoryFabTooltip,

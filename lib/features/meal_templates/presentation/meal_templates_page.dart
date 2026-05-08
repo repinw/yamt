@@ -6,14 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
-import 'package:yamt/features/meal_templates/presentation/models/'
-    'meal_template_import_review_args.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_template_card.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_template_recipe_import_button.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_template_recipe_template_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -21,7 +20,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines meal templates page.
 class MealTemplatesPage extends ConsumerWidget {
   /// The meal templates page.
-  const MealTemplatesPage({super.key});
+  const MealTemplatesPage({super.key, this.includeAppBar = true});
+
+  /// Whether this page should render its own app bar.
+  final bool includeAppBar;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,17 +36,12 @@ class MealTemplatesPage extends ConsumerWidget {
     final templatesAsync = ref.watch(preparedMealTemplatesControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.preparedMealTemplatesPageTitle),
-        actions: [
-          IconButton(
-            tooltip: l10n.preparedMealTemplateAddRecipeAction,
-            onPressed: () =>
-                _createTemplateFromRecipe(context: context, ref: ref),
-            icon: const Icon(Icons.add_link_rounded),
-          ),
-        ],
-      ),
+      appBar: includeAppBar
+          ? AppBar(
+              title: Text(l10n.preparedMealTemplatesPageTitle),
+              actions: const [MealTemplateRecipeImportButton()],
+            )
+          : null,
       body: templatesAsync.when(
         data: (templates) {
           if (templates.isEmpty) {
@@ -60,11 +57,13 @@ class MealTemplatesPage extends ConsumerWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               AppSpacing.xl,
               AppSpacing.lg,
               AppSpacing.xl,
-              AppSpacing.xxl,
+              includeAppBar
+                  ? AppSpacing.xxl
+                  : AppSizes.homeShellBottomBarClearance,
             ),
             itemCount: templates.length,
             separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
@@ -188,43 +187,6 @@ class MealTemplatesPage extends ConsumerWidget {
       AppLocalizations.of(context)!.preparedMealTemplateDeletedMessage,
     );
     return true;
-  }
-
-  Future<void> _createTemplateFromRecipe({
-    required BuildContext context,
-    required WidgetRef ref,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    final draft = await showPreparedMealRecipeTemplateSheet(context);
-    if (!context.mounted || draft == null) {
-      return;
-    }
-
-    final importedRecipe = await ref
-        .read(preparedMealRecipeImporterProvider)
-        .importRecipe(draft.recipeUrl, localeName: l10n.localeName);
-    if (!context.mounted) {
-      return;
-    }
-
-    if (importedRecipe == null) {
-      _showSnackBar(
-        context,
-        l10n.preparedMealTemplateRecipeImportFailedMessage,
-      );
-      return;
-    }
-
-    unawaited(
-      context.push(
-        AppRoutes.homeInventoryTemplateImportReview,
-        extra: MealTemplateImportReviewArgs(
-          importedRecipe: importedRecipe,
-          preferredName: draft.name,
-          preferredPortions: draft.totalPortions,
-        ),
-      ),
-    );
   }
 
   Future<bool> _editTemplate({

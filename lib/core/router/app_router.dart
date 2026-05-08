@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/provider/'
     'auth_profile_setup_status_provider.dart';
@@ -92,9 +93,11 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
 )
 Raw<GoRouter> appRouter(Ref ref) {
   final navigatorKey = ref.watch(navigatorKeyProvider);
+  final routeObserver = ref.watch(appRouteObserverProvider);
   final refreshListenable = ref.watch(appRouterRefreshListenableProvider);
   final router = GoRouter(
     navigatorKey: navigatorKey,
+    observers: [routeObserver],
     initialLocation: AppRoutes.root,
     refreshListenable: refreshListenable,
     redirect: (context, state) => _redirectForState(ref, state),
@@ -104,7 +107,7 @@ Raw<GoRouter> appRouter(Ref ref) {
         redirect: (context, state) {
           final authState = ref.read(authStateChangesProvider);
           final isAuthenticated = authState.asData?.value != null;
-          return isAuthenticated ? AppRoutes.homeInventory : AppRoutes.welcome;
+          return isAuthenticated ? AppRoutes.homeDiary : AppRoutes.welcome;
         },
       ),
       GoRoute(
@@ -125,7 +128,7 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.home,
-        redirect: (context, state) => AppRoutes.homeInventory,
+        redirect: (context, state) => AppRoutes.homeDiary,
       ),
       GoRoute(
         path: AppRoutes.homeSettingsAccount,
@@ -203,10 +206,6 @@ Raw<GoRouter> appRouter(Ref ref) {
         },
       ),
       GoRoute(
-        path: AppRoutes.homeInventoryTemplates,
-        builder: (context, state) => const MealTemplatesPage(),
-      ),
-      GoRoute(
         path: AppRoutes.homeInventoryTemplateImportReview,
         builder: (context, state) {
           final args = state.extra;
@@ -254,6 +253,16 @@ Raw<GoRouter> appRouter(Ref ref) {
               GoRoute(
                 path: AppRoutes.homeDiary,
                 builder: (context, state) => const DiaryPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.homeInventoryTemplates,
+                builder: (context, state) {
+                  return const MealTemplatesPage(includeAppBar: false);
+                },
               ),
             ],
           ),
@@ -343,15 +352,15 @@ String? _redirectForState(Ref ref, GoRouterState state) {
   }
 
   if (path == AppRoutes.guestNameSetup) {
-    return AppRoutes.homeInventory;
+    return AppRoutes.homeDiary;
   }
 
   if (path == AppRoutes.calorieGoalSetup) {
-    return AppRoutes.homeInventory;
+    return AppRoutes.homeDiary;
   }
 
   if (path == AppRoutes.welcome || isStartupRoute) {
-    return AppRoutes.homeInventory;
+    return AppRoutes.homeDiary;
   }
 
   return null;

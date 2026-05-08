@@ -21,6 +21,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCalories => 'Diary';
 
   @override
+  String get homeCookbook => 'Cookbook';
+
+  @override
+  String get homeMore => 'More';
+
+  @override
   String get homeSettings => 'Settings';
 
   @override
