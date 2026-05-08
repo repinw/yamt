@@ -313,9 +313,7 @@ class HomePage extends ConsumerWidget {
         body: navigationShell,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
-        floatingActionButton: _HomeFloatingActionButtonHost(
-          child: floatingActionButton,
-        ),
+        floatingActionButton: floatingActionButton ?? const SizedBox.shrink(),
         bottomNavigationBar: HomeBottomNavBar(
           entries: _navEntries(context, l10n),
         ),
@@ -385,17 +383,6 @@ class HomePage extends ConsumerWidget {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
-  }
-}
-
-class _HomeFloatingActionButtonHost extends StatelessWidget {
-  const _HomeFloatingActionButtonHost({required this.child});
-
-  final Widget? child;
-
-  @override
-  Widget build(BuildContext context) {
-    return child ?? const SizedBox.shrink();
   }
 }
 

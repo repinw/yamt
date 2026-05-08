@@ -210,8 +210,11 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
   }
 
   void _removeExpandedMenu() {
-    _expandedMenuEntry?.remove();
+    final entry = _expandedMenuEntry;
     _expandedMenuEntry = null;
+    entry
+      ?..remove()
+      ..dispose();
   }
 
   List<Widget> _buildActions({

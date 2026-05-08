@@ -838,7 +838,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
   final VoidCallback? onBuild;
 
   @override
-  FutureOr<List<InventoryItem>> build() {
+  FutureOr<List<InventoryItem>> build() async {
     onBuild?.call();
     return const <InventoryItem>[];
   }
@@ -850,7 +850,7 @@ class _StaticPreparedMealsController extends PreparedMealsController {
   final VoidCallback? onBuild;
 
   @override
-  FutureOr<List<PreparedMeal>> build() {
+  FutureOr<List<PreparedMeal>> build() async {
     onBuild?.call();
     return const <PreparedMeal>[];
   }

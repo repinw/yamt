@@ -504,7 +504,7 @@ class _TestInventoryItemsController extends InventoryItemsController {
   final bool failStage;
 
   @override
-  FutureOr<List<InventoryItem>> build() {
+  FutureOr<List<InventoryItem>> build() async {
     return _items;
   }
 
@@ -545,7 +545,7 @@ class _TestPreparedMealsController extends PreparedMealsController {
   final bool failConsume;
 
   @override
-  FutureOr<List<PreparedMeal>> build() {
+  FutureOr<List<PreparedMeal>> build() async {
     return _meals;
   }
 
