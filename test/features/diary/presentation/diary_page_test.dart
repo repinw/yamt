@@ -40,6 +40,8 @@ import 'package:yamt/features/health/provider/diary_health_service_provider.dart
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
 import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
 import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -142,6 +144,25 @@ void main() {
 
     expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
+  });
+
+  testWidgets('starts inventory providers when diary opens', (tester) async {
+    var inventoryBuildCount = 0;
+    var preparedMealsBuildCount = 0;
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      onInventoryBuild: () {
+        inventoryBuildCount += 1;
+      },
+      onPreparedMealsBuild: () {
+        preparedMealsBuildCount += 1;
+      },
+    );
+
+    expect(inventoryBuildCount, greaterThan(0));
+    expect(preparedMealsBuildCount, greaterThan(0));
   });
 
   testWidgets('auto-opens already loaded weekly check-in dialog', (
@@ -710,6 +731,8 @@ Future<ProviderContainer> _pumpDiaryPage(
   BurnWeekRunState? burnWeekRunState,
   Map<String, DiaryHealthDayData> healthDataByDay =
       const <String, DiaryHealthDayData>{},
+  VoidCallback? onInventoryBuild,
+  VoidCallback? onPreparedMealsBuild,
   List<Override> overrides = const [],
   bool overrideWeeklyCheckInProvider = true,
 }) async {
@@ -741,6 +764,12 @@ Future<ProviderContainer> _pumpDiaryPage(
         _FakeBurnWeekRunStateRepository(
           state: burnWeekRunState ?? const BurnWeekRunState.initial(),
         ),
+      ),
+      inventoryItemsControllerProvider.overrideWith(
+        () => _StaticInventoryItemsController(onBuild: onInventoryBuild),
+      ),
+      preparedMealsControllerProvider.overrideWith(
+        () => _StaticPreparedMealsController(onBuild: onPreparedMealsBuild),
       ),
       diaryCalendarControllerProvider.overrideWith(
         () => _TestDiaryCalendarController(selectedDay),
@@ -801,6 +830,30 @@ Future<ProviderContainer> _pumpDiaryPage(
     await _pumpFrames(tester);
   }
   return container;
+}
+
+class _StaticInventoryItemsController extends InventoryItemsController {
+  _StaticInventoryItemsController({this.onBuild});
+
+  final VoidCallback? onBuild;
+
+  @override
+  FutureOr<List<InventoryItem>> build() {
+    onBuild?.call();
+    return const <InventoryItem>[];
+  }
+}
+
+class _StaticPreparedMealsController extends PreparedMealsController {
+  _StaticPreparedMealsController({this.onBuild});
+
+  final VoidCallback? onBuild;
+
+  @override
+  FutureOr<List<PreparedMeal>> build() {
+    onBuild?.call();
+    return const <PreparedMeal>[];
+  }
 }
 
 Future<void> _pumpFrames(WidgetTester tester, {int count = 8}) async {
