@@ -107,6 +107,11 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntry(CalorieEntry entry) async {
+    return saveEntryForCurrentUser(entry);
+  }
+
+  @override
+  Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
     saveStarted = true;
     if (saveBlocker != null) {
       await saveBlocker!.future;

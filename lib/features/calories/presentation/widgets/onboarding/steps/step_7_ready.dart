@@ -84,7 +84,7 @@ class Step7Ready extends StatelessWidget {
                       ),
                     )
                   : Text(
-                      l10n.onboardingNextActionStep5, // Or "Starten"
+                      l10n.onboardingFinishAction,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

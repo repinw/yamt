@@ -17,6 +17,17 @@ import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_con
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+enum _CalorieOnboardingStep {
+  welcome,
+  personalInfo,
+  activity,
+  goalWeight,
+  pace,
+  info,
+  startDate,
+  ready,
+}
+
 /// Full-screen calorie goal onboarding wizard.
 class CalorieOnboardingWizard extends ConsumerStatefulWidget {
   /// Creates calorie onboarding wizard.
@@ -39,42 +50,30 @@ class _CalorieOnboardingWizardState
   final PageController _pageController = PageController();
   bool _showErrors = false;
 
-  static const _totalSteps = 8;
+  static const _steps = _CalorieOnboardingStep.values;
+  static final _totalSteps = _steps.length;
+
+  _CalorieOnboardingStep get _currentStep => _steps[_step];
 
   Future<void> _handleNext() async {
-    if (_step < _totalSteps) {
+    if (_step < _totalSteps - 1) {
       final formProvider = calorieGoalCalculatorFormControllerProvider(
         widget.initialSettings.calculatorProfile,
         useEmptyDefaults: true,
       );
       final formState = ref.read(formProvider);
 
-      // Validation per step
-      if (_step == 1) {
-        if (formState.sexError != null ||
-            formState.ageError != null ||
-            formState.heightError != null) {
-          setState(() {
-            _showErrors = true;
-          });
-          return;
-        }
-      }
-
-      if (_step == 3) {
-        if (formState.weightError != null ||
-            formState.targetWeightError != null ||
-            formState.targetWeightKgText.isEmpty) {
-          setState(() {
-            _showErrors = true;
-          });
-          return;
-        }
+      if (!_isCurrentStepValid(formState)) {
+        setState(() {
+          _showErrors = true;
+        });
+        return;
       }
 
       setState(() {
         _step++;
-        if (_step == 4 && formState.goalMode == CalorieGoalMode.maintain) {
+        if (_currentStep == _CalorieOnboardingStep.pace &&
+            formState.goalMode == CalorieGoalMode.maintain) {
           _step++;
         }
         _showErrors = false;
@@ -85,6 +84,20 @@ class _CalorieOnboardingWizardState
         curve: Curves.easeInOut,
       );
     }
+  }
+
+  bool _isCurrentStepValid(CalorieGoalCalculatorFormState formState) {
+    return switch (_currentStep) {
+      _CalorieOnboardingStep.personalInfo =>
+        formState.sexError == null &&
+            formState.ageError == null &&
+            formState.heightError == null,
+      _CalorieOnboardingStep.goalWeight =>
+        formState.weightError == null &&
+            formState.targetWeightError == null &&
+            formState.targetWeightKgText.isNotEmpty,
+      _ => true,
+    };
   }
 
   Future<void> _handleSave(
@@ -125,7 +138,8 @@ class _CalorieOnboardingWizardState
 
       setState(() {
         _step--;
-        if (_step == 4 && formState.goalMode == CalorieGoalMode.maintain) {
+        if (_currentStep == _CalorieOnboardingStep.pace &&
+            formState.goalMode == CalorieGoalMode.maintain) {
           _step--;
         }
       });
@@ -253,7 +267,7 @@ class _CalorieOnboardingWizardState
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _step == 5
+                          _currentStep == _CalorieOnboardingStep.info
                               ? AppLocalizations.of(
                                   context,
                                 )!.onboardingNextActionStep5

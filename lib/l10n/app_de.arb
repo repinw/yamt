@@ -1618,6 +1618,7 @@
   "onboardingWelcomeAction": "Lass uns starten",
   "onboardingNextAction": "Weiter",
   "onboardingNextActionStep5": "Klingt super, weiter!",
+  "onboardingFinishAction": "Starten",
   "onboardingPersonalInfoTitle": "Erzähl uns etwas über dich.",
   "onboardingPersonalInfoSubtitle": "Diese Daten helfen uns, deinen Grundumsatz zu berechnen – denn jeder Körper verbrennt Energie anders!",
   "onboardingActivityLevelTitle": "Wie aktiv bist du?",

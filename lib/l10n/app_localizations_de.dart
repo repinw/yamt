@@ -3018,6 +3018,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onboardingNextActionStep5 => 'Klingt super, weiter!';
 
   @override
+  String get onboardingFinishAction => 'Starten';
+
+  @override
   String get onboardingPersonalInfoTitle => 'Erzähl uns etwas über dich.';
 
   @override

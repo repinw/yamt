@@ -150,6 +150,11 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntry(CalorieEntry entry) async {
+    return saveEntryForCurrentUser(entry);
+  }
+
+  @override
+  Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
     final userId = _currentUserId();
     if (userId == null) {
       return false;
@@ -344,6 +349,11 @@ class _UnavailableCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntry(CalorieEntry entry) async {
+    return false;
+  }
+
+  @override
+  Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
     return false;
   }
 

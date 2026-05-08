@@ -1577,6 +1577,7 @@
   "onboardingWelcomeAction": "Let's start",
   "onboardingNextAction": "Next",
   "onboardingNextActionStep5": "Sounds great, next!",
+  "onboardingFinishAction": "Let's go",
   "onboardingPersonalInfoTitle": "Tell us something about yourself.",
   "onboardingPersonalInfoSubtitle": "This data helps us calculate your basal metabolic rate – because every body burns energy differently!",
   "onboardingActivityLevelTitle": "How active are you?",

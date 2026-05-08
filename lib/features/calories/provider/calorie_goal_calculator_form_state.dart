@@ -319,7 +319,7 @@ class CalorieGoalCalculatorFormState {
       return CalorieCalculatorFieldError.empty;
     }
     final val = _parsePositiveDouble(rawValue);
-    if (val == null || val < 40 || val > 250) {
+    if (val == null || val < 1 || val > 700) {
       return CalorieCalculatorFieldError.invalid;
     }
     return null;
@@ -330,7 +330,7 @@ class CalorieGoalCalculatorFormState {
       return CalorieCalculatorFieldError.empty;
     }
     final val = _parsePositiveDouble(rawValue);
-    if (val == null || val < 120 || val > 250) {
+    if (val == null || val < 50 || val > 272) {
       return CalorieCalculatorFieldError.invalid;
     }
     return null;

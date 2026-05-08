@@ -112,7 +112,7 @@ void main() {
 
     await _tapNext(tester);
 
-    await tester.tap(find.text('Sounds great, next!'));
+    await tester.tap(find.text("Let's go"));
     await tester.pumpAndSettle();
 
     expect(runStateRepository.state.currentWeekStartDayKey, isNotNull);

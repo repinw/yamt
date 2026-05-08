@@ -245,10 +245,10 @@ class CalorieEntry {
   /// fat split so totals are roughly self-consistent.
   factory CalorieEntry.placeholder({
     required String id,
-    required String userId,
     required String name,
     required MealType mealType,
     required double totalKcal,
+    String userId = '',
     DateTime? loggedAt,
     DateTime? createdAt,
     DateTime? updatedAt,

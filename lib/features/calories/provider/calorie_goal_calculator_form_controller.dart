@@ -165,10 +165,9 @@ class CalorieGoalCalculatorFormController
 
     final referenceNow = now ?? DateTime.now();
     state = state.copyWith(isSaving: true);
-    final onboardingRunWeekNumber =
-        await _resolveOnboardingRunWeekNumber(
-          syncBurnWeekForOnboarding: syncBurnWeekForOnboarding,
-        );
+    final onboardingRunWeekNumber = await _resolveOnboardingRunWeekNumber(
+      syncBurnWeekForOnboarding: syncBurnWeekForOnboarding,
+    );
     if (!ref.mounted) {
       return false;
     }
@@ -196,8 +195,7 @@ class CalorieGoalCalculatorFormController
           profile,
           goalStartDate: goalStartDate,
           allowFutureGoalStart: allowFutureGoalStart,
-          countGoalStartDayForLearning:
-              countGoalStartDayForLearning,
+          countGoalStartDayForLearning: countGoalStartDayForLearning,
         );
     if (!ref.mounted) {
       return saved;
@@ -282,14 +280,12 @@ class CalorieGoalCalculatorFormController
         }
         final placeholder = CalorieEntry.placeholder(
           id: _uuid.v4(),
-          // userId is replaced by the repository on save.
-          userId: '',
           name: placeholderName,
           mealType: entry.key,
           totalKcal: entry.value,
           loggedAt: mealMidpointForDay(entry.key, normalizedToday),
         );
-        await repository.saveEntry(placeholder);
+        await repository.saveEntryForCurrentUser(placeholder);
         if (!ref.mounted) {
           return;
         }

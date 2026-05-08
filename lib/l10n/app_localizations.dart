@@ -5837,6 +5837,12 @@ abstract class AppLocalizations {
   /// **'Sounds great, next!'**
   String get onboardingNextActionStep5;
 
+  /// No description provided for @onboardingFinishAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go'**
+  String get onboardingFinishAction;
+
   /// No description provided for @onboardingPersonalInfoTitle.
   ///
   /// In en, this message translates to:
