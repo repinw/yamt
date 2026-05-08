@@ -10,6 +10,7 @@ import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
@@ -98,10 +99,138 @@ void main() {
 
     expect(find.text('selected:meal:meal-1'), findsOneWidget);
   });
+
+  test('inventory availability rejects depleted items', () {
+    expect(
+      DiaryQuickEatFlow.canEatInventoryItem(
+        _inventoryItem(id: 'available', name: 'Available'),
+      ),
+      isTrue,
+    );
+    expect(
+      DiaryQuickEatFlow.canEatInventoryItem(
+        _inventoryItem(id: 'depleted', name: 'Depleted', quantity: 0),
+      ),
+      isFalse,
+    );
+    expect(
+      DiaryQuickEatFlow.canEatInventoryItem(
+        _inventoryItem(
+          id: 'empty-progress',
+          name: 'Empty progress',
+          initialAmount: 500,
+          amountUnit: InventoryAmountUnit.gram,
+        ),
+      ),
+      isFalse,
+    );
+    expect(
+      DiaryQuickEatFlow.canEatInventoryItem(
+        _inventoryItem(
+          id: 'missing-progress-unit',
+          name: 'Missing progress unit',
+          initialAmount: 500,
+          currentAmount: 250,
+        ),
+      ),
+      isTrue,
+    );
+  });
+
+  testWidgets('inventory quick eat hides depleted provider items', (
+    tester,
+  ) async {
+    await _pumpInventoryFlowHarness(
+      tester,
+      inventoryItems: [
+        _inventoryItem(id: 'available', name: 'Available food'),
+        _inventoryItem(id: 'depleted', name: 'Depleted food', quantity: 0),
+        _inventoryItem(
+          id: 'empty-progress',
+          name: 'Empty progress food',
+          initialAmount: 500,
+          amountUnit: InventoryAmountUnit.gram,
+        ),
+      ],
+      preparedMeals: const <PreparedMeal>[],
+    );
+
+    await tester.tap(find.byKey(_openInventoryFlowButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Available food'), findsOneWidget);
+    expect(find.text('Depleted food'), findsNothing);
+    expect(find.text('Empty progress food'), findsNothing);
+  });
+
+  testWidgets('inventory item stage failure shows action failed snackbar', (
+    tester,
+  ) async {
+    _stageCallCount = 0;
+    await _pumpInventoryFlowHarness(
+      tester,
+      inventoryItems: [
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Stage Failure Food',
+          initialAmount: 100,
+          currentAmount: 100,
+          amountUnit: InventoryAmountUnit.gram,
+        ),
+      ],
+      preparedMeals: const <PreparedMeal>[],
+      failInventoryStage: true,
+    );
+
+    await tester.tap(find.byKey(_openInventoryFlowButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Stage Failure Food'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '100',
+    );
+    await tester.pump();
+    final confirmButton = find.byKey(
+      const Key('inventory_item_amount_dialog_confirm_button'),
+    );
+    await tester.ensureVisible(confirmButton);
+    await tester.tap(confirmButton);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(_stageCallCount, 1);
+    expect(find.textContaining('Action failed'), findsOneWidget);
+  });
+
+  testWidgets('prepared meal consume failure shows prepared meal snackbar', (
+    tester,
+  ) async {
+    await _pumpInventoryFlowHarness(
+      tester,
+      inventoryItems: const <InventoryItem>[],
+      preparedMeals: [
+        _preparedMeal(id: 'meal-1', name: 'Failure Meal'),
+      ],
+      failPreparedMealConsume: true,
+    );
+
+    await tester.tap(find.byKey(_openInventoryFlowButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Failure Meal'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.textContaining('Prepared meal action failed'), findsOneWidget);
+  });
 }
 
 const _openFlowButtonKey = Key('open_quick_eat_flow');
 const _openPickerButtonKey = Key('open_inventory_picker');
+const _openInventoryFlowButtonKey = Key('open_inventory_quick_eat_flow');
+int _stageCallCount = 0;
 
 @Dependencies([
   InventoryItemsController,
@@ -219,6 +348,120 @@ Future<void> _pumpPickerHarness(
   await tester.pumpAndSettle();
 }
 
+Future<void> _pumpInventoryFlowHarness(
+  WidgetTester tester, {
+  required List<InventoryItem> inventoryItems,
+  required List<PreparedMeal> preparedMeals,
+  bool failInventoryStage = false,
+  bool failPreparedMealConsume = false,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        inventoryItemsControllerProvider.overrideWith(
+          () => _TestInventoryItemsController(
+            inventoryItems,
+            failStage: failInventoryStage,
+          ),
+        ),
+        preparedMealsControllerProvider.overrideWith(
+          () => _TestPreparedMealsController(
+            preparedMeals,
+            failConsume: failPreparedMealConsume,
+          ),
+        ),
+      ],
+      child: const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _InventoryFlowHarness(),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
+class _InventoryFlowHarness extends ConsumerWidget {
+  const _InventoryFlowHarness();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: TextButton(
+        key: _openInventoryFlowButtonKey,
+        onPressed: () {
+          unawaited(
+            DiaryQuickEatFlow.openSource(
+              context: context,
+              ref: ref,
+              source: DiaryQuickEatSource.inventory,
+              mealType: MealType.lunch,
+              selectedDay: DateTime(2026, 4, 27),
+            ),
+          );
+        },
+        child: const Text('Open inventory'),
+      ),
+    );
+  }
+}
+
+class _TestInventoryItemsController extends InventoryItemsController {
+  _TestInventoryItemsController(this._items, {required this.failStage});
+
+  final List<InventoryItem> _items;
+  final bool failStage;
+
+  @override
+  FutureOr<List<InventoryItem>> build() {
+    return _items;
+  }
+
+  @override
+  Future<PendingInventoryConsumption?> stagePendingConsumption(
+    String itemId,
+    int amount,
+  ) async {
+    _stageCallCount += 1;
+    if (failStage) {
+      return null;
+    }
+    return PendingInventoryConsumption(
+      id: 'pending-$itemId',
+      itemId: itemId,
+      amount: amount,
+    );
+  }
+}
+
+class _TestPreparedMealsController extends PreparedMealsController {
+  _TestPreparedMealsController(this._meals, {required this.failConsume});
+
+  final List<PreparedMeal> _meals;
+  final bool failConsume;
+
+  @override
+  FutureOr<List<PreparedMeal>> build() {
+    return _meals;
+  }
+
+  @override
+  Future<bool> consumePreparedMeal({
+    required String mealId,
+    required int consumedPortions,
+    required MealType mealType,
+    DateTime? loggedDay,
+  }) async {
+    return !failConsume;
+  }
+}
+
 class _PickerHarness extends StatefulWidget {
   const _PickerHarness({
     required this.items,
@@ -279,15 +522,27 @@ class _PickerHarnessState extends State<_PickerHarness> {
 InventoryItem _inventoryItem({
   required String id,
   required String name,
+  int quantity = 1,
+  int initialAmount = 0,
+  int currentAmount = 0,
+  InventoryAmountUnit? amountUnit,
 }) {
   return InventoryItem.create(
     id: id,
     name: name,
     entryDate: DateTime(2026, 4, 27),
     storeName: 'Test Store',
-    quantity: 1,
+    quantity: quantity,
+    initialAmount: initialAmount,
+    currentAmount: currentAmount,
+    amountUnit: amountUnit,
     brand: 'Test Brand',
     imageUrl: 'https://example.com/$id.jpg',
+    weight: '100g',
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 100,
+    ),
   );
 }
 

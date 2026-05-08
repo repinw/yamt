@@ -1147,7 +1147,7 @@
   "diaryQuickEatSourceInventory": "Inventory",
   "diaryQuickEatSourceBarcode": "Barcode",
   "diaryQuickEatSourceManualSearch": "Search",
-  "diaryQuickEatSourceAi": "KI",
+  "diaryQuickEatSourceAi": "AI",
   "diaryQuickEatInventoryTitle": "Eat from inventory",
   "diaryQuickEatInventoryEmpty": "No available food in inventory.",
   "diaryBalanceLoadFailed": "Balance could not be loaded",

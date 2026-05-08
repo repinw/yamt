@@ -207,7 +207,7 @@ class DiaryQuickEatFlow {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return DiaryInventoryFoodPicker(
-          items: items.where(_canEatItem).toList(growable: false),
+          items: items.where(canEatInventoryItem).toList(growable: false),
           meals: meals
               .where((meal) => !meal.isDepleted)
               .toList(
@@ -247,7 +247,7 @@ class DiaryQuickEatFlow {
     required DateTime loggedAt,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    final maxAmount = _maxInventoryAmount(item);
+    final maxAmount = maxInventoryAmount(item);
     if (maxAmount == null) {
       return;
     }
@@ -320,11 +320,15 @@ class DiaryQuickEatFlow {
     );
   }
 
-  static bool _canEatItem(InventoryItem item) {
-    return _maxInventoryAmount(item) != null;
+  /// Whether an inventory item can be selected for diary quick eat.
+  @visibleForTesting
+  static bool canEatInventoryItem(InventoryItem item) {
+    return maxInventoryAmount(item) != null;
   }
 
-  static int? _maxInventoryAmount(InventoryItem item) {
+  /// Maximum consumable inventory amount for diary quick eat.
+  @visibleForTesting
+  static int? maxInventoryAmount(InventoryItem item) {
     if (item.usesAmountProgress) {
       if (item.amountUnit == null || item.currentAmount < 1) {
         return null;

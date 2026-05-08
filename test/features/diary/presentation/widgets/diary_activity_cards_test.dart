@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -32,11 +34,18 @@ import 'package:yamt/features/health/provider/diary_health_service_provider.dart
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
 import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
 import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 

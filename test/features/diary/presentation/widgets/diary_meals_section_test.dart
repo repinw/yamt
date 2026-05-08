@@ -142,7 +142,7 @@ void main() {
     expect(find.text('Inventory'), findsOneWidget);
     expect(find.text('Barcode'), findsOneWidget);
     expect(find.text('Search'), findsOneWidget);
-    expect(find.text('KI'), findsOneWidget);
+    expect(find.text('AI'), findsOneWidget);
     expect(
       find.byKey(DiaryMealsSectionKeys.expandedEmpty(MealType.lunch)),
       findsNothing,
