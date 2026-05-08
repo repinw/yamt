@@ -932,4 +932,31 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('more menu can be dismissed with a drag', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('MEHR'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Statistics'), findsOneWidget);
+    expect(find.text('Settings'), findsOneWidget);
+
+    await tester.drag(find.byType(BottomSheet), const Offset(0, 500));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Statistics'), findsNothing);
+    expect(find.text('Settings'), findsNothing);
+    expect(find.text('INVENTORY'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

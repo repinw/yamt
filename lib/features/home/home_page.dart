@@ -278,7 +278,6 @@ class HomePage extends ConsumerWidget {
       HomeTabType.statistics ||
       HomeTabType.settings => null,
     };
-    final hasFloatingActionButton = floatingActionButton != null;
 
     final theme = Theme.of(context);
     final homeTheme = theme.copyWith(
@@ -290,7 +289,6 @@ class HomePage extends ConsumerWidget {
     return Theme(
       data: homeTheme,
       child: Scaffold(
-        key: ValueKey(hasFloatingActionButton),
         extendBody: currentTab != HomeTabType.settings,
         appBar: HomeTopBar(
           title: topBarTitle,
@@ -314,10 +312,10 @@ class HomePage extends ConsumerWidget {
         ),
         body: navigationShell,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButtonAnimator: floatingActionButton is InventoryActionFab
-            ? FloatingActionButtonAnimator.noAnimation
-            : null,
-        floatingActionButton: floatingActionButton,
+        floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
+        floatingActionButton: _HomeFloatingActionButtonHost(
+          child: floatingActionButton,
+        ),
         bottomNavigationBar: HomeBottomNavBar(
           entries: _navEntries(context, l10n),
         ),
@@ -387,6 +385,17 @@ class HomePage extends ConsumerWidget {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _HomeFloatingActionButtonHost extends StatelessWidget {
+  const _HomeFloatingActionButtonHost({required this.child});
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return child ?? const SizedBox.shrink();
   }
 }
 
