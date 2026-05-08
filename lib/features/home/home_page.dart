@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +17,8 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
+    'kitchen_utensils_button.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_template_recipe_import_button.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
@@ -241,7 +245,10 @@ class HomePage extends ConsumerWidget {
           ),
         ];
       case HomeTabType.cookbook:
-        return const [MealTemplateRecipeImportButton()];
+        return const [
+          KitchenUtensilsButton(),
+          MealTemplateRecipeImportButton(),
+        ];
       case HomeTabType.statistics:
         return const <Widget>[];
       case HomeTabType.settings:
@@ -345,37 +352,39 @@ class HomePage extends ConsumerWidget {
   }
 
   void _showMoreMenu(BuildContext context, AppLocalizations l10n) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _HomeMoreMenuTile(
-                  icon: Icons.insights_rounded,
-                  label: l10n.homeStatistics,
-                  onTap: () {
-                    sheetContext.pop();
-                    _onTabTapped(_statisticsBranchIndex);
-                  },
-                ),
-                _HomeMoreMenuTile(
-                  icon: Icons.settings_rounded,
-                  label: l10n.homeSettings,
-                  onTap: () {
-                    sheetContext.pop();
-                    _onTabTapped(_settingsBranchIndex);
-                  },
-                ),
-              ],
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (sheetContext) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _HomeMoreMenuTile(
+                    icon: Icons.insights_rounded,
+                    label: l10n.homeStatistics,
+                    onTap: () {
+                      sheetContext.pop();
+                      _onTabTapped(_statisticsBranchIndex);
+                    },
+                  ),
+                  _HomeMoreMenuTile(
+                    icon: Icons.settings_rounded,
+                    label: l10n.homeSettings,
+                    onTap: () {
+                      sheetContext.pop();
+                      _onTabTapped(_settingsBranchIndex);
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 

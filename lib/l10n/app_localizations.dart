@@ -2111,6 +2111,168 @@ abstract class AppLocalizations {
   /// **'Template updated.'**
   String get preparedMealTemplateUpdatedMessage;
 
+  /// No description provided for @kitchenUtensilsPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Kitchen utensils'**
+  String get kitchenUtensilsPageTitle;
+
+  /// No description provided for @kitchenUtensilsOpenAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Kitchen utensils'**
+  String get kitchenUtensilsOpenAction;
+
+  /// No description provided for @kitchenUtensilsEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'No kitchen utensils saved yet.'**
+  String get kitchenUtensilsEmptyState;
+
+  /// No description provided for @kitchenUtensilsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load kitchen utensils.'**
+  String get kitchenUtensilsLoadFailed;
+
+  /// No description provided for @kitchenUtensilAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add utensil'**
+  String get kitchenUtensilAddAction;
+
+  /// No description provided for @kitchenUtensilEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit utensil'**
+  String get kitchenUtensilEditTitle;
+
+  /// No description provided for @kitchenUtensilAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add utensil'**
+  String get kitchenUtensilAddTitle;
+
+  /// No description provided for @kitchenUtensilDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete utensil'**
+  String get kitchenUtensilDeleteAction;
+
+  /// No description provided for @kitchenUtensilSavedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Utensil saved.'**
+  String get kitchenUtensilSavedMessage;
+
+  /// No description provided for @kitchenUtensilUpdatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Utensil updated.'**
+  String get kitchenUtensilUpdatedMessage;
+
+  /// No description provided for @kitchenUtensilDeletedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Utensil deleted.'**
+  String get kitchenUtensilDeletedMessage;
+
+  /// No description provided for @kitchenUtensilUnnamedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unnamed utensil'**
+  String get kitchenUtensilUnnamedLabel;
+
+  /// No description provided for @kitchenUtensilNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get kitchenUtensilNameLabel;
+
+  /// No description provided for @kitchenUtensilWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (g)'**
+  String get kitchenUtensilWeightLabel;
+
+  /// No description provided for @kitchenUtensilWeightValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g'**
+  String kitchenUtensilWeightValue(int grams);
+
+  /// No description provided for @kitchenUtensilImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get kitchenUtensilImageLabel;
+
+  /// No description provided for @kitchenUtensilAddImageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get kitchenUtensilAddImageAction;
+
+  /// No description provided for @kitchenUtensilChangeImageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get kitchenUtensilChangeImageAction;
+
+  /// No description provided for @kitchenUtensilRemoveImageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get kitchenUtensilRemoveImageAction;
+
+  /// No description provided for @kitchenUtensilImageCameraAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get kitchenUtensilImageCameraAction;
+
+  /// No description provided for @kitchenUtensilImageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo or name so you can recognize this utensil later.'**
+  String get kitchenUtensilImageHint;
+
+  /// No description provided for @kitchenUtensilImagePickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not pick the utensil photo.'**
+  String get kitchenUtensilImagePickFailed;
+
+  /// No description provided for @kitchenUtensilImageUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Utensil photo could not be uploaded.'**
+  String get kitchenUtensilImageUploadFailed;
+
+  /// No description provided for @kitchenUtensilSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Utensil could not be saved.'**
+  String get kitchenUtensilSaveFailed;
+
+  /// No description provided for @kitchenUtensilDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Utensil could not be deleted.'**
+  String get kitchenUtensilDeleteFailed;
+
+  /// No description provided for @kitchenUtensilInvalidWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a weight greater than 0.'**
+  String get kitchenUtensilInvalidWeight;
+
+  /// No description provided for @kitchenUtensilIdentityRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a name or photo.'**
+  String get kitchenUtensilIdentityRequired;
+
   /// No description provided for @preparedMealTemplateImportReviewTitle.
   ///
   /// In en, this message translates to:

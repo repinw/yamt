@@ -835,6 +835,10 @@ service cloud.firestore {
       allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
     }
 
+    match /users/{uid}/kitchen_utensils/{utensilId} {
+      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
+    }
+
     match /users/{uid}/inventory_discard_events/{eventId} {
       allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
     }

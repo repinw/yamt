@@ -41,7 +41,7 @@ Widget _buildHarness({
         builder: (context, state) {
           return Scaffold(
             body: Center(
-              child: embedded ? InventoryActionFab.embedded() : null,
+              child: embedded ? const InventoryActionFab.embedded() : null,
             ),
             floatingActionButton: embedded ? null : const InventoryActionFab(),
           );

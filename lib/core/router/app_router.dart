@@ -33,6 +33,8 @@ import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.d
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/kitchen_utensils/presentation/'
+    'kitchen_utensils_page.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_detail_page.dart';
 import 'package:yamt/features/meal_templates/presentation/'
@@ -224,6 +226,10 @@ Raw<GoRouter> appRouter(Ref ref) {
           final templateId = state.pathParameters['templateId'] ?? '';
           return MealTemplateDetailPage(templateId: templateId);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.homeKitchenUtensils,
+        builder: (context, state) => const KitchenUtensilsPage(),
       ),
       GoRoute(
         path: AppRoutes.homeShopping,

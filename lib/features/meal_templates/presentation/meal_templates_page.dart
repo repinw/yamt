@@ -9,6 +9,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
+import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
+    'kitchen_utensils_button.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_template_card.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
@@ -39,7 +41,10 @@ class MealTemplatesPage extends ConsumerWidget {
       appBar: includeAppBar
           ? AppBar(
               title: Text(l10n.preparedMealTemplatesPageTitle),
-              actions: const [MealTemplateRecipeImportButton()],
+              actions: const [
+                KitchenUtensilsButton(),
+                MealTemplateRecipeImportButton(),
+              ],
             )
           : null,
       body: templatesAsync.when(

@@ -1,19 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Main inventory floating action button.
 class InventoryMainFabButton extends StatelessWidget {
+  /// Creates main inventory floating action button.
   const InventoryMainFabButton({
     required this.isBusy,
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    super.key,
     this.buttonKey,
   });
 
+  /// Whether action flow is running.
   final bool isBusy;
+
+  /// Icon shown when idle.
   final IconData icon;
+
+  /// Tooltip text.
   final String tooltip;
+
+  /// Called when user presses the button.
   final VoidCallback? onPressed;
+
+  /// Key for the inner square button used by existing tests.
   final Key? buttonKey;
 
   @override
