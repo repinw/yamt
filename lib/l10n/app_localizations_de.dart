@@ -1047,6 +1047,89 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateUpdatedMessage => 'Rezept aktualisiert.';
 
   @override
+  String get kitchenUtensilsPageTitle => 'Küchenutensilien';
+
+  @override
+  String get kitchenUtensilsOpenAction => 'Küchenutensilien';
+
+  @override
+  String get kitchenUtensilsEmptyState => 'Noch keine Küchenutensilien gespeichert.';
+
+  @override
+  String get kitchenUtensilsLoadFailed => 'Küchenutensilien konnten nicht geladen werden.';
+
+  @override
+  String get kitchenUtensilAddAction => 'Utensil hinzufügen';
+
+  @override
+  String get kitchenUtensilEditTitle => 'Utensil bearbeiten';
+
+  @override
+  String get kitchenUtensilAddTitle => 'Utensil hinzufügen';
+
+  @override
+  String get kitchenUtensilDeleteAction => 'Utensil löschen';
+
+  @override
+  String get kitchenUtensilSavedMessage => 'Utensil gespeichert.';
+
+  @override
+  String get kitchenUtensilUpdatedMessage => 'Utensil aktualisiert.';
+
+  @override
+  String get kitchenUtensilDeletedMessage => 'Utensil gelöscht.';
+
+  @override
+  String get kitchenUtensilUnnamedLabel => 'Unbenanntes Utensil';
+
+  @override
+  String get kitchenUtensilNameLabel => 'Name';
+
+  @override
+  String get kitchenUtensilWeightLabel => 'Gewicht (g)';
+
+  @override
+  String kitchenUtensilWeightValue(int grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get kitchenUtensilImageLabel => 'Foto';
+
+  @override
+  String get kitchenUtensilAddImageAction => 'Foto hinzufügen';
+
+  @override
+  String get kitchenUtensilChangeImageAction => 'Foto ändern';
+
+  @override
+  String get kitchenUtensilRemoveImageAction => 'Foto entfernen';
+
+  @override
+  String get kitchenUtensilImageCameraAction => 'Foto aufnehmen';
+
+  @override
+  String get kitchenUtensilImageHint => 'Füge ein Foto oder einen Namen hinzu, damit du das Utensil später erkennst.';
+
+  @override
+  String get kitchenUtensilImagePickFailed => 'Foto konnte nicht ausgewählt werden.';
+
+  @override
+  String get kitchenUtensilImageUploadFailed => 'Foto konnte nicht hochgeladen werden.';
+
+  @override
+  String get kitchenUtensilSaveFailed => 'Utensil konnte nicht gespeichert werden.';
+
+  @override
+  String get kitchenUtensilDeleteFailed => 'Utensil konnte nicht gelöscht werden.';
+
+  @override
+  String get kitchenUtensilInvalidWeight => 'Bitte gib ein Gewicht größer als 0 ein.';
+
+  @override
+  String get kitchenUtensilIdentityRequired => 'Füge einen Namen oder ein Foto hinzu.';
+
+  @override
   String get preparedMealTemplateImportReviewTitle => 'Rezept prüfen';
 
   @override

@@ -35,6 +35,9 @@ abstract final class AppRoutes {
   static const homeInventoryTemplateDetail =
       '/home/inventory/templates/:templateId';
 
+  /// Kitchen utensils route.
+  static const homeKitchenUtensils = '/home/kitchen-utensils';
+
   /// Receipt review route.
   static const homeInventoryReceiptReview = '/home/inventory/receipt-review';
 

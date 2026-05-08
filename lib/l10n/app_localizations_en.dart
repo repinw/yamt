@@ -1047,6 +1047,89 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealTemplateUpdatedMessage => 'Template updated.';
 
   @override
+  String get kitchenUtensilsPageTitle => 'Kitchen utensils';
+
+  @override
+  String get kitchenUtensilsOpenAction => 'Kitchen utensils';
+
+  @override
+  String get kitchenUtensilsEmptyState => 'No kitchen utensils saved yet.';
+
+  @override
+  String get kitchenUtensilsLoadFailed => 'Could not load kitchen utensils.';
+
+  @override
+  String get kitchenUtensilAddAction => 'Add utensil';
+
+  @override
+  String get kitchenUtensilEditTitle => 'Edit utensil';
+
+  @override
+  String get kitchenUtensilAddTitle => 'Add utensil';
+
+  @override
+  String get kitchenUtensilDeleteAction => 'Delete utensil';
+
+  @override
+  String get kitchenUtensilSavedMessage => 'Utensil saved.';
+
+  @override
+  String get kitchenUtensilUpdatedMessage => 'Utensil updated.';
+
+  @override
+  String get kitchenUtensilDeletedMessage => 'Utensil deleted.';
+
+  @override
+  String get kitchenUtensilUnnamedLabel => 'Unnamed utensil';
+
+  @override
+  String get kitchenUtensilNameLabel => 'Name';
+
+  @override
+  String get kitchenUtensilWeightLabel => 'Weight (g)';
+
+  @override
+  String kitchenUtensilWeightValue(int grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get kitchenUtensilImageLabel => 'Photo';
+
+  @override
+  String get kitchenUtensilAddImageAction => 'Add photo';
+
+  @override
+  String get kitchenUtensilChangeImageAction => 'Change photo';
+
+  @override
+  String get kitchenUtensilRemoveImageAction => 'Remove photo';
+
+  @override
+  String get kitchenUtensilImageCameraAction => 'Take photo';
+
+  @override
+  String get kitchenUtensilImageHint => 'Add a photo or name so you can recognize this utensil later.';
+
+  @override
+  String get kitchenUtensilImagePickFailed => 'Could not pick the utensil photo.';
+
+  @override
+  String get kitchenUtensilImageUploadFailed => 'Utensil photo could not be uploaded.';
+
+  @override
+  String get kitchenUtensilSaveFailed => 'Utensil could not be saved.';
+
+  @override
+  String get kitchenUtensilDeleteFailed => 'Utensil could not be deleted.';
+
+  @override
+  String get kitchenUtensilInvalidWeight => 'Please enter a weight greater than 0.';
+
+  @override
+  String get kitchenUtensilIdentityRequired => 'Add a name or photo.';
+
+  @override
   String get preparedMealTemplateImportReviewTitle => 'Review recipe';
 
   @override

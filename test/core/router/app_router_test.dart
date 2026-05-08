@@ -824,6 +824,33 @@ void main() {
     expect(manualAddRoute.path, AppRoutes.homeInventoryManualAdd);
   });
 
+  testWidgets('kitchen utensils route is registered on app router', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final routes = container
+        .read(appRouterProvider)
+        .configuration
+        .routes
+        .whereType<GoRoute>()
+        .toList();
+    final kitchenUtensilsRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.homeKitchenUtensils,
+    );
+
+    expect(kitchenUtensilsRoute.path, AppRoutes.homeKitchenUtensils);
+  });
+
   test(
     'inventory manual add route args support new, legacy, and bad extras',
     () {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// Extended floating action button used in the expanded inventory menu.
 class InventoryFabMenuAction extends StatelessWidget {
+  /// Creates expanded-menu action.
   const InventoryFabMenuAction({
     required this.heroTag,
     required this.icon,
@@ -10,10 +12,19 @@ class InventoryFabMenuAction extends StatelessWidget {
     String? tooltip,
   }) : tooltip = tooltip ?? label;
 
+  /// Hero tag for the floating action button.
   final Object heroTag;
+
+  /// Action icon.
   final IconData icon;
+
+  /// Visible label.
   final String label;
+
+  /// Tooltip text.
   final String tooltip;
+
+  /// Called when user presses the action.
   final VoidCallback? onPressed;
 
   @override

@@ -32,6 +32,7 @@ migrate_working_dir/
 /coverage/
 macos/Flutter/GeneratedPluginRegistrant.swift
 macos/Flutter/ephemeral/
+/linux/
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugins.cmake
 

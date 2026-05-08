@@ -1,0 +1,55 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userExists(uid) {
+      return firestore.exists(
+        /databases/(default)/documents/users/$(uid)
+      );
+    }
+
+    function userHouseholdId(uid) {
+      return userExists(uid)
+        && firestore.get(/databases/(default)/documents/users/$(uid))
+          .data.householdId is string
+        ? firestore.get(/databases/(default)/documents/users/$(uid))
+            .data.householdId
+        : null;
+    }
+
+    function householdOwnerId(uid) {
+      let householdId = userHouseholdId(uid);
+      return householdId == null ? uid : householdId;
+    }
+
+    function currentHouseholdOwnerId() {
+      return householdOwnerId(request.auth.uid);
+    }
+
+    function canAccessHouseholdOwnedData(uid) {
+      return isSignedIn()
+        && (
+          request.auth.uid == uid
+          || currentHouseholdOwnerId() == uid
+        );
+    }
+
+    function isKitchenUtensilImage() {
+      return request.resource == null
+        || (
+          request.resource.size < 2 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        );
+    }
+
+    match /users/{uid}/kitchen_utensils/{utensilId}/images/{imageId} {
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create, update: if canAccessHouseholdOwnedData(uid)
+        && isKitchenUtensilImage();
+    }
+  }
+}

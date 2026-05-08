@@ -3,7 +3,9 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_action_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Bottom sheet with inventory add actions.
 class InventoryFabActionSheet extends StatelessWidget {
+  /// Creates inventory action sheet.
   const InventoryFabActionSheet({
     required this.isCameraEnabled,
     required this.onManualSearch,
@@ -11,13 +13,25 @@ class InventoryFabActionSheet extends StatelessWidget {
     required this.onAiSuggestion,
     required this.onUploadFile,
     required this.onScanCamera,
+    super.key,
   });
 
+  /// Whether camera action can be used.
   final bool isCameraEnabled;
+
+  /// Opens manual product search.
   final VoidCallback onManualSearch;
+
+  /// Starts barcode scan flow.
   final VoidCallback onBarcodeScan;
+
+  /// Starts AI suggestion flow.
   final VoidCallback onAiSuggestion;
+
+  /// Opens image or PDF upload flow.
   final VoidCallback onUploadFile;
+
+  /// Starts camera capture flow.
   final VoidCallback onScanCamera;
 
   @override

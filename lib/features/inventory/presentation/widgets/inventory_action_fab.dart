@@ -381,14 +381,19 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
   }
 }
 
+/// Animated expanded inventory FAB menu.
 class InventoryExpandedFabMenu extends StatelessWidget {
+  /// Creates expanded inventory FAB menu.
   const InventoryExpandedFabMenu({
     required this.actions,
     required this.closeButton,
     super.key,
   });
 
+  /// Action buttons shown above the close button.
   final List<Widget> actions;
+
+  /// Button used to close the expanded menu.
   final Widget closeButton;
 
   @override
