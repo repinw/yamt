@@ -20,6 +20,8 @@ import 'package:yamt/features/calories/provider/calorie_entries_controller.dart'
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_meal_quick_add_menu.dart';
 import 'package:yamt/features/diary/provider/diary_entries_provider.dart';
 import 'package:yamt/features/diary/provider/diary_meal_sections_provider.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';

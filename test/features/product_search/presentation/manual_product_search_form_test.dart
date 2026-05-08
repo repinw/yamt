@@ -407,6 +407,56 @@ void main() {
     expect(eatResult?.code, result.code);
   });
 
+  testWidgets('search results can show eat action without inventory action', (
+    tester,
+  ) async {
+    final searchController = TextEditingController(text: 'Wurst');
+    final result = _searchResult();
+    OffProductSearchResult? eatResult;
+
+    addTearDown(searchController.dispose);
+
+    await tester.pumpWidget(
+      _wrapForm(
+        builder: (_) => _buildForm(
+          searchController: searchController,
+          showDetails: false,
+          searchResults: <OffProductSearchResult>[result],
+          onSearchResultEatSelected: (value) => eatResult = value,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(
+        const Key(
+          'receipt_review_manual_search_result_store_button_4006381333931',
+        ),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(
+        const Key(
+          'receipt_review_manual_search_result_eat_button_4006381333931',
+        ),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(
+        const Key(
+          'receipt_review_manual_search_result_eat_button_4006381333931',
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(eatResult?.code, result.code);
+  });
+
   testWidgets(
     'optional nutrition composer sanitizes numeric input and enables apply',
     (tester) async {

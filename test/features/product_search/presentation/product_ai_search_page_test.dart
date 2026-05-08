@@ -274,6 +274,44 @@ void main() {
     expect(promptField.controller?.text, 'doener haehnchen');
   });
 
+  testWidgets('quick-eat AI page shows eat action without inventory action', (
+    tester,
+  ) async {
+    final repository = _FakeProductAiSearchRepository(
+      onGenerateFoodFromText: (_) async => _doenerDraft(),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          productAiSearchRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ManualProductAiSearchPage(
+            item: _placeholderItem(),
+            initialPrompt: 'doener',
+            showEatImmediatelyOption: true,
+            initialAction: InventoryReceiptManualProductAction.eatNow,
+            quickEatOnly: true,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const Key('manual_product_ai_generate_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.restaurant_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.inventory_2_outlined), findsNothing);
+    expect(find.text('Eat'), findsOneWidget);
+    expect(find.text('Inventory'), findsNothing);
+  });
+
   testWidgets('ai page adjusts per-100 kcal and weight before save', (
     tester,
   ) async {

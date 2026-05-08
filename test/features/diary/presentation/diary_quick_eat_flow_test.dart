@@ -10,6 +10,8 @@ import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_inventory_food_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -50,6 +52,28 @@ void main() {
       expect(find.text('mealType:lunch'), findsOneWidget);
       expect(find.text('loggedDay:2026-04-27'), findsOneWidget);
     }
+  });
+
+  testWidgets('manual quick-eat route keeps future selected day', (
+    tester,
+  ) async {
+    final futureDay = DateTime.now().add(const Duration(days: 1));
+    final expectedDay =
+        '${futureDay.year.toString().padLeft(4, '0')}-'
+        '${futureDay.month.toString().padLeft(2, '0')}-'
+        '${futureDay.day.toString().padLeft(2, '0')}';
+
+    await tester.pumpWidget(
+      _RouteHarness(
+        source: DiaryQuickEatSource.manualSearch,
+        selectedDay: futureDay,
+      ),
+    );
+
+    await tester.tap(find.byKey(_openFlowButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('loggedDay:$expectedDay'), findsOneWidget);
   });
 
   testWidgets(

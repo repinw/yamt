@@ -21,6 +21,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -28,6 +29,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
@@ -815,6 +818,41 @@ void main() {
 
     expect(manualAddRoute.path, AppRoutes.homeInventoryManualAdd);
   });
+
+  test(
+    'inventory manual add route args support new, legacy, and bad extras',
+    () {
+      final loggedAt = DateTime(2026, 5, 9, 12, 30);
+      final routeArgs = InventoryManualAddRouteArgs(
+        initialAction: InventoryManualAddInitialAction.barcodeScan,
+        quickEatOnly: true,
+        preselectedMealType: MealType.dinner,
+        preselectedLoggedAt: loggedAt,
+      );
+
+      expect(resolveInventoryManualAddRouteArgs(routeArgs), same(routeArgs));
+
+      final legacyArgs = resolveInventoryManualAddRouteArgs(
+        InventoryManualAddInitialAction.aiSuggestion,
+      );
+      expect(
+        legacyArgs.initialAction,
+        InventoryManualAddInitialAction.aiSuggestion,
+      );
+      expect(legacyArgs.quickEatOnly, isFalse);
+      expect(legacyArgs.preselectedMealType, isNull);
+      expect(legacyArgs.preselectedLoggedAt, isNull);
+
+      for (final badExtra in <Object?>[null, 'unexpected']) {
+        final fallbackArgs = resolveInventoryManualAddRouteArgs(badExtra);
+        expect(
+          fallbackArgs.initialAction,
+          InventoryManualAddInitialAction.launcher,
+        );
+        expect(fallbackArgs.quickEatOnly, isFalse);
+      }
+    },
+  );
 
   testWidgets('Burn Week mock route is reachable for authenticated user', (
     tester,

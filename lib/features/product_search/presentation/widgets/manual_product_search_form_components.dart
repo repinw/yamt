@@ -720,8 +720,6 @@ class ManualProductSearchResults extends StatelessWidget {
           Builder(
             builder: (context) {
               final result = results[index];
-              final showsActionButtons =
-                  onStoreSelect != null && onEatSelect != null;
               return InventoryProductCandidateTile(
                 key: Key('receipt_review_manual_search_result_${result.code}'),
                 name: result.name,
@@ -730,10 +728,10 @@ class ManualProductSearchResults extends StatelessWidget {
                 packageWeight: result.packageWeight,
                 nutrition: result.nutrition,
                 onTap: () => onSelect(result),
-                trailing: showsActionButtons
+                trailing: onEatSelect != null
                     ? _ManualProductSearchActions(
                         result: result,
-                        onStore: onStoreSelect!,
+                        onStore: onStoreSelect,
                         onEat: onEatSelect!,
                       )
                     : null,
@@ -751,13 +749,13 @@ class ManualProductSearchResults extends StatelessWidget {
 class _ManualProductSearchActions extends StatelessWidget {
   const _ManualProductSearchActions({
     required this.result,
-    required this.onStore,
     required this.onEat,
+    this.onStore,
   });
 
   final OffProductSearchResult result;
-  final ValueChanged<OffProductSearchResult> onStore;
   final ValueChanged<OffProductSearchResult> onEat;
+  final ValueChanged<OffProductSearchResult>? onStore;
 
   @override
   Widget build(BuildContext context) {
@@ -772,7 +770,8 @@ class _ManualProductSearchActions extends StatelessWidget {
       eatButtonKey: Key(
         'receipt_review_manual_search_result_eat_button_${result.code}',
       ),
-      onInventory: () => onStore(result),
+      showInventoryAction: onStore != null,
+      onInventory: () => onStore?.call(result),
       onEat: () => onEat(result),
     );
   }
@@ -816,8 +815,6 @@ class ManualProductRecentItems extends StatelessWidget {
               Builder(
                 builder: (context) {
                   final item = items[index];
-                  final showsActionButtons =
-                      onStoreSelect != null && onEatSelect != null;
                   final inventoryButtonKey = Key(
                     'receipt_review_manual_recent_item_store_button_'
                     '${item.id}',
@@ -834,14 +831,15 @@ class ManualProductRecentItems extends StatelessWidget {
                     packageWeight: item.weight,
                     nutrition: item.nutrition,
                     onTap: () => onSelect(item),
-                    trailing: showsActionButtons
+                    trailing: onEatSelect != null
                         ? InventoryProductCandidateActions(
                             inventoryLabel:
                                 l10n.inventoryManualAddResultActionInventory,
                             eatLabel: l10n.inventoryManualAddResultActionEat,
                             inventoryButtonKey: inventoryButtonKey,
                             eatButtonKey: eatButtonKey,
-                            onInventory: () => onStoreSelect!(item),
+                            showInventoryAction: onStoreSelect != null,
+                            onInventory: () => onStoreSelect?.call(item),
                             onEat: () => onEatSelect!(item),
                           )
                         : null,
