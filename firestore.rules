@@ -89,6 +89,12 @@ service cloud.firestore {
         && isOptionalMap(data, 'burn_week_run_state');
     }
 
+    function canCreateBurnWeekRunStateProfile(uid, data) {
+      return data.keys().hasOnly(['uid', 'burn_week_run_state'])
+        && data.uid == uid
+        && isOptionalMap(data, 'burn_week_run_state');
+    }
+
     function isMissingOptionalStringValue(data, key) {
       return !(key in data)
         || data[key] == null
@@ -803,7 +809,7 @@ service cloud.firestore {
       allow create: if isOwner(uid)
         && request.resource.data.uid == uid;
       allow create: if isOwner(uid)
-        && canWriteBurnWeekRunStateOnly(request.resource.data);
+        && canCreateBurnWeekRunStateProfile(uid, request.resource.data);
       allow update: if (isOwner(uid) && request.resource.data.uid == uid)
         || canRemoveHouseholdMember(uid)
         || (isOwner(uid)

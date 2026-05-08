@@ -230,6 +230,48 @@ void main() {
       expect(state.profile?.activityLevel, 1.725);
     });
 
+    test('target below start weight switches goal mode to lose', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+      container.read(provider.notifier).updateWeightKg('70');
+      container.read(provider.notifier).updateTargetWeightKg('69');
+      final state = container.read(provider);
+
+      expect(state.goalMode, CalorieGoalMode.lose);
+      expect(state.goalSpeedKgPerWeekText, '0.5');
+      expect(state.goalSpeedError, isNull);
+    });
+
+    test('target above start weight switches goal mode to gain', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+      container.read(provider.notifier).updateWeightKg('70');
+      container.read(provider.notifier).updateTargetWeightKg('71');
+      final state = container.read(provider);
+
+      expect(state.goalMode, CalorieGoalMode.gain);
+      expect(state.goalSpeedKgPerWeekText, '0.5');
+      expect(state.goalSpeedError, isNull);
+    });
+
+    test('target equal to start weight switches goal mode to maintain', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+      container.read(provider.notifier).updateWeightKg('70');
+      container.read(provider.notifier).updateTargetWeightKg('70');
+      final state = container.read(provider);
+
+      expect(state.goalMode, CalorieGoalMode.maintain);
+      expect(state.goalSpeedKgPerWeekText, '0');
+      expect(state.goalSpeedError, isNull);
+    });
+
     test('onboarding provider mode starts with empty required fields', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
@@ -580,8 +622,10 @@ void main() {
         // For "normal" modifier ×1.0 → desired ≈ goal × 0.325.
         // We only assert the basic invariant: placeholders are created with
         // a positive total kcal value.
-        final totalPlaceholderKcal =
-            placeholders.fold<double>(0, (sum, e) => sum + e.totalKcal);
+        final totalPlaceholderKcal = placeholders.fold<double>(
+          0,
+          (sum, e) => sum + e.totalKcal,
+        );
         expect(totalPlaceholderKcal, greaterThan(0));
       },
     );
@@ -681,8 +725,10 @@ void main() {
             .where((e) => e.name == 'Geschätzte Mahlzeit')
             .toList();
         expect(placeholders, isNotEmpty);
-        final totalPlaceholderKcal =
-            placeholders.fold<double>(0, (sum, e) => sum + e.totalKcal);
+        final totalPlaceholderKcal = placeholders.fold<double>(
+          0,
+          (sum, e) => sum + e.totalKcal,
+        );
         // "high" must produce more placeholder kcal than "normal" /
         // already-logged offset would.
         expect(totalPlaceholderKcal, greaterThan(0));

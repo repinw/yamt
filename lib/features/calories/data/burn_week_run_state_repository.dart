@@ -86,7 +86,10 @@ class FirestoreBurnWeekRunStateRepository
 
     try {
       await _document(userId).set(
-        <String, dynamic>{_burnWeekRunStateField: state.toJson()},
+        <String, dynamic>{
+          'uid': userId,
+          _burnWeekRunStateField: state.toJson(),
+        },
         SetOptions(merge: true),
       );
       return true;

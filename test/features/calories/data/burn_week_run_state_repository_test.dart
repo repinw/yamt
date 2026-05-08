@@ -49,6 +49,7 @@ void main() {
     final profileData = profileSnapshot.data()!;
 
     expect(saved, isTrue);
+    expect(profileData['uid'], 'user-1');
     expect(profileData['burn_week_run_state'], isA<Map<String, dynamic>>());
     expect(
       (profileData['burn_week_run_state']
