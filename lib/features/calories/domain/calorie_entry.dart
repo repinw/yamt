@@ -237,6 +237,51 @@ class CalorieEntry {
     );
   }
 
+  /// Creates a [CalorieEntry] used as an onboarding placeholder.
+  ///
+  /// Onboarding placeholders represent food the user has eaten before
+  /// they started tracking actively. They expose only [totalKcal] —
+  /// macros are estimated with a generic 50% carbs / 25% protein / 25%
+  /// fat split so totals are roughly self-consistent.
+  factory CalorieEntry.placeholder({
+    required String id,
+    required String userId,
+    required String name,
+    required MealType mealType,
+    required double totalKcal,
+    DateTime? loggedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    final now = DateTime.now();
+    final safeKcal = totalKcal < 0 ? 0.0 : totalKcal;
+    // Generic macro split: 50% kcal from carbs, 25% protein, 25% fat.
+    // 1 g carbs/protein = 4 kcal, 1 g fat = 9 kcal.
+    final totalCarbs = (safeKcal * 0.50) / 4;
+    final totalProtein = (safeKcal * 0.25) / 4;
+    final totalFat = (safeKcal * 0.25) / 9;
+
+    return CalorieEntry(
+      id: id,
+      userId: userId,
+      name: name,
+      mealType: mealType,
+      consumedAmount: 100,
+      consumedUnit: ConsumedUnit.grams,
+      per100Kcal: safeKcal,
+      per100Protein: totalProtein,
+      per100Carbs: totalCarbs,
+      per100Fat: totalFat,
+      totalKcal: safeKcal,
+      totalProtein: totalProtein,
+      totalCarbs: totalCarbs,
+      totalFat: totalFat,
+      loggedAt: loggedAt ?? now,
+      createdAt: createdAt ?? now,
+      updatedAt: updatedAt ?? now,
+    );
+  }
+
   /// Creates a [CalorieEntry] for from json.
   factory CalorieEntry.fromJson(Map<String, dynamic> json) {
     return _$CalorieEntryFromJson(json);

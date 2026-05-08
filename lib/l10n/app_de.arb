@@ -822,6 +822,7 @@
   "caloriesCalculatorOnboardingCatchUpHighAction": "Viel",
   "caloriesCalculatorOnboardingCatchUpHint":
       "Wir setzen dich sicher in die heutige Pufferzone.",
+  "caloriesOnboardingPlaceholderName": "Geschätzte Mahlzeit",
   "caloriesCalculatorMinimumGoalWarning":
       "Beim Abnehmen darf das tägliche Ziel nicht unter {minimumKcal} kcal fallen. Das Ergebnis wurde auf dieses Minimum begrenzt.",
   "@caloriesCalculatorMinimumGoalWarning": {
@@ -1179,6 +1180,18 @@
   "diaryNutritionLoadFailed": "Nährwerte konnten nicht geladen werden",
   "diaryBalanceEatenLabel": "Gegessen",
   "diaryBalanceLeftLabel": "Übrig",
+  "diaryBalanceRealEatenLabel": "Echt {kcal}",
+  "@diaryBalanceRealEatenLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "diaryBalanceBufferAdjustmentLabel": "Puffer {kcal}",
+  "@diaryBalanceBufferAdjustmentLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
   "diaryBalanceRealLeftLabel": "Echt {kcal}",
   "@diaryBalanceRealLeftLabel": {
     "placeholders": {
@@ -1599,5 +1612,58 @@
   "statisticsMetricNoData": "Noch keine Daten",
   "statisticsLoadFailed": "Statistik konnte nicht geladen werden.",
   "commonUndoAction": "Rückgängig machen",
-  "commonNotImplementedYet": "Noch nicht implementiert"
+  "commonNotImplementedYet": "Noch nicht implementiert",
+  "onboardingWelcomeTitle": "Schön, dass du hier bist!",
+  "onboardingWelcomeText": "Vergiss kompliziertes Kalorienzählen. Wir machen es dir so einfach wie möglich. Damit wir dich optimal unterstützen können, brauchen wir nur ein paar kleine Infos zu dir.",
+  "onboardingWelcomeAction": "Lass uns starten",
+  "onboardingNextAction": "Weiter",
+  "onboardingNextActionStep5": "Klingt super, weiter!",
+  "onboardingPersonalInfoTitle": "Erzähl uns etwas über dich.",
+  "onboardingPersonalInfoSubtitle": "Diese Daten helfen uns, deinen Grundumsatz zu berechnen – denn jeder Körper verbrennt Energie anders!",
+  "onboardingActivityLevelTitle": "Wie aktiv bist du?",
+  "onboardingActivityLevelSubtitle": "Dein normaler Alltag (Training kommt später).",
+  "onboardingActivityTitle": "Aktivitätslevel",
+  "onboardingActivitySubtitle": "Wie aktiv bist du in deinem Alltag?",
+  "onboardingGoalWeightTitle": "Dein Ziel",
+  "onboardingGoalWeightSubtitle": "Lass uns dein Zielgewicht festlegen.",
+  "onboardingGoalWeightStartLabel": "Startgewicht (kg)",
+  "onboardingGoalWeightTargetLabel": "Wunschgewicht (kg)",
+  "onboardingGoalWeightLoseFeedback": "Du möchtest abnehmen. Ein gesundes Ziel!",
+  "onboardingGoalWeightGainFeedback": "Du möchtest zunehmen. Muskelaufbau ist super!",
+  "onboardingGoalWeightMaintainFeedback": "Du möchtest dein Gewicht halten. Perfekt!",
+  "onboardingPaceTitle": "Dein Tempo",
+  "onboardingPaceSubtitle": "Wie schnell möchtest du dein Ziel erreichen?",
+  "onboardingPaceMaintainMessage": "Da du dein Gewicht halten möchtest, berechnen wir einfach deinen Erhaltungsbedarf. Du brauchst kein Tempo festlegen.",
+  "onboardingPaceWarningTitle": "Ambitioniertes Tempo",
+  "onboardingPaceWarningLoseMessage": "Mehr als 0,5 kg pro Woche abzunehmen ist recht hoch. Achte darauf, dass du ausreichend Nährstoffe zu dir nimmst!",
+  "onboardingPaceWarningGainMessage": "Mehr als 0,5 kg pro Woche zuzunehmen ist recht hoch. Ein moderateres Tempo hilft dir, Muskeln aufzubauen, ohne zu viel Fett anzusetzen.",
+  "onboardingPacePerWeek": "{pace} kg / Woche",
+  "@onboardingPacePerWeek": {
+    "placeholders": {
+      "pace": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingInfoTitle": "Dein Plan steht! 🎉",
+  "onboardingInfoSubtitle": "Ein paar Dinge, die du wissen solltest.",
+  "onboardingInfoPoint1Title": "Kassenzettel scannen",
+  "onboardingInfoPoint1Body": "Kein langes Tippen mehr.",
+  "onboardingInfoPoint2Title": "KI-Erkennung",
+  "onboardingInfoPoint2Body": "Sag uns einfach, was du gegessen hast.",
+  "onboardingInfoPoint3Title": "Barcode-Scanner",
+  "onboardingInfoPoint3Body": "Ein Scan, alle Nährwerte.",
+  "onboardingInfoBoxTitle": "Die Kennenlern-Woche",
+  "onboardingInfoBoxBody": "Deine erste Mission: Versuche in den nächsten 7 Tagen nichts krampfhaft zu ändern. Iss wie immer und tracke einfach. Unser smarter Algorithmus lernt deinen Stoffwechsel kennen und erstellt danach dein maßgeschneidertes Kalorienziel!",
+  "onboardingStartDateTitle": "Wann geht's los?",
+  "onboardingStartDateSubtitle": "Wann möchtest du mit dem Tracking starten?",
+  "onboardingStartDateNowLabel": "Ab heute",
+  "onboardingStartDateNowDesc": "Ich tracke heute alles (oder habe es bereits getan).",
+  "onboardingStartDateNowQuestion": "Wie gehen wir mit dem heutigen Tag um?",
+  "onboardingStartDateNowExact": "Ich trage den ganzen Tag exakt nach",
+  "onboardingStartDateNowEstimate": "Ich schätze grob ab, was ich bisher aß",
+  "onboardingStartDateLaterLabel": "Ab morgen",
+  "onboardingStartDateLaterDesc": "Heute ist schon fast rum, ich starte lieber morgen frisch.",
+  "onboardingReadyTitle": "Alles bereit!",
+  "onboardingReadySubtitle": "Dein Profil ist fertig. Lass uns loslegen!"
 }

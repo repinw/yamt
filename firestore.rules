@@ -84,6 +84,11 @@ service cloud.firestore {
       return !(key in data) || data[key] == null || data[key] is number;
     }
 
+    function canWriteBurnWeekRunStateOnly(data) {
+      return data.keys().hasOnly(['burn_week_run_state'])
+        && isOptionalMap(data, 'burn_week_run_state');
+    }
+
     function isMissingOptionalStringValue(data, key) {
       return !(key in data)
         || data[key] == null
@@ -797,8 +802,16 @@ service cloud.firestore {
       allow read: if canReadUserDocument(uid);
       allow create: if isOwner(uid)
         && request.resource.data.uid == uid;
+      allow create: if isOwner(uid)
+        && canWriteBurnWeekRunStateOnly(request.resource.data);
       allow update: if (isOwner(uid) && request.resource.data.uid == uid)
-        || canRemoveHouseholdMember(uid);
+        || canRemoveHouseholdMember(uid)
+        || (isOwner(uid)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['burn_week_run_state'])
+          && canWriteBurnWeekRunStateOnly(
+              request.resource.data.diff(resource.data)
+            ));
       allow delete: if isOwner(uid);
     }
 

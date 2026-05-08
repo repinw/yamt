@@ -796,6 +796,7 @@
   "caloriesCalculatorOnboardingCatchUpHighAction": "A lot",
   "caloriesCalculatorOnboardingCatchUpHint":
       "We place you safely into today's buffer zone.",
+  "caloriesOnboardingPlaceholderName": "Estimated meal",
   "caloriesCalculatorMinimumGoalWarning":
       "For weight loss, the daily target cannot go below {minimumKcal} kcal. The result was capped at this minimum.",
   "@caloriesCalculatorMinimumGoalWarning": {
@@ -1139,6 +1140,18 @@
   "diaryNutritionLoadFailed": "Nutrition could not be loaded",
   "diaryBalanceEatenLabel": "Eaten",
   "diaryBalanceLeftLabel": "Left",
+  "diaryBalanceRealEatenLabel": "Real {kcal}",
+  "@diaryBalanceRealEatenLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "diaryBalanceBufferAdjustmentLabel": "Buffer {kcal}",
+  "@diaryBalanceBufferAdjustmentLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
   "diaryBalanceRealLeftLabel": "Real {kcal}",
   "@diaryBalanceRealLeftLabel": {
     "placeholders": {
@@ -1558,5 +1571,58 @@
   "statisticsMetricNoData": "No data yet",
   "statisticsLoadFailed": "Could not load statistics.",
   "commonUndoAction": "Undo",
-  "commonNotImplementedYet": "Not implemented yet"
+  "commonNotImplementedYet": "Not implemented yet",
+  "onboardingWelcomeTitle": "Glad you are here!",
+  "onboardingWelcomeText": "Forget complicated calorie counting. We make it as easy as possible. To support you optimally, we just need a little bit of information about you.",
+  "onboardingWelcomeAction": "Let's start",
+  "onboardingNextAction": "Next",
+  "onboardingNextActionStep5": "Sounds great, next!",
+  "onboardingPersonalInfoTitle": "Tell us something about yourself.",
+  "onboardingPersonalInfoSubtitle": "This data helps us calculate your basal metabolic rate – because every body burns energy differently!",
+  "onboardingActivityLevelTitle": "How active are you?",
+  "onboardingActivityLevelSubtitle": "Your normal daily level (training comes later).",
+  "onboardingActivityTitle": "Activity Level",
+  "onboardingActivitySubtitle": "How active are you in your daily life?",
+  "onboardingGoalWeightTitle": "Your Goal",
+  "onboardingGoalWeightSubtitle": "Let's set your goal weight.",
+  "onboardingGoalWeightStartLabel": "Start weight (kg)",
+  "onboardingGoalWeightTargetLabel": "Goal weight (kg)",
+  "onboardingGoalWeightLoseFeedback": "You want to lose weight. A healthy goal!",
+  "onboardingGoalWeightGainFeedback": "You want to gain weight. Building muscle is great!",
+  "onboardingGoalWeightMaintainFeedback": "You want to maintain your weight. Perfect!",
+  "onboardingPaceTitle": "Your Pace",
+  "onboardingPaceSubtitle": "How fast do you want to reach your goal?",
+  "onboardingPaceMaintainMessage": "Since you want to maintain your weight, we will simply calculate your maintenance calories. You don't need to set a pace.",
+  "onboardingPaceWarningTitle": "Ambitious Pace",
+  "onboardingPaceWarningLoseMessage": "Losing more than 0.5 kg per week is quite high. Make sure you still get enough nutrients!",
+  "onboardingPaceWarningGainMessage": "Gaining more than 0.5 kg per week is quite high. A more moderate pace helps build muscle without adding too much fat.",
+  "onboardingPacePerWeek": "{pace} kg / week",
+  "@onboardingPacePerWeek": {
+    "placeholders": {
+      "pace": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingInfoTitle": "Your Plan is Ready! 🎉",
+  "onboardingInfoSubtitle": "A few things you should know.",
+  "onboardingInfoPoint1Title": "Scan Receipts",
+  "onboardingInfoPoint1Body": "No more tedious typing.",
+  "onboardingInfoPoint2Title": "AI Recognition",
+  "onboardingInfoPoint2Body": "Just tell us what you ate.",
+  "onboardingInfoPoint3Title": "Barcode Scanner",
+  "onboardingInfoPoint3Body": "One scan, all nutrition facts.",
+  "onboardingInfoBoxTitle": "The Learning Week",
+  "onboardingInfoBoxBody": "Your first mission: Try not to force any changes in the next 7 days. Eat as usual and just track. Our smart algorithm learns your metabolism and creates your custom calorie goal!",
+  "onboardingStartDateTitle": "When to start?",
+  "onboardingStartDateSubtitle": "When do you want to start tracking?",
+  "onboardingStartDateNowLabel": "Today",
+  "onboardingStartDateNowDesc": "I will track everything today (or already did).",
+  "onboardingStartDateNowQuestion": "How should we handle today?",
+  "onboardingStartDateNowExact": "I will track the whole day exactly",
+  "onboardingStartDateNowEstimate": "I will estimate what I ate so far",
+  "onboardingStartDateLaterLabel": "Tomorrow",
+  "onboardingStartDateLaterDesc": "Today is almost over, I prefer to start fresh tomorrow.",
+  "onboardingReadyTitle": "All set!",
+  "onboardingReadySubtitle": "Your profile is ready. Let's get started!"
 }

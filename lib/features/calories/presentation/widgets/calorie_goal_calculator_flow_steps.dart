@@ -25,7 +25,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
     switch (step) {
       case _CalculatorOnboardingStep.sex:
         return CalorieGoalCalculatorSexSegmentedControl(
-          selectedSex: state.sex,
+          selectedSex: state.sex ?? CalorieCalculatorSex.male,
           onSelected: (sex) {
             ref.read(formProvider.notifier).updateSex(sex);
           },

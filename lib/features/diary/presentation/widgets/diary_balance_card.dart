@@ -275,6 +275,33 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     );
     final dayBudgetKcal = weekOverview.todayFlexibleGoalKcal;
     final realDayLeftKcal = dayBudgetKcal - selectedDayOverview.totalKcal;
+    final bufferAdjustmentKcal = isLiveDay ? runState.heartCreditKcal : 0.0;
+    final eatenKcal = math.max<double>(
+      0,
+      selectedDayOverview.totalKcal + bufferAdjustmentKcal,
+    );
+    final eatenSubtitle = bufferAdjustmentKcal.round() == 0
+        ? null
+        : '${l10n.diaryBalanceRealEatenLabel(
+            _formatKcal(
+              numberFormat,
+              selectedDayOverview.totalKcal,
+              l10n.caloriesUnitKcal,
+            ),
+          )} · ${l10n.diaryBalanceBufferAdjustmentLabel(
+            formatBurnWeekSignedKcal(
+              bufferAdjustmentKcal,
+              numberFormat,
+              l10n.caloriesUnitKcal,
+            ),
+          )}';
+    final bufferAdjustmentLabel = l10n.diaryBalanceBufferAdjustmentLabel(
+      formatBurnWeekSignedKcal(
+        bufferAdjustmentKcal,
+        numberFormat,
+        l10n.caloriesUnitKcal,
+      ),
+    );
     final heartAdjustmentKcal = -runState.heartCreditKcal;
     final isHeartDay = runState.isHeartDay(selectedDayOverview.date);
     final canRevertHeartDay = runState.canUnmarkHeartDay(
@@ -352,6 +379,10 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
               ),
             ],
           ),
+          if (bufferAdjustmentKcal.round() != 0 && !isHeartDay) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _DiaryBalanceBufferBadge(label: bufferAdjustmentLabel),
+          ],
           const SizedBox(height: AppSpacing.xxl),
           Row(
             children: [
@@ -360,9 +391,10 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                   label: l10n.diaryBalanceEatenLabel,
                   value: _formatKcal(
                     numberFormat,
-                    selectedDayOverview.totalKcal,
+                    eatenKcal,
                     l10n.caloriesUnitKcal,
                   ),
+                  subtitle: eatenSubtitle,
                   valueColor: const Color(0xFF3A5A78),
                   backgroundColor:
                       Theme.of(context).brightness == Brightness.dark

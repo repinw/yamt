@@ -101,9 +101,7 @@ class CalorieEntryEditorFormScaffold extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          isEditing
-              ? l10n.caloriesEditEntryTitle
-              : l10n.caloriesAddEntryTitle,
+          isEditing ? l10n.caloriesEditEntryTitle : l10n.caloriesAddEntryTitle,
         ),
         actions: <Widget>[
           TextButton(
@@ -196,12 +194,14 @@ class _CalorieEntryIdentitySection extends StatelessWidget {
         DropdownButtonFormField<MealType>(
           initialValue: selectedMealType,
           decoration: InputDecoration(labelText: l10n.caloriesEntryMealLabel),
-          items: MealType.sectionOrder.map((mealType) {
-            return DropdownMenuItem<MealType>(
-              value: mealType,
-              child: Text(mealType.localizedName(l10n)),
-            );
-          }).toList(growable: false),
+          items: MealType.sectionOrder
+              .map((mealType) {
+                return DropdownMenuItem<MealType>(
+                  value: mealType,
+                  child: Text(mealType.localizedName(l10n)),
+                );
+              })
+              .toList(growable: false),
           onChanged: (value) {
             if (value != null) {
               onMealTypeChanged(value);
@@ -249,12 +249,14 @@ class _CalorieEntryAmountSection extends StatelessWidget {
             key: CalorieEntryEditorKeys.unitField,
             initialValue: selectedConsumedUnit,
             decoration: InputDecoration(labelText: l10n.caloriesEntryUnitLabel),
-            items: ConsumedUnit.values.map((unit) {
-              return DropdownMenuItem<ConsumedUnit>(
-                value: unit,
-                child: Text(unit.localizedName(l10n)),
-              );
-            }).toList(growable: false),
+            items: ConsumedUnit.values
+                .map((unit) {
+                  return DropdownMenuItem<ConsumedUnit>(
+                    value: unit,
+                    child: Text(unit.localizedName(l10n)),
+                  );
+                })
+                .toList(growable: false),
             onChanged: (value) {
               if (value != null) {
                 onConsumedUnitChanged(value);

@@ -335,9 +335,8 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    final dayController =
-        container.read(calorieDayControllerProvider.notifier)
-          ..setDay(DateTime(2026, 2, 25, 19, 30));
+    final dayController = container.read(calorieDayControllerProvider.notifier)
+      ..setDay(DateTime(2026, 2, 25, 19, 30));
 
     expect(container.read(calorieDayControllerProvider), DateTime(2026, 2, 25));
 
