@@ -41,6 +41,7 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
     with RouteAware {
   final LayerLink _fabLayerLink = LayerLink();
   OverlayEntry? _expandedMenuEntry;
+  RouteObserver<ModalRoute<void>>? _subscribedObserver;
   ModalRoute<void>? _subscribedRoute;
   bool _isSheetOpen = false;
   bool _isExpanded = false;
@@ -51,17 +52,19 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
     if (widget.embedded) {
       return;
     }
+    final observer = ref.read(appRouteObserverProvider);
     final route = ModalRoute.of(context);
-    if (route == _subscribedRoute) {
+    if (observer == _subscribedObserver && route == _subscribedRoute) {
       return;
     }
-    final previousRoute = _subscribedRoute;
-    if (previousRoute != null) {
-      appRouteObserver.unsubscribe(this);
+    final previousObserver = _subscribedObserver;
+    if (previousObserver != null) {
+      previousObserver.unsubscribe(this);
     }
     if (route != null) {
-      appRouteObserver.subscribe(this, route);
+      observer.subscribe(this, route);
     }
+    _subscribedObserver = observer;
     _subscribedRoute = route;
   }
 
@@ -77,7 +80,7 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
 
   @override
   void dispose() {
-    appRouteObserver.unsubscribe(this);
+    _subscribedObserver?.unsubscribe(this);
     _removeExpandedMenu();
     super.dispose();
   }
@@ -153,7 +156,10 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
     if (_isExpanded) {
       return;
     }
-    final overlay = Overlay.of(context);
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) {
+      return;
+    }
     setState(() {
       _isExpanded = true;
     });
@@ -211,10 +217,14 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
 
   void _removeExpandedMenu() {
     final entry = _expandedMenuEntry;
+    if (entry == null) {
+      return;
+    }
     _expandedMenuEntry = null;
-    entry
-      ?..remove()
-      ..dispose();
+    if (entry.mounted) {
+      entry.remove();
+    }
+    entry.dispose();
   }
 
   List<Widget> _buildActions({

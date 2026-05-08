@@ -93,10 +93,11 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
 )
 Raw<GoRouter> appRouter(Ref ref) {
   final navigatorKey = ref.watch(navigatorKeyProvider);
+  final routeObserver = ref.watch(appRouteObserverProvider);
   final refreshListenable = ref.watch(appRouterRefreshListenableProvider);
   final router = GoRouter(
     navigatorKey: navigatorKey,
-    observers: [appRouteObserver],
+    observers: [routeObserver],
     initialLocation: AppRoutes.root,
     refreshListenable: refreshListenable,
     redirect: (context, state) => _redirectForState(ref, state),

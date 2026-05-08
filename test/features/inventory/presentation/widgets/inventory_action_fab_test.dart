@@ -32,8 +32,9 @@ Widget _buildHarness({
   bool isCameraSupported = true,
   ValueChanged<Object?>? onManualAddRouteExtra,
 }) {
+  final routeObserver = RouteObserver<ModalRoute<void>>();
   final router = GoRouter(
-    observers: [appRouteObserver],
+    observers: [routeObserver],
     routes: [
       GoRoute(
         path: AppRoutes.root,
@@ -64,6 +65,7 @@ Widget _buildHarness({
 
   return ProviderScope(
     overrides: <Override>[
+      appRouteObserverProvider.overrideWithValue(routeObserver),
       receiptCaptureFlowControllerProvider.overrideWith(
         _RecordingReceiptCaptureFlowController.new,
       ),

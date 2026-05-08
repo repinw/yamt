@@ -609,7 +609,7 @@ void main() {
     final router = container.read(appRouterProvider);
     expect(router.state.uri.path, AppRoutes.homeCalories);
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text('MEHR'), findsOneWidget);
+    expect(find.text('MORE'), findsOneWidget);
     expect(find.text('STATISTICS'), findsNothing);
 
     await tester.tap(find.byIcon(Icons.more_horiz_rounded).hitTestable());
@@ -674,7 +674,7 @@ void main() {
     await _pumpRouterTransition(tester);
 
     expect(router.state.uri.path, AppRoutes.homeInventoryTemplates);
-    expect(find.text('Kochbuch'), findsOneWidget);
+    expect(find.text('Cookbook'), findsOneWidget);
     expect(find.byIcon(Icons.add_link_rounded), findsOneWidget);
     expect(find.byType(BackButton), findsNothing);
   });
