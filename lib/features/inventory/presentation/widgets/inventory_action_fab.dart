@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/inventory/presentation/inventory_action_sheet_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_action_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_menu_action.dart';
@@ -36,14 +37,47 @@ class InventoryActionFab extends ConsumerStatefulWidget {
   ConsumerState<InventoryActionFab> createState() => _InventoryActionFabState();
 }
 
-class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
+class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
+    with RouteAware {
   final LayerLink _fabLayerLink = LayerLink();
   OverlayEntry? _expandedMenuEntry;
+  ModalRoute<void>? _subscribedRoute;
   bool _isSheetOpen = false;
   bool _isExpanded = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.embedded) {
+      return;
+    }
+    final route = ModalRoute.of(context);
+    if (route == _subscribedRoute) {
+      return;
+    }
+    final previousRoute = _subscribedRoute;
+    if (previousRoute != null) {
+      appRouteObserver.unsubscribe(this);
+    }
+    if (route != null) {
+      appRouteObserver.subscribe(this, route);
+    }
+    _subscribedRoute = route;
+  }
+
+  @override
+  void didPushNext() {
+    _collapseExpandedMenu();
+  }
+
+  @override
+  void didPop() {
+    _collapseExpandedMenu();
+  }
+
+  @override
   void dispose() {
+    appRouteObserver.unsubscribe(this);
     _removeExpandedMenu();
     super.dispose();
   }
@@ -74,25 +108,33 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab> {
       );
     }
 
-    return CompositedTransformTarget(
-      link: _fabLayerLink,
-      child: Visibility(
-        visible: !_isExpanded,
-        maintainAnimation: true,
-        maintainSize: true,
-        maintainState: true,
-        child: InventoryMainFabButton(
-          buttonKey: const Key('inventory_action_fab_button'),
-          isBusy: isBusy,
-          icon: Icons.add_rounded,
-          tooltip: l10n.inventoryFabTooltip,
-          onPressed: isBusy
-              ? null
-              : () => _showExpandedMenu(
-                  context: context,
-                  l10n: l10n,
-                  isCameraEnabled: isCameraEnabled,
-                ),
+    return PopScope(
+      canPop: !_isExpanded,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _collapseExpandedMenu();
+        }
+      },
+      child: CompositedTransformTarget(
+        link: _fabLayerLink,
+        child: Visibility(
+          visible: !_isExpanded,
+          maintainAnimation: true,
+          maintainSize: true,
+          maintainState: true,
+          child: InventoryMainFabButton(
+            buttonKey: const Key('inventory_action_fab_button'),
+            isBusy: isBusy,
+            icon: Icons.add_rounded,
+            tooltip: l10n.inventoryFabTooltip,
+            onPressed: isBusy
+                ? null
+                : () => _showExpandedMenu(
+                    context: context,
+                    l10n: l10n,
+                    isCameraEnabled: isCameraEnabled,
+                  ),
+          ),
         ),
       ),
     );

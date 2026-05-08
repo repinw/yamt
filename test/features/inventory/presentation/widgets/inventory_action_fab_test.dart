@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -32,6 +33,7 @@ Widget _buildHarness({
   ValueChanged<Object?>? onManualAddRouteExtra,
 }) {
   final router = GoRouter(
+    observers: [appRouteObserver],
     routes: [
       GoRoute(
         path: AppRoutes.root,
@@ -42,6 +44,12 @@ Widget _buildHarness({
             ),
             floatingActionButton: embedded ? null : const InventoryActionFab(),
           );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.homeShopping,
+        builder: (context, state) {
+          return const Scaffold(body: Text('Next route'));
         },
       ),
       GoRoute(
@@ -123,6 +131,26 @@ void main() {
       await tester.tapAt(const Offset(24, 24));
       await tester.pumpAndSettle();
 
+      expect(find.text('Manual search'), findsNothing);
+      expect(find.byIcon(Icons.close_rounded), findsNothing);
+    });
+
+    testWidgets('route push closes expanded floating menu overlay', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildHarness(embedded: false));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('inventory_action_fab_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Manual search'), findsOneWidget);
+
+      final context = tester.element(find.byType(InventoryActionFab));
+      unawaited(context.push(AppRoutes.homeShopping));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Next route'), findsOneWidget);
       expect(find.text('Manual search'), findsNothing);
       expect(find.byIcon(Icons.close_rounded), findsNothing);
     });

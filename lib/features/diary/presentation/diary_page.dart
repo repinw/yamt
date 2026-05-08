@@ -93,6 +93,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       _cacheWeeklyCheckInView,
       fireImmediately: true,
     );
+    // Warm up inventory data for quick access from diary bottom sheets.
     _inventoryItemsSubscription = ref.listenManual(
       inventoryItemsControllerProvider,
       (_, _) {},

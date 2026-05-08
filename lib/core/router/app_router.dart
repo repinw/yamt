@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/provider/'
     'auth_profile_setup_status_provider.dart';
@@ -95,6 +96,7 @@ Raw<GoRouter> appRouter(Ref ref) {
   final refreshListenable = ref.watch(appRouterRefreshListenableProvider);
   final router = GoRouter(
     navigatorKey: navigatorKey,
+    observers: [appRouteObserver],
     initialLocation: AppRoutes.root,
     refreshListenable: refreshListenable,
     redirect: (context, state) => _redirectForState(ref, state),

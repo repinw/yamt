@@ -10,6 +10,7 @@ const _regularHomeTopBarHeight = 76.0;
 const _compactHomeTopBarHeight = 88.0;
 const _regularHomeTopBarWithSubtitleHeight = 86.0;
 const _compactHomeTopBarWithSubtitleHeight = 96.0;
+const _bottomNavTopIndicatorWidth = 20.0;
 const double _homeTopBarTextVerticalPadding = AppSpacing.xxl;
 
 double _effectiveTextScale(
@@ -462,7 +463,7 @@ class _HomeBottomNavItemButton extends StatelessWidget {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeOutCubic,
-                width: showTopIndicator ? 20 : 0,
+                width: showTopIndicator ? _bottomNavTopIndicatorWidth : 0,
                 height: 3,
                 decoration: BoxDecoration(
                   color: showTopIndicator ? colors.primary : Colors.transparent,
