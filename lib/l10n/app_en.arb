@@ -4,6 +4,8 @@
   "homeShopping": "Shopping",
   "homeStatistics": "Statistics",
   "homeCalories": "Diary",
+  "homeCookbook": "Kochbuch",
+  "homeMore": "Mehr",
   "homeSettings": "Settings",
   "homeQuickActionTooltip": "Quick action",
   "homeHeartCounterUseTooltip": "Use heart for {day}",

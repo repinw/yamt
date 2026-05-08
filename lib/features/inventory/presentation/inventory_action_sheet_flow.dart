@@ -52,6 +52,18 @@ class InventoryActionSheetFlow {
     );
   }
 
+  /// Open barcode scanner.
+  static Future<void> openBarcodeScanner({
+    required BuildContext context,
+    required AppLocalizations l10n,
+  }) {
+    return _openManualAddPage(
+      context,
+      l10n,
+      initialAction: InventoryManualAddInitialAction.barcodeScan,
+    );
+  }
+
   /// Scan receipt with camera.
   static Future<void> scanCamera({
     required BuildContext context,

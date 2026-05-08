@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -277,6 +276,14 @@ Widget _buildHarness({
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
+                path: AppRoutes.homeInventoryTemplates,
+                builder: (context, state) => const SizedBox(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
                 path: AppRoutes.homeStatistics,
                 builder: (context, state) => const SizedBox(),
               ),
@@ -462,7 +469,9 @@ void main() {
     );
     final runStateRepository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: '2026-04-27',
+        currentWeekStartDayKey: diaryDayKey(
+          startOfDiaryCalendarWeek(oldDay),
+        ),
         runWeekNumber: burnWeekFirstGameRunWeekNumber,
         heartCount: 1,
       ),
@@ -535,7 +544,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(InventoryActionFab), findsNothing);
-    expect(find.byType(ExpandableFab), findsNothing);
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
@@ -581,19 +589,40 @@ void main() {
 
     expect(find.byType(InventoryActionFab), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
-    final expandableFab = tester.widget<ExpandableFab>(
-      find.byType(ExpandableFab),
-    );
     final scaffoldFinder = find.ancestor(
       of: find.byType(InventoryActionFab),
       matching: find.byType(Scaffold),
     );
     final scaffold = tester.widget<Scaffold>(scaffoldFinder.first);
-    expect(expandableFab.duration, Duration.zero);
     expect(
       scaffold.floatingActionButtonAnimator,
       FloatingActionButtonAnimator.noAnimation,
     );
+  });
+
+  testWidgets('inventory fab disappears immediately after leaving inventory', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InventoryActionFab), findsOneWidget);
+
+    await tester.tap(find.text('DIARY'));
+    await tester.pump();
+
+    expect(find.byType(InventoryActionFab), findsNothing);
   });
 
   testWidgets('inventory tab shows shell fab when only inventory items exist', (
@@ -680,6 +709,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Manual search'), findsOneWidget);
+    expect(find.text('Barcode'), findsOneWidget);
     expect(find.text('AI suggestion'), findsOneWidget);
     expect(find.text('Upload image/PDF'), findsOneWidget);
     expect(find.text('Camera'), findsOneWidget);
@@ -882,9 +912,23 @@ void main() {
 
       expect(find.text('INVENTORY'), findsOneWidget);
       expect(find.text('DIARY'), findsOneWidget);
+      expect(find.text('KOCHBUCH'), findsOneWidget);
+      expect(
+        tester.getCenter(find.text('DIARY')).dx,
+        lessThan(tester.getCenter(find.text('INVENTORY')).dx),
+      );
+      expect(
+        tester.getCenter(find.text('INVENTORY')).dx,
+        lessThan(tester.getCenter(find.text('KOCHBUCH')).dx),
+      );
+      expect(
+        tester.getCenter(find.text('KOCHBUCH')).dx,
+        lessThan(tester.getCenter(find.text('MEHR')).dx),
+      );
       expect(find.text('BURN'), findsNothing);
-      expect(find.text('STATISTICS'), findsOneWidget);
-      expect(find.text('SETTINGS'), findsOneWidget);
+      expect(find.text('MEHR'), findsOneWidget);
+      expect(find.text('STATISTICS'), findsNothing);
+      expect(find.text('SETTINGS'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

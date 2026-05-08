@@ -119,6 +119,18 @@ abstract class AppLocalizations {
   /// **'Diary'**
   String get homeCalories;
 
+  /// No description provided for @homeCookbook.
+  ///
+  /// In en, this message translates to:
+  /// **'Kochbuch'**
+  String get homeCookbook;
+
+  /// No description provided for @homeMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Mehr'**
+  String get homeMore;
+
   /// No description provided for @homeSettings.
   ///
   /// In en, this message translates to:

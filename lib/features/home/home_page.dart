@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
@@ -16,6 +15,8 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_template_recipe_import_button.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -23,8 +24,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
 const _diaryBranchIndex = 1;
-const _statisticsBranchIndex = 2;
-const _settingsBranchIndex = 3;
+const _cookbookBranchIndex = 2;
+const _statisticsBranchIndex = 3;
+const _settingsBranchIndex = 4;
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 @Dependencies([
@@ -52,6 +54,7 @@ class HomePage extends ConsumerWidget {
     return switch (navigationShell.currentIndex) {
       _inventoryBranchIndex => HomeTabType.inventory,
       _diaryBranchIndex => HomeTabType.diary,
+      _cookbookBranchIndex => HomeTabType.cookbook,
       _statisticsBranchIndex => HomeTabType.statistics,
       _settingsBranchIndex => HomeTabType.settings,
       _ => HomeTabType.inventory, // coverage:ignore-line
@@ -79,6 +82,8 @@ class HomePage extends ConsumerWidget {
                 diaryCalendarState!.selectedDay,
                 localeName,
               );
+      case HomeTabType.cookbook:
+        return l10n.homeCookbook;
       case HomeTabType.statistics:
         return l10n.homeStatistics;
       case HomeTabType.settings:
@@ -99,16 +104,11 @@ class HomePage extends ConsumerWidget {
 
   List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
     final currentTab = _currentTab();
+    final isMoreSelected =
+        currentTab == HomeTabType.statistics ||
+        currentTab == HomeTabType.settings;
 
     return [
-      HomeNavEntry(
-        item: HomeNavItem(
-          icon: Icons.inventory_2_rounded,
-          label: l10n.homeInventory,
-        ),
-        isSelected: currentTab == HomeTabType.inventory,
-        onTap: () => _onTabTapped(_inventoryBranchIndex),
-      ),
       HomeNavEntry(
         item: HomeNavItem(
           icon: Icons.menu_book_rounded,
@@ -119,19 +119,28 @@ class HomePage extends ConsumerWidget {
       ),
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.insights_rounded,
-          label: l10n.homeStatistics,
+          icon: Icons.inventory_2_rounded,
+          label: l10n.homeInventory,
         ),
-        isSelected: currentTab == HomeTabType.statistics,
-        onTap: () => _onTabTapped(_statisticsBranchIndex),
+        isSelected: currentTab == HomeTabType.inventory,
+        onTap: () => _onTabTapped(_inventoryBranchIndex),
       ),
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.settings_rounded,
-          label: l10n.homeSettings,
+          icon: Icons.auto_stories_rounded,
+          label: l10n.homeCookbook,
         ),
-        isSelected: currentTab == HomeTabType.settings,
-        onTap: () => _onTabTapped(_settingsBranchIndex),
+        isSelected: currentTab == HomeTabType.cookbook,
+        onTap: () => _onTabTapped(_cookbookBranchIndex),
+      ),
+      HomeNavEntry(
+        item: HomeNavItem(
+          icon: Icons.more_horiz_rounded,
+          label: l10n.homeMore,
+        ),
+        isSelected: isMoreSelected,
+        showTopIndicator: isMoreSelected,
+        onTap: () => _showMoreMenu(context, l10n),
       ),
     ];
   }
@@ -144,7 +153,6 @@ class HomePage extends ConsumerWidget {
     bool useCompactSelectionActions,
     DiaryCalendarState? diaryCalendarState,
   ) {
-    final colors = Theme.of(context).colorScheme;
     if (_currentTab() == HomeTabType.inventory &&
         selectionState.isSelectionMode) {
       final isAddingIngredients = selectionState.isAddingIngredientsToMeal;
@@ -213,15 +221,6 @@ class HomePage extends ConsumerWidget {
                 _showSnackBar(context, l10n.commonNotImplementedYet),
             icon: const Icon(Icons.assignment_outlined),
           ),
-          IconButton.filledTonal(
-            tooltip: l10n.preparedMealTemplatesPageTitle,
-            onPressed: () => context.push(AppRoutes.homeInventoryTemplates),
-            icon: const Icon(Icons.bookmarks_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: colors.primary.withValues(alpha: 0.12),
-              foregroundColor: colors.primary,
-            ),
-          ),
           IconButton(
             tooltip: l10n.homeShopping,
             onPressed: () => context.push(AppRoutes.homeShopping),
@@ -241,6 +240,8 @@ class HomePage extends ConsumerWidget {
             child: Text(l10n.diaryTodayTitle),
           ),
         ];
+      case HomeTabType.cookbook:
+        return const [MealTemplateRecipeImportButton()];
       case HomeTabType.statistics:
         return const <Widget>[];
       case HomeTabType.settings:
@@ -272,9 +273,12 @@ class HomePage extends ConsumerWidget {
     final topBarSubtitle = _subtitleForTab(diaryCalendarState, localeName);
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
-      HomeTabType.diary || HomeTabType.statistics => null,
+      HomeTabType.diary ||
+      HomeTabType.cookbook ||
+      HomeTabType.statistics ||
       HomeTabType.settings => null,
     };
+    final hasFloatingActionButton = floatingActionButton != null;
 
     final theme = Theme.of(context);
     final homeTheme = theme.copyWith(
@@ -286,6 +290,7 @@ class HomePage extends ConsumerWidget {
     return Theme(
       data: homeTheme,
       child: Scaffold(
+        key: ValueKey(hasFloatingActionButton),
         extendBody: currentTab != HomeTabType.settings,
         appBar: HomeTopBar(
           title: topBarTitle,
@@ -308,9 +313,7 @@ class HomePage extends ConsumerWidget {
           ),
         ),
         body: navigationShell,
-        floatingActionButtonLocation: floatingActionButton is InventoryActionFab
-            ? ExpandableFab.location
-            : FloatingActionButtonLocation.endFloat,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButtonAnimator: floatingActionButton is InventoryActionFab
             ? FloatingActionButtonAnimator.noAnimation
             : null,
@@ -345,9 +348,65 @@ class HomePage extends ConsumerWidget {
     return HomeHeartCounterButton(runState: runState);
   }
 
+  void _showMoreMenu(BuildContext context, AppLocalizations l10n) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _HomeMoreMenuTile(
+                  icon: Icons.insights_rounded,
+                  label: l10n.homeStatistics,
+                  onTap: () {
+                    sheetContext.pop();
+                    _onTabTapped(_statisticsBranchIndex);
+                  },
+                ),
+                _HomeMoreMenuTile(
+                  icon: Icons.settings_rounded,
+                  label: l10n.homeSettings,
+                  onTap: () {
+                    sheetContext.pop();
+                    _onTabTapped(_settingsBranchIndex);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _HomeMoreMenuTile extends StatelessWidget {
+  const _HomeMoreMenuTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(label),
+      onTap: onTap,
+    );
   }
 }

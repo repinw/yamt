@@ -97,6 +97,10 @@ void main() {
         findsOneWidget,
       );
       expect(
+        find.byKey(const Key('inventory_action_barcode_fab')),
+        findsOneWidget,
+      );
+      expect(
         find.byKey(const Key('inventory_action_upload_image_pdf_fab')),
         findsOneWidget,
       );
@@ -105,6 +109,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Manual search'), findsOneWidget);
+      expect(find.text('Barcode'), findsOneWidget);
       expect(find.text('AI suggestion'), findsOneWidget);
       expect(find.text('Upload image/PDF'), findsOneWidget);
       expect(find.text('Camera'), findsOneWidget);
@@ -135,6 +140,32 @@ void main() {
       expect(
         manualAddRouteExtra,
         InventoryManualAddInitialAction.manualSearch,
+      );
+    });
+
+    testWidgets('barcode closes sheet and opens barcode route', (
+      tester,
+    ) async {
+      Object? manualAddRouteExtra;
+
+      await tester.pumpWidget(
+        _buildHarness(
+          onManualAddRouteExtra: (extra) => manualAddRouteExtra = extra,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _openEmbeddedFabSheet(tester);
+      await tester.tap(find.byKey(const Key('inventory_action_barcode_fab')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('inventory_action_barcode_fab')),
+        findsNothing,
+      );
+      expect(
+        manualAddRouteExtra,
+        InventoryManualAddInitialAction.barcodeScan,
       );
     });
 

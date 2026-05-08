@@ -104,7 +104,7 @@ Raw<GoRouter> appRouter(Ref ref) {
         redirect: (context, state) {
           final authState = ref.read(authStateChangesProvider);
           final isAuthenticated = authState.asData?.value != null;
-          return isAuthenticated ? AppRoutes.homeInventory : AppRoutes.welcome;
+          return isAuthenticated ? AppRoutes.homeDiary : AppRoutes.welcome;
         },
       ),
       GoRoute(
@@ -125,7 +125,7 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.home,
-        redirect: (context, state) => AppRoutes.homeInventory,
+        redirect: (context, state) => AppRoutes.homeDiary,
       ),
       GoRoute(
         path: AppRoutes.homeSettingsAccount,
@@ -203,10 +203,6 @@ Raw<GoRouter> appRouter(Ref ref) {
         },
       ),
       GoRoute(
-        path: AppRoutes.homeInventoryTemplates,
-        builder: (context, state) => const MealTemplatesPage(),
-      ),
-      GoRoute(
         path: AppRoutes.homeInventoryTemplateImportReview,
         builder: (context, state) {
           final args = state.extra;
@@ -254,6 +250,16 @@ Raw<GoRouter> appRouter(Ref ref) {
               GoRoute(
                 path: AppRoutes.homeDiary,
                 builder: (context, state) => const DiaryPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.homeInventoryTemplates,
+                builder: (context, state) {
+                  return const MealTemplatesPage(includeAppBar: false);
+                },
               ),
             ],
           ),
@@ -343,15 +349,15 @@ String? _redirectForState(Ref ref, GoRouterState state) {
   }
 
   if (path == AppRoutes.guestNameSetup) {
-    return AppRoutes.homeInventory;
+    return AppRoutes.homeDiary;
   }
 
   if (path == AppRoutes.calorieGoalSetup) {
-    return AppRoutes.homeInventory;
+    return AppRoutes.homeDiary;
   }
 
   if (path == AppRoutes.welcome || isStartupRoute) {
-    return AppRoutes.homeInventory;
+    return AppRoutes.homeDiary;
   }
 
   return null;
