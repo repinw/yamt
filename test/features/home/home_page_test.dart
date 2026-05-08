@@ -912,21 +912,21 @@ void main() {
 
       expect(find.text('INVENTORY'), findsOneWidget);
       expect(find.text('DIARY'), findsOneWidget);
-      expect(find.text('KOCHBUCH'), findsOneWidget);
+      expect(find.text('COOKBOOK'), findsOneWidget);
       expect(
         tester.getCenter(find.text('DIARY')).dx,
         lessThan(tester.getCenter(find.text('INVENTORY')).dx),
       );
       expect(
         tester.getCenter(find.text('INVENTORY')).dx,
-        lessThan(tester.getCenter(find.text('KOCHBUCH')).dx),
+        lessThan(tester.getCenter(find.text('COOKBOOK')).dx),
       );
       expect(
-        tester.getCenter(find.text('KOCHBUCH')).dx,
-        lessThan(tester.getCenter(find.text('MEHR')).dx),
+        tester.getCenter(find.text('COOKBOOK')).dx,
+        lessThan(tester.getCenter(find.text('MORE')).dx),
       );
       expect(find.text('BURN'), findsNothing);
-      expect(find.text('MEHR'), findsOneWidget);
+      expect(find.text('MORE'), findsOneWidget);
       expect(find.text('STATISTICS'), findsNothing);
       expect(find.text('SETTINGS'), findsNothing);
       expect(tester.takeException(), isNull);
@@ -945,7 +945,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('MEHR'));
+    await tester.tap(find.text('MORE'));
     await tester.pumpAndSettle();
 
     expect(find.text('Statistics'), findsOneWidget);

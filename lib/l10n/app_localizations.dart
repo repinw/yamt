@@ -122,13 +122,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeCookbook.
   ///
   /// In en, this message translates to:
-  /// **'Kochbuch'**
+  /// **'Cookbook'**
   String get homeCookbook;
 
   /// No description provided for @homeMore.
   ///
   /// In en, this message translates to:
-  /// **'Mehr'**
+  /// **'More'**
   String get homeMore;
 
   /// No description provided for @homeSettings.
