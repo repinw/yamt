@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -19,9 +18,6 @@ class InventoryManualAddProductPage extends StatelessWidget {
     required this.onSaved,
     super.key,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
-    this.quickEatOnly = false,
-    this.preselectedMealType,
-    this.preselectedLoggedAt,
   });
 
   /// Draft inventory item used by the product search flow.
@@ -32,15 +28,6 @@ class InventoryManualAddProductPage extends StatelessWidget {
 
   /// Initial result action.
   final InventoryReceiptManualProductAction initialAction;
-
-  /// Whether only eat flow actions should be shown.
-  final bool quickEatOnly;
-
-  /// Preselected meal type.
-  final MealType? preselectedMealType;
-
-  /// Preselected logged-at.
-  final DateTime? preselectedLoggedAt;
 
   /// Called when the product flow returns a save result.
   final Future<void> Function(InventoryReceiptManualProductResult result)
@@ -53,9 +40,6 @@ class InventoryManualAddProductPage extends StatelessWidget {
       showEatImmediatelyOption: true,
       initialIntent: initialIntent,
       initialAction: initialAction,
-      quickEatOnly: quickEatOnly,
-      preselectedMealType: preselectedMealType,
-      preselectedLoggedAt: preselectedLoggedAt,
       onSaved: onSaved,
     );
   }

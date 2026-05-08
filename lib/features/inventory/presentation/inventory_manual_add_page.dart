@@ -20,6 +20,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_dialogs.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -131,16 +133,21 @@ class _InventoryManualAddPageState
 
   @override
   Widget build(BuildContext context) {
-    return InventoryManualAddProductPage(
-      item: _draftItem,
-      initialIntent: _initialIntentFor(widget.initialAction),
-      quickEatOnly: widget.quickEatOnly,
-      initialAction: widget.quickEatOnly
-          ? InventoryReceiptManualProductAction.eatNow
-          : InventoryReceiptManualProductAction.addToInventory,
-      preselectedMealType: widget.preselectedMealType,
-      preselectedLoggedAt: widget.preselectedLoggedAt,
-      onSaved: _saveSheetResult,
+    final quickEatConfig = _quickEatConfig;
+    return ProviderScope(
+      overrides: [
+        inventoryManualAddQuickEatConfigProvider.overrideWithValue(
+          quickEatConfig,
+        ),
+      ],
+      child: InventoryManualAddProductPage(
+        item: _draftItem,
+        initialIntent: _initialIntentFor(widget.initialAction),
+        initialAction: quickEatConfig.quickEatOnly
+            ? InventoryReceiptManualProductAction.eatNow
+            : InventoryReceiptManualProductAction.addToInventory,
+        onSaved: _saveSheetResult,
+      ),
     );
   }
 
@@ -313,6 +320,7 @@ class _InventoryManualAddPageState
     String? initialEatWeight,
   }) async {
     final l10n = AppLocalizations.of(context)!;
+    final quickEatConfig = _quickEatConfig;
     final maxAmount = resolveInventoryManualAddConsumableAmount(item);
     if (maxAmount == null) {
       _showSnackBar(l10n.inventoryItemActionFailed);
@@ -328,14 +336,22 @@ class _InventoryManualAddPageState
         item: item,
         rawWeight: initialEatWeight,
       ),
-      initialLoggedAt: widget.preselectedLoggedAt,
-      initialMealType: widget.preselectedMealType,
+      initialLoggedAt: quickEatConfig.preselectedLoggedAt,
+      initialMealType: quickEatConfig.preselectedMealType,
     );
     if (!mounted || request == null) {
       return;
     }
 
     await _completeImmediateEatFlow(item, request);
+  }
+
+  InventoryManualAddQuickEatConfig get _quickEatConfig {
+    return InventoryManualAddQuickEatConfig(
+      quickEatOnly: widget.quickEatOnly,
+      preselectedMealType: widget.preselectedMealType,
+      preselectedLoggedAt: widget.preselectedLoggedAt,
+    );
   }
 
   Future<void> _completeImmediateEatFlow(

@@ -13,6 +13,8 @@ import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
@@ -59,9 +61,6 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
     this.initialPrompt = '',
     this.showEatImmediatelyOption = false,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
-    this.quickEatOnly = false,
-    this.preselectedMealType,
-    this.preselectedLoggedAt,
   });
 
   /// Base item to build from.
@@ -75,15 +74,6 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
 
   /// Initially selected action.
   final InventoryReceiptManualProductAction initialAction;
-
-  /// Whether only eat action is available.
-  final bool quickEatOnly;
-
-  /// Preselected meal type.
-  final MealType? preselectedMealType;
-
-  /// Preselected logged-at.
-  final DateTime? preselectedLoggedAt;
 
   @override
   ConsumerState<ManualProductAiSearchPage> createState() =>
@@ -111,11 +101,15 @@ class _ManualProductAiSearchPageState
   void initState() {
     super.initState();
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
+    if (quickEatConfig.quickEatOnly) {
+      _selectedAction = InventoryReceiptManualProductAction.eatNow;
+    }
     _promptController = TextEditingController(text: widget.initialPrompt);
     _weightController = TextEditingController();
-    _selectedLoggedAt = widget.preselectedLoggedAt ?? DateTime.now();
+    _selectedLoggedAt = quickEatConfig.preselectedLoggedAt ?? DateTime.now();
     _selectedMealType =
-        widget.preselectedMealType ??
+        quickEatConfig.preselectedMealType ??
         MealType.defaultForDateTime(
           _selectedLoggedAt,
         );
@@ -194,7 +188,6 @@ class _ManualProductAiSearchPageState
           weightErrorText: weightErrorText,
           selectedAction: _selectedAction,
           showEatImmediatelyOption: widget.showEatImmediatelyOption,
-          quickEatOnly: widget.quickEatOnly,
           isLoggedAtToday: isLoggedAtToday,
           loggedAtLabel: loggedAtLabel,
           selectedMealType: _selectedMealType,

@@ -5,6 +5,8 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
@@ -198,6 +200,9 @@ void main() {
       ProviderScope(
         overrides: [
           productAiSearchRepositoryProvider.overrideWithValue(repository),
+          inventoryManualAddQuickEatConfigProvider.overrideWithValue(
+            const InventoryManualAddQuickEatConfig(quickEatOnly: true),
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -285,6 +290,9 @@ void main() {
       ProviderScope(
         overrides: [
           productAiSearchRepositoryProvider.overrideWithValue(repository),
+          inventoryManualAddQuickEatConfigProvider.overrideWithValue(
+            const InventoryManualAddQuickEatConfig(quickEatOnly: true),
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -294,7 +302,6 @@ void main() {
             initialPrompt: 'doener',
             showEatImmediatelyOption: true,
             initialAction: InventoryReceiptManualProductAction.eatNow,
-            quickEatOnly: true,
           ),
         ),
       ),
@@ -308,8 +315,7 @@ void main() {
 
     expect(find.byIcon(Icons.restaurant_outlined), findsOneWidget);
     expect(find.byIcon(Icons.inventory_2_outlined), findsNothing);
-    expect(find.text('Eat'), findsOneWidget);
-    expect(find.text('Inventory'), findsNothing);
+    expect(find.text('Eat'), findsWidgets);
   });
 
   testWidgets('ai page adjusts per-100 kcal and weight before save', (

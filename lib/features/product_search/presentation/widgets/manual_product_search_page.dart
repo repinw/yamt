@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
@@ -16,6 +15,8 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -57,9 +58,6 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
     this.showEatImmediatelyOption = false,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
     this.initialIntent = InventoryReceiptManualProductInitialIntent.launcher,
-    this.quickEatOnly = false,
-    this.preselectedMealType,
-    this.preselectedLoggedAt,
     this.onSaved,
   });
 
@@ -84,15 +82,6 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
   /// The initial launcher intent.
   final InventoryReceiptManualProductInitialIntent initialIntent;
 
-  /// Whether only eat actions are available.
-  final bool quickEatOnly;
-
-  /// Preselected meal type.
-  final MealType? preselectedMealType;
-
-  /// Preselected logged-at.
-  final DateTime? preselectedLoggedAt;
-
   /// Documented member.
   final Future<void> Function(InventoryReceiptManualProductResult result)?
   onSaved;
@@ -114,9 +103,6 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
         config: config,
         showEatImmediatelyOption: showEatImmediatelyOption,
         initialAction: initialAction,
-        quickEatOnly: quickEatOnly,
-        preselectedMealType: preselectedMealType,
-        preselectedLoggedAt: preselectedLoggedAt,
         closeCurrentEditorOnSave: false,
         onSaved: onSaved,
       );
@@ -126,9 +112,6 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
       config: config,
       showEatImmediatelyOption: showEatImmediatelyOption,
       initialIntent: initialIntent,
-      quickEatOnly: quickEatOnly,
-      preselectedMealType: preselectedMealType,
-      preselectedLoggedAt: preselectedLoggedAt,
       onSaved: onSaved,
     );
   }
@@ -189,18 +172,12 @@ class _InventoryReceiptManualProductLauncherPage
     required this.config,
     required this.showEatImmediatelyOption,
     required this.initialIntent,
-    required this.quickEatOnly,
-    required this.preselectedMealType,
-    required this.preselectedLoggedAt,
     this.onSaved,
   });
 
   final InventoryReceiptManualProductConfig config;
   final bool showEatImmediatelyOption;
   final InventoryReceiptManualProductInitialIntent initialIntent;
-  final bool quickEatOnly;
-  final MealType? preselectedMealType;
-  final DateTime? preselectedLoggedAt;
   final Future<void> Function(InventoryReceiptManualProductResult result)?
   onSaved;
 
@@ -250,6 +227,9 @@ class _InventoryReceiptManualProductLauncherPageState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final quickEatConfig = ref.watch(
+      inventoryManualAddQuickEatConfigProvider,
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -271,7 +251,7 @@ class _InventoryReceiptManualProductLauncherPageState
           unawaited(_openRecentItemEditor(item));
         },
         onRecentItemStoreSelected: widget.showEatImmediatelyOption
-            ? widget.quickEatOnly
+            ? quickEatConfig.quickEatOnly
                   ? null
                   : _handleRecentItemStoreSelected
             : null,
@@ -314,6 +294,7 @@ class _InventoryReceiptManualProductLauncherPageState
   }
 
   Future<void> _openAiSearchPage() async {
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     final result = await Navigator.of(context)
         .push<ManualProductAiSearchResult>(
           _NoAnimationMaterialPageRoute<ManualProductAiSearchResult>(
@@ -323,12 +304,9 @@ class _InventoryReceiptManualProductLauncherPageState
                 item: widget.config.item,
                 initialPrompt: _searchController.text,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
-                initialAction: widget.quickEatOnly
+                initialAction: quickEatConfig.quickEatOnly
                     ? InventoryReceiptManualProductAction.eatNow
                     : InventoryReceiptManualProductAction.addToInventory,
-                quickEatOnly: widget.quickEatOnly,
-                preselectedMealType: widget.preselectedMealType,
-                preselectedLoggedAt: widget.preselectedLoggedAt,
               );
             },
           ),
@@ -420,9 +398,6 @@ class _InventoryReceiptManualProductLauncherPageState
                 config: config,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
                 initialAction: initialAction,
-                quickEatOnly: widget.quickEatOnly,
-                preselectedMealType: widget.preselectedMealType,
-                preselectedLoggedAt: widget.preselectedLoggedAt,
                 closeCurrentEditorOnSave: !autofocusSearch,
                 showActionSelector: showActionSelector,
                 onSaved: widget.onSaved,
@@ -448,6 +423,7 @@ class _InventoryReceiptManualProductLauncherPageState
 
   Future<void> _openBarcodeScanner() async {
     final l10n = AppLocalizations.of(context)!;
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     final result = await showModalBottomSheet<_ManualBarcodeScanResult>(
       context: context,
       isScrollControlled: true,
@@ -476,7 +452,7 @@ class _InventoryReceiptManualProductLauncherPageState
               );
               return true;
             },
-            eatOnly: widget.quickEatOnly,
+            eatOnly: quickEatConfig.quickEatOnly,
           ),
         );
       },
@@ -660,9 +636,6 @@ class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     required this.config,
     required this.showEatImmediatelyOption,
     required this.initialAction,
-    required this.quickEatOnly,
-    required this.preselectedMealType,
-    required this.preselectedLoggedAt,
     required this.closeCurrentEditorOnSave,
     this.showActionSelector = true,
     this.onSaved,
@@ -675,9 +648,6 @@ class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   final InventoryReceiptManualProductConfig config;
   final bool showEatImmediatelyOption;
   final InventoryReceiptManualProductAction initialAction;
-  final bool quickEatOnly;
-  final MealType? preselectedMealType;
-  final DateTime? preselectedLoggedAt;
   final bool closeCurrentEditorOnSave;
   final bool showActionSelector;
   final Future<void> Function(InventoryReceiptManualProductResult result)?
@@ -780,6 +750,10 @@ class _InventoryReceiptManualProductEditorPageState
   void initState() {
     super.initState();
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
+    if (quickEatConfig.quickEatOnly) {
+      _selectedAction = InventoryReceiptManualProductAction.eatNow;
+    }
     _searchController = TextEditingController();
     final initialInfoMessage = widget.initialInfoMessage;
     if (initialInfoMessage != null) {
@@ -869,6 +843,9 @@ class _InventoryReceiptManualProductEditorPageState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(_provider);
+    final quickEatConfig = ref.watch(
+      inventoryManualAddQuickEatConfigProvider,
+    );
     final preview = _buildPreviewData();
     final canSave = _canSave(state);
 
@@ -913,11 +890,11 @@ class _InventoryReceiptManualProductEditorPageState
         showActionSelector:
             widget.showEatImmediatelyOption &&
             _showActionSelector &&
-            !widget.quickEatOnly,
+            !quickEatConfig.quickEatOnly,
         selectedAction: _selectedAction,
         onSearchResultSelected: _handleSearchResultSelected,
         onSearchResultStoreSelected: widget.showEatImmediatelyOption
-            ? widget.quickEatOnly
+            ? quickEatConfig.quickEatOnly
                   ? null
                   : _handleSearchResultStoreSelected
             : null,
@@ -985,10 +962,11 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   void _handleSearchResultSelected(OffProductSearchResult product) {
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     unawaited(
       _handleSearchResultActionSelected(
         product,
-        widget.quickEatOnly
+        quickEatConfig.quickEatOnly
             ? InventoryReceiptManualProductAction.eatNow
             : InventoryReceiptManualProductAction.addToInventory,
       ),
@@ -1027,7 +1005,8 @@ class _InventoryReceiptManualProductEditorPageState
         return;
       }
     }
-    if (widget.autofocusSearch || widget.quickEatOnly) {
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
+    if (widget.autofocusSearch || quickEatConfig.quickEatOnly) {
       await _openSelectedProductEditor(
         product,
         action: action,
@@ -1112,9 +1091,6 @@ class _InventoryReceiptManualProductEditorPageState
                 config: config,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
                 initialAction: action,
-                quickEatOnly: widget.quickEatOnly,
-                preselectedMealType: widget.preselectedMealType,
-                preselectedLoggedAt: widget.preselectedLoggedAt,
                 closeCurrentEditorOnSave: true,
                 showActionSelector: showActionSelector,
                 onSaved: widget.onSaved,
@@ -1171,6 +1147,7 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
     final l10n = AppLocalizations.of(context)!;
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     final result = await showModalBottomSheet<_ManualBarcodeScanResult>(
       context: context,
       isScrollControlled: true,
@@ -1199,7 +1176,7 @@ class _InventoryReceiptManualProductEditorPageState
               );
               return true;
             },
-            eatOnly: widget.quickEatOnly,
+            eatOnly: quickEatConfig.quickEatOnly,
           ),
         );
       },
@@ -1222,7 +1199,7 @@ class _InventoryReceiptManualProductEditorPageState
           return;
         }
         if (selectedProduct != null &&
-            (widget.autofocusSearch || widget.quickEatOnly)) {
+            (widget.autofocusSearch || quickEatConfig.quickEatOnly)) {
           await _openSelectedProductEditor(
             selectedProduct,
             action: action,
@@ -1297,9 +1274,6 @@ class _InventoryReceiptManualProductEditorPageState
                 initialPrompt: _searchController.text,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
                 initialAction: _selectedAction,
-                quickEatOnly: widget.quickEatOnly,
-                preselectedMealType: widget.preselectedMealType,
-                preselectedLoggedAt: widget.preselectedLoggedAt,
               );
             },
           ),
