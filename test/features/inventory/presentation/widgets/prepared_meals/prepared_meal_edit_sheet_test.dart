@@ -194,6 +194,39 @@ void main() {
     );
   });
 
+  testWidgets('shows amount limit for fractional remaining meal', (
+    tester,
+  ) async {
+    final meal = preparedMealTestData(
+      imageAssetId: 'asset-meal-1',
+      totalPortions: 2,
+      remainingPortions: 0.5,
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          preparedMealImagePickerProvider.overrideWithValue(
+            FakePreparedMealImagePicker(),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: _EditSheetHarness(
+            meal: meal,
+            inventoryItems: _inventoryItems(meal),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Available: 900 g'), findsOneWidget);
+  });
+
   testWidgets('can remove image and returns changed state', (tester) async {
     final localImageStore = FakeLocalImageStore();
     await localImageStore.saveBytes(

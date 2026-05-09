@@ -221,6 +221,18 @@ List<InventoryItem> restoreItemsFromPreparedMeal({
   return nextItems;
 }
 
+/// Computes the inventory amount represented by remaining prepared portions.
+int remainingPreparedMealShareAmount({
+  required int usedAmount,
+  required int totalPortions,
+  required num remainingPortions,
+}) {
+  if (totalPortions < 1 || remainingPortions <= 0) {
+    return 0;
+  }
+  return ((usedAmount * remainingPortions) / totalPortions).round();
+}
+
 double _nutritionMultiplier({
   required int amount,
   required InventoryAmountUnit unit,
@@ -235,11 +247,11 @@ int _restoreAmountForComponent({
   required PreparedMealComponent component,
   required PreparedMeal meal,
 }) {
-  if (meal.remainingPortions <= 0 || meal.totalPortions < 1) {
-    return 0;
-  }
-  return ((component.usedAmount * meal.remainingPortions) / meal.totalPortions)
-      .round();
+  return remainingPreparedMealShareAmount(
+    usedAmount: component.usedAmount,
+    totalPortions: meal.totalPortions,
+    remainingPortions: meal.remainingPortions,
+  );
 }
 
 InventoryItem _buildRestoredSnapshotItem({

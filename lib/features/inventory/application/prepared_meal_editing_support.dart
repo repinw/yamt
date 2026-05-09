@@ -104,7 +104,7 @@ PreparedMealComponent _buildEditedComponent({
   }
 
   final inventoryItem = _findInventoryItem(nextItems, input.itemId);
-  final amountToReserve = _remainingShareAmount(
+  final amountToReserve = remainingPreparedMealShareAmount(
     usedAmount: input.usedAmount,
     totalPortions: totalPortions,
     remainingPortions: remainingPortions,
@@ -207,17 +207,6 @@ InventoryItem? _findInventoryItem(List<InventoryItem> items, String itemId) {
     }
   }
   return null;
-}
-
-int _remainingShareAmount({
-  required int usedAmount,
-  required int totalPortions,
-  required num remainingPortions,
-}) {
-  if (totalPortions < 1 || remainingPortions < 1) {
-    return 0;
-  }
-  return ((usedAmount * remainingPortions) / totalPortions).round();
 }
 
 num _consumedPortions(PreparedMeal meal) {

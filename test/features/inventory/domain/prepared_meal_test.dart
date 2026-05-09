@@ -146,6 +146,13 @@ void main() {
     expect(formatPreparedMealPortions(roundtrip.remainingPortions), '2.5');
   });
 
+  test('formatPreparedMealPortions trims noisy trailing zeroes', () {
+    expect(formatPreparedMealPortions(1), '1');
+    expect(formatPreparedMealPortions(1.0), '1');
+    expect(formatPreparedMealPortions(0.5), '0.5');
+    expect(formatPreparedMealPortions(1.25), '1.25');
+  });
+
   test('PreparedMeal totals price proportionally for amount-based items', () {
     final sourceItem = InventoryItem.create(
       id: 'item-1',

@@ -69,4 +69,20 @@ void main() {
     expect(event.discardedValue, closeTo(1, 0.0001));
     expect(event.toJson()['discarded_amount'], 0.5);
   });
+
+  test('fromJson keeps fractional discarded amount', () {
+    final event = InventoryDiscardEvent.fromJson(<String, dynamic>{
+      'id': 'event-1',
+      'source_type': 'preparedMeal',
+      'source_id': 'meal-1',
+      'name': 'Soup',
+      'reason': 'expired',
+      'discarded_at': '2026-03-27T12:00:00Z',
+      'discarded_amount': '0.5',
+      'discarded_value': 1,
+      'currency_code': 'EUR',
+    });
+
+    expect(event.discardedAmount, 0.5);
+  });
 }

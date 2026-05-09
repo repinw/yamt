@@ -319,6 +319,16 @@ void main() {
         expect(restoredItems.single.currentAmount, 25);
       },
     );
+
+    test('remainingPreparedMealShareAmount keeps fractional shares', () {
+      final share = remainingPreparedMealShareAmount(
+        usedAmount: 200,
+        totalPortions: 4,
+        remainingPortions: 0.5,
+      );
+
+      expect(share, 25);
+    });
   });
 }
 

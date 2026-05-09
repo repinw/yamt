@@ -118,9 +118,7 @@ class _PreparedMealEatSheet extends StatefulWidget {
 }
 
 class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
-  late final TextEditingController _portionsController = TextEditingController(
-    text: formatPreparedMealPortions(_defaultPreparedMealPortions),
-  );
+  late final TextEditingController _portionsController;
   late final FocusNode _portionsFocusNode = FocusNode();
   late DateTime _selectedLoggedAt;
   late MealType _selectedMealType;
@@ -129,6 +127,9 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
   @override
   void initState() {
     super.initState();
+    _portionsController = TextEditingController(
+      text: _defaultPortionsText(widget.meal.remainingPortions),
+    );
     _selectedLoggedAt = widget.initialLoggedAt ?? DateTime.now();
     _selectedMealType =
         widget.initialMealType ??
@@ -413,9 +414,15 @@ class _PreparedMealPortionDialog extends StatefulWidget {
 
 class _PreparedMealPortionDialogState
     extends State<_PreparedMealPortionDialog> {
-  late final TextEditingController _controller = TextEditingController(
-    text: formatPreparedMealPortions(_defaultPreparedMealPortions),
-  );
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: _defaultPortionsText(widget.meal.remainingPortions),
+    );
+  }
 
   @override
   void dispose() {
@@ -504,4 +511,12 @@ void _showInvalidPortionsSnackBar({
   ScaffoldMessenger.of(scaffoldContext)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(message)));
+}
+
+String _defaultPortionsText(num remainingPortions) {
+  if (remainingPortions <= 0 ||
+      remainingPortions >= _defaultPreparedMealPortions) {
+    return formatPreparedMealPortions(_defaultPreparedMealPortions);
+  }
+  return formatPreparedMealPortions(remainingPortions);
 }
