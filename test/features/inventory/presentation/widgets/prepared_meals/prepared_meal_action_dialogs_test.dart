@@ -216,7 +216,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
-        locale: const Locale('en'),
+        locale: const Locale('de'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(
@@ -231,7 +231,7 @@ void main() {
     final portionsField = tester.widget<TextField>(
       find.byKey(const Key('prepared_meal_portions_field')),
     );
-    expect(portionsField.controller?.text, '0.5');
+    expect(portionsField.controller?.text, '0,5');
 
     await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
     await tester.pumpAndSettle();
@@ -365,7 +365,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
-        locale: const Locale('en'),
+        locale: const Locale('de'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(
@@ -378,9 +378,9 @@ void main() {
     await tester.pumpAndSettle();
 
     final field = tester.widget<TextField>(find.byType(TextField));
-    expect(field.controller?.text, '0.5');
+    expect(field.controller?.text, '0,5');
 
-    await tester.tap(find.text('Confirm'));
+    await tester.tap(find.text('Bestätigen'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
 

@@ -122,20 +122,32 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
   late final FocusNode _portionsFocusNode = FocusNode();
   late DateTime _selectedLoggedAt;
   late MealType _selectedMealType;
+  bool _hasInitializedPortionsText = false;
   String? _portionsErrorText;
 
   @override
   void initState() {
     super.initState();
-    _portionsController = TextEditingController(
-      text: _defaultPortionsText(widget.meal.remainingPortions),
-    );
+    _portionsController = TextEditingController();
     _selectedLoggedAt = widget.initialLoggedAt ?? DateTime.now();
     _selectedMealType =
         widget.initialMealType ??
         MealType.defaultForDateTime(
           _selectedLoggedAt,
         );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_hasInitializedPortionsText) {
+      return;
+    }
+    _portionsController.text = _defaultPortionsText(
+      widget.meal.remainingPortions,
+      AppLocalizations.of(context)!.localeName,
+    );
+    _hasInitializedPortionsText = true;
   }
 
   @override
@@ -182,7 +194,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
           selectedPortions: selectedPortions,
           quickOptions: _buildQuickOptions(l10n),
           remainingLabel: l10n.preparedMealPortionsRemaining(
-            formatPreparedMealPortions(widget.meal.remainingPortions),
+            _formatPortions(widget.meal.remainingPortions, l10n),
             widget.meal.totalPortions,
           ),
           clearTooltip: l10n.inventoryItemEatSheetClearAmountAction,
@@ -263,7 +275,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       l10n.inventoryItemEatSheetAllAction,
     );
     for (final value in const [0.5, 1.0, 2.0, 3.0]) {
-      addOption(value, formatPreparedMealPortions(value));
+      addOption(value, _formatPortions(value, l10n));
     }
     return options;
   }
@@ -291,7 +303,10 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
 
   void _selectPortions(num portions) {
     setState(() {
-      _portionsController.text = formatPreparedMealPortions(portions);
+      _portionsController.text = _formatPortions(
+        portions,
+        AppLocalizations.of(context)!,
+      );
       _portionsErrorText = null;
     });
   }
@@ -415,13 +430,25 @@ class _PreparedMealPortionDialog extends StatefulWidget {
 class _PreparedMealPortionDialogState
     extends State<_PreparedMealPortionDialog> {
   late final TextEditingController _controller;
+  bool _hasInitializedPortionsText = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-      text: _defaultPortionsText(widget.meal.remainingPortions),
+    _controller = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_hasInitializedPortionsText) {
+      return;
+    }
+    _controller.text = _defaultPortionsText(
+      widget.meal.remainingPortions,
+      AppLocalizations.of(context)!.localeName,
     );
+    _hasInitializedPortionsText = true;
   }
 
   @override
@@ -442,7 +469,7 @@ class _PreparedMealPortionDialogState
         decoration: InputDecoration(
           labelText: l10n.preparedMealPortionsToUseLabel,
           helperText: l10n.preparedMealPortionsRemaining(
-            formatPreparedMealPortions(widget.meal.remainingPortions),
+            _formatPortions(widget.meal.remainingPortions, l10n),
             widget.meal.totalPortions,
           ),
           suffixIcon: Padding(
@@ -496,7 +523,10 @@ class _PreparedMealPortionDialogState
   }
 
   void _fillRemainingPortions() {
-    final value = formatPreparedMealPortions(widget.meal.remainingPortions);
+    final value = _formatPortions(
+      widget.meal.remainingPortions,
+      AppLocalizations.of(context)!,
+    );
     _controller.value = TextEditingValue(
       text: value,
       selection: TextSelection.collapsed(offset: value.length),
@@ -513,10 +543,20 @@ void _showInvalidPortionsSnackBar({
     ..showSnackBar(SnackBar(content: Text(message)));
 }
 
-String _defaultPortionsText(num remainingPortions) {
+String _formatPortions(num portions, AppLocalizations l10n) {
+  return formatPreparedMealPortions(portions, localeName: l10n.localeName);
+}
+
+String _defaultPortionsText(num remainingPortions, String localeName) {
   if (remainingPortions <= 0 ||
       remainingPortions >= _defaultPreparedMealPortions) {
-    return formatPreparedMealPortions(_defaultPreparedMealPortions);
+    return formatPreparedMealPortions(
+      _defaultPreparedMealPortions,
+      localeName: localeName,
+    );
   }
-  return formatPreparedMealPortions(remainingPortions);
+  return formatPreparedMealPortions(
+    remainingPortions,
+    localeName: localeName,
+  );
 }

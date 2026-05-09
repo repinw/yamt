@@ -1054,7 +1054,10 @@ Color _ingredientAccentColor(int index) {
 String _consumedAmountLabel(AppLocalizations l10n, CalorieEntry entry) {
   if (entry.isBundle) {
     return l10n.caloriesBundlePortions(
-      formatPreparedMealPortions(entry.bundleConsumedPortions ?? 0),
+      formatPreparedMealPortions(
+        entry.bundleConsumedPortions ?? 0,
+        localeName: l10n.localeName,
+      ),
       entry.bundleTotalPortions ?? 0,
     );
   }

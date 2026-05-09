@@ -72,7 +72,7 @@ class PreparedMealCalorieLogBridge {
   /// Log consumed prepared meal.
   Future<bool> logConsumedPreparedMeal({
     required PreparedMeal meal,
-      required num consumedPortions,
+    required num consumedPortions,
     required MealType mealType,
     DateTime? loggedDay,
   }) {

@@ -105,7 +105,12 @@ void main() {
       remainingPortions: 0.5,
     );
 
-    await _pumpPickerHarness(tester, items: [item], meals: [meal]);
+    await _pumpPickerHarness(
+      tester,
+      items: [item],
+      meals: [meal],
+      locale: const Locale('de'),
+    );
 
     await tester.tap(find.byKey(_openPickerButtonKey));
     await tester.pumpAndSettle();
@@ -114,7 +119,7 @@ void main() {
     expect(listView.shrinkWrap, isFalse);
     expect(find.text('Greek Yogurt'), findsOneWidget);
     expect(find.text('Pasta Bowl'), findsOneWidget);
-    expect(find.text('0.5/2 portions'), findsOneWidget);
+    expect(find.text('0,5/2 Portionen'), findsOneWidget);
 
     await tester.tap(find.text('Greek Yogurt'));
     await tester.pumpAndSettle();
@@ -390,11 +395,12 @@ Future<void> _pumpPickerHarness(
   WidgetTester tester, {
   required List<InventoryItem> items,
   required List<PreparedMeal> meals,
+  Locale locale = const Locale('en'),
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
-        locale: const Locale('en'),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _PickerHarness(items: items, meals: meals),

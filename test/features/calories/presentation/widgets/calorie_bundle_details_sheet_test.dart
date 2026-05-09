@@ -38,7 +38,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        locale: const Locale('en'),
+        locale: const Locale('de'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
@@ -61,7 +61,7 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    expect(find.text('0.5/4 portions'), findsOneWidget);
+    expect(find.text('0,5/4 Portionen'), findsOneWidget);
     expect(find.text('Beans'), findsOneWidget);
   });
 }

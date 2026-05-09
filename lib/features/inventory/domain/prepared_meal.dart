@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:yamt/core/utils/currency_format.dart';
@@ -356,13 +357,8 @@ class PreparedMeal {
 }
 
 /// Formats prepared meal portion values without noisy trailing zeroes.
-String formatPreparedMealPortions(num portions) {
-  final asDouble = portions.toDouble();
-  final rounded = asDouble.roundToDouble();
-  if ((asDouble - rounded).abs() < 0.000001) {
-    return rounded.toInt().toString();
-  }
-  return asDouble.toStringAsFixed(3).replaceFirst(RegExp(r'\.?0+$'), '');
+String formatPreparedMealPortions(num portions, {String? localeName}) {
+  return NumberFormat.decimalPattern(localeName).format(portions);
 }
 
 /// Defines prepared meal component.

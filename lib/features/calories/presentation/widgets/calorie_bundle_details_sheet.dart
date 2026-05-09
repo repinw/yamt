@@ -66,6 +66,7 @@ class _CalorieBundleDetailsSheet extends StatelessWidget {
                     l10n.caloriesBundlePortions(
                       formatPreparedMealPortions(
                         entry.bundleConsumedPortions ?? 0,
+                        localeName: l10n.localeName,
                       ),
                       entry.bundleTotalPortions ?? 0,
                     ),

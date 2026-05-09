@@ -296,7 +296,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
-          locale: const Locale('en'),
+          locale: const Locale('de'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
@@ -324,7 +324,7 @@ void main() {
     final progressBar = tester.widget<RemainingProgressBar>(
       find.byType(RemainingProgressBar),
     );
-    expect(progressBar.stockLabel, '0.5/3 portions');
+    expect(progressBar.stockLabel, '0,5/3 Portionen');
     expect(progressBar.ratio, closeTo(1 / 6, 0.0001));
     expect(progressBar.remainingUnits, 0.5);
     expect(progressBar.segmentedByUnits, isFalse);

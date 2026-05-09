@@ -143,14 +143,25 @@ void main() {
     expect(roundtrip.recipeUrl, meal.recipeUrl);
     expect(roundtrip.components.single.sourceItemSnapshot, sourceItem);
     expect(roundtrip.remainingPortions, 2.5);
-    expect(formatPreparedMealPortions(roundtrip.remainingPortions), '2.5');
+    expect(
+      formatPreparedMealPortions(
+        roundtrip.remainingPortions,
+        localeName: 'en',
+      ),
+      '2.5',
+    );
   });
 
   test('formatPreparedMealPortions trims noisy trailing zeroes', () {
-    expect(formatPreparedMealPortions(1), '1');
-    expect(formatPreparedMealPortions(1.0), '1');
-    expect(formatPreparedMealPortions(0.5), '0.5');
-    expect(formatPreparedMealPortions(1.25), '1.25');
+    expect(formatPreparedMealPortions(1, localeName: 'en'), '1');
+    expect(formatPreparedMealPortions(1.0, localeName: 'en'), '1');
+    expect(formatPreparedMealPortions(0.5, localeName: 'en'), '0.5');
+    expect(formatPreparedMealPortions(1.25, localeName: 'en'), '1.25');
+  });
+
+  test('formatPreparedMealPortions uses locale decimal separator', () {
+    expect(formatPreparedMealPortions(0.5, localeName: 'de'), '0,5');
+    expect(formatPreparedMealPortions(1.25, localeName: 'de'), '1,25');
   });
 
   test('PreparedMeal totals price proportionally for amount-based items', () {

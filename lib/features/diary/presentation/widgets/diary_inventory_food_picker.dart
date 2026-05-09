@@ -128,6 +128,7 @@ class DiaryInventoryFoodPicker extends ConsumerWidget {
                                   subtitle: l10n.preparedMealPortionsRemaining(
                                     formatPreparedMealPortions(
                                       meal.remainingPortions,
+                                      localeName: l10n.localeName,
                                     ),
                                     meal.totalPortions,
                                   ),

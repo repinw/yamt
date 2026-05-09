@@ -264,6 +264,7 @@ Widget _buildHarness({
   List<Override> additionalOverrides = const <Override>[],
   bool openCreateFromRoot = false,
   String? autoOpenLocationFromRoot,
+  Locale locale = const Locale('en'),
 }) {
   final router = GoRouter(
     initialLocation: initialLocation,
@@ -328,7 +329,7 @@ Widget _buildHarness({
   when(() => user.uid).thenReturn('user-1');
 
   final app = MaterialApp.router(
-    locale: const Locale('en'),
+    locale: locale,
     routerConfig: router,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -562,13 +563,14 @@ void main() {
         logRepository: logRepository,
         settingsRepository: settingsRepository,
         initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('bundle-1'),
+        locale: const Locale('de'),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.byKey(CalorieEntryDetailKeys.brandValue), findsOneWidget);
     expect(find.text('Kitchen Club'), findsOneWidget);
-    expect(find.text('0.5/4 portions'), findsOneWidget);
+    expect(find.text('0,5/4 Portionen'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.byKey(CalorieEntryDetailKeys.ingredientsTable),
