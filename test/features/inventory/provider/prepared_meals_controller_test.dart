@@ -866,17 +866,17 @@ void main() {
           .read(preparedMealsControllerProvider.notifier)
           .consumePreparedMeal(
             mealId: 'meal-1',
-            consumedPortions: 2,
+            consumedPortions: 0.5,
             mealType: MealType.dinner,
             loggedDay: loggedDay,
           );
 
       expect(saved, isTrue);
-      expect(preparedMealRepository.savedMeals.single.remainingPortions, 2);
+      expect(preparedMealRepository.savedMeals.single.remainingPortions, 3.5);
       expect(calorieLogRepository.entries.single.isBundle, isTrue);
       expect(calorieLogRepository.entries.single.imageAssetId, isNotNull);
-      expect(calorieLogRepository.entries.single.bundleConsumedPortions, 2);
-      expect(calorieLogRepository.entries.single.totalKcal, 200);
+      expect(calorieLogRepository.entries.single.bundleConsumedPortions, 0.5);
+      expect(calorieLogRepository.entries.single.totalKcal, 50);
       expect(
         normalizeDiaryDay(calorieLogRepository.entries.single.loggedAt),
         loggedDay,

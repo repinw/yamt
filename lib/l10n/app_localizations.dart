@@ -1893,7 +1893,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{remaining}/{total} portions'**
-  String preparedMealPortionsRemaining(int remaining, int total);
+  String preparedMealPortionsRemaining(String remaining, int total);
 
   /// No description provided for @preparedMealUnbundleAction.
   ///
@@ -4815,7 +4815,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{consumed}/{total} portions'**
-  String caloriesBundlePortions(int consumed, int total);
+  String caloriesBundlePortions(String consumed, int total);
 
   /// No description provided for @homeSettingsActionContextPlaceholder.
   ///

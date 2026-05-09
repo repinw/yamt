@@ -134,8 +134,8 @@ class PreparedMeal {
   final int totalPortions;
 
   /// The remaining portions.
-  @JsonKey(fromJson: _readIntOrZero)
-  final int remainingPortions;
+  @JsonKey(fromJson: _readDoubleOrZero)
+  final num remainingPortions;
 
   /// The total kcal.
   @JsonKey(fromJson: _readDoubleOrZero)
@@ -182,7 +182,7 @@ class PreparedMeal {
     recipeIngredientAmountConversions,
     List<String>? pendingRecipeIngredients,
     int? totalPortions,
-    int? remainingPortions,
+    num? remainingPortions,
     double? totalKcal,
     double? totalProtein,
     double? totalCarbs,
@@ -353,6 +353,19 @@ class PreparedMeal {
       const ListEquality<PreparedMealComponent>().hash(components),
     ]);
   }
+}
+
+/// Formats prepared meal portion values without noisy trailing zeroes.
+String formatPreparedMealPortions(num portions) {
+  final asDouble = portions.toDouble();
+  final rounded = asDouble.roundToDouble();
+  if ((asDouble - rounded).abs() < 0.000001) {
+    return rounded.toInt().toString();
+  }
+  return asDouble
+      .toStringAsFixed(3)
+      .replaceFirst(RegExp(r'0+$'), '')
+      .replaceFirst(RegExp(r'\.$'), '');
 }
 
 /// Defines prepared meal component.

@@ -4,7 +4,7 @@ class _PreparedMealQuickOption {
   const _PreparedMealQuickOption({required this.label, required this.value});
 
   final String label;
-  final int value;
+  final num value;
 }
 
 class _PreparedMealEatHero extends StatelessWidget {
@@ -73,14 +73,14 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final String? errorText;
-  final int? selectedPortions;
+  final num? selectedPortions;
   final List<_PreparedMealQuickOption> quickOptions;
   final String remainingLabel;
   final String clearTooltip;
   final ValueChanged<String> onChanged;
   final VoidCallback onClearAndFocus;
   final VoidCallback onSubmitted;
-  final ValueChanged<int> onQuickOptionSelected;
+  final ValueChanged<num> onQuickOptionSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
           controller: controller,
           focusNode: focusNode,
           errorText: errorText,
-          allowFractionalInput: false,
+          allowFractionalInput: true,
           clearTooltip: clearTooltip,
           fieldKey: const Key('prepared_meal_portions_field'),
           clearButtonKey: const Key('prepared_meal_portions_clear_button'),

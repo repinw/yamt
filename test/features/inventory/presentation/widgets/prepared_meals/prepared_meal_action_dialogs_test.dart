@@ -173,6 +173,12 @@ void main() {
     );
     expect(portionsField.controller?.text, '2');
     expect(tester.widget<Text>(caloriesValue).data, '267');
+
+    await tester.tap(find.text('0.5'));
+    await tester.pump();
+
+    expect(portionsField.controller?.text, '0.5');
+    expect(tester.widget<Text>(caloriesValue).data, '67');
   });
 
   testWidgets('eat dialog returns selected meal day on confirm', (
@@ -194,10 +200,14 @@ void main() {
     await tester.tap(find.text('Open eat'));
     await tester.pumpAndSettle();
 
+    await tester.enterText(
+      find.byKey(const Key('prepared_meal_portions_field')),
+      '0.5',
+    );
     await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('eat:1:'), findsOneWidget);
+    expect(find.textContaining('eat:0.5:'), findsOneWidget);
     expect(find.textContaining(':$today'), findsOneWidget);
   });
 

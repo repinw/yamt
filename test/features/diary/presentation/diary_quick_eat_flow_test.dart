@@ -99,7 +99,11 @@ void main() {
     tester,
   ) async {
     final item = _inventoryItem(id: 'item-1', name: 'Greek Yogurt');
-    final meal = _preparedMeal(id: 'meal-1', name: 'Pasta Bowl');
+    final meal = _preparedMeal(
+      id: 'meal-1',
+      name: 'Pasta Bowl',
+      remainingPortions: 0.5,
+    );
 
     await _pumpPickerHarness(tester, items: [item], meals: [meal]);
 
@@ -110,6 +114,7 @@ void main() {
     expect(listView.shrinkWrap, isFalse);
     expect(find.text('Greek Yogurt'), findsOneWidget);
     expect(find.text('Pasta Bowl'), findsOneWidget);
+    expect(find.text('0.5/2 portions'), findsOneWidget);
 
     await tester.tap(find.text('Greek Yogurt'));
     await tester.pumpAndSettle();
@@ -552,7 +557,7 @@ class _TestPreparedMealsController extends PreparedMealsController {
   @override
   Future<bool> consumePreparedMeal({
     required String mealId,
-    required int consumedPortions,
+    required num consumedPortions,
     required MealType mealType,
     DateTime? loggedDay,
   }) async {
@@ -660,12 +665,13 @@ InventoryItem _inventoryItem({
 PreparedMeal _preparedMeal({
   required String id,
   required String name,
+  num remainingPortions = 1,
 }) {
   return PreparedMeal(
     id: id,
     name: name,
     totalPortions: 2,
-    remainingPortions: 1,
+    remainingPortions: remainingPortions,
     totalKcal: 500,
     totalProtein: 20,
     totalCarbs: 60,

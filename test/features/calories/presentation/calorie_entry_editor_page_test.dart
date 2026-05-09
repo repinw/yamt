@@ -91,11 +91,11 @@ CalorieEntryDeleteFlow _calorieEntryDeleteFlow({
   Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})?
   rollbackRestoredItem,
   Future<bool> Function(String itemId)? sourceInventoryItemExists,
-  Future<bool> Function({required String mealId, required int portions})?
+  Future<bool> Function({required String mealId, required num portions})?
   restorePreparedMealPortions,
   Future<bool> Function({
     required String mealId,
-    required int discardedPortions,
+    required num discardedPortions,
   })?
   rollbackRestoredPreparedMeal,
   Future<bool> Function(String mealId)? sourcePreparedMealExists,
@@ -547,7 +547,9 @@ void main() {
   testWidgets('prepared meal details view shows ingredient table', (
     tester,
   ) async {
-    final existing = _bundleEntry('bundle-1');
+    final existing = _bundleEntry(
+      'bundle-1',
+    ).copyWith(bundleConsumedPortions: 0.5);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
     );
@@ -566,6 +568,7 @@ void main() {
 
     expect(find.byKey(CalorieEntryDetailKeys.brandValue), findsOneWidget);
     expect(find.text('Kitchen Club'), findsOneWidget);
+    expect(find.text('0.5/4 portions'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.byKey(CalorieEntryDetailKeys.ingredientsTable),

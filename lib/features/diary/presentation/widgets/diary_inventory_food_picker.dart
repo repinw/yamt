@@ -126,7 +126,9 @@ class DiaryInventoryFoodPicker extends ConsumerWidget {
                                   imageBytes: _storedMealImageBytes(ref, meal),
                                   title: meal.name,
                                   subtitle: l10n.preparedMealPortionsRemaining(
-                                    meal.remainingPortions,
+                                    formatPreparedMealPortions(
+                                      meal.remainingPortions,
+                                    ),
                                     meal.totalPortions,
                                   ),
                                   onTap: () => Navigator.of(context).pop(

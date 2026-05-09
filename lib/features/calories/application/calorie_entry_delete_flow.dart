@@ -159,12 +159,12 @@ class CalorieEntryDeleteFlow {
     required Future<bool> Function(String itemId) sourceInventoryItemExists,
     required Future<bool> Function({
       required String mealId,
-      required int portions,
+      required num portions,
     })
     restorePreparedMealPortions,
     required Future<bool> Function({
       required String mealId,
-      required int discardedPortions,
+      required num discardedPortions,
     })
     rollbackRestoredPreparedMeal,
     required Future<bool> Function(String mealId) sourcePreparedMealExists,
@@ -184,11 +184,11 @@ class CalorieEntryDeleteFlow {
   final Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})
   _rollbackRestoredItem;
   final Future<bool> Function(String itemId) _sourceInventoryItemExists;
-  final Future<bool> Function({required String mealId, required int portions})
+  final Future<bool> Function({required String mealId, required num portions})
   _restorePreparedMealPortions;
   final Future<bool> Function({
     required String mealId,
-    required int discardedPortions,
+    required num discardedPortions,
   })
   _rollbackRestoredPreparedMeal;
   final Future<bool> Function(DateTime day) _invalidateSnapshotsFromDay;
@@ -310,7 +310,7 @@ class CalorieEntryDeleteFlow {
     if (sourceMealId == null ||
         sourceMealId.isEmpty ||
         portionsToRestore == null ||
-        portionsToRestore < 1) {
+        portionsToRestore <= 0) {
       log(
         '_returnPreparedMealToInventory(): missing prepared meal restore '
         'data (entryId=${entry.id}, mealId=$sourceMealId, '

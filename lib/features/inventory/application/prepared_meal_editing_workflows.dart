@@ -365,9 +365,9 @@ class PreparedMealEditingWorkflows {
   /// Restores previously removed prepared meal portions.
   Future<bool> restorePreparedMealPortions({
     required String mealId,
-    required int portions,
+    required num portions,
   }) async {
-    if (portions < 1) {
+    if (portions <= 0) {
       _context.logMessage(
         'restorePreparedMealPortions(): invalid portions=$portions '
         '(mealId=$mealId)',

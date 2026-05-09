@@ -664,7 +664,7 @@ void main() {
 
       final saved = await harness.workflows.consumePreparedMeal(
         mealId: 'meal-1',
-        consumedPortions: 2,
+        consumedPortions: 0.5,
         mealType: MealType.breakfast,
         loggedDay: null,
         calorieLogBridge: bridge,
@@ -673,7 +673,7 @@ void main() {
       expect(saved, isTrue);
       expect(savedEntryCount, 1);
       expect(harness.saveCalls, 1);
-      expect(harness.lastSavedMeals.single.remainingPortions, 2);
+      expect(harness.lastSavedMeals.single.remainingPortions, 3.5);
       expect(harness.publishCalls, 0);
     });
 
@@ -741,6 +741,43 @@ void main() {
         );
       },
     );
+
+    test('throwAwayPreparedMeal supports fractional portions', () async {
+      final sourceItem = _measuredItem(
+        id: 'rice',
+        name: 'Rice',
+        currentAmount: 400,
+        initialAmount: 400,
+        initialQuantity: 1,
+        unitPrice: 4,
+      );
+      final harness = _WorkflowHarness(
+        meals: <PreparedMeal>[
+          _meal(
+            id: 'meal-1',
+            name: 'Rice Bowl',
+            totalPortions: 4,
+            remainingPortions: 2,
+            components: <PreparedMealComponent>[
+              _component(item: sourceItem, usedAmount: 400, totalKcal: 400),
+            ],
+          ),
+        ],
+      );
+      final discardRepository = _FakeDiscardEventRepository();
+
+      final saved = await harness.workflows.throwAwayPreparedMeal(
+        mealId: 'meal-1',
+        discardedPortions: 0.5,
+        reason: InventoryDiscardReason.spoiled,
+        discardEventRepository: discardRepository,
+      );
+
+      expect(saved, isTrue);
+      expect(harness.lastSavedMeals.single.remainingPortions, 1.5);
+      expect(discardRepository.lastSavedEvent?.discardedAmount, 0.5);
+      expect(discardRepository.lastSavedEvent?.discardedValue, 0.5);
+    });
 
     test('throwAwayPreparedMeal returns false for invalid portions', () async {
       final harness = _WorkflowHarness();
@@ -822,6 +859,28 @@ void main() {
       expect(saved, isTrue);
       expect(harness.saveCalls, 1);
       expect(harness.lastSavedMeals.single.remainingPortions, 3);
+    });
+
+    test('restorePreparedMealPortions saves fractional portions', () async {
+      final harness = _WorkflowHarness(
+        meals: <PreparedMeal>[
+          _meal(
+            id: 'meal-1',
+            name: 'Soup',
+            totalPortions: 4,
+            remainingPortions: 2,
+            components: const <PreparedMealComponent>[],
+          ),
+        ],
+      );
+
+      final saved = await harness.workflows.restorePreparedMealPortions(
+        mealId: 'meal-1',
+        portions: 0.5,
+      );
+
+      expect(saved, isTrue);
+      expect(harness.lastSavedMeals.single.remainingPortions, 2.5);
     });
 
     test(
@@ -1061,7 +1120,7 @@ PreparedMeal _meal({
   required String id,
   required String name,
   required int totalPortions,
-  required int remainingPortions,
+  required num remainingPortions,
   required List<PreparedMealComponent> components,
   double totalKcal = 0,
   double totalProtein = 0,

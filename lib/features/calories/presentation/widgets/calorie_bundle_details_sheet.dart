@@ -4,6 +4,7 @@ import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Show calorie bundle details sheet.
@@ -63,7 +64,9 @@ class _CalorieBundleDetailsSheet extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     l10n.caloriesBundlePortions(
-                      entry.bundleConsumedPortions ?? 0,
+                      formatPreparedMealPortions(
+                        entry.bundleConsumedPortions ?? 0,
+                      ),
                       entry.bundleTotalPortions ?? 0,
                     ),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(

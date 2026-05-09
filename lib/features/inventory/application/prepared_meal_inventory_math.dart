@@ -165,7 +165,7 @@ int remainingRequirementAfterConsumption({
 List<PreparedMeal> applyPreparedMealPortionReduction({
   required List<PreparedMeal> currentMeals,
   required int mealIndex,
-  required int removedPortions,
+  required num removedPortions,
   required DateTime updatedAt,
   bool keepDepletedMeal = false,
 }) {
@@ -235,7 +235,7 @@ int _restoreAmountForComponent({
   required PreparedMealComponent component,
   required PreparedMeal meal,
 }) {
-  if (meal.remainingPortions < 1 || meal.totalPortions < 1) {
+  if (meal.remainingPortions <= 0 || meal.totalPortions < 1) {
     return 0;
   }
   return ((component.usedAmount * meal.remainingPortions) / meal.totalPortions)

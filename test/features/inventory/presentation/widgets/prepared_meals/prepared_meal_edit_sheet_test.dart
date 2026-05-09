@@ -325,6 +325,7 @@ PreparedMeal _meal() {
 PreparedMeal _consumedMeal() {
   return preparedMealTestData(
     imageAssetId: 'asset-meal-1',
+    remainingPortions: 1.5,
   );
 }
 

@@ -93,7 +93,7 @@ class InventoryDiscardEvent {
   factory InventoryDiscardEvent.fromPreparedMeal({
     required String id,
     required PreparedMeal meal,
-    required int discardedPortions,
+    required num discardedPortions,
     required InventoryDiscardReason reason,
     DateTime? discardedAt,
   }) {
@@ -131,7 +131,7 @@ class InventoryDiscardEvent {
   final DateTime discardedAt;
 
   /// The discarded amount.
-  final int discardedAmount;
+  final num discardedAmount;
 
   /// The discarded value.
   final double discardedValue;
@@ -155,7 +155,7 @@ class InventoryDiscardEvent {
   }
 }
 
-double _inventoryDiscardValue(InventoryItem item, int discardedAmount) {
+double _inventoryDiscardValue(InventoryItem item, num discardedAmount) {
   if (discardedAmount <= 0) {
     return 0;
   }

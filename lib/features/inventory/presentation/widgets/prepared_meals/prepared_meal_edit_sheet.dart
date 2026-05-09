@@ -464,7 +464,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
     setState(() {});
   }
 
-  int get _consumedPortions {
+  num get _consumedPortions {
     final consumed = widget.meal.totalPortions - widget.meal.remainingPortions;
     return consumed < 0 ? 0 : consumed;
   }
@@ -817,7 +817,7 @@ int _defaultAmount(InventoryItem item) {
 int _remainingShareAmount({
   required int usedAmount,
   required int totalPortions,
-  required int remainingPortions,
+  required num remainingPortions,
 }) {
   if (totalPortions < 1 || remainingPortions < 1) {
     return 0;
