@@ -42,7 +42,7 @@ class RemainingProgressBar extends StatelessWidget {
   final int totalUnits;
 
   /// The remaining units.
-  final int remainingUnits;
+  final num remainingUnits;
 
   /// The label layout.
   final RemainingProgressBarLabelLayout labelLayout;

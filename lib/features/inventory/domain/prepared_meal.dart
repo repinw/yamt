@@ -362,15 +362,7 @@ String formatPreparedMealPortions(num portions) {
   if ((asDouble - rounded).abs() < 0.000001) {
     return rounded.toInt().toString();
   }
-  final fixed = asDouble.toStringAsFixed(3);
-  var end = fixed.length;
-  while (end > 0 && fixed.codeUnitAt(end - 1) == 48) {
-    end -= 1;
-  }
-  if (end > 0 && fixed.codeUnitAt(end - 1) == 46) {
-    end -= 1;
-  }
-  return fixed.substring(0, end);
+  return asDouble.toStringAsFixed(3).replaceFirst(RegExp(r'\.?0+$'), '');
 }
 
 /// Defines prepared meal component.

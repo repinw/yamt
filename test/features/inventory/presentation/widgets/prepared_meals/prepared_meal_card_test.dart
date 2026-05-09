@@ -326,6 +326,8 @@ void main() {
     );
     expect(progressBar.stockLabel, '0.5/3 portions');
     expect(progressBar.ratio, closeTo(1 / 6, 0.0001));
+    expect(progressBar.remainingUnits, 0.5);
+    expect(progressBar.segmentedByUnits, isFalse);
     expect(find.text('17%'), findsOneWidget);
   });
 

@@ -54,7 +54,7 @@ class _PreparedMealCardHeader extends StatelessWidget {
           ),
           segmentedByUnits: false,
           totalUnits: meal.totalPortions,
-          remainingUnits: meal.remainingPortions.round(),
+          remainingUnits: meal.remainingPortions,
           action: _PreparedMealPrimaryActionButton(
             label: l10n.inventoryItemEatAction,
             onPressed: canEat ? onEatPressed : null,
