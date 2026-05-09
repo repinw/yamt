@@ -6,7 +6,7 @@ PreparedMeal preparedMealTestData({
   String name = 'Rice bowl',
   String? imageAssetId,
   int totalPortions = 3,
-  int remainingPortions = 2,
+  num remainingPortions = 2,
 }) {
   final sourceItem = InventoryItem.create(
     id: 'item-1',

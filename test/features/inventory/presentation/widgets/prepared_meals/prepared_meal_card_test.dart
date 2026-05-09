@@ -290,6 +290,47 @@ void main() {
     expect(find.text('300 kcal'), findsNothing);
   });
 
+  testWidgets('PreparedMealCard shows fractional portions progress label', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal().copyWith(remainingPortions: 0.5),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, result) async => true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final progressBar = tester.widget<RemainingProgressBar>(
+      find.byType(RemainingProgressBar),
+    );
+    expect(progressBar.stockLabel, '0,5/3 Portionen');
+    expect(progressBar.ratio, closeTo(1 / 6, 0.0001));
+    expect(progressBar.remainingUnits, 0.5);
+    expect(progressBar.segmentedByUnits, isFalse);
+    expect(find.text('17%'), findsOneWidget);
+  });
+
   testWidgets('PreparedMealCard shows ingredient count in header badge', (
     tester,
   ) async {
@@ -514,7 +555,7 @@ void main() {
   ) async {
     final meal = _meal();
     String? thrownAwayMealId;
-    int? thrownAwayPortions;
+    num? thrownAwayPortions;
 
     await tester.pumpWidget(
       ProviderScope(

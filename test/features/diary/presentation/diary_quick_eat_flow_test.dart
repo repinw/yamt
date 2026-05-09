@@ -99,9 +99,18 @@ void main() {
     tester,
   ) async {
     final item = _inventoryItem(id: 'item-1', name: 'Greek Yogurt');
-    final meal = _preparedMeal(id: 'meal-1', name: 'Pasta Bowl');
+    final meal = _preparedMeal(
+      id: 'meal-1',
+      name: 'Pasta Bowl',
+      remainingPortions: 0.5,
+    );
 
-    await _pumpPickerHarness(tester, items: [item], meals: [meal]);
+    await _pumpPickerHarness(
+      tester,
+      items: [item],
+      meals: [meal],
+      locale: const Locale('de'),
+    );
 
     await tester.tap(find.byKey(_openPickerButtonKey));
     await tester.pumpAndSettle();
@@ -110,6 +119,7 @@ void main() {
     expect(listView.shrinkWrap, isFalse);
     expect(find.text('Greek Yogurt'), findsOneWidget);
     expect(find.text('Pasta Bowl'), findsOneWidget);
+    expect(find.text('0,5/2 Portionen'), findsOneWidget);
 
     await tester.tap(find.text('Greek Yogurt'));
     await tester.pumpAndSettle();
@@ -385,11 +395,12 @@ Future<void> _pumpPickerHarness(
   WidgetTester tester, {
   required List<InventoryItem> items,
   required List<PreparedMeal> meals,
+  Locale locale = const Locale('en'),
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
-        locale: const Locale('en'),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _PickerHarness(items: items, meals: meals),
@@ -552,7 +563,7 @@ class _TestPreparedMealsController extends PreparedMealsController {
   @override
   Future<bool> consumePreparedMeal({
     required String mealId,
-    required int consumedPortions,
+    required num consumedPortions,
     required MealType mealType,
     DateTime? loggedDay,
   }) async {
@@ -660,12 +671,13 @@ InventoryItem _inventoryItem({
 PreparedMeal _preparedMeal({
   required String id,
   required String name,
+  num remainingPortions = 1,
 }) {
   return PreparedMeal(
     id: id,
     name: name,
     totalPortions: 2,
-    remainingPortions: 1,
+    remainingPortions: remainingPortions,
     totalKcal: 500,
     totalProtein: 20,
     totalCarbs: 60,

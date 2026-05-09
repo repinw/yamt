@@ -130,7 +130,7 @@ CalorieEntry _entry({
   );
 }
 
-PreparedMeal _meal({required String id, required int remainingPortions}) {
+PreparedMeal _meal({required String id, required num remainingPortions}) {
   final item = _inventoryItem();
   return PreparedMeal(
     id: id,
@@ -164,7 +164,7 @@ PreparedMeal _meal({required String id, required int remainingPortions}) {
 CalorieEntry _bundleEntry({
   required String id,
   required String sourceMealId,
-  required int consumedPortions,
+  required num consumedPortions,
 }) {
   return CalorieEntry.bundle(
     id: id,
@@ -247,7 +247,7 @@ class _DeleteFlowHarness {
         .currentAmount;
   }
 
-  int? get preparedMealRemainingPortions {
+  num? get preparedMealRemainingPortions {
     return container
         .read(preparedMealsControllerProvider)
         .asData
@@ -317,11 +317,11 @@ CalorieEntryDeleteFlow _deleteFlow({
   Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})?
   rollbackRestoredItem,
   Future<bool> Function(String itemId)? sourceInventoryItemExists,
-  Future<bool> Function({required String mealId, required int portions})?
+  Future<bool> Function({required String mealId, required num portions})?
   restorePreparedMealPortions,
   Future<bool> Function({
     required String mealId,
-    required int discardedPortions,
+    required num discardedPortions,
   })?
   rollbackRestoredPreparedMeal,
   Future<bool> Function(String mealId)? sourcePreparedMealExists,
@@ -490,6 +490,31 @@ void main() {
     expect(harness.calorieRepository.entries, isEmpty);
     expect(harness.preparedMealRemainingPortions, 2);
   });
+
+  test(
+    'delete flow returns fractional prepared meal bundle to inventory',
+    () async {
+      final harness = _buildDeleteFlowHarness(
+        entries: <CalorieEntry>[
+          _bundleEntry(
+            id: 'entry-1',
+            sourceMealId: 'meal-1',
+            consumedPortions: 0.5,
+          ),
+        ],
+        preparedMeals: <PreparedMeal>[
+          _meal(id: 'meal-1', remainingPortions: 1),
+        ],
+      );
+
+      await harness.load(includePreparedMeals: true);
+
+      final result = await harness.deleteSingleEntry(restoreToInventory: true);
+
+      expect(result.isSuccess, isTrue);
+      expect(harness.preparedMealRemainingPortions, 1.5);
+    },
+  );
 
   test(
     'delete flow reports missing source when prepared meal is gone',

@@ -75,7 +75,7 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   sourceInventoryAmountToRestore:
       (json['source_inventory_amount_to_restore'] as num?)?.toInt(),
   bundleSourcePreparedMealId: json['bundle_source_prepared_meal_id'] as String?,
-  bundleConsumedPortions: (json['bundle_consumed_portions'] as num?)?.toInt(),
+  bundleConsumedPortions: json['bundle_consumed_portions'] as num?,
   bundleTotalPortions: (json['bundle_total_portions'] as num?)?.toInt(),
   bundleComponents:
       (json['bundle_components'] as List<dynamic>?)

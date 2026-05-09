@@ -19,7 +19,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 typedef PreparedMealEatCallback =
     Future<bool> Function({
       required String mealId,
-      required int portions,
+      required num portions,
       required MealType mealType,
       required DateTime loggedDay,
     });
@@ -28,7 +28,7 @@ typedef PreparedMealEatCallback =
 typedef PreparedMealDiscardCallback =
     Future<bool> Function(
       String mealId,
-      int portions,
+      num portions,
       InventoryDiscardReason reason,
     );
 

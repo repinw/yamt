@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:yamt/core/utils/currency_format.dart';
@@ -134,8 +135,8 @@ class PreparedMeal {
   final int totalPortions;
 
   /// The remaining portions.
-  @JsonKey(fromJson: _readIntOrZero)
-  final int remainingPortions;
+  @JsonKey(fromJson: _readDoubleOrZero)
+  final num remainingPortions;
 
   /// The total kcal.
   @JsonKey(fromJson: _readDoubleOrZero)
@@ -182,7 +183,7 @@ class PreparedMeal {
     recipeIngredientAmountConversions,
     List<String>? pendingRecipeIngredients,
     int? totalPortions,
-    int? remainingPortions,
+    num? remainingPortions,
     double? totalKcal,
     double? totalProtein,
     double? totalCarbs,
@@ -353,6 +354,11 @@ class PreparedMeal {
       const ListEquality<PreparedMealComponent>().hash(components),
     ]);
   }
+}
+
+/// Formats prepared meal portion values without noisy trailing zeroes.
+String formatPreparedMealPortions(num portions, {String? localeName}) {
+  return NumberFormat.decimalPattern(localeName).format(portions);
 }
 
 /// Defines prepared meal component.

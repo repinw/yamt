@@ -173,6 +173,12 @@ void main() {
     );
     expect(portionsField.controller?.text, '2');
     expect(tester.widget<Text>(caloriesValue).data, '267');
+
+    await tester.tap(find.text('0.5'));
+    await tester.pump();
+
+    expect(portionsField.controller?.text, '0.5');
+    expect(tester.widget<Text>(caloriesValue).data, '67');
   });
 
   testWidgets('eat dialog returns selected meal day on confirm', (
@@ -194,11 +200,43 @@ void main() {
     await tester.tap(find.text('Open eat'));
     await tester.pumpAndSettle();
 
+    await tester.enterText(
+      find.byKey(const Key('prepared_meal_portions_field')),
+      '0.5',
+    );
     await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('eat:1:'), findsOneWidget);
+    expect(find.textContaining('eat:0.5:'), findsOneWidget);
     expect(find.textContaining(':$today'), findsOneWidget);
+  });
+
+  testWidgets('eat dialog defaults to fractional remaining portions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('de'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(
+          meal: _meal().copyWith(remainingPortions: 0.5),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open eat'));
+    await tester.pumpAndSettle();
+
+    final portionsField = tester.widget<TextField>(
+      find.byKey(const Key('prepared_meal_portions_field')),
+    );
+    expect(portionsField.controller?.text, '0,5');
+
+    await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('eat:0.5:'), findsOneWidget);
   });
 
   testWidgets('eat dialog keeps selected day when date picker is cancelled', (
@@ -320,6 +358,33 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     expect(find.text('portions:1'), findsOneWidget);
+  });
+
+  testWidgets('portion dialog defaults to fractional remaining portions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('de'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(
+          meal: _meal().copyWith(remainingPortions: 0.5),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open portions'));
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, '0,5');
+
+    await tester.tap(find.text('Bestätigen'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.text('portions:0.5'), findsOneWidget);
   });
 
   testWidgets('portion dialog can fill all remaining portions', (tester) async {

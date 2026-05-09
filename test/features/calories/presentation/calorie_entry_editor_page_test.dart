@@ -91,11 +91,11 @@ CalorieEntryDeleteFlow _calorieEntryDeleteFlow({
   Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})?
   rollbackRestoredItem,
   Future<bool> Function(String itemId)? sourceInventoryItemExists,
-  Future<bool> Function({required String mealId, required int portions})?
+  Future<bool> Function({required String mealId, required num portions})?
   restorePreparedMealPortions,
   Future<bool> Function({
     required String mealId,
-    required int discardedPortions,
+    required num discardedPortions,
   })?
   rollbackRestoredPreparedMeal,
   Future<bool> Function(String mealId)? sourcePreparedMealExists,
@@ -264,6 +264,7 @@ Widget _buildHarness({
   List<Override> additionalOverrides = const <Override>[],
   bool openCreateFromRoot = false,
   String? autoOpenLocationFromRoot,
+  Locale locale = const Locale('en'),
 }) {
   final router = GoRouter(
     initialLocation: initialLocation,
@@ -328,7 +329,7 @@ Widget _buildHarness({
   when(() => user.uid).thenReturn('user-1');
 
   final app = MaterialApp.router(
-    locale: const Locale('en'),
+    locale: locale,
     routerConfig: router,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -547,7 +548,9 @@ void main() {
   testWidgets('prepared meal details view shows ingredient table', (
     tester,
   ) async {
-    final existing = _bundleEntry('bundle-1');
+    final existing = _bundleEntry(
+      'bundle-1',
+    ).copyWith(bundleConsumedPortions: 0.5);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
     );
@@ -560,12 +563,14 @@ void main() {
         logRepository: logRepository,
         settingsRepository: settingsRepository,
         initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('bundle-1'),
+        locale: const Locale('de'),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.byKey(CalorieEntryDetailKeys.brandValue), findsOneWidget);
     expect(find.text('Kitchen Club'), findsOneWidget);
+    expect(find.text('0,5/4 Portionen'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.byKey(CalorieEntryDetailKeys.ingredientsTable),

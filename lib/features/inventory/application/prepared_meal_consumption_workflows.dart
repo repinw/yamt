@@ -21,12 +21,12 @@ class PreparedMealConsumptionWorkflows {
   /// Consumes prepared meal portions and forwards calorie logging.
   Future<bool> consumePreparedMeal({
     required String mealId,
-    required int consumedPortions,
+    required num consumedPortions,
     required MealType mealType,
     required DateTime? loggedDay,
     required PreparedMealCalorieLogBridge calorieLogBridge,
   }) async {
-    if (consumedPortions < 1) {
+    if (consumedPortions <= 0) {
       _context.logMessage(
         'consumePreparedMeal(): invalid consumedPortions='
         '$consumedPortions (mealId=$mealId)',
@@ -99,11 +99,11 @@ class PreparedMealConsumptionWorkflows {
   /// Discards prepared meal portions and persists a discard event.
   Future<bool> throwAwayPreparedMeal({
     required String mealId,
-    required int discardedPortions,
+    required num discardedPortions,
     required InventoryDiscardReason reason,
     required InventoryDiscardEventRepository discardEventRepository,
   }) async {
-    if (discardedPortions < 1) {
+    if (discardedPortions <= 0) {
       _context.logMessage(
         'throwAwayPreparedMeal(): invalid discardedPortions='
         '$discardedPortions',

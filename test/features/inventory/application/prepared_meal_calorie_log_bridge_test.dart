@@ -119,6 +119,50 @@ void main() {
     },
   );
 
+  test('buildConsumedPreparedMealCalorieEntry scales fractional portions', () {
+    final rice = _item(id: 'rice', name: 'Rice');
+    final meal = PreparedMeal(
+      id: 'meal-1',
+      name: 'Rice',
+      totalPortions: 4,
+      remainingPortions: 4,
+      totalKcal: 400,
+      totalProtein: 20,
+      totalCarbs: 40,
+      totalFat: 10,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: [
+        PreparedMealComponent(
+          inventoryItemId: rice.id,
+          name: rice.name,
+          brand: rice.brand,
+          imageUrl: rice.imageUrl,
+          usedAmount: 200,
+          usedUnit: InventoryAmountUnit.gram,
+          totalKcal: 400,
+          totalProtein: 20,
+          totalCarbs: 40,
+          totalFat: 10,
+          sourceItemSnapshot: rice,
+        ),
+      ],
+    );
+
+    final entry = buildConsumedPreparedMealCalorieEntry(
+      meal: meal,
+      consumedPortions: 0.5,
+      mealType: MealType.lunch,
+      now: () => DateTime(2026, 3, 27, 13),
+      nextEntryId: () => 'entry-1',
+    );
+
+    expect(entry, isNotNull);
+    expect(entry!.bundleConsumedPortions, 0.5);
+    expect(entry.totalKcal, 50);
+    expect(entry.bundleComponents.single.amountLabel, '25 g');
+  });
+
   test('bridge still saves after provider invalidation', () async {
     final calorieLogRepository = FakeCalorieLogRepository();
     addTearDown(calorieLogRepository.dispose);

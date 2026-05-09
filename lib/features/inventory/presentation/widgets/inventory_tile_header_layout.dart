@@ -65,7 +65,7 @@ class InventoryTileHeaderLayout extends StatelessWidget {
   final int totalUnits;
 
   /// The remaining units.
-  final int remainingUnits;
+  final num remainingUnits;
 
   /// The action.
   final Widget? action;

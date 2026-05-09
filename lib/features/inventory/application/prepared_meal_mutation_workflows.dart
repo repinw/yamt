@@ -161,7 +161,7 @@ class PreparedMealMutationWorkflows {
   /// Consumes prepared meal portions and forwards calorie logging.
   Future<bool> consumePreparedMeal({
     required String mealId,
-    required int consumedPortions,
+    required num consumedPortions,
     required MealType mealType,
     required DateTime? loggedDay,
     required PreparedMealCalorieLogBridge calorieLogBridge,
@@ -180,7 +180,7 @@ class PreparedMealMutationWorkflows {
   /// Discards prepared meal portions and persists a discard event.
   Future<bool> throwAwayPreparedMeal({
     required String mealId,
-    required int discardedPortions,
+    required num discardedPortions,
     required InventoryDiscardReason reason,
     required InventoryDiscardEventRepository discardEventRepository,
   }) {
@@ -197,7 +197,7 @@ class PreparedMealMutationWorkflows {
   /// Restores previously removed prepared meal portions.
   Future<bool> restorePreparedMealPortions({
     required String mealId,
-    required int portions,
+    required num portions,
   }) {
     return PreparedMealEditingWorkflows(
       context: _context,

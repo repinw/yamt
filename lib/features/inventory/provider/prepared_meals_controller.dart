@@ -191,7 +191,7 @@ class PreparedMealsController extends _$PreparedMealsController {
   /// Consume prepared meal.
   Future<bool> consumePreparedMeal({
     required String mealId,
-    required int consumedPortions,
+    required num consumedPortions,
     required MealType mealType,
     DateTime? loggedDay,
   }) {
@@ -210,7 +210,7 @@ class PreparedMealsController extends _$PreparedMealsController {
   /// Throw away prepared meal.
   Future<bool> throwAwayPreparedMeal({
     required String mealId,
-    required int discardedPortions,
+    required num discardedPortions,
     required InventoryDiscardReason reason,
   }) {
     final keepAliveLink = ref.keepAlive();
@@ -229,7 +229,7 @@ class PreparedMealsController extends _$PreparedMealsController {
   /// Restore prepared meal portions.
   Future<bool> restorePreparedMealPortions({
     required String mealId,
-    required int portions,
+    required num portions,
   }) {
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(

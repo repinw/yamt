@@ -13,6 +13,7 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Read-only details view for an existing diary entry.
@@ -1053,7 +1054,10 @@ Color _ingredientAccentColor(int index) {
 String _consumedAmountLabel(AppLocalizations l10n, CalorieEntry entry) {
   if (entry.isBundle) {
     return l10n.caloriesBundlePortions(
-      entry.bundleConsumedPortions ?? 0,
+      formatPreparedMealPortions(
+        entry.bundleConsumedPortions ?? 0,
+        localeName: l10n.localeName,
+      ),
       entry.bundleTotalPortions ?? 0,
     );
   }

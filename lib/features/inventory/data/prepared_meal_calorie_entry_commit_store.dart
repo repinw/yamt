@@ -79,7 +79,7 @@ class FirestorePreparedMealCalorieEntryCommitStore
       );
       return false;
     }
-    if (consumedPortions < 1) {
+    if (consumedPortions <= 0) {
       log(
         'Cannot commit prepared meal calorie entry ${entry.id}: '
         'invalid consumedPortions=$consumedPortions.',

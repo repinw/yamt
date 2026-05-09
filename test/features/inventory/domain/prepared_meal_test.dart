@@ -111,7 +111,7 @@ void main() {
       imageUrl: 'https://images.example.com/rice-bowl.jpg',
       recipeUrl: 'https://www.chefkoch.de/rezepte/123/rice-bowl.html',
       totalPortions: 4,
-      remainingPortions: 3,
+      remainingPortions: 2.5,
       totalKcal: 720,
       totalProtein: 14,
       totalCarbs: 158,
@@ -142,6 +142,26 @@ void main() {
     expect(roundtrip.imageUrl, meal.imageUrl);
     expect(roundtrip.recipeUrl, meal.recipeUrl);
     expect(roundtrip.components.single.sourceItemSnapshot, sourceItem);
+    expect(roundtrip.remainingPortions, 2.5);
+    expect(
+      formatPreparedMealPortions(
+        roundtrip.remainingPortions,
+        localeName: 'en',
+      ),
+      '2.5',
+    );
+  });
+
+  test('formatPreparedMealPortions trims noisy trailing zeroes', () {
+    expect(formatPreparedMealPortions(1, localeName: 'en'), '1');
+    expect(formatPreparedMealPortions(1.0, localeName: 'en'), '1');
+    expect(formatPreparedMealPortions(0.5, localeName: 'en'), '0.5');
+    expect(formatPreparedMealPortions(1.25, localeName: 'en'), '1.25');
+  });
+
+  test('formatPreparedMealPortions uses locale decimal separator', () {
+    expect(formatPreparedMealPortions(0.5, localeName: 'de'), '0,5');
+    expect(formatPreparedMealPortions(1.25, localeName: 'de'), '1,25');
   });
 
   test('PreparedMeal totals price proportionally for amount-based items', () {

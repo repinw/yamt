@@ -62,7 +62,7 @@ class InventoryDiscardEvent {
       name: _readString(json['name']),
       reason: _readReason(json['reason']),
       discardedAt: _readDateTime(json['discarded_at']),
-      discardedAmount: _readInt(json['discarded_amount']),
+      discardedAmount: _readNum(json['discarded_amount']),
       discardedValue: _readDouble(json['discarded_value']),
       currencyCode: _readNullableString(json['currency_code']),
     );
@@ -93,7 +93,7 @@ class InventoryDiscardEvent {
   factory InventoryDiscardEvent.fromPreparedMeal({
     required String id,
     required PreparedMeal meal,
-    required int discardedPortions,
+    required num discardedPortions,
     required InventoryDiscardReason reason,
     DateTime? discardedAt,
   }) {
@@ -131,7 +131,7 @@ class InventoryDiscardEvent {
   final DateTime discardedAt;
 
   /// The discarded amount.
-  final int discardedAmount;
+  final num discardedAmount;
 
   /// The discarded value.
   final double discardedValue;
@@ -155,7 +155,7 @@ class InventoryDiscardEvent {
   }
 }
 
-double _inventoryDiscardValue(InventoryItem item, int discardedAmount) {
+double _inventoryDiscardValue(InventoryItem item, num discardedAmount) {
   if (discardedAmount <= 0) {
     return 0;
   }
@@ -220,15 +220,12 @@ DateTime _readDateTime(Object? value) {
   );
 }
 
-int _readInt(Object? value) {
-  if (value is int) {
+num _readNum(Object? value) {
+  if (value is num) {
     return value;
   }
-  if (value is num) {
-    return value.toInt();
-  }
   if (value is String) {
-    return int.tryParse(value.trim()) ?? 0;
+    return num.tryParse(value.trim().replaceAll(',', '.')) ?? 0;
   }
   return 0;
 }

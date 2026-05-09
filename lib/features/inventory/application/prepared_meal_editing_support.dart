@@ -73,7 +73,7 @@ List<PreparedMealComponent> _buildEditedComponents({
   required Map<String, PreparedMealComponent> existingComponents,
   required List<PreparedMealItemInput> inputs,
   required int totalPortions,
-  required int remainingPortions,
+  required num remainingPortions,
 }) {
   final seenItemIds = <String>{};
   return [
@@ -95,7 +95,7 @@ PreparedMealComponent _buildEditedComponent({
   required PreparedMealItemInput input,
   required Set<String> seenItemIds,
   required int totalPortions,
-  required int remainingPortions,
+  required num remainingPortions,
 }) {
   if (input.usedAmount < 1 || !seenItemIds.add(input.itemId)) {
     throw const PreparedMealBuildException(
@@ -104,7 +104,7 @@ PreparedMealComponent _buildEditedComponent({
   }
 
   final inventoryItem = _findInventoryItem(nextItems, input.itemId);
-  final amountToReserve = _remainingShareAmount(
+  final amountToReserve = remainingPreparedMealShareAmount(
     usedAmount: input.usedAmount,
     totalPortions: totalPortions,
     remainingPortions: remainingPortions,
@@ -209,18 +209,7 @@ InventoryItem? _findInventoryItem(List<InventoryItem> items, String itemId) {
   return null;
 }
 
-int _remainingShareAmount({
-  required int usedAmount,
-  required int totalPortions,
-  required int remainingPortions,
-}) {
-  if (totalPortions < 1 || remainingPortions < 1) {
-    return 0;
-  }
-  return ((usedAmount * remainingPortions) / totalPortions).round();
-}
-
-int _consumedPortions(PreparedMeal meal) {
+num _consumedPortions(PreparedMeal meal) {
   final consumed = meal.totalPortions - meal.remainingPortions;
   return consumed < 0 ? 0 : consumed;
 }

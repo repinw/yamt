@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_creation_support.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_editing_support.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
@@ -150,6 +152,53 @@ void main() {
       },
     );
 
+    test('buildPreparedMealEditResult keeps fractional consumed portions', () {
+      final rice = _measuredItem(
+        id: 'rice',
+        name: 'Rice',
+        currentAmount: 300,
+        initialAmount: 400,
+        initialQuantity: 1,
+      );
+      final currentMeal = _meal(
+        id: 'meal-1',
+        name: 'Rice Bowl',
+        totalPortions: 2,
+        remainingPortions: 0.5,
+        components: <PreparedMealComponent>[
+          PreparedMealComponent(
+            inventoryItemId: rice.id,
+            name: rice.name,
+            brand: rice.brand,
+            imageUrl: rice.imageUrl,
+            usedAmount: 100,
+            usedUnit: InventoryAmountUnit.gram,
+            totalKcal: 100,
+            totalProtein: 10,
+            totalCarbs: 20,
+            totalFat: 5,
+            sourceItemSnapshot: rice,
+          ),
+        ],
+      );
+
+      final result = buildPreparedMealEditResult(
+        currentMeal: currentMeal,
+        currentItems: <InventoryItem>[rice],
+        now: now,
+        name: 'Bigger Rice Bowl',
+        imageChanged: false,
+        imageAssetId: null,
+        totalPortions: 3,
+        inputs: const <PreparedMealItemInput>[
+          PreparedMealItemInput(itemId: 'rice', usedAmount: 100),
+        ],
+      );
+
+      expect(result.preparedMeal.remainingPortions, 1.5);
+      expect(result.nextItems.single.currentAmount, 275);
+    });
+
     test('applyPreparedMealPortionReduction removes depleted meal', () {
       final nextMeals = applyPreparedMealPortionReduction(
         currentMeals: <PreparedMeal>[
@@ -167,6 +216,27 @@ void main() {
       );
 
       expect(nextMeals, isEmpty);
+    });
+
+    test('applyPreparedMealPortionReduction keeps fractional remainder', () {
+      final nextMeals = applyPreparedMealPortionReduction(
+        currentMeals: <PreparedMeal>[
+          _meal(
+            id: 'meal-1',
+            name: 'Meal',
+            totalPortions: 2,
+            remainingPortions: 1,
+            components: const <PreparedMealComponent>[],
+          ),
+        ],
+        mealIndex: 0,
+        removedPortions: 0.5,
+        updatedAt: now,
+        keepDepletedMeal: true,
+      );
+
+      expect(nextMeals.single.remainingPortions, 0.5);
+      expect(nextMeals.single.updatedAt, now);
     });
 
     test('restoreItemsFromPreparedMeal recreates missing snapshot item', () {
@@ -207,6 +277,57 @@ void main() {
       expect(restoredItems, hasLength(1));
       expect(restoredItems.single.currentAmount, 100);
       expect(restoredItems.single.quantity, 1);
+    });
+
+    test(
+      'restoreItemsFromPreparedMeal restores fractional remaining share',
+      () {
+        final sourceItem = _measuredItem(
+          id: 'rice',
+          name: 'Rice',
+          currentAmount: 400,
+          initialAmount: 400,
+          initialQuantity: 2,
+        );
+        final meal = _meal(
+          id: 'meal-1',
+          name: 'Rice Bowl',
+          totalPortions: 4,
+          remainingPortions: 0.5,
+          components: <PreparedMealComponent>[
+            PreparedMealComponent(
+              inventoryItemId: 'rice',
+              name: sourceItem.name,
+              brand: sourceItem.brand,
+              imageUrl: sourceItem.imageUrl,
+              usedAmount: 200,
+              usedUnit: InventoryAmountUnit.gram,
+              totalKcal: 200,
+              totalProtein: 10,
+              totalCarbs: 20,
+              totalFat: 5,
+              sourceItemSnapshot: sourceItem,
+            ),
+          ],
+        );
+
+        final restoredItems = restoreItemsFromPreparedMeal(
+          currentItems: const <InventoryItem>[],
+          meal: meal,
+        );
+
+        expect(restoredItems.single.currentAmount, 25);
+      },
+    );
+
+    test('remainingPreparedMealShareAmount keeps fractional shares', () {
+      final share = remainingPreparedMealShareAmount(
+        usedAmount: 200,
+        totalPortions: 4,
+        remainingPortions: 0.5,
+      );
+
+      expect(share, 25);
     });
   });
 }
@@ -262,7 +383,7 @@ PreparedMeal _meal({
   required String id,
   required String name,
   required int totalPortions,
-  required int remainingPortions,
+  required num remainingPortions,
   required List<PreparedMealComponent> components,
 }) {
   return PreparedMeal(

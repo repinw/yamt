@@ -72,7 +72,7 @@ class PreparedMealCalorieLogBridge {
   /// Log consumed prepared meal.
   Future<bool> logConsumedPreparedMeal({
     required PreparedMeal meal,
-    required int consumedPortions,
+    required num consumedPortions,
     required MealType mealType,
     DateTime? loggedDay,
   }) {
@@ -96,7 +96,7 @@ class PreparedMealCalorieLogBridge {
     required List<PreparedMeal> currentMeals,
     required List<PreparedMeal> nextMeals,
     required PreparedMeal meal,
-    required int consumedPortions,
+    required num consumedPortions,
     required MealType mealType,
     required PreparedMealStatePublisher publishMeals,
     required PreparedMealSaveCallback saveMeals,
@@ -145,13 +145,13 @@ class PreparedMealCalorieLogBridge {
 /// Build consumed prepared meal calorie entry.
 CalorieEntry? buildConsumedPreparedMealCalorieEntry({
   required PreparedMeal meal,
-  required int consumedPortions,
+  required num consumedPortions,
   required MealType mealType,
   required DateTime Function() now,
   required String Function() nextEntryId,
   DateTime? loggedDay,
 }) {
-  if (meal.totalPortions < 1 || consumedPortions < 1) {
+  if (meal.totalPortions < 1 || consumedPortions <= 0) {
     return null;
   }
 

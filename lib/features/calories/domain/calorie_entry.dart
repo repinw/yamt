@@ -197,7 +197,7 @@ class CalorieEntry {
     required double totalCarbs,
     required double totalFat,
     required String bundleSourcePreparedMealId,
-    required int bundleConsumedPortions,
+    required num bundleConsumedPortions,
     required int bundleTotalPortions,
     required List<CalorieEntryBundleComponent> bundleComponents,
     DateTime? loggedAt,
@@ -315,7 +315,7 @@ class CalorieEntry {
   final String? bundleSourcePreparedMealId;
 
   /// The bundle consumed portions.
-  final int? bundleConsumedPortions;
+  final num? bundleConsumedPortions;
 
   /// The bundle total portions.
   final int? bundleTotalPortions;
@@ -473,7 +473,7 @@ class CalorieEntry {
           : bundleSourcePreparedMealId as String?,
       bundleConsumedPortions: bundleConsumedPortions == _keepValue
           ? this.bundleConsumedPortions
-          : bundleConsumedPortions as int?,
+          : bundleConsumedPortions as num?,
       bundleTotalPortions: bundleTotalPortions == _keepValue
           ? this.bundleTotalPortions
           : bundleTotalPortions as int?,

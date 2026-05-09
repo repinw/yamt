@@ -934,7 +934,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealPendingIngredientIgnoreFailed => 'Zutat konnte nicht ignoriert werden.';
 
   @override
-  String preparedMealPortionsRemaining(int remaining, int total) {
+  String preparedMealPortionsRemaining(String remaining, int total) {
     return '$remaining/$total Portionen';
   }
 
@@ -2483,7 +2483,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String caloriesBundlePortions(int consumed, int total) {
+  String caloriesBundlePortions(String consumed, int total) {
     return '$consumed/$total Portionen';
   }
 

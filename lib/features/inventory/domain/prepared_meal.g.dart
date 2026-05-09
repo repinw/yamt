@@ -24,7 +24,7 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
   id: _readRequiredString(json['id']),
   name: _readRequiredString(json['name']),
   totalPortions: _readIntOrZero(json['total_portions']),
-  remainingPortions: _readIntOrZero(json['remaining_portions']),
+  remainingPortions: _readDoubleOrZero(json['remaining_portions']),
   totalKcal: _readDoubleOrZero(json['total_kcal']),
   totalProtein: _readDoubleOrZero(json['total_protein']),
   totalCarbs: _readDoubleOrZero(json['total_carbs']),

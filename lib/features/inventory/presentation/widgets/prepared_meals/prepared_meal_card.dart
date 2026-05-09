@@ -78,7 +78,7 @@ class PreparedMealCard extends ConsumerStatefulWidget {
   /// The on eat pressed.
   final Future<bool> Function({
     required String mealId,
-    required int portions,
+    required num portions,
     required MealType mealType,
     required DateTime loggedDay,
   })
@@ -87,7 +87,7 @@ class PreparedMealCard extends ConsumerStatefulWidget {
   /// The on throw away pressed.
   final Future<bool> Function(
     String mealId,
-    int portions,
+    num portions,
     InventoryDiscardReason reason,
   )
   onThrowAwayPressed;

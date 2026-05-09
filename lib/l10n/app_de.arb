@@ -464,7 +464,7 @@
   "@preparedMealPortionsRemaining": {
     "placeholders": {
       "remaining": {
-        "type": "int"
+        "type": "String"
       },
       "total": {
         "type": "int"
@@ -1393,7 +1393,7 @@
   "@caloriesBundlePortions": {
     "placeholders": {
       "consumed": {
-        "type": "int"
+        "type": "String"
       },
       "total": {
         "type": "int"

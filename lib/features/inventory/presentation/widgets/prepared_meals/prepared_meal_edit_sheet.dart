@@ -7,6 +7,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_inventory_math.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -464,7 +466,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
     setState(() {});
   }
 
-  int get _consumedPortions {
+  num get _consumedPortions {
     final consumed = widget.meal.totalPortions - widget.meal.remainingPortions;
     return consumed < 0 ? 0 : consumed;
   }
@@ -472,11 +474,11 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
   bool get _isContentEditingLocked => _consumedPortions > 0;
 
   int? _maxAmountForComponent(PreparedMealComponent component) {
-    if (widget.meal.remainingPortions < 1) {
+    if (widget.meal.remainingPortions <= 0) {
       return null;
     }
     final available = _availableAmountForItem(component.inventoryItemId);
-    final restorable = _remainingShareAmount(
+    final restorable = remainingPreparedMealShareAmount(
       usedAmount: component.usedAmount,
       totalPortions: widget.meal.totalPortions,
       remainingPortions: widget.meal.remainingPortions,
@@ -488,7 +490,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
   }
 
   int? _maxAmountForNewItem(InventoryItem item) {
-    if (widget.meal.remainingPortions < 1) {
+    if (widget.meal.remainingPortions <= 0) {
       return null;
     }
     return (_defaultAmount(item) * widget.meal.totalPortions) ~/
@@ -812,17 +814,6 @@ int _defaultAmount(InventoryItem item) {
     return item.currentAmount;
   }
   return item.quantity;
-}
-
-int _remainingShareAmount({
-  required int usedAmount,
-  required int totalPortions,
-  required int remainingPortions,
-}) {
-  if (totalPortions < 1 || remainingPortions < 1) {
-    return 0;
-  }
-  return ((usedAmount * remainingPortions) / totalPortions).round();
 }
 
 bool _hasCompleteNutrition(GlobalFoodNutrition? nutrition) {

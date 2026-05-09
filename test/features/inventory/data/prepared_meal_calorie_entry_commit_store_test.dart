@@ -31,7 +31,7 @@ CollectionReference<Map<String, dynamic>> _entryCollection({
       .collection(_calorieEntriesCollection);
 }
 
-PreparedMeal _meal({int remainingPortions = 4}) {
+PreparedMeal _meal({num remainingPortions = 4}) {
   return PreparedMeal(
     id: 'meal-1',
     name: 'Lunch box',
@@ -48,7 +48,7 @@ PreparedMeal _meal({int remainingPortions = 4}) {
   );
 }
 
-CalorieEntry _entry() {
+CalorieEntry _entry({num consumedPortions = 2}) {
   return CalorieEntry.bundle(
     id: 'entry-1',
     userId: 'user-1',
@@ -60,7 +60,7 @@ CalorieEntry _entry() {
     totalCarbs: 20,
     totalFat: 5,
     bundleSourcePreparedMealId: 'meal-1',
-    bundleConsumedPortions: 2,
+    bundleConsumedPortions: consumedPortions,
     bundleTotalPortions: 4,
     bundleComponents: const <CalorieEntryBundleComponent>[],
     loggedAt: DateTime(2026, 3, 27, 13),
@@ -106,6 +106,38 @@ void main() {
         savedMeal.data()?['updated_at'],
         _entry().updatedAt.toIso8601String(),
       );
+    },
+  );
+
+  test(
+    'commitEntryAndPreparedMeal persists fractional remaining portions',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await _preparedMealCollection(
+        firestore: firestore,
+      ).doc('meal-1').set(_meal(remainingPortions: 1).toJson());
+
+      final store = FirestorePreparedMealCalorieEntryCommitStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+        preparedMealOwnerUserId: 'user-1',
+      );
+
+      final saved = await store.commitEntryAndPreparedMeal(
+        entry: _entry(consumedPortions: 0.5),
+      );
+
+      expect(saved, isTrue);
+
+      final savedEntry = await _entryCollection(
+        firestore: firestore,
+      ).doc('entry-1').get();
+      expect(savedEntry.data()?['bundle_consumed_portions'], 0.5);
+
+      final savedMeal = await _preparedMealCollection(
+        firestore: firestore,
+      ).doc('meal-1').get();
+      expect(savedMeal.data()?['remaining_portions'], 0.5);
     },
   );
 

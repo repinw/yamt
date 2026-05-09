@@ -39,6 +39,40 @@ void main() {
     expect(roundtrip.totalKcal, 420);
   });
 
+  test('bundle JSON roundtrip preserves fractional consumed portions', () {
+    final entry = CalorieEntry.bundle(
+      id: 'bundle-half',
+      userId: 'user-1',
+      name: 'Soup',
+      mealType: MealType.lunch,
+      totalKcal: 105,
+      totalProtein: 7,
+      totalCarbs: 9,
+      totalFat: 4,
+      bundleSourcePreparedMealId: 'prepared-1',
+      bundleConsumedPortions: 0.5,
+      bundleTotalPortions: 4,
+      bundleComponents: const <CalorieEntryBundleComponent>[
+        CalorieEntryBundleComponent(
+          name: 'Soup',
+          amountLabel: '50 g',
+          totalKcal: 105,
+          totalProtein: 7,
+          totalCarbs: 9,
+          totalFat: 4,
+        ),
+      ],
+      loggedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+    );
+
+    final roundtrip = CalorieEntry.fromJson(entry.toJson());
+
+    expect(roundtrip.bundleConsumedPortions, 0.5);
+    expect(roundtrip.isBundle, isTrue);
+  });
+
   test('recalculateTotals keeps bundle totals untouched', () {
     final entry = CalorieEntry.bundle(
       id: 'bundle-1',
