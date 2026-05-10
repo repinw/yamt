@@ -115,6 +115,17 @@ abstract final class AppInventoryEditorialSurfaces {
     );
   }
 
+  /// Accent color for repeated ingredient markers.
+  static Color ingredientAccent(ColorScheme colors, int index) {
+    final palette = <Color>[
+      colors.primary,
+      colors.secondary,
+      colors.tertiary,
+      colors.inversePrimary,
+    ];
+    return palette[index % palette.length];
+  }
+
   /// Ambient shadow color.
   static Color ambientShadow(ColorScheme colors) {
     return colors.onSurface.withValues(

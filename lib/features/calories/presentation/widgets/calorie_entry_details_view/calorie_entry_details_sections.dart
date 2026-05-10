@@ -91,7 +91,10 @@ class CalorieEntryIngredientsSection extends StatelessWidget {
                   CalorieEntryIngredientRow(
                     component: entry.bundleComponents[index],
                     index: index,
-                    accentColor: _ingredientAccentColor(index),
+                    accentColor: AppInventoryEditorialSurfaces.ingredientAccent(
+                      colors,
+                      index,
+                    ),
                   ),
                 ],
               ],
@@ -101,14 +104,4 @@ class CalorieEntryIngredientsSection extends StatelessWidget {
       ],
     );
   }
-}
-
-Color _ingredientAccentColor(int index) {
-  const palette = <Color>[
-    Color(0xFF0F7A52),
-    Color(0xFF67DEA8),
-    Color(0xFF8AF5C5),
-    Color(0xFFFFA271),
-  ];
-  return palette[index % palette.length];
 }

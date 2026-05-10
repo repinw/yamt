@@ -51,6 +51,9 @@ String calorieEntryConsumedAmountLabel(
 
 /// Formats a nutrition metric without trailing decimals when possible.
 String formatCalorieEntryNutritionMetricValue(double value) {
-  final hasFraction = value % 1 != 0;
-  return hasFraction ? value.toStringAsFixed(1) : value.toStringAsFixed(0);
+  final singleDecimalValue = value.toStringAsFixed(1);
+  if (singleDecimalValue.endsWith('.0')) {
+    return value.toStringAsFixed(0);
+  }
+  return singleDecimalValue;
 }

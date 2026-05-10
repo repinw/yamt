@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -13,7 +12,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_overview_card.dart';
 
 /// Read-only details view for an existing diary entry.
-class CalorieEntryDetailsView extends ConsumerWidget {
+class CalorieEntryDetailsView extends StatelessWidget {
   /// The calorie entry details view.
   const CalorieEntryDetailsView({
     required this.title,
@@ -60,7 +59,7 @@ class CalorieEntryDetailsView extends ConsumerWidget {
   final VoidCallback onReturnToInventory;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final hasMealChanges = selectedMealType != entry.mealType;
     final hasLoggedAtChanges = selectedLoggedAt != entry.loggedAt;
     final hasPendingChanges = hasMealChanges || hasLoggedAtChanges;
