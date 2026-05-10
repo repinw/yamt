@@ -5,6 +5,10 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/provider/'
     'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_state.dart';
 
 class _RecordingOffProductSearchRepository
     implements OffProductSearchRepository {

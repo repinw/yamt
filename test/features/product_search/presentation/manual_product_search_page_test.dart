@@ -23,8 +23,14 @@ import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_types.dart';
 import 'package:yamt/features/product_search/provider/'
     'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _wrapPage({

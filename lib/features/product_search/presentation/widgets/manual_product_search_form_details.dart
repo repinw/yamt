@@ -12,7 +12,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form_components.dart';
 import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_controller.dart';
+    'manual_product_search_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class ManualProductDetailsForm extends StatefulWidget {

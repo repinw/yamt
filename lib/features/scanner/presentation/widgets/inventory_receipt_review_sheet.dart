@@ -15,6 +15,10 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_types.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_review_item_processor.dart';
@@ -23,8 +27,6 @@ import 'package:yamt/features/scanner/domain/'
     'receipt_review_weight_confirmation.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_preview_button.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'

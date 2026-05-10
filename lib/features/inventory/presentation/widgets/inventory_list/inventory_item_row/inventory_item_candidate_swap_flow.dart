@@ -15,6 +15,8 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_types.dart';
 
 const _swapGlobalFoodIdPrefix = 'global-food-';
 
