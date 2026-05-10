@@ -12,10 +12,10 @@ import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_search/domain/'
+    'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_utils.dart';
 import 'package:yamt/features/product_search/provider/'
     'manual_product_search_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';

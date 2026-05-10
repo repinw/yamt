@@ -2,12 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';

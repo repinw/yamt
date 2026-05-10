@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_utils.dart';
+import 'package:yamt/features/product_search/domain/'
+    'manual_product_search_value_utils.dart';
 
 /// Ingredient row shown in AI estimate review.
 @immutable

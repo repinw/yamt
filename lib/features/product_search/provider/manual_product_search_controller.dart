@@ -18,8 +18,8 @@ import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_utils.dart';
+import 'package:yamt/features/product_search/domain/'
+    'manual_product_search_value_utils.dart';
 
 part 'manual_product_search_controller.g.dart';
 

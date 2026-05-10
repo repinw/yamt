@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
+import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 
 void main() {
   test('fallback goal is used when no goal exists', () {
