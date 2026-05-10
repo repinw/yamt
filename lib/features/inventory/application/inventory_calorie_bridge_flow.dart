@@ -1,31 +1,14 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:uuid/uuid.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
 /// Defines inventory calorie bridge flow.
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 class InventoryCalorieBridgeFlow {
   const InventoryCalorieBridgeFlow._();
-
-  static const _uuid = Uuid();
 
   /// Build profile from inventory item.
   static CalorieProductProfile? buildProfileFromInventoryItem(
@@ -106,68 +89,6 @@ class InventoryCalorieBridgeFlow {
       portionCount: request.portionCount,
       portionLabel: request.portionLabel,
     );
-  }
-
-  /// Save direct entry.
-  static Future<bool> saveDirectEntry({
-    required WidgetRef ref,
-    required CalorieProductProfile profile,
-    required CalorieInventoryCreateContext inventoryContext,
-    required CalorieScannedSourceRef? scannedSourceRef,
-    required DateTime loggedAt,
-    required MealType mealType,
-  }) async {
-    final user = ref.read(firebaseAuthProvider).currentUser;
-    if (user == null) {
-      return false;
-    }
-
-    final now = DateTime.now();
-    final entry = CalorieEntry.create(
-      id: _uuid.v4(),
-      userId: user.uid,
-      name: profile.name,
-      brand: profile.brand,
-      imageUrl: profile.imageUrl,
-      mealType: mealType,
-      consumedAmount: inventoryContext.consumedAmount,
-      consumedUnit: inventoryContext.consumedUnit,
-      per100Kcal: profile.per100Kcal,
-      per100Protein: profile.per100Protein,
-      per100Carbs: profile.per100Carbs,
-      per100Fat: profile.per100Fat,
-      sourceInventoryItemId: inventoryContext.inventoryItemId,
-      sourceInventoryAmountToRestore: inventoryContext.inventoryAmountToRestore,
-      loggedAt: loggedAt,
-      createdAt: now,
-      updatedAt: now,
-    );
-
-    return ref
-        .read(calorieEntriesControllerProvider.notifier)
-        .saveEntry(
-          entry,
-          inventoryContext: inventoryContext,
-          scannedSourceRef: scannedSourceRef,
-          persistEntry: (entry) {
-            return ref
-                .read(inventoryBackedCalorieEntrySaveFlowProvider)
-                .saveEntry(
-                  entry: entry,
-                  pendingConsumptionId: inventoryContext.pendingConsumptionId,
-                );
-          },
-        );
-  }
-
-  /// Discard pending consumption.
-  static Future<void> discardPendingConsumption({
-    required WidgetRef ref,
-    required String pendingConsumptionId,
-  }) {
-    return ref
-        .read(inventoryItemsControllerProvider.notifier)
-        .discardPendingConsumption(pendingConsumptionId);
   }
 
   static String? _resolveOffProductId(String? globalFoodItemId) {

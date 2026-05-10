@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_segmented_button_style.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

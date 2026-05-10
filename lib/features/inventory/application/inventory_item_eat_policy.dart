@@ -1,6 +1,6 @@
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 
 /// Inventory item uses fixed calorie unit.

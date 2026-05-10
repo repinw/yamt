@@ -30,12 +30,12 @@ import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';

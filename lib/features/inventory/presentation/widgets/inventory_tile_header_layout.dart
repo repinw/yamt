@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/brand_badge.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/remaining_progress_bar.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/status_line.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'brand_badge.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'remaining_progress_bar.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'status_line.dart';
 
 /// Defines inventory tile header layout.
 class InventoryTileHeaderLayout extends StatelessWidget {

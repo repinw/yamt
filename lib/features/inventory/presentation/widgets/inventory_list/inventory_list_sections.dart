@@ -4,7 +4,7 @@ import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_segmented_button_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
