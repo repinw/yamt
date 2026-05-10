@@ -22,7 +22,7 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_editor_draft.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_entry_details_view.dart';
+    'calorie_entry_details_view/calorie_entry_details_view.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_editor_dialogs.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
