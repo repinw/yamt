@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/models/user_profile.dart';
 import 'package:yamt/features/household/presentation/household_error_message.dart';
 import 'package:yamt/features/household/provider/'

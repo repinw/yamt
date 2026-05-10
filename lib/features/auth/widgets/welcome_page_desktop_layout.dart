@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/widgets/auth_card.dart';
 import 'package:yamt/features/auth/widgets/auth_footer_prompt.dart';

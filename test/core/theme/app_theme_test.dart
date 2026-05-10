@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 void main() {
   group('AppTheme', () {

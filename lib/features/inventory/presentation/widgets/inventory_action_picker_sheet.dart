@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shows an inventory action picker as an elevated bottom sheet.
 Future<T?> showInventoryActionPickerSheet<T>(

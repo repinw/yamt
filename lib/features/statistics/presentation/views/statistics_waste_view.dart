@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/presentation/widgets/'

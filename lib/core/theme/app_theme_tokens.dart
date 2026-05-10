@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_layout_tokens.dart';
 
 /// Top-level colors used by app theme setup.
 abstract final class AppColors {
@@ -63,7 +63,7 @@ abstract final class AppInventoryEditorial {
   static const double glassBlur = 20;
 
   /// Editorial card radius.
-  static const double cardRadius = AppRadius.xl;
+  static const double cardRadius = AppThemeRadius.xl;
 
   /// Square image tile size.
   static const double imageTileSize = 56;

@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_health_weight_dialog.dart';
@@ -30,9 +30,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 export 'package:yamt/features/diary/application/diary_activity_weight_service.dart'
     show DiaryActivityWeightData, DiaryWeightDayData;
 
+part 'diary_activity_metric_shells.dart';
 part 'diary_health_connect_metric_card.dart';
 part 'diary_weight_details_card.dart';
-part 'diary_activity_metric_shells.dart';
 
 /// Stable keys for diary activity and weight card tests.
 abstract final class DiaryActivityWeightCardsKeys {
