@@ -5,7 +5,7 @@ import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';

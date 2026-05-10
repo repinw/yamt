@@ -13,12 +13,12 @@ import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/remaining_progress_bar.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'remaining_progress_bar.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

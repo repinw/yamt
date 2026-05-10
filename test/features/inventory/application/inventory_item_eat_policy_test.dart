@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 
 InventoryItem _inventoryItem({

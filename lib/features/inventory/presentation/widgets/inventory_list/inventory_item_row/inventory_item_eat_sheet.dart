@@ -14,13 +14,13 @@ import 'package:yamt/features/inventory/application/serving_suggestion_resolver.
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_amount_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
@@ -35,7 +35,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_sheet_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_when_section.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

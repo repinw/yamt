@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_row_view_data.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_item_row_view_data.dart';
+
+export 'package:yamt/features/inventory/presentation/formatters/'
+    'inventory_nutrition_format.dart'
+    show formatInventoryNutritionValue;
 
 /// Defines inventory nutrition strip.
 class InventoryNutritionStrip extends StatelessWidget {
@@ -30,9 +34,4 @@ class InventoryNutritionStrip extends StatelessWidget {
       colorScheme: colorScheme,
     );
   }
-}
-
-/// Format inventory nutrition value.
-String formatInventoryNutritionValue(double value) {
-  return value.toNutritionMetricValue();
 }

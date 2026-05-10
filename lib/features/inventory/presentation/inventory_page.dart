@@ -14,13 +14,13 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_creation_coordinator.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'

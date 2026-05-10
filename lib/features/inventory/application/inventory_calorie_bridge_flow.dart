@@ -13,8 +13,7 @@ import 'package:yamt/features/calories/provider/calorie_entries_controller.dart'
 import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
 /// Defines inventory calorie bridge flow.
@@ -108,6 +107,17 @@ class InventoryCalorieBridgeFlow {
     );
   }
 
+  static String? _resolveOffProductId(String? globalFoodItemId) {
+    final normalizedId = globalFoodItemId?.trim();
+    if (normalizedId == null || normalizedId.isEmpty) {
+      return null;
+    }
+    if (normalizedId.startsWith('off-')) {
+      return normalizedId;
+    }
+    return null;
+  }
+
   /// Save direct entry.
   static Future<bool> saveDirectEntry({
     required WidgetRef ref,
@@ -168,16 +178,5 @@ class InventoryCalorieBridgeFlow {
     return ref
         .read(inventoryItemsControllerProvider.notifier)
         .discardPendingConsumption(pendingConsumptionId);
-  }
-
-  static String? _resolveOffProductId(String? globalFoodItemId) {
-    final normalizedId = globalFoodItemId?.trim();
-    if (normalizedId == null || normalizedId.isEmpty) {
-      return null;
-    }
-    if (normalizedId.startsWith('off-')) {
-      return normalizedId;
-    }
-    return null;
   }
 }

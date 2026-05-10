@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_manual_add_initial_action.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dart';

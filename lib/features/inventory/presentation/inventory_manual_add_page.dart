@@ -15,6 +15,8 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
+    'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/domain/'
     'inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_dialogs.dart';
@@ -23,7 +25,7 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
+    'inventory_manual_add_initial_action.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -35,23 +37,12 @@ import 'package:yamt/features/product_search/provider/'
     'manual_product_search_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+export 'package:yamt/features/inventory/presentation/models/'
+    'inventory_manual_add_initial_action.dart'
+    show InventoryManualAddInitialAction;
+
 const _inventoryManualAddItemId = Uuid();
 const _inventoryManualAddGlobalFoodItemId = Uuid();
-
-/// Initial action for inventory manual add route.
-enum InventoryManualAddInitialAction {
-  /// Show the manual add launcher.
-  launcher,
-
-  /// Open manual search immediately.
-  manualSearch,
-
-  /// Open AI suggestion immediately.
-  aiSuggestion,
-
-  /// Open barcode scanner immediately.
-  barcodeScan,
-}
 
 /// Route args for inventory manual add.
 class InventoryManualAddRouteArgs {

@@ -3,15 +3,15 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_image_tile.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_row_constants.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_snapshot.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_tile_header_layout.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_item_row_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_item_row_view_data.dart';
 
 /// Defines inventory item row main section.
 class InventoryItemRowMainSection extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/remaining_progress_bar.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'remaining_progress_bar.dart';
 
 void main() {
   Widget buildWidget({
