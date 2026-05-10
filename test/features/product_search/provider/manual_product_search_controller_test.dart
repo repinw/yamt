@@ -11,6 +11,10 @@ class _RecordingOffProductSearchRepository
   _RecordingOffProductSearchRepository(this.results);
 
   final List<OffProductSearchResult> results;
+  String? lastQuery;
+  String? lastStore;
+  String? lastWeight;
+  int? lastLimit;
 
   @override
   Future<List<OffProductSearchResult>> search({
@@ -20,6 +24,10 @@ class _RecordingOffProductSearchRepository
     String? weight,
     int limit = 15,
   }) async {
+    lastQuery = query;
+    lastStore = store;
+    lastWeight = weight;
+    lastLimit = limit;
     return results.take(limit).toList(growable: false);
   }
 
@@ -42,6 +50,81 @@ InventoryItem _item() {
 }
 
 void main() {
+  test('config equality compares selected product content', () {
+    final first = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: const OffProductSearchResult(
+        code: '4311596490202',
+        name: 'Booster Absolute Zero',
+        brand: 'Booster',
+        packageWeight: '330 ml',
+        score: 100,
+      ),
+    );
+    final second = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: const OffProductSearchResult(
+        code: '4311596490202',
+        name: 'Booster Absolute Zero',
+        brand: 'Booster',
+        packageWeight: '330 ml',
+        score: 100,
+      ),
+    );
+    final changedWeight = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: const OffProductSearchResult(
+        code: '4311596490202',
+        name: 'Booster Absolute Zero',
+        brand: 'Booster',
+        packageWeight: '500 ml',
+        score: 100,
+      ),
+    );
+
+    expect(first, second);
+    expect(first.hashCode, second.hashCode);
+    expect(first, isNot(changedWeight));
+  });
+
+  test('initial query skips barcode-like names and duplicate parts', () {
+    final query = buildManualProductInitialSearchQuery(
+      InventoryReceiptManualProductConfig(
+        item: InventoryItem.create(
+          id: 'item-1',
+          name: '4311596490202',
+          entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+          storeName: 'Booster',
+          quantity: 1,
+          brand: 'Booster',
+        ),
+      ),
+    );
+
+    expect(query, 'Booster');
+  });
+
+  test('state exposes optional nutrition availability and copy clearing', () {
+    const state = InventoryReceiptManualProductState(
+      showPolyunsaturatedFatField: true,
+      showFiberField: true,
+      selectedProduct: InventoryReceiptManualProductSelection(
+        source: InventoryReceiptManualProductSelectionSource.externalSearch,
+        name: 'Milk',
+        barcode: '4006381333931',
+      ),
+      error: InventoryReceiptManualProductError.requiredPackageWeight,
+    );
+
+    expect(state.availableOptionalNutritionTypes, isEmpty);
+    expect(state.canAddOptionalNutrition, isFalse);
+    expect(state.resolvedOptionalNutritionType, isNull);
+
+    final cleared = state.copyWith(selectedProduct: null, error: null);
+    expect(cleared.selectedProduct, isNull);
+    expect(cleared.error, isNull);
+  });
+
   test('buildSavePayload requires package weight when barcode is present', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -263,6 +346,103 @@ void main() {
   );
 
   test(
+    'buildDirectSearchResultPayload returns null when barcode is blank',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final config = InventoryReceiptManualProductConfig(item: _item());
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final controller = container.read(provider.notifier);
+
+      final payload = controller.buildDirectSearchResultPayload(
+        product: const OffProductSearchResult(
+          code: '',
+          name: 'Milk',
+          brand: 'Brand',
+          packageWeight: '1 l',
+          score: 99,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 100,
+            per100Protein: 10,
+            per100Carbs: 20,
+            per100Fat: 3,
+          ),
+        ),
+        action: InventoryReceiptManualProductAction.eatNow,
+      );
+
+      expect(payload, isNull);
+    },
+  );
+
+  test('buildPreviewData uses manual text with matched product media', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    const selectedProduct = OffProductSearchResult(
+      code: '4311596490202',
+      name: 'Booster Absolute Zero',
+      brand: 'Booster',
+      imageUrl: 'https://example.com/image.png',
+      packageWeight: '330 ml',
+      score: 100,
+    );
+    final config = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: selectedProduct,
+    );
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final controller = container.read(provider.notifier)
+      ..updateNameText('  Custom Zero  ')
+      ..updateBrandText('  Custom Brand  ');
+
+    final preview = controller.buildPreviewData();
+
+    expect(preview?.name, 'Custom Zero');
+    expect(preview?.brand, 'Custom Brand');
+    expect(preview?.weight, '330 ml');
+    expect(preview?.imageUrl, 'https://example.com/image.png');
+  });
+
+  test('applyScannedBarcodeOnly clears product and nutrition state', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    const selectedProduct = OffProductSearchResult(
+      code: '4311596490202',
+      name: 'Booster Absolute Zero',
+      brand: 'Booster',
+      packageWeight: '330 ml',
+      score: 100,
+      nutrition: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 2,
+        per100Protein: 0,
+        per100Carbs: 0,
+        per100Fat: 0,
+        per100Fiber: 1,
+      ),
+    );
+    final config = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: selectedProduct,
+    );
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    container.read(provider.notifier).applyScannedBarcodeOnly('4006381333931');
+    final state = container.read(provider);
+
+    expect(state.barcode, '4006381333931');
+    expect(state.nameText, 'Unknown');
+    expect(state.brandText, isEmpty);
+    expect(state.selectedProduct, isNull);
+    expect(state.kcalText, isEmpty);
+    expect(state.fiberText, isEmpty);
+    expect(state.showFiberField, isFalse);
+  });
+
+  test(
     'buildSavePayload stores normalized manual piece amount for inventory'
     ' and global payload',
     () {
@@ -360,6 +540,68 @@ void main() {
       expect(
         state.searchResults.map((result) => result.name),
         <String>['Complete Zero'],
+      );
+      expect(repository.lastQuery, 'Zero');
+      expect(repository.lastStore, isNull);
+      expect(repository.lastWeight, isNull);
+      expect(repository.lastLimit, 20);
+    },
+  );
+
+  test(
+    'updateSearchQuery sends supported store and receipt weight hints',
+    () async {
+      final repository = _RecordingOffProductSearchRepository(
+        const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4311596490203',
+            name: 'Complete Zero',
+            brand: 'Booster',
+            packageWeight: '330 ml',
+            score: 98,
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 2,
+              per100Fat: 0,
+              per100SaturatedFat: 0,
+              per100Carbs: 0.01,
+              per100Sugar: 0.01,
+              per100Protein: 0.02,
+              per100Salt: 0.01,
+            ),
+          ),
+        ],
+      );
+      final container = ProviderContainer(
+        overrides: [
+          offProductSearchRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final config = InventoryReceiptManualProductConfig(
+        item: InventoryItem.create(
+          id: 'item-1',
+          name: 'Unknown',
+          entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+          storeName: 'Netto Marken-Discount',
+          quantity: 1,
+          weight: '330 ml',
+        ),
+      );
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final subscription = container.listen(provider, (previous, next) {});
+      addTearDown(subscription.close);
+
+      container.read(provider.notifier).updateSearchQuery('Zero');
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(repository.lastStore, 'Netto');
+      expect(repository.lastWeight, '330 ml');
+      expect(
+        container.read(provider).searchResults.single.name,
+        'Complete Zero',
       );
     },
   );
