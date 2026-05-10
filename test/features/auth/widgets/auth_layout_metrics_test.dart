@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
 void main() {
   group('AuthLayoutMetrics', () {
@@ -12,13 +12,13 @@ void main() {
         isWide: true,
       );
 
-      expect(metrics.heroBadgeSize, AppAuthUi.heroBadgeSize);
-      expect(metrics.heroIconSize, AppAuthUi.heroIconSize * 0.42);
-      expect(metrics.cardPadding, AppAuthUi.cardPadding);
+      expect(metrics.heroBadgeSize, CredentialFormUi.heroBadgeSize);
+      expect(metrics.heroIconSize, CredentialFormUi.heroIconSize * 0.42);
+      expect(metrics.cardPadding, CredentialFormUi.cardPadding);
       expect(metrics.headerSpacing, AppSpacing.xxxl);
       expect(metrics.sectionSpacing, AppSpacing.xxxl);
       expect(metrics.footerSpacing, AppSpacing.xxl);
-      expect(metrics.socialButtonHeight, AppAuthUi.socialButtonHeight);
+      expect(metrics.socialButtonHeight, CredentialFormUi.socialButtonHeight);
       expect(metrics.centerContent, isTrue);
     });
 
@@ -47,14 +47,14 @@ void main() {
         isWide: false,
       );
 
-      expect(metrics.heroBadgeSize, AppAuthUi.heroBadgeSize);
-      expect(metrics.heroIconSize, AppAuthUi.heroIconSize * 0.42);
+      expect(metrics.heroBadgeSize, CredentialFormUi.heroBadgeSize);
+      expect(metrics.heroIconSize, CredentialFormUi.heroIconSize * 0.42);
       expect(metrics.cardPadding.left, AppSpacing.xxl);
       expect(metrics.cardPadding.top, AppSpacing.xxl);
       expect(metrics.headerSpacing, AppSpacing.xxl);
       expect(metrics.sectionSpacing, AppSpacing.xxl);
       expect(metrics.footerSpacing, AppSpacing.xl);
-      expect(metrics.socialButtonHeight, AppAuthUi.socialButtonHeight);
+      expect(metrics.socialButtonHeight, CredentialFormUi.socialButtonHeight);
       expect(metrics.centerContent, isTrue);
     });
   });

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Header shown above the auth card.
@@ -39,7 +39,7 @@ class AuthHeader extends StatelessWidget {
           Align(
             alignment: isCentered ? Alignment.center : Alignment.centerLeft,
             child: DecoratedBox(
-              decoration: AppAuthSurfaces.heroBadge(colors),
+              decoration: CredentialFormSurfaces.heroBadge(colors),
               child: SizedBox(
                 key: const Key('auth_header_badge'),
                 width: metrics.heroBadgeSize,

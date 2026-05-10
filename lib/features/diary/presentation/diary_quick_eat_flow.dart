@@ -7,8 +7,7 @@ import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_inventory_food_picker.dart';
+import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/provider/diary_entries_provider.dart';
 import 'package:yamt/features/diary/provider/diary_meal_sections_provider.dart';
 import 'package:yamt/features/diary/provider/diary_nutrition_bars_provider.dart';

@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/auth/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
 /// Auth layout sizing values derived from current constraints.
 class AuthLayoutMetrics {
@@ -26,13 +26,13 @@ class AuthLayoutMetrics {
   }) {
     if (isWide) {
       return const AuthLayoutMetrics(
-        heroBadgeSize: AppAuthUi.heroBadgeSize,
-        heroIconSize: AppAuthUi.heroIconSize * 0.42,
-        cardPadding: AppAuthUi.cardPadding,
+        heroBadgeSize: CredentialFormUi.heroBadgeSize,
+        heroIconSize: CredentialFormUi.heroIconSize * 0.42,
+        cardPadding: CredentialFormUi.cardPadding,
         headerSpacing: AppSpacing.xxxl,
         sectionSpacing: AppSpacing.xxxl,
         footerSpacing: AppSpacing.xxl,
-        socialButtonHeight: AppAuthUi.socialButtonHeight,
+        socialButtonHeight: CredentialFormUi.socialButtonHeight,
         centerContent: true,
       );
     }
@@ -42,8 +42,8 @@ class AuthLayoutMetrics {
     final scale = math.min(widthScale, heightScale).clamp(0.82, 1.0);
 
     return AuthLayoutMetrics(
-      heroBadgeSize: AppAuthUi.heroBadgeSize * scale,
-      heroIconSize: AppAuthUi.heroIconSize * 0.42 * scale,
+      heroBadgeSize: CredentialFormUi.heroBadgeSize * scale,
+      heroIconSize: CredentialFormUi.heroIconSize * 0.42 * scale,
       cardPadding: EdgeInsets.fromLTRB(
         AppSpacing.xxl * scale,
         AppSpacing.xxl * scale,
@@ -53,7 +53,10 @@ class AuthLayoutMetrics {
       headerSpacing: AppSpacing.xxl * scale,
       sectionSpacing: AppSpacing.xxl * scale,
       footerSpacing: AppSpacing.xl * scale,
-      socialButtonHeight: math.max(48, AppAuthUi.socialButtonHeight * scale),
+      socialButtonHeight: math.max(
+        48,
+        CredentialFormUi.socialButtonHeight * scale,
+      ),
       centerContent: maxHeight >= 760,
     );
   }

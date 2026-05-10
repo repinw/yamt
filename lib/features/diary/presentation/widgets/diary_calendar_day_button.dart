@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 
 /// Single day button used by the diary calendar strip.
 class DiaryCalendarDayButton extends StatelessWidget {
@@ -87,7 +87,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      diaryWeekdayLabel(day, localeName).toUpperCase(),
+                      calendarWeekdayLabel(day, localeName).toUpperCase(),
                       style: TextStyle(
                         color: isActive
                             ? Colors.white.withValues(alpha: 0.9)

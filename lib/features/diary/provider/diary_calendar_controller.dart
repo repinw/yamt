@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 
 /// Provides the current clock for diary calendar state.
 final diaryCalendarNowProvider = Provider<DateTime Function()>((ref) {
@@ -25,7 +25,7 @@ class DiaryCalendarState {
   final int todayRequest;
 
   /// Whether the selected date is today.
-  bool get isSelectedToday => isSameDiaryCalendarDay(selectedDay, today);
+  bool get isSelectedToday => isSameCalendarDay(selectedDay, today);
 
   /// Returns a copy with selected overrides.
   DiaryCalendarState copyWith({
@@ -55,8 +55,8 @@ class DiaryCalendarController extends Notifier<DiaryCalendarState> {
 
   /// Selects [day].
   void selectDay(DateTime day) {
-    final selectedDay = diaryDayOnly(day);
-    if (isSameDiaryCalendarDay(selectedDay, state.selectedDay)) {
+    final selectedDay = dateOnly(day);
+    if (isSameCalendarDay(selectedDay, state.selectedDay)) {
       return;
     }
 
@@ -76,7 +76,7 @@ class DiaryCalendarController extends Notifier<DiaryCalendarState> {
   /// Refreshes the cached today value after app resume or midnight rollover.
   void refreshToday() {
     final today = _currentToday();
-    if (isSameDiaryCalendarDay(today, state.today)) {
+    if (isSameCalendarDay(today, state.today)) {
       return;
     }
 
@@ -91,7 +91,7 @@ class DiaryCalendarController extends Notifier<DiaryCalendarState> {
   }
 
   DateTime _currentToday() {
-    return diaryDayOnly(ref.read(diaryCalendarNowProvider)());
+    return dateOnly(ref.read(diaryCalendarNowProvider)());
   }
 }
 

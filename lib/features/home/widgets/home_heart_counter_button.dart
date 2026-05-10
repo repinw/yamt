@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -19,10 +19,10 @@ class HomeHeartCounterButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final localeName = Localizations.localeOf(context).toLanguageTag();
-    final selectedDay = diaryDayOnly(
+    final selectedDay = dateOnly(
       ref.watch(diaryCalendarControllerProvider).selectedDay,
     );
-    final dayLabel = formatDiaryHeaderDate(selectedDay, localeName);
+    final dayLabel = formatCalendarHeaderDate(selectedDay, localeName);
     final isHeartDay = runState.isHeartDay(selectedDay);
     final hasHearts = runState.heartCount > 0;
     final canUseHeart = runState.canUseHeartForDay(selectedDay);

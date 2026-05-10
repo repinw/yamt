@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/auth/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
 /// Text-only auth action button with loading state.
 class AuthGhostTextButton extends StatelessWidget {
@@ -39,7 +39,7 @@ class AuthGhostTextButton extends StatelessWidget {
       style: TextButton.styleFrom(
         minimumSize: Size.fromHeight(minimumHeight),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppAuthUi.buttonRadius),
+          borderRadius: BorderRadius.circular(CredentialFormUi.buttonRadius),
         ),
       ),
       child: isLoading

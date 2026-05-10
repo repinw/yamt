@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
-/// App auth ui UI component.
-abstract final class AppAuthUi {
+/// Shared credential form layout metrics.
+abstract final class CredentialFormUi {
   /// The max content width.
   static const double maxContentWidth = 420;
 
@@ -42,13 +42,13 @@ abstract final class AppAuthUi {
   );
 }
 
-/// App auth surfaces UI component.
-abstract final class AppAuthSurfaces {
+/// Shared credential form surface decorations.
+abstract final class CredentialFormSurfaces {
   /// Panel.
   static BoxDecoration panel(ColorScheme colors) {
     return BoxDecoration(
       color: colors.surfaceContainerLowest.withValues(alpha: 0.96),
-      borderRadius: BorderRadius.circular(AppAuthUi.cardRadius),
+      borderRadius: BorderRadius.circular(CredentialFormUi.cardRadius),
       border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.12)),
       boxShadow: [
         BoxShadow(
@@ -104,7 +104,7 @@ abstract final class AppAuthSurfaces {
           colors.surfaceContainerLowest.withValues(alpha: 0.95),
         ],
       ),
-      borderRadius: BorderRadius.circular(AppAuthUi.cardRadius),
+      borderRadius: BorderRadius.circular(CredentialFormUi.cardRadius),
       border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.1)),
       boxShadow: [
         BoxShadow(
