@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
+import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_overview_card.dart';
 

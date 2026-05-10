@@ -18,11 +18,11 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
+    'manual_product_search_value_utils.dart';
+import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form_components.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_utils.dart';
 import 'package:yamt/features/product_search/provider/'
     'manual_product_search_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';

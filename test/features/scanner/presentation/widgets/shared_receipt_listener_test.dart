@@ -16,8 +16,7 @@ import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'shared_receipt_listener.dart';
+import 'package:yamt/features/scanner/presentation/shared_receipt_listener.dart';
 import 'package:yamt/features/scanner/provider/'
     'pending_shared_receipt_intent.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';

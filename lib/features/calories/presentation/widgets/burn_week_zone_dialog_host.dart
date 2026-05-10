@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_live_overview_dialogs.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
