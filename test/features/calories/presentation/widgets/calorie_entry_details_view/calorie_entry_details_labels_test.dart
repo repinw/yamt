@@ -26,6 +26,39 @@ void main() {
     );
   });
 
+  testWidgets('logged at meta label combines date and time', (tester) async {
+    final loggedAt = DateTime(2026, 2, 25, 8, 30);
+    String? actualLabel;
+    String? expectedLabel;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            final material = MaterialLocalizations.of(context);
+            final dateLabel = material.formatShortDate(loggedAt);
+            final timeLabel = material.formatTimeOfDay(
+              TimeOfDay.fromDateTime(loggedAt),
+              alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(
+                context,
+              ),
+            );
+            expectedLabel = '$dateLabel, $timeLabel';
+            actualLabel = calorieEntryLoggedAtMetaLabel(
+              context,
+              l10n,
+              material,
+              loggedAt,
+            );
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+
+    expect(actualLabel, expectedLabel);
+  });
+
   test('consumed amount label formats regular entries', () {
     expect(
       calorieEntryConsumedAmountLabel(
