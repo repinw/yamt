@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/onboarding/'
     'calorie_onboarding_wizard.dart';
 import 'package:yamt/features/calories/provider/'
@@ -89,9 +90,17 @@ void main() {
     await _tapNext(tester);
     await _tapNext(tester);
 
-    await tester.tap(find.text('I will estimate what I ate so far'));
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartNowOption),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('A lot'));
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingEstimateOption),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.catchUpHighOption),
+    );
     await tester.pumpAndSettle();
 
     final formProvider = calorieGoalCalculatorFormControllerProvider(
@@ -111,6 +120,11 @@ void main() {
     );
 
     await _tapNext(tester);
+
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.resultsCard),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text("Let's go"));
     await tester.pumpAndSettle();

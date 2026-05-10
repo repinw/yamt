@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
@@ -65,26 +66,37 @@ class _EditSheetHarnessState extends State<_EditSheetHarness> {
   }
 }
 
-void main() {
-  testWidgets('returns updated name on happy path submit', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealImagePickerProvider.overrideWithValue(
-            FakePreparedMealImagePicker(),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: _EditSheetHarness(
-            meal: _meal(),
-            inventoryItems: _inventoryItems(_meal()),
-          ),
+Future<void> _pumpEditSheetHarness(
+  WidgetTester tester, {
+  required PreparedMeal meal,
+  List<InventoryItem>? inventoryItems,
+  PreparedMealImagePicker? imagePicker,
+  List<Override> overrides = const <Override>[],
+}) {
+  return tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        ...overrides,
+        preparedMealImagePickerProvider.overrideWithValue(
+          imagePicker ?? FakePreparedMealImagePicker(),
+        ),
+      ],
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _EditSheetHarness(
+          meal: meal,
+          inventoryItems: inventoryItems ?? _inventoryItems(meal),
         ),
       ),
-    );
+    ),
+  );
+}
+
+void main() {
+  testWidgets('returns updated name on happy path submit', (tester) async {
+    await _pumpEditSheetHarness(tester, meal: _meal());
 
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
@@ -103,23 +115,10 @@ void main() {
   });
 
   testWidgets('allows metadata save for pending-only meal', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealImagePickerProvider.overrideWithValue(
-            FakePreparedMealImagePicker(),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: _EditSheetHarness(
-            meal: _pendingOnlyMeal(),
-            inventoryItems: const <InventoryItem>[],
-          ),
-        ),
-      ),
+    await _pumpEditSheetHarness(
+      tester,
+      meal: _pendingOnlyMeal(),
+      inventoryItems: const <InventoryItem>[],
     );
 
     await tester.tap(find.text('Open'));
@@ -142,24 +141,7 @@ void main() {
     tester,
   ) async {
     final meal = _consumedMeal();
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealImagePickerProvider.overrideWithValue(
-            FakePreparedMealImagePicker(),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: _EditSheetHarness(
-            meal: meal,
-            inventoryItems: _inventoryItems(meal),
-          ),
-        ),
-      ),
-    );
+    await _pumpEditSheetHarness(tester, meal: meal);
 
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
@@ -202,24 +184,7 @@ void main() {
       totalPortions: 2,
       remainingPortions: 0.5,
     );
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealImagePickerProvider.overrideWithValue(
-            FakePreparedMealImagePicker(),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: _EditSheetHarness(
-            meal: meal,
-            inventoryItems: _inventoryItems(meal),
-          ),
-        ),
-      ),
-    );
+    await _pumpEditSheetHarness(tester, meal: meal);
 
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
@@ -234,24 +199,10 @@ void main() {
       bytes: Uint8List.fromList(<int>[1, 2, 3]),
     );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          localImageStoreProvider.overrideWithValue(localImageStore),
-          preparedMealImagePickerProvider.overrideWithValue(
-            FakePreparedMealImagePicker(),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: _EditSheetHarness(
-            meal: _meal(),
-            inventoryItems: _inventoryItems(_meal()),
-          ),
-        ),
-      ),
+    await _pumpEditSheetHarness(
+      tester,
+      meal: _meal(),
+      overrides: [localImageStoreProvider.overrideWithValue(localImageStore)],
     );
 
     await tester.tap(find.text('Open'));
@@ -272,24 +223,11 @@ void main() {
   testWidgets('can pick replacement image and returns changed bytes', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealImagePickerProvider.overrideWithValue(
-            FakePreparedMealImagePicker(
-              fileBytes: tinyPreparedMealPngBytes(),
-            ),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: _EditSheetHarness(
-            meal: _meal(),
-            inventoryItems: _inventoryItems(_meal()),
-          ),
-        ),
+    await _pumpEditSheetHarness(
+      tester,
+      meal: _meal(),
+      imagePicker: FakePreparedMealImagePicker(
+        fileBytes: tinyPreparedMealPngBytes(),
       ),
     );
 

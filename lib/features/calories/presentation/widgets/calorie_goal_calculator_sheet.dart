@@ -25,7 +25,6 @@ Future<void> showCalorieGoalCalculatorSheet(
     builder: (context) {
       return CalorieGoalCalculatorFlow(
         initialSettings: initialSettings,
-        presentation: CalorieGoalCalculatorFlowPresentation.bottomSheet,
       );
     },
   );

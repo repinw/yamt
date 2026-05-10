@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -163,219 +162,6 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
   }
 }
 
-/// Defines onboarding start card for same-day or future kickoff.
-class CalorieGoalCalculatorOnboardingStartCard extends StatelessWidget {
-  /// The onboarding start card.
-  const CalorieGoalCalculatorOnboardingStartCard({
-    required this.goalStartDate,
-    required this.todayTrackingChoice,
-    required this.catchUpEstimate,
-    required this.startNowSelected,
-    required this.startLaterSelected,
-    required this.onStartNowSelected,
-    required this.onStartLaterSelected,
-    required this.onTodayTrackingSelected,
-    required this.onChangeFutureDateRequested,
-    required this.onCatchUpEstimateSelected,
-    super.key,
-    this.enabled = true,
-  });
-
-  /// Selected goal start date.
-  final DateTime goalStartDate;
-
-  /// How today will be tracked when starting immediately.
-  final CalorieGoalOnboardingTodayTracking? todayTrackingChoice;
-
-  /// Selected catch-up estimate.
-  final CalorieGoalOnboardingCatchUpEstimate catchUpEstimate;
-
-  /// Whether "start now" is selected.
-  final bool startNowSelected;
-
-  /// Whether "start later" is selected.
-  final bool startLaterSelected;
-
-  /// Called when user chooses today.
-  final VoidCallback onStartNowSelected;
-
-  /// Called when user chooses later start.
-  final VoidCallback onStartLaterSelected;
-
-  /// Called when user chooses exact or estimated tracking for today.
-  final ValueChanged<CalorieGoalOnboardingTodayTracking>
-  onTodayTrackingSelected;
-
-  /// Called when user wants another future day.
-  final VoidCallback onChangeFutureDateRequested;
-
-  /// Called when catch-up estimate changes.
-  final ValueChanged<CalorieGoalOnboardingCatchUpEstimate>
-  onCatchUpEstimateSelected;
-
-  /// Whether controls enabled.
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final dateFormat = DateFormat.yMMMd(locale);
-
-    return _GoalStartCardShell(
-      key: CalorieGoalCalculatorSheetKeys.goalStartCard,
-      title: l10n.caloriesCalculatorOnboardingStartTitle,
-      children: [
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: [
-            ChoiceChip(
-              key: CalorieGoalCalculatorSheetKeys.goalStartNowOption,
-              label: Text(l10n.caloriesCalculatorOnboardingStartNowAction),
-              selected: startNowSelected,
-              onSelected: enabled ? (_) => onStartNowSelected() : null,
-            ),
-            ChoiceChip(
-              key: CalorieGoalCalculatorSheetKeys.goalStartLaterOption,
-              label: Text(
-                l10n.caloriesCalculatorOnboardingStartLaterAction,
-              ),
-              selected: startLaterSelected,
-              onSelected: enabled ? (_) => onStartLaterSelected() : null,
-            ),
-          ],
-        ),
-        if (startNowSelected || startLaterSelected)
-          const SizedBox(height: AppSpacing.md),
-        if (startNowSelected) ...[
-          _GoalStartCardHint(
-            text: l10n.caloriesCalculatorOnboardingTodayTrackingLabel,
-            isBody: true,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              ChoiceChip(
-                key: CalorieGoalCalculatorSheetKeys.todayTrackingExactOption,
-                label: Text(
-                  l10n.caloriesCalculatorOnboardingTodayTrackingExactAction,
-                ),
-                selected:
-                    todayTrackingChoice ==
-                    CalorieGoalOnboardingTodayTracking.exact,
-                onSelected: enabled
-                    ? (_) => onTodayTrackingSelected(
-                        CalorieGoalOnboardingTodayTracking.exact,
-                      )
-                    : null,
-              ),
-              ChoiceChip(
-                key: CalorieGoalCalculatorSheetKeys.todayTrackingEstimateOption,
-                label: Text(
-                  l10n.caloriesCalculatorOnboardingTodayTrackingEstimateAction,
-                ),
-                selected:
-                    todayTrackingChoice ==
-                    CalorieGoalOnboardingTodayTracking.estimate,
-                onSelected: enabled
-                    ? (_) => onTodayTrackingSelected(
-                        CalorieGoalOnboardingTodayTracking.estimate,
-                      )
-                    : null,
-              ),
-            ],
-          ),
-        ],
-        if (startNowSelected &&
-            todayTrackingChoice ==
-                CalorieGoalOnboardingTodayTracking.estimate) ...[
-          const SizedBox(height: AppSpacing.md),
-          _GoalStartCardHint(
-            text: l10n.caloriesCalculatorOnboardingCatchUpLabel,
-            isBody: true,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              ChoiceChip(
-                key: CalorieGoalCalculatorSheetKeys.catchUpLowOption,
-                label: Text(
-                  l10n.caloriesCalculatorOnboardingCatchUpLowAction,
-                ),
-                selected:
-                    catchUpEstimate == CalorieGoalOnboardingCatchUpEstimate.low,
-                onSelected: enabled
-                    ? (_) => onCatchUpEstimateSelected(
-                        CalorieGoalOnboardingCatchUpEstimate.low,
-                      )
-                    : null,
-              ),
-              ChoiceChip(
-                key: CalorieGoalCalculatorSheetKeys.catchUpNormalOption,
-                label: Text(
-                  l10n.caloriesCalculatorOnboardingCatchUpNormalAction,
-                ),
-                selected:
-                    catchUpEstimate ==
-                    CalorieGoalOnboardingCatchUpEstimate.normal,
-                onSelected: enabled
-                    ? (_) => onCatchUpEstimateSelected(
-                        CalorieGoalOnboardingCatchUpEstimate.normal,
-                      )
-                    : null,
-              ),
-              ChoiceChip(
-                key: CalorieGoalCalculatorSheetKeys.catchUpHighOption,
-                label: Text(
-                  l10n.caloriesCalculatorOnboardingCatchUpHighAction,
-                ),
-                selected:
-                    catchUpEstimate ==
-                    CalorieGoalOnboardingCatchUpEstimate.high,
-                onSelected: enabled
-                    ? (_) => onCatchUpEstimateSelected(
-                        CalorieGoalOnboardingCatchUpEstimate.high,
-                      )
-                    : null,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          _GoalStartCardHint(
-            text: l10n.caloriesCalculatorOnboardingCatchUpHint,
-          ),
-        ] else if (startLaterSelected) ...[
-          Text(
-            dateFormat.format(goalStartDate),
-            key: CalorieGoalCalculatorSheetKeys.goalStartValue,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          _GoalStartCardHint(
-            text: l10n.caloriesCalculatorOnboardingStartLaterHint,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          OutlinedButton.icon(
-            key: CalorieGoalCalculatorSheetKeys.goalStartChangeButton,
-            onPressed: enabled ? onChangeFutureDateRequested : null,
-            icon: const Icon(Icons.event_outlined),
-            label: Text(
-              l10n.caloriesCalculatorOnboardingChooseFutureDateAction,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
 class _GoalStartCardShell extends StatelessWidget {
   const _GoalStartCardShell({
     required this.title,
@@ -416,23 +202,18 @@ class _GoalStartCardShell extends StatelessWidget {
 }
 
 class _GoalStartCardHint extends StatelessWidget {
-  const _GoalStartCardHint({
-    required this.text,
-    this.isBody = false,
-  });
+  const _GoalStartCardHint({required this.text});
 
   final String text;
-  final bool isBody;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final baseStyle = isBody
-        ? Theme.of(context).textTheme.bodyMedium
-        : Theme.of(context).textTheme.bodySmall;
     return Text(
       text,
-      style: baseStyle?.copyWith(color: colors.onSurfaceVariant),
+      style: Theme.of(
+        context,
+      ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
     );
   }
 }

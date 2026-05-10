@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_goal_calculator_results.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Final onboarding step that saves the calculated goal.
@@ -8,6 +10,7 @@ class Step7Ready extends StatelessWidget {
   const Step7Ready({
     required this.onFinish,
     required this.isSaving,
+    required this.calculation,
     super.key,
   });
 
@@ -16,6 +19,9 @@ class Step7Ready extends StatelessWidget {
 
   /// Whether save is in progress.
   final bool isSaving;
+
+  /// Calculation preview shown before saving.
+  final CalorieGoalCalculationResult? calculation;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +69,25 @@ class Step7Ready extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 60),
+          if (calculation != null) ...[
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: CalorieGoalCalculatorResultsCard(
+                calculation: calculation!,
+              ),
+            ),
+            if (calculation!.wasClampedToMinimum) ...[
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: CalorieGoalCalculatorWarningCard(
+                  message: l10n.caloriesCalculatorMinimumGoalWarning(1200),
+                ),
+              ),
+            ],
+          ],
+          const SizedBox(height: AppSpacing.xxl),
           SizedBox(
             width: double.infinity,
             height: 56,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/presentation/widgets/onboarding/steps/onboarding_labeled_text_field.dart';
+import 'package:yamt/features/calories/presentation/widgets/onboarding/steps/onboarding_step_content.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -29,182 +31,75 @@ class Step1PersonalInfo extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(
-        top: 80,
-        bottom: 120,
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            l10n.onboardingPersonalInfoTitle,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            l10n.onboardingPersonalInfoSubtitle,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
+    return OnboardingStepContent(
+      title: l10n.onboardingPersonalInfoTitle,
+      subtitle: l10n.onboardingPersonalInfoSubtitle,
+      children: [
+        const SizedBox(height: AppSpacing.xl),
 
-          // Gender
-          Text(
-            l10n.caloriesCalculatorSexLabel,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: showErrors && state.sexError != null
-                  ? theme.colorScheme.error
-                  : Theme.of(context).colorScheme.onSurface,
+        // Gender
+        Text(
+          l10n.caloriesCalculatorSexLabel,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: showErrors && state.sexError != null
+                ? theme.colorScheme.error
+                : Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Row(
+          children: [
+            _buildGenderButton(
+              context: context,
+              label: l10n.caloriesCalculatorSexFemale,
+              isSelected: state.sex == CalorieCalculatorSex.female,
+              hasError: showErrors && state.sexError != null,
+              onTap: () => notifier.updateSex(CalorieCalculatorSex.female),
             ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              _buildGenderButton(
-                context: context,
-                label: l10n.caloriesCalculatorSexFemale,
-                isSelected: state.sex == CalorieCalculatorSex.female,
-                hasError: showErrors && state.sexError != null,
-                onTap: () => notifier.updateSex(CalorieCalculatorSex.female),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _buildGenderButton(
-                context: context,
-                label: l10n.caloriesCalculatorSexMale,
-                isSelected: state.sex == CalorieCalculatorSex.male,
-                hasError: showErrors && state.sexError != null,
-                onTap: () => notifier.updateSex(CalorieCalculatorSex.male),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
+            const SizedBox(width: AppSpacing.sm),
+            _buildGenderButton(
+              context: context,
+              label: l10n.caloriesCalculatorSexMale,
+              isSelected: state.sex == CalorieCalculatorSex.male,
+              hasError: showErrors && state.sexError != null,
+              onTap: () => notifier.updateSex(CalorieCalculatorSex.male),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
 
-          // Age and Height
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.caloriesCalculatorAgeLabel,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    TextFormField(
-                      initialValue: state.ageYearsText,
-                      onChanged: notifier.updateAgeYears,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: l10n.caloriesCalculatorAgeLabel,
-                        errorText: _getAgeError(state.ageError, l10n),
-                        filled: true,
-                        fillColor: Theme.of(context).canvasColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHigh,
-                            width: 2,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainer,
-                            width: 2,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: theme.colorScheme.primary,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+        // Age and Height
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: OnboardingLabeledTextField(
+                label: l10n.caloriesCalculatorAgeLabel,
+                hintText: l10n.caloriesCalculatorAgeLabel,
+                initialValue: state.ageYearsText,
+                keyboardType: TextInputType.number,
+                errorText: _getAgeError(state.ageError, l10n),
+                onChanged: notifier.updateAgeYears,
               ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.caloriesCalculatorHeightLabel,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    TextFormField(
-                      initialValue: state.heightCmText,
-                      onChanged: notifier.updateHeightCm,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'cm',
-                        errorText: _getHeightError(state.heightError, l10n),
-                        filled: true,
-                        fillColor: Theme.of(context).canvasColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHigh,
-                            width: 2,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainer,
-                            width: 2,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: theme.colorScheme.primary,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: OnboardingLabeledTextField(
+                label: l10n.caloriesCalculatorHeightLabel,
+                hintText: 'cm',
+                initialValue: state.heightCmText,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
                 ),
+                errorText: _getHeightError(state.heightError, l10n),
+                onChanged: notifier.updateHeightCm,
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
