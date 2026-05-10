@@ -8,6 +8,8 @@ import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_models.dart';
 import 'package:yamt/features/scanner/provider/'
     'inventory_receipt_manual_product_controller.dart';
 

@@ -17,7 +17,7 @@ import 'package:yamt/features/product_search/domain/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
 import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_controller.dart';
+    'manual_product_search_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 final TextInputFormatter manualProductSingleDecimalInputFormatter =

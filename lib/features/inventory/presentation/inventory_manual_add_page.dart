@@ -30,9 +30,9 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_manual_add_product_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page.dart';
+    'manual_product_search_page_types.dart';
 import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_controller.dart';
+    'manual_product_search_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualAddItemId = Uuid();

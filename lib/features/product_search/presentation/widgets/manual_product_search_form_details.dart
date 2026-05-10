@@ -12,7 +12,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form_components.dart';
 import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_controller.dart';
+    'manual_product_search_models.dart'
+    as manual_product_models;
 import 'package:yamt/l10n/app_localizations.dart';
 
 class ManualProductDetailsForm extends StatefulWidget {
@@ -100,12 +101,14 @@ class ManualProductDetailsForm extends StatefulWidget {
   final bool isAddingOptionalNutrition;
   final String optionalNutritionValueText;
   final InventoryAmountUnit optionalNutritionUnit;
-  final InventoryReceiptOptionalNutritionType? optionalNutritionType;
-  final List<InventoryReceiptOptionalNutritionType>
+  final manual_product_models.InventoryReceiptOptionalNutritionType?
+  optionalNutritionType;
+  final List<manual_product_models.InventoryReceiptOptionalNutritionType>
   availableOptionalNutritionTypes;
   final String? errorText;
   final bool showActionSelector;
-  final InventoryReceiptManualProductAction selectedAction;
+  final manual_product_models.InventoryReceiptManualProductAction
+  selectedAction;
   final bool canSave;
   final bool isRunningNutritionOcr;
   final ValueChanged<OffProductSearchResult> onSearchResultSelected;
@@ -129,11 +132,14 @@ class ManualProductDetailsForm extends StatefulWidget {
   final VoidCallback onStartAddingOptionalNutrition;
   final ValueChanged<String> onOptionalNutritionValueChanged;
   final ValueChanged<InventoryAmountUnit> onOptionalNutritionUnitChanged;
-  final ValueChanged<InventoryReceiptOptionalNutritionType>
+  final ValueChanged<
+    manual_product_models.InventoryReceiptOptionalNutritionType
+  >
   onOptionalNutritionTypeChanged;
   final VoidCallback onApplyOptionalNutrition;
   final VoidCallback onCancelOptionalNutrition;
-  final ValueChanged<InventoryReceiptManualProductAction>? onActionChanged;
+  final ValueChanged<manual_product_models.InventoryReceiptManualProductAction>?
+  onActionChanged;
   final VoidCallback onCancel;
   final VoidCallback onSave;
 
@@ -256,7 +262,7 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
   }
 
   void _onOptionalNutritionTypeChanged(
-    InventoryReceiptOptionalNutritionType? value,
+    manual_product_models.InventoryReceiptOptionalNutritionType? value,
   ) {
     if (_isPatchingFormValues || value == null) {
       return;

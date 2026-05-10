@@ -9,7 +9,8 @@ import 'package:yamt/features/product_search/presentation/widgets/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form_details.dart';
 import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_controller.dart';
+    'manual_product_search_models.dart'
+    as manual_product_models;
 
 export 'manual_product_search_form_components.dart'
     show InventoryReceiptManualProductPreviewData;
@@ -255,10 +256,11 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final InventoryAmountUnit optionalNutritionUnit;
 
   /// The optional nutrition type.
-  final InventoryReceiptOptionalNutritionType? optionalNutritionType;
+  final manual_product_models.InventoryReceiptOptionalNutritionType?
+  optionalNutritionType;
 
   /// Documented member.
-  final List<InventoryReceiptOptionalNutritionType>
+  final List<manual_product_models.InventoryReceiptOptionalNutritionType>
   availableOptionalNutritionTypes;
 
   /// The preview.
@@ -352,7 +354,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final ValueChanged<InventoryAmountUnit> onOptionalNutritionUnitChanged;
 
   /// Documented member.
-  final ValueChanged<InventoryReceiptOptionalNutritionType>
+  final ValueChanged<
+    manual_product_models.InventoryReceiptOptionalNutritionType
+  >
   onOptionalNutritionTypeChanged;
 
   /// The on apply optional nutrition.
@@ -362,10 +366,12 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final VoidCallback onCancelOptionalNutrition;
 
   /// The selected action.
-  final InventoryReceiptManualProductAction selectedAction;
+  final manual_product_models.InventoryReceiptManualProductAction
+  selectedAction;
 
   /// The on action changed.
-  final ValueChanged<InventoryReceiptManualProductAction>? onActionChanged;
+  final ValueChanged<manual_product_models.InventoryReceiptManualProductAction>?
+  onActionChanged;
 
   /// The on cancel.
   final VoidCallback onCancel;

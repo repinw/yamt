@@ -15,6 +15,8 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_types.dart';
 
 const _swapGlobalFoodIdPrefix = 'global-food-';
 
@@ -72,11 +74,12 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   }
 
   return switch (selection.kind) {
-    ReceiptCandidatePickerSelectionKind.candidate => _candidateRequest(
-      draft: draft,
-      candidateId: selection.candidateId,
-      sourceItem: item,
-    ),
+    ReceiptCandidatePickerSelectionKind.candidate =>
+      buildInventoryItemCandidateSwapRequestFromCandidate(
+        draft: draft,
+        candidateId: selection.candidateId,
+        sourceItem: item,
+      ),
     ReceiptCandidatePickerSelectionKind.manualEntry => _manualEntryRequest(
       context: context,
       item: item,
@@ -85,7 +88,9 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   };
 }
 
-InventoryItemCandidateSwapRequest? _candidateRequest({
+/// Builds a swap request from a selected candidate id.
+InventoryItemCandidateSwapRequest?
+buildInventoryItemCandidateSwapRequestFromCandidate({
   required ReceiptReviewItemDraft draft,
   required String? candidateId,
   required InventoryItem sourceItem,
@@ -129,10 +134,15 @@ Future<InventoryItemCandidateSwapRequest?> _manualEntryRequest({
     return null;
   }
 
-  return _requestFromManualResult(result: result, matcher: matcher);
+  return buildInventoryItemCandidateSwapRequestFromManualResult(
+    result: result,
+    matcher: matcher,
+  );
 }
 
-InventoryItemCandidateSwapRequest _requestFromManualResult({
+/// Builds a swap request from the manual product search result.
+InventoryItemCandidateSwapRequest
+buildInventoryItemCandidateSwapRequestFromManualResult({
   required InventoryReceiptManualProductResult result,
   required GlobalFoodItemMatcher matcher,
 }) {
