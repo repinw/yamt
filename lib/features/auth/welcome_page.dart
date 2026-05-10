@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
@@ -8,6 +7,7 @@ import 'package:yamt/features/auth/provider/guest_auth_controller.dart';
 import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
 import 'package:yamt/features/auth/widgets/welcome_page_desktop_layout.dart';
 import 'package:yamt/features/auth/widgets/welcome_page_mobile_layout.dart';
+import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _AuthFormMode { login, register }

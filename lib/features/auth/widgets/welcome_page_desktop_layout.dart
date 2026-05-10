@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/widgets/auth_card.dart';
 import 'package:yamt/features/auth/widgets/auth_footer_prompt.dart';
 import 'package:yamt/features/auth/widgets/auth_header.dart';
 import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
 import 'package:yamt/features/auth/widgets/welcome_page_editorial_aside.dart';
+import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Wide auth welcome layout.

@@ -7,7 +7,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/features/diary/domain/diary_date_utils.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';

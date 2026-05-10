@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/features/diary/domain/diary_date_utils.dart';
 
 void main() {
   setUpAll(() async {

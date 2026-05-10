@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/features/diary/domain/diary_date_utils.dart';
 
 /// Single day button used by the diary calendar strip.
 class DiaryCalendarDayButton extends StatelessWidget {

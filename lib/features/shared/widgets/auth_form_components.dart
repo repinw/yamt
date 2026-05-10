@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/auth/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 String _resolveValidationLocaleName(BuildContext context) {

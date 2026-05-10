@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/provider/guest_auth_controller.dart';
@@ -12,6 +11,7 @@ import 'package:yamt/features/auth/widgets/auth_ghost_text_button.dart';
 import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
 import 'package:yamt/features/auth/widgets/login_form.dart';
 import 'package:yamt/features/auth/widgets/register_form.dart';
+import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Auth form card with email, social, and guest actions.

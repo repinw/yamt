@@ -12,7 +12,7 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/features/diary/domain/diary_date_utils.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';

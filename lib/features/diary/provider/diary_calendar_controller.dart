@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_date_utils.dart';
+import 'package:yamt/features/diary/domain/diary_date_utils.dart';
 
 /// Provides the current clock for diary calendar state.
 final diaryCalendarNowProvider = Provider<DateTime Function()>((ref) {
