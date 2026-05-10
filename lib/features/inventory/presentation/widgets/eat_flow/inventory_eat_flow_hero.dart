@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_hero_image.dart';
 
 /// Shared hero for inventory eat flows.

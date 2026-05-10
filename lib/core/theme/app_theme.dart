@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_layout_tokens.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Centralized app themes generated from a single seed color.
@@ -54,46 +54,46 @@ abstract final class AppTheme {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
+          borderRadius: BorderRadius.circular(AppThemeRadius.lg),
           side: BorderSide(color: cardBorderColor),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
+            horizontal: AppThemeSpacing.xl,
+            vertical: AppThemeSpacing.md,
           ),
           textStyle: textTheme.labelLarge,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.xl),
+            borderRadius: BorderRadius.circular(AppThemeRadius.xl),
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
+            horizontal: AppThemeSpacing.xl,
+            vertical: AppThemeSpacing.md,
           ),
           textStyle: textTheme.labelLarge,
           side: BorderSide(
             color: AppInventoryEditorialSurfaces.ghostBorder(colorScheme),
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.xl),
+            borderRadius: BorderRadius.circular(AppThemeRadius.xl),
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(AppThemeRadius.md),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(AppThemeRadius.md),
         ),
       ),
     );

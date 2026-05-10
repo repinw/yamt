@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';

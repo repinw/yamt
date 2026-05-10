@@ -1,4 +1,4 @@
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Defines inventory item row constants.
 abstract final class InventoryItemRowConstants {

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

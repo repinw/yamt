@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 
 /// Displays one macro progress card in the summary footer.

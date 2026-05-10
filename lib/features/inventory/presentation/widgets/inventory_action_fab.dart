@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/inventory/presentation/inventory_action_sheet_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_action_sheet.dart';

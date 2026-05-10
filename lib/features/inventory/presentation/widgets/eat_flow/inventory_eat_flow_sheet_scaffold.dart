@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_footer.dart';
 
 /// Shared bottom sheet chrome for inventory eat flows.

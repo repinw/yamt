@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -42,8 +43,8 @@ part 'inventory_item_eat_sheet_display.dart';
 part 'inventory_item_eat_sheet_hero.dart';
 part 'inventory_item_eat_sheet_input_sections.dart';
 part 'inventory_item_eat_sheet_models.dart';
-part 'inventory_item_new_portion_dialog.dart';
 part 'inventory_item_eat_sheet_view.dart';
+part 'inventory_item_new_portion_dialog.dart';
 
 /// Show inventory item eat sheet.
 Future<InventoryItemEatRequest?> showInventoryItemEatSheet({

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
 

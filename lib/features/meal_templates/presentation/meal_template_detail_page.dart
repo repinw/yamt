@@ -6,10 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/application/'

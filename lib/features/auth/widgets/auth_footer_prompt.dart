@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Footer prompt that switches between login and registration.
 class AuthFooterPrompt extends StatelessWidget {

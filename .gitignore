@@ -68,3 +68,6 @@ IDEAS.md
 # Golden test failure artifacts
 test/**/failures/
 .agents/skills/jscpd/*
+
+# LayerLens generated dependency diagrams
+**/DEPS.md
