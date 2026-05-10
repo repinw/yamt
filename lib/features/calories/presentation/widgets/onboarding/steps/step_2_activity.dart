@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
+import 'package:yamt/features/calories/presentation/widgets/onboarding/steps/onboarding_selectable_card.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -61,87 +62,70 @@ class Step2Activity extends StatelessWidget {
                 final option = CalorieActivityLevelOption.values[index];
                 final isSelected = state.activityLevelOption == option;
 
-                return GestureDetector(
+                return OnboardingSelectableCard(
+                  isSelected: isSelected,
                   onTap: () => notifier.updateActivityLevel(option),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? theme.colorScheme.primary.withValues(alpha: 0.05)
-                          : theme.colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelected
-                            ? theme.colorScheme.primary
-                            : Theme.of(context).colorScheme.surfaceContainer,
-                        width: 2,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _activityLevelTitle(l10n, option),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: isSelected
-                                      ? theme.colorScheme.primary
-                                      : Theme.of(context).colorScheme.onSurface,
-                                ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _activityLevelTitle(l10n, option),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? theme.colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _activityLevelDescription(l10n, option),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isSelected
-                                      ? theme.colorScheme.primary.withValues(
-                                          alpha: 0.8,
-                                        )
-                                      : Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected
-                                  ? theme.colorScheme.primary
-                                  : Theme.of(
-                                      context,
-                                    ).colorScheme.surfaceContainerHigh,
-                              width: 2,
                             ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _activityLevelDescription(l10n, option),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isSelected
+                                    ? theme.colorScheme.primary.withValues(
+                                        alpha: 0.8,
+                                      )
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
                             color: isSelected
                                 ? theme.colorScheme.primary
-                                : Colors.transparent,
-                          ),
-                          alignment: Alignment.center,
-                          child: isSelected
-                              ? Icon(
-                                  Icons.circle,
-                                  size: 10,
-                                  color: Theme.of(
+                                : Theme.of(
                                     context,
-                                  ).colorScheme.onPrimary,
-                                )
-                              : null,
+                                  ).colorScheme.surfaceContainerHigh,
+                            width: 2,
+                          ),
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : Colors.transparent,
                         ),
-                      ],
-                    ),
+                        alignment: Alignment.center,
+                        child: isSelected
+                            ? Icon(
+                                Icons.circle,
+                                size: 10,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              )
+                            : null,
+                      ),
+                    ],
                   ),
                 );
               },

@@ -2,29 +2,7 @@ part of 'calorie_goal_calculator_flow.dart';
 
 extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
   bool _canSaveResults(CalorieGoalCalculatorFormState state) {
-    return state.canSave && !state.isSaving && _hasOnboardingStartChoice;
-  }
-
-  Widget _buildOnboardingScaffold(BuildContext context, AppLocalizations l10n) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
-            child: Padding(
-              padding: AppInsets.page,
-              child: SingleChildScrollView(
-                child: _buildCard(
-                  context: context,
-                  l10n: l10n,
-                  showDescription: true,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+    return state.canSave && !state.isSaving;
   }
 
   Widget _buildBottomSheet(BuildContext context, AppLocalizations l10n) {
@@ -37,7 +15,7 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
           top: AppSpacing.lg,
           bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xxxl,
         ),
-        child: _buildCard(context: context, l10n: l10n, showDescription: false),
+        child: _buildCard(context: context, l10n: l10n),
       ),
     );
   }
@@ -45,7 +23,6 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
   Widget _buildCard({
     required BuildContext context,
     required AppLocalizations l10n,
-    required bool showDescription,
   }) {
     final colors = Theme.of(context).colorScheme;
     final formProvider = calorieGoalCalculatorFormControllerProvider(
@@ -69,22 +46,11 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.isOnboarding
-                    ? l10n.caloriesCalculatorOnboardingTitle
-                    : l10n.caloriesCalculatorSheetTitle,
+                l10n.caloriesCalculatorSheetTitle,
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
               ),
-              if (showDescription) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  l10n.caloriesCalculatorOnboardingSubtitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ],
               const SizedBox(height: AppSpacing.md),
               Text(
                 l10n.caloriesCalculatorStepProgress(
@@ -101,7 +67,7 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
                 child: _StepPanel(
-                  key: ValueKey<_CalculatorOnboardingStep>(currentStep),
+                  key: ValueKey<_CalculatorStep>(currentStep),
                   title: _titleForStep(currentStep, l10n),
                   child: _buildStepContent(
                     context: context,
@@ -124,7 +90,7 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: currentStep == _CalculatorOnboardingStep.results
+                    child: currentStep == _CalculatorStep.results
                         ? FilledButton(
                             key: CalorieGoalCalculatorSheetKeys.saveButton,
                             onPressed: _canSaveResults(state) ? _save : null,
@@ -158,9 +124,9 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
     required BuildContext context,
     required AppLocalizations l10n,
     required CalorieGoalCalculatorFormState state,
-    required _CalculatorOnboardingStep currentStep,
+    required _CalculatorStep currentStep,
   }) {
-    if (currentStep != _CalculatorOnboardingStep.sex) {
+    if (currentStep != _CalculatorStep.sex) {
       return TextButton(
         key: CalorieGoalCalculatorSheetKeys.backButton,
         onPressed: state.isSaving
@@ -168,10 +134,6 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
             : () => _goToPreviousStep(state.goalMode),
         child: Text(l10n.caloriesCalculatorBackAction),
       );
-    }
-
-    if (widget.isOnboarding) {
-      return const SizedBox.shrink();
     }
 
     return TextButton(

@@ -11,96 +11,38 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/onboarding/'
     'calorie_onboarding_wizard.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_goal_calculator_form_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../support/fake_calories_repositories.dart';
 
 void main() {
-  testWidgets('new onboarding seeds placeholder entries for high estimate', (
+  testWidgets('seeds placeholder entries for start-now estimate high', (
     tester,
   ) async {
-    final settingsRepository = FakeCalorieSettingsRepository();
-    final logRepository = FakeCalorieLogRepository();
-    final runStateRepository = _FakeBurnWeekRunStateRepository(
-      const BurnWeekRunState.initial(),
-    );
-    addTearDown(settingsRepository.dispose);
-    addTearDown(logRepository.dispose);
+    final harness = await _pumpOnboarding(tester);
+    await _goToStartDateStep(tester);
 
-    final router = GoRouter(
-      initialLocation: '/',
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => const Scaffold(
-            body: SizedBox.shrink(),
-          ),
-        ),
-        GoRoute(
-          path: '/onboarding',
-          builder: (context, state) => const CalorieOnboardingWizard(
-            initialSettings: CalorieGoalSettings.empty(),
-          ),
-        ),
-      ],
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartNowOption),
     );
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(
-            settingsRepository,
-          ),
-          calorieLogRepositoryProvider.overrideWithValue(logRepository),
-          burnWeekRunStateRepositoryProvider.overrideWithValue(
-            runStateRepository,
-          ),
-        ],
-        child: MaterialApp.router(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          routerConfig: router,
-        ),
-      ),
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingEstimateOption),
     );
-    unawaited(router.push('/onboarding'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.catchUpHighOption),
+    );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text("Let's start"));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Female'));
-    await tester.enterText(find.byType(TextFormField).at(0), '30');
-    await tester.enterText(find.byType(TextFormField).at(1), '170');
-    await _tapNext(tester);
-
-    await _tapNext(tester);
-
-    await tester.enterText(find.byType(TextFormField).at(0), '70');
-    await tester.enterText(find.byType(TextFormField).at(1), '80');
-    await _tapNext(tester);
-
-    await _tapNext(tester);
-    await _tapNext(tester);
-
-    await tester.tap(find.text('I will estimate what I ate so far'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('A lot'));
-    await tester.pumpAndSettle();
-
-    final formProvider = calorieGoalCalculatorFormControllerProvider(
-      null,
-      useEmptyDefaults: true,
-    );
-    final context = tester.element(find.byType(CalorieOnboardingWizard));
-    final container = ProviderScope.containerOf(context, listen: false);
-    final formState = container.read(formProvider);
+    final formState = _readFormState(tester);
     expect(
       formState.onboardingTodayTracking,
       CalorieGoalOnboardingTodayTracking.estimate,
@@ -112,18 +54,23 @@ void main() {
 
     await _tapNext(tester);
 
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.resultsCard),
+      findsOneWidget,
+    );
+
     await tester.tap(find.text("Let's go"));
     await tester.pumpAndSettle();
 
-    expect(runStateRepository.state.currentWeekStartDayKey, isNotNull);
+    expect(harness.runStateRepository.state.currentWeekStartDayKey, isNotNull);
     expect(
-      runStateRepository.state.currentWeekStartDayKey,
+      harness.runStateRepository.state.currentWeekStartDayKey,
       diaryDayKey(normalizeDiaryDay(DateTime.now())),
     );
     // heartCreditKcal is no longer used for onboarding catch-up; instead
     // the user gets real "estimated meal" placeholder entries in the diary.
-    expect(runStateRepository.state.heartCreditKcal, 0);
-    final placeholders = logRepository.entries
+    expect(harness.runStateRepository.state.heartCreditKcal, 0);
+    final placeholders = harness.logRepository.entries
         .where((e) => e.name == 'Estimated meal')
         .toList();
     // Depending on the time-of-day at which the test runs, there may be
@@ -133,6 +80,230 @@ void main() {
       expect(p.totalKcal, greaterThan(0));
     }
   });
+
+  testWidgets('saves start-now exact without catch-up estimate', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboarding(tester);
+    await _goToStartDateStep(tester);
+
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartNowOption),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingExactOption),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.catchUpHighOption),
+      findsNothing,
+    );
+
+    await _tapNext(tester);
+    await tester.tap(find.text("Let's go"));
+    await tester.pumpAndSettle();
+
+    final today = normalizeDiaryDay(DateTime.now());
+    final settings = await harness.settingsRepository.readSettings();
+    final goalEntry = settings.goalHistory.single;
+    expect(goalEntry.effectiveDate, today);
+    expect(goalEntry.effectiveCountingStartDate, today);
+    expect(harness.runStateRepository.state.currentWeekStartDayKey, isNotNull);
+    expect(harness.logRepository.entries, isEmpty);
+  });
+
+  testWidgets('saves start-later future date selected through picker', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboarding(tester);
+    await _goToStartDateStep(tester);
+
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartLaterOption),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartChangeButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+    await tester.tap(find.text('OK').last);
+    await tester.pumpAndSettle();
+
+    await _tapNext(tester);
+    await tester.tap(find.text("Let's go"));
+    await tester.pumpAndSettle();
+
+    final tomorrow = DateUtils.dateOnly(
+      DateTime.now().add(const Duration(days: 1)),
+    );
+    final settings = await harness.settingsRepository.readSettings();
+    expect(settings.nextGoalStartAfterDay(DateTime.now()), tomorrow);
+    expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);
+    expect(harness.runStateRepository.state.runWeekNumber, 1);
+    expect(harness.logRepository.entries, isEmpty);
+  });
+
+  testWidgets('blocks personal info step and shows age and height errors', (
+    tester,
+  ) async {
+    await _pumpOnboarding(tester);
+    await _startWizard(tester);
+
+    await tester.tap(find.text('Female'));
+    await tester.pumpAndSettle();
+    await _tapNext(tester);
+
+    expect(find.text('Tell us something about yourself.'), findsOneWidget);
+    expect(find.text('Please enter your age.'), findsOneWidget);
+    expect(find.text('Please enter your height.'), findsOneWidget);
+  });
+
+  testWidgets('blocks goal weight step when target weight is empty', (
+    tester,
+  ) async {
+    await _pumpOnboarding(tester);
+    await _startWizard(tester);
+    await _completePersonalInfo(tester);
+    await _tapNext(tester);
+
+    await tester.enterText(find.byType(TextFormField).at(0), '70');
+    await _tapNext(tester);
+
+    expect(find.text('Your Goal'), findsOneWidget);
+    expect(find.text('Please enter your weight.'), findsOneWidget);
+  });
+
+  testWidgets('shows minimum goal warning on ready step', (tester) async {
+    await _pumpOnboarding(tester);
+    await _goToStartDateStep(
+      tester,
+      age: '70',
+      height: '150',
+      weight: '50',
+      targetWeight: '45',
+    );
+
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartLaterOption),
+    );
+    await tester.pumpAndSettle();
+    await _tapNext(tester);
+
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.warningCard),
+      findsOneWidget,
+    );
+  });
+}
+
+Future<_OnboardingHarness> _pumpOnboarding(
+  WidgetTester tester, {
+  CalorieGoalSettings initialSettings = const CalorieGoalSettings.empty(),
+  BurnWeekRunState initialRunState = const BurnWeekRunState.initial(),
+}) async {
+  final settingsRepository = FakeCalorieSettingsRepository(
+    initialSettings: initialSettings,
+  );
+  final logRepository = FakeCalorieLogRepository();
+  final runStateRepository = _FakeBurnWeekRunStateRepository(initialRunState);
+  addTearDown(settingsRepository.dispose);
+  addTearDown(logRepository.dispose);
+
+  final router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const Scaffold(
+          body: SizedBox.shrink(),
+        ),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => CalorieOnboardingWizard(
+          initialSettings: initialSettings,
+        ),
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        burnWeekRunStateRepositoryProvider.overrideWithValue(
+          runStateRepository,
+        ),
+      ],
+      child: MaterialApp.router(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    ),
+  );
+  unawaited(router.push('/onboarding'));
+  await tester.pumpAndSettle();
+
+  return _OnboardingHarness(
+    settingsRepository: settingsRepository,
+    logRepository: logRepository,
+    runStateRepository: runStateRepository,
+  );
+}
+
+Future<void> _startWizard(WidgetTester tester) async {
+  await tester.tap(find.text("Let's start"));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _completePersonalInfo(
+  WidgetTester tester, {
+  String age = '30',
+  String height = '170',
+}) async {
+  await tester.tap(find.text('Female'));
+  await tester.enterText(find.byType(TextFormField).at(0), age);
+  await tester.enterText(find.byType(TextFormField).at(1), height);
+  await _tapNext(tester);
+}
+
+Future<void> _goToStartDateStep(
+  WidgetTester tester, {
+  String age = '30',
+  String height = '170',
+  String weight = '70',
+  String targetWeight = '80',
+}) async {
+  await _startWizard(tester);
+  await _completePersonalInfo(tester, age: age, height: height);
+  await _tapNext(tester);
+
+  await tester.enterText(find.byType(TextFormField).at(0), weight);
+  await tester.enterText(find.byType(TextFormField).at(1), targetWeight);
+  await _tapNext(tester);
+
+  await _tapNext(tester);
+  await _tapNext(tester);
+}
+
+CalorieGoalCalculatorFormState _readFormState(WidgetTester tester) {
+  final formProvider = calorieGoalCalculatorFormControllerProvider(
+    null,
+    useEmptyDefaults: true,
+  );
+  final context = tester.element(find.byType(CalorieOnboardingWizard));
+  final container = ProviderScope.containerOf(context, listen: false);
+  return container.read(formProvider);
 }
 
 Future<void> _tapNext(WidgetTester tester) async {
@@ -142,6 +313,18 @@ Future<void> _tapNext(WidgetTester tester) async {
   await tester.ensureVisible(button);
   await tester.tap(button);
   await tester.pumpAndSettle();
+}
+
+class _OnboardingHarness {
+  _OnboardingHarness({
+    required this.settingsRepository,
+    required this.logRepository,
+    required this.runStateRepository,
+  });
+
+  final FakeCalorieSettingsRepository settingsRepository;
+  final FakeCalorieLogRepository logRepository;
+  final _FakeBurnWeekRunStateRepository runStateRepository;
 }
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {

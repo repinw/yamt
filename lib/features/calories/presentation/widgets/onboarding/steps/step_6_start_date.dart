@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/presentation/widgets/onboarding/steps/onboarding_selectable_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/onboarding/steps/onboarding_step_content.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Onboarding step for choosing goal start date.
@@ -10,20 +14,29 @@ class Step6StartDate extends StatelessWidget {
     required this.startNow,
     required this.todayMode,
     required this.catchUpEstimate,
+    required this.futureGoalStartDate,
+    required this.showErrors,
     required this.onStartNowChanged,
     required this.onTodayModeChanged,
     required this.onCatchUpEstimateChanged,
+    required this.onFutureGoalStartChangeRequested,
     super.key,
   });
 
   /// Whether the user starts tracking today.
-  final bool startNow;
+  final bool? startNow;
 
   /// How today should be handled when starting now.
-  final CalorieGoalOnboardingTodayTracking todayMode;
+  final CalorieGoalOnboardingTodayTracking? todayMode;
 
   /// Selected rough estimate for eaten calories today.
   final CalorieGoalOnboardingCatchUpEstimate catchUpEstimate;
+
+  /// Selected future goal start date.
+  final DateTime futureGoalStartDate;
+
+  /// Whether validation errors should be shown.
+  final bool showErrors;
 
   /// Called when start-now choice changes.
   final ValueChanged<bool> onStartNowChanged;
@@ -35,57 +48,84 @@ class Step6StartDate extends StatelessWidget {
   final ValueChanged<CalorieGoalOnboardingCatchUpEstimate>
   onCatchUpEstimateChanged;
 
+  /// Called when the future start date should be changed.
+  final VoidCallback onFutureGoalStartChangeRequested;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final dateFormat = DateFormat.yMMMd(locale);
     final catchUpLowLabel = l10n.caloriesCalculatorOnboardingCatchUpLowAction;
     final catchUpNormalLabel =
         l10n.caloriesCalculatorOnboardingCatchUpNormalAction;
     final catchUpHighLabel = l10n.caloriesCalculatorOnboardingCatchUpHighAction;
+    final chooseFutureDateLabel =
+        l10n.caloriesCalculatorOnboardingChooseFutureDateAction;
+    final startNowSelected = startNow == true;
+    final startLaterSelected = startNow == false;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(
-        top: 80,
-        bottom: 120,
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            l10n.onboardingStartDateTitle,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            l10n.onboardingStartDateSubtitle,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          _buildOption(
-            context: context,
-            title: l10n.onboardingStartDateNowLabel,
-            description: l10n.onboardingStartDateNowDesc,
-            icon: Icons.today,
-            isSelected: startNow,
-            onTap: () => onStartNowChanged(true),
-            child: startNow
-                ? Padding(
-                    padding: const EdgeInsets.only(top: AppSpacing.md),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+    return OnboardingStepContent(
+      key: CalorieGoalCalculatorSheetKeys.goalStartCard,
+      title: l10n.onboardingStartDateTitle,
+      subtitle: l10n.onboardingStartDateSubtitle,
+      children: [
+        const SizedBox(height: AppSpacing.xl),
+        _buildOption(
+          key: CalorieGoalCalculatorSheetKeys.goalStartNowOption,
+          context: context,
+          title: l10n.onboardingStartDateNowLabel,
+          description: l10n.onboardingStartDateNowDesc,
+          icon: Icons.today,
+          isSelected: startNowSelected,
+          onTap: () => onStartNowChanged(true),
+          child: startNowSelected
+              ? Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.onboardingStartDateNowQuestion,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _buildSubOption(
+                        key: CalorieGoalCalculatorSheetKeys
+                            .todayTrackingExactOption,
+                        context: context,
+                        title: l10n.onboardingStartDateNowExact,
+                        isSelected:
+                            todayMode ==
+                            CalorieGoalOnboardingTodayTracking.exact,
+                        onTap: () => onTodayModeChanged(
+                          CalorieGoalOnboardingTodayTracking.exact,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _buildSubOption(
+                        key: CalorieGoalCalculatorSheetKeys
+                            .todayTrackingEstimateOption,
+                        context: context,
+                        title: l10n.onboardingStartDateNowEstimate,
+                        isSelected:
+                            todayMode ==
+                            CalorieGoalOnboardingTodayTracking.estimate,
+                        onTap: () => onTodayModeChanged(
+                          CalorieGoalOnboardingTodayTracking.estimate,
+                        ),
+                      ),
+                      if (todayMode ==
+                          CalorieGoalOnboardingTodayTracking.estimate) ...[
+                        const SizedBox(height: AppSpacing.md),
                         Text(
-                          l10n.onboardingStartDateNowQuestion,
+                          l10n.caloriesCalculatorOnboardingCatchUpHint,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -95,101 +135,126 @@ class Step6StartDate extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: AppSpacing.sm),
-                        _buildSubOption(
-                          context: context,
-                          title: l10n.onboardingStartDateNowExact,
-                          isSelected:
-                              todayMode ==
-                              CalorieGoalOnboardingTodayTracking.exact,
-                          onTap: () => onTodayModeChanged(
-                            CalorieGoalOnboardingTodayTracking.exact,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _buildSubOption(
-                          context: context,
-                          title: l10n.onboardingStartDateNowEstimate,
-                          isSelected:
-                              todayMode ==
-                              CalorieGoalOnboardingTodayTracking.estimate,
-                          onTap: () => onTodayModeChanged(
-                            CalorieGoalOnboardingTodayTracking.estimate,
-                          ),
-                        ),
-                        if (todayMode ==
-                            CalorieGoalOnboardingTodayTracking.estimate) ...[
-                          const SizedBox(height: AppSpacing.md),
-                          Text(
-                            l10n.caloriesCalculatorOnboardingCatchUpHint,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildEstimateButton(
-                                  context: context,
-                                  title: catchUpLowLabel,
-                                  isSelected:
-                                      catchUpEstimate ==
-                                      CalorieGoalOnboardingCatchUpEstimate.low,
-                                  onTap: () => onCatchUpEstimateChanged(
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildEstimateButton(
+                                key: CalorieGoalCalculatorSheetKeys
+                                    .catchUpLowOption,
+                                context: context,
+                                title: catchUpLowLabel,
+                                isSelected:
+                                    catchUpEstimate ==
                                     CalorieGoalOnboardingCatchUpEstimate.low,
-                                  ),
+                                onTap: () => onCatchUpEstimateChanged(
+                                  CalorieGoalOnboardingCatchUpEstimate.low,
                                 ),
                               ),
-                              const SizedBox(width: AppSpacing.sm),
-                              Expanded(
-                                child: _buildEstimateButton(
-                                  context: context,
-                                  title: catchUpNormalLabel,
-                                  isSelected:
-                                      catchUpEstimate ==
-                                      CalorieGoalOnboardingCatchUpEstimate
-                                          .normal,
-                                  onTap: () => onCatchUpEstimateChanged(
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: _buildEstimateButton(
+                                key: CalorieGoalCalculatorSheetKeys
+                                    .catchUpNormalOption,
+                                context: context,
+                                title: catchUpNormalLabel,
+                                isSelected:
+                                    catchUpEstimate ==
                                     CalorieGoalOnboardingCatchUpEstimate.normal,
-                                  ),
+                                onTap: () => onCatchUpEstimateChanged(
+                                  CalorieGoalOnboardingCatchUpEstimate.normal,
                                 ),
                               ),
-                              const SizedBox(width: AppSpacing.sm),
-                              Expanded(
-                                child: _buildEstimateButton(
-                                  context: context,
-                                  title: catchUpHighLabel,
-                                  isSelected:
-                                      catchUpEstimate ==
-                                      CalorieGoalOnboardingCatchUpEstimate.high,
-                                  onTap: () => onCatchUpEstimateChanged(
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: _buildEstimateButton(
+                                key: CalorieGoalCalculatorSheetKeys
+                                    .catchUpHighOption,
+                                context: context,
+                                title: catchUpHighLabel,
+                                isSelected:
+                                    catchUpEstimate ==
                                     CalorieGoalOnboardingCatchUpEstimate.high,
-                                  ),
+                                onTap: () => onCatchUpEstimateChanged(
+                                  CalorieGoalOnboardingCatchUpEstimate.high,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ],
-                    ),
-                  )
-                : null,
-          ),
+                    ],
+                  ),
+                )
+              : null,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _buildOption(
+          key: CalorieGoalCalculatorSheetKeys.goalStartLaterOption,
+          context: context,
+          title: l10n.caloriesCalculatorOnboardingStartLaterAction,
+          description: l10n.onboardingStartDateLaterDesc,
+          icon: Icons.event,
+          isSelected: startLaterSelected,
+          onTap: () => onStartNowChanged(false),
+          child: startLaterSelected
+              ? Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dateFormat.format(futureGoalStartDate),
+                        key: CalorieGoalCalculatorSheetKeys.goalStartValue,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        l10n.caloriesCalculatorOnboardingStartLaterHint,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      OutlinedButton.icon(
+                        key: CalorieGoalCalculatorSheetKeys
+                            .goalStartChangeButton,
+                        onPressed: onFutureGoalStartChangeRequested,
+                        icon: const Icon(Icons.event_outlined),
+                        label: Text(chooseFutureDateLabel),
+                      ),
+                    ],
+                  ),
+                )
+              : null,
+        ),
+        if (showErrors && startNow == null) ...[
           const SizedBox(height: AppSpacing.md),
-          _buildOption(
-            context: context,
-            title: l10n.onboardingStartDateLaterLabel,
-            description: l10n.onboardingStartDateLaterDesc,
-            icon: Icons.event,
-            isSelected: !startNow,
-            onTap: () => onStartNowChanged(false),
+          Text(
+            l10n.caloriesCalculatorOnboardingStartTitle,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.error,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ] else if (showErrors && startNowSelected && todayMode == null) ...[
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            l10n.caloriesCalculatorOnboardingTodayTrackingLabel,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.error,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
-      ),
+      ],
     );
   }
 
@@ -200,78 +265,65 @@ class Step6StartDate extends StatelessWidget {
     required IconData icon,
     required bool isSelected,
     required VoidCallback onTap,
+    Key? key,
     Widget? child,
   }) {
     final theme = Theme.of(context);
-    return GestureDetector(
+    return OnboardingSelectableCard(
+      key: key,
+      isSelected: isSelected,
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary.withValues(alpha: 0.05)
-              : theme.colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary
-                : Theme.of(context).colorScheme.surfaceContainer,
-            width: 2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : Theme.of(context).colorScheme.surfaceContainerLow,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected
+                      ? theme.colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : Theme.of(context).colorScheme.surfaceContainerLow,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isSelected
-                        ? theme.colorScheme.onPrimary
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected
-                              ? theme.colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            ?child,
-          ],
-        ),
+          ?child,
+        ],
       ),
     );
   }
@@ -281,9 +333,11 @@ class Step6StartDate extends StatelessWidget {
     required String title,
     required bool isSelected,
     required VoidCallback onTap,
+    Key? key,
   }) {
     final theme = Theme.of(context);
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -345,9 +399,11 @@ class Step6StartDate extends StatelessWidget {
     required String title,
     required bool isSelected,
     required VoidCallback onTap,
+    Key? key,
   }) {
     final theme = Theme.of(context);
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),

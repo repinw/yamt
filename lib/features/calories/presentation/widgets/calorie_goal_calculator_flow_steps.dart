@@ -1,6 +1,6 @@
 part of 'calorie_goal_calculator_flow.dart';
 
-enum _CalculatorOnboardingStep {
+enum _CalculatorStep {
   sex,
   weight,
   height,
@@ -16,21 +16,21 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
     required BuildContext context,
     required AppLocalizations l10n,
     required CalorieGoalCalculatorFormState state,
-    required _CalculatorOnboardingStep step,
+    required _CalculatorStep step,
   }) {
     final formProvider = calorieGoalCalculatorFormControllerProvider(
       widget.initialSettings.calculatorProfile,
     );
 
     switch (step) {
-      case _CalculatorOnboardingStep.sex:
+      case _CalculatorStep.sex:
         return CalorieGoalCalculatorSexSegmentedControl(
           selectedSex: state.sex ?? CalorieCalculatorSex.male,
           onSelected: (sex) {
             ref.read(formProvider.notifier).updateSex(sex);
           },
         );
-      case _CalculatorOnboardingStep.weight:
+      case _CalculatorStep.weight:
         return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.weightField,
           controller: _weightController,
@@ -39,7 +39,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
           autofocus: true,
           onChanged: ref.read(formProvider.notifier).updateWeightKg,
         );
-      case _CalculatorOnboardingStep.height:
+      case _CalculatorStep.height:
         return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.heightField,
           controller: _heightController,
@@ -48,7 +48,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
           autofocus: true,
           onChanged: ref.read(formProvider.notifier).updateHeightCm,
         );
-      case _CalculatorOnboardingStep.age:
+      case _CalculatorStep.age:
         return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.ageField,
           controller: _ageController,
@@ -58,12 +58,12 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
           autofocus: true,
           onChanged: ref.read(formProvider.notifier).updateAgeYears,
         );
-      case _CalculatorOnboardingStep.activityLevel:
+      case _CalculatorStep.activityLevel:
         return CalorieGoalCalculatorActivityLevelSelector(
           selectedOption: state.activityLevelOption,
           onSelected: ref.read(formProvider.notifier).updateActivityLevel,
         );
-      case _CalculatorOnboardingStep.goalMode:
+      case _CalculatorStep.goalMode:
         return CalorieGoalCalculatorGoalModeSegmentedControl(
           selectedGoalMode: state.goalMode,
           onSelected: (goalMode) {
@@ -71,7 +71,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
             _syncGoalSpeedText(ref.read(formProvider).goalSpeedKgPerWeekText);
           },
         );
-      case _CalculatorOnboardingStep.goalSpeed:
+      case _CalculatorStep.goalSpeed:
         return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
           controller: _goalSpeedController,
@@ -81,7 +81,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
           autofocus: true,
           onChanged: ref.read(formProvider.notifier).updateGoalSpeedKgPerWeek,
         );
-      case _CalculatorOnboardingStep.results:
+      case _CalculatorStep.results:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -94,48 +94,29 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
               ),
             ],
             const SizedBox(height: AppSpacing.md),
-            if (widget.isOnboarding)
-              CalorieGoalCalculatorOnboardingStartCard(
-                goalStartDate: _goalStartDate,
-                todayTrackingChoice: _onboardingTodayTrackingChoice,
-                catchUpEstimate: _onboardingCatchUpEstimate,
-                startNowSelected:
-                    _onboardingGoalStartChoice ==
-                    _OnboardingGoalStartChoice.now,
-                startLaterSelected:
-                    _onboardingGoalStartChoice ==
-                    _OnboardingGoalStartChoice.later,
-                enabled: !state.isSaving,
-                onStartNowSelected: _selectOnboardingStartNow,
-                onStartLaterSelected: _selectOnboardingStartLater,
-                onTodayTrackingSelected: _selectOnboardingTodayTracking,
-                onChangeFutureDateRequested: _pickOnboardingFutureGoalStart,
-                onCatchUpEstimateSelected: _selectOnboardingCatchUpEstimate,
-              )
-            else
-              CalorieGoalCalculatorGoalStartCard(
-                goalStartDate: _goalStartDate,
-                enabled: !state.isSaving,
-                onChangeRequested: _pickGoalStart,
-              ),
+            CalorieGoalCalculatorGoalStartCard(
+              goalStartDate: _goalStartDate,
+              enabled: !state.isSaving,
+              onChangeRequested: _pickGoalStart,
+            ),
           ],
         );
     }
   }
 
   bool _canContinue(
-    _CalculatorOnboardingStep step,
+    _CalculatorStep step,
     CalorieGoalCalculatorFormState state,
   ) {
     return switch (step) {
-      _CalculatorOnboardingStep.sex => true,
-      _CalculatorOnboardingStep.weight => state.weightError == null,
-      _CalculatorOnboardingStep.height => state.heightError == null,
-      _CalculatorOnboardingStep.age => state.ageError == null,
-      _CalculatorOnboardingStep.activityLevel => true,
-      _CalculatorOnboardingStep.goalMode => true,
-      _CalculatorOnboardingStep.goalSpeed => state.goalSpeedError == null,
-      _CalculatorOnboardingStep.results => false,
+      _CalculatorStep.sex => true,
+      _CalculatorStep.weight => state.weightError == null,
+      _CalculatorStep.height => state.heightError == null,
+      _CalculatorStep.age => state.ageError == null,
+      _CalculatorStep.activityLevel => true,
+      _CalculatorStep.goalMode => true,
+      _CalculatorStep.goalSpeed => state.goalSpeedError == null,
+      _CalculatorStep.results => false,
     };
   }
 
@@ -159,41 +140,38 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
     _setCurrentStep(visibleSteps[currentIndex - 1]);
   }
 
-  _CalculatorOnboardingStep _effectiveStep(CalorieGoalMode goalMode) {
-    if (_currentStep == _CalculatorOnboardingStep.goalSpeed &&
+  _CalculatorStep _effectiveStep(CalorieGoalMode goalMode) {
+    if (_currentStep == _CalculatorStep.goalSpeed &&
         goalMode == CalorieGoalMode.maintain) {
-      return _CalculatorOnboardingStep.results;
+      return _CalculatorStep.results;
     }
     return _currentStep;
   }
 
-  List<_CalculatorOnboardingStep> _visibleSteps(CalorieGoalMode goalMode) {
-    return <_CalculatorOnboardingStep>[
-      _CalculatorOnboardingStep.sex,
-      _CalculatorOnboardingStep.weight,
-      _CalculatorOnboardingStep.height,
-      _CalculatorOnboardingStep.age,
-      _CalculatorOnboardingStep.activityLevel,
-      _CalculatorOnboardingStep.goalMode,
-      if (goalMode != CalorieGoalMode.maintain)
-        _CalculatorOnboardingStep.goalSpeed,
-      _CalculatorOnboardingStep.results,
+  List<_CalculatorStep> _visibleSteps(CalorieGoalMode goalMode) {
+    return <_CalculatorStep>[
+      _CalculatorStep.sex,
+      _CalculatorStep.weight,
+      _CalculatorStep.height,
+      _CalculatorStep.age,
+      _CalculatorStep.activityLevel,
+      _CalculatorStep.goalMode,
+      if (goalMode != CalorieGoalMode.maintain) _CalculatorStep.goalSpeed,
+      _CalculatorStep.results,
     ];
   }
 
-  String _titleForStep(_CalculatorOnboardingStep step, AppLocalizations l10n) {
+  String _titleForStep(_CalculatorStep step, AppLocalizations l10n) {
     return switch (step) {
-      _CalculatorOnboardingStep.sex => l10n.caloriesCalculatorSexLabel,
-      _CalculatorOnboardingStep.weight => l10n.caloriesCalculatorWeightLabel,
-      _CalculatorOnboardingStep.height => l10n.caloriesCalculatorHeightLabel,
-      _CalculatorOnboardingStep.age => l10n.caloriesCalculatorAgeLabel,
-      _CalculatorOnboardingStep.activityLevel =>
+      _CalculatorStep.sex => l10n.caloriesCalculatorSexLabel,
+      _CalculatorStep.weight => l10n.caloriesCalculatorWeightLabel,
+      _CalculatorStep.height => l10n.caloriesCalculatorHeightLabel,
+      _CalculatorStep.age => l10n.caloriesCalculatorAgeLabel,
+      _CalculatorStep.activityLevel =>
         l10n.caloriesCalculatorActivityLevelLabel,
-      _CalculatorOnboardingStep.goalMode =>
-        l10n.caloriesCalculatorGoalModeLabel,
-      _CalculatorOnboardingStep.goalSpeed =>
-        l10n.caloriesCalculatorGoalSpeedLabel,
-      _CalculatorOnboardingStep.results => l10n.caloriesCalculatorResultsTitle,
+      _CalculatorStep.goalMode => l10n.caloriesCalculatorGoalModeLabel,
+      _CalculatorStep.goalSpeed => l10n.caloriesCalculatorGoalSpeedLabel,
+      _CalculatorStep.results => l10n.caloriesCalculatorResultsTitle,
     };
   }
 
