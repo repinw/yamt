@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
 /// Divider with centered auth section label.
 class AuthDivider extends StatelessWidget {
@@ -18,7 +18,7 @@ class AuthDivider extends StatelessWidget {
       children: [
         Expanded(
           child: DecoratedBox(
-            decoration: AppAuthSurfaces.divider(colors),
+            decoration: CredentialFormSurfaces.divider(colors),
             child: const SizedBox(height: 1),
           ),
         ),
@@ -33,7 +33,7 @@ class AuthDivider extends StatelessWidget {
         ),
         Expanded(
           child: DecoratedBox(
-            decoration: AppAuthSurfaces.divider(colors),
+            decoration: CredentialFormSurfaces.divider(colors),
             child: const SizedBox(height: 1),
           ),
         ),

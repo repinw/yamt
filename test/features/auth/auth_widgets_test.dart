@@ -12,7 +12,7 @@ import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/auth/widgets/login_form.dart';
 import 'package:yamt/features/auth/widgets/register_form.dart';
-import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../helpers/fake_auth_repository.dart';
@@ -366,7 +366,7 @@ void main() {
       expect(tester.getTopLeft(badgeFinder).dy, greaterThanOrEqualTo(44));
       expect(
         tester.getSize(badgeFinder).height,
-        lessThan(AppAuthUi.heroBadgeSize),
+        lessThan(CredentialFormUi.heroBadgeSize),
       );
 
       await tester.ensureVisible(find.byKey(const Key('auth_guest_button')));

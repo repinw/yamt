@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 String _resolveValidationLocaleName(BuildContext context) {
@@ -367,7 +367,7 @@ class AuthSubmitButton extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [colors.primary, gradientEnd],
         ),
-        borderRadius: BorderRadius.circular(AppAuthUi.buttonRadius),
+        borderRadius: BorderRadius.circular(CredentialFormUi.buttonRadius),
         boxShadow: [
           BoxShadow(
             color: colors.primary.withValues(alpha: 0.18),
@@ -387,7 +387,7 @@ class AuthSubmitButton extends StatelessWidget {
           disabledForegroundColor: colors.onPrimary.withValues(alpha: 0.82),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppAuthUi.buttonRadius),
+            borderRadius: BorderRadius.circular(CredentialFormUi.buttonRadius),
           ),
         ),
         child: isLoading
@@ -440,7 +440,7 @@ InputDecoration _authInputDecoration(
   Widget? suffixIcon,
 }) {
   final colors = Theme.of(context).colorScheme;
-  final borderRadius = BorderRadius.circular(AppAuthUi.fieldRadius);
+  final borderRadius = BorderRadius.circular(CredentialFormUi.fieldRadius);
   final borderColor = colors.outlineVariant.withValues(alpha: 0.16);
 
   return InputDecoration(

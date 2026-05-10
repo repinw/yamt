@@ -7,7 +7,7 @@ import 'package:yamt/features/auth/provider/guest_auth_controller.dart';
 import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
 import 'package:yamt/features/auth/widgets/welcome_page_desktop_layout.dart';
 import 'package:yamt/features/auth/widgets/welcome_page_mobile_layout.dart';
-import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _AuthFormMode { login, register }
@@ -90,13 +90,13 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
           final isWide = constraints.maxWidth >= 960;
           final safeHeight =
               constraints.maxHeight - mediaQuery.viewPadding.vertical;
-          final minHeight = safeHeight - AppAuthUi.pagePadding.vertical;
+          final minHeight = safeHeight - CredentialFormUi.pagePadding.vertical;
           final metrics = AuthLayoutMetrics.fromConstraints(
             maxWidth: constraints.maxWidth,
             maxHeight: safeHeight,
             isWide: isWide,
           );
-          final scrollPadding = AppAuthUi.pagePadding.add(
+          final scrollPadding = CredentialFormUi.pagePadding.add(
             EdgeInsets.only(
               top: mediaQuery.viewPadding.top,
               bottom: mediaQuery.viewPadding.bottom,
@@ -110,8 +110,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 constraints: BoxConstraints(
                   minHeight: minHeight > 0 ? minHeight : 0,
                   maxWidth: isWide
-                      ? AppAuthUi.maxDesktopWidth
-                      : AppAuthUi.maxContentWidth,
+                      ? CredentialFormUi.maxDesktopWidth
+                      : CredentialFormUi.maxContentWidth,
                 ),
                 child: isWide
                     ? DesktopAuthLayout(

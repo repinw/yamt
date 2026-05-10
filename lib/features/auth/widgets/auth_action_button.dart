@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
 /// Outlined auth action button with loading state.
 class AuthActionButton extends StatelessWidget {
@@ -45,7 +45,7 @@ class AuthActionButton extends StatelessWidget {
         backgroundColor: colors.surfaceContainerLowest,
         side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.22)),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppAuthUi.buttonRadius),
+          borderRadius: BorderRadius.circular(CredentialFormUi.buttonRadius),
         ),
       ),
       icon: isLoading

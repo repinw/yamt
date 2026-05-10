@@ -1,13 +1,13 @@
 import 'package:intl/intl.dart';
 
-/// Formats the diary header date.
-String formatDiaryHeaderDate(DateTime day, String localeName) {
-  return '${diaryWeekdayLabel(day, localeName)}, '
+/// Formats a compact calendar header date.
+String formatCalendarHeaderDate(DateTime day, String localeName) {
+  return '${calendarWeekdayLabel(day, localeName)}, '
       '${DateFormat.MMMMd(localeName).format(day)}';
 }
 
 /// Returns the localized short weekday label for [day].
-String diaryWeekdayLabel(DateTime day, String localeName) {
+String calendarWeekdayLabel(DateTime day, String localeName) {
   return DateFormat.E(localeName)
       .format(day)
       .replaceFirst(
@@ -17,23 +17,23 @@ String diaryWeekdayLabel(DateTime day, String localeName) {
 }
 
 /// Returns the localized full weekday label for [day].
-String diaryWeekdayFullLabel(DateTime day, String localeName) {
+String calendarWeekdayFullLabel(DateTime day, String localeName) {
   return DateFormat.EEEE(localeName).format(day);
 }
 
 /// Normalizes [day] to date-only precision.
-DateTime diaryDayOnly(DateTime day) {
+DateTime dateOnly(DateTime day) {
   return DateTime(day.year, day.month, day.day);
 }
 
 /// Returns the Monday that starts the calendar week for [day].
-DateTime startOfDiaryCalendarWeek(DateTime day) {
-  final normalized = diaryDayOnly(day);
+DateTime startOfCalendarWeek(DateTime day) {
+  final normalized = dateOnly(day);
   return normalized.subtract(Duration(days: normalized.weekday - 1));
 }
 
 /// Compares two days at date-only precision.
-bool isSameDiaryCalendarDay(DateTime left, DateTime right) {
+bool isSameCalendarDay(DateTime left, DateTime right) {
   return left.year == right.year &&
       left.month == right.month &&
       left.day == right.day;

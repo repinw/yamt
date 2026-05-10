@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Editorial side panel for the wide auth welcome layout.
@@ -18,7 +18,7 @@ class EditorialAside extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return DecoratedBox(
-      decoration: AppAuthSurfaces.editorialAside(colors),
+      decoration: CredentialFormSurfaces.editorialAside(colors),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxxxl),
         child: Column(
@@ -44,7 +44,9 @@ class EditorialAside extends StatelessWidget {
             Expanded(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppAuthUi.cardRadius),
+                  borderRadius: BorderRadius.circular(
+                    CredentialFormUi.cardRadius,
+                  ),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,

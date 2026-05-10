@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
-import 'package:yamt/features/diary/domain/diary_date_utils.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
@@ -82,7 +82,7 @@ class HomePage extends ConsumerWidget {
       case HomeTabType.diary:
         return diaryCalendarState?.isSelectedToday ?? true
             ? l10n.diaryTodayTitle
-            : diaryWeekdayFullLabel(
+            : calendarWeekdayFullLabel(
                 diaryCalendarState!.selectedDay,
                 localeName,
               );
@@ -103,7 +103,7 @@ class HomePage extends ConsumerWidget {
       return null;
     }
 
-    return formatDiaryHeaderDate(diaryCalendarState.selectedDay, localeName);
+    return formatCalendarHeaderDate(diaryCalendarState.selectedDay, localeName);
   }
 
   List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {

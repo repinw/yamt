@@ -11,7 +11,7 @@ import 'package:yamt/features/auth/widgets/auth_ghost_text_button.dart';
 import 'package:yamt/features/auth/widgets/auth_layout_metrics.dart';
 import 'package:yamt/features/auth/widgets/login_form.dart';
 import 'package:yamt/features/auth/widgets/register_form.dart';
-import 'package:yamt/features/shared/widgets/auth_ui_constants.dart';
+import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Auth form card with email, social, and guest actions.
@@ -46,7 +46,7 @@ class AuthCard extends ConsumerWidget {
     final isGuestLoading = ref.watch(guestAuthControllerProvider).isLoading;
 
     return DecoratedBox(
-      decoration: AppAuthSurfaces.panel(colors),
+      decoration: CredentialFormSurfaces.panel(colors),
       child: Padding(
         padding: metrics.cardPadding,
         child: Column(

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/diary/domain/diary_date_utils.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 
 void main() {
@@ -10,7 +10,7 @@ void main() {
 
     final state = container.read(diaryCalendarControllerProvider);
 
-    expect(state.today, diaryDayOnly(DateTime.now()));
+    expect(state.today, dateOnly(DateTime.now()));
     expect(state.selectedDay, state.today);
     expect(state.todayRequest, 0);
     expect(state.isSelectedToday, isTrue);
@@ -41,7 +41,7 @@ void main() {
       ..selectToday();
     final state = container.read(diaryCalendarControllerProvider);
 
-    expect(state.today, diaryDayOnly(DateTime.now()));
+    expect(state.today, dateOnly(DateTime.now()));
     expect(state.selectedDay, state.today);
     expect(state.todayRequest, 1);
     expect(state.isSelectedToday, isTrue);

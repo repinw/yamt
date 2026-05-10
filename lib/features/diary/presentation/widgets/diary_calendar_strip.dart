@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/domain/diary_date_utils.dart';
 import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_day_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -125,11 +125,11 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
                   final day = _dayForIndex(index);
                   return DiaryCalendarDayButton(
                     day: day,
-                    isActive: isSameDiaryCalendarDay(
+                    isActive: isSameCalendarDay(
                       day,
                       widget.selectedDay,
                     ),
-                    isToday: isSameDiaryCalendarDay(day, widget.today),
+                    isToday: isSameCalendarDay(day, widget.today),
                     isHeartDay: widget.heartDayKeys.contains(
                       diaryDayKey(day),
                     ),
@@ -225,7 +225,7 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
   }
 
   int _indexForDay(DateTime day) {
-    return diaryDayOnly(day)
+    return dateOnly(day)
         .difference(_earliestDay)
         .inDays
         .clamp(

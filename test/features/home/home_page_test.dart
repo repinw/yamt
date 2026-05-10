@@ -6,13 +6,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
-import 'package:yamt/features/diary/domain/diary_date_utils.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
@@ -400,7 +400,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text(formatDiaryHeaderDate(today, 'en')), findsOneWidget);
+    expect(find.text(formatCalendarHeaderDate(today, 'en')), findsOneWidget);
     expect(find.text('Week 1 day 7'), findsNothing);
   });
 
@@ -470,7 +470,7 @@ void main() {
     final runStateRepository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(
-          startOfDiaryCalendarWeek(oldDay),
+          startOfCalendarWeek(oldDay),
         ),
         runWeekNumber: burnWeekFirstGameRunWeekNumber,
         heartCount: 1,
