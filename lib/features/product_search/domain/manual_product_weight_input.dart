@@ -36,11 +36,15 @@ ManualProductResolvedWeightInput resolveManualProductWeightInput(
 
   final normalized = normalizeManualProductText(rawWeight ?? '');
   final amountMatch = RegExp(r'\d+(?:[.,]\d+)?').firstMatch(normalized ?? '');
-  final amount = amountMatch?.group(0)?.replaceAll(',', '.') ?? '';
-  final unit =
-      _unitFromRawWeight(normalized) ??
-      fallbackUnit ??
-      InventoryAmountUnit.gram;
+  final rawAmount = amountMatch != null
+      ? amountMatch.group(0)!.replaceAll(',', '.')
+      : '';
+  final conversion = _conversionFromRawWeight(normalized);
+  final unit = conversion?.unit ?? fallbackUnit ?? InventoryAmountUnit.gram;
+  final amount = _convertFallbackAmount(
+    rawAmount: rawAmount,
+    multiplier: conversion?.multiplier ?? 1,
+  );
   final parsedAmount = _parseWeightAmount(amount: amount, unit: unit);
   return (
     amount: amount,
@@ -95,13 +99,18 @@ InventoryAmountParseResult? _parseWeightAmount({
   );
 }
 
-InventoryAmountUnit? _unitFromRawWeight(String? rawWeight) {
+({InventoryAmountUnit unit, double multiplier})? _conversionFromRawWeight(
+  String? rawWeight,
+) {
   final normalized = rawWeight?.toLowerCase();
   if (normalized == null || normalized.isEmpty) {
     return null;
   }
-  if (normalized.contains('ml') || RegExp(r'(^|\s)l\b').hasMatch(normalized)) {
-    return InventoryAmountUnit.milliliter;
+  if (normalized.contains('ml')) {
+    return (unit: InventoryAmountUnit.milliliter, multiplier: 1);
+  }
+  if (RegExp(r'(^|\s|\d)l\b').hasMatch(normalized)) {
+    return (unit: InventoryAmountUnit.milliliter, multiplier: 1000);
   }
   if (normalized.contains('stk') ||
       normalized.contains('stück') ||
@@ -109,10 +118,27 @@ InventoryAmountUnit? _unitFromRawWeight(String? rawWeight) {
       normalized.endsWith(' st') ||
       normalized.contains('pc') ||
       normalized.contains('piece')) {
-    return InventoryAmountUnit.piece;
+    return (unit: InventoryAmountUnit.piece, multiplier: 1);
+  }
+  if (normalized.contains('kg')) {
+    return (unit: InventoryAmountUnit.gram, multiplier: 1000);
   }
   if (normalized.contains('g')) {
-    return InventoryAmountUnit.gram;
+    return (unit: InventoryAmountUnit.gram, multiplier: 1);
   }
   return null;
+}
+
+String _convertFallbackAmount({
+  required String rawAmount,
+  required double multiplier,
+}) {
+  if (rawAmount.isEmpty) {
+    return '';
+  }
+  final parsed = double.tryParse(rawAmount);
+  if (parsed == null || !parsed.isFinite || parsed <= 0) {
+    return rawAmount;
+  }
+  return formatManualProductDouble(parsed * multiplier);
 }

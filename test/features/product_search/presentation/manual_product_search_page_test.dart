@@ -22,6 +22,8 @@ import 'package:yamt/features/product_search/data/'
 import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_editor_page.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
@@ -80,6 +82,33 @@ Widget _wrapPage({
         initialAction: initialAction,
         initialIntent: initialIntent,
         onSaved: onSaved,
+      ),
+    ),
+  );
+}
+
+Widget _wrapEditorPage({
+  required InventoryItem item,
+  InventoryItem? initialRecentItem,
+  String? initialInfoMessage,
+}) {
+  return ProviderScope(
+    overrides: [
+      inventoryItemRepositoryProvider.overrideWithValue(
+        _FakeInventoryItemRepository(),
+      ),
+    ],
+    child: MaterialApp(
+      locale: const Locale('de'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: InventoryReceiptManualProductEditorPage(
+        config: InventoryReceiptManualProductConfig(item: item),
+        showEatImmediatelyOption: false,
+        initialAction: InventoryReceiptManualProductAction.addToInventory,
+        closeCurrentEditorOnSave: false,
+        initialRecentItem: initialRecentItem,
+        initialInfoMessage: initialInfoMessage,
       ),
     ),
   );
@@ -390,6 +419,62 @@ FormBuilderDropdown<T> _manualFormDropdown<T>(
 
 @Dependencies([inventoryItemRepository])
 void main() {
+  testWidgets('editor shows the initial info message after mount', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrapEditorPage(
+        item: _item(),
+        initialInfoMessage: 'Bitte Nährwerte ergänzen',
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Bitte Nährwerte ergänzen'), findsOneWidget);
+  });
+
+  testWidgets('editor applies an initial recent item after mount', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrapEditorPage(
+        item: _item(),
+        initialRecentItem: InventoryItem.create(
+          id: 'recent-1',
+          name: 'Recent Yogurt',
+          brand: 'Dairy',
+          weight: '500 g',
+          entryDate: DateTime.parse('2026-04-03T10:00:00Z'),
+          storeName: 'Kaufland',
+          quantity: 1,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      _manualFormFieldText(
+        tester,
+        const Key('receipt_review_manual_name_field'),
+      ),
+      'Recent Yogurt',
+    );
+    expect(
+      _manualFormFieldText(
+        tester,
+        const Key('receipt_review_manual_brand_field'),
+      ),
+      'Dairy',
+    );
+    expect(
+      _manualFormFieldText(
+        tester,
+        const Key('receipt_review_manual_weight_field'),
+      ),
+      '500',
+    );
+  });
+
   testWidgets('initial manual search intent opens search editor', (
     tester,
   ) async {
