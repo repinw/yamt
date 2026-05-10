@@ -26,7 +26,6 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
@@ -118,7 +117,7 @@ class _SaveDirectEntryButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
       onPressed: () async {
-        final saved = await InventoryItemEatFlow.saveDirectEntry(
+        final saved = await InventoryCalorieBridgeFlow.saveDirectEntry(
           ref: ref,
           profile: profile,
           inventoryContext: inventoryContext,

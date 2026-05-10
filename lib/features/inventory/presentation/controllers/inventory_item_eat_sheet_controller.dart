@@ -4,7 +4,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_controller_models.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/presentation/formatters/'
     'inventory_nutrition_format.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

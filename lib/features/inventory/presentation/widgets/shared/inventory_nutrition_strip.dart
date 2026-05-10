@@ -3,7 +3,7 @@ import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_item_row_view_data.dart';
 
-export 'package:yamt/features/inventory/presentation/models/'
+export 'package:yamt/features/inventory/presentation/formatters/'
     'inventory_nutrition_format.dart'
     show formatInventoryNutritionValue;
 
