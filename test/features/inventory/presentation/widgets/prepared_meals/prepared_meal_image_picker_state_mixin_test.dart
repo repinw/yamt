@@ -121,15 +121,13 @@ class _ImagePickerMixinHarnessState
           Text('loading:$isPickingPreparedMealImage'),
           Text('picked:${_pickedBytes != null}'),
           TextButton(
-            onPressed: () {
-              unawaited(
-                pickPreparedMealImage(
-                  source: PreparedMealImageSource.file,
-                  onPicked: (imageBytes) {
-                    _pickedBytes = imageBytes;
-                    widget.onPicked(imageBytes);
-                  },
-                ),
+            onPressed: () async {
+              await pickPreparedMealImage(
+                source: PreparedMealImageSource.file,
+                onPicked: (imageBytes) {
+                  _pickedBytes = imageBytes;
+                  widget.onPicked(imageBytes);
+                },
               );
             },
             child: const Text('Pick file'),
@@ -165,23 +163,38 @@ class _ControlledPreparedMealImagePicker implements PreparedMealImagePicker {
   }
 }
 
-class _TestApp extends StatelessWidget {
+class _TestApp extends StatefulWidget {
   const _TestApp({required this.imagePicker, required this.child});
 
   final PreparedMealImagePicker imagePicker;
   final Widget child;
 
   @override
+  State<_TestApp> createState() => _TestAppState();
+}
+
+class _TestAppState extends State<_TestApp> {
+  late final ProviderContainer _container = ProviderContainer(
+    overrides: [
+      preparedMealImagePickerProvider.overrideWithValue(widget.imagePicker),
+    ],
+  );
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      overrides: [
-        preparedMealImagePickerProvider.overrideWithValue(imagePicker),
-      ],
+    return UncontrolledProviderScope(
+      container: _container,
       child: MaterialApp(
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: child,
+        home: widget.child,
       ),
     );
   }

@@ -110,6 +110,10 @@ void main() {
       imageAssetId: 'asset-1',
       imageUrl: 'https://images.example.com/rice-bowl.jpg',
       recipeUrl: 'https://www.chefkoch.de/rezepte/123/rice-bowl.html',
+      recipeInstructions: const <String>[
+        'Reis waschen.',
+        'Reis kochen.',
+      ],
       totalPortions: 4,
       remainingPortions: 2.5,
       totalKcal: 720,
@@ -141,6 +145,7 @@ void main() {
     expect(roundtrip.imageAssetId, meal.imageAssetId);
     expect(roundtrip.imageUrl, meal.imageUrl);
     expect(roundtrip.recipeUrl, meal.recipeUrl);
+    expect(roundtrip.recipeInstructions, meal.recipeInstructions);
     expect(roundtrip.components.single.sourceItemSnapshot, sourceItem);
     expect(roundtrip.remainingPortions, 2.5);
     expect(

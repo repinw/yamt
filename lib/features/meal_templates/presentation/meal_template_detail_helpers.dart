@@ -384,8 +384,48 @@ _IngredientRowData _scaledRecipeIngredient(
     );
   }
 
+  if (requirement != null) {
+    return _ingredientRowFromRequirement(
+      ingredient: ingredient,
+      isIgnored: isIgnored,
+      assignedInventoryItemIds: assignedInventoryItemIds,
+      requirement: requirement,
+      amountConversion: amountConversion,
+    );
+  }
+
   return _fallbackIngredientRow(
     ingredient: ingredient,
+    isIgnored: isIgnored,
+    assignedInventoryItemIds: assignedInventoryItemIds,
+    requirement: requirement,
+    amountConversion: amountConversion,
+  );
+}
+
+_IngredientRowData _ingredientRowFromRequirement({
+  required String ingredient,
+  required bool isIgnored,
+  required List<String> assignedInventoryItemIds,
+  required TemplateIngredientRequirement requirement,
+  required RecipeIngredientAmountConversion? amountConversion,
+}) {
+  final countMeasureLabel = requirement.countMeasureLabel?.trim();
+  final packageCountLabel = requirement.packageCountLabel?.trim();
+  return _IngredientRowData(
+    name: requirement.name,
+    amountLabel:
+        packageCountLabel?.isNotEmpty == true &&
+            requirement.unit != InventoryAmountUnit.piece
+        ? '$packageCountLabel ${requirement.amount}${requirement.unit.code}'
+        : [
+            requirement.amount.toString(),
+            if (countMeasureLabel?.isNotEmpty == true)
+              countMeasureLabel!
+            else
+              requirement.unit.code,
+          ].join(' '),
+    rawIngredient: ingredient,
     isIgnored: isIgnored,
     assignedInventoryItemIds: assignedInventoryItemIds,
     requirement: requirement,

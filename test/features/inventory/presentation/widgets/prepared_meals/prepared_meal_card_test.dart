@@ -331,6 +331,90 @@ void main() {
     expect(find.text('17%'), findsOneWidget);
   });
 
+  testWidgets('PreparedMealCard shows gram progress for weight meals', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal().copyWith(
+                  totalPortions: 3000,
+                  remainingPortions: 3000,
+                  finalNetWeight: 3000,
+                  remainingNetWeight: 3000,
+                ),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, result) async => true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final progressBar = tester.widget<RemainingProgressBar>(
+      find.byType(RemainingProgressBar),
+    );
+    expect(progressBar.stockLabel, '3000g / 3000g');
+  });
+
+  testWidgets('PreparedMealCard shows portions and grams for weighed meals', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal().copyWith(
+                  totalPortions: 4,
+                  remainingPortions: 2,
+                  finalNetWeight: 3000,
+                  remainingNetWeight: 1500,
+                ),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, result) async => true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final progressBar = tester.widget<RemainingProgressBar>(
+      find.byType(RemainingProgressBar),
+    );
+    expect(progressBar.stockLabel, '2/4 Portionen · 1500g / 3000g');
+  });
+
   testWidgets('PreparedMealCard shows ingredient count in header badge', (
     tester,
   ) async {

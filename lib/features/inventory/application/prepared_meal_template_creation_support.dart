@@ -23,6 +23,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
   required Map<String, RecipeIngredientAmountConversion>
   recipeIngredientAmountConversions,
   required TemplateIngredientParser ingredientParser,
+  Map<String, String> sourceKeysByIngredient = const <String, String>{},
 }) {
   final activeIngredients = template.recipeIngredients
       .where(
@@ -37,6 +38,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
 
   final nextItems = List<InventoryItem>.from(currentItems);
   final components = <PreparedMealComponent>[];
+  final componentSourceKeys = <String>[];
   final pendingIngredients = <String>[];
 
   for (final ingredient in activeIngredients) {
@@ -142,6 +144,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
           nutrition: resolvedNutrition,
         ),
       );
+      componentSourceKeys.add(sourceKeysByIngredient[ingredient] ?? '');
       remainingAmount = remainingRequirementAfterConsumption(
         item: currentItem,
         requiredUnit: effectiveRequirement.unit,
@@ -175,6 +178,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
   final nutritionTotals = components.nutritionTotals;
   return PreparedMealBuildResult(
     nextItems: nextItems,
+    componentSourceKeys: componentSourceKeys,
     preparedMeal: PreparedMeal(
       id: preparedMealId,
       name: template.name,
@@ -182,6 +186,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
       imageUrl: template.imageUrl,
       recipeUrl: template.recipeUrl,
       recipeIngredients: template.recipeIngredients,
+      recipeInstructions: template.recipeInstructions,
       ignoredRecipeIngredients: template.ignoredRecipeIngredients,
       recipeIngredientAssignments: recipeIngredientAssignments,
       recipeIngredientAmountConversions: recipeIngredientAmountConversions,

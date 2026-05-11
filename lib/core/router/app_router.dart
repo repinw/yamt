@@ -24,6 +24,11 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_controller.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_wizard_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
@@ -36,10 +41,9 @@ import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart'
 import 'package:yamt/features/kitchen_utensils/presentation/'
     'kitchen_utensils_page.dart';
 import 'package:yamt/features/meal_templates/presentation/'
-    'meal_template_detail_page.dart';
-import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_import_review_page.dart';
-import 'package:yamt/features/meal_templates/presentation/meal_templates_page.dart';
+import 'package:yamt/features/meal_templates/presentation/'
+    'meal_templates_page.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/features/scanner/presentation/'
@@ -85,6 +89,8 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     inventoryItemRepository,
     calorieEntryDeleteFlow,
     inventoryBackedCalorieEntrySaveFlow,
+    CookingFlowController,
+    CookingFlowWizardController,
     InventoryItemsController,
     PreparedMealsController,
     preparedMealImagePicker,
@@ -224,7 +230,7 @@ Raw<GoRouter> appRouter(Ref ref) {
         path: AppRoutes.homeInventoryTemplateDetail,
         builder: (context, state) {
           final templateId = state.pathParameters['templateId'] ?? '';
-          return MealTemplateDetailPage(templateId: templateId);
+          return CookingFlowPage(templateId: templateId);
         },
       ),
       GoRoute(

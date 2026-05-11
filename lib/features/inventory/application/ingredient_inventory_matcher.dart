@@ -1,3 +1,4 @@
+import 'package:fuzzywuzzy/fuzzywuzzy.dart' as fuzzywuzzy;
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 /// Resolve inventory items by id.
@@ -150,7 +151,91 @@ int _scoreMatchTexts({
       score += 4;
     }
   }
+  for (final token in itemTokens) {
+    if (token.length >= _minimumIngredientCompoundTokenLength &&
+        normalizedIngredient.contains(token)) {
+      score += token.length >= 5 ? 12 : 8;
+    }
+  }
+  final shingleScore = _tokenShingleContainmentScore(
+    leftTokens: ingredientTokens,
+    rightTokens: itemTokens,
+  );
+  if (shingleScore >= _ingredientShingleContainmentThreshold) {
+    score += (shingleScore / 2).round();
+  }
+  final fuzzyScore = _ingredientFuzzyMatchScore(
+    normalizedIngredient: normalizedIngredient,
+    normalizedItem: normalizedItem,
+  );
+  if (fuzzyScore >= _ingredientFuzzyMatchThreshold) {
+    score += fuzzyScore;
+  }
   return score;
+}
+
+int _ingredientFuzzyMatchScore({
+  required String normalizedIngredient,
+  required String normalizedItem,
+}) {
+  final partialScore = fuzzywuzzy.partialRatio(
+    normalizedIngredient,
+    normalizedItem,
+  );
+  final tokenScore = fuzzywuzzy.tokenSetPartialRatio(
+    normalizedIngredient,
+    normalizedItem,
+  );
+  return partialScore > tokenScore ? partialScore : tokenScore;
+}
+
+int _tokenShingleContainmentScore({
+  required Set<String> leftTokens,
+  required Set<String> rightTokens,
+}) {
+  var bestScore = 0;
+  for (final leftToken in leftTokens) {
+    for (final rightToken in rightTokens) {
+      final score = _shingleContainmentScore(leftToken, rightToken);
+      if (score > bestScore) {
+        bestScore = score;
+      }
+    }
+  }
+  return bestScore;
+}
+
+int _shingleContainmentScore(String leftToken, String rightToken) {
+  if (leftToken.length < _minimumIngredientCompoundTokenLength ||
+      rightToken.length < _minimumIngredientCompoundTokenLength) {
+    return 0;
+  }
+  final leftShingles = _characterShingles(leftToken);
+  final rightShingles = _characterShingles(rightToken);
+  if (leftShingles.isEmpty || rightShingles.isEmpty) {
+    return 0;
+  }
+  final commonCount = leftShingles.intersection(rightShingles).length;
+  if (commonCount == 0) {
+    return 0;
+  }
+  final smallerCount = leftShingles.length < rightShingles.length
+      ? leftShingles.length
+      : rightShingles.length;
+  return ((commonCount / smallerCount) * 100).round();
+}
+
+Set<String> _characterShingles(String token) {
+  final shingles = <String>{};
+  for (final size in _ingredientShingleSizes) {
+    if (token.length < size) {
+      continue;
+    }
+    for (var index = 0; index <= token.length - size; index++) {
+      shingles.add(token.substring(index, index + size));
+    }
+  }
+  return shingles;
 }
 
 Set<String> _ingredientMatchCandidates(
@@ -480,3 +565,7 @@ const _englishIngredientTokenAliases = <String, String>{
 const _commonShortIngredientTokens = <String>{'ei'};
 const _germanShortIngredientTokens = <String>{'öl'};
 const _englishShortIngredientTokens = <String>{};
+const _ingredientFuzzyMatchThreshold = 80;
+const _ingredientShingleContainmentThreshold = 75;
+const _minimumIngredientCompoundTokenLength = 4;
+const _ingredientShingleSizes = <int>{3, 4, 5};

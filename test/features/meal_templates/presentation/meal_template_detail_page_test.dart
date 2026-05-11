@@ -145,6 +145,10 @@ class _StaticPreparedMealsController extends PreparedMealsController {
     required Map<String, List<String>> recipeIngredientAssignments,
     required Map<String, RecipeIngredientAmountConversion>
     recipeIngredientAmountConversions,
+    List<PreparedMealItemInput> additionalItems =
+        const <PreparedMealItemInput>[],
+    int? finalNetWeight,
+    Map<String, String> sourceKeysByIngredient = const <String, String>{},
   }) async {
     return const PreparedMealCreationResult.failure(
       PreparedMealCreationFailureReason.invalidInput,
@@ -279,6 +283,32 @@ InkWell _inkWellForText(WidgetTester tester, String text) {
   return tester.widget<InkWell>(finder.first);
 }
 
+void _expectAssignedIngredientMatch(String label) {
+  expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+  expect(find.text(label), findsOneWidget);
+}
+
+Future<void> _openConversionInput({
+  required WidgetTester tester,
+  required String itemName,
+  required String conversionLabel,
+}) async {
+  expect(find.byIcon(Icons.check_rounded), findsNothing);
+
+  await tester.tap(find.text('Search'));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.widgetWithText(CheckboxListTile, itemName));
+  await tester.pumpAndSettle();
+
+  expect(find.text(conversionLabel), findsNothing);
+
+  await tester.tap(find.text('Apply'));
+  await tester.pumpAndSettle();
+
+  expect(find.text(conversionLabel), findsOneWidget);
+}
+
 @Dependencies([InventoryItemsController, PreparedMealsController])
 void main() {
   testWidgets('renders localized meal template detail content', (tester) async {
@@ -359,8 +389,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
-      expect(find.text('Karotten - 1x'), findsOneWidget);
+      _expectAssignedIngredientMatch('Karotten - 1x');
     },
   );
 
@@ -390,8 +419,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
-      expect(find.text('Karotten - 1x'), findsOneWidget);
+      _expectAssignedIngredientMatch('Karotten - 1x');
       expect(find.text('1 assigned item no longer exists.'), findsNothing);
     },
   );
@@ -464,20 +492,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check_rounded), findsNothing);
-
-      await tester.tap(find.text('Search'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.widgetWithText(CheckboxListTile, 'Carrots'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Amount per pc (g)'), findsNothing);
-
-      await tester.tap(find.text('Apply'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Amount per pc (g)'), findsOneWidget);
+      await _openConversionInput(
+        tester: tester,
+        itemName: 'Carrots',
+        conversionLabel: 'Amount per pc (g)',
+      );
       await tester.enterText(find.byType(TextField), '100');
       await tester.pumpAndSettle();
 
@@ -568,18 +587,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Search'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(CheckboxListTile, 'Carrots'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Amount per pc (g)'), findsNothing);
-
-    await tester.tap(find.text('Apply'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Amount per pc (g)'), findsOneWidget);
+    await _openConversionInput(
+      tester: tester,
+      itemName: 'Carrots',
+      conversionLabel: 'Amount per pc (g)',
+    );
 
     tester.view.viewInsets = const FakeViewPadding(bottom: 320);
     await tester.pumpAndSettle();

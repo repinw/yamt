@@ -294,6 +294,26 @@ void main() {
     expect(items?.single.quantity, 2);
   });
 
+  test('resolveItemsByIds decrements and removes in one save', () async {
+    final repository = FakeShoppingListRepository(
+      initialItems: <ShoppingListItem>[
+        _item('a', quantity: 2),
+        _item('b', name: 'Bread'),
+        _item('c', name: 'Eggs', quantity: 3),
+      ],
+    );
+    final container = await _createContainer(repository);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    final result = await controller.resolveItemsByIds(<String>['a', 'b']);
+
+    final items = container.read(shoppingListControllerProvider).asData?.value;
+    expect(result, isTrue);
+    expect(items?.map((item) => item.id), <String>['a', 'c']);
+    expect(items?.first.quantity, 1);
+    expect(repository.savedItems.map((item) => item.id), <String>['a', 'c']);
+  });
+
   test('clearCrossedOffItems removes only items with quantity zero', () async {
     final repository = FakeShoppingListRepository(
       initialItems: <ShoppingListItem>[

@@ -29,11 +29,28 @@ class PreparedMealCreationResult {
     required this.isSuccess,
     this.preparedMealId,
     this.failureReason,
-  });
+    List<String> preparedMealIds = const <String>[],
+  }) : _preparedMealIds = preparedMealIds;
 
   /// Creates a [PreparedMealCreationResult] for success.
   const PreparedMealCreationResult.success(String preparedMealId)
     : this._(isSuccess: true, preparedMealId: preparedMealId);
+
+  /// Creates a [PreparedMealCreationResult] for many saved meals.
+  factory PreparedMealCreationResult.successMany(List<String> preparedMealIds) {
+    final ids = preparedMealIds
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList(growable: false);
+    return PreparedMealCreationResult._(
+      isSuccess: ids.isNotEmpty,
+      preparedMealId: ids.isEmpty ? null : ids.first,
+      preparedMealIds: ids,
+      failureReason: ids.isEmpty
+          ? PreparedMealCreationFailureReason.invalidInput
+          : null,
+    );
+  }
 
   /// Creates a [PreparedMealCreationResult] for failure.
   const PreparedMealCreationResult.failure(
@@ -46,6 +63,17 @@ class PreparedMealCreationResult {
   /// The prepared meal id.
   final String? preparedMealId;
 
+  /// The prepared meal ids.
+  List<String> get preparedMealIds {
+    if (_preparedMealIds.isNotEmpty) {
+      return _preparedMealIds;
+    }
+    final id = preparedMealId;
+    return id == null ? const <String>[] : <String>[id];
+  }
+
+  final List<String> _preparedMealIds;
+
   /// The failure reason.
   final PreparedMealCreationFailureReason? failureReason;
 }
@@ -57,6 +85,7 @@ class PreparedMealItemInput {
     required this.itemId,
     required this.usedAmount,
     this.manualNutrition,
+    this.sourceKey,
   });
 
   /// The item id.
@@ -67,6 +96,36 @@ class PreparedMealItemInput {
 
   /// The manual nutrition.
   final GlobalFoodNutrition? manualNutrition;
+
+  /// Optional source row key used by split creation workflows.
+  final String? sourceKey;
+}
+
+/// Defines one prepared meal output from a split template creation.
+class PreparedMealContainerInput {
+  /// Creates container input.
+  const PreparedMealContainerInput({
+    required this.id,
+    required this.label,
+    required this.totalPortions,
+    required this.finalNetWeight,
+    required this.sourceKeys,
+  });
+
+  /// Stable flow-local container id.
+  final String id;
+
+  /// User-visible container label.
+  final String label;
+
+  /// Portion count for the generated meal.
+  final int totalPortions;
+
+  /// Net cooked weight for the generated meal.
+  final int finalNetWeight;
+
+  /// Source row keys included in this generated meal.
+  final List<String> sourceKeys;
 }
 
 /// Carries built inventory and meal changes before persistence.
@@ -75,6 +134,7 @@ class PreparedMealBuildResult {
   const PreparedMealBuildResult({
     required this.nextItems,
     required this.preparedMeal,
+    this.componentSourceKeys = const <String>[],
   });
 
   /// Updated inventory items after consumption.
@@ -82,6 +142,9 @@ class PreparedMealBuildResult {
 
   /// Prepared meal snapshot ready to save.
   final PreparedMeal preparedMeal;
+
+  /// Optional source row keys aligned by component index.
+  final List<String> componentSourceKeys;
 }
 
 /// Signals validation failure while building a prepared meal draft.

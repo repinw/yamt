@@ -11,6 +11,7 @@ class PreparedMealRecipeImport {
     required this.servings,
     required this.ingredients,
     this.imageUrl,
+    this.instructions = const <String>[],
     this.instructionsPreview = const <String>[],
   });
 
@@ -28,6 +29,9 @@ class PreparedMealRecipeImport {
 
   /// The ingredients.
   final List<String> ingredients;
+
+  /// The full instructions.
+  final List<String> instructions;
 
   /// The instructions preview.
   final List<String> instructionsPreview;
@@ -67,6 +71,10 @@ class PreparedMealRecipeImporter {
               localeName: localeName,
             ),
           )
+          .where((line) => line.isNotEmpty)
+          .toList(growable: false),
+      instructions: recipe.instructions
+          .map((line) => line.trim())
           .where((line) => line.isNotEmpty)
           .toList(growable: false),
       instructionsPreview: recipe.instructions

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_amount_card.dart';
@@ -26,6 +27,8 @@ part 'prepared_meal_eat_sheet_widgets.dart';
 
 const _defaultPreparedMealPortions = 1.0;
 const _preparedMealDialogsLogName = 'PreparedMealDialogs';
+
+enum _PreparedMealEatAmountMode { portions, grams }
 
 /// Defines prepared meal day picker typedef.
 typedef PreparedMealDayPicker =
@@ -122,6 +125,8 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
   late final FocusNode _portionsFocusNode = FocusNode();
   late DateTime _selectedLoggedAt;
   late MealType _selectedMealType;
+  _PreparedMealEatAmountMode _selectedAmountMode =
+      _PreparedMealEatAmountMode.portions;
   bool _hasInitializedPortionsText = false;
   String? _portionsErrorText;
 
@@ -167,6 +172,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
         : material.formatMediumDate(_selectedLoggedAt);
     final selectedPortions = _selectedQuickPortions();
     final metrics = _buildNutritionMetrics(l10n, selectedPortions ?? 1);
+    final canUseGrams = _canUseGramAmountMode(widget.meal);
 
     return InventoryEatFlowSheetScaffold(
       viewInsetsBottom: MediaQuery.viewInsetsOf(context).bottom,
@@ -191,17 +197,17 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
           controller: _portionsController,
           focusNode: _portionsFocusNode,
           errorText: _portionsErrorText,
-          selectedPortions: selectedPortions,
+          amountMode: _selectedAmountMode,
+          canUseGrams: canUseGrams,
+          selectedAmount: _selectedQuickAmount(),
           quickOptions: _buildQuickOptions(l10n),
-          remainingLabel: l10n.preparedMealPortionsRemaining(
-            _formatPortions(widget.meal.remainingPortions, l10n),
-            widget.meal.totalPortions,
-          ),
+          remainingLabel: _remainingAmountLabel(l10n),
+          onAmountModeChanged: canUseGrams ? _updateAmountMode : null,
           clearTooltip: l10n.inventoryItemEatSheetClearAmountAction,
           onChanged: _clearPortionsError,
           onClearAndFocus: _clearPortionsAndFocus,
           onSubmitted: _dismissKeyboard,
-          onQuickOptionSelected: _selectPortions,
+          onQuickOptionSelected: _selectAmount,
         ),
         const SizedBox(height: AppSpacing.xxxl),
         InventoryEatFlowWhenSection(
@@ -257,6 +263,15 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
   }
 
   List<_PreparedMealQuickOption> _buildQuickOptions(AppLocalizations l10n) {
+    return switch (_selectedAmountMode) {
+      _PreparedMealEatAmountMode.portions => _buildPortionQuickOptions(l10n),
+      _PreparedMealEatAmountMode.grams => _buildGramQuickOptions(l10n),
+    };
+  }
+
+  List<_PreparedMealQuickOption> _buildPortionQuickOptions(
+    AppLocalizations l10n,
+  ) {
     final values = <num>{};
     final options = <_PreparedMealQuickOption>[];
 
@@ -280,8 +295,80 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     return options;
   }
 
-  num? _selectedQuickPortions() {
+  List<_PreparedMealQuickOption> _buildGramQuickOptions(AppLocalizations l10n) {
+    final remainingGrams = _remainingGramAmount(widget.meal);
+    if (remainingGrams == null || remainingGrams <= 0) {
+      return const <_PreparedMealQuickOption>[];
+    }
+    final values = <num>{};
+    final options = <_PreparedMealQuickOption>[];
+
+    void addOption(num value, String label) {
+      if (value <= 0 || value > remainingGrams) {
+        return;
+      }
+      if (!values.add(value)) {
+        return;
+      }
+      options.add(_PreparedMealQuickOption(label: label, value: value));
+    }
+
+    addOption(remainingGrams, l10n.inventoryItemEatSheetAllAction);
+    for (final value in const [100, 250, 500]) {
+      addOption(value, '${value}g');
+    }
+    return options;
+  }
+
+  num? _selectedQuickAmount() {
     return _parsePortions(_portionsController.text);
+  }
+
+  num? _selectedQuickPortions() {
+    final amount = _selectedQuickAmount();
+    if (amount == null) {
+      return null;
+    }
+    return switch (_selectedAmountMode) {
+      _PreparedMealEatAmountMode.portions => amount,
+      _PreparedMealEatAmountMode.grams => _gramsToPortions(amount),
+    };
+  }
+
+  String _remainingAmountLabel(AppLocalizations l10n) {
+    if (_selectedAmountMode == _PreparedMealEatAmountMode.grams) {
+      final remainingGrams = _remainingGramAmount(widget.meal) ?? 0;
+      final totalGrams = widget.meal.finalNetWeight ?? 0;
+      return '${_formatGrams(remainingGrams)} / ${_formatGrams(totalGrams)}';
+    }
+    return l10n.preparedMealPortionsRemaining(
+      _formatPortions(widget.meal.remainingPortions, l10n),
+      widget.meal.totalPortions,
+    );
+  }
+
+  void _updateAmountMode(_PreparedMealEatAmountMode mode) {
+    if (mode == _selectedAmountMode) {
+      return;
+    }
+    final currentAmount = _parsePortions(_portionsController.text);
+    final nextAmount = currentAmount == null
+        ? null
+        : switch (mode) {
+            _PreparedMealEatAmountMode.portions => _gramsToPortions(
+              currentAmount,
+            ),
+            _PreparedMealEatAmountMode.grams => _portionsToGrams(
+              currentAmount,
+            ),
+          };
+    setState(() {
+      _selectedAmountMode = mode;
+      _portionsErrorText = null;
+      if (nextAmount != null && nextAmount > 0) {
+        _portionsController.text = _formatModeAmount(nextAmount);
+      }
+    });
   }
 
   void _clearPortionsError(String _) {
@@ -301,12 +388,9 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     _portionsFocusNode.requestFocus();
   }
 
-  void _selectPortions(num portions) {
+  void _selectAmount(num amount) {
     setState(() {
-      _portionsController.text = _formatPortions(
-        portions,
-        AppLocalizations.of(context)!,
-      );
+      _portionsController.text = _formatModeAmount(amount);
       _portionsErrorText = null;
     });
   }
@@ -361,12 +445,20 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
 
   void _submit() {
     final l10n = AppLocalizations.of(context)!;
-    final portions = _parsePortions(_portionsController.text);
-    if (portions == null ||
+    final amount = _parsePortions(_portionsController.text);
+    final portions = amount == null
+        ? null
+        : switch (_selectedAmountMode) {
+            _PreparedMealEatAmountMode.portions => amount,
+            _PreparedMealEatAmountMode.grams => _gramsToPortions(amount),
+          };
+    if (amount == null ||
+        !_isAmountInRange(amount) ||
+        portions == null ||
         portions <= 0 ||
         portions > widget.meal.remainingPortions) {
       log(
-        'showPreparedMealEatDialog(): invalid portions '
+        'showPreparedMealEatDialog(): invalid amount '
         '"${_portionsController.text}" for meal ${widget.meal.id}',
         name: _preparedMealDialogsLogName,
       );
@@ -384,6 +476,51 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       ),
     );
   }
+
+  bool _isAmountInRange(num amount) {
+    if (amount <= 0) {
+      return false;
+    }
+    return switch (_selectedAmountMode) {
+      _PreparedMealEatAmountMode.portions =>
+        amount <= widget.meal.remainingPortions,
+      _PreparedMealEatAmountMode.grams =>
+        amount <= (_remainingGramAmount(widget.meal) ?? 0),
+    };
+  }
+
+  num? _gramsToPortions(num grams) {
+    final finalNetWeight = widget.meal.finalNetWeight;
+    if (finalNetWeight == null ||
+        finalNetWeight <= 0 ||
+        widget.meal.totalPortions < 1) {
+      return null;
+    }
+    return grams * widget.meal.totalPortions / finalNetWeight;
+  }
+
+  num? _portionsToGrams(num portions) {
+    final finalNetWeight = widget.meal.finalNetWeight;
+    if (finalNetWeight == null ||
+        finalNetWeight <= 0 ||
+        widget.meal.totalPortions < 1) {
+      return null;
+    }
+    return portions * finalNetWeight / widget.meal.totalPortions;
+  }
+
+  String _formatModeAmount(num amount) {
+    return switch (_selectedAmountMode) {
+      _PreparedMealEatAmountMode.portions => _formatPortions(
+        amount,
+        AppLocalizations.of(context)!,
+      ),
+      _PreparedMealEatAmountMode.grams => formatInventoryAmountValue(
+        amount: amount.round(),
+        unit: InventoryAmountUnit.gram,
+      ),
+    };
+  }
 }
 
 num? _parsePortions(String value) {
@@ -400,6 +537,34 @@ num? _parsePortions(String value) {
     return rounded.toInt();
   }
   return parsed;
+}
+
+bool _canUseGramAmountMode(PreparedMeal meal) {
+  final finalNetWeight = meal.finalNetWeight;
+  return finalNetWeight != null && finalNetWeight > 0 && meal.totalPortions > 0;
+}
+
+int? _remainingGramAmount(PreparedMeal meal) {
+  final remainingNetWeight = meal.remainingNetWeight;
+  if (remainingNetWeight != null) {
+    return remainingNetWeight < 0 ? 0 : remainingNetWeight;
+  }
+  final finalNetWeight = meal.finalNetWeight;
+  if (finalNetWeight == null ||
+      finalNetWeight < 1 ||
+      meal.totalPortions < 1 ||
+      meal.remainingPortions <= 0) {
+    return null;
+  }
+  return ((finalNetWeight * meal.remainingPortions) / meal.totalPortions)
+      .round();
+}
+
+String _formatGrams(num grams) {
+  return '${formatInventoryAmountValue(
+    amount: grams.round(),
+    unit: InventoryAmountUnit.gram,
+  )}g';
 }
 
 Future<DateTime?> _showPreparedMealDayPicker({

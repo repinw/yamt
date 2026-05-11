@@ -64,11 +64,15 @@ class PreparedMealTemplatesController
     extends _$PreparedMealTemplatesController {
   static const _uuid = Uuid();
 
-  // Subscription is cancelled by _disposeSubscription.
+  // Subscription is cancelled by `_disposeSubscription`.
   // ignore: cancel_subscriptions
   StreamSubscription<List<PreparedMeal>>? _templatesSubscription;
   int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
+  final Set<(String, String)> _recipeInstructionBackfillsInProgress =
+      <(String, String)>{};
+  final Set<(String, String)> _recipeInstructionBackfillsAttempted =
+      <(String, String)>{};
   String? _currentDataOwnerUserId;
   bool _isRecoveringHouseholdAccess = false;
 
@@ -266,6 +270,7 @@ class PreparedMealTemplatesController
             var nextRecipeUrl = normalizedRecipeUrl;
             var nextImageUrl = currentTemplate.imageUrl;
             var nextRecipeIngredients = currentTemplate.recipeIngredients;
+            var nextRecipeInstructions = currentTemplate.recipeInstructions;
             var nextIgnoredIngredients =
                 currentTemplate.ignoredRecipeIngredients;
             var nextRecipeIngredientAssignments =
@@ -285,6 +290,7 @@ class PreparedMealTemplatesController
               nextRecipeUrl = importedRecipe.recipeUrl;
               nextImageUrl = importedRecipe.imageUrl;
               nextRecipeIngredients = importedRecipe.ingredients;
+              nextRecipeInstructions = importedRecipe.instructions;
               nextIgnoredIngredients = const <String>[];
               nextRecipeIngredientAssignments = const <String, List<String>>{};
               importedTitle = importedRecipe.title;
@@ -312,6 +318,7 @@ class PreparedMealTemplatesController
               imageUrl: nextImageUrl,
               recipeUrl: nextRecipeUrl,
               recipeIngredients: nextRecipeIngredients,
+              recipeInstructions: nextRecipeInstructions,
               ignoredRecipeIngredients: nextIgnoredIngredients,
               recipeIngredientAssignments: nextRecipeIngredientAssignments,
               totalPortions: resolvedPortions,
@@ -493,6 +500,7 @@ class PreparedMealTemplatesController
           return;
         }
         final sortedTemplates = _sortTemplates(templates);
+        _scheduleRecipeInstructionBackfill(sortedTemplates);
         if (!initialTemplates.isCompleted) {
           initialTemplates.complete(sortedTemplates);
           return;
@@ -532,6 +540,145 @@ class PreparedMealTemplatesController
       return;
     }
     state = AsyncData(templates);
+  }
+
+  void _scheduleRecipeInstructionBackfill(List<PreparedMeal> templates) {
+    final candidates = templates
+        .where(_needsRecipeInstructionBackfill)
+        .where((template) {
+          final backfillKey = _recipeInstructionBackfillKey(template);
+          if (backfillKey == null) {
+            return false;
+          }
+          return !_recipeInstructionBackfillsInProgress.contains(backfillKey) &&
+              !_recipeInstructionBackfillsAttempted.contains(backfillKey);
+        })
+        .toList(growable: false);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    for (final candidate in candidates) {
+      final backfillKey = _recipeInstructionBackfillKey(candidate);
+      if (backfillKey == null) {
+        continue;
+      }
+      _recipeInstructionBackfillsInProgress.add(backfillKey);
+      _recipeInstructionBackfillsAttempted.add(backfillKey);
+    }
+    unawaited(_backfillMissingRecipeInstructions(candidates));
+  }
+
+  Future<void> _backfillMissingRecipeInstructions(
+    List<PreparedMeal> templates,
+  ) async {
+    final backfillKeys = templates
+        .map(_recipeInstructionBackfillKey)
+        .whereType<(String, String)>()
+        .toList(growable: false);
+    try {
+      final importer = ref.read(preparedMealRecipeImporterProvider);
+      final fetchedInstructions =
+          <
+            ({String templateId, String recipeUrl, List<String> instructions})
+          >[];
+
+      for (final template in templates) {
+        final recipeUrl = template.recipeUrl;
+        if (recipeUrl == null || recipeUrl.isEmpty) {
+          continue;
+        }
+
+        try {
+          final importedRecipe = await importer.importRecipe(recipeUrl);
+          if (!ref.mounted) {
+            return;
+          }
+          final normalizedInstructions =
+              (importedRecipe?.instructions ?? const <String>[])
+                  .map((line) => line.trim())
+                  .where((line) => line.isNotEmpty)
+                  .toList(growable: false);
+          if (normalizedInstructions.isEmpty) {
+            continue;
+          }
+          fetchedInstructions.add((
+            templateId: template.id,
+            recipeUrl: recipeUrl,
+            instructions: normalizedInstructions,
+          ));
+        } on Object catch (error, stackTrace) {
+          log(
+            'Failed to backfill recipe instructions for template '
+            '${template.id}.',
+            name: _preparedMealTemplatesControllerLogName,
+            error: error,
+            stackTrace: stackTrace,
+          );
+        }
+      }
+
+      if (fetchedInstructions.isEmpty || !ref.mounted) {
+        return;
+      }
+
+      await _mutationQueue.run<bool>(
+        operation: () async {
+          final currentTemplates = await _currentTemplates();
+          if (!ref.mounted) {
+            return false;
+          }
+
+          final fetchedByTemplateId =
+              <
+                String,
+                ({
+                  String templateId,
+                  String recipeUrl,
+                  List<String> instructions,
+                })
+              >{
+                for (final entry in fetchedInstructions)
+                  entry.templateId: entry,
+              };
+          final nextTemplates = List<PreparedMeal>.from(currentTemplates);
+          var hasChanges = false;
+
+          for (var index = 0; index < currentTemplates.length; index++) {
+            final template = currentTemplates[index];
+            final fetchedTemplate = fetchedByTemplateId[template.id];
+            if (fetchedTemplate == null ||
+                !_needsRecipeInstructionBackfill(template) ||
+                template.recipeUrl != fetchedTemplate.recipeUrl) {
+              continue;
+            }
+            nextTemplates[index] = template.copyWith(
+              recipeInstructions: fetchedTemplate.instructions,
+            );
+            hasChanges = true;
+          }
+
+          if (!hasChanges) {
+            return true;
+          }
+          return _saveTemplates(
+            previousTemplates: currentTemplates,
+            nextTemplates: nextTemplates,
+          );
+        },
+        fallbackValue: false,
+        onError: (error, stackTrace) {
+          log(
+            'Unexpected recipe instruction backfill error.',
+            name: _preparedMealTemplatesControllerLogName,
+            error: error,
+            stackTrace: stackTrace,
+          );
+        },
+      );
+    } finally {
+      backfillKeys.forEach(_recipeInstructionBackfillsInProgress.remove);
+    }
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
@@ -657,6 +804,7 @@ class PreparedMealTemplatesController
       imageUrl: importedRecipe.imageUrl,
       name: resolvedName,
       recipeIngredients: importedRecipe.ingredients,
+      recipeInstructions: importedRecipe.instructions,
       totalPortions: resolvedPortions,
     );
     final nextTemplates = List<PreparedMeal>.from(currentTemplates)
@@ -690,6 +838,7 @@ PreparedMeal _buildTemplateFromRecipe({
   required String? imageUrl,
   required String name,
   required List<String> recipeIngredients,
+  required List<String> recipeInstructions,
   required int totalPortions,
 }) {
   final now = DateTime.now();
@@ -699,6 +848,7 @@ PreparedMeal _buildTemplateFromRecipe({
     imageUrl: imageUrl,
     recipeUrl: recipeUrl,
     recipeIngredients: recipeIngredients,
+    recipeInstructions: recipeInstructions,
     totalPortions: totalPortions,
     remainingPortions: totalPortions,
     totalKcal: 0,
@@ -800,4 +950,17 @@ List<PreparedMeal> _sortTemplates(List<PreparedMeal> templates) {
       return right.createdAt.compareTo(left.createdAt);
     });
   return List<PreparedMeal>.unmodifiable(sortedTemplates);
+}
+
+bool _needsRecipeInstructionBackfill(PreparedMeal template) {
+  return (template.recipeUrl?.isNotEmpty ?? false) &&
+      template.recipeInstructions.isEmpty;
+}
+
+(String, String)? _recipeInstructionBackfillKey(PreparedMeal template) {
+  final recipeUrl = template.recipeUrl;
+  if (recipeUrl == null || recipeUrl.isEmpty) {
+    return null;
+  }
+  return (template.id, recipeUrl);
 }
