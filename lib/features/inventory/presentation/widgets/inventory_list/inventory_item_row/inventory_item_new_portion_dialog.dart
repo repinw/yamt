@@ -82,6 +82,7 @@ class _NewPortionDialogState extends State<_NewPortionDialog> {
             if (widget.availableUnits.length > 1) ...[
               const SizedBox(height: AppSpacing.lg),
               DropdownButtonFormField<ConsumedUnit>(
+                enableFeedback: false,
                 key: const Key('inventory_item_portion_unit_field'),
                 initialValue: _selectedUnit,
                 items: [

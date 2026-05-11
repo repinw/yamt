@@ -386,6 +386,7 @@ class InventorySortOptionCard extends StatelessWidget {
       child: Semantics(
         selected: isSelected,
         child: InkWell(
+          enableFeedback: false,
           onTap: enabled ? onSelect : null,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: AnimatedContainer(
@@ -606,6 +607,7 @@ class InventorySectionExpandButton extends StatelessWidget {
       expanded: isExpanded,
       label: semanticLabel,
       child: InkResponse(
+        enableFeedback: false,
         onTap: enabled ? onPressed : null,
         radius: 24,
         child: Padding(

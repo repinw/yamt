@@ -141,6 +141,7 @@ class _HomeHeartCounterPill extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         child: InkWell(
+          enableFeedback: false,
           onTap: onPressed,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Padding(

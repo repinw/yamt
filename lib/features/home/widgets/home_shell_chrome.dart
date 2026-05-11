@@ -608,6 +608,7 @@ class _HomeBottomNavItemButton extends StatelessWidget {
       selected: isSelected,
       label: item.label,
       child: InkWell(
+        enableFeedback: false,
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         child: AnimatedContainer(

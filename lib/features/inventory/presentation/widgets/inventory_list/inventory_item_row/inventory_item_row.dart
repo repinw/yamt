@@ -834,6 +834,7 @@ class _InventoryItemRowCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
+            enableFeedback: false,
             onTap: onToggleExpanded,
             onLongPress: isSelectionMode ? null : onStartSelection,
             child: _InventoryItemRowBody(

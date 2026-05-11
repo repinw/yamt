@@ -257,6 +257,7 @@ ThemeData _buildSearchToolbarTheme(BuildContext context) {
     ),
     iconButtonTheme: IconButtonThemeData(
       style: IconButton.styleFrom(
+        enableFeedback: false,
         backgroundColor: colors.surfaceContainerLow.withValues(alpha: 0.96),
         foregroundColor: colors.onSurfaceVariant,
         side: BorderSide(

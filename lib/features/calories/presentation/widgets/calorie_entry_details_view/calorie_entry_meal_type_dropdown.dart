@@ -31,6 +31,7 @@ class CalorieEntryMealTypeDropdown extends StatelessWidget {
 
     return DropdownButtonHideUnderline(
       child: DropdownButton<MealType>(
+        enableFeedback: false,
         key: CalorieEntryDetailKeys.mealSelector,
         value: selectedMealType,
         isDense: true,

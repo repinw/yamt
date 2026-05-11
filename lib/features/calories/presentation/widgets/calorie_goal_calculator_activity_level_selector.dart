@@ -110,6 +110,7 @@ class _ActivityLevelOptionCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        enableFeedback: false,
         key: CalorieGoalCalculatorSheetKeys.activityLevelOption(option.name),
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.xl),

@@ -216,6 +216,7 @@ class _AiEatWhenCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        enableFeedback: false,
         key: const Key('manual_product_ai_logged_at_button'),
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -308,6 +309,7 @@ class _AiMealTypeSelector extends StatelessWidget {
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<MealType>(
+                enableFeedback: false,
                 value: selectedMealType,
                 isDense: true,
                 isExpanded: true,

@@ -149,6 +149,7 @@ class SettingsTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        enableFeedback: false,
         onTap: effectiveOnTap,
         child: Opacity(
           opacity: opacity,

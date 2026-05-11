@@ -27,6 +27,7 @@ class SettingsProfileCard extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: false,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           onTap: () => context.push(AppRoutes.homeSettingsAccount),
           child: Padding(

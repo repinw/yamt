@@ -48,6 +48,7 @@ class InventoryMainFabButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
+            enableFeedback: false,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             onTap: onPressed,
             child: Tooltip(

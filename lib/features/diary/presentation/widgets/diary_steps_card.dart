@@ -67,6 +67,7 @@ class _DiaryStepsCardState extends ConsumerState<DiaryStepsCard>
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(24),
           child: InkWell(
+            enableFeedback: false,
             onTap: canExpand
                 ? () {
                     setState(() {

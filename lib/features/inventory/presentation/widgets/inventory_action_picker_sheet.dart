@@ -210,6 +210,7 @@ class InventoryActionPickerOptionTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        enableFeedback: false,
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Ink(

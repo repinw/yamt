@@ -223,6 +223,7 @@ class _CookingFlowTareUtensilTile extends ConsumerWidget {
             : colors.surfaceContainerLow,
         borderRadius: radius,
         child: InkWell(
+          enableFeedback: false,
           borderRadius: radius,
           onTap: () => onSelected(utensil),
           child: Padding(

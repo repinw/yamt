@@ -1070,6 +1070,7 @@ class _QuickActionCard extends StatelessWidget {
         color: color.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: InkWell(
+          enableFeedback: false,
           key: CaloriesPageKeys.burnWeekMockQuickAction(
             delta.round().toString(),
           ),

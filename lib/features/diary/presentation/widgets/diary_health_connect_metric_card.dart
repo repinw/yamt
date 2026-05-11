@@ -102,6 +102,7 @@ class _HealthConnectCardShell extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: false,
           onTap: onPressed,
           borderRadius: BorderRadius.circular(24),
           child: Padding(

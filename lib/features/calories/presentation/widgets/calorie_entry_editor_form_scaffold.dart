@@ -192,6 +192,7 @@ class _CalorieEntryIdentitySection extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<MealType>(
+          enableFeedback: false,
           initialValue: selectedMealType,
           decoration: InputDecoration(labelText: l10n.caloriesEntryMealLabel),
           items: MealType.sectionOrder
@@ -246,6 +247,7 @@ class _CalorieEntryAmountSection extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: DropdownButtonFormField<ConsumedUnit>(
+            enableFeedback: false,
             key: CalorieEntryEditorKeys.unitField,
             initialValue: selectedConsumedUnit,
             decoration: InputDecoration(labelText: l10n.caloriesEntryUnitLabel),

@@ -138,6 +138,7 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
+          enableFeedback: false,
           onTap: widget.selection.isSelectionMode ? null : _toggleExpanded,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: Padding(

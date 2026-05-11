@@ -121,6 +121,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             DropdownButtonFormField<int>(
+              enableFeedback: false,
               key: ValueKey<int>(_selectedSeedColor.toARGB32()),
               initialValue: _selectedSeedColor.toARGB32(),
               decoration: InputDecoration(labelText: l10n.settingsColorTitle),
@@ -145,6 +146,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             DropdownButtonFormField<ThemeMode>(
+              enableFeedback: false,
               key: ValueKey<ThemeMode>(_selectedThemeMode),
               initialValue: _selectedThemeMode,
               decoration: InputDecoration(labelText: l10n.settingsThemeTitle),

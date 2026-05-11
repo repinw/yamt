@@ -29,6 +29,7 @@ class InventoryEatFlowMealTypeSelector extends StatelessWidget {
       leadingIcon: Icons.restaurant_rounded,
       child: DropdownButtonHideUnderline(
         child: DropdownButton<MealType>(
+          enableFeedback: false,
           value: selectedMealType,
           isDense: true,
           isExpanded: true,

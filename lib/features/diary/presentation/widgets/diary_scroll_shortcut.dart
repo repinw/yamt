@@ -132,6 +132,7 @@ class _DiaryScrollShortcutButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: false,
           onTap: onPressed,
           borderRadius: BorderRadius.circular(20),
           child: Ink(

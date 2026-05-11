@@ -55,6 +55,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: false,
           borderRadius: BorderRadius.circular(19),
           onTap: onTap,
           child: AnimatedContainer(

@@ -189,6 +189,7 @@ class _CandidatePickerTile extends StatelessWidget {
       color: background,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
+        enableFeedback: false,
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -275,6 +276,7 @@ class _FallbackSelectionTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(top: 16),
         child: InkWell(
+          enableFeedback: false,
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Ink(

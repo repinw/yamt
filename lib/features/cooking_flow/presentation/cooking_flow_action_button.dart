@@ -124,6 +124,7 @@ class _CookingFlowAccentSurface extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: false,
           onTap: onPressed,
           borderRadius: radius,
           child: child,
@@ -177,6 +178,7 @@ class CookingFlowSecondaryActionButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: false,
           onTap: onPressed,
           borderRadius: radius,
           child: Padding(

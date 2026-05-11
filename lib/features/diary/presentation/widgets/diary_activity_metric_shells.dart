@@ -12,6 +12,7 @@ class _MetricTapShell extends StatelessWidget {
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(24),
       child: InkWell(
+        enableFeedback: false,
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: child,

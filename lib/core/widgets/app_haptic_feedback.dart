@@ -1,11 +1,13 @@
 import 'dart:async';
-import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// Adds a small haptic pulse for completed touch taps across the app.
+///
+/// Material widget feedback is disabled in the app theme and raw Ink widgets so
+/// this remains the single feedback source for tap haptics.
 class AppHapticFeedback extends StatefulWidget {
   /// Creates an app-wide haptic feedback listener.
   const AppHapticFeedback({required this.child, super.key});
@@ -81,5 +83,5 @@ class _TrackedTouchPress {
   _TrackedTouchPress(this.startPosition);
 
   final Offset startPosition;
-  var movedTooFar = false;
+  bool movedTooFar = false;
 }

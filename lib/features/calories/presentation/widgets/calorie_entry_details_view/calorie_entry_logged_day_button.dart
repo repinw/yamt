@@ -39,6 +39,7 @@ class CalorieEntryLoggedDayButton extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        enableFeedback: false,
         key: CalorieEntryDetailKeys.loggedDayButton,
         onTap: isEnabled ? onPressed : null,
         borderRadius: BorderRadius.circular(AppRadius.md),

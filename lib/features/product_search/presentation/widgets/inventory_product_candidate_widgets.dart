@@ -90,6 +90,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: false,
           onTap: onTap,
           borderRadius: borderRadius,
           child: tile,

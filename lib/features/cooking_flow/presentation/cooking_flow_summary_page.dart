@@ -686,6 +686,7 @@ class _SummaryIngredientContainerRow extends StatelessWidget {
         SizedBox(
           width: 180,
           child: DropdownButtonFormField<String>(
+            enableFeedback: false,
             initialValue: resolvedValue,
             isExpanded: true,
             decoration: InputDecoration(

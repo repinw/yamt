@@ -201,6 +201,7 @@ class _WeightAddRow extends StatelessWidget {
       color: colors.surfaceContainerHighest.withValues(alpha: 0.24),
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
+        enableFeedback: false,
         onTap: onPressed,
         borderRadius: BorderRadius.circular(14),
         child: Padding(
@@ -268,6 +269,7 @@ class _WeightHistoryRow extends StatelessWidget {
       color: colors.surfaceContainerHighest.withValues(alpha: 0.36),
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
+        enableFeedback: false,
         onTap: onEdit,
         borderRadius: BorderRadius.circular(14),
         child: Padding(

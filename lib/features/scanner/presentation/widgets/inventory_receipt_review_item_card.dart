@@ -70,6 +70,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        enableFeedback: false,
         key: Key('receipt_review_edit_button_$index'),
         onTap: item.isDiscount ? null : () => onEditTap(item.id),
         borderRadius: BorderRadius.circular(18),

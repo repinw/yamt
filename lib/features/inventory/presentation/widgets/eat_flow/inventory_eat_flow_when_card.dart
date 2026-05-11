@@ -42,6 +42,7 @@ class InventoryEatFlowWhenCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        enableFeedback: false,
         key: buttonKey,
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppRadius.lg),

@@ -163,6 +163,7 @@ class _ConflictActionTile extends StatelessWidget {
       color: containerColor,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
+        enableFeedback: false,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         onTap: onTap,
         child: Container(

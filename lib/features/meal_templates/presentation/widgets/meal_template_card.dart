@@ -61,6 +61,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: false,
           borderRadius: borderRadius,
           onTap: onOpenPressed,
           child: Padding(
@@ -172,6 +173,7 @@ class _ResumeCookflowBadge extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
+      enableFeedback: false,
       onTap: onPressed,
       borderRadius: BorderRadius.circular(AppRadius.xl),
       child: Container(

@@ -18,6 +18,7 @@ class InventoryReceiptPreviewButton extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        enableFeedback: false,
         key: const Key('receipt_review_preview_button'),
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),

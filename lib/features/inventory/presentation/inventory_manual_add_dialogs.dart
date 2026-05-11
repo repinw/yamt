@@ -202,6 +202,7 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
             SizedBox(
               width: 112,
               child: DropdownButtonFormField<InventoryAmountUnit>(
+                enableFeedback: false,
                 key: const Key('inventory_manual_add_eat_unit_field'),
                 initialValue: _selectedUnit,
                 decoration: const InputDecoration(

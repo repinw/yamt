@@ -211,6 +211,7 @@ class _InventoryItemEatAmountModeSelector extends StatelessWidget {
 
     return DropdownButtonHideUnderline(
       child: DropdownButton<String>(
+        enableFeedback: false,
         key: const Key('inventory_item_amount_mode_dropdown'),
         value: data.selectedModeId,
         isExpanded: true,

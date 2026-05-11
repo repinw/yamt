@@ -471,6 +471,7 @@ class _ManualIngredientAdditionSheetState
             ),
             const SizedBox(height: AppSpacing.lg),
             DropdownButtonFormField<String>(
+              enableFeedback: false,
               initialValue: _selectedItemId,
               decoration: InputDecoration(
                 labelText: l10n.cookflowInventorySelectionItemLabel,
