@@ -20,6 +20,7 @@ import 'package:yamt/features/health/provider/health_connection_service_provider
 import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
+import 'package:yamt/features/settings/settings_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
@@ -149,7 +150,6 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
   AsyncValue<String>? appVersionValueOverride,
   CalorieGoalSettings? calorieSettings,
   _FakeHealthConnectionService? healthService,
-  List<dynamic> extraOverrides = const <dynamic>[],
 }) async {
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: calorieSettings,
@@ -165,6 +165,9 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
     ProviderScope(
       overrides: [
         appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(null),
+        ),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         healthConnectionServiceProvider.overrideWith(
           (ref) => resolvedHealthService,
@@ -173,7 +176,6 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
           appVersionProvider.overrideWithValue(appVersionValueOverride),
         if (appVersionOverride != null)
           appVersionProvider.overrideWith(appVersionOverride),
-        ...extraOverrides.cast(),
       ],
       child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -186,13 +188,25 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
   return settingsRepository;
 }
 
-ListTile _aboutTile(WidgetTester tester) {
-  final finder = find.ancestor(
-    of: find.text('About'),
-    matching: find.byType(ListTile),
+ProviderContainer _createSettingsContainer({
+  required CalorieSettingsRepository settingsRepository,
+}) {
+  return ProviderContainer(
+    overrides: [
+      appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
+      authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(null)),
+      appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+      calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      healthConnectionServiceProvider.overrideWith(
+        (ref) => _FakeHealthConnectionService(
+          disconnectResult: HealthDisconnectResult.disconnected,
+        ),
+      ),
+    ],
   );
-  return tester.widget<ListTile>(finder.first);
 }
+
+Finder _settingsTile(Key key) => find.byKey(key);
 
 Future<void> _scrollToText(
   WidgetTester tester,
@@ -219,8 +233,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.group_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.person_outline), findsOneWidget);
+    expect(find.byIcon(Icons.groups_2_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
 
     expect(find.text('Household'), findsOneWidget);
     expect(
@@ -230,7 +244,7 @@ void main() {
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Manage profile and sign-in'), findsOneWidget);
     await _scrollToText(tester, 'Health Connect');
-    expect(find.byIcon(Icons.link_off), findsOneWidget);
+    expect(find.byIcon(Icons.link_off_rounded), findsOneWidget);
     expect(find.text('Health Connect'), findsOneWidget);
     expect(find.text('Remove Health Connect access for YAMT.'), findsOneWidget);
     expect(find.text('Set goal manually'), findsNothing);
@@ -246,17 +260,17 @@ void main() {
     expect(find.text('Teal'), findsNWidgets(2));
 
     await _scrollToText(tester, 'Language');
-    expect(find.byIcon(Icons.language_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.language_rounded), findsOneWidget);
     expect(find.text('Language'), findsOneWidget);
-    expect(find.text('Choose app language'), findsOneWidget);
+    expect(find.text('English'), findsOneWidget);
 
     await _scrollToText(tester, 'Notifications');
-    expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Manage reminders and alerts'), findsOneWidget);
 
     await _scrollToText(tester, 'About');
-    expect(find.byIcon(Icons.info_outline), findsOneWidget);
+    expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and information'), findsOneWidget);
     expect(find.text('1.1.0+2'), findsOneWidget);
@@ -308,7 +322,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Health Connect').first);
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
     await tester.pumpAndSettle();
 
     expect(healthService.requestAuthorizationCallCount, 1);
@@ -342,7 +356,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Health Connect').first);
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
     await tester.pumpAndSettle();
 
     expect(healthService.installCallCount, 1);
@@ -362,7 +376,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _scrollToText(tester, 'Health Connect');
-    await tester.tap(find.text('Health Connect').first);
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
     await tester.pumpAndSettle();
 
     expect(find.text('Disconnect health access?'), findsOneWidget);
@@ -406,7 +420,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Apple Health').first);
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
     await tester.pumpAndSettle();
 
     expect(find.text('Disconnect health access?'), findsOneWidget);
@@ -458,10 +472,17 @@ void main() {
       ProviderScope(
         overrides: [
           appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
-          authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
+          authStateChangesProvider.overrideWith(
+            (ref) => Stream<User?>.value(user),
+          ),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
           calorieSettingsRepositoryProvider.overrideWithValue(
             settingsRepository,
+          ),
+          healthConnectionServiceProvider.overrideWith(
+            (ref) => _FakeHealthConnectionService(
+              disconnectResult: HealthDisconnectResult.disconnected,
+            ),
           ),
         ],
         child: MaterialApp.router(
@@ -472,7 +493,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Household').first);
+    await tester.tap(_settingsTile(SettingsPageKeys.householdTile));
     await tester.pumpAndSettle();
 
     expect(find.byType(HouseholdPage), findsOneWidget);
@@ -487,12 +508,12 @@ void main() {
     await tester.pumpAndSettle();
 
     await _scrollToText(tester, 'Language');
-    await tester.tap(find.text('Language'));
+    await tester.tap(_settingsTile(SettingsPageKeys.languageTile));
     await tester.pumpAndSettle();
     expect(find.text('Not implemented yet'), findsOneWidget);
 
     await _scrollToText(tester, 'Notifications');
-    await tester.tap(find.text('Notifications'));
+    await tester.tap(_settingsTile(SettingsPageKeys.notificationsTile));
     await tester.pumpAndSettle();
     expect(find.text('Not implemented yet'), findsOneWidget);
 
@@ -500,15 +521,11 @@ void main() {
     expect(find.text('1.1.0+2'), findsOneWidget);
   });
 
-  testWidgets('theme dropdown updates theme mode provider', (tester) async {
+  testWidgets('theme sheet updates theme mode provider', (tester) async {
     final settingsRepository = FakeCalorieSettingsRepository();
     addTearDown(settingsRepository.dispose);
-    final container = ProviderContainer(
-      overrides: [
-        appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
+    final container = _createSettingsContainer(
+      settingsRepository: settingsRepository,
     );
     addTearDown(container.dispose);
 
@@ -524,13 +541,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final dropdownFinder = find.byWidgetPredicate(
-      (widget) => widget is DropdownButton<ThemeMode>,
-    );
-
     expect(container.read(themeModeControllerProvider), ThemeMode.system);
 
-    await tester.tap(dropdownFinder);
+    await tester.tap(_settingsTile(SettingsPageKeys.themeTile));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dark').last);
     await tester.pumpAndSettle();
@@ -539,15 +552,11 @@ void main() {
     expect(find.text('Dark'), findsNWidgets(2));
   });
 
-  testWidgets('color dropdown updates seed color provider', (tester) async {
+  testWidgets('color sheet updates seed color provider', (tester) async {
     final settingsRepository = FakeCalorieSettingsRepository();
     addTearDown(settingsRepository.dispose);
-    final container = ProviderContainer(
-      overrides: [
-        appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
+    final container = _createSettingsContainer(
+      settingsRepository: settingsRepository,
     );
     addTearDown(container.dispose);
 
@@ -563,14 +572,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final colorDropdownFinder = find.byWidgetPredicate(
-      (widget) => widget is DropdownButton<int>,
-    );
-
     expect(container.read(seedColorControllerProvider).toARGB32(), 0xFF00695C);
 
     await _scrollToText(tester, 'Accent color');
-    await tester.tap(colorDropdownFinder);
+    await tester.tap(_settingsTile(SettingsPageKeys.colorTile));
     await tester.pumpAndSettle();
     expect(find.text('Pink'), findsOneWidget);
     await tester.tap(find.text('Pink').last);
@@ -590,7 +595,8 @@ void main() {
 
     await _scrollToText(tester, 'About', settle: false);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(_aboutTile(tester).trailing, isNotNull);
+    expect(find.byKey(SettingsPageKeys.aboutTrailing), findsOneWidget);
+    expect(find.text('1.1.0+2'), findsNothing);
   });
 
   testWidgets('About tile renders no trailing widget on version error', (
@@ -606,8 +612,9 @@ void main() {
 
     await _scrollToText(tester, 'About');
     expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byKey(SettingsPageKeys.aboutTrailing), findsNothing);
     expect(find.text('1.1.0+2'), findsNothing);
-    expect(_aboutTile(tester).trailing, isNull);
+    expect(find.text('App version and information'), findsOneWidget);
   });
 
   testWidgets('Account tile opens AccountPage', (tester) async {
@@ -637,10 +644,17 @@ void main() {
       ProviderScope(
         overrides: [
           appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
-          authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
+          authStateChangesProvider.overrideWith(
+            (ref) => Stream<User?>.value(user),
+          ),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
           calorieSettingsRepositoryProvider.overrideWithValue(
             settingsRepository,
+          ),
+          healthConnectionServiceProvider.overrideWith(
+            (ref) => _FakeHealthConnectionService(
+              disconnectResult: HealthDisconnectResult.disconnected,
+            ),
           ),
         ],
         child: MaterialApp.router(
@@ -652,7 +666,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Account').first);
+    await tester.tap(_settingsTile(SettingsPageKeys.accountTile));
     await tester.pumpAndSettle();
 
     expect(find.byType(AccountPage), findsOneWidget);
