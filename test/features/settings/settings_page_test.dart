@@ -15,6 +15,8 @@ import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_page_keys.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
@@ -208,6 +210,68 @@ ProviderContainer _createSettingsContainer({
       ),
     ],
   );
+}
+
+Future<ProviderContainer> _pumpSettingsPageUnderShellOverlay(
+  WidgetTester tester, {
+  required ValueNotifier<bool> menuCatchesTaps,
+  required VoidCallback onMenuTap,
+}) async {
+  final settingsRepository = FakeCalorieSettingsRepository();
+  addTearDown(settingsRepository.dispose);
+  final container = _createSettingsContainer(
+    settingsRepository: settingsRepository,
+  );
+  addTearDown(container.dispose);
+
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Stack(
+            children: [
+              Navigator(
+                onGenerateRoute: (_) {
+                  return MaterialPageRoute<void>(
+                    builder: (_) => const Scaffold(body: SettingsPage()),
+                  );
+                },
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 320,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: menuCatchesTaps,
+                  builder: (context, catchesTaps, child) {
+                    return IgnorePointer(
+                      ignoring: !catchesTaps,
+                      child: child,
+                    );
+                  },
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onMenuTap,
+                    child: const ColoredBox(
+                      color: Colors.black54,
+                      child: Center(child: Text('Shell bottom menu')),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+
+  return container;
 }
 
 Finder _settingsTile(Key key) => find.byKey(key);
@@ -651,6 +715,59 @@ void main() {
 
     expect(container.read(seedColorControllerProvider).toARGB32(), 0xFFFF006F);
     expect(find.text('Pink'), findsNWidgets(2));
+  });
+
+  testWidgets('settings bottom sheets open above shell bottom menu', (
+    tester,
+  ) async {
+    final menuCatchesTaps = ValueNotifier<bool>(false);
+    addTearDown(menuCatchesTaps.dispose);
+    var menuTapCount = 0;
+    final container = await _pumpSettingsPageUnderShellOverlay(
+      tester,
+      menuCatchesTaps: menuCatchesTaps,
+      onMenuTap: () => menuTapCount += 1,
+    );
+
+    await _scrollToText(tester, 'Accent color');
+    await tester.tap(_settingsTile(SettingsPageKeys.colorTile));
+    await tester.pumpAndSettle();
+    menuCatchesTaps.value = true;
+    await tester.pump();
+
+    await tester.tap(find.text('Pink').last);
+    await tester.pumpAndSettle();
+
+    expect(menuTapCount, 0);
+    expect(container.read(seedColorControllerProvider).toARGB32(), 0xFFFF006F);
+  });
+
+  testWidgets('calculator bottom sheet opens above shell bottom menu', (
+    tester,
+  ) async {
+    final menuCatchesTaps = ValueNotifier<bool>(false);
+    addTearDown(menuCatchesTaps.dispose);
+    var menuTapCount = 0;
+    await _pumpSettingsPageUnderShellOverlay(
+      tester,
+      menuCatchesTaps: menuCatchesTaps,
+      onMenuTap: () => menuTapCount += 1,
+    );
+
+    await _scrollToTile(tester, SettingsPageKeys.calorieGoalCalculatorTile);
+    await tester.tap(_settingsTile(SettingsPageKeys.calorieGoalCalculatorTile));
+    await tester.pumpAndSettle();
+    menuCatchesTaps.value = true;
+    await tester.pump();
+
+    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.nextButton));
+    await tester.pumpAndSettle();
+
+    expect(menuTapCount, 0);
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.weightField),
+      findsOneWidget,
+    );
   });
 
   testWidgets('About tile shows loading indicator while version loads', (

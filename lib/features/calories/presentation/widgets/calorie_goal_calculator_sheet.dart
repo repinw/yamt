@@ -10,16 +10,19 @@ Future<void> showCalorieGoalCalculatorSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
   bool preferLearnedTdee = true,
+  bool useRootNavigator = false,
 }) {
   if (preferLearnedTdee && initialSettings.hasLearnedTdee) {
     return showCalorieLearnedTdeeGoalSheet(
       context,
       initialSettings: initialSettings,
+      useRootNavigator: useRootNavigator,
     );
   }
 
   return showCalorieGoalCalculatorResetSheet(
     context,
     initialSettings: initialSettings,
+    useRootNavigator: useRootNavigator,
   );
 }

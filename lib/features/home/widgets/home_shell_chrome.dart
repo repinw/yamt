@@ -162,6 +162,10 @@ class _HomeShellTopChromeDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
+    if (maxExtent <= 0) {
+      return const SizedBox.shrink();
+    }
+
     final visibility = _clampChromeVisibility(
       (maxExtent - shrinkOffset) / maxExtent,
     );

@@ -212,6 +212,7 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
               showCalorieGoalCalculatorSheet(
                 context,
                 initialSettings: settings,
+                useRootNavigator: true,
               ),
             ),
     );
@@ -363,6 +364,7 @@ class _SeedColorTile extends ConsumerWidget {
     unawaited(
       showModalBottomSheet<void>(
         context: context,
+        useRootNavigator: true,
         showDragHandle: true,
         builder: (sheetContext) {
           return SafeArea(
