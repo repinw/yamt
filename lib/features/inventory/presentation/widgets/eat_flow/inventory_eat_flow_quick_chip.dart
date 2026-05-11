@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Shared quick chip.
 class InventoryEatFlowQuickChip extends StatelessWidget {
@@ -26,8 +27,7 @@ class InventoryEatFlowQuickChip extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        enableFeedback: false,
+      child: AppInkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Ink(

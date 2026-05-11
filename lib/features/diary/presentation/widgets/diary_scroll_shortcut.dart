@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Floating shortcut for jumping between diary header and meals.
@@ -131,8 +132,7 @@ class _DiaryScrollShortcutButton extends StatelessWidget {
       message: label,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          enableFeedback: false,
+        child: AppInkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(20),
           child: Ink(

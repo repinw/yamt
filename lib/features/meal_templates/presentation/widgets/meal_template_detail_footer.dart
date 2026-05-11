@@ -189,8 +189,7 @@ class _FooterPrimaryActionButton extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          enableFeedback: false,
+        child: AppInkWell(
           onTap: onPressed,
           borderRadius: radius,
           child: Padding(
@@ -249,8 +248,7 @@ class _FooterOutlineActionButton extends StatelessWidget {
     return Material(
       color: colors.surfaceContainerLowest,
       borderRadius: radius,
-      child: InkWell(
-        enableFeedback: false,
+      child: AppInkWell(
         onTap: onPressed,
         borderRadius: radius,
         child: Ink(

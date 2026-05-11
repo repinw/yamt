@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Single day button used by the diary calendar strip.
 class DiaryCalendarDayButton extends StatelessWidget {
@@ -54,8 +55,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 1),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          enableFeedback: false,
+        child: AppInkWell(
           borderRadius: BorderRadius.circular(19),
           onTap: onTap,
           child: AnimatedContainer(

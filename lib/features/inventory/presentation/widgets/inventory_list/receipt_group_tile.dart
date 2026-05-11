@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -137,8 +138,7 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        InkWell(
-          enableFeedback: false,
+        AppInkWell(
           onTap: widget.selection.isSelectionMode ? null : _toggleExpanded,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: Padding(

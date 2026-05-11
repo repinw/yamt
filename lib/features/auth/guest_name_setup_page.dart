@@ -7,6 +7,7 @@ import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -120,8 +121,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            DropdownButtonFormField<int>(
-              enableFeedback: false,
+            AppDropdownButtonFormField<int>(
               key: ValueKey<int>(_selectedSeedColor.toARGB32()),
               initialValue: _selectedSeedColor.toARGB32(),
               decoration: InputDecoration(labelText: l10n.settingsColorTitle),
@@ -145,8 +145,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
               ],
             ),
             const SizedBox(height: AppSpacing.xl),
-            DropdownButtonFormField<ThemeMode>(
-              enableFeedback: false,
+            AppDropdownButtonFormField<ThemeMode>(
               key: ValueKey<ThemeMode>(_selectedThemeMode),
               initialValue: _selectedThemeMode,
               decoration: InputDecoration(labelText: l10n.settingsThemeTitle),

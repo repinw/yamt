@@ -163,8 +163,7 @@ class _PreparedMealEatAmountModeSelector extends StatelessWidget {
     ];
 
     return DropdownButtonHideUnderline(
-      child: DropdownButton<_PreparedMealEatAmountMode>(
-        enableFeedback: false,
+      child: AppDropdownButton<_PreparedMealEatAmountMode>(
         key: const Key('prepared_meal_amount_mode_dropdown'),
         value: amountMode,
         isExpanded: true,

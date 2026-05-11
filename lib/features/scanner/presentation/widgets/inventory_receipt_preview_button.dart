@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Button that opens the full receipt preview dialog.
@@ -17,8 +18,7 @@ class InventoryReceiptPreviewButton extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        enableFeedback: false,
+      child: AppInkWell(
         key: const Key('receipt_review_preview_button'),
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),

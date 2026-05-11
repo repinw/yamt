@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Shared max width for the settings content column.
 const settingsMaxWidth = 560.0;
@@ -148,8 +149,7 @@ class SettingsTile extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        enableFeedback: false,
+      child: AppInkWell(
         onTap: effectiveOnTap,
         child: Opacity(
           opacity: opacity,

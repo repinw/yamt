@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
@@ -140,8 +141,7 @@ class _HomeHeartCounterPill extends StatelessWidget {
       child: Material(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        child: InkWell(
-          enableFeedback: false,
+        child: AppInkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Padding(

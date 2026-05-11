@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/inventory/application/'
@@ -470,8 +471,7 @@ class _ManualIngredientAdditionSheetState
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.lg),
-            DropdownButtonFormField<String>(
-              enableFeedback: false,
+            AppDropdownButtonFormField<String>(
               initialValue: _selectedItemId,
               decoration: InputDecoration(
                 labelText: l10n.cookflowInventorySelectionItemLabel,

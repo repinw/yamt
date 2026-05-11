@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Defines credential conflict action.
 enum CredentialConflictAction {
@@ -162,8 +163,7 @@ class _ConflictActionTile extends StatelessWidget {
     return Material(
       color: containerColor,
       borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: InkWell(
-        enableFeedback: false,
+      child: AppInkWell(
         borderRadius: BorderRadius.circular(AppRadius.lg),
         onTap: onTap,
         child: Container(

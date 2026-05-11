@@ -226,6 +226,14 @@ ThemeData _buildSearchToolbarTheme(BuildContext context) {
   final shape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(AppRadius.xl),
   );
+  final iconButtonStyle = IconButton.styleFrom(
+    backgroundColor: colors.surfaceContainerLow.withValues(alpha: 0.96),
+    foregroundColor: colors.onSurfaceVariant,
+    side: BorderSide(
+      color: colors.outlineVariant.withValues(alpha: 0.72),
+    ),
+    shape: shape,
+  ).merge(theme.iconButtonTheme.style);
 
   return theme.copyWith(
     inputDecorationTheme: theme.inputDecorationTheme.copyWith(
@@ -256,15 +264,7 @@ ThemeData _buildSearchToolbarTheme(BuildContext context) {
       ),
     ),
     iconButtonTheme: IconButtonThemeData(
-      style: IconButton.styleFrom(
-        enableFeedback: false,
-        backgroundColor: colors.surfaceContainerLow.withValues(alpha: 0.96),
-        foregroundColor: colors.onSurfaceVariant,
-        side: BorderSide(
-          color: colors.outlineVariant.withValues(alpha: 0.72),
-        ),
-        shape: shape,
-      ),
+      style: iconButtonStyle,
     ),
   );
 }

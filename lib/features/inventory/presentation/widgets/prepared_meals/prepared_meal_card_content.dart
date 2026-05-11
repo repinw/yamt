@@ -26,8 +26,7 @@ class _PreparedMealCardHeader extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
 
-    return InkWell(
-      enableFeedback: false,
+    return AppInkWell(
       onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: Padding(

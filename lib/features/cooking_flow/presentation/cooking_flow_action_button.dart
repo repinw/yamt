@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Primary accent button used across Cookflow screens.
 class CookingFlowActionButton extends StatelessWidget {
@@ -123,8 +124,7 @@ class _CookingFlowAccentSurface extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          enableFeedback: false,
+        child: AppInkWell(
           onTap: onPressed,
           borderRadius: radius,
           child: child,
@@ -177,8 +177,7 @@ class CookingFlowSecondaryActionButton extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          enableFeedback: false,
+        child: AppInkWell(
           onTap: onPressed,
           borderRadius: radius,
           child: Padding(

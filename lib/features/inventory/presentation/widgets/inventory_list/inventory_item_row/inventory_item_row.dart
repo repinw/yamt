@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -833,8 +834,7 @@ class _InventoryItemRowCard extends StatelessWidget {
         borderRadius: radius,
         child: Material(
           color: Colors.transparent,
-          child: InkWell(
-            enableFeedback: false,
+          child: AppInkWell(
             onTap: onToggleExpanded,
             onLongPress: isSelectionMode ? null : onStartSelection,
             child: _InventoryItemRowBody(

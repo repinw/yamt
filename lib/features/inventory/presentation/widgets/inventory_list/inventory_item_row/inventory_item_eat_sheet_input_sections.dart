@@ -107,8 +107,7 @@ class _InventoryItemEatInedibleAmountSection extends StatelessWidget {
         children: [
           Material(
             color: Colors.transparent,
-            child: InkWell(
-              enableFeedback: false,
+            child: AppInkWell(
               key: const Key('inventory_item_inedible_amount_toggle'),
               borderRadius: BorderRadius.circular(AppRadius.lg),
               onTap: onToggleExpanded,

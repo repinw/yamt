@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -685,8 +686,7 @@ class _SummaryIngredientContainerRow extends StatelessWidget {
         const SizedBox(width: AppSpacing.lg),
         SizedBox(
           width: 180,
-          child: DropdownButtonFormField<String>(
-            enableFeedback: false,
+          child: AppDropdownButtonFormField<String>(
             initialValue: resolvedValue,
             isExpanded: true,
             decoration: InputDecoration(

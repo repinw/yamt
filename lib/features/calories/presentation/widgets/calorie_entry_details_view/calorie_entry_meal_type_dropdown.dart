@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -30,8 +31,7 @@ class CalorieEntryMealTypeDropdown extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DropdownButtonHideUnderline(
-      child: DropdownButton<MealType>(
-        enableFeedback: false,
+      child: AppDropdownButton<MealType>(
         key: CalorieEntryDetailKeys.mealSelector,
         value: selectedMealType,
         isDense: true,

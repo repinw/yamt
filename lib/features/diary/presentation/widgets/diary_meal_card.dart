@@ -47,8 +47,7 @@ class _DiaryMealCard extends StatelessWidget {
           children: [
             Material(
               color: Colors.transparent,
-              child: InkWell(
-                enableFeedback: false,
+              child: AppInkWell(
                 onTap: onToggle,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 child: Padding(
@@ -176,8 +175,7 @@ class _CollapsedMealBody extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
               child: Material(
                 color: Colors.transparent,
-                child: InkWell(
-                  enableFeedback: false,
+                child: AppInkWell(
                   onTap: () => onTapEntry(entry),
                   borderRadius: BorderRadius.circular(10),
                   child: Padding(
@@ -309,8 +307,7 @@ class _ExpandedMealEntry extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        enableFeedback: false,
+      child: AppInkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(18),
         child: Ink(
