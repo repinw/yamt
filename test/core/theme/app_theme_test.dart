@@ -71,5 +71,19 @@ void main() {
         ),
       );
     });
+
+    test('Material widgets keep their built-in feedback available', () {
+      expect(light.bottomNavigationBarTheme.enableFeedback, isNull);
+      expect(light.filledButtonTheme.style?.enableFeedback, isNull);
+      expect(light.outlinedButtonTheme.style?.enableFeedback, isNull);
+      expect(light.elevatedButtonTheme.style?.enableFeedback, isNull);
+      expect(light.textButtonTheme.style?.enableFeedback, isNull);
+      expect(light.iconButtonTheme.style?.enableFeedback, isNull);
+      expect(light.floatingActionButtonTheme.enableFeedback, isNull);
+      expect(light.listTileTheme.enableFeedback, isNull);
+      expect(light.popupMenuTheme.enableFeedback, isNull);
+      expect(light.segmentedButtonTheme.style?.enableFeedback, isNull);
+      expect(light.tooltipTheme.enableFeedback, isNull);
+    });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
@@ -69,7 +70,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
+      child: AppInkWell(
         key: Key('receipt_review_edit_button_$index'),
         onTap: item.isDiscount ? null : () => onEditTap(item.id),
         borderRadius: BorderRadius.circular(18),

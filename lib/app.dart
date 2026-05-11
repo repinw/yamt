@@ -35,8 +35,9 @@ class YAMT extends ConsumerWidget {
       theme: AppTheme.light(seedColor: seedColor),
       darkTheme: AppTheme.dark(seedColor: seedColor),
       themeMode: themeMode,
-      builder: (context, child) =>
-          SharedReceiptListener(child: AppBackground(child: child)),
+      builder: (context, child) => SharedReceiptListener(
+        child: AppBackground(child: child),
+      ),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

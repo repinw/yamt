@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -1069,7 +1070,7 @@ class _QuickActionCard extends StatelessWidget {
       child: Material(
         color: color.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        child: InkWell(
+        child: AppInkWell(
           key: CaloriesPageKeys.burnWeekMockQuickAction(
             delta.round().toString(),
           ),

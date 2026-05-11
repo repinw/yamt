@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_metric_stat_card.dart';
@@ -227,7 +228,7 @@ class _BurnWeekCounterBadge extends StatelessWidget {
     return Material(
       color: colors.surfaceContainerLow,
       borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: InkWell(
+      child: AppInkWell(
         borderRadius: BorderRadius.circular(AppRadius.lg),
         onTap: onTap,
         child: child,

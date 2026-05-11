@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_cover.dart';
@@ -222,7 +223,7 @@ class _CookingFlowTareUtensilTile extends ConsumerWidget {
             ? colors.primaryContainer
             : colors.surfaceContainerLow,
         borderRadius: radius,
-        child: InkWell(
+        child: AppInkWell(
           borderRadius: radius,
           onTap: () => onSelected(utensil),
           child: Padding(

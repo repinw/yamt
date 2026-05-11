@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
@@ -385,7 +386,7 @@ class InventorySortOptionCard extends StatelessWidget {
     return MergeSemantics(
       child: Semantics(
         selected: isSelected,
-        child: InkWell(
+        child: AppInkWell(
           onTap: enabled ? onSelect : null,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: AnimatedContainer(
@@ -605,7 +606,7 @@ class InventorySectionExpandButton extends StatelessWidget {
       enabled: enabled,
       expanded: isExpanded,
       label: semanticLabel,
-      child: InkResponse(
+      child: AppInkResponse(
         onTap: enabled ? onPressed : null,
         radius: 24,
         child: Padding(

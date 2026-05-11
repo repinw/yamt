@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
@@ -191,7 +192,7 @@ class _CalorieEntryIdentitySection extends StatelessWidget {
           decoration: InputDecoration(labelText: l10n.caloriesEntryBrandLabel),
         ),
         const SizedBox(height: AppSpacing.md),
-        DropdownButtonFormField<MealType>(
+        AppDropdownButtonFormField<MealType>(
           initialValue: selectedMealType,
           decoration: InputDecoration(labelText: l10n.caloriesEntryMealLabel),
           items: MealType.sectionOrder
@@ -245,7 +246,7 @@ class _CalorieEntryAmountSection extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: DropdownButtonFormField<ConsumedUnit>(
+          child: AppDropdownButtonFormField<ConsumedUnit>(
             key: CalorieEntryEditorKeys.unitField,
             initialValue: selectedConsumedUnit,
             decoration: InputDecoration(labelText: l10n.caloriesEntryUnitLabel),

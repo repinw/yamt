@@ -6,6 +6,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -60,7 +61,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
+        child: AppInkWell(
           borderRadius: borderRadius,
           onTap: onOpenPressed,
           child: Padding(
@@ -171,7 +172,7 @@ class _ResumeCookflowBadge extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return InkWell(
+    return AppInkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(AppRadius.xl),
       child: Container(

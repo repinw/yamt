@@ -136,10 +136,7 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
                     activeColor: accentColors.today,
                     heartColor: accentColors.heartFor(colors.brightness),
                     inactiveTextColor: colors.onSurfaceVariant,
-                    onTap: () {
-                      unawaited(HapticFeedback.lightImpact());
-                      widget.onSelectDay(day);
-                    },
+                    onTap: () => widget.onSelectDay(day),
                   );
                 },
               ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart'
     show userProfileProvider;
 import 'package:yamt/features/settings/settings_page_keys.dart';
@@ -26,7 +27,7 @@ class SettingsProfileCard extends ConsumerWidget {
       key: SettingsPageKeys.profileCard,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
+        child: AppInkWell(
           borderRadius: BorderRadius.circular(AppRadius.lg),
           onTap: () => context.push(AppRoutes.homeSettingsAccount),
           child: Padding(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -201,7 +202,7 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
             const SizedBox(width: 12),
             SizedBox(
               width: 112,
-              child: DropdownButtonFormField<InventoryAmountUnit>(
+              child: AppDropdownButtonFormField<InventoryAmountUnit>(
                 key: const Key('inventory_manual_add_eat_unit_field'),
                 initialValue: _selectedUnit,
                 decoration: const InputDecoration(

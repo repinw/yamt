@@ -145,7 +145,7 @@ class _IngredientAssignmentBottomSheetState
                                 candidate: item,
                               );
 
-                          return CheckboxListTile(
+                          return AppCheckboxListTile(
                             value: isSelected,
                             contentPadding: EdgeInsets.zero,
                             secondary: _IngredientPreviewThumbnail(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
@@ -66,7 +67,7 @@ class _DiaryStepsCardState extends ConsumerState<DiaryStepsCard>
         Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(24),
-          child: InkWell(
+          child: AppInkWell(
             onTap: canExpand
                 ? () {
                     setState(() {

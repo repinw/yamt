@@ -12,6 +12,7 @@ import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -319,7 +320,7 @@ class _ThemeModeTile extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   for (final mode in ThemeMode.values)
-                    RadioListTile<ThemeMode>(
+                    AppRadioListTile<ThemeMode>(
                       value: mode,
                       title: Text(localizedThemeModeLabel(l10n, mode)),
                     ),
@@ -385,7 +386,7 @@ class _SeedColorTile extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   for (final color in AppSeedColors.values)
-                    RadioListTile<int>(
+                    AppRadioListTile<int>(
                       value: color.toARGB32(),
                       title: Text(localizedSeedColorLabel(l10n, color)),
                       secondary: Container(

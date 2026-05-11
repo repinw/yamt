@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
@@ -188,7 +189,7 @@ class _CandidatePickerTile extends StatelessWidget {
     return Material(
       color: background,
       borderRadius: BorderRadius.circular(12),
-      child: InkWell(
+      child: AppInkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -274,7 +275,7 @@ class _FallbackSelectionTile extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.only(top: 16),
-        child: InkWell(
+        child: AppInkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Ink(

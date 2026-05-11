@@ -97,7 +97,7 @@ class _BurnWeekCounterBadge extends StatelessWidget {
     return Material(
       color: colors.surfaceContainerLow,
       borderRadius: BorderRadius.circular(999),
-      child: InkWell(
+      child: AppInkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
         child: child,

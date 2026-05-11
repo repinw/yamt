@@ -432,7 +432,7 @@ class _IngredientActionPill extends StatelessWidget {
     return Material(
       color: colors.surfaceContainerLow,
       borderRadius: radius,
-      child: InkWell(
+      child: AppInkWell(
         onTap: onPressed,
         borderRadius: radius,
         child: Padding(

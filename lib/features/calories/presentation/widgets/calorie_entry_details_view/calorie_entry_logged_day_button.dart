@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_details_labels.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -38,7 +39,7 @@ class CalorieEntryLoggedDayButton extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
+      child: AppInkWell(
         key: CalorieEntryDetailKeys.loggedDayButton,
         onTap: isEnabled ? onPressed : null,
         borderRadius: BorderRadius.circular(AppRadius.md),

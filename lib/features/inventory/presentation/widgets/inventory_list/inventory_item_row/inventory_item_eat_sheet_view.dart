@@ -210,7 +210,7 @@ class _InventoryItemEatAmountModeSelector extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
+      child: AppDropdownButton<String>(
         key: const Key('inventory_item_amount_mode_dropdown'),
         value: data.selectedModeId,
         isExpanded: true,

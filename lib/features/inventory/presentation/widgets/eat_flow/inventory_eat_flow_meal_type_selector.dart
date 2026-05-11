@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_field_card.dart';
@@ -28,7 +29,7 @@ class InventoryEatFlowMealTypeSelector extends StatelessWidget {
     return InventoryEatFlowFieldCard(
       leadingIcon: Icons.restaurant_rounded,
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<MealType>(
+        child: AppDropdownButton<MealType>(
           value: selectedMealType,
           isDense: true,
           isExpanded: true,
