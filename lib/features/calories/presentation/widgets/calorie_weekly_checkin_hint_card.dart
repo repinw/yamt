@@ -7,7 +7,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_messages.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines calorie weekly check in hint card.

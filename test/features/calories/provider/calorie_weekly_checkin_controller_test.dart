@@ -9,8 +9,7 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 
 import '../support/fake_calories_repositories.dart';
 

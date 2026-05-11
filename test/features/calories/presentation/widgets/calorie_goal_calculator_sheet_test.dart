@@ -90,7 +90,55 @@ Future<void> _goToResultsWithDefaults(WidgetTester tester) async {
   await _tapNext(tester); // goal mode -> results (maintain default)
 }
 
+CalorieGoalSettings _learnedTdeeSettings() {
+  final goalStartDate = DateTime(2026, 4, 10);
+  return CalorieGoalSettings.single(
+    dailyKcalGoal: 2450,
+    calculatorProfile: const CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.female,
+      weightKg: 65,
+      heightCm: 170,
+      ageYears: 28,
+      activityLevel: 1.7,
+      goalMode: CalorieGoalMode.maintain,
+      goalSpeedKgPerWeek: 0,
+    ),
+    effectiveDate: goalStartDate,
+    countingStartDate: goalStartDate,
+    source: CalorieGoalSource.calculator,
+    weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: goalStartDate.subtract(const Duration(days: 7)),
+      windowEndDate: goalStartDate.subtract(const Duration(days: 1)),
+      trendWeightChangePerDay: -0.08,
+      calculatedTrueTdeeKcal: 2450,
+      averageActiveKcal: 210,
+      lowConfidence: false,
+    ),
+  );
+}
+
 void main() {
+  testWidgets('routes learned TDEE settings to learned TDEE sheet', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialSettings: _learnedTdeeSettings(),
+      ),
+    );
+    await _openSheet(tester);
+
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsOneWidget);
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.stepCounter),
+      findsNothing,
+    );
+  });
+
   testWidgets('asks values step by step before showing results', (
     tester,
   ) async {

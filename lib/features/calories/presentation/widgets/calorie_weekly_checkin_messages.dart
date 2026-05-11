@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Resolves localized blocked reason text for weekly check-in UI.

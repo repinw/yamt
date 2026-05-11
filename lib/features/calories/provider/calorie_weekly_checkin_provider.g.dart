@@ -54,4 +54,4 @@ final class CalorieWeeklyCheckInViewModelProvider
 }
 
 String _$calorieWeeklyCheckInViewModelHash() =>
-    r'225ad9383f988e81c885fb47fa5649f146d32b26';
+    r'3cc89414c38fdce8969cbeadf3ad3dd53f3f9f11';

@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
@@ -47,6 +48,18 @@ CalorieEntry _entry(
 }
 
 void main() {
+  test('calorieBalanceNowProvider defaults to the current time', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final before = DateTime.now();
+    final now = container.read(calorieBalanceNowProvider)();
+    final after = DateTime.now();
+
+    expect(now.isBefore(before), isFalse);
+    expect(now.isAfter(after), isFalse);
+  });
+
   test(
     'calorieBalanceSummary paces from start of the full day',
     () async {

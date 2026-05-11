@@ -12,6 +12,7 @@ import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -21,9 +22,6 @@ import 'package:yamt/features/calories/provider/'
 part 'calorie_balance_summary_provider.g.dart';
 
 const _balanceSummaryLogName = 'CalorieBalanceSummaryProvider';
-
-/// Defines calorie balance now typedef.
-typedef CalorieBalanceNow = DateTime Function();
 
 /// Defines calorie balance summary data.
 class CalorieBalanceSummaryData {
@@ -139,12 +137,6 @@ class CalorieBalanceSummaryData {
 
   /// The bar progress.
   double get barProgress => (deltaKcal.abs() / rangeKcal).clamp(0.0, 1.0);
-}
-
-/// Calorie balance now.
-@Riverpod(keepAlive: true)
-CalorieBalanceNow calorieBalanceNow(Ref ref) {
-  return DateTime.now;
 }
 
 /// Calorie balance summary.
