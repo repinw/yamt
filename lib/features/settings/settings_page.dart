@@ -17,80 +17,131 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/settings/settings_page_keys.dart';
+import 'package:yamt/features/settings/widgets/settings_health_connect_tile.dart';
+import 'package:yamt/features/settings/widgets/settings_profile_card.dart';
+import 'package:yamt/features/settings/widgets/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-TextStyle? _settingsDropdownTextStyle(BuildContext context) {
-  final colors = Theme.of(context).colorScheme;
-  return Theme.of(
-    context,
-  ).textTheme.labelLarge?.copyWith(color: colors.primary);
-}
-
 /// Defines settings page.
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends ConsumerWidget {
   /// The settings page.
   const SettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final panelRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
-    final tiles = <Widget>[
-      _HouseholdTile(l10n: l10n),
-      _AccountTile(l10n: l10n),
-      const _HealthConnectTile(),
-      const _CalorieGoalStartTile(),
-      const _CalorieGoalCalculatorTile(),
-      const _ThemeModeTile(),
-      const _SeedColorTile(),
-      _NotImplementedTile(
-        icon: Icons.language_outlined,
-        title: l10n.settingsLanguageTitle,
-        subtitle: l10n.settingsLanguageSubtitle,
-        message: l10n.commonNotImplementedYet,
-      ),
-      _NotImplementedTile(
-        icon: Icons.notifications_outlined,
-        title: l10n.settingsNotificationsTitle,
-        subtitle: l10n.settingsNotificationsSubtitle,
-        message: l10n.commonNotImplementedYet,
-      ),
-      const _AboutTile(),
-    ];
+    final pageColor = Color.alphaBlend(
+      colors.primary.withValues(alpha: 0.035),
+      colors.surface,
+    );
 
-    return Padding(
-      padding: responsivePagePadding(
-        context,
-        top: AppSpacing.xl,
-        bottom: AppSpacing.xl,
-      ),
-      child: DecoratedBox(
-        decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-          colors,
-          borderRadius: panelRadius,
+    return ColoredBox(
+      color: pageColor,
+      child: ListView(
+        padding: responsivePagePadding(
+          context,
+          top: AppSpacing.xl,
+          bottom: AppSpacing.xxxl,
         ),
-        child: ClipRRect(
-          borderRadius: panelRadius,
-          child: Material(
-            color: Colors.transparent,
-            child: ListTileTheme(
-              iconColor: colors.primary,
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                itemCount: tiles.length,
-                itemBuilder: (context, index) => tiles[index],
-                separatorBuilder: (context, index) => Divider(
-                  height: 1,
-                  color: AppInventoryEditorialSurfaces.ghostBorder(colors),
-                ),
+        children: [
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: settingsMaxWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SettingsHeader(l10n: l10n),
+                  const SizedBox(height: AppSpacing.lg),
+                  const SettingsProfileCard(),
+                  const SizedBox(height: AppSpacing.lg),
+                  SettingsSection(
+                    title: l10n.settingsAccountHouseholdSectionTitle,
+                    children: [
+                      _HouseholdTile(l10n: l10n),
+                      _AccountTile(l10n: l10n),
+                    ],
+                  ),
+                  SettingsSection(
+                    title: l10n.settingsHealthGoalsSectionTitle,
+                    children: const [
+                      SettingsHealthConnectTile(),
+                      _CalorieGoalStartTile(),
+                      _CalorieGoalCalculatorTile(),
+                    ],
+                  ),
+                  SettingsSection(
+                    title: l10n.settingsAppearanceSectionTitle,
+                    children: const [
+                      _ThemeModeTile(),
+                      _SeedColorTile(),
+                      _LanguageTile(),
+                    ],
+                  ),
+                  SettingsSection(
+                    title: l10n.settingsAppSectionTitle,
+                    children: [
+                      SettingsTile(
+                        key: SettingsPageKeys.notificationsTile,
+                        icon: Icons.notifications_none_rounded,
+                        title: l10n.settingsNotificationsTitle,
+                        subtitle: l10n.settingsNotificationsSubtitle,
+                        onTap: () => _showNotImplementedSnackBar(
+                          context,
+                          l10n.commonNotImplementedYet,
+                        ),
+                      ),
+                      SettingsTile(
+                        key: SettingsPageKeys.privacyTile,
+                        icon: Icons.lock_outline_rounded,
+                        title: l10n.settingsPrivacyTitle,
+                        subtitle: l10n.settingsPrivacySubtitle,
+                        onTap: () => _showNotImplementedSnackBar(
+                          context,
+                          l10n.commonNotImplementedYet,
+                        ),
+                      ),
+                      const _AboutTile(),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+}
+
+class _SettingsHeader extends StatelessWidget {
+  const _SettingsHeader({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.homeSettings,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: colors.primary,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          l10n.settingsManagePreferencesSubtitle,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -110,14 +161,13 @@ class _CalorieGoalStartTile extends ConsumerWidget {
     final initialGoalStartDate =
         latestGoal?.effectiveCountingStartDate ?? DateTime.now();
 
-    return ListTile(
-      leading: const Icon(Icons.event_outlined),
-      title: Text(l10n.caloriesShiftGoalStartAction),
-      subtitle: Text(
-        hasGoal
-            ? dateFormat.format(initialGoalStartDate)
-            : l10n.settingsDiaryGoalSetGoalFirst,
-      ),
+    return SettingsTile(
+      key: SettingsPageKeys.calorieGoalStartTile,
+      icon: Icons.event_note_rounded,
+      title: l10n.caloriesShiftGoalStartAction,
+      subtitle: hasGoal
+          ? dateFormat.format(initialGoalStartDate)
+          : l10n.settingsDiaryGoalSetGoalFirst,
       enabled: hasGoal && !settingsState.isLoading,
       onTap: !hasGoal || settingsState.isLoading
           ? null
@@ -145,10 +195,11 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
     final settingsState = ref.watch(calorieGoalControllerProvider);
     final settings = settingsState.asData?.value;
 
-    return ListTile(
-      leading: const Icon(Icons.calculate_outlined),
-      title: Text(l10n.caloriesCalculatorAction),
-      subtitle: Text(l10n.caloriesCalculatorOnboardingSubtitle),
+    return SettingsTile(
+      key: SettingsPageKeys.calorieGoalCalculatorTile,
+      icon: Icons.track_changes_rounded,
+      title: l10n.caloriesCalculatorAction,
+      subtitle: l10n.caloriesCalculatorOnboardingSubtitle,
       enabled: settings != null && !settingsState.isLoading,
       onTap: settings == null || settingsState.isLoading
           ? null
@@ -169,24 +220,28 @@ class _AboutTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final version = ref.watch(appVersionProvider);
-    final theme = Theme.of(context);
 
-    return ListTile(
-      leading: const Icon(Icons.info_outline),
-      title: Text(l10n.settingsAboutTitle),
-      subtitle: Text(l10n.settingsAboutSubtitle),
+    return SettingsTile(
+      key: SettingsPageKeys.aboutTile,
+      icon: Icons.info_outline_rounded,
+      title: l10n.settingsAboutTitle,
+      subtitle: l10n.settingsAboutSubtitle,
       trailing: switch (version) {
-        AsyncData(:final value) => Text(
-          value,
-          style: theme.textTheme.bodySmall,
+        AsyncData(:final value) => KeyedSubtree(
+          key: SettingsPageKeys.aboutTrailing,
+          child: SettingsTrailingValue(value: value),
         ),
-        AsyncLoading() => const SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
+        AsyncLoading() => const KeyedSubtree(
+          key: SettingsPageKeys.aboutTrailing,
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
         ),
         AsyncError() => null,
       },
+      showChevron: version is! AsyncLoading,
     );
   }
 }
@@ -198,10 +253,11 @@ class _HouseholdTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.group_outlined),
-      title: Text(l10n.settingsHouseholdTitle),
-      subtitle: Text(l10n.settingsHouseholdSubtitle),
+    return SettingsTile(
+      key: SettingsPageKeys.householdTile,
+      icon: Icons.groups_2_outlined,
+      title: l10n.settingsHouseholdTitle,
+      subtitle: l10n.settingsHouseholdSubtitle,
       onTap: () => context.push(AppRoutes.homeSettingsHousehold),
     );
   }
@@ -214,10 +270,11 @@ class _AccountTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.person_outline),
-      title: Text(l10n.settingsAccountTitle),
-      subtitle: Text(l10n.settingsAccountSubtitle),
+    return SettingsTile(
+      key: SettingsPageKeys.accountTile,
+      icon: Icons.person_outline_rounded,
+      title: l10n.settingsAccountTitle,
+      subtitle: l10n.settingsAccountSubtitle,
       onTap: () => context.push(AppRoutes.homeSettingsAccount),
     );
   }
@@ -230,35 +287,57 @@ class _ThemeModeTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final themeMode = ref.watch(themeModeControllerProvider);
-    final dropdownTextStyle = _settingsDropdownTextStyle(context);
 
-    return ListTile(
-      leading: const Icon(Icons.palette_outlined),
-      title: Text(l10n.settingsThemeTitle),
-      subtitle: Text(localizedThemeModeLabel(l10n, themeMode)),
-      trailing: DropdownButtonHideUnderline(
-        child: DropdownButton<ThemeMode>(
-          value: themeMode,
-          iconEnabledColor: Theme.of(context).colorScheme.primary,
-          style: dropdownTextStyle,
-          onChanged: (selectedMode) {
-            if (selectedMode == null) {
-              return;
-            }
-            unawaited(
-              ref
-                  .read(themeModeControllerProvider.notifier)
-                  .setThemeMode(selectedMode),
-            );
-          },
-          items: [
-            for (final mode in ThemeMode.values)
-              DropdownMenuItem<ThemeMode>(
-                value: mode,
-                child: Text(localizedThemeModeLabel(l10n, mode)),
+    return SettingsTile(
+      key: SettingsPageKeys.themeTile,
+      icon: Icons.palette_outlined,
+      title: l10n.settingsThemeTitle,
+      subtitle: localizedThemeModeLabel(l10n, themeMode),
+      trailing: SettingsTrailingValue(
+        value: localizedThemeModeLabel(l10n, themeMode),
+      ),
+      onTap: () => _showThemeModeSheet(context, ref, themeMode),
+    );
+  }
+
+  void _showThemeModeSheet(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode selectedMode,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (sheetContext) {
+          return SafeArea(
+            child: RadioGroup<ThemeMode>(
+              groupValue: selectedMode,
+              onChanged: (mode) {
+                if (mode == null) {
+                  return;
+                }
+                unawaited(
+                  ref
+                      .read(themeModeControllerProvider.notifier)
+                      .setThemeMode(mode),
+                );
+                Navigator.of(sheetContext).pop();
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final mode in ThemeMode.values)
+                    RadioListTile<ThemeMode>(
+                      value: mode,
+                      title: Text(localizedThemeModeLabel(l10n, mode)),
+                    ),
+                ],
               ),
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -271,274 +350,106 @@ class _SeedColorTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final seedColor = ref.watch(seedColorControllerProvider);
-    final dropdownTextStyle = _settingsDropdownTextStyle(context);
 
-    return ListTile(
-      leading: const Icon(Icons.format_paint_outlined),
-      title: Text(l10n.settingsColorTitle),
-      subtitle: Text(localizedSeedColorLabel(l10n, seedColor)),
-      trailing: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: seedColor.toARGB32(),
-          iconEnabledColor: Theme.of(context).colorScheme.primary,
-          style: dropdownTextStyle,
-          onChanged: (selectedColorValue) {
-            if (selectedColorValue == null) {
-              return;
-            }
-            unawaited(
-              ref
-                  .read(seedColorControllerProvider.notifier)
-                  .setSeedColor(Color(selectedColorValue)),
-            );
-          },
-          items: [
-            for (final color in AppSeedColors.values)
-              DropdownMenuItem<int>(
-                value: color.toARGB32(),
-                child: Text(localizedSeedColorLabel(l10n, color)),
+    return SettingsTile(
+      key: SettingsPageKeys.colorTile,
+      icon: Icons.format_paint_outlined,
+      title: l10n.settingsColorTitle,
+      subtitle: localizedSeedColorLabel(l10n, seedColor),
+      trailing: SettingsTrailingValue(
+        value: localizedSeedColorLabel(l10n, seedColor),
+        swatchColor: seedColor,
+      ),
+      iconColor: seedColor,
+      onTap: () => _showSeedColorSheet(context, ref, seedColor),
+    );
+  }
+
+  void _showSeedColorSheet(
+    BuildContext context,
+    WidgetRef ref,
+    Color selectedColor,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (sheetContext) {
+          return SafeArea(
+            child: RadioGroup<int>(
+              groupValue: selectedColor.toARGB32(),
+              onChanged: (colorValue) {
+                if (colorValue == null) {
+                  return;
+                }
+                unawaited(
+                  ref
+                      .read(seedColorControllerProvider.notifier)
+                      .setSeedColor(Color(colorValue)),
+                );
+                Navigator.of(sheetContext).pop();
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final color in AppSeedColors.values)
+                    RadioListTile<int>(
+                      value: color.toARGB32(),
+                      title: Text(localizedSeedColorLabel(l10n, color)),
+                      secondary: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-class _HealthConnectTile extends ConsumerWidget {
-  const _HealthConnectTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final statusAsync = ref.watch(healthConnectionControllerProvider);
-    final status = statusAsync.asData?.value;
-    final accessState = status?.accessState;
-    final isUnsupported = accessState == HealthDataAccessState.unsupported;
-    final showsInstall = accessState == HealthDataAccessState.installRequired;
-    final showsConnect =
-        status == null ||
-        accessState == HealthDataAccessState.permissionRequired ||
-        accessState == HealthDataAccessState.historyRequired;
-    final needsHistoryOnly = status?.needsHistoryOnly ?? false;
-    final shouldOpenPermissionSettings =
-        showsConnect && status?.errorMessage != null;
-    final shouldOpenAppPermissionSettings =
-        status?.errorMessage == healthActivityRecognitionPermissionErrorMessage;
-
-    return ListTile(
-      leading: Icon(
-        isUnsupported
-            ? Icons.block_outlined
-            : showsInstall
-            ? Icons.download_for_offline_outlined
-            : showsConnect
-            ? Icons.favorite_outline
-            : Icons.link_off,
-      ),
-      title: Text(_tileTitle(l10n, status)),
-      subtitle: Text(
-        isUnsupported
-            ? l10n.healthUnsupportedHint
-            : showsInstall
-            ? l10n.settingsHealthInstallSubtitle
-            : showsConnect
-            ? needsHistoryOnly
-                  ? l10n.settingsHealthHistorySubtitle
-                  : _connectSubtitle(l10n, status)
-            : _disconnectSubtitle(l10n, status),
-      ),
-      trailing: statusAsync.isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : null,
-      enabled: !statusAsync.isLoading,
-      onTap: statusAsync.isLoading
-          ? null
-          : isUnsupported
-          ? null
-          : showsInstall
-          ? () => _installHealthConnect(ref)
-          : showsConnect
-          ? shouldOpenPermissionSettings
-                ? shouldOpenAppPermissionSettings
-                      ? () => _openAppPermissionSettings(ref)
-                      : () => _openHealthPermissionSettings(ref)
-                : () => _connectHealth(context, ref)
-          : () => _confirmDisconnect(context, ref),
-    );
-  }
-
-  Future<void> _connectHealth(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context)!;
-    final status = await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .connect();
-    if (!context.mounted) {
-      return;
-    }
-    if (_shouldShowConnectFailure(status)) {
-      _showSnackBar(context, l10n.settingsHealthConnectFailed);
-    }
-  }
-
-  Future<void> _installHealthConnect(WidgetRef ref) async {
-    await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .installHealthConnect();
-  }
-
-  Future<void> _openHealthPermissionSettings(WidgetRef ref) async {
-    await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .openHealthPermissionSettings();
-  }
-
-  Future<void> _openAppPermissionSettings(WidgetRef ref) async {
-    await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .openAppPermissionSettings();
-  }
-
-  Future<void> _confirmDisconnect(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context)!;
-    final status = ref.read(healthConnectionControllerProvider).asData?.value;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.settingsHealthDisconnectDialogTitle),
-          content: Text(_disconnectDialogBody(l10n, status)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.inventoryReceiptReviewCancelAction),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.settingsHealthDisconnectAction),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed != true || !context.mounted) {
-      return;
-    }
-
-    final result = await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .disconnect();
-    if (!context.mounted) {
-      return;
-    }
-    final nextStatus = ref
-        .read(healthConnectionControllerProvider)
-        .asData
-        ?.value;
-    _showSnackBar(context, _disconnectMessage(l10n, result, nextStatus));
-  }
-
-  bool _shouldShowConnectFailure(HealthConnectionStatus status) {
-    return status.errorMessage != null ||
-        status.accessState == HealthDataAccessState.permissionRequired ||
-        status.accessState == HealthDataAccessState.historyRequired ||
-        status.accessState == HealthDataAccessState.installRequired ||
-        status.accessState == HealthDataAccessState.unsupported;
-  }
-
-  String _disconnectMessage(
-    AppLocalizations l10n,
-    HealthDisconnectResult result,
-    HealthConnectionStatus? status,
-  ) {
-    return switch (result) {
-      HealthDisconnectResult.disconnected => switch (status?.platform) {
-        HealthPlatform.ios => l10n.settingsAppleHealthDisconnectSuccess,
-        _ => l10n.settingsHealthDisconnectSuccess,
-      },
-      HealthDisconnectResult.openedSettings =>
-        l10n.settingsHealthDisconnectOpenedSettings,
-      HealthDisconnectResult.unsupported =>
-        status?.errorMessage != null
-            ? l10n.settingsHealthDisconnectFailed
-            : l10n.healthUnsupportedHint,
-    };
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  String _tileTitle(AppLocalizations l10n, HealthConnectionStatus? status) {
-    return switch (status?.platform) {
-      HealthPlatform.ios => l10n.settingsAppleHealthTitle,
-      _ => l10n.settingsHealthConnectPlatformTitle,
-    };
-  }
-
-  String _connectSubtitle(
-    AppLocalizations l10n,
-    HealthConnectionStatus? status,
-  ) {
-    return switch (status?.platform) {
-      HealthPlatform.ios => l10n.settingsAppleHealthConnectSubtitle,
-      _ => l10n.settingsHealthConnectSubtitle,
-    };
-  }
-
-  String _disconnectSubtitle(
-    AppLocalizations l10n,
-    HealthConnectionStatus? status,
-  ) {
-    return switch (status?.platform) {
-      HealthPlatform.ios => l10n.settingsAppleHealthDisconnectSubtitle,
-      _ => l10n.settingsHealthDisconnectSubtitle,
-    };
-  }
-
-  String _disconnectDialogBody(
-    AppLocalizations l10n,
-    HealthConnectionStatus? status,
-  ) {
-    return switch (status?.platform) {
-      HealthPlatform.ios => l10n.settingsAppleHealthDisconnectDialogBody,
-      _ => l10n.settingsHealthDisconnectDialogBody,
-    };
-  }
-}
-
-class _NotImplementedTile extends StatelessWidget {
-  const _NotImplementedTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.message,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String message;
+class _LanguageTile extends StatelessWidget {
+  const _LanguageTile();
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      onTap: () => _showNotImplementedSnackBar(context),
-    );
-  }
+    final l10n = AppLocalizations.of(context)!;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final languageLabels = <String, String>{
+      for (final locale in AppLocalizations.supportedLocales)
+        locale.languageCode: _localizedLanguageLabel(l10n, locale),
+    };
+    final language = languageLabels[languageCode] ?? languageCode;
 
-  void _showNotImplementedSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+    return SettingsTile(
+      key: SettingsPageKeys.languageTile,
+      icon: Icons.language_rounded,
+      title: l10n.settingsLanguageTitle,
+      subtitle: language,
+      onTap: () =>
+          _showNotImplementedSnackBar(context, l10n.commonNotImplementedYet),
     );
   }
+}
+
+String _localizedLanguageLabel(AppLocalizations l10n, Locale locale) {
+  return switch (locale.languageCode) {
+    'de' => l10n.settingsLanguageGerman,
+    'en' => l10n.settingsLanguageEnglish,
+    _ => locale.languageCode,
+  };
+}
+
+void _showNotImplementedSnackBar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
 }
