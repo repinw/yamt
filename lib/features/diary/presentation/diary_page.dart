@@ -266,15 +266,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                               weeklyCheckIn.pendingWeeklyCheckIn?.windowEndDate,
                         ),
                         onToggleSelectedDaySkipped:
-                            ({
-                              required selectedDay,
-                              required isSkipped,
-                            }) {
-                              return _toggleSkippedCalorieIntakeDay(
-                                selectedDay: selectedDay,
-                                isSkipped: isSkipped,
-                              );
-                            },
+                            _toggleSkippedCalorieIntakeDay,
                       ),
                     ],
                     if (showWeeklySuccessCard) ...[

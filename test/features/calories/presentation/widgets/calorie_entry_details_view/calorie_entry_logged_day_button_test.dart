@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_logged_day_button.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -16,7 +17,7 @@ void main() {
       ),
     );
 
-    final inkWell = tester.widget<InkWell>(
+    final inkWell = tester.widget<AppInkWell>(
       find.byKey(CalorieEntryDetailKeys.loggedDayButton),
     );
     final context = tester.element(find.byType(CalorieEntryLoggedDayButton));

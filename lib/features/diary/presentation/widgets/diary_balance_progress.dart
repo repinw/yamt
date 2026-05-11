@@ -16,9 +16,9 @@ class _DiaryBalanceProgressBar extends StatelessWidget {
         builder: (context, constraints) {
           final width = constraints.maxWidth;
           final safeZoneRadiusRatio = _resolveSafeZoneRadiusRatio(metrics);
-          final progressTop =
+          const progressTop =
               (_balanceProgressAreaHeight - _balanceProgressHeight) / 2;
-          final flameTop =
+          const flameTop =
               progressTop +
               ((_balanceProgressHeight - _balanceFlameIconSize) / 2);
 
