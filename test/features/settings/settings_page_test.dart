@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/models/user_profile.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
@@ -150,6 +151,7 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
   AsyncValue<String>? appVersionValueOverride,
   CalorieGoalSettings? calorieSettings,
   _FakeHealthConnectionService? healthService,
+  Stream<UserProfile?>? userProfile,
 }) async {
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: calorieSettings,
@@ -168,6 +170,8 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(null),
         ),
+        if (userProfile != null)
+          userProfileProvider.overrideWith((ref) => userProfile),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         healthConnectionServiceProvider.overrideWith(
           (ref) => resolvedHealthService,
@@ -274,6 +278,54 @@ void main() {
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and information'), findsOneWidget);
     expect(find.text('1.1.0+2'), findsOneWidget);
+  });
+
+  testWidgets('profile card renders display name and email', (tester) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      userProfile: Stream.value(
+        const UserProfile(
+          uid: 'uid-123',
+          email: 'jane@example.com',
+          displayName: 'Jane Doe',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(SettingsPageKeys.profileCard), findsOneWidget);
+    expect(find.text('Jane Doe'), findsOneWidget);
+    expect(find.text('jane@example.com'), findsOneWidget);
+  });
+
+  testWidgets('profile card falls back to email as title', (tester) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      userProfile: Stream.value(
+        const UserProfile(uid: 'uid-123', email: 'jane@example.com'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(SettingsPageKeys.profileCard), findsOneWidget);
+    expect(find.text('jane@example.com'), findsNWidgets(2));
+  });
+
+  testWidgets('profile card renders guest mode without profile', (
+    tester,
+  ) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      userProfile: Stream<UserProfile?>.value(null),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(SettingsPageKeys.profileCard), findsOneWidget);
+    expect(find.text('Guest account'), findsOneWidget);
+    expect(find.text('Guest mode'), findsOneWidget);
   });
 
   testWidgets(
@@ -514,6 +566,11 @@ void main() {
 
     await _scrollToText(tester, 'Notifications');
     await tester.tap(_settingsTile(SettingsPageKeys.notificationsTile));
+    await tester.pumpAndSettle();
+    expect(find.text('Not implemented yet'), findsOneWidget);
+
+    await _scrollToText(tester, 'Privacy');
+    await tester.tap(_settingsTile(SettingsPageKeys.privacyTile));
     await tester.pumpAndSettle();
     expect(find.text('Not implemented yet'), findsOneWidget);
 

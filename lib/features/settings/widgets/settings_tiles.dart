@@ -4,9 +4,6 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 /// Shared max width for the settings content column.
 const settingsMaxWidth = 560.0;
 
-/// Shared settings card radius.
-const settingsSectionRadius = 18.0;
-
 const _settingsTileIconSize = 34.0;
 
 /// Section wrapper for grouped settings rows.
@@ -83,7 +80,7 @@ class SettingsCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: isDark ? colors.surfaceContainerLow : colors.surface,
-        borderRadius: BorderRadius.circular(settingsSectionRadius),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: colors.outlineVariant.withValues(alpha: isDark ? 0.24 : 0.18),
         ),
@@ -96,7 +93,7 @@ class SettingsCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(settingsSectionRadius),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: child,
       ),
     );

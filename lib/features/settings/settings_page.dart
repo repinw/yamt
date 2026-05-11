@@ -423,10 +423,11 @@ class _LanguageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final languageCode = Localizations.localeOf(context).languageCode;
-    final language = switch (languageCode) {
-      'de' => l10n.settingsLanguageGerman,
-      _ => l10n.settingsLanguageEnglish,
+    final languageLabels = <String, String>{
+      for (final locale in AppLocalizations.supportedLocales)
+        locale.languageCode: _localizedLanguageLabel(l10n, locale),
     };
+    final language = languageLabels[languageCode] ?? languageCode;
 
     return SettingsTile(
       key: SettingsPageKeys.languageTile,
@@ -437,6 +438,14 @@ class _LanguageTile extends StatelessWidget {
           _showNotImplementedSnackBar(context, l10n.commonNotImplementedYet),
     );
   }
+}
+
+String _localizedLanguageLabel(AppLocalizations l10n, Locale locale) {
+  return switch (locale.languageCode) {
+    'de' => l10n.settingsLanguageGerman,
+    'en' => l10n.settingsLanguageEnglish,
+    _ => locale.languageCode,
+  };
 }
 
 void _showNotImplementedSnackBar(BuildContext context, String message) {
