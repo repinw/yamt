@@ -212,6 +212,15 @@ ProviderContainer _createSettingsContainer({
 
 Finder _settingsTile(Key key) => find.byKey(key);
 
+Future<void> _scrollToTile(WidgetTester tester, Key key) async {
+  await tester.scrollUntilVisible(
+    _settingsTile(key),
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}
+
 Future<void> _scrollToText(
   WidgetTester tester,
   String text, {
@@ -238,15 +247,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.groups_2_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
+    expect(find.byKey(SettingsPageKeys.profileCard), findsOneWidget);
 
-    expect(find.text('Household'), findsOneWidget);
+    expect(_settingsTile(SettingsPageKeys.householdTile), findsOneWidget);
+    expect(find.text('Household'), findsNWidgets(2));
     expect(
       find.text('Invite members and manage shared access'),
       findsOneWidget,
     );
-    expect(find.text('Account'), findsOneWidget);
-    expect(find.text('Manage profile and sign-in'), findsOneWidget);
+    expect(find.text('Account'), findsNothing);
+    expect(find.text('Manage profile and sign-in'), findsNothing);
     await _scrollToText(tester, 'Health Connect');
     expect(find.byIcon(Icons.link_off_rounded), findsOneWidget);
     expect(find.text('Health Connect'), findsOneWidget);
@@ -600,6 +610,7 @@ void main() {
 
     expect(container.read(themeModeControllerProvider), ThemeMode.system);
 
+    await _scrollToTile(tester, SettingsPageKeys.themeTile);
     await tester.tap(_settingsTile(SettingsPageKeys.themeTile));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dark').last);
@@ -674,7 +685,7 @@ void main() {
     expect(find.text('App version and information'), findsOneWidget);
   });
 
-  testWidgets('Account tile opens AccountPage', (tester) async {
+  testWidgets('Profile card opens AccountPage', (tester) async {
     final user = _MockUser();
     final settingsRepository = FakeCalorieSettingsRepository();
     addTearDown(settingsRepository.dispose);
@@ -723,7 +734,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(_settingsTile(SettingsPageKeys.accountTile));
+    await tester.tap(find.byKey(SettingsPageKeys.profileCard));
     await tester.pumpAndSettle();
 
     expect(find.byType(AccountPage), findsOneWidget);

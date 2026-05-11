@@ -2498,7 +2498,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsProfileGuestSubtitle => 'Gastmodus';
 
   @override
-  String get settingsAccountHouseholdSectionTitle => 'Konto & Haushalt';
+  String get settingsAccountHouseholdSectionTitle => 'Haushalt';
 
   @override
   String get settingsHealthGoalsSectionTitle => 'Health & Ziele';

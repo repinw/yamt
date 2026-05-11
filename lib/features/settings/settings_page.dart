@@ -43,7 +43,7 @@ class SettingsPage extends ConsumerWidget {
         padding: responsivePagePadding(
           context,
           top: AppSpacing.xl,
-          bottom: AppSpacing.xxxl,
+          bottom: homeShellPageBottomPadding(context),
         ),
         children: [
           Center(
@@ -52,16 +52,13 @@ class SettingsPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _SettingsHeader(l10n: l10n),
+                  _SettingsIntro(l10n: l10n),
                   const SizedBox(height: AppSpacing.lg),
                   const SettingsProfileCard(),
                   const SizedBox(height: AppSpacing.lg),
                   SettingsSection(
                     title: l10n.settingsAccountHouseholdSectionTitle,
-                    children: [
-                      _HouseholdTile(l10n: l10n),
-                      _AccountTile(l10n: l10n),
-                    ],
+                    children: [_HouseholdTile(l10n: l10n)],
                   ),
                   SettingsSection(
                     title: l10n.settingsHealthGoalsSectionTitle,
@@ -115,8 +112,8 @@ class SettingsPage extends ConsumerWidget {
   }
 }
 
-class _SettingsHeader extends StatelessWidget {
-  const _SettingsHeader({required this.l10n});
+class _SettingsIntro extends StatelessWidget {
+  const _SettingsIntro({required this.l10n});
 
   final AppLocalizations l10n;
 
@@ -126,14 +123,6 @@ class _SettingsHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.homeSettings,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: colors.primary,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        const SizedBox(height: 2),
         Text(
           l10n.settingsManagePreferencesSubtitle,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -259,23 +248,6 @@ class _HouseholdTile extends StatelessWidget {
       title: l10n.settingsHouseholdTitle,
       subtitle: l10n.settingsHouseholdSubtitle,
       onTap: () => context.push(AppRoutes.homeSettingsHousehold),
-    );
-  }
-}
-
-class _AccountTile extends StatelessWidget {
-  const _AccountTile({required this.l10n});
-
-  final AppLocalizations l10n;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsTile(
-      key: SettingsPageKeys.accountTile,
-      icon: Icons.person_outline_rounded,
-      title: l10n.settingsAccountTitle,
-      subtitle: l10n.settingsAccountSubtitle,
-      onTap: () => context.push(AppRoutes.homeSettingsAccount),
     );
   }
 }

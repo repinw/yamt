@@ -35,7 +35,7 @@ class SettingsSection extends StatelessWidget {
               bottom: AppSpacing.sm,
             ),
             child: Text(
-              title.toUpperCase(),
+              title,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: colors.primary,
                 fontSize: 11,
@@ -145,6 +145,7 @@ class SettingsTile extends StatelessWidget {
     final resolvedIconColor = iconColor ?? colors.primary;
     final effectiveOnTap = enabled ? onTap : null;
     final opacity = enabled ? 1.0 : 0.45;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -185,7 +186,7 @@ class SettingsTile extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           subtitle,
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
