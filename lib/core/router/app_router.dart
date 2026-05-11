@@ -255,6 +255,7 @@ Raw<GoRouter> appRouter(Ref ref) {
                       : null;
                   return InventoryPage(
                     expandedPreparedMealId: expandedPreparedMealId,
+                    includeHomeShellChrome: true,
                   );
                 },
               ),
@@ -264,7 +265,8 @@ Raw<GoRouter> appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.homeDiary,
-                builder: (context, state) => const DiaryPage(),
+                builder: (context, state) =>
+                    const DiaryPage(includeHomeShellChrome: true),
               ),
             ],
           ),
@@ -282,7 +284,8 @@ Raw<GoRouter> appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.homeStatistics,
-                builder: (context, state) => const StatisticsPage(),
+                builder: (context, state) =>
+                    const StatisticsPage(includeHomeShellChrome: true),
               ),
             ],
           ),
@@ -290,7 +293,8 @@ Raw<GoRouter> appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.homeSettings,
-                builder: (context, state) => const SettingsPage(),
+                builder: (context, state) =>
+                    const SettingsPage(includeHomeShellChrome: true),
               ),
             ],
           ),

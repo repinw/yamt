@@ -18,6 +18,7 @@ import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
+import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -226,6 +227,18 @@ CalorieWeekOverview _weekOverview(DateTime selectedDay) {
   );
 }
 
+Widget _defaultBranchBody(HomeTabType tab) {
+  return CustomScrollView(
+    slivers: [
+      HomeShellTabTopChrome(tab: tab),
+      const SliverFillRemaining(
+        hasScrollBody: false,
+        child: SizedBox(),
+      ),
+    ],
+  );
+}
+
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
@@ -262,7 +275,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventory,
-                builder: (context, state) => branchBody ?? const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.inventory),
               ),
             ],
           ),
@@ -270,7 +284,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeCalories,
-                builder: (context, state) => branchBody ?? const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.diary),
               ),
             ],
           ),
@@ -278,7 +293,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventoryTemplates,
-                builder: (context, state) => branchBody ?? const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.cookbook),
               ),
             ],
           ),
@@ -286,7 +302,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeStatistics,
-                builder: (context, state) => branchBody ?? const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.statistics),
               ),
             ],
           ),
@@ -294,7 +311,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeSettings,
-                builder: (context, state) => branchBody ?? const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.settings),
               ),
             ],
           ),
@@ -417,12 +435,21 @@ void main() {
     await tester.pumpWidget(
       _buildHarness(
         settingsRepository: repository,
-        branchBody: ListView.builder(
-          itemCount: 40,
-          itemBuilder: (context, index) {
-            return SizedBox(
-              height: 72,
-              child: Text('Row $index'),
+        branchBody: Builder(
+          builder: (context) {
+            return CustomScrollView(
+              slivers: [
+                const HomeShellTabTopChrome(tab: HomeTabType.diary),
+                SliverList.builder(
+                  itemCount: 40,
+                  itemBuilder: (context, index) {
+                    return SizedBox(
+                      height: 72,
+                      child: Text('Row $index'),
+                    );
+                  },
+                ),
+              ],
             );
           },
         ),
@@ -443,62 +470,38 @@ void main() {
           .opacity;
     }
 
-    final initialTopOpacity = chromeOpacity(HomeShellTopChrome);
+    final initialTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
     final initialBottomOpacity = chromeOpacity(HomeShellBottomChrome);
-    final initialTopHeight = tester
-        .widget<HomeShellTopChrome>(find.byType(HomeShellTopChrome))
-        .preferredSize
-        .height;
-    final initialBottomHeight = tester
-        .getSize(
-          find.byType(HomeShellBottomChrome),
-        )
-        .height;
 
-    await tester.drag(find.text('Row 5'), const Offset(0, -220));
+    await tester.drag(find.text('Row 5'), const Offset(0, -48));
     await tester.pump();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
 
-    final collapsedTopOpacity = chromeOpacity(HomeShellTopChrome);
+    final shiftedTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -172));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
     final collapsedBottomOpacity = chromeOpacity(HomeShellBottomChrome);
-    final collapsedTopHeight = tester
-        .widget<HomeShellTopChrome>(find.byType(HomeShellTopChrome))
-        .preferredSize
-        .height;
-    final collapsedBottomHeight = tester
-        .getSize(
-          find.byType(HomeShellBottomChrome),
-        )
-        .height;
 
-    expect(collapsedTopOpacity, lessThan(initialTopOpacity));
+    expect(shiftedTopOffset, lessThan(initialTopOffset));
+    expect(find.byType(HomeTopBar), findsNothing);
     expect(collapsedBottomOpacity, lessThan(initialBottomOpacity));
-    expect(collapsedTopHeight, lessThan(initialTopHeight));
-    expect(collapsedBottomHeight, lessThan(initialBottomHeight));
 
-    await tester.drag(find.text('Row 8'), const Offset(0, 90));
+    await tester.drag(find.text('Row 8'), const Offset(0, 240));
     await tester.pump();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
 
-    final revealedTopOpacity = chromeOpacity(HomeShellTopChrome);
+    expect(find.byType(HomeTopBar), findsOneWidget);
+    final revealedTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
     final revealedBottomOpacity = chromeOpacity(HomeShellBottomChrome);
-    final revealedTopHeight = tester
-        .widget<HomeShellTopChrome>(find.byType(HomeShellTopChrome))
-        .preferredSize
-        .height;
-    final revealedBottomHeight = tester
-        .getSize(
-          find.byType(HomeShellBottomChrome),
-        )
-        .height;
 
-    expect(revealedTopOpacity, greaterThan(collapsedTopOpacity));
+    expect(revealedTopOffset, greaterThan(shiftedTopOffset));
     expect(revealedBottomOpacity, greaterThan(collapsedBottomOpacity));
-    expect(revealedTopHeight, greaterThan(collapsedTopHeight));
-    expect(revealedBottomHeight, greaterThan(collapsedBottomHeight));
-    expect(revealedTopOpacity - collapsedTopOpacity, greaterThan(0.5));
     expect(revealedBottomOpacity - collapsedBottomOpacity, greaterThan(0.5));
     expect(tester.takeException(), isNull);
   });
@@ -697,6 +700,68 @@ void main() {
       scaffold.floatingActionButtonAnimator,
       FloatingActionButtonAnimator.noAnimation,
     );
+  });
+
+  testWidgets('inventory fab follows the bottom chrome while scrolling', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellTabTopChrome(tab: HomeTabType.inventory),
+            SliverList.builder(
+              itemCount: 40,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  height: 72,
+                  child: Text('Row $index'),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialFabTop = tester.getTopLeft(find.byType(InventoryActionFab)).dy;
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -220));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final collapsedFabTop = tester
+        .getTopLeft(
+          find.byType(InventoryActionFab),
+        )
+        .dy;
+
+    expect(collapsedFabTop, greaterThan(initialFabTop));
+
+    await tester.drag(find.text('Row 8'), const Offset(0, 240));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final revealedFabTop = tester
+        .getTopLeft(find.byType(InventoryActionFab))
+        .dy;
+
+    expect(revealedFabTop, lessThan(collapsedFabTop));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('inventory fab disappears immediately after leaving inventory', (

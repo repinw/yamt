@@ -123,7 +123,7 @@ void main() {
     expect(find.text('To diary').hitTestable(), findsOneWidget);
 
     final gesture = await tester.startGesture(
-      tester.getCenter(find.byType(ListView).first),
+      tester.getCenter(find.byType(CustomScrollView).first),
     );
     await gesture.moveBy(const Offset(0, -80));
     await tester.pump();

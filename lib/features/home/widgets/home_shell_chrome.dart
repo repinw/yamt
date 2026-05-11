@@ -112,64 +112,82 @@ enum HomeTabType {
   settings,
 }
 
-/// Collapses and fades the shared home top chrome.
-class HomeShellTopChrome extends StatelessWidget
-    implements PreferredSizeWidget {
-  /// The shell top chrome transition.
-  const HomeShellTopChrome({
+/// Floating sliver that hosts the shared home top chrome.
+class HomeShellTopSliverChrome extends StatelessWidget {
+  /// The shell top chrome sliver.
+  const HomeShellTopSliverChrome({
     required this.child,
-    required this.visibility,
     super.key,
   });
 
   /// The visible app bar.
   final PreferredSizeWidget child;
 
-  /// How much chrome is visible, from 0 to 1.
-  final double visibility;
-
-  @override
-  Size get preferredSize {
-    return Size.fromHeight(
-      child.preferredSize.height * _clampChromeVisibility(visibility),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final statusBarInset = MediaQuery.paddingOf(context).top;
     final toolbarHeight = child.preferredSize.height;
-    // Keep the glass surface painted behind the system status bar.
-    final expandedHeight = statusBarInset + toolbarHeight;
 
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(end: _clampChromeVisibility(visibility)),
-      duration: _shellChromeMotionDuration,
-      curve: Curves.easeOutCubic,
-      child: child,
-      builder: (context, effectiveVisibility, chromeChild) {
-        return ClipRect(
-          child: OverflowBox(
-            alignment: Alignment.topCenter,
-            minHeight: expandedHeight,
-            maxHeight: expandedHeight,
-            child: IgnorePointer(
-              ignoring: effectiveVisibility < 0.05,
-              child: Opacity(
-                opacity: effectiveVisibility,
-                child: Transform.translate(
-                  offset: Offset(
-                    0,
-                    -toolbarHeight * (1 - effectiveVisibility),
-                  ),
-                  child: chromeChild,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+    return SliverPersistentHeader(
+      floating: true,
+      delegate: _HomeShellTopChromeDelegate(
+        child: child,
+        statusBarInset: statusBarInset,
+        toolbarHeight: toolbarHeight,
+      ),
     );
+  }
+}
+
+class _HomeShellTopChromeDelegate extends SliverPersistentHeaderDelegate {
+  const _HomeShellTopChromeDelegate({
+    required this.child,
+    required this.statusBarInset,
+    required this.toolbarHeight,
+  });
+
+  final PreferredSizeWidget child;
+  final double statusBarInset;
+  final double toolbarHeight;
+
+  @override
+  double get minExtent => 0;
+
+  @override
+  double get maxExtent => statusBarInset + toolbarHeight;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final visibility = _clampChromeVisibility(
+      (maxExtent - shrinkOffset) / maxExtent,
+    );
+
+    return ClipRect(
+      child: OverflowBox(
+        alignment: Alignment.topCenter,
+        minHeight: maxExtent,
+        maxHeight: maxExtent,
+        // Keep the glass surface painted behind the system status bar.
+        child: Opacity(
+          opacity: visibility,
+          child: Transform.translate(
+            offset: Offset(0, -toolbarHeight * (1 - visibility)),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _HomeShellTopChromeDelegate oldDelegate) {
+    return child != oldDelegate.child ||
+        statusBarInset != oldDelegate.statusBarInset ||
+        toolbarHeight != oldDelegate.toolbarHeight;
   }
 }
 
@@ -410,25 +428,53 @@ class HomeShellBottomChrome extends StatelessWidget {
       curve: Curves.easeOutCubic,
       child: child,
       builder: (context, effectiveVisibility, chromeChild) {
-        return ClipRect(
-          child: Align(
-            alignment: Alignment.topCenter,
-            heightFactor: effectiveVisibility,
-            child: IgnorePointer(
-              ignoring: effectiveVisibility < 0.05,
-              child: Opacity(
-                opacity: effectiveVisibility,
-                child: Transform.translate(
-                  offset: Offset(
-                    0,
-                    AppSizes.homeShellBottomBarClearance *
-                        (1 - effectiveVisibility),
-                  ),
-                  child: chromeChild,
-                ),
+        return IgnorePointer(
+          ignoring: effectiveVisibility < 0.05,
+          child: Opacity(
+            opacity: effectiveVisibility,
+            child: Transform.translate(
+              offset: Offset(
+                0,
+                AppSizes.homeShellBottomBarClearance *
+                    (1 - effectiveVisibility),
               ),
+              child: chromeChild,
             ),
           ),
+        );
+      },
+    );
+  }
+}
+
+/// Moves the home floating action button with the shared bottom chrome.
+class HomeShellFloatingActionButtonChrome extends StatelessWidget {
+  /// The shell floating action button transition.
+  const HomeShellFloatingActionButtonChrome({
+    required this.child,
+    required this.visibility,
+    super.key,
+  });
+
+  /// The visible floating action button.
+  final Widget child;
+
+  /// How much bottom chrome is visible, from 0 to 1.
+  final double visibility;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: _clampChromeVisibility(visibility)),
+      duration: _shellChromeMotionDuration,
+      curve: Curves.easeOutCubic,
+      child: child,
+      builder: (context, effectiveVisibility, fabChild) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: AppSizes.homeShellBottomBarClearance * effectiveVisibility,
+          ),
+          child: fabChild,
         );
       },
     );

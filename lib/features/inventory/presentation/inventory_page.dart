@@ -11,6 +11,9 @@ import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
+    show HomeTabType;
+import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -54,10 +57,17 @@ const _preparedMealImageAssetUuid = Uuid();
 ])
 class InventoryPage extends ConsumerStatefulWidget {
   /// The inventory page.
-  const InventoryPage({super.key, this.expandedPreparedMealId});
+  const InventoryPage({
+    super.key,
+    this.expandedPreparedMealId,
+    this.includeHomeShellChrome = false,
+  });
 
   /// The expanded prepared meal id.
   final String? expandedPreparedMealId;
+
+  /// Whether to render the shared home shell app bar as a sliver.
+  final bool includeHomeShellChrome;
 
   @override
   ConsumerState<InventoryPage> createState() => _InventoryPageState();
@@ -86,7 +96,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     final selectionState = ref.watch(preparedMealSelectionControllerProvider);
 
     if (itemsAsync.isLoading || mealsAsync.isLoading) {
-      return const _InventoryLoadingView();
+      return _InventoryLoadingView(
+        includeHomeShellChrome: widget.includeHomeShellChrome,
+      );
     }
 
     final itemsError = itemsAsync.asError;
@@ -99,6 +111,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         },
         message: l10n.inventoryLoadFailed,
         retryLabel: l10n.inventoryRetryAction,
+        includeHomeShellChrome: widget.includeHomeShellChrome,
       );
     }
 
@@ -109,6 +122,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       items: items,
       preparedMeals: meals,
       expandedPreparedMealId: widget.expandedPreparedMealId,
+      includeHomeShellChrome: widget.includeHomeShellChrome,
       inventorySelectionFocusToken: _inventorySelectionFocusToken,
       emptyStateActionButton: const InventoryActionFab.embedded(),
       onDeleteItem: (itemId) =>
@@ -522,17 +536,28 @@ int _defaultInventoryItemAmount(InventoryItem item) {
 }
 
 class _InventoryLoadingView extends StatelessWidget {
-  const _InventoryLoadingView();
+  const _InventoryLoadingView({required this.includeHomeShellChrome});
+
+  final bool includeHomeShellChrome;
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: SizedBox.square(
-        dimension: AppSizes.inlineProgressIndicator,
-        child: CircularProgressIndicator(
-          strokeWidth: AppSizes.progressStrokeWidth,
+    return CustomScrollView(
+      slivers: [
+        if (includeHomeShellChrome)
+          const HomeShellTabTopChrome(tab: HomeTabType.inventory),
+        const SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: SizedBox.square(
+              dimension: AppSizes.inlineProgressIndicator,
+              child: CircularProgressIndicator(
+                strokeWidth: AppSizes.progressStrokeWidth,
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -542,48 +567,59 @@ class _InventoryErrorView extends StatelessWidget {
     required this.onRetry,
     required this.message,
     required this.retryLabel,
+    required this.includeHomeShellChrome,
   });
 
   final Future<void> Function() onRetry;
   final String message;
   final String retryLabel;
+  final bool includeHomeShellChrome;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final cardRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
 
-    return Center(
-      child: Padding(
-        padding: AppInsets.pageLarge,
-        child: DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: cardRadius,
-          ),
-          child: Padding(
-            padding: AppInsets.card,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.wifi_tethering_error_rounded,
-                  color: colors.error,
-                  size: AppSizes.welcomeIcon * 0.45,
+    return CustomScrollView(
+      slivers: [
+        if (includeHomeShellChrome)
+          const HomeShellTabTopChrome(tab: HomeTabType.inventory),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Padding(
+              padding: AppInsets.pageLarge,
+              child: DecoratedBox(
+                decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+                  colors,
+                  borderRadius: cardRadius,
                 ),
-                const SizedBox(height: AppSpacing.md),
-                Text(message, textAlign: TextAlign.center),
-                const SizedBox(height: AppSpacing.md),
-                FilledButton.icon(
-                  onPressed: onRetry,
-                  icon: const Icon(Icons.refresh),
-                  label: Text(retryLabel),
+                child: Padding(
+                  padding: AppInsets.card,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.wifi_tethering_error_rounded,
+                        color: colors.error,
+                        size: AppSizes.welcomeIcon * 0.45,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(message, textAlign: TextAlign.center),
+                      const SizedBox(height: AppSpacing.md),
+                      FilledButton.icon(
+                        onPressed: onRetry,
+                        icon: const Icon(Icons.refresh),
+                        label: Text(retryLabel),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

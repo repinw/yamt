@@ -11,6 +11,9 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
+    show HomeTabType;
+import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -84,6 +87,7 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.onSelectionToggle,
     super.key,
     this.expandedPreparedMealId,
+    this.includeHomeShellChrome = false,
     this.inventorySelectionFocusToken = 0,
   });
 
@@ -95,6 +99,9 @@ class InventoryList extends ConsumerStatefulWidget {
 
   /// The expanded prepared meal id.
   final String? expandedPreparedMealId;
+
+  /// Whether to render the shared home shell app bar as a sliver.
+  final bool includeHomeShellChrome;
 
   /// Token used to focus the inventory item list for selection.
   final int inventorySelectionFocusToken;
@@ -246,6 +253,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
 
     return CustomScrollView(
       slivers: [
+        if (widget.includeHomeShellChrome)
+          const HomeShellTabTopChrome(tab: HomeTabType.inventory),
         InventoryListTopControlsSliver(
           modeToggle: InventoryModeToolbar(modeToggle: modeToggle),
           showSearch: hasAnySourceItems,
