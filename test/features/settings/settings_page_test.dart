@@ -674,7 +674,7 @@ void main() {
     expect(find.text('App version and information'), findsOneWidget);
   });
 
-  testWidgets('profile card opens AccountPage', (tester) async {
+  testWidgets('Profile card opens AccountPage', (tester) async {
     final user = _MockUser();
     final settingsRepository = FakeCalorieSettingsRepository();
     addTearDown(settingsRepository.dispose);
