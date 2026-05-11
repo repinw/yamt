@@ -59,35 +59,3 @@ class CookingFlowSummaryIngredientDraft {
     );
   }
 }
-
-/// Default local summary ingredient list for placeholder flow UI.
-const List<CookingFlowSummaryIngredientDraft>
-defaultCookingFlowSummaryIngredients = <CookingFlowSummaryIngredientDraft>[
-  CookingFlowSummaryIngredientDraft(
-    key: 'template:300g Linsen',
-    name: 'Linsen',
-    amount: '300',
-    unitCode: 'g',
-    inventoryItemIds: <String>[],
-    kind: CookingFlowSummaryIngredientKind.template,
-    sourceIngredient: '300g Linsen',
-  ),
-  CookingFlowSummaryIngredientDraft(
-    key: 'template:500ml Passata',
-    name: 'Passata',
-    amount: '500',
-    unitCode: 'ml',
-    inventoryItemIds: <String>[],
-    kind: CookingFlowSummaryIngredientKind.template,
-    sourceIngredient: '500ml Passata',
-  ),
-  CookingFlowSummaryIngredientDraft(
-    key: 'template:2 Dosen Kidneybohnen',
-    name: 'Kidneybohnen',
-    amount: '2',
-    unitCode: 'pc',
-    inventoryItemIds: <String>[],
-    kind: CookingFlowSummaryIngredientKind.template,
-    sourceIngredient: '2 Dosen Kidneybohnen',
-  ),
-];

@@ -44,20 +44,4 @@ void main() {
 
     expect(updated.sourceIngredient, isNull);
   });
-
-  test('default ingredients provide stable template rows', () {
-    expect(defaultCookingFlowSummaryIngredients, hasLength(3));
-    expect(
-      defaultCookingFlowSummaryIngredients.map((draft) => draft.kind),
-      everyElement(CookingFlowSummaryIngredientKind.template),
-    );
-    expect(
-      defaultCookingFlowSummaryIngredients.map((draft) => draft.key),
-      containsAll(<String>[
-        'template:300g Linsen',
-        'template:500ml Passata',
-        'template:2 Dosen Kidneybohnen',
-      ]),
-    );
-  });
 }

@@ -100,6 +100,7 @@ List<CookingFlowInstructionStep> buildCookingFlowInstructionSteps({
           text: text,
         )
       : sourceInstructions;
+  final patternCache = <String, RegExp>{};
 
   return baseInstructions
       .map(
@@ -108,6 +109,7 @@ List<CookingFlowInstructionStep> buildCookingFlowInstructionSteps({
             instruction: instruction,
             ingredientReferences: ingredientReferences,
             parserLocale: parserLocale,
+            patternCache: patternCache,
           ),
         ),
       )
@@ -161,6 +163,7 @@ List<CookingFlowInstructionSegment> _buildInstructionSegments({
   required String instruction,
   required List<_CookingIngredientReference> ingredientReferences,
   required CookingFlowParserLocale parserLocale,
+  required Map<String, RegExp> patternCache,
 }) {
   if (instruction.trim().isEmpty) {
     return const <CookingFlowInstructionSegment>[];
@@ -175,7 +178,6 @@ List<CookingFlowInstructionSegment> _buildInstructionSegments({
         );
       });
   final matches = <_InstructionMatch>[];
-  final patternCache = <String, RegExp>{};
   for (final reference in sortedReferences) {
     for (final matchText in reference.matchTexts) {
       final pattern = patternCache.putIfAbsent(

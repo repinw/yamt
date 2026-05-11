@@ -24,30 +24,36 @@ void main() {
     final controller = container.read(
       cookingFlowWizardControllerProvider.notifier,
     );
+    void openPreparationStep() => controller.openPreparationStep();
+    void openCookingStep() => controller.openCookingStep();
+    void openSummaryStep() => controller.openSummaryStep(
+      template: null,
+      inventoryItems: const <InventoryItem>[],
+      containerIds: const <String>['container-1'],
+    );
+    void openFinalizeStep() {
+      controller.openFinalizeStep(const <String>['container-1']);
+    }
 
-    controller.openPreparationStep();
+    openPreparationStep();
     expect(
       container.read(cookingFlowWizardControllerProvider).step,
       CookingFlowStep.preparation,
     );
 
-    controller.openCookingStep();
+    openCookingStep();
     expect(
       container.read(cookingFlowWizardControllerProvider).step,
       CookingFlowStep.cooking,
     );
 
-    controller.openSummaryStep(
-      template: null,
-      inventoryItems: const <InventoryItem>[],
-      containerIds: const <String>['container-1'],
-    );
+    openSummaryStep();
     expect(
       container.read(cookingFlowWizardControllerProvider).step,
       CookingFlowStep.summary,
     );
 
-    controller.openFinalizeStep(const <String>['container-1']);
+    openFinalizeStep();
     expect(
       container.read(cookingFlowWizardControllerProvider).step,
       CookingFlowStep.finalize,
@@ -59,13 +65,21 @@ void main() {
     final controller = container.read(
       cookingFlowWizardControllerProvider.notifier,
     );
+    void addSummaryIngredientAndSetFinalizePortions() {
+      controller
+        ..addSummaryIngredient(
+          ingredient: _summaryIngredient,
+          adjustmentIndex: null,
+          containerIds: const <String>['container-1'],
+        )
+        ..updateFinalizePortionCount(5.6);
+    }
 
-    controller.addSummaryIngredient(
-      ingredient: _summaryIngredient,
-      adjustmentIndex: null,
-      containerIds: const <String>['container-1'],
-    );
-    controller.updateFinalizePortionCount(5.6);
+    void updateBasePortions() {
+      controller.updatePortionCount(7.4);
+    }
+
+    addSummaryIngredientAndSetFinalizePortions();
 
     final afterFinalizeChange = container.read(
       cookingFlowWizardControllerProvider,
@@ -76,7 +90,7 @@ void main() {
       'row-rice': 'container-1',
     });
 
-    controller.updatePortionCount(7.4);
+    updateBasePortions();
 
     final afterBaseChange = container.read(cookingFlowWizardControllerProvider);
     expect(afterBaseChange.portionCount, 7);
@@ -144,12 +158,13 @@ void main() {
         container.read(cookingFlowControllerProvider.notifier)
             as _SuccessCookingFlowController;
 
-    wizard.addSummaryIngredient(
-      ingredient: _summaryIngredient,
-      adjustmentIndex: null,
-      containerIds: const <String>['container-1'],
-    );
-    wizard.openFinalizeStep(const <String>['container-1']);
+    wizard
+      ..addSummaryIngredient(
+        ingredient: _summaryIngredient,
+        adjustmentIndex: null,
+        containerIds: const <String>['container-1'],
+      )
+      ..openFinalizeStep(const <String>['container-1']);
 
     final result = await wizard.finalizeMeal(
       template: _template(),
@@ -158,9 +173,9 @@ void main() {
     );
 
     expect(result.isSuccess, isTrue);
-    expect(finalizeController.finalizeCalls, 1);
-    expect(finalizeController.capturedSummaryIngredients.single.name, 'Rice');
-    expect(finalizeController.capturedAssignments, <String, String>{
+    expect(finalizeController._finalizeCalls, 1);
+    expect(finalizeController._capturedSummaryIngredients.single.name, 'Rice');
+    expect(finalizeController._capturedAssignments, <String, String>{
       'row-rice': 'container-1',
     });
     final state = container.read(cookingFlowWizardControllerProvider);
@@ -228,10 +243,10 @@ PreparedMeal _template() {
 }
 
 class _SuccessCookingFlowController extends CookingFlowController {
-  int finalizeCalls = 0;
-  List<CookingFlowSummaryIngredientDraft> capturedSummaryIngredients =
+  int _finalizeCalls = 0;
+  List<CookingFlowSummaryIngredientDraft> _capturedSummaryIngredients =
       const <CookingFlowSummaryIngredientDraft>[];
-  Map<String, String> capturedAssignments = const <String, String>{};
+  Map<String, String> _capturedAssignments = const <String, String>{};
 
   @override
   CookingFlowControllerState build() {
@@ -248,9 +263,9 @@ class _SuccessCookingFlowController extends CookingFlowController {
     required List<CookingFlowFinalizeStorageContainerInput> containers,
     required Map<String, String> ingredientContainerAssignments,
   }) async {
-    finalizeCalls += 1;
-    capturedSummaryIngredients = summaryIngredients;
-    capturedAssignments = ingredientContainerAssignments;
+    _finalizeCalls += 1;
+    _capturedSummaryIngredients = summaryIngredients;
+    _capturedAssignments = ingredientContainerAssignments;
     return const CookingFlowFinalizeSaveResult.success(
       preparedMealId: 'meal-1',
       containerCount: 1,

@@ -45,7 +45,7 @@ void main() {
       expect(
         validateCookingFlowFinalize(
           containers: <CookingFlowFinalizeStorageContainerInput>[
-            _container(taraWeight: 700, grossWeight: 700),
+            _container(taraWeight: 700),
           ],
           summaryIngredients: _summaryRows,
           assignments: const <String, String>{'row-rice': 'container-1'},
@@ -57,7 +57,7 @@ void main() {
     test('blocks containers that have no assigned ingredient', () {
       final failure = validateCookingFlowFinalize(
         containers: <CookingFlowFinalizeStorageContainerInput>[
-          _container(id: 'container-1'),
+          _container(),
           _container(id: 'container-2'),
         ],
         summaryIngredients: _summaryRows,
