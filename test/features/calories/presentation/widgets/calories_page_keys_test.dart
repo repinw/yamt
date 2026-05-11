@@ -25,6 +25,10 @@ void main() {
       const Key('calories_summary_macro_bar_protein'),
     );
     expect(
+      CaloriesPageKeys.calorieDebugActionsMenuButton,
+      const Key('calories_debug_actions_menu_button'),
+    );
+    expect(
       CaloriesPageKeys.calorieDebugDumpButton,
       const Key('calories_debug_dump_button'),
     );
@@ -35,6 +39,18 @@ void main() {
     expect(
       CalorieGoalCalculatorSheetKeys.activityLevelOption('high'),
       const Key('calorie_calculator_activity_level_option_high'),
+    );
+    expect(
+      CalorieEntryDetailKeys.ingredientNameCell(2),
+      const Key('calorie_entry_detail_ingredient_name_2'),
+    );
+    expect(
+      CalorieEntryDetailKeys.ingredientAmountCell(2),
+      const Key('calorie_entry_detail_ingredient_amount_2'),
+    );
+    expect(
+      CalorieEntryDetailKeys.ingredientKcalCell(2),
+      const Key('calorie_entry_detail_ingredient_kcal_2'),
     );
   });
 }

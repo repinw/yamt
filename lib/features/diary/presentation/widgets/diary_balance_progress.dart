@@ -16,6 +16,11 @@ class _DiaryBalanceProgressBar extends StatelessWidget {
         builder: (context, constraints) {
           final width = constraints.maxWidth;
           final safeZoneRadiusRatio = _resolveSafeZoneRadiusRatio(metrics);
+          final progressTop =
+              (_balanceProgressAreaHeight - _balanceProgressHeight) / 2;
+          final flameTop =
+              progressTop +
+              ((_balanceProgressHeight - _balanceFlameIconSize) / 2);
 
           return Stack(
             clipBehavior: Clip.none,
@@ -23,7 +28,7 @@ class _DiaryBalanceProgressBar extends StatelessWidget {
               Positioned(
                 left: 0,
                 right: 0,
-                top: 16,
+                top: progressTop,
                 child: Container(
                   key: DiaryBalanceCardKeys.progressTrack,
                   height: _balanceProgressHeight,
@@ -66,11 +71,13 @@ class _DiaryBalanceProgressBar extends StatelessWidget {
 
                       return Positioned(
                         left: safeCenter - safeHalfWidth,
-                        top: 20,
+                        top: progressTop + _balanceSafeZoneVerticalInset,
                         width: safeWidth,
                         child: Container(
                           key: DiaryBalanceCardKeys.safeZone,
-                          height: _balanceProgressHeight - 8,
+                          height:
+                              _balanceProgressHeight -
+                              (_balanceSafeZoneVerticalInset * 2),
                           decoration: BoxDecoration(
                             color: colors.tertiary.withValues(alpha: 0.32),
                             borderRadius: BorderRadius.circular(999),
@@ -91,11 +98,13 @@ class _DiaryBalanceProgressBar extends StatelessWidget {
 
                   return Positioned(
                     left: markerLeft,
-                    top: 8,
+                    top: progressTop - _balanceTargetMarkerOverflowTop,
                     child: Container(
                       key: DiaryBalanceCardKeys.targetMarker,
                       width: _balanceTargetMarkerWidth,
-                      height: _balanceProgressHeight + 8,
+                      height:
+                          _balanceProgressHeight +
+                          _balanceTargetMarkerOverflowTop,
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFF9CA3AF)
@@ -118,7 +127,7 @@ class _DiaryBalanceProgressBar extends StatelessWidget {
 
                   return Positioned(
                     left: flameLeft,
-                    top: 14,
+                    top: flameTop,
                     child: const SizedBox.square(
                       key: DiaryBalanceCardKeys.consumedMarker,
                       dimension: _balanceFlameIconSize,

@@ -26,10 +26,12 @@ part 'diary_balance_progress.dart';
 part 'diary_balance_shell.dart';
 
 const _balanceCardRadius = 32.0;
-const _balanceProgressHeight = 24.0;
+const _balanceProgressHeight = 30.0;
 const _balanceFlameIconSize = 24.0;
 const _balanceTargetMarkerWidth = 3.0;
-const _balanceProgressAreaHeight = 56.0;
+const _balanceProgressAreaHeight = 62.0;
+const _balanceSafeZoneVerticalInset = 4.0;
+const _balanceTargetMarkerOverflowTop = 8.0;
 const _balanceStatTileHeight = 104.0;
 const _balanceGameHeaderHeight = 24.0;
 const _balanceCounterBadgeHeight = 22.0;
@@ -98,7 +100,6 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
         AutomaticKeepAliveClientMixin<DiaryBalanceCard>,
         BurnWeekZoneDialogHost<DiaryBalanceCard> {
   CalorieWeekOverview? _lastWeekOverview;
-  CalorieWeekDayOverview? _lastSelectedDayOverview;
   Timer? _ticker;
 
   @override
@@ -156,9 +157,6 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     final weekOverviewState = ref.watch(
       calorieWeekOverviewForWindowProvider(normalizedSelectedDay),
     );
-    final selectedDayState = ref.watch(
-      calorieWeekDayOverviewForDateProvider(normalizedSelectedDay),
-    );
     final dayEntriesState = isLiveDay
         ? ref.watch(diaryEntriesForDayProvider(normalizedSelectedDay))
         : null;
@@ -168,11 +166,10 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
         ref.watch(burnWeekRunControllerProvider).value ??
         const BurnWeekRunState.initial();
     final weekOverview = weekOverviewState.value;
-    final selectedDayOverview = selectedDayState.value;
 
-    if (weekOverview != null && selectedDayOverview != null) {
+    if (weekOverview != null) {
+      final selectedDayOverview = weekOverview.days.last;
       _lastWeekOverview = weekOverview;
-      _lastSelectedDayOverview = selectedDayOverview;
 
       return _buildLoaded(
         context,
@@ -186,15 +183,11 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     }
 
     final lastWeekOverview = _lastWeekOverview;
-    final lastSelectedDayOverview = _lastSelectedDayOverview;
-    if (!weekOverviewState.hasError &&
-        !selectedDayState.hasError &&
-        lastWeekOverview != null &&
-        lastSelectedDayOverview != null) {
+    if (!weekOverviewState.hasError && lastWeekOverview != null) {
       return _buildLoaded(
         context,
         weekOverview: lastWeekOverview,
-        selectedDayOverview: lastSelectedDayOverview,
+        selectedDayOverview: lastWeekOverview.days.last,
         selectedDayEntries: dayEntries,
         selectedDayEntriesLoaded: dayEntriesLoaded,
         runState: runState,
@@ -203,9 +196,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     }
 
     final hasError =
-        weekOverviewState.hasError ||
-        selectedDayState.hasError ||
-        dayEntriesState?.hasError == true;
+        weekOverviewState.hasError || dayEntriesState?.hasError == true;
     if (hasError) {
       final l10n = AppLocalizations.of(context)!;
       return _DiaryBalanceShell(
@@ -224,7 +215,6 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   void _retryBalance(DateTime normalizedSelectedDay) {
     ref
       ..invalidate(calorieWeekOverviewForWindowProvider(normalizedSelectedDay))
-      ..invalidate(calorieWeekDayOverviewForDateProvider(normalizedSelectedDay))
       ..invalidate(diaryEntriesForDayProvider(normalizedSelectedDay));
   }
 
@@ -347,7 +337,24 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
       queueBurnWeekZoneDialogIfNeeded(metrics: metrics, runState: runState);
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final eatenValueColor = isDark
+        ? const Color(0xFFBFDBFE)
+        : const Color(0xFF2E4A79);
+    final leftGradient = isDark
+        ? const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF047857), Color(0xFF065F46)],
+          )
+        : const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1FA86A), Color(0xFF168955)],
+          );
+
     return _DiaryBalanceShell(
+      framed: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -395,14 +402,17 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                     l10n.caloriesUnitKcal,
                   ),
                   subtitle: eatenSubtitle,
-                  valueColor: const Color(0xFF3A5A78),
-                  backgroundColor:
-                      Theme.of(context).brightness == Brightness.dark
-                      ? colors.surfaceContainerLowest
-                      : Colors.white,
-                  borderColor: Theme.of(context).brightness == Brightness.dark
-                      ? colors.outlineVariant
-                      : const Color(0xFFCBD5E1),
+                  style: _DiaryBalanceStatTileStyle.eaten(
+                    isDark: isDark,
+                    valueColor: eatenValueColor,
+                    subtitleColor: colors.onSurfaceVariant,
+                    backgroundColor: isDark
+                        ? colors.surfaceContainerLowest
+                        : Colors.white,
+                    borderColor: isDark
+                        ? colors.outlineVariant
+                        : const Color(0xFFE2E8F0),
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -417,16 +427,9 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
                           l10n.caloriesUnitKcal,
                         ),
                   subtitle: resolvedLeftSubtitle,
-                  valueColor: dayLeftKcal < 0
-                      ? colors.error
-                      : const Color(0xFF116B5A),
-                  backgroundColor:
-                      Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF052E2B).withValues(alpha: 0.28)
-                      : const Color(0xFFF4FCF9),
-                  borderColor: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF065F46)
-                      : const Color(0xFFA1C4B9),
+                  style: _DiaryBalanceStatTileStyle.left(
+                    gradient: leftGradient,
+                  ),
                 ),
               ),
             ],

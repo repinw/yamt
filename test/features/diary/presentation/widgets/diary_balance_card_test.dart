@@ -643,6 +643,29 @@ void main() {
     await tester.pump(const Duration(milliseconds: 40));
     expect(tickerTickCount, greaterThan(initialTickCount));
   });
+
+  testWidgets('shows retry content when week overview fails', (tester) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial(),
+      weekOverviewThrows: true,
+    );
+
+    expect(find.text('Balance could not be loaded'), findsOneWidget);
+    expect(find.byKey(DiaryBalanceCardKeys.retryButton), findsOneWidget);
+
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.retryButton));
+    await tester.pump();
+
+    expect(find.byKey(DiaryBalanceCardKeys.retryButton), findsOneWidget);
+  });
 }
 
 Future<void> _pumpBalanceCard(
@@ -666,6 +689,7 @@ Future<void> _pumpBalanceCard(
   ValueChanged<DateTime>? onUnmarkHeartDay,
   ValueChanged<DateTime>? onRestartRunFrom,
   VoidCallback? onContinueRunAfterLimitWarning,
+  bool weekOverviewThrows = false,
 }) async {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final weekOverview = _weekOverview(
@@ -699,7 +723,12 @@ Future<void> _pumpBalanceCard(
           ),
         calorieWeekOverviewForWindowProvider(
           normalizedSelectedDay,
-        ).overrideWith((ref) => weekOverview),
+        ).overrideWith((ref) {
+          if (weekOverviewThrows) {
+            throw StateError('week overview failed');
+          }
+          return weekOverview;
+        }),
         calorieWeekDayOverviewForDateProvider(
           normalizedSelectedDay,
         ).overrideWith((ref) => selectedDayOverview),

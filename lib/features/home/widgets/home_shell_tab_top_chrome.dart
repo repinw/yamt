@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_debug_actions_menu.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
@@ -214,17 +217,15 @@ class HomeShellTabTopChrome extends ConsumerWidget {
     AppLocalizations l10n,
     DiaryCalendarState? diaryCalendarState,
   ) {
-    if (diaryCalendarState == null || diaryCalendarState.isSelectedToday) {
-      return const <Widget>[];
-    }
-
     return [
-      TextButton(
-        onPressed: () {
-          ref.read(diaryCalendarControllerProvider.notifier).selectToday();
-        },
-        child: Text(l10n.diaryTodayTitle),
-      ),
+      if (kDebugMode) const CalorieDebugActionsMenu(),
+      if (diaryCalendarState != null && !diaryCalendarState.isSelectedToday)
+        TextButton(
+          onPressed: () {
+            ref.read(diaryCalendarControllerProvider.notifier).selectToday();
+          },
+          child: Text(l10n.diaryTodayTitle),
+        ),
     ];
   }
 

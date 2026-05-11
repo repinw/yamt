@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
@@ -170,7 +171,9 @@ void main() {
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
   });
 
-  testWidgets('starts inventory providers when diary opens', (tester) async {
+  testWidgets('does not warm inventory providers when diary opens', (
+    tester,
+  ) async {
     var inventoryBuildCount = 0;
     var preparedMealsBuildCount = 0;
 
@@ -185,8 +188,8 @@ void main() {
       },
     );
 
-    expect(inventoryBuildCount, greaterThan(0));
-    expect(preparedMealsBuildCount, greaterThan(0));
+    expect(inventoryBuildCount, 0);
+    expect(preparedMealsBuildCount, 0);
   });
 
   testWidgets('auto-opens already loaded weekly check-in dialog', (
@@ -202,6 +205,87 @@ void main() {
 
     expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
+  });
+
+  testWidgets('weekly check-in hint continue opens dialog', (tester) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      useGoRouter: true,
+      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+        windowStartDate: DateTime(2026, 4, 21),
+        shouldAutoOpen: false,
+      ),
+    );
+
+    expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsOneWidget);
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsNothing);
+
+    await tester.tap(find.byKey(CaloriesPageKeys.weeklyCheckInContinueButton));
+    await _pumpFrames(tester);
+
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+  });
+
+  testWidgets('weekly check-in hint opens Health trends', (tester) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      useGoRouter: true,
+      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+        windowStartDate: DateTime(2026, 4, 21),
+        shouldAutoOpen: false,
+        blockedReason:
+            CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
+      ),
+    );
+
+    expect(
+      find.byKey(CaloriesPageKeys.weeklyCheckInOpenTrendsButton),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(CaloriesPageKeys.weeklyCheckInOpenTrendsButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Trends'), findsOneWidget);
+  });
+
+  testWidgets('weekly check-in skip day failure shows snackbar', (
+    tester,
+  ) async {
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+      ),
+    )..saveShouldFail = true;
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      settingsRepository: settingsRepository,
+      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+        windowStartDate: DateTime(2026, 4, 21),
+        shouldAutoOpen: false,
+        days: [
+          _weeklyCheckInWindowDay(selectedDay),
+        ],
+      ),
+    );
+
+    expect(
+      find.byKey(CaloriesPageKeys.weeklyCheckInSkipDayButton),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(CaloriesPageKeys.weeklyCheckInSkipDayButton));
+    await _pumpFrames(tester);
+
+    expect(find.text('Could not save calorie goal.'), findsOneWidget);
   });
 
   testWidgets('defers a second weekly check-in while a dialog is open', (
@@ -268,43 +352,34 @@ void main() {
     await _pumpFrames(tester);
   });
 
-  testWidgets('debug dump shows success snackbar', (tester) async {
+  testWidgets('shows weekly check-in hint again when apply fails', (
+    tester,
+  ) async {
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+      ),
+    )..saveShouldFail = true;
+
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      logRepository: FakeCalorieLogRepository(
-        initialEntries: [
-          _entry(
-            id: 'debug-entry',
-            day: selectedDay,
-            mealType: MealType.breakfast,
-          ),
-        ],
+      settingsRepository: settingsRepository,
+      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+        windowStartDate: DateTime(2026, 4, 20),
       ),
     );
 
-    await tester.tap(find.byKey(CaloriesPageKeys.calorieDebugDumpButton));
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+
+    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton));
     await _pumpFrames(tester);
 
-    expect(find.textContaining('Printed calorie debug table'), findsOneWidget);
-  });
-
-  testWidgets('debug dump shows failure snackbar', (tester) async {
-    final logRepository = FakeCalorieLogRepository()
-      ..onReadEntriesInRange = (startInclusive, endExclusive) async {
-        throw StateError('debug dump failed');
-      };
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      logRepository: logRepository,
-    );
-
-    await tester.tap(find.byKey(CaloriesPageKeys.calorieDebugDumpButton));
-    await _pumpFrames(tester);
-
-    expect(find.text('Could not print calorie debug table.'), findsOneWidget);
+    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsOneWidget);
+    expect(find.text('Could not close the weekly check-in.'), findsOneWidget);
   });
 
   testWidgets('shows activity tracking widgets when Health is ready', (
@@ -579,6 +654,40 @@ void main() {
     expect(healthService.openAppPermissionSettingsCallCount, 1);
   });
 
+  testWidgets('first diary intro opens Health Connect settings for errors', (
+    tester,
+  ) async {
+    final healthService = FakeHealthConnectionService(
+      const HealthConnectionStatus(
+        platform: HealthPlatform.android,
+        healthConnectAvailability: HealthConnectAvailability.available,
+        permissionState: HealthPermissionState.notGranted,
+        historyAccess: HealthHistoryAccess.notGranted,
+        errorMessage: 'Health Connect permission failed.',
+      ),
+    );
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      locale: const Locale('de'),
+      healthConnectionService: healthService,
+      settingsRepository: FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 1200,
+          calculatorProfile: const CalorieCalculatorProfile.defaults(),
+          effectiveDate: selectedDay,
+        ),
+      ),
+    );
+    await _advanceIntroToActivityPage(tester);
+
+    await tester.tap(find.byKey(DiaryIntroDialogKeys.healthActionButton));
+    await _pumpFrames(tester);
+
+    expect(healthService.openHealthPermissionSettingsCallCount, 1);
+  });
+
   testWidgets('does not show first diary intro after completion', (
     tester,
   ) async {
@@ -760,6 +869,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   List<Override> overrides = const [],
   bool overrideWeeklyCheckInProvider = true,
   bool includeHomeShellChrome = false,
+  bool useGoRouter = false,
 }) async {
   final resolvedLogRepository = logRepository ?? FakeCalorieLogRepository();
   final resolvedSettingsRepository =
@@ -831,23 +941,46 @@ Future<ProviderContainer> _pumpDiaryPage(
     container.dispose();
   });
 
+  final diaryPage = Scaffold(
+    body: DiaryPage(
+      includeHomeShellChrome: includeHomeShellChrome,
+    ),
+  );
+  final app = useGoRouter
+      ? MaterialApp.router(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: GoRouter(
+            initialLocation: AppRoutes.homeCalories,
+            routes: [
+              GoRoute(
+                path: AppRoutes.homeCalories,
+                builder: (context, state) => diaryPage,
+              ),
+              GoRoute(
+                path: AppRoutes.homeStatisticsWeight,
+                builder: (context, state) =>
+                    const Scaffold(body: Text('Trends')),
+              ),
+            ],
+          ),
+        )
+      : MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: diaryPage,
+          routes: {
+            AppRoutes.homeStatisticsWeight: (context) =>
+                const Scaffold(body: Text('Trends')),
+          },
+        );
+
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: MaterialApp(
-        locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: DiaryPage(
-            includeHomeShellChrome: includeHomeShellChrome,
-          ),
-        ),
-        routes: {
-          AppRoutes.homeStatisticsWeight: (context) =>
-              const Scaffold(body: Text('Trends')),
-        },
-      ),
+      child: app,
     ),
   );
   await _pumpFrames(tester);
@@ -920,6 +1053,10 @@ CalorieWeeklyCheckInViewModel _emptyWeeklyCheckInViewModel() {
 
 CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
   required DateTime windowStartDate,
+  bool shouldAutoOpen = true,
+  CalorieWeeklyCheckInBlockedReason? blockedReason,
+  List<CalorieWeeklyCheckInWindowDay> days =
+      const <CalorieWeeklyCheckInWindowDay>[],
 }) {
   final pending = PendingCalorieGoalWeeklyCheckIn(
     windowStartDate: windowStartDate,
@@ -928,8 +1065,8 @@ CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
   );
   return CalorieWeeklyCheckInViewModel(
     pendingWeeklyCheckIn: pending,
-    shouldAutoOpen: true,
-    days: const <CalorieWeeklyCheckInWindowDay>[],
+    shouldAutoOpen: shouldAutoOpen,
+    days: days,
     calculation: const CalorieWeeklyCheckInCalculation(
       trendWeightChangePerDay: -0.05,
       averageIntakeKcal: 2100,
@@ -941,12 +1078,25 @@ CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
       activityDeltaKcal: 50,
       dynamicGoalTodayKcal: 2250,
     ),
-    blockedReason: null,
+    blockedReason: blockedReason,
     missingIntakeDays: const <DateTime>[],
     missingWeightDays: const <DateTime>[],
     freshness: CalorieLearnedTdeeFreshness.none,
     latestLearnedTdeeAt: null,
     lowConfidence: false,
+  );
+}
+
+CalorieWeeklyCheckInWindowDay _weeklyCheckInWindowDay(DateTime day) {
+  return CalorieWeeklyCheckInWindowDay(
+    day: day,
+    hasEntries: false,
+    loggedIntakeKcal: 0,
+    resolvedIntakeKcal: null,
+    isSkippedIntakeDay: false,
+    isHeartDay: false,
+    activeKcal: 0,
+    weightKg: null,
   );
 }
 

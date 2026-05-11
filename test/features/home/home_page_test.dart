@@ -338,6 +338,11 @@ Widget _buildHarness({
           return const SizedBox();
         },
       ),
+      GoRoute(
+        path: AppRoutes.homeShopping,
+        builder: (context, state) =>
+            const Scaffold(body: Text('Shopping route')),
+      ),
     ],
   );
 
@@ -434,6 +439,67 @@ void main() {
     expect(find.text('Today'), findsOneWidget);
     expect(find.text(formatCalendarHeaderDate(today, 'en')), findsOneWidget);
     expect(find.text('Week 1 day 7'), findsNothing);
+  });
+
+  testWidgets('diary shell Today action returns to the current day', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final today = normalizeDiaryDay(DateTime.now());
+    final oldDay = today.subtract(const Duration(days: 2));
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        selectedDiaryDay: oldDay,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(calendarWeekdayFullLabel(oldDay, 'en')), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
+
+    await tester.tap(find.text('Today'));
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomePage)),
+    );
+    final state = container.read(diaryCalendarControllerProvider);
+    expect(state.selectedDay, today);
+    expect(state.todayRequest, 1);
+  });
+
+  testWidgets('secondary tab chrome uses tab titles and empty actions', (
+    tester,
+  ) async {
+    final scenarios = <String, String>{
+      AppRoutes.homeInventoryTemplates: 'Cookbook',
+      AppRoutes.homeStatistics: 'Statistics',
+      AppRoutes.homeSettings: 'Settings',
+    };
+
+    for (final scenario in scenarios.entries) {
+      final repository = FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          settingsRepository: repository,
+          initialLocation: scenario.key,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(scenario.value), findsOneWidget);
+      expect(find.byIcon(Icons.assignment_outlined), findsNothing);
+      expect(find.byIcon(Icons.shopping_cart_rounded), findsNothing);
+      expect(find.byIcon(Icons.bug_report_rounded), findsNothing);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    }
   });
 
   testWidgets('home shell chrome collapses on scroll down and returns upward', (
@@ -770,6 +836,111 @@ void main() {
 
     expect(find.byType(InventoryActionFab), findsNothing);
     expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('inventory top bar actions show placeholder and shopping route', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.assignment_outlined));
+    await tester.pump();
+
+    expect(find.text('Not implemented yet'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shopping route'), findsOneWidget);
+  });
+
+  testWidgets('inventory selection chrome confirms and clears full actions', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomePage)),
+    );
+    container.read(preparedMealSelectionControllerProvider.notifier)
+      ..enterSelection('item-1')
+      ..toggleSelection('item-2');
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 selected'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    expect(find.text('Bind meal'), findsOneWidget);
+
+    await tester.tap(find.text('Bind meal'));
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(preparedMealSelectionControllerProvider).bindRequestToken,
+      1,
+    );
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(preparedMealSelectionControllerProvider).isSelectionMode,
+      isFalse,
+    );
+  });
+
+  testWidgets('inventory ingredient selection chrome uses add action', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomePage)),
+    );
+    container
+        .read(preparedMealSelectionControllerProvider.notifier)
+        .startAddIngredientsToMealSelection();
+    container
+        .read(preparedMealSelectionControllerProvider.notifier)
+        .toggleSelection('item-1');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add ingredient'), findsOneWidget);
+    expect(find.byIcon(Icons.add_rounded), findsOneWidget);
+
+    await tester.tap(find.text('Add ingredient'));
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(preparedMealSelectionControllerProvider).bindRequestToken,
+      1,
+    );
   });
 
   testWidgets('inventory tab hides shell fab while inventory is loading', (
@@ -1174,6 +1345,24 @@ void main() {
       expect(find.text('Bind meal'), findsNothing);
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
       expect(find.byIcon(Icons.restaurant_menu_rounded), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.restaurant_menu_rounded));
+      await tester.pumpAndSettle();
+
+      expect(
+        container
+            .read(preparedMealSelectionControllerProvider)
+            .bindRequestToken,
+        1,
+      );
+
+      await tester.tap(find.byIcon(Icons.close_rounded));
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(preparedMealSelectionControllerProvider).isSelectionMode,
+        isFalse,
+      );
       expect(tester.takeException(), isNull);
     },
   );
