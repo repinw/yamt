@@ -162,7 +162,7 @@ Future<List<String>?> _showPendingIngredientSelectionSheet({
                                 final isSelected = draftSelection.contains(
                                   item.id,
                                 );
-                                return CheckboxListTile(
+                                return AppCheckboxListTile(
                                   value: isSelected,
                                   contentPadding: EdgeInsets.zero,
                                   secondary: _PendingIngredientPreview(

@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/inventory/application/'
@@ -275,7 +276,7 @@ class CookingFlowInventoryAssignmentBottomSheetState
                             final isSelected = _selectedItemIds.contains(
                               item.id,
                             );
-                            return CheckboxListTile(
+                            return AppCheckboxListTile(
                               value: isSelected,
                               contentPadding: EdgeInsets.zero,
                               secondary: CookingFlowInventoryAssignmentPreview(
