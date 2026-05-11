@@ -60,10 +60,13 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.errorText,
-    required this.selectedPortions,
+    required this.amountMode,
+    required this.canUseGrams,
+    required this.selectedAmount,
     required this.quickOptions,
     required this.remainingLabel,
     required this.clearTooltip,
+    required this.onAmountModeChanged,
     required this.onChanged,
     required this.onClearAndFocus,
     required this.onSubmitted,
@@ -73,10 +76,13 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final String? errorText;
-  final num? selectedPortions;
+  final _PreparedMealEatAmountMode amountMode;
+  final bool canUseGrams;
+  final num? selectedAmount;
   final List<_PreparedMealQuickOption> quickOptions;
   final String remainingLabel;
   final String clearTooltip;
+  final ValueChanged<_PreparedMealEatAmountMode>? onAmountModeChanged;
   final ValueChanged<String> onChanged;
   final VoidCallback onClearAndFocus;
   final VoidCallback onSubmitted;
@@ -84,7 +90,6 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
 
     return Column(
@@ -98,8 +103,10 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
           clearTooltip: clearTooltip,
           fieldKey: const Key('prepared_meal_portions_field'),
           clearButtonKey: const Key('prepared_meal_portions_clear_button'),
-          trailing: _PreparedMealEatPortionLabel(
-            label: l10n.preparedMealPortionsToUseLabel,
+          trailing: _PreparedMealEatAmountModeSelector(
+            amountMode: amountMode,
+            canUseGrams: canUseGrams,
+            onChanged: onAmountModeChanged,
           ),
           onChanged: onChanged,
           onClearAndFocus: onClearAndFocus,
@@ -114,7 +121,7 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
                   for (final option in quickOptions)
                     InventoryEatFlowQuickChip(
                       label: option.label,
-                      isSelected: selectedPortions == option.value,
+                      isSelected: selectedAmount == option.value,
                       onPressed: () => onQuickOptionSelected(option.value),
                     ),
                 ],
@@ -135,22 +142,66 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
   }
 }
 
-class _PreparedMealEatPortionLabel extends StatelessWidget {
-  const _PreparedMealEatPortionLabel({required this.label});
+class _PreparedMealEatAmountModeSelector extends StatelessWidget {
+  const _PreparedMealEatAmountModeSelector({
+    required this.amountMode,
+    required this.canUseGrams,
+    required this.onChanged,
+  });
 
-  final String label;
+  final _PreparedMealEatAmountMode amountMode;
+  final bool canUseGrams;
+  final ValueChanged<_PreparedMealEatAmountMode>? onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
+    final options = [
+      _PreparedMealEatAmountMode.portions,
+      if (canUseGrams) _PreparedMealEatAmountMode.grams,
+    ];
 
-    return Text(
-      label,
-      overflow: TextOverflow.ellipsis,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        color: colors.onSurface,
-        fontWeight: FontWeight.w700,
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<_PreparedMealEatAmountMode>(
+        key: const Key('prepared_meal_amount_mode_dropdown'),
+        value: amountMode,
+        isExpanded: true,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        dropdownColor: colors.surfaceContainerHigh,
+        icon: Icon(Icons.expand_more_rounded, color: colors.onSurfaceVariant),
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: colors.onSurface,
+          fontWeight: FontWeight.w700,
+        ),
+        items: [
+          for (final option in options)
+            DropdownMenuItem<_PreparedMealEatAmountMode>(
+              value: option,
+              child: Text(
+                _labelForMode(option, l10n),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+        ],
+        onChanged: (value) {
+          if (value == null) {
+            return;
+          }
+          onChanged?.call(value);
+        },
       ),
     );
+  }
+
+  String _labelForMode(
+    _PreparedMealEatAmountMode mode,
+    AppLocalizations l10n,
+  ) {
+    return switch (mode) {
+      _PreparedMealEatAmountMode.portions =>
+        l10n.preparedMealPortionsToUseLabel,
+      _PreparedMealEatAmountMode.grams => l10n.inventoryItemEatSheetUnitGram,
+    };
   }
 }

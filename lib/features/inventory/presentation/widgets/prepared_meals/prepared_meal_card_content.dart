@@ -48,13 +48,7 @@ class _PreparedMealCardHeader extends StatelessWidget {
               : null,
           statusColor: meal.hasPendingRecipeIngredients ? colors.error : null,
           progressRatio: meal.remainingRatio,
-          progressLabel: l10n.preparedMealPortionsRemaining(
-            formatPreparedMealPortions(
-              meal.remainingPortions,
-              localeName: l10n.localeName,
-            ),
-            meal.totalPortions,
-          ),
+          progressLabel: _preparedMealProgressLabel(l10n: l10n, meal: meal),
           segmentedByUnits: false,
           totalUnits: meal.totalPortions,
           remainingUnits: meal.remainingPortions,

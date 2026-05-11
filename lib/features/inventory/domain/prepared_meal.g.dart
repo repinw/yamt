@@ -46,6 +46,11 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
           ?.map((e) => e as String)
           .toList() ??
       [],
+  recipeInstructions:
+      (json['recipe_instructions'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      [],
   ignoredRecipeIngredients:
       (json['ignored_recipe_ingredients'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -73,6 +78,8 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
           ?.map((e) => e as String)
           .toList() ??
       [],
+  finalNetWeight: _readNullableInt(json['final_net_weight']),
+  remainingNetWeight: _readNullableInt(json['remaining_net_weight']),
 );
 
 Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
@@ -83,12 +90,15 @@ Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
       'image_url': instance.imageUrl,
       'recipe_url': instance.recipeUrl,
       'recipe_ingredients': instance.recipeIngredients,
+      'recipe_instructions': instance.recipeInstructions,
       'ignored_recipe_ingredients': instance.ignoredRecipeIngredients,
       'recipe_ingredient_assignments': instance.recipeIngredientAssignments,
       'recipe_ingredient_amount_conversions': instance
           .recipeIngredientAmountConversions
           .map((k, e) => MapEntry(k, e.toJson())),
       'pending_recipe_ingredients': instance.pendingRecipeIngredients,
+      'final_net_weight': instance.finalNetWeight,
+      'remaining_net_weight': instance.remainingNetWeight,
       'total_portions': instance.totalPortions,
       'remaining_portions': instance.remainingPortions,
       'total_kcal': instance.totalKcal,

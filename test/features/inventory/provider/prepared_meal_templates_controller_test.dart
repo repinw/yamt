@@ -98,6 +98,19 @@ class _FakePreparedMealRecipeImporter extends PreparedMealRecipeImporter {
   }
 }
 
+Future<void> _waitForCondition(
+  bool Function() condition, {
+  Duration timeout = const Duration(milliseconds: 200),
+}) async {
+  final stopwatch = Stopwatch()..start();
+  while (!condition()) {
+    if (stopwatch.elapsed >= timeout) {
+      fail('Condition not reached within $timeout.');
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+  }
+}
+
 PreparedMeal _templateMeal({required String id, required String name}) {
   final sourceItem = InventoryItem.create(
     id: 'rice',
@@ -310,6 +323,10 @@ void main() {
                 title: 'Spaghetti mit Pesto',
                 servings: 4,
                 ingredients: <String>['500 g Spaghetti', '2 EL Pesto'],
+                instructions: <String>[
+                  'Spaghetti kochen.',
+                  'Pesto unterheben.',
+                ],
               ),
             ),
           ),
@@ -337,6 +354,10 @@ void main() {
       expect(repository.savedTemplates.single.recipeIngredients, <String>[
         '500 g Spaghetti',
         '2 EL Pesto',
+      ]);
+      expect(repository.savedTemplates.single.recipeInstructions, <String>[
+        'Spaghetti kochen.',
+        'Pesto unterheben.',
       ]);
       expect(repository.savedTemplates.single.components, isEmpty);
     },
@@ -426,6 +447,10 @@ void main() {
               title: 'Imported Recipe',
               servings: 6,
               ingredients: <String>['2 carrots', '1 onion'],
+              instructions: <String>[
+                'Karotten schneiden.',
+                'Mit Zwiebeln kochen.',
+              ],
             ),
           ),
         ),
@@ -456,7 +481,64 @@ void main() {
       '2 carrots',
       '1 onion',
     ]);
+    expect(repository.savedTemplates.single.recipeInstructions, <String>[
+      'Karotten schneiden.',
+      'Mit Zwiebeln kochen.',
+    ]);
     expect(repository.savedTemplates.single.totalPortions, 2);
     expect(repository.savedTemplates.single.remainingPortions, 2);
+  });
+
+  test('existing recipe templates backfill missing instructions', () async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[
+        _templateMeal(id: 'template-1', name: 'Soup').copyWith(
+          recipeUrl: 'https://chefkoch.de/rezepte/soup.html',
+          recipeIngredients: const <String>['1 L Brühe'],
+          recipeInstructions: const <String>[],
+        ),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(
+            PreparedMealRecipeImport(
+              recipeUrl: 'https://chefkoch.de/rezepte/soup.html',
+              title: 'Soup',
+              servings: 4,
+              ingredients: <String>['1 L Brühe'],
+              instructions: <String>[
+                'Brühe erhitzen.',
+                'Suppe ziehen lassen.',
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    final templates = await container.read(
+      preparedMealTemplatesControllerProvider.future,
+    );
+
+    expect(templates.single.recipeInstructions, isEmpty);
+
+    await _waitForCondition(() => repository.savedTemplates.isNotEmpty);
+
+    expect(repository.savedTemplates.single.recipeInstructions, <String>[
+      'Brühe erhitzen.',
+      'Suppe ziehen lassen.',
+    ]);
+    expect(
+      repository.savedTemplates.single.updatedAt,
+      DateTime.parse('2026-03-27T12:00:00Z'),
+    );
   });
 }

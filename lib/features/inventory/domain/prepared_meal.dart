@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
@@ -78,11 +79,14 @@ class PreparedMeal {
     this.imageUrl,
     this.recipeUrl,
     this.recipeIngredients = const <String>[],
+    this.recipeInstructions = const <String>[],
     this.ignoredRecipeIngredients = const <String>[],
     this.recipeIngredientAssignments = const <String, List<String>>{},
     this.recipeIngredientAmountConversions =
         const <String, RecipeIngredientAmountConversion>{},
     this.pendingRecipeIngredients = const <String>[],
+    this.finalNetWeight,
+    this.remainingNetWeight,
   });
 
   /// Creates a [PreparedMeal] for from json.
@@ -113,6 +117,10 @@ class PreparedMeal {
   @JsonKey(defaultValue: <String>[])
   final List<String> recipeIngredients;
 
+  /// The recipe instructions.
+  @JsonKey(defaultValue: <String>[])
+  final List<String> recipeInstructions;
+
   /// The ignored recipe ingredients.
   @JsonKey(defaultValue: <String>[])
   final List<String> ignoredRecipeIngredients;
@@ -129,6 +137,14 @@ class PreparedMeal {
   /// The pending recipe ingredients.
   @JsonKey(defaultValue: <String>[])
   final List<String> pendingRecipeIngredients;
+
+  /// The cooked net weight in g/ml after tare.
+  @JsonKey(fromJson: _readNullableInt)
+  final int? finalNetWeight;
+
+  /// Remaining cooked net weight in g/ml.
+  @JsonKey(fromJson: _readNullableInt)
+  final int? remainingNetWeight;
 
   /// The total portions.
   @JsonKey(fromJson: _readIntOrZero)
@@ -177,11 +193,14 @@ class PreparedMeal {
     Object? imageUrl = _keepValue,
     Object? recipeUrl = _keepValue,
     List<String>? recipeIngredients,
+    List<String>? recipeInstructions,
     List<String>? ignoredRecipeIngredients,
     Map<String, List<String>>? recipeIngredientAssignments,
     Map<String, RecipeIngredientAmountConversion>?
     recipeIngredientAmountConversions,
     List<String>? pendingRecipeIngredients,
+    Object? finalNetWeight = _keepValue,
+    Object? remainingNetWeight = _keepValue,
     int? totalPortions,
     num? remainingPortions,
     double? totalKcal,
@@ -203,6 +222,7 @@ class PreparedMeal {
           ? this.recipeUrl
           : recipeUrl as String?,
       recipeIngredients: recipeIngredients ?? this.recipeIngredients,
+      recipeInstructions: recipeInstructions ?? this.recipeInstructions,
       ignoredRecipeIngredients:
           ignoredRecipeIngredients ?? this.ignoredRecipeIngredients,
       recipeIngredientAssignments:
@@ -212,6 +232,12 @@ class PreparedMeal {
           this.recipeIngredientAmountConversions,
       pendingRecipeIngredients:
           pendingRecipeIngredients ?? this.pendingRecipeIngredients,
+      finalNetWeight: finalNetWeight == _keepValue
+          ? this.finalNetWeight
+          : finalNetWeight as int?,
+      remainingNetWeight: remainingNetWeight == _keepValue
+          ? this.remainingNetWeight
+          : remainingNetWeight as int?,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,
@@ -301,6 +327,10 @@ class PreparedMeal {
               recipeIngredients,
             ) &&
             const ListEquality<String>().equals(
+              other.recipeInstructions,
+              recipeInstructions,
+            ) &&
+            const ListEquality<String>().equals(
               other.ignoredRecipeIngredients,
               ignoredRecipeIngredients,
             ) &&
@@ -316,6 +346,8 @@ class PreparedMeal {
               other.pendingRecipeIngredients,
               pendingRecipeIngredients,
             ) &&
+            other.finalNetWeight == finalNetWeight &&
+            other.remainingNetWeight == remainingNetWeight &&
             other.totalPortions == totalPortions &&
             other.remainingPortions == remainingPortions &&
             other.totalKcal == totalKcal &&
@@ -339,10 +371,13 @@ class PreparedMeal {
       imageUrl,
       recipeUrl,
       const ListEquality<String>().hash(recipeIngredients),
+      const ListEquality<String>().hash(recipeInstructions),
       const ListEquality<String>().hash(ignoredRecipeIngredients),
       const DeepCollectionEquality().hash(recipeIngredientAssignments),
       const DeepCollectionEquality().hash(recipeIngredientAmountConversions),
       const ListEquality<String>().hash(pendingRecipeIngredients),
+      finalNetWeight,
+      remainingNetWeight,
       totalPortions,
       remainingPortions,
       totalKcal,
@@ -535,6 +570,19 @@ int _readIntOrZero(Object? value) {
     return value.toInt();
   }
   return 0;
+}
+
+int? _readNullableInt(Object? value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is double) {
+    return value.round();
+  }
+  if (value is String) {
+    return int.tryParse(value.trim());
+  }
+  return null;
 }
 
 double _readDoubleOrZero(Object? value) {

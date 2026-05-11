@@ -171,6 +171,10 @@ List<PreparedMeal> applyPreparedMealPortionReduction({
 }) {
   final currentMeal = currentMeals[mealIndex];
   final nextRemainingPortions = currentMeal.remainingPortions - removedPortions;
+  final nextRemainingNetWeight = _remainingNetWeightAfterPortionReduction(
+    meal: currentMeal,
+    nextRemainingPortions: nextRemainingPortions,
+  );
   final nextMeals = List<PreparedMeal>.from(currentMeals);
   if (nextRemainingPortions <= 0 && !keepDepletedMeal) {
     nextMeals.removeAt(mealIndex);
@@ -179,6 +183,7 @@ List<PreparedMeal> applyPreparedMealPortionReduction({
 
   nextMeals[mealIndex] = currentMeal.copyWith(
     remainingPortions: nextRemainingPortions < 0 ? 0 : nextRemainingPortions,
+    remainingNetWeight: nextRemainingNetWeight,
     updatedAt: updatedAt,
   );
   return nextMeals;
@@ -252,6 +257,21 @@ int _restoreAmountForComponent({
     totalPortions: meal.totalPortions,
     remainingPortions: meal.remainingPortions,
   );
+}
+
+int? _remainingNetWeightAfterPortionReduction({
+  required PreparedMeal meal,
+  required num nextRemainingPortions,
+}) {
+  final finalNetWeight = meal.finalNetWeight;
+  if (finalNetWeight == null || finalNetWeight < 1) {
+    return meal.remainingNetWeight;
+  }
+  if (meal.totalPortions < 1 || nextRemainingPortions <= 0) {
+    return 0;
+  }
+  return ((finalNetWeight * nextRemainingPortions) / meal.totalPortions)
+      .round();
 }
 
 InventoryItem _buildRestoredSnapshotItem({

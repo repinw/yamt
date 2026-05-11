@@ -128,7 +128,8 @@ List<_PreparedMealDisplayMode> _availableDisplayModes(PreparedMeal meal) {
     if (meal.perHundredAmountBasis != null) ...[
       _PreparedMealDisplayMode.perHundred,
     ],
-    if (meal.totalPortions > 0) _PreparedMealDisplayMode.perPortion,
+    if (meal.totalPortions > 0 && !_isGramTrackedPreparedMeal(meal))
+      _PreparedMealDisplayMode.perPortion,
     _PreparedMealDisplayMode.total,
   ];
 }
@@ -203,4 +204,60 @@ String _priceModeLabel({
     _PreparedMealDisplayMode.perPortion => l10n.preparedMealPricePerPortion,
     _PreparedMealDisplayMode.total => l10n.preparedMealPriceTotal,
   };
+}
+
+String _preparedMealProgressLabel({
+  required AppLocalizations l10n,
+  required PreparedMeal meal,
+}) {
+  if (_isGramTrackedPreparedMeal(meal)) {
+    return '${_formatPreparedMealGramAmount(
+      meal.remainingPortions,
+    )} / ${_formatPreparedMealGramAmount(meal.totalPortions)}';
+  }
+  final portionLabel = l10n.preparedMealPortionsRemaining(
+    formatPreparedMealPortions(
+      meal.remainingPortions,
+      localeName: l10n.localeName,
+    ),
+    meal.totalPortions,
+  );
+  final gramLabel = _preparedMealGramProgressLabel(meal);
+  if (gramLabel == null) {
+    return portionLabel;
+  }
+  return '$portionLabel · $gramLabel';
+}
+
+bool _isGramTrackedPreparedMeal(PreparedMeal meal) {
+  final finalNetWeight = meal.finalNetWeight;
+  return finalNetWeight != null &&
+      finalNetWeight > 0 &&
+      meal.totalPortions == finalNetWeight;
+}
+
+String _formatPreparedMealGramAmount(num amount) {
+  return '${formatInventoryAmountValue(
+    amount: amount.round(),
+    unit: InventoryAmountUnit.gram,
+  )}g';
+}
+
+String? _preparedMealGramProgressLabel(PreparedMeal meal) {
+  final finalNetWeight = meal.finalNetWeight;
+  if (finalNetWeight == null || finalNetWeight < 1) {
+    return null;
+  }
+  final remainingNetWeight =
+      meal.remainingNetWeight ??
+      (meal.totalPortions < 1
+          ? null
+          : ((finalNetWeight * meal.remainingPortions) / meal.totalPortions)
+                .round());
+  if (remainingNetWeight == null) {
+    return null;
+  }
+  return '${_formatPreparedMealGramAmount(
+    remainingNetWeight,
+  )} / ${_formatPreparedMealGramAmount(finalNetWeight)}';
 }

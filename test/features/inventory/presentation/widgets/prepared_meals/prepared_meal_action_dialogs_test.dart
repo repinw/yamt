@@ -211,6 +211,49 @@ void main() {
     expect(find.textContaining(':$today'), findsOneWidget);
   });
 
+  testWidgets('eat dialog can convert grams to portions', (
+    tester,
+  ) async {
+    final today = DateUtils.dateOnly(
+      DateTime.now(),
+    ).toIso8601String().substring(0, 10);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(
+          meal: _meal().copyWith(
+            totalPortions: 4,
+            remainingPortions: 4,
+            finalNetWeight: 3000,
+            remainingNetWeight: 3000,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open eat'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const Key('prepared_meal_amount_mode_dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gram').last);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('prepared_meal_portions_field')),
+      '750',
+    );
+    await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('eat:1.0:'), findsOneWidget);
+    expect(find.textContaining(':$today'), findsOneWidget);
+  });
+
   testWidgets('eat dialog defaults to fractional remaining portions', (
     tester,
   ) async {

@@ -90,6 +90,10 @@ class PreparedMealMutationWorkflows {
     recipeIngredientAmountConversions,
     required InventoryItemRepository inventoryRepository,
     required TemplateIngredientParser ingredientParser,
+    List<PreparedMealItemInput> additionalItems =
+        const <PreparedMealItemInput>[],
+    int? finalNetWeight,
+    Map<String, String> sourceKeysByIngredient = const <String, String>{},
   }) {
     return PreparedMealCreationWorkflows(
       context: _context,
@@ -100,6 +104,38 @@ class PreparedMealMutationWorkflows {
       recipeIngredientAmountConversions: recipeIngredientAmountConversions,
       inventoryRepository: inventoryRepository,
       ingredientParser: ingredientParser,
+      additionalItems: additionalItems,
+      finalNetWeight: finalNetWeight,
+      sourceKeysByIngredient: sourceKeysByIngredient,
+    );
+  }
+
+  /// Creates multiple prepared meals from one saved recipe template.
+  Future<PreparedMealCreationResult> createPreparedMealsFromTemplateContainers({
+    required PreparedMeal template,
+    required int totalPortions,
+    required Map<String, List<String>> recipeIngredientAssignments,
+    required Map<String, RecipeIngredientAmountConversion>
+    recipeIngredientAmountConversions,
+    required InventoryItemRepository inventoryRepository,
+    required TemplateIngredientParser ingredientParser,
+    required List<PreparedMealContainerInput> containers,
+    required Map<String, String> sourceKeysByIngredient,
+    List<PreparedMealItemInput> additionalItems =
+        const <PreparedMealItemInput>[],
+  }) {
+    return PreparedMealCreationWorkflows(
+      context: _context,
+    ).createPreparedMealsFromTemplateContainers(
+      template: template,
+      totalPortions: totalPortions,
+      recipeIngredientAssignments: recipeIngredientAssignments,
+      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
+      inventoryRepository: inventoryRepository,
+      ingredientParser: ingredientParser,
+      containers: containers,
+      sourceKeysByIngredient: sourceKeysByIngredient,
+      additionalItems: additionalItems,
     );
   }
 

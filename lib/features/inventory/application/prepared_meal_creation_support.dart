@@ -17,6 +17,7 @@ PreparedMealBuildResult buildPreparedMealCreationResult({
 }) {
   final nextItems = List<InventoryItem>.from(currentItems);
   final components = <PreparedMealComponent>[];
+  final componentSourceKeys = <String>[];
 
   for (final input in inputs) {
     if (input.usedAmount < 1) {
@@ -69,11 +70,13 @@ PreparedMealBuildResult buildPreparedMealCreationResult({
         nutrition: resolvedNutrition!,
       ),
     );
+    componentSourceKeys.add(input.sourceKey?.trim() ?? '');
   }
 
   final nutritionTotals = components.nutritionTotals;
   return PreparedMealBuildResult(
     nextItems: nextItems,
+    componentSourceKeys: componentSourceKeys,
     preparedMeal: PreparedMeal(
       id: preparedMealId,
       name: name,

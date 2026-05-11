@@ -1716,5 +1716,174 @@
   "onboardingStartDateLaterLabel": "Ab morgen",
   "onboardingStartDateLaterDesc": "Heute ist schon fast rum, ich starte lieber morgen frisch.",
   "onboardingReadyTitle": "Alles bereit!",
-  "onboardingReadySubtitle": "Dein Profil ist fertig. Lass uns loslegen!"
+  "onboardingReadySubtitle": "Dein Profil ist fertig. Lass uns loslegen!",
+  "cookflowPrepflowTitle": "Prepflow",
+  "cookflowTemplateNotFound": "Rezept nicht gefunden.",
+  "cookflowLoadFailed": "Cookflow konnte nicht geladen werden.",
+  "cookflowStartButton": "Flow starten",
+  "cookflowLaterButton": "Später",
+  "cookflowShoppingListContinueButton": "Zur Einkaufsliste hinzufügen und später fortsetzen",
+  "cookflowShoppingListAddFailed": "Einkaufsliste konnte nicht aktualisiert werden.",
+  "cookflowSessionSaveFailed": "Cookflow konnte nicht gespeichert werden.",
+  "cookflowResolveConflictsButton": "Bitte Konflikte lösen",
+  "cookflowContinueButton": "Weiter",
+  "cookflowPhaseChip": "Phase {currentPhase} / {totalPhases}",
+  "@cookflowPhaseChip": {
+    "placeholders": {
+      "currentPhase": {
+        "type": "int"
+      },
+      "totalPhases": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowSaveMealButton": "Mahlzeit speichern",
+  "cookflowSavingMealButton": "Mahlzeit wird gespeichert",
+  "cookflowInvalidWeight": "Bitte gib ein gültiges Bruttogewicht ein.",
+  "cookflowMissingWeight": "Bitte gib das Bruttogewicht ein.",
+  "cookflowGrossMustExceedTara": "Bruttogewicht muss größer als Tara sein.",
+  "cookflowMissingAssignments": "Bitte weise mindestens eine Zutat dem Vorrat zu.",
+  "cookflowIngredientContainerMissing": "Bitte wähle für jede Zutat einen Behälter.",
+  "cookflowContainerMissingIngredients": "Jeder Behälter braucht mindestens eine Zutat.",
+  "cookflowSaveFailed": "Mahlzeit konnte nicht gespeichert werden.",
+  "cookflowSuccessFallbackMealName": "Deine Mahlzeit",
+  "cookflowSavedMealsCount": "{count} Mahlzeiten gespeichert",
+  "@cookflowSavedMealsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowIntroHeadline": "Kochsession starten",
+  "cookflowRecipeLabel": "Rezept: ",
+  "cookflowInventoryCheckTitle": "Inventar Check",
+  "cookflowResetButton": "Zurücksetzen",
+  "cookflowEmptyIngredients": "Keine Zutaten vorhanden.",
+  "cookflowShoppingCartTooltip": "Einkaufswagen",
+  "cookflowAssignTooltip": "Zuweisen",
+  "cookflowIgnoreTooltip": "Ignorieren",
+  "cookflowUnknownAmount": "Menge offen",
+  "cookflowInventorySelectionTitle": "Vorrat auswählen",
+  "cookflowInventoryConflictMessage": "Vorrat reicht nicht: Nur {availableAmount} da. Es fehlen {missingAmount}.",
+  "@cookflowInventoryConflictMessage": {
+    "placeholders": {
+      "availableAmount": {},
+      "missingAmount": {}
+    }
+  },
+  "cookflowInventoryUsagePreview": "Abzug {usedAmount} · übrig {remainingAmount}",
+  "@cookflowInventoryUsagePreview": {
+    "placeholders": {
+      "usedAmount": {},
+      "remainingAmount": {}
+    }
+  },
+  "cookflowBuyRemainingButton": "REST EINKAUFEN",
+  "cookflowAdjustTemplateButton": "REZEPT ANPASSEN",
+  "cookflowInventoryUnitConflictMessage": "Einheiten-Konflikt: Rezept nutzt \"{recipeUnit}\". Inventar hat \"{inventoryUnit}\".",
+  "@cookflowInventoryUnitConflictMessage": {
+    "placeholders": {
+      "recipeUnit": {},
+      "inventoryUnit": {}
+    }
+  },
+  "cookflowInventoryUnitConversionPrefix": "1 Stück ≈",
+  "cookflowInventoryUnitConvertAction": "Umrechnen",
+  "cookflowInventoryUnitWeighLaterAction": "Später beim Kochen wiegen",
+  "cookflowEditIngredientTooltip": "Zutat bearbeiten",
+  "cookflowEditIngredientTitle": "Zutat bearbeiten",
+  "cookflowEditIngredientNameLabel": "Zutat",
+  "cookflowEditIngredientAmountLabel": "Menge",
+  "cookflowEditIngredientUnitLabel": "Einheit",
+  "cookflowEditIngredientRequiredField": "Bitte ausfüllen.",
+  "cookflowEditIngredientSaveAction": "Speichern",
+  "cookflowInventorySelectionEmpty": "Keine passenden Vorratsartikel gefunden.",
+  "cookflowCancelButton": "Abbrechen",
+  "cookflowInventorySelectionSaveButton": "Auswählen",
+  "cookflowInventorySelectionItemLabel": "Vorratsartikel",
+  "cookflowInventorySelectionAddIngredient": "Zutat hinzufügen",
+  "cookflowInventorySelectionAddIngredientSubtitle": "Optionalen Vorratsartikel auswählen.",
+  "cookflowInventorySelectionWeightLater": "Gewicht später in Phase 3 festlegen.",
+  "cookflowInventorySelectionAddConfirm": "Hinzufügen",
+  "cookflowInventoryReturnSuggestion": "Neuer Treffer im Vorrat gefunden.",
+  "cookflowInventoryReturnSuggestionButton": "Übernehmen",
+  "cookflowPreparationTitle": "1. Vorbereitung",
+  "cookflowPreparationBody": "Bevor wir loslegen: Wähle alle Töpfe oder Behälter und trage ihr Leergewicht ein.",
+  "cookflowTaraFieldTitle": "Leergewicht (Tara)",
+  "cookflowGramUnit": "Gramm",
+  "cookflowTaraUtensilsTitle": "Gespeicherte Utensilien",
+  "cookflowTaraUtensilsLoadFailed": "Utensilien konnten nicht geladen werden.",
+  "cookflowPreparationHint": "Wenn Nudeln und Soße in getrennten Behältern landen, füge beide jetzt hinzu. In Phase 3 weist du jede Zutat zu.",
+  "cookflowPortionScalerTitle": "Rezeptportionen",
+  "cookflowOriginalPortionsLabel": "Originalrezept: {count} Portionen",
+  "@cookflowOriginalPortionsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowTargetPortionsLabel": "{count} Portionen",
+  "@cookflowTargetPortionsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowTargetPortionsFieldLabel": "Neue Portionen",
+  "cookflowCookingTitle": "2. Kochen",
+  "cookflowCookingBody": "Die Zutaten aus deinem Vorrat sind lokal reserviert.\nLass es dir schmecken!",
+  "cookflowOnTheFlyTitle": "On-the-fly Anpassung",
+  "cookflowOnTheFlyHint": "z.B. 150g extra Erbsen...",
+  "cookflowOnTheFlyRemoveTooltip": "Anpassung entfernen",
+  "cookflowVoiceInputStartTooltip": "Spracheingabe starten",
+  "cookflowVoiceInputStopTooltip": "Spracheingabe beenden",
+  "cookflowVoiceInputUnavailable": "Spracheingabe wird auf diesem Gerät aktuell nicht unterstützt.",
+  "cookflowVoiceInputPermissionDenied": "Bitte erlaube Mikrofonzugriff, um die Spracheingabe zu verwenden.",
+  "cookflowVoiceInputFailed": "Spracheingabe konnte nicht gestartet werden. Bitte versuche es erneut.",
+  "cookflowCookingFallbackNoIngredients": "Bereite dein Rezept nach den vorhandenen Zutaten vor.",
+  "cookflowCookingFallbackPrepPrefix": "Bereite die Zutaten vor:",
+  "cookflowCookingFallbackCookText": "Koche das Gericht anschließend wie im Rezept beschrieben.",
+  "cookflowSummaryTitle": "3. Resümee",
+  "cookflowSummaryBody": "Prüfe die finalen Zutaten, löse spontane Änderungen auf und wähle, wo jede Zutat verstaut ist.",
+  "cookflowSummaryIngredientsTitle": "Grundrezept Zutaten",
+  "cookflowSummaryAdjustmentsTitle": "Ungelöste Anpassungen",
+  "cookflowSummaryMatchInventoryButton": "Als Zutat hinzufügen",
+  "cookflowSummaryPlaceholderAdjustment": "200g Gurken",
+  "cookflowFinalizeTitle": "4. Finalisieren",
+  "cookflowFinalizeBody": "Stell jeden gefüllten Behälter auf die Waage und lege danach die Portionen für die erstellten Mahlzeiten fest.",
+  "cookflowStorageContainersTitle": "Aufbewahrungsbehälter",
+  "cookflowAddStorageContainerButton": "Behälter hinzufügen",
+  "cookflowContainerLabel": "Behälter",
+  "cookflowContainerNameHint": "Behälter {index}",
+  "@cookflowContainerNameHint": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowRemoveContainerTooltip": "Behälter entfernen",
+  "cookflowContainerTaraLabel": "Tara",
+  "cookflowPortionsUnit": "Portionen",
+  "cookflowIngredientContainerTitle": "Wo ist welche Zutat verstaut?",
+  "cookflowIngredientContainerEmpty": "Keine Vorratszutaten für Behälter-Zuweisung vorhanden.",
+  "cookflowGrossWeightTitle": "Bruttogewicht (Topf + Essen)",
+  "cookflowGrossWeightHint": "z.B. 2500",
+  "cookflowMinusTaraLabel": "Minus Leergewicht (Tara)",
+  "cookflowNetWeightLabel": "Netto-Endgewicht",
+  "cookflowSplitIntoPortionsLabel": "Portionen nachjustieren?",
+  "cookflowHowManyPortions": "Wie viele Portionen sind das?",
+  "cookflowCaloriesShortLabel": "KALORIEN",
+  "cookflowCarbsShortLabel": "KOHLENH.",
+  "cookflowProteinShortLabel": "PROTEIN",
+  "cookflowFatShortLabel": "FETT",
+  "cookflowSuccessTitle": "Fertig",
+  "cookflowSuccessSubtitle": "Deine Mahlzeit wurde gespeichert und ist jetzt im Inventar verfügbar.",
+  "cookflowSuccessHeadline": "Mahlzeit gespeichert",
+  "cookflowToInventoryButton": "Zum Inventar",
+  "cookflowResumeLabel": "Fortsetzen"
 }

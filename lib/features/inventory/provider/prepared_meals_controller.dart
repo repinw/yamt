@@ -27,6 +27,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 export 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart'
     show
+        PreparedMealContainerInput,
         PreparedMealCreationFailureReason,
         PreparedMealCreationResult,
         PreparedMealItemInput;
@@ -40,7 +41,7 @@ const _preparedMealsControllerLogName = 'PreparedMealsController';
 class PreparedMealsController extends _$PreparedMealsController {
   static const _uuid = Uuid();
 
-  // Subscription is cancelled by _disposeSubscription.
+  // Subscription is cancelled by `_disposeSubscription`.
   // ignore: cancel_subscriptions
   StreamSubscription<List<PreparedMeal>>? _mealsSubscription;
   int _subscriptionGeneration = 0;
@@ -117,6 +118,10 @@ class PreparedMealsController extends _$PreparedMealsController {
     required Map<String, List<String>> recipeIngredientAssignments,
     required Map<String, RecipeIngredientAmountConversion>
     recipeIngredientAmountConversions,
+    List<PreparedMealItemInput> additionalItems =
+        const <PreparedMealItemInput>[],
+    int? finalNetWeight,
+    Map<String, String> sourceKeysByIngredient = const <String, String>{},
   }) {
     return _runCreationMutation(
       operation: () {
@@ -127,9 +132,42 @@ class PreparedMealsController extends _$PreparedMealsController {
           recipeIngredientAmountConversions: recipeIngredientAmountConversions,
           inventoryRepository: ref.read(inventoryItemRepositoryProvider),
           ingredientParser: ref.read(templateIngredientParserProvider),
+          additionalItems: additionalItems,
+          finalNetWeight: finalNetWeight,
+          sourceKeysByIngredient: sourceKeysByIngredient,
         );
       },
       unexpectedErrorMessage: 'Unexpected template meal creation error.',
+    );
+  }
+
+  /// Create prepared meals from a template split into storage containers.
+  Future<PreparedMealCreationResult> createPreparedMealsFromTemplateContainers({
+    required PreparedMeal template,
+    required int totalPortions,
+    required Map<String, List<String>> recipeIngredientAssignments,
+    required Map<String, RecipeIngredientAmountConversion>
+    recipeIngredientAmountConversions,
+    required List<PreparedMealContainerInput> containers,
+    required Map<String, String> sourceKeysByIngredient,
+    List<PreparedMealItemInput> additionalItems =
+        const <PreparedMealItemInput>[],
+  }) {
+    return _runCreationMutation(
+      operation: () {
+        return _mutationWorkflows.createPreparedMealsFromTemplateContainers(
+          template: template,
+          totalPortions: totalPortions,
+          recipeIngredientAssignments: recipeIngredientAssignments,
+          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
+          inventoryRepository: ref.read(inventoryItemRepositoryProvider),
+          ingredientParser: ref.read(templateIngredientParserProvider),
+          containers: containers,
+          sourceKeysByIngredient: sourceKeysByIngredient,
+          additionalItems: additionalItems,
+        );
+      },
+      unexpectedErrorMessage: 'Unexpected split template meal creation error.',
     );
   }
 

@@ -62,8 +62,7 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en'),
+    Locale('en')
   ];
 
   /// No description provided for @homeInventory.
@@ -2430,20 +2427,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Amount per {sourceUnit} ({unit})'**
-  String preparedMealTemplateDetailSelectionConversionLabel(
-    String sourceUnit,
-    String unit,
-  );
+  String preparedMealTemplateDetailSelectionConversionLabel(String sourceUnit, String unit);
 
   /// No description provided for @preparedMealTemplateDetailSelectionConversionHint.
   ///
   /// In en, this message translates to:
   /// **'How much {unit} does 1 {sourceUnit} of \"{ingredient}\" use?'**
-  String preparedMealTemplateDetailSelectionConversionHint(
-    String sourceUnit,
-    String unit,
-    String ingredient,
-  );
+  String preparedMealTemplateDetailSelectionConversionHint(String sourceUnit, String unit, String ingredient);
 
   /// No description provided for @preparedMealTemplateDetailSelectionConversionError.
   ///
@@ -2455,11 +2445,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'1 {sourceUnit} = {amount} {unit}'**
-  String preparedMealTemplateDetailConversionSummary(
-    String sourceUnit,
-    int amount,
-    String unit,
-  );
+  String preparedMealTemplateDetailConversionSummary(String sourceUnit, int amount, String unit);
 
   /// No description provided for @preparedMealTemplateDetailListAction.
   ///
@@ -6318,10 +6304,687 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your profile is ready. Let\'s get started!'**
   String get onboardingReadySubtitle;
+
+  /// No description provided for @cookflowPrepflowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepflow'**
+  String get cookflowPrepflowTitle;
+
+  /// No description provided for @cookflowTemplateNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe not found.'**
+  String get cookflowTemplateNotFound;
+
+  /// No description provided for @cookflowLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookflow could not be loaded.'**
+  String get cookflowLoadFailed;
+
+  /// No description provided for @cookflowStartButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Start flow'**
+  String get cookflowStartButton;
+
+  /// No description provided for @cookflowLaterButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get cookflowLaterButton;
+
+  /// No description provided for @cookflowShoppingListContinueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to shopping list and continue later'**
+  String get cookflowShoppingListContinueButton;
+
+  /// No description provided for @cookflowShoppingListAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping list could not be updated.'**
+  String get cookflowShoppingListAddFailed;
+
+  /// No description provided for @cookflowSessionSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookflow could not be saved.'**
+  String get cookflowSessionSaveFailed;
+
+  /// No description provided for @cookflowResolveConflictsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolve conflicts'**
+  String get cookflowResolveConflictsButton;
+
+  /// No description provided for @cookflowContinueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get cookflowContinueButton;
+
+  /// No description provided for @cookflowPhaseChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Phase {currentPhase} / {totalPhases}'**
+  String cookflowPhaseChip(int currentPhase, int totalPhases);
+
+  /// No description provided for @cookflowSaveMealButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save meal'**
+  String get cookflowSaveMealButton;
+
+  /// No description provided for @cookflowSavingMealButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving meal'**
+  String get cookflowSavingMealButton;
+
+  /// No description provided for @cookflowInvalidWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid gross weight.'**
+  String get cookflowInvalidWeight;
+
+  /// No description provided for @cookflowMissingWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the gross weight.'**
+  String get cookflowMissingWeight;
+
+  /// No description provided for @cookflowGrossMustExceedTara.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross weight must be greater than tare.'**
+  String get cookflowGrossMustExceedTara;
+
+  /// No description provided for @cookflowMissingAssignments.
+  ///
+  /// In en, this message translates to:
+  /// **'Please assign at least one ingredient from inventory.'**
+  String get cookflowMissingAssignments;
+
+  /// No description provided for @cookflowIngredientContainerMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose a container for every ingredient.'**
+  String get cookflowIngredientContainerMissing;
+
+  /// No description provided for @cookflowContainerMissingIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Every container needs at least one ingredient.'**
+  String get cookflowContainerMissingIngredients;
+
+  /// No description provided for @cookflowSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal could not be saved.'**
+  String get cookflowSaveFailed;
+
+  /// No description provided for @cookflowSuccessFallbackMealName.
+  ///
+  /// In en, this message translates to:
+  /// **'Your meal'**
+  String get cookflowSuccessFallbackMealName;
+
+  /// No description provided for @cookflowSavedMealsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} meals saved'**
+  String cookflowSavedMealsCount(int count);
+
+  /// No description provided for @cookflowIntroHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Start cooking session'**
+  String get cookflowIntroHeadline;
+
+  /// No description provided for @cookflowRecipeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe: '**
+  String get cookflowRecipeLabel;
+
+  /// No description provided for @cookflowInventoryCheckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory check'**
+  String get cookflowInventoryCheckTitle;
+
+  /// No description provided for @cookflowResetButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get cookflowResetButton;
+
+  /// No description provided for @cookflowEmptyIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'No ingredients available.'**
+  String get cookflowEmptyIngredients;
+
+  /// No description provided for @cookflowShoppingCartTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping cart'**
+  String get cookflowShoppingCartTooltip;
+
+  /// No description provided for @cookflowAssignTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get cookflowAssignTooltip;
+
+  /// No description provided for @cookflowIgnoreTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore'**
+  String get cookflowIgnoreTooltip;
+
+  /// No description provided for @cookflowUnknownAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount open'**
+  String get cookflowUnknownAmount;
+
+  /// No description provided for @cookflowInventorySelectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose inventory'**
+  String get cookflowInventorySelectionTitle;
+
+  /// No description provided for @cookflowInventoryConflictMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough in inventory: Only {availableAmount} available. {missingAmount} missing.'**
+  String cookflowInventoryConflictMessage(Object availableAmount, Object missingAmount);
+
+  /// No description provided for @cookflowInventoryUsagePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtract {usedAmount} · left {remainingAmount}'**
+  String cookflowInventoryUsagePreview(Object usedAmount, Object remainingAmount);
+
+  /// No description provided for @cookflowBuyRemainingButton.
+  ///
+  /// In en, this message translates to:
+  /// **'BUY REMAINDER'**
+  String get cookflowBuyRemainingButton;
+
+  /// No description provided for @cookflowAdjustTemplateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'ADJUST RECIPE'**
+  String get cookflowAdjustTemplateButton;
+
+  /// No description provided for @cookflowInventoryUnitConflictMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit conflict: recipe uses \"{recipeUnit}\". Inventory has \"{inventoryUnit}\".'**
+  String cookflowInventoryUnitConflictMessage(Object recipeUnit, Object inventoryUnit);
+
+  /// No description provided for @cookflowInventoryUnitConversionPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'1 piece ≈'**
+  String get cookflowInventoryUnitConversionPrefix;
+
+  /// No description provided for @cookflowInventoryUnitConvertAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert'**
+  String get cookflowInventoryUnitConvertAction;
+
+  /// No description provided for @cookflowInventoryUnitWeighLaterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh later while cooking'**
+  String get cookflowInventoryUnitWeighLaterAction;
+
+  /// No description provided for @cookflowEditIngredientTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit ingredient'**
+  String get cookflowEditIngredientTooltip;
+
+  /// No description provided for @cookflowEditIngredientTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit ingredient'**
+  String get cookflowEditIngredientTitle;
+
+  /// No description provided for @cookflowEditIngredientNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient'**
+  String get cookflowEditIngredientNameLabel;
+
+  /// No description provided for @cookflowEditIngredientAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get cookflowEditIngredientAmountLabel;
+
+  /// No description provided for @cookflowEditIngredientUnitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get cookflowEditIngredientUnitLabel;
+
+  /// No description provided for @cookflowEditIngredientRequiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill this field.'**
+  String get cookflowEditIngredientRequiredField;
+
+  /// No description provided for @cookflowEditIngredientSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get cookflowEditIngredientSaveAction;
+
+  /// No description provided for @cookflowInventorySelectionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching inventory items found.'**
+  String get cookflowInventorySelectionEmpty;
+
+  /// No description provided for @cookflowCancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cookflowCancelButton;
+
+  /// No description provided for @cookflowInventorySelectionSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get cookflowInventorySelectionSaveButton;
+
+  /// No description provided for @cookflowInventorySelectionItemLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory item'**
+  String get cookflowInventorySelectionItemLabel;
+
+  /// No description provided for @cookflowInventorySelectionAddIngredient.
+  ///
+  /// In en, this message translates to:
+  /// **'Add ingredient'**
+  String get cookflowInventorySelectionAddIngredient;
+
+  /// No description provided for @cookflowInventorySelectionAddIngredientSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an optional inventory item.'**
+  String get cookflowInventorySelectionAddIngredientSubtitle;
+
+  /// No description provided for @cookflowInventorySelectionWeightLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Set weight later in phase 3.'**
+  String get cookflowInventorySelectionWeightLater;
+
+  /// No description provided for @cookflowInventorySelectionAddConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get cookflowInventorySelectionAddConfirm;
+
+  /// No description provided for @cookflowInventoryReturnSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Found a new inventory match.'**
+  String get cookflowInventoryReturnSuggestion;
+
+  /// No description provided for @cookflowInventoryReturnSuggestionButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get cookflowInventoryReturnSuggestionButton;
+
+  /// No description provided for @cookflowPreparationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Preparation'**
+  String get cookflowPreparationTitle;
+
+  /// No description provided for @cookflowPreparationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Before we begin: choose every pot or storage box you will use and enter its empty weight.'**
+  String get cookflowPreparationBody;
+
+  /// No description provided for @cookflowTaraFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty weight (tare)'**
+  String get cookflowTaraFieldTitle;
+
+  /// No description provided for @cookflowGramUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Grams'**
+  String get cookflowGramUnit;
+
+  /// No description provided for @cookflowTaraUtensilsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved utensils'**
+  String get cookflowTaraUtensilsTitle;
+
+  /// No description provided for @cookflowTaraUtensilsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load utensils.'**
+  String get cookflowTaraUtensilsLoadFailed;
+
+  /// No description provided for @cookflowPreparationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If pasta and sauce end up in separate containers, add both now. In phase 3 you assign each ingredient to its container.'**
+  String get cookflowPreparationHint;
+
+  /// No description provided for @cookflowPortionScalerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe portions'**
+  String get cookflowPortionScalerTitle;
+
+  /// No description provided for @cookflowOriginalPortionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Original recipe: {count} portions'**
+  String cookflowOriginalPortionsLabel(int count);
+
+  /// No description provided for @cookflowTargetPortionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} portions'**
+  String cookflowTargetPortionsLabel(int count);
+
+  /// No description provided for @cookflowTargetPortionsFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New portions'**
+  String get cookflowTargetPortionsFieldLabel;
+
+  /// No description provided for @cookflowCookingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Cooking'**
+  String get cookflowCookingTitle;
+
+  /// No description provided for @cookflowCookingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The ingredients from your inventory are reserved locally.\nEnjoy your meal!'**
+  String get cookflowCookingBody;
+
+  /// No description provided for @cookflowOnTheFlyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On-the-fly adjustment'**
+  String get cookflowOnTheFlyTitle;
+
+  /// No description provided for @cookflowOnTheFlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 150g extra peas...'**
+  String get cookflowOnTheFlyHint;
+
+  /// No description provided for @cookflowOnTheFlyRemoveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove adjustment'**
+  String get cookflowOnTheFlyRemoveTooltip;
+
+  /// No description provided for @cookflowVoiceInputStartTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Start voice input'**
+  String get cookflowVoiceInputStartTooltip;
+
+  /// No description provided for @cookflowVoiceInputStopTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop voice input'**
+  String get cookflowVoiceInputStopTooltip;
+
+  /// No description provided for @cookflowVoiceInputUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input is not currently supported on this device.'**
+  String get cookflowVoiceInputUnavailable;
+
+  /// No description provided for @cookflowVoiceInputPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Please allow microphone access to use voice input.'**
+  String get cookflowVoiceInputPermissionDenied;
+
+  /// No description provided for @cookflowVoiceInputFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input could not be started. Please try again.'**
+  String get cookflowVoiceInputFailed;
+
+  /// No description provided for @cookflowCookingFallbackNoIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare your recipe with the ingredients you have available.'**
+  String get cookflowCookingFallbackNoIngredients;
+
+  /// No description provided for @cookflowCookingFallbackPrepPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare the ingredients:'**
+  String get cookflowCookingFallbackPrepPrefix;
+
+  /// No description provided for @cookflowCookingFallbackCookText.
+  ///
+  /// In en, this message translates to:
+  /// **'Then cook the dish as described in the recipe.'**
+  String get cookflowCookingFallbackCookText;
+
+  /// No description provided for @cookflowSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Summary'**
+  String get cookflowSummaryTitle;
+
+  /// No description provided for @cookflowSummaryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the final ingredients, resolve spontaneous changes, and choose where each ingredient is stored.'**
+  String get cookflowSummaryBody;
+
+  /// No description provided for @cookflowSummaryIngredientsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Base recipe ingredients'**
+  String get cookflowSummaryIngredientsTitle;
+
+  /// No description provided for @cookflowSummaryAdjustmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unresolved adjustments'**
+  String get cookflowSummaryAdjustmentsTitle;
+
+  /// No description provided for @cookflowSummaryMatchInventoryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add as ingredient'**
+  String get cookflowSummaryMatchInventoryButton;
+
+  /// No description provided for @cookflowSummaryPlaceholderAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'200g cucumbers'**
+  String get cookflowSummaryPlaceholderAdjustment;
+
+  /// No description provided for @cookflowFinalizeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Finalize'**
+  String get cookflowFinalizeTitle;
+
+  /// No description provided for @cookflowFinalizeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Place each filled container on the scale, then set portions for the meals we will create.'**
+  String get cookflowFinalizeBody;
+
+  /// No description provided for @cookflowStorageContainersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage containers'**
+  String get cookflowStorageContainersTitle;
+
+  /// No description provided for @cookflowAddStorageContainerButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add container'**
+  String get cookflowAddStorageContainerButton;
+
+  /// No description provided for @cookflowContainerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Container'**
+  String get cookflowContainerLabel;
+
+  /// No description provided for @cookflowContainerNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Container {index}'**
+  String cookflowContainerNameHint(int index);
+
+  /// No description provided for @cookflowRemoveContainerTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove container'**
+  String get cookflowRemoveContainerTooltip;
+
+  /// No description provided for @cookflowContainerTaraLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tare'**
+  String get cookflowContainerTaraLabel;
+
+  /// No description provided for @cookflowPortionsUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'portions'**
+  String get cookflowPortionsUnit;
+
+  /// No description provided for @cookflowIngredientContainerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where is each ingredient stored?'**
+  String get cookflowIngredientContainerTitle;
+
+  /// No description provided for @cookflowIngredientContainerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No inventory ingredients available for container assignment.'**
+  String get cookflowIngredientContainerEmpty;
+
+  /// No description provided for @cookflowGrossWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross weight (pot + food)'**
+  String get cookflowGrossWeightTitle;
+
+  /// No description provided for @cookflowGrossWeightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 2500'**
+  String get cookflowGrossWeightHint;
+
+  /// No description provided for @cookflowMinusTaraLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Minus empty weight (tare)'**
+  String get cookflowMinusTaraLabel;
+
+  /// No description provided for @cookflowNetWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Net final weight'**
+  String get cookflowNetWeightLabel;
+
+  /// No description provided for @cookflowSplitIntoPortionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust portions?'**
+  String get cookflowSplitIntoPortionsLabel;
+
+  /// No description provided for @cookflowHowManyPortions.
+  ///
+  /// In en, this message translates to:
+  /// **'How many portions is that?'**
+  String get cookflowHowManyPortions;
+
+  /// No description provided for @cookflowCaloriesShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CALORIES'**
+  String get cookflowCaloriesShortLabel;
+
+  /// No description provided for @cookflowCarbsShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CARBS'**
+  String get cookflowCarbsShortLabel;
+
+  /// No description provided for @cookflowProteinShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PROTEIN'**
+  String get cookflowProteinShortLabel;
+
+  /// No description provided for @cookflowFatShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'FAT'**
+  String get cookflowFatShortLabel;
+
+  /// No description provided for @cookflowSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get cookflowSuccessTitle;
+
+  /// No description provided for @cookflowSuccessSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your meal was saved and is now available in inventory.'**
+  String get cookflowSuccessSubtitle;
+
+  /// No description provided for @cookflowSuccessHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal saved'**
+  String get cookflowSuccessHeadline;
+
+  /// No description provided for @cookflowToInventoryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to inventory'**
+  String get cookflowToInventoryButton;
+
+  /// No description provided for @cookflowResumeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get cookflowResumeLabel;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -6330,26 +6993,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de':
-      return AppLocalizationsDe();
-    case 'en':
-      return AppLocalizationsEn();
+    case 'de': return AppLocalizationsDe();
+    case 'en': return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

@@ -19,6 +19,19 @@ void main() {
     expect(requirement.name, 'Kartoffeln');
   });
 
+  test('parses German thousands and decimal separators', () {
+    final requirement = parser.parseRequirement(
+      ingredient: '1.000,50 g Mehl',
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+
+    expect(requirement, isNotNull);
+    expect(requirement!.amount, 1001);
+    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.name, 'Mehl');
+  });
+
   test('parses fractional milliliter requirements', () {
     final requirement = parser.parseRequirement(
       ingredient: '1/2 l Brühe',
@@ -149,6 +162,76 @@ void main() {
     expect(requirement.allowsDirectPieceInventoryMatch, isFalse);
   });
 
+  test(
+    'parses embedded approximate gram amounts from imported package text',
+    () {
+      final requirement = parser.parseRequirement(
+        ingredient: 'gr Dose/n Tomaten, stückig (ca 800g)',
+        selectedPortions: 1,
+        basePortions: 1,
+      );
+
+      expect(requirement, isNotNull);
+      expect(requirement!.amount, 800);
+      expect(requirement.unit, InventoryAmountUnit.gram);
+      expect(requirement.name, 'Tomaten, stückig');
+    },
+  );
+
+  test('parses dotted approximate weights with spaces', () {
+    final requirement = parser.parseRequirement(
+      ingredient: 'Dose/n Tomaten, stückige (ca. 800 g)',
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+
+    expect(requirement, isNotNull);
+    expect(requirement!.amount, 800);
+    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.name, 'Tomaten, stückige');
+  });
+
+  test('parses embedded weights with extra amount-unit spaces', () {
+    final requirement = parser.parseRequirement(
+      ingredient: 'Dose/n Tomaten, stückige (ca. 800  g)',
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+
+    expect(requirement, isNotNull);
+    expect(requirement!.amount, 800);
+    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.name, 'Tomaten, stückige');
+  });
+
+  test('prefers embedded package weights over imported package counts', () {
+    final requirement = parser.parseRequirement(
+      ingredient: '1 Dose Tomaten, passiert (ca 800g)',
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+
+    expect(requirement, isNotNull);
+    expect(requirement!.amount, 800);
+    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.name, 'Tomaten, passiert');
+    expect(requirement.packageCountLabel, '1x');
+  });
+
+  test('treats dotted package size prefixes as labels not gram units', () {
+    final requirement = parser.parseRequirement(
+      ingredient: '1 gr. Dose/n Tomaten, stückige (ca. 800 g)',
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+
+    expect(requirement, isNotNull);
+    expect(requirement!.amount, 800);
+    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.name, 'Tomaten, stückige');
+    expect(requirement.packageCountLabel, '1x');
+  });
+
   test('formats pending ingredient labels from requirements', () {
     final label = parser.pendingIngredientLabel(
       originalIngredient: '1 kg Kartoffeln',
@@ -175,5 +258,19 @@ void main() {
     );
 
     expect(label, '4 EL Tomatenmark');
+  });
+
+  test('formats pending ingredient labels with package count and weight', () {
+    final label = parser.pendingIngredientLabel(
+      originalIngredient: '1 Dose Tomaten, passiert (ca 800g)',
+      requirement: const TemplateIngredientRequirement(
+        amount: 800,
+        unit: InventoryAmountUnit.gram,
+        name: 'Tomaten, passiert',
+        packageCountLabel: '1x',
+      ),
+    );
+
+    expect(label, '1x 800g Tomaten, passiert');
   });
 }

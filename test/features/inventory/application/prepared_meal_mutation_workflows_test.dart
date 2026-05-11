@@ -242,6 +242,156 @@ void main() {
       },
     );
 
+    test(
+      'createPreparedMealsFromTemplateContainers consumes once '
+      'and saves splits',
+      () async {
+        final harness = _WorkflowHarness();
+        final inventoryRepository = _FakeInventoryItemRepository(
+          items: <InventoryItem>[
+            _measuredItem(
+              id: 'pasta',
+              name: 'Pasta',
+              currentAmount: 200,
+              initialAmount: 200,
+              initialQuantity: 1,
+            ),
+            _measuredItem(
+              id: 'sauce',
+              name: 'Sauce',
+              currentAmount: 100,
+              initialAmount: 100,
+              initialQuantity: 1,
+            ),
+          ],
+        );
+
+        final result = await harness.workflows
+            .createPreparedMealsFromTemplateContainers(
+              template: _meal(
+                id: 'template',
+                name: 'Spaghetti',
+                totalPortions: 4,
+                remainingPortions: 4,
+                recipeIngredients: const <String>[
+                  '100 g pasta',
+                  '50 g sauce',
+                ],
+                components: const <PreparedMealComponent>[],
+              ),
+              totalPortions: 4,
+              recipeIngredientAssignments: const <String, List<String>>{
+                '100 g pasta': <String>['pasta'],
+                '50 g sauce': <String>['sauce'],
+              },
+              recipeIngredientAmountConversions:
+                  const <String, RecipeIngredientAmountConversion>{},
+              inventoryRepository: inventoryRepository,
+              ingredientParser: ingredientParser,
+              sourceKeysByIngredient: const <String, String>{
+                '100 g pasta': 'row-pasta',
+                '50 g sauce': 'row-sauce',
+              },
+              containers: const <PreparedMealContainerInput>[
+                PreparedMealContainerInput(
+                  id: 'container-1',
+                  label: 'Pasta',
+                  totalPortions: 4,
+                  finalNetWeight: 700,
+                  sourceKeys: <String>['row-pasta'],
+                ),
+                PreparedMealContainerInput(
+                  id: 'container-2',
+                  label: 'Sauce',
+                  totalPortions: 4,
+                  finalNetWeight: 300,
+                  sourceKeys: <String>['row-sauce'],
+                ),
+              ],
+            );
+
+        expect(result.isSuccess, isTrue);
+        expect(inventoryRepository.saveCount, 1);
+        expect(inventoryRepository.lastSavedItems[0].currentAmount, 100);
+        expect(inventoryRepository.lastSavedItems[1].currentAmount, 50);
+        expect(harness.saveCalls, 1);
+        expect(harness.lastSavedMeals, hasLength(2));
+
+        final pastaMeal = harness.lastSavedMeals[0];
+        expect(pastaMeal.name, 'Spaghetti - Pasta');
+        expect(pastaMeal.totalPortions, 4);
+        expect(pastaMeal.finalNetWeight, 700);
+        expect(pastaMeal.components.single.inventoryItemId, 'pasta');
+        expect(pastaMeal.totalKcal, 100);
+
+        final sauceMeal = harness.lastSavedMeals[1];
+        expect(sauceMeal.name, 'Spaghetti - Sauce');
+        expect(sauceMeal.totalPortions, 4);
+        expect(sauceMeal.finalNetWeight, 300);
+        expect(sauceMeal.components.single.inventoryItemId, 'sauce');
+        expect(sauceMeal.totalKcal, 50);
+      },
+    );
+
+    test(
+      'createPreparedMealsFromTemplateContainers restores inventory on failure',
+      () async {
+        final harness = _WorkflowHarness(saveMealsResults: <bool>[false]);
+        final inventoryRepository = _FakeInventoryItemRepository(
+          items: <InventoryItem>[
+            _measuredItem(
+              id: 'pasta',
+              name: 'Pasta',
+              currentAmount: 200,
+              initialAmount: 200,
+              initialQuantity: 1,
+            ),
+          ],
+        );
+
+        final result = await harness.workflows
+            .createPreparedMealsFromTemplateContainers(
+              template: _meal(
+                id: 'template',
+                name: 'Spaghetti',
+                totalPortions: 4,
+                remainingPortions: 4,
+                recipeIngredients: const <String>['100 g pasta'],
+                components: const <PreparedMealComponent>[],
+              ),
+              totalPortions: 4,
+              recipeIngredientAssignments: const <String, List<String>>{
+                '100 g pasta': <String>['pasta'],
+              },
+              recipeIngredientAmountConversions:
+                  const <String, RecipeIngredientAmountConversion>{},
+              inventoryRepository: inventoryRepository,
+              ingredientParser: ingredientParser,
+              sourceKeysByIngredient: const <String, String>{
+                '100 g pasta': 'row-pasta',
+              },
+              containers: const <PreparedMealContainerInput>[
+                PreparedMealContainerInput(
+                  id: 'container-1',
+                  label: 'Pasta',
+                  totalPortions: 4,
+                  finalNetWeight: 700,
+                  sourceKeys: <String>['row-pasta'],
+                ),
+              ],
+            );
+
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.failureReason,
+          PreparedMealCreationFailureReason.mealSaveFailed,
+        );
+        expect(inventoryRepository.saveCount, 1);
+        expect(harness.restoreInventoryCalls, 1);
+        expect(harness.lastRestoredItems.single.currentAmount, 200);
+      },
+    );
+
     test('updatePreparedMealDetails saves changed values', () async {
       final harness = _WorkflowHarness(
         meals: <PreparedMeal>[

@@ -6,6 +6,8 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/features/cooking_flow/data/'
+    'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
@@ -39,8 +41,13 @@ class PreparedMealTemplateCard extends ConsumerWidget {
     final borderRadius = BorderRadius.circular(
       AppInventoryEditorial.cardRadius,
     );
-    final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final activeSession = ref
+        .watch(cookingFlowSessionSnapshotProvider)
+        .asData
+        ?.value;
+    final hasActiveCookflow = activeSession?.templateId == template.id;
     final imageRef = maybeLocalImageAssetRef(template.imageAssetId);
     final storedImageBytes = imageRef == null
         ? null
@@ -67,39 +74,37 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: Text(
-                    template.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        template.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      if (hasActiveCookflow) ...<Widget>[
+                        const SizedBox(height: AppSpacing.sm),
+                        _ResumeCookflowBadge(
+                          onPressed: onOpenPressed,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                const SizedBox(width: AppSpacing.xs),
-                PopupMenuButton<_PreparedMealTemplateCardAction>(
-                  tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-                  onSelected: (action) {
-                    switch (action) {
-                      case _PreparedMealTemplateCardAction.edit:
-                        unawaited(onEditPressed(template));
-                      case _PreparedMealTemplateCardAction.delete:
-                        unawaited(onDeletePressed(template.id));
-                    }
-                  },
-                  itemBuilder: (context) {
-                    return <PopupMenuEntry<_PreparedMealTemplateCardAction>>[
-                      if (template.recipeUrl != null)
-                        PopupMenuItem<_PreparedMealTemplateCardAction>(
-                          value: _PreparedMealTemplateCardAction.edit,
-                          child: Text(l10n.inventoryReceiptReviewEditAction),
-                        ),
-                      PopupMenuItem<_PreparedMealTemplateCardAction>(
-                        value: _PreparedMealTemplateCardAction.delete,
-                        child: Text(l10n.preparedMealTemplateDeleteAction),
-                      ),
-                    ];
-                  },
+                SizedBox(
+                  width: hasActiveCookflow ? AppSpacing.sm : AppSpacing.xs,
+                ),
+                _PreparedMealTemplateMenuButton(
+                  template: template,
+                  onEditPressed: onEditPressed,
+                  onDeletePressed: onDeletePressed,
+                  editLabel: l10n.inventoryReceiptReviewEditAction,
+                  deleteLabel: l10n.preparedMealTemplateDeleteAction,
                 ),
               ],
             ),
@@ -111,3 +116,95 @@ class PreparedMealTemplateCard extends ConsumerWidget {
 }
 
 enum _PreparedMealTemplateCardAction { edit, delete }
+
+class _PreparedMealTemplateMenuButton extends StatelessWidget {
+  const _PreparedMealTemplateMenuButton({
+    required this.template,
+    required this.onEditPressed,
+    required this.onDeletePressed,
+    required this.editLabel,
+    required this.deleteLabel,
+  });
+
+  final PreparedMeal template;
+  final Future<bool> Function(PreparedMeal template) onEditPressed;
+  final Future<bool> Function(String templateId) onDeletePressed;
+  final String editLabel;
+  final String deleteLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<_PreparedMealTemplateCardAction>(
+      tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+      onSelected: (action) {
+        switch (action) {
+          case _PreparedMealTemplateCardAction.edit:
+            unawaited(onEditPressed(template));
+          case _PreparedMealTemplateCardAction.delete:
+            unawaited(onDeletePressed(template.id));
+        }
+      },
+      itemBuilder: (context) {
+        return <PopupMenuEntry<_PreparedMealTemplateCardAction>>[
+          if (template.recipeUrl != null)
+            PopupMenuItem<_PreparedMealTemplateCardAction>(
+              value: _PreparedMealTemplateCardAction.edit,
+              child: Text(editLabel),
+            ),
+          PopupMenuItem<_PreparedMealTemplateCardAction>(
+            value: _PreparedMealTemplateCardAction.delete,
+            child: Text(deleteLabel),
+          ),
+        ];
+      },
+    );
+  }
+}
+
+class _ResumeCookflowBadge extends StatelessWidget {
+  const _ResumeCookflowBadge({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: colors.primaryContainer.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          border: Border.all(
+            color: colors.primary.withValues(alpha: 0.24),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              Icons.play_circle_outline_rounded,
+              size: 16,
+              color: colors.primary,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              l10n.cookflowResumeLabel,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

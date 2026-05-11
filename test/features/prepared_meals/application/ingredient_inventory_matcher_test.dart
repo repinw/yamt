@@ -120,6 +120,54 @@ void main() {
     },
   );
 
+  test(
+    'rankInventoryItemsForIngredient uses fuzzy score for noisy imports',
+    () {
+      final rankedItems = rankInventoryItemsForIngredient(
+        ingredient: 'mittelgroße Zwiebeln',
+        inventoryItems: <InventoryItem>[
+          _item(id: '1', name: 'Mittelgroße Vorratsdose'),
+          _item(id: '2', name: 'Zwiebeln'),
+        ],
+        localeCode: 'de',
+      );
+
+      expect(rankedItems.map((item) => item.id).first, '2');
+    },
+  );
+
+  test(
+    'rankInventoryItemsForIngredient matches compounds by character shingles',
+    () {
+      final rankedItems = rankInventoryItemsForIngredient(
+        ingredient: 'Rinderhackfleisch',
+        inventoryItems: <InventoryItem>[
+          _item(id: '1', name: 'Bio-Speisezwiebeln'),
+          _item(id: '2', name: 'Schwin Schweine Hack'),
+        ],
+        localeCode: 'de',
+      );
+
+      expect(rankedItems.map((item) => item.id).first, '2');
+    },
+  );
+
+  test(
+    'rankInventoryItemsForIngredient still matches onion compounds',
+    () {
+      final rankedItems = rankInventoryItemsForIngredient(
+        ingredient: 'Zwiebeln',
+        inventoryItems: <InventoryItem>[
+          _item(id: '1', name: 'Bio-Speisezwiebeln'),
+          _item(id: '2', name: 'Schwin Schweine Hack'),
+        ],
+        localeCode: 'de',
+      );
+
+      expect(rankedItems.map((item) => item.id).first, '1');
+    },
+  );
+
   test('matchInventoryItemsForIngredient returns empty for blank input', () {
     final matches = matchInventoryItemsForIngredient(
       ingredient: '   ',

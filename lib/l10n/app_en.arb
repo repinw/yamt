@@ -1675,5 +1675,174 @@
   "onboardingStartDateLaterLabel": "Tomorrow",
   "onboardingStartDateLaterDesc": "Today is almost over, I prefer to start fresh tomorrow.",
   "onboardingReadyTitle": "All set!",
-  "onboardingReadySubtitle": "Your profile is ready. Let's get started!"
+  "onboardingReadySubtitle": "Your profile is ready. Let's get started!",
+  "cookflowPrepflowTitle": "Prepflow",
+  "cookflowTemplateNotFound": "Recipe not found.",
+  "cookflowLoadFailed": "Cookflow could not be loaded.",
+  "cookflowStartButton": "Start flow",
+  "cookflowLaterButton": "Later",
+  "cookflowShoppingListContinueButton": "Add to shopping list and continue later",
+  "cookflowShoppingListAddFailed": "Shopping list could not be updated.",
+  "cookflowSessionSaveFailed": "Cookflow could not be saved.",
+  "cookflowResolveConflictsButton": "Resolve conflicts",
+  "cookflowContinueButton": "Continue",
+  "cookflowPhaseChip": "Phase {currentPhase} / {totalPhases}",
+  "@cookflowPhaseChip": {
+    "placeholders": {
+      "currentPhase": {
+        "type": "int"
+      },
+      "totalPhases": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowSaveMealButton": "Save meal",
+  "cookflowSavingMealButton": "Saving meal",
+  "cookflowInvalidWeight": "Please enter a valid gross weight.",
+  "cookflowMissingWeight": "Please enter the gross weight.",
+  "cookflowGrossMustExceedTara": "Gross weight must be greater than tare.",
+  "cookflowMissingAssignments": "Please assign at least one ingredient from inventory.",
+  "cookflowIngredientContainerMissing": "Please choose a container for every ingredient.",
+  "cookflowContainerMissingIngredients": "Every container needs at least one ingredient.",
+  "cookflowSaveFailed": "Meal could not be saved.",
+  "cookflowSuccessFallbackMealName": "Your meal",
+  "cookflowSavedMealsCount": "{count} meals saved",
+  "@cookflowSavedMealsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowIntroHeadline": "Start cooking session",
+  "cookflowRecipeLabel": "Recipe: ",
+  "cookflowInventoryCheckTitle": "Inventory check",
+  "cookflowResetButton": "Reset",
+  "cookflowEmptyIngredients": "No ingredients available.",
+  "cookflowShoppingCartTooltip": "Shopping cart",
+  "cookflowAssignTooltip": "Assign",
+  "cookflowIgnoreTooltip": "Ignore",
+  "cookflowUnknownAmount": "Amount open",
+  "cookflowInventorySelectionTitle": "Choose inventory",
+  "cookflowInventoryConflictMessage": "Not enough in inventory: Only {availableAmount} available. {missingAmount} missing.",
+  "@cookflowInventoryConflictMessage": {
+    "placeholders": {
+      "availableAmount": {},
+      "missingAmount": {}
+    }
+  },
+  "cookflowInventoryUsagePreview": "Subtract {usedAmount} · left {remainingAmount}",
+  "@cookflowInventoryUsagePreview": {
+    "placeholders": {
+      "usedAmount": {},
+      "remainingAmount": {}
+    }
+  },
+  "cookflowBuyRemainingButton": "BUY REMAINDER",
+  "cookflowAdjustTemplateButton": "ADJUST RECIPE",
+  "cookflowInventoryUnitConflictMessage": "Unit conflict: recipe uses \"{recipeUnit}\". Inventory has \"{inventoryUnit}\".",
+  "@cookflowInventoryUnitConflictMessage": {
+    "placeholders": {
+      "recipeUnit": {},
+      "inventoryUnit": {}
+    }
+  },
+  "cookflowInventoryUnitConversionPrefix": "1 piece ≈",
+  "cookflowInventoryUnitConvertAction": "Convert",
+  "cookflowInventoryUnitWeighLaterAction": "Weigh later while cooking",
+  "cookflowEditIngredientTooltip": "Edit ingredient",
+  "cookflowEditIngredientTitle": "Edit ingredient",
+  "cookflowEditIngredientNameLabel": "Ingredient",
+  "cookflowEditIngredientAmountLabel": "Amount",
+  "cookflowEditIngredientUnitLabel": "Unit",
+  "cookflowEditIngredientRequiredField": "Please fill this field.",
+  "cookflowEditIngredientSaveAction": "Save",
+  "cookflowInventorySelectionEmpty": "No matching inventory items found.",
+  "cookflowCancelButton": "Cancel",
+  "cookflowInventorySelectionSaveButton": "Select",
+  "cookflowInventorySelectionItemLabel": "Inventory item",
+  "cookflowInventorySelectionAddIngredient": "Add ingredient",
+  "cookflowInventorySelectionAddIngredientSubtitle": "Choose an optional inventory item.",
+  "cookflowInventorySelectionWeightLater": "Set weight later in phase 3.",
+  "cookflowInventorySelectionAddConfirm": "Add",
+  "cookflowInventoryReturnSuggestion": "Found a new inventory match.",
+  "cookflowInventoryReturnSuggestionButton": "Apply",
+  "cookflowPreparationTitle": "1. Preparation",
+  "cookflowPreparationBody": "Before we begin: choose every pot or storage box you will use and enter its empty weight.",
+  "cookflowTaraFieldTitle": "Empty weight (tare)",
+  "cookflowGramUnit": "Grams",
+  "cookflowTaraUtensilsTitle": "Saved utensils",
+  "cookflowTaraUtensilsLoadFailed": "Could not load utensils.",
+  "cookflowPreparationHint": "If pasta and sauce end up in separate containers, add both now. In phase 3 you assign each ingredient to its container.",
+  "cookflowPortionScalerTitle": "Recipe portions",
+  "cookflowOriginalPortionsLabel": "Original recipe: {count} portions",
+  "@cookflowOriginalPortionsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowTargetPortionsLabel": "{count} portions",
+  "@cookflowTargetPortionsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowTargetPortionsFieldLabel": "New portions",
+  "cookflowCookingTitle": "2. Cooking",
+  "cookflowCookingBody": "The ingredients from your inventory are reserved locally.\nEnjoy your meal!",
+  "cookflowOnTheFlyTitle": "On-the-fly adjustment",
+  "cookflowOnTheFlyHint": "e.g. 150g extra peas...",
+  "cookflowOnTheFlyRemoveTooltip": "Remove adjustment",
+  "cookflowVoiceInputStartTooltip": "Start voice input",
+  "cookflowVoiceInputStopTooltip": "Stop voice input",
+  "cookflowVoiceInputUnavailable": "Voice input is not currently supported on this device.",
+  "cookflowVoiceInputPermissionDenied": "Please allow microphone access to use voice input.",
+  "cookflowVoiceInputFailed": "Voice input could not be started. Please try again.",
+  "cookflowCookingFallbackNoIngredients": "Prepare your recipe with the ingredients you have available.",
+  "cookflowCookingFallbackPrepPrefix": "Prepare the ingredients:",
+  "cookflowCookingFallbackCookText": "Then cook the dish as described in the recipe.",
+  "cookflowSummaryTitle": "3. Summary",
+  "cookflowSummaryBody": "Check the final ingredients, resolve spontaneous changes, and choose where each ingredient is stored.",
+  "cookflowSummaryIngredientsTitle": "Base recipe ingredients",
+  "cookflowSummaryAdjustmentsTitle": "Unresolved adjustments",
+  "cookflowSummaryMatchInventoryButton": "Add as ingredient",
+  "cookflowSummaryPlaceholderAdjustment": "200g cucumbers",
+  "cookflowFinalizeTitle": "4. Finalize",
+  "cookflowFinalizeBody": "Place each filled container on the scale, then set portions for the meals we will create.",
+  "cookflowStorageContainersTitle": "Storage containers",
+  "cookflowAddStorageContainerButton": "Add container",
+  "cookflowContainerLabel": "Container",
+  "cookflowContainerNameHint": "Container {index}",
+  "@cookflowContainerNameHint": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "cookflowRemoveContainerTooltip": "Remove container",
+  "cookflowContainerTaraLabel": "Tare",
+  "cookflowPortionsUnit": "portions",
+  "cookflowIngredientContainerTitle": "Where is each ingredient stored?",
+  "cookflowIngredientContainerEmpty": "No inventory ingredients available for container assignment.",
+  "cookflowGrossWeightTitle": "Gross weight (pot + food)",
+  "cookflowGrossWeightHint": "e.g. 2500",
+  "cookflowMinusTaraLabel": "Minus empty weight (tare)",
+  "cookflowNetWeightLabel": "Net final weight",
+  "cookflowSplitIntoPortionsLabel": "Adjust portions?",
+  "cookflowHowManyPortions": "How many portions is that?",
+  "cookflowCaloriesShortLabel": "CALORIES",
+  "cookflowCarbsShortLabel": "CARBS",
+  "cookflowProteinShortLabel": "PROTEIN",
+  "cookflowFatShortLabel": "FAT",
+  "cookflowSuccessTitle": "Done",
+  "cookflowSuccessSubtitle": "Your meal was saved and is now available in inventory.",
+  "cookflowSuccessHeadline": "Meal saved",
+  "cookflowToInventoryButton": "Go to inventory",
+  "cookflowResumeLabel": "Resume"
 }

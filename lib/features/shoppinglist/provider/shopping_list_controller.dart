@@ -88,6 +88,30 @@ class ShoppingListController extends _$ShoppingListController {
     return _runListMutation(_buildQuantityMutation(itemId, (q) => q - 1));
   }
 
+  /// Decrements or removes several items in one persisted mutation.
+  Future<bool> resolveItemsByIds(Iterable<String> itemIds) {
+    final ids = itemIds.map((id) => id.trim()).where((id) => id.isNotEmpty);
+    final itemIdsToResolve = ids.toSet();
+    if (itemIdsToResolve.isEmpty) {
+      return Future<bool>.value(true);
+    }
+    return _runListMutation((previousItems) {
+      var changed = false;
+      final nextItems = <ShoppingListItem>[];
+      for (final item in previousItems) {
+        if (!itemIdsToResolve.contains(item.id)) {
+          nextItems.add(item);
+          continue;
+        }
+        changed = true;
+        if (item.quantity > 1) {
+          nextItems.add(item.copyWith(quantity: item.quantity - 1));
+        }
+      }
+      return changed ? nextItems : null;
+    });
+  }
+
   /// Clear crossed off items.
   Future<bool> clearCrossedOffItems() {
     return _runListMutation((previousItems) {
