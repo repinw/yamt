@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,8 +16,6 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_hint_card.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
@@ -52,8 +49,6 @@ import 'package:yamt/features/health/provider/health_connection_controller.dart'
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
     show HomeTabType;
 import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -78,46 +73,75 @@ class DiaryPage extends ConsumerStatefulWidget {
   ConsumerState<DiaryPage> createState() => _DiaryPageState();
 }
 
+class _DiaryWeeklyCheckInHintHost extends ConsumerWidget {
+  const _DiaryWeeklyCheckInHintHost({
+    required this.viewModel,
+    required this.selectedDay,
+    required this.onContinue,
+    required this.onOpenHealthTrends,
+    required this.onToggleSelectedDaySkipped,
+  });
+
+  final CalorieWeeklyCheckInViewModel viewModel;
+  final DateTime selectedDay;
+  final VoidCallback onContinue;
+  final VoidCallback onOpenHealthTrends;
+  final Future<void> Function({
+    required DateTime selectedDay,
+    required bool isSkipped,
+  })
+  onToggleSelectedDaySkipped;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedDayOverview = ref
+        .watch(calorieWeekDayOverviewForDateProvider(selectedDay))
+        .value;
+
+    return CalorieWeeklyCheckInHintCard(
+      viewModel: viewModel,
+      selectedDay: selectedDay,
+      selectedDayHasEntries: (selectedDayOverview?.entryCount ?? 0) > 0,
+      onContinue: onContinue,
+      onOpenHealthTrends: onOpenHealthTrends,
+      onToggleSelectedDaySkipped: ({required isSkipped}) {
+        return onToggleSelectedDaySkipped(
+          selectedDay: selectedDay,
+          isSkipped: isSkipped,
+        );
+      },
+    );
+  }
+}
+
 class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   final DiaryWeeklyCheckInDialogScheduler _weeklyCheckInDialogs =
       DiaryWeeklyCheckInDialogScheduler();
-  ProviderSubscription<AsyncValue<List<InventoryItem>>>?
-  _inventoryItemsSubscription;
-  ProviderSubscription<AsyncValue<List<PreparedMeal>>>?
-  _preparedMealsSubscription;
   ProviderSubscription<AsyncValue<CalorieWeeklyCheckInViewModel>>?
   _weeklyCheckInSubscription;
+  ProviderSubscription<DiaryIntroTrigger?>? _diaryIntroSubscription;
+  AsyncValue<CalorieWeeklyCheckInViewModel> _weeklyCheckInState =
+      const AsyncLoading<CalorieWeeklyCheckInViewModel>();
   bool _didQueueDiaryIntro = false;
   String? _hiddenWeeklyCheckInWindowKey;
 
   @override
   void initState() {
     super.initState();
-    _weeklyCheckInSubscription = ref.listenManual(
-      calorieWeeklyCheckInViewModelProvider,
-      _cacheWeeklyCheckInView,
-      fireImmediately: true,
-    );
-    // Warm up inventory data for quick access from diary bottom sheets.
-    _inventoryItemsSubscription = ref.listenManual(
-      inventoryItemsControllerProvider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-    _preparedMealsSubscription = ref.listenManual(
-      preparedMealsControllerProvider,
-      (_, _) {},
-      fireImmediately: true,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _startDeferredDiarySubscriptions();
+    });
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    _preparedMealsSubscription?.close();
-    _inventoryItemsSubscription?.close();
+    _diaryIntroSubscription?.close();
     _weeklyCheckInSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     _diaryScrollController.dispose();
@@ -138,19 +162,11 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<DiaryIntroTrigger?>(
-      diaryIntroTriggerProvider,
-      _handleDiaryIntroTrigger,
-    );
-
     final calendarState = ref.watch(diaryCalendarControllerProvider);
     final calendarController = ref.read(
       diaryCalendarControllerProvider.notifier,
     );
-    final selectedDayOverview = ref
-        .watch(calorieWeekDayOverviewForDateProvider(calendarState.selectedDay))
-        .value;
-    final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
+    final weeklyCheckInState = _weeklyCheckInState;
     final rawWeeklyCheckIn =
         weeklyCheckInState.value ?? _weeklyCheckInDialogs.lastViewModel;
     final weeklyCheckIn = _isHiddenWeeklyCheckIn(rawWeeklyCheckIn)
@@ -187,6 +203,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
           child: CustomScrollView(
             key: DiaryPage.pageKey,
             controller: _diaryScrollController.scrollController,
+            cacheExtent: 0,
             slivers: [
               if (widget.includeHomeShellChrome)
                 const HomeShellTabTopChrome(tab: HomeTabType.diary),
@@ -239,23 +256,25 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                     if (weeklyCheckIn != null &&
                         weeklyCheckIn.showDiaryHint) ...[
                       const SizedBox(height: AppSpacing.md),
-                      CalorieWeeklyCheckInHintCard(
+                      _DiaryWeeklyCheckInHintHost(
                         viewModel: weeklyCheckIn,
                         selectedDay: calendarState.selectedDay,
-                        selectedDayHasEntries:
-                            (selectedDayOverview?.entryCount ?? 0) > 0,
                         onContinue: () =>
                             _openWeeklyCheckInDialog(weeklyCheckIn),
                         onOpenHealthTrends: () => _openHealthTrendsPage(
                           visibleWindowEnd:
                               weeklyCheckIn.pendingWeeklyCheckIn?.windowEndDate,
                         ),
-                        onToggleSelectedDaySkipped: ({required isSkipped}) {
-                          return _toggleSkippedCalorieIntakeDay(
-                            selectedDay: calendarState.selectedDay,
-                            isSkipped: isSkipped,
-                          );
-                        },
+                        onToggleSelectedDaySkipped:
+                            ({
+                              required selectedDay,
+                              required isSkipped,
+                            }) {
+                              return _toggleSkippedCalorieIntakeDay(
+                                selectedDay: selectedDay,
+                                isSkipped: isSkipped,
+                              );
+                            },
                       ),
                     ],
                     if (showWeeklySuccessCard) ...[
@@ -265,38 +284,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                             latestGoalHistoryEntry?.dailyKcalGoal ??
                             goalSettings?.dailyKcalGoal ??
                             0,
-                      ),
-                    ],
-                    if (kDebugMode) ...[
-                      const SizedBox(height: AppSpacing.md),
-                      FilledButton.tonalIcon(
-                        key: CaloriesPageKeys.calorieDebugDumpButton,
-                        onPressed: () {
-                          unawaited(_printCalorieDebugDump());
-                        },
-                        icon: const Icon(Icons.table_chart_rounded),
-                        label: Text(
-                          AppLocalizations.of(context)!.caloriesDebugDumpAction,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      FilledButton.tonalIcon(
-                        key: CaloriesPageKeys.calorieSettingsDebugDumpButton,
-                        onPressed: () {
-                          unawaited(_printCalorieSettingsDebugDump());
-                        },
-                        icon: const Icon(Icons.data_object_rounded),
-                        label: const Text('Print calorie settings JSON'),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      FilledButton.tonalIcon(
-                        key: CaloriesPageKeys
-                            .calorieWeeklyCheckInDebugDumpButton,
-                        onPressed: () {
-                          unawaited(_printCalorieWeeklyCheckInDebugDump());
-                        },
-                        icon: const Icon(Icons.rule_rounded),
-                        label: const Text('Print weekly check-in state'),
                       ),
                     ],
                     const SizedBox(height: AppSpacing.xl),
@@ -359,10 +346,30 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     );
   }
 
+  void _startDeferredDiarySubscriptions() {
+    _weeklyCheckInSubscription ??= ref.listenManual(
+      calorieWeeklyCheckInViewModelProvider,
+      _cacheWeeklyCheckInView,
+      fireImmediately: true,
+    );
+    _diaryIntroSubscription ??= ref.listenManual<DiaryIntroTrigger?>(
+      diaryIntroTriggerProvider,
+      _handleDiaryIntroTrigger,
+      fireImmediately: true,
+    );
+  }
+
   void _cacheWeeklyCheckInView(
     AsyncValue<CalorieWeeklyCheckInViewModel>? previous,
     AsyncValue<CalorieWeeklyCheckInViewModel> next,
   ) {
+    if (mounted) {
+      setState(() {
+        _weeklyCheckInState = next;
+      });
+    } else {
+      _weeklyCheckInState = next;
+    }
     final viewModel = next.value;
     if (viewModel == null) {
       return;
@@ -471,39 +478,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     setState(() {
       _hiddenWeeklyCheckInWindowKey = null;
     });
-  }
-
-  Future<void> _printCalorieDebugDump() async {
-    final controller = ref.read(caloriePageActionControllerProvider.notifier);
-    final result = await controller.printDebugDump(DateTime.now());
-    if (!mounted) {
-      return;
-    }
-    showCalorieDebugDumpResultSnackBar(context: context, result: result);
-  }
-
-  Future<void> _printCalorieSettingsDebugDump() async {
-    final controller = ref.read(caloriePageActionControllerProvider.notifier);
-    final result = await controller.printSettingsDebugDump();
-    if (!mounted) {
-      return;
-    }
-    showCalorieSettingsDebugDumpResultSnackBar(
-      context: context,
-      result: result,
-    );
-  }
-
-  Future<void> _printCalorieWeeklyCheckInDebugDump() async {
-    final controller = ref.read(caloriePageActionControllerProvider.notifier);
-    final result = await controller.printWeeklyCheckInDebugDump();
-    if (!mounted) {
-      return;
-    }
-    showCalorieWeeklyCheckInDebugDumpResultSnackBar(
-      context: context,
-      result: result,
-    );
   }
 
   Future<void> _toggleSkippedCalorieIntakeDay({

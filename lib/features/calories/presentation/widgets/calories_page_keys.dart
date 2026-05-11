@@ -2,6 +2,11 @@ import 'package:flutter/widgets.dart';
 
 /// Defines shared calorie feature keys.
 abstract final class CaloriesPageKeys {
+  /// Opens calorie debug actions.
+  static const calorieDebugActionsMenuButton = Key(
+    'calories_debug_actions_menu_button',
+  );
+
   /// Prints calorie debug dump.
   static const calorieDebugDumpButton = Key('calories_debug_dump_button');
 
