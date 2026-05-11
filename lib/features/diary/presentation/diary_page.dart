@@ -337,7 +337,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
           bottom:
               MediaQuery.paddingOf(context).bottom +
               AppSpacing.xxxxl +
-              AppSpacing.xs,
+              AppSpacing.xs +
+              (widget.includeHomeShellChrome
+                  ? AppSizes.homeShellBottomBarClearance
+                  : 0),
           child: Center(
             child: DiaryScrollShortcut(
               showJumpToMeals:

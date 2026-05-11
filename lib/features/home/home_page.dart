@@ -246,7 +246,10 @@ class _HomeShellChromeVisibilityController {
   double get visibility => _visibility;
 
   bool handleScrollNotification(ScrollNotification notification) {
-    if (notification.metrics.axis != Axis.vertical) {
+    if (notification.depth != 0 ||
+        notification.metrics.axis != Axis.vertical ||
+        notification.metrics.maxScrollExtent <=
+            notification.metrics.minScrollExtent) {
       return false;
     }
 

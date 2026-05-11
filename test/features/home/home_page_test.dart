@@ -239,6 +239,19 @@ Widget _defaultBranchBody(HomeTabType tab) {
   );
 }
 
+double _homeChromeOpacity(WidgetTester tester, Type chromeType) {
+  return tester
+      .widget<Opacity>(
+        find
+            .descendant(
+              of: find.byType(chromeType),
+              matching: find.byType(Opacity),
+            )
+            .first,
+      )
+      .opacity;
+}
+
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
@@ -457,21 +470,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    double chromeOpacity(Type chromeType) {
-      return tester
-          .widget<Opacity>(
-            find
-                .descendant(
-                  of: find.byType(chromeType),
-                  matching: find.byType(Opacity),
-                )
-                .first,
-          )
-          .opacity;
-    }
-
     final initialTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
-    final initialBottomOpacity = chromeOpacity(HomeShellBottomChrome);
+    final initialBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
 
     await tester.drag(find.text('Row 5'), const Offset(0, -48));
     await tester.pump();
@@ -485,7 +488,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
 
-    final collapsedBottomOpacity = chromeOpacity(HomeShellBottomChrome);
+    final collapsedBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
 
     expect(shiftedTopOffset, lessThan(initialTopOffset));
     expect(find.byType(HomeTopBar), findsNothing);
@@ -498,11 +504,128 @@ void main() {
 
     expect(find.byType(HomeTopBar), findsOneWidget);
     final revealedTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
-    final revealedBottomOpacity = chromeOpacity(HomeShellBottomChrome);
+    final revealedBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
 
     expect(revealedTopOffset, greaterThan(shiftedTopOffset));
     expect(revealedBottomOpacity, greaterThan(collapsedBottomOpacity));
     expect(revealedBottomOpacity - collapsedBottomOpacity, greaterThan(0.5));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome ignores non-scrollable page drags', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: const CustomScrollView(
+          slivers: [
+            HomeShellTabTopChrome(tab: HomeTabType.diary),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: Text('Short content')),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    await tester.drag(
+      find.byType(CustomScrollView).first,
+      const Offset(0, -180),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    expect(find.byType(HomeTopBar), findsOneWidget);
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(initialBottomOpacity),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome ignores nested vertical scroll views', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellTabTopChrome(tab: HomeTabType.diary),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 480,
+                child: ListView.builder(
+                  key: const ValueKey('nested-home-scroll'),
+                  primary: false,
+                  itemCount: 30,
+                  itemBuilder: (context, index) {
+                    return SizedBox(
+                      height: 64,
+                      child: Text('Nested row $index'),
+                    );
+                  },
+                ),
+              ),
+            ),
+            SliverList.builder(
+              itemCount: 20,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  height: 72,
+                  child: Text('Outer row $index'),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
+    final initialBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    await tester.drag(find.text('Nested row 4'), const Offset(0, -220));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    expect(find.byType(HomeTopBar), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byType(HomeTopBar)).dy,
+      moreOrLessEquals(initialTopOffset),
+    );
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(initialBottomOpacity),
+    );
     expect(tester.takeException(), isNull);
   });
 
