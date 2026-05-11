@@ -49,6 +49,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
+    show HomeTabType;
+import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -63,10 +66,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 ])
 class DiaryPage extends ConsumerStatefulWidget {
   /// The diary page.
-  const DiaryPage({super.key});
+  const DiaryPage({super.key, this.includeHomeShellChrome = false});
 
   /// Key used by the shell and later design tests.
   static const pageKey = ValueKey<String>('diary-page');
+
+  /// Whether to render the shared home shell app bar as a sliver.
+  final bool includeHomeShellChrome;
 
   @override
   ConsumerState<DiaryPage> createState() => _DiaryPageState();
@@ -106,7 +112,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       fireImmediately: true,
     );
     WidgetsBinding.instance.addObserver(this);
-    _diaryScrollController.addListener(_refreshScrollActions);
   }
 
   @override
@@ -115,9 +120,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     _inventoryItemsSubscription?.close();
     _weeklyCheckInSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
-    _diaryScrollController
-      ..removeListener(_refreshScrollActions)
-      ..dispose();
+    _diaryScrollController.dispose();
     _weeklyCheckInDialogs.dispose();
     super.dispose();
   }
@@ -181,126 +184,144 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       children: [
         NotificationListener<ScrollNotification>(
           onNotification: _diaryScrollController.handleScrollNotification,
-          child: ListView(
+          child: CustomScrollView(
             key: DiaryPage.pageKey,
             controller: _diaryScrollController.scrollController,
-            padding: responsivePagePadding(
-              context,
-              top: AppSpacing.lg,
-              bottom: homeShellPageBottomPadding(context),
-            ),
-            children: [
-              DiaryCalendarStrip(
-                today: calendarState.today,
-                selectedDay: calendarState.selectedDay,
-                todayRequest: calendarState.todayRequest,
-                heartDayKeys:
-                    runState?.heartDayKeys.toSet() ?? const <String>{},
-                onSelectDay: calendarController.selectDay,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              DiaryBalanceCard(
-                selectedDay: calendarState.selectedDay,
-                hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
-              ),
-              if (showIntroReplayButton) ...[
-                const SizedBox(height: AppSpacing.xs),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    key: DiaryIntroDialogKeys.replayButton,
-                    style: TextButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    onPressed: () => _openDiaryIntroReplay(
-                      goalSettings: goalSettings,
-                      healthStatus: healthStatus,
-                    ),
-                    icon: const Icon(Icons.help_outline_rounded, size: 18),
-                    label: Text(
-                      AppLocalizations.of(context)!.diaryIntroReplayAction,
-                    ),
-                  ),
+            slivers: [
+              if (widget.includeHomeShellChrome)
+                const HomeShellTabTopChrome(tab: HomeTabType.diary),
+              SliverPadding(
+                padding: responsivePagePadding(
+                  context,
+                  top: AppSpacing.lg,
+                  bottom: homeShellPageBottomPadding(context),
                 ),
-              ],
-              if (weeklyCheckIn != null && weeklyCheckIn.showDiaryHint) ...[
-                const SizedBox(height: AppSpacing.md),
-                CalorieWeeklyCheckInHintCard(
-                  viewModel: weeklyCheckIn,
-                  selectedDay: calendarState.selectedDay,
-                  selectedDayHasEntries:
-                      (selectedDayOverview?.entryCount ?? 0) > 0,
-                  onContinue: () => _openWeeklyCheckInDialog(weeklyCheckIn),
-                  onOpenHealthTrends: () => _openHealthTrendsPage(
-                    visibleWindowEnd:
-                        weeklyCheckIn.pendingWeeklyCheckIn?.windowEndDate,
-                  ),
-                  onToggleSelectedDaySkipped: ({required isSkipped}) {
-                    return _toggleSkippedCalorieIntakeDay(
+                sliver: SliverList.list(
+                  children: [
+                    DiaryCalendarStrip(
+                      today: calendarState.today,
                       selectedDay: calendarState.selectedDay,
-                      isSkipped: isSkipped,
-                    );
-                  },
-                ),
-              ],
-              if (showWeeklySuccessCard) ...[
-                const SizedBox(height: AppSpacing.md),
-                CalorieWeeklyCheckInSuccessCard(
-                  goalKcal:
-                      latestGoalHistoryEntry?.dailyKcalGoal ??
-                      goalSettings?.dailyKcalGoal ??
-                      0,
-                ),
-              ],
-              if (kDebugMode) ...[
-                const SizedBox(height: AppSpacing.md),
-                FilledButton.tonalIcon(
-                  key: CaloriesPageKeys.calorieDebugDumpButton,
-                  onPressed: () {
-                    unawaited(_printCalorieDebugDump());
-                  },
-                  icon: const Icon(Icons.table_chart_rounded),
-                  label: Text(
-                    AppLocalizations.of(context)!.caloriesDebugDumpAction,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                FilledButton.tonalIcon(
-                  key: CaloriesPageKeys.calorieSettingsDebugDumpButton,
-                  onPressed: () {
-                    unawaited(_printCalorieSettingsDebugDump());
-                  },
-                  icon: const Icon(Icons.data_object_rounded),
-                  label: const Text('Print calorie settings JSON'),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                FilledButton.tonalIcon(
-                  key: CaloriesPageKeys.calorieWeeklyCheckInDebugDumpButton,
-                  onPressed: () {
-                    unawaited(_printCalorieWeeklyCheckInDebugDump());
-                  },
-                  icon: const Icon(Icons.rule_rounded),
-                  label: const Text('Print weekly check-in state'),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.xl),
-              DiaryNutritionBars(selectedDay: calendarState.selectedDay),
-              const SizedBox(height: AppSpacing.xl),
-              DiaryActivityWeightCards(selectedDay: calendarState.selectedDay),
-              if (showActivityTrackingWidgets) ...[
-                const SizedBox(height: AppSpacing.xl),
-                DiaryStepsCard(
-                  selectedDay: calendarState.selectedDay,
-                  expandedContent: DiaryActivityDetailsCard(
-                    selectedDay: calendarState.selectedDay,
-                  ),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.xl),
-              KeyedSubtree(
-                key: _diaryScrollController.mealsSectionKey,
-                child: DiaryMealsSection(
-                  selectedDay: calendarState.selectedDay,
+                      todayRequest: calendarState.todayRequest,
+                      heartDayKeys:
+                          runState?.heartDayKeys.toSet() ?? const <String>{},
+                      onSelectDay: calendarController.selectDay,
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    DiaryBalanceCard(
+                      selectedDay: calendarState.selectedDay,
+                      hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
+                    ),
+                    if (showIntroReplayButton) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          key: DiaryIntroDialogKeys.replayButton,
+                          style: TextButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          onPressed: () => _openDiaryIntroReplay(
+                            goalSettings: goalSettings,
+                            healthStatus: healthStatus,
+                          ),
+                          icon: const Icon(
+                            Icons.help_outline_rounded,
+                            size: 18,
+                          ),
+                          label: Text(
+                            AppLocalizations.of(
+                              context,
+                            )!.diaryIntroReplayAction,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (weeklyCheckIn != null &&
+                        weeklyCheckIn.showDiaryHint) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      CalorieWeeklyCheckInHintCard(
+                        viewModel: weeklyCheckIn,
+                        selectedDay: calendarState.selectedDay,
+                        selectedDayHasEntries:
+                            (selectedDayOverview?.entryCount ?? 0) > 0,
+                        onContinue: () =>
+                            _openWeeklyCheckInDialog(weeklyCheckIn),
+                        onOpenHealthTrends: () => _openHealthTrendsPage(
+                          visibleWindowEnd:
+                              weeklyCheckIn.pendingWeeklyCheckIn?.windowEndDate,
+                        ),
+                        onToggleSelectedDaySkipped: ({required isSkipped}) {
+                          return _toggleSkippedCalorieIntakeDay(
+                            selectedDay: calendarState.selectedDay,
+                            isSkipped: isSkipped,
+                          );
+                        },
+                      ),
+                    ],
+                    if (showWeeklySuccessCard) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      CalorieWeeklyCheckInSuccessCard(
+                        goalKcal:
+                            latestGoalHistoryEntry?.dailyKcalGoal ??
+                            goalSettings?.dailyKcalGoal ??
+                            0,
+                      ),
+                    ],
+                    if (kDebugMode) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      FilledButton.tonalIcon(
+                        key: CaloriesPageKeys.calorieDebugDumpButton,
+                        onPressed: () {
+                          unawaited(_printCalorieDebugDump());
+                        },
+                        icon: const Icon(Icons.table_chart_rounded),
+                        label: Text(
+                          AppLocalizations.of(context)!.caloriesDebugDumpAction,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      FilledButton.tonalIcon(
+                        key: CaloriesPageKeys.calorieSettingsDebugDumpButton,
+                        onPressed: () {
+                          unawaited(_printCalorieSettingsDebugDump());
+                        },
+                        icon: const Icon(Icons.data_object_rounded),
+                        label: const Text('Print calorie settings JSON'),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      FilledButton.tonalIcon(
+                        key: CaloriesPageKeys
+                            .calorieWeeklyCheckInDebugDumpButton,
+                        onPressed: () {
+                          unawaited(_printCalorieWeeklyCheckInDebugDump());
+                        },
+                        icon: const Icon(Icons.rule_rounded),
+                        label: const Text('Print weekly check-in state'),
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.xl),
+                    DiaryNutritionBars(selectedDay: calendarState.selectedDay),
+                    const SizedBox(height: AppSpacing.xl),
+                    DiaryActivityWeightCards(
+                      selectedDay: calendarState.selectedDay,
+                    ),
+                    if (showActivityTrackingWidgets) ...[
+                      const SizedBox(height: AppSpacing.xl),
+                      DiaryStepsCard(
+                        selectedDay: calendarState.selectedDay,
+                        expandedContent: DiaryActivityDetailsCard(
+                          selectedDay: calendarState.selectedDay,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.xl),
+                    KeyedSubtree(
+                      key: _diaryScrollController.mealsSectionKey,
+                      child: DiaryMealsSection(
+                        selectedDay: calendarState.selectedDay,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -312,17 +333,25 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
           bottom:
               MediaQuery.paddingOf(context).bottom +
               AppSpacing.xxxxl +
-              AppSpacing.xs,
+              AppSpacing.xs +
+              (widget.includeHomeShellChrome
+                  ? AppSizes.homeShellBottomBarClearance
+                  : 0),
           child: Center(
-            child: DiaryScrollShortcut(
-              showJumpToMeals:
-                  !_diaryScrollController.isManualScrolling &&
-                  _diaryScrollController.showJumpToMeals,
-              showScrollToTop:
-                  !_diaryScrollController.isManualScrolling &&
-                  _diaryScrollController.showScrollToTop,
-              onJumpToMeals: _diaryScrollController.scrollToMeals,
-              onScrollToTop: _diaryScrollController.scrollToTop,
+            child: ListenableBuilder(
+              listenable: _diaryScrollController,
+              builder: (context, _) {
+                return DiaryScrollShortcut(
+                  showJumpToMeals:
+                      !_diaryScrollController.isManualScrolling &&
+                      _diaryScrollController.showJumpToMeals,
+                  showScrollToTop:
+                      !_diaryScrollController.isManualScrolling &&
+                      _diaryScrollController.showScrollToTop,
+                  onJumpToMeals: _diaryScrollController.scrollToMeals,
+                  onScrollToTop: _diaryScrollController.scrollToTop,
+                );
+              },
             ),
           ),
         ),
@@ -490,13 +519,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       return;
     }
     showSkippedCalorieIntakeSaveFailedSnackBar(context);
-  }
-
-  void _refreshScrollActions() {
-    if (!mounted) {
-      return;
-    }
-    setState(() {});
   }
 
   void _handleDiaryIntroTrigger(

@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
+    show HomeTabType;
+import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
@@ -36,6 +39,9 @@ class MealTemplatesPage extends ConsumerWidget {
       preparedMealTemplatesControllerProvider.notifier,
     );
     final templatesAsync = ref.watch(preparedMealTemplatesControllerProvider);
+    final topChromeSlivers = includeAppBar
+        ? const <Widget>[]
+        : const [HomeShellTabTopChrome(tab: HomeTabType.cookbook)];
 
     return Scaffold(
       appBar: includeAppBar
@@ -50,89 +56,121 @@ class MealTemplatesPage extends ConsumerWidget {
       body: templatesAsync.when(
         data: (templates) {
           if (templates.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: AppInsets.pageLarge,
-                child: Text(
-                  l10n.preparedMealTemplatesEmptyState,
-                  textAlign: TextAlign.center,
+            return CustomScrollView(
+              slivers: [
+                ...topChromeSlivers,
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Padding(
+                      padding: AppInsets.pageLarge,
+                      child: Text(
+                        l10n.preparedMealTemplatesEmptyState,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             );
           }
 
-          return ListView.separated(
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.xl,
-              AppSpacing.lg,
-              AppSpacing.xl,
-              includeAppBar
-                  ? AppSpacing.xxl
-                  : AppSizes.homeShellBottomBarClearance,
-            ),
-            itemCount: templates.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
-            itemBuilder: (context, index) {
-              final template = templates[index];
-              return PreparedMealTemplateCard(
-                template: template,
-                onOpenPressed: () => _openTemplateDetail(
-                  context: context,
-                  templateId: template.id,
+          return CustomScrollView(
+            slivers: [
+              ...topChromeSlivers,
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.lg,
+                  AppSpacing.xl,
+                  includeAppBar
+                      ? AppSpacing.xxl
+                      : AppSizes.homeShellBottomBarClearance,
                 ),
-                onEditPressed: (template) => _editTemplate(
-                  context: context,
-                  ref: ref,
-                  template: template,
+                sliver: SliverList.separated(
+                  itemCount: templates.length,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: AppSpacing.lg),
+                  itemBuilder: (context, index) {
+                    final template = templates[index];
+                    return PreparedMealTemplateCard(
+                      template: template,
+                      onOpenPressed: () => _openTemplateDetail(
+                        context: context,
+                        templateId: template.id,
+                      ),
+                      onEditPressed: (template) => _editTemplate(
+                        context: context,
+                        ref: ref,
+                        template: template,
+                      ),
+                      onDeletePressed: (templateId) => _deleteTemplate(
+                        context: context,
+                        ref: ref,
+                        templateId: templateId,
+                      ),
+                    );
+                  },
                 ),
-                onDeletePressed: (templateId) => _deleteTemplate(
-                  context: context,
-                  ref: ref,
-                  templateId: templateId,
-                ),
-              );
-            },
+              ),
+            ],
           );
         },
-        loading: () => const Center(
-          child: SizedBox.square(
-            dimension: AppSizes.inlineProgressIndicator,
-            child: CircularProgressIndicator(
-              strokeWidth: AppSizes.progressStrokeWidth,
-            ),
-          ),
-        ),
-        error: (error, stackTrace) {
-          return Center(
-            child: Padding(
-              padding: AppInsets.pageLarge,
-              child: Card(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: AppInsets.card,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(
-                        Icons.wifi_tethering_error_rounded,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Text(
-                        l10n.preparedMealTemplatesLoadFailed,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      FilledButton.icon(
-                        onPressed: templatesController.refresh,
-                        icon: const Icon(Icons.refresh),
-                        label: Text(l10n.inventoryRetryAction),
-                      ),
-                    ],
+        loading: () => CustomScrollView(
+          slivers: [
+            ...topChromeSlivers,
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: SizedBox.square(
+                  dimension: AppSizes.inlineProgressIndicator,
+                  child: CircularProgressIndicator(
+                    strokeWidth: AppSizes.progressStrokeWidth,
                   ),
                 ),
               ),
             ),
+          ],
+        ),
+        error: (error, stackTrace) {
+          return CustomScrollView(
+            slivers: [
+              ...topChromeSlivers,
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Padding(
+                    padding: AppInsets.pageLarge,
+                    child: Card(
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: AppInsets.card,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(
+                              Icons.wifi_tethering_error_rounded,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              l10n.preparedMealTemplatesLoadFailed,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            FilledButton.icon(
+                              onPressed: templatesController.refresh,
+                              icon: const Icon(Icons.refresh),
+                              label: Text(l10n.inventoryRetryAction),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),

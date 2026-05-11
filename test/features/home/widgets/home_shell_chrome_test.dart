@@ -3,6 +3,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 
 void main() {
+  group('HomeShellTopSliverChrome', () {
+    testWidgets('handles zero height chrome without layout exceptions', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: MediaQuery(
+            data: MediaQueryData(),
+            child: CustomScrollView(
+              slivers: [
+                HomeShellTopSliverChrome(child: _ZeroHeightAppBar()),
+                SliverFillRemaining(child: SizedBox.shrink()),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('HomeTopBar', () {
     test('returns subtitle preferred size for regular and compact layouts', () {
       const regular = HomeTopBar(
@@ -71,6 +93,18 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+}
+
+class _ZeroHeightAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _ZeroHeightAppBar();
+
+  @override
+  Size get preferredSize => Size.zero;
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.shrink();
+  }
 }
 
 Widget _homeTopBarHarness(PreferredSizeWidget appBar) {

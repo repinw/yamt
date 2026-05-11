@@ -4,23 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/utils/date_utils.dart';
-import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
-import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
-import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/'
-    'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
-import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
-    'kitchen_utensils_button.dart';
-import 'package:yamt/features/meal_templates/presentation/widgets/'
-    'meal_template_recipe_import_button.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -40,22 +28,42 @@ const _settingsBranchIndex = 4;
   ReceiptBatchFlowController,
   receiptCameraSupported,
 ])
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   /// The home page.
   const HomePage({required this.navigationShell, super.key});
 
   /// The navigation shell.
   final StatefulNavigationShell navigationShell;
 
+  @override
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  late final _HomeShellChromeVisibilityController _chromeVisibilityController;
+
+  @override
+  void initState() {
+    super.initState();
+    _chromeVisibilityController = _HomeShellChromeVisibilityController();
+  }
+
+  @override
+  void dispose() {
+    _chromeVisibilityController.dispose();
+    super.dispose();
+  }
+
   void _onTabTapped(int index) {
-    navigationShell.goBranch(
+    _chromeVisibilityController.reveal();
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
   HomeTabType _currentTab() {
-    return switch (navigationShell.currentIndex) {
+    return switch (widget.navigationShell.currentIndex) {
       _inventoryBranchIndex => HomeTabType.inventory,
       _diaryBranchIndex => HomeTabType.diary,
       _cookbookBranchIndex => HomeTabType.cookbook,
@@ -63,47 +71,6 @@ class HomePage extends ConsumerWidget {
       _settingsBranchIndex => HomeTabType.settings,
       _ => HomeTabType.inventory, // coverage:ignore-line
     };
-  }
-
-  String _titleForTab(
-    AppLocalizations l10n,
-    PreparedMealSelectionState selectionState,
-    DiaryCalendarState? diaryCalendarState,
-    String localeName,
-  ) {
-    if (_currentTab() == HomeTabType.inventory &&
-        selectionState.isSelectionMode) {
-      return l10n.preparedMealSelectionCount(selectionState.selectedCount);
-    }
-
-    switch (_currentTab()) {
-      case HomeTabType.inventory:
-        return l10n.inventoryPageTitle;
-      case HomeTabType.diary:
-        return diaryCalendarState?.isSelectedToday ?? true
-            ? l10n.diaryTodayTitle
-            : calendarWeekdayFullLabel(
-                diaryCalendarState!.selectedDay,
-                localeName,
-              );
-      case HomeTabType.cookbook:
-        return l10n.homeCookbook;
-      case HomeTabType.statistics:
-        return l10n.homeStatistics;
-      case HomeTabType.settings:
-        return l10n.homeSettings;
-    }
-  }
-
-  String? _subtitleForTab(
-    DiaryCalendarState? diaryCalendarState,
-    String localeName,
-  ) {
-    if (diaryCalendarState == null) {
-      return null;
-    }
-
-    return formatCalendarHeaderDate(diaryCalendarState.selectedDay, localeName);
   }
 
   List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
@@ -149,135 +116,10 @@ class HomePage extends ConsumerWidget {
     ];
   }
 
-  List<Widget> _buildActions(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-    PreparedMealSelectionState selectionState,
-    bool useCompactSelectionActions,
-    DiaryCalendarState? diaryCalendarState,
-  ) {
-    if (_currentTab() == HomeTabType.inventory &&
-        selectionState.isSelectionMode) {
-      final isAddingIngredients = selectionState.isAddingIngredientsToMeal;
-      final selectionActionLabel = isAddingIngredients
-          ? l10n.preparedMealAddIngredientAction
-          : l10n.preparedMealBindAction;
-      final selectionActionIcon = isAddingIngredients
-          ? Icons.add_rounded
-          : Icons.restaurant_menu_rounded;
-      final canConfirmSelection =
-          selectionState.selectedCount >= (isAddingIngredients ? 1 : 2);
-      if (useCompactSelectionActions) {
-        return [
-          IconButton(
-            tooltip: l10n.inventoryReceiptReviewCancelAction,
-            onPressed: () {
-              ref
-                  .read(preparedMealSelectionControllerProvider.notifier)
-                  .clearSelection();
-            },
-            icon: const Icon(Icons.close_rounded),
-          ),
-          IconButton.filledTonal(
-            tooltip: selectionActionLabel,
-            onPressed: canConfirmSelection
-                ? () {
-                    ref
-                        .read(preparedMealSelectionControllerProvider.notifier)
-                        .confirmSelection();
-                  }
-                : null,
-            icon: Icon(selectionActionIcon),
-          ),
-        ];
-      }
-
-      return [
-        TextButton(
-          onPressed: () {
-            ref
-                .read(preparedMealSelectionControllerProvider.notifier)
-                .clearSelection();
-          },
-          child: Text(l10n.inventoryReceiptReviewCancelAction),
-        ),
-        FilledButton.tonalIcon(
-          onPressed: canConfirmSelection
-              ? () {
-                  ref
-                      .read(preparedMealSelectionControllerProvider.notifier)
-                      .confirmSelection();
-                }
-              : null,
-          icon: Icon(selectionActionIcon),
-          label: Text(selectionActionLabel),
-        ),
-      ];
-    }
-
-    switch (_currentTab()) {
-      case HomeTabType.inventory:
-        return [
-          IconButton(
-            tooltip: l10n.commonNotImplementedYet,
-            onPressed: () =>
-                _showSnackBar(context, l10n.commonNotImplementedYet),
-            icon: const Icon(Icons.assignment_outlined),
-          ),
-          IconButton(
-            tooltip: l10n.homeShopping,
-            onPressed: () => context.push(AppRoutes.homeShopping),
-            icon: const Icon(Icons.shopping_cart_rounded),
-          ),
-        ];
-      case HomeTabType.diary:
-        if (diaryCalendarState == null || diaryCalendarState.isSelectedToday) {
-          return const <Widget>[];
-        }
-
-        return [
-          TextButton(
-            onPressed: () {
-              ref.read(diaryCalendarControllerProvider.notifier).selectToday();
-            },
-            child: Text(l10n.diaryTodayTitle),
-          ),
-        ];
-      case HomeTabType.cookbook:
-        return const [
-          KitchenUtensilsButton(),
-          MealTemplateRecipeImportButton(),
-        ];
-      case HomeTabType.statistics:
-        return const <Widget>[];
-      case HomeTabType.settings:
-        return const <Widget>[];
-    }
-  }
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final localeName = Localizations.localeOf(context).toLanguageTag();
-    final colors = Theme.of(context).colorScheme;
     final currentTab = _currentTab();
-    final compactHomeChrome = shouldUseCompactHomeChrome(context);
-    final selectionState = ref.watch(preparedMealSelectionControllerProvider);
-    final diaryCalendarState = currentTab == HomeTabType.diary
-        ? ref.watch(diaryCalendarControllerProvider)
-        : null;
-    final burnWeekRunState = ref
-        .watch(burnWeekRunControllerProvider)
-        .asData
-        ?.value;
-    final topBarTitle = _titleForTab(
-      l10n,
-      selectionState,
-      diaryCalendarState,
-      localeName,
-    );
-    final topBarSubtitle = _subtitleForTab(diaryCalendarState, localeName);
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
       HomeTabType.diary ||
@@ -296,34 +138,46 @@ class HomePage extends ConsumerWidget {
     return Theme(
       data: homeTheme,
       child: Scaffold(
-        extendBody: true,
-        appBar: HomeTopBar(
-          title: topBarTitle,
-          subtitle: topBarSubtitle,
-          middle: _buildMiddle(currentTab, burnWeekRunState),
-          titleColor: colors.primary,
-          compact: compactHomeChrome,
-          preferredHeight: HomeTopBar.preferredHeightFor(
-            context,
-            compact: compactHomeChrome,
-            hasSubtitle: topBarSubtitle != null,
-          ),
-          actions: _buildActions(
-            context,
-            ref,
-            l10n,
-            selectionState,
-            compactHomeChrome,
-            diaryCalendarState,
+        extendBody: currentTab != HomeTabType.settings,
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _chromeVisibilityController.handleScrollNotification,
+          child: Stack(
+            children: [
+              widget.navigationShell,
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: ValueListenableBuilder<double>(
+                  valueListenable: _chromeVisibilityController,
+                  child: HomeBottomNavBar(
+                    entries: _navEntries(context, l10n),
+                  ),
+                  builder: (context, visibility, bottomNavBar) {
+                    return HomeShellBottomChrome(
+                      visibility: visibility,
+                      child: bottomNavBar!,
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
-        body: navigationShell,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
-        floatingActionButton: floatingActionButton ?? const SizedBox.shrink(),
-        bottomNavigationBar: HomeBottomNavBar(
-          entries: _navEntries(context, l10n),
-        ),
+        floatingActionButton: floatingActionButton == null
+            ? const SizedBox.shrink()
+            : ValueListenableBuilder<double>(
+                valueListenable: _chromeVisibilityController,
+                child: floatingActionButton,
+                builder: (context, visibility, fab) {
+                  return HomeShellFloatingActionButtonChrome(
+                    visibility: visibility,
+                    child: fab!,
+                  );
+                },
+              ),
       ),
     );
   }
@@ -338,17 +192,6 @@ class HomePage extends ConsumerWidget {
       return null;
     }
     return const InventoryActionFab();
-  }
-
-  Widget? _buildMiddle(HomeTabType currentTab, BurnWeekRunState? runState) {
-    if (currentTab != HomeTabType.diary) {
-      return null;
-    }
-    if (runState == null ||
-        runState.runWeekNumber <= burnWeekLearningRunWeekNumber) {
-      return null;
-    }
-    return HomeHeartCounterButton(runState: runState);
   }
 
   void _showMoreMenu(BuildContext context, AppLocalizations l10n) {
@@ -387,11 +230,62 @@ class HomePage extends ConsumerWidget {
       ),
     );
   }
+}
 
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+class _HomeShellChromeVisibilityController extends ValueNotifier<double> {
+  _HomeShellChromeVisibilityController() : super(1);
+
+  static const _hideScrollDistance = 320;
+  static const _revealScrollDistance = 140;
+  static const _topRevealThreshold = 8;
+
+  double get visibility => value;
+
+  bool handleScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0 ||
+        notification.metrics.axis != Axis.vertical ||
+        notification.metrics.maxScrollExtent <=
+            notification.metrics.minScrollExtent) {
+      return false;
+    }
+
+    if (notification is ScrollUpdateNotification &&
+        notification.scrollDelta != null) {
+      _updateFromScrollDelta(notification.scrollDelta!);
+    } else if (notification.metrics.pixels <=
+        notification.metrics.minScrollExtent + _topRevealThreshold) {
+      reveal();
+    }
+
+    return false;
+  }
+
+  void reveal() {
+    _setVisibility(1);
+  }
+
+  void _updateFromScrollDelta(double scrollDelta) {
+    if (scrollDelta == 0) {
+      return;
+    }
+
+    final scrollDistance = scrollDelta > 0
+        ? _hideScrollDistance
+        : _revealScrollDistance;
+    final nextVisibility = (visibility - (scrollDelta / scrollDistance)).clamp(
+      0.0,
+      1.0,
+    );
+    _setVisibility(nextVisibility);
+  }
+
+  void _setVisibility(double value) {
+    final targetVisibility = value.clamp(0.0, 1.0);
+    if ((visibility - targetVisibility).abs() < 0.001) {
+      return;
+    }
+
+    this.value = targetVisibility;
   }
 }
 

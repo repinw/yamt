@@ -6,6 +6,9 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
+    show HomeTabType;
+import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/presentation/views/'
@@ -26,7 +29,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 @Dependencies([InventoryItemsController])
 class StatisticsPage extends ConsumerStatefulWidget {
   /// The statistics page.
-  const StatisticsPage({super.key});
+  const StatisticsPage({super.key, this.includeHomeShellChrome = false});
+
+  /// Whether to render the shared home shell app bar as a sliver.
+  final bool includeHomeShellChrome;
 
   @override
   ConsumerState<StatisticsPage> createState() => _StatisticsPageState();
@@ -41,48 +47,56 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     final l10n = AppLocalizations.of(context)!;
     final inventoryAsync = ref.watch(inventoryItemsControllerProvider);
 
-    return ListView(
-      padding: responsivePagePadding(
-        context,
-        top: AppSpacing.lg,
-        bottom: homeShellPageBottomPadding(context),
-      ),
-      children: [
-        _StatisticsHeroCard(
-          subtitle: l10n.statisticsPageSubtitle,
-          contextLabel:
-              _selectedTab.contextKind == StatisticsContextKind.personal
-              ? l10n.statisticsContextPersonal
-              : l10n.statisticsContextHousehold,
+    return CustomScrollView(
+      slivers: [
+        if (widget.includeHomeShellChrome)
+          const HomeShellTabTopChrome(tab: HomeTabType.statistics),
+        SliverPadding(
+          padding: responsivePagePadding(
+            context,
+            top: AppSpacing.lg,
+            bottom: homeShellPageBottomPadding(context),
+          ),
+          sliver: SliverList.list(
+            children: [
+              _StatisticsHeroCard(
+                subtitle: l10n.statisticsPageSubtitle,
+                contextLabel:
+                    _selectedTab.contextKind == StatisticsContextKind.personal
+                    ? l10n.statisticsContextPersonal
+                    : l10n.statisticsContextHousehold,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              _buildTimeframeSelector(l10n),
+              const SizedBox(height: AppSpacing.lg),
+              _buildTabSelector(l10n),
+              const SizedBox(height: AppSpacing.lg),
+              if (_selectedTab != StatisticsTab.calories)
+                _StatisticsInfoBanner(
+                  icon: Icons.dataset_linked_rounded,
+                  title: l10n.statisticsHouseholdHintTitle,
+                  message: l10n.statisticsHouseholdHintBody,
+                ),
+              if (_selectedTab != StatisticsTab.calories)
+                const SizedBox(height: AppSpacing.lg),
+              switch (_selectedTab) {
+                StatisticsTab.spending => StatisticsSpendingView(
+                  timeframe: _selectedTimeframe,
+                  inventoryAsync: inventoryAsync,
+                  onRetry: _retryHouseholdData,
+                ),
+                StatisticsTab.waste => StatisticsWasteView(
+                  timeframe: _selectedTimeframe,
+                  onRetry: _retryWasteData,
+                ),
+                StatisticsTab.calories => StatisticsCaloriesView(
+                  timeframe: _selectedTimeframe,
+                  onRetry: _retryCalorieData,
+                ),
+              },
+            ],
+          ),
         ),
-        const SizedBox(height: AppSpacing.xl),
-        _buildTimeframeSelector(l10n),
-        const SizedBox(height: AppSpacing.lg),
-        _buildTabSelector(l10n),
-        const SizedBox(height: AppSpacing.lg),
-        if (_selectedTab != StatisticsTab.calories)
-          _StatisticsInfoBanner(
-            icon: Icons.dataset_linked_rounded,
-            title: l10n.statisticsHouseholdHintTitle,
-            message: l10n.statisticsHouseholdHintBody,
-          ),
-        if (_selectedTab != StatisticsTab.calories)
-          const SizedBox(height: AppSpacing.lg),
-        switch (_selectedTab) {
-          StatisticsTab.spending => StatisticsSpendingView(
-            timeframe: _selectedTimeframe,
-            inventoryAsync: inventoryAsync,
-            onRetry: _retryHouseholdData,
-          ),
-          StatisticsTab.waste => StatisticsWasteView(
-            timeframe: _selectedTimeframe,
-            onRetry: _retryWasteData,
-          ),
-          StatisticsTab.calories => StatisticsCaloriesView(
-            timeframe: _selectedTimeframe,
-            onRetry: _retryCalorieData,
-          ),
-        },
       ],
     );
   }

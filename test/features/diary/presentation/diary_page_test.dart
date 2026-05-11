@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -123,15 +124,37 @@ void main() {
     expect(find.text('To diary').hitTestable(), findsOneWidget);
 
     final gesture = await tester.startGesture(
-      tester.getCenter(find.byType(ListView).first),
+      tester.getCenter(find.byType(CustomScrollView).first),
     );
     await gesture.moveBy(const Offset(0, -80));
+    await tester.pump();
     await tester.pump();
 
     expect(find.text('To diary').hitTestable(), findsNothing);
 
     await gesture.up();
     await _pumpFrames(tester);
+  });
+
+  testWidgets('scroll shortcut clears home shell bottom chrome', (
+    tester,
+  ) async {
+    _setSmallSurface(tester);
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      includeHomeShellChrome: true,
+    );
+
+    final shortcut = find.text('To diary').hitTestable();
+    expect(shortcut, findsOneWidget);
+
+    final shortcutBottom = tester.getBottomLeft(shortcut).dy;
+    final reservedChromeTop =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio -
+        AppSizes.homeShellBottomBarClearance;
+
+    expect(shortcutBottom, lessThan(reservedChromeTop));
   });
 
   testWidgets('auto-opens weekly check-in dialog', (tester) async {
@@ -736,6 +759,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   VoidCallback? onPreparedMealsBuild,
   List<Override> overrides = const [],
   bool overrideWeeklyCheckInProvider = true,
+  bool includeHomeShellChrome = false,
 }) async {
   final resolvedLogRepository = logRepository ?? FakeCalorieLogRepository();
   final resolvedSettingsRepository =
@@ -814,8 +838,10 @@ Future<ProviderContainer> _pumpDiaryPage(
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(
-          body: DiaryPage(),
+        home: Scaffold(
+          body: DiaryPage(
+            includeHomeShellChrome: includeHomeShellChrome,
+          ),
         ),
         routes: {
           AppRoutes.homeStatisticsWeight: (context) =>

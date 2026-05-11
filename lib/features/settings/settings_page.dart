@@ -17,6 +17,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
+    show HomeTabType;
+import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/settings/settings_page_keys.dart';
 import 'package:yamt/features/settings/widgets/settings_health_connect_tile.dart';
 import 'package:yamt/features/settings/widgets/settings_profile_card.dart';
@@ -26,7 +29,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines settings page.
 class SettingsPage extends ConsumerWidget {
   /// The settings page.
-  const SettingsPage({super.key});
+  const SettingsPage({super.key, this.includeHomeShellChrome = false});
+
+  /// Whether to render the shared home shell app bar as a sliver.
+  final bool includeHomeShellChrome;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,71 +45,81 @@ class SettingsPage extends ConsumerWidget {
 
     return ColoredBox(
       color: pageColor,
-      child: ListView(
-        padding: responsivePagePadding(
-          context,
-          top: AppSpacing.xl,
-          bottom: homeShellPageBottomPadding(context),
-        ),
-        children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: settingsMaxWidth),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _SettingsIntro(l10n: l10n),
-                  const SizedBox(height: AppSpacing.lg),
-                  const SettingsProfileCard(),
-                  const SizedBox(height: AppSpacing.lg),
-                  SettingsSection(
-                    title: l10n.settingsAccountHouseholdSectionTitle,
-                    children: [_HouseholdTile(l10n: l10n)],
-                  ),
-                  SettingsSection(
-                    title: l10n.settingsHealthGoalsSectionTitle,
-                    children: const [
-                      SettingsHealthConnectTile(),
-                      _CalorieGoalStartTile(),
-                      _CalorieGoalCalculatorTile(),
-                    ],
-                  ),
-                  SettingsSection(
-                    title: l10n.settingsAppearanceSectionTitle,
-                    children: const [
-                      _ThemeModeTile(),
-                      _SeedColorTile(),
-                      _LanguageTile(),
-                    ],
-                  ),
-                  SettingsSection(
-                    title: l10n.settingsAppSectionTitle,
-                    children: [
-                      SettingsTile(
-                        key: SettingsPageKeys.notificationsTile,
-                        icon: Icons.notifications_none_rounded,
-                        title: l10n.settingsNotificationsTitle,
-                        subtitle: l10n.settingsNotificationsSubtitle,
-                        onTap: () => _showNotImplementedSnackBar(
-                          context,
-                          l10n.commonNotImplementedYet,
+      child: CustomScrollView(
+        slivers: [
+          if (includeHomeShellChrome)
+            const HomeShellTabTopChrome(tab: HomeTabType.settings),
+          SliverPadding(
+            padding: responsivePagePadding(
+              context,
+              top: AppSpacing.xl,
+              bottom: homeShellPageBottomPadding(context),
+            ),
+            sliver: SliverList.list(
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: settingsMaxWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _SettingsIntro(l10n: l10n),
+                        const SizedBox(height: AppSpacing.lg),
+                        const SettingsProfileCard(),
+                        const SizedBox(height: AppSpacing.lg),
+                        SettingsSection(
+                          title: l10n.settingsAccountHouseholdSectionTitle,
+                          children: [_HouseholdTile(l10n: l10n)],
                         ),
-                      ),
-                      SettingsTile(
-                        key: SettingsPageKeys.privacyTile,
-                        icon: Icons.lock_outline_rounded,
-                        title: l10n.settingsPrivacyTitle,
-                        subtitle: l10n.settingsPrivacySubtitle,
-                        onTap: () => _showNotImplementedSnackBar(
-                          context,
-                          l10n.commonNotImplementedYet,
+                        SettingsSection(
+                          title: l10n.settingsHealthGoalsSectionTitle,
+                          children: const [
+                            SettingsHealthConnectTile(),
+                            _CalorieGoalStartTile(),
+                            _CalorieGoalCalculatorTile(),
+                          ],
                         ),
-                      ),
-                      const _AboutTile(),
-                    ],
+                        SettingsSection(
+                          title: l10n.settingsAppearanceSectionTitle,
+                          children: const [
+                            _ThemeModeTile(),
+                            _SeedColorTile(),
+                            _LanguageTile(),
+                          ],
+                        ),
+                        SettingsSection(
+                          title: l10n.settingsAppSectionTitle,
+                          children: [
+                            SettingsTile(
+                              key: SettingsPageKeys.notificationsTile,
+                              icon: Icons.notifications_none_rounded,
+                              title: l10n.settingsNotificationsTitle,
+                              subtitle: l10n.settingsNotificationsSubtitle,
+                              onTap: () => _showNotImplementedSnackBar(
+                                context,
+                                l10n.commonNotImplementedYet,
+                              ),
+                            ),
+                            SettingsTile(
+                              key: SettingsPageKeys.privacyTile,
+                              icon: Icons.lock_outline_rounded,
+                              title: l10n.settingsPrivacyTitle,
+                              subtitle: l10n.settingsPrivacySubtitle,
+                              onTap: () => _showNotImplementedSnackBar(
+                                context,
+                                l10n.commonNotImplementedYet,
+                              ),
+                            ),
+                            const _AboutTile(),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -196,6 +212,7 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
               showCalorieGoalCalculatorSheet(
                 context,
                 initialSettings: settings,
+                useRootNavigator: true,
               ),
             ),
     );
@@ -281,6 +298,7 @@ class _ThemeModeTile extends ConsumerWidget {
     unawaited(
       showModalBottomSheet<void>(
         context: context,
+        useRootNavigator: true,
         showDragHandle: true,
         builder: (sheetContext) {
           return SafeArea(
@@ -346,6 +364,7 @@ class _SeedColorTile extends ConsumerWidget {
     unawaited(
       showModalBottomSheet<void>(
         context: context,
+        useRootNavigator: true,
         showDragHandle: true,
         builder: (sheetContext) {
           return SafeArea(

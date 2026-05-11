@@ -433,6 +433,15 @@ void main() {
     await _tapCalorieOnboardingNext(tester);
     await _tapCalorieOnboardingNext(tester);
 
+    final startLaterOption = find.byKey(
+      CalorieGoalCalculatorSheetKeys.goalStartLaterOption,
+    );
+    await tester.ensureVisible(startLaterOption);
+    await tester.tap(startLaterOption);
+    await tester.pumpAndSettle();
+
+    await _tapCalorieOnboardingNext(tester);
+
     await tester.ensureVisible(find.text("Let's go"));
     await tester.tap(find.text("Let's go"));
     await tester.pump();
@@ -646,7 +655,7 @@ void main() {
     await tester.tap(find.text('Settings').hitTestable());
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettings);
-    expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('Settings'), findsWidgets);
 
     router.go(AppRoutes.homeSettingsAccount);
     await _pumpRouterTransition(tester);

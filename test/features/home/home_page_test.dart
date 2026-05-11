@@ -18,6 +18,7 @@ import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
+import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -226,6 +227,31 @@ CalorieWeekOverview _weekOverview(DateTime selectedDay) {
   );
 }
 
+Widget _defaultBranchBody(HomeTabType tab) {
+  return CustomScrollView(
+    slivers: [
+      HomeShellTabTopChrome(tab: tab),
+      const SliverFillRemaining(
+        hasScrollBody: false,
+        child: SizedBox(),
+      ),
+    ],
+  );
+}
+
+double _homeChromeOpacity(WidgetTester tester, Type chromeType) {
+  return tester
+      .widget<Opacity>(
+        find
+            .descendant(
+              of: find.byType(chromeType),
+              matching: find.byType(Opacity),
+            )
+            .first,
+      )
+      .opacity;
+}
+
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
@@ -236,6 +262,7 @@ CalorieWeekOverview _weekOverview(DateTime selectedDay) {
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   String initialLocation = AppRoutes.homeCalories,
+  Widget? branchBody,
   InventoryItemRepository? inventoryRepository,
   PreparedMealRepository? preparedMealRepository,
   InventoryItemsController? inventoryItemsController,
@@ -261,7 +288,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventory,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.inventory),
               ),
             ],
           ),
@@ -269,7 +297,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeCalories,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.diary),
               ),
             ],
           ),
@@ -277,7 +306,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventoryTemplates,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.cookbook),
               ),
             ],
           ),
@@ -285,7 +315,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeStatistics,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.statistics),
               ),
             ],
           ),
@@ -293,7 +324,8 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeSettings,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) =>
+                    branchBody ?? _defaultBranchBody(HomeTabType.settings),
               ),
             ],
           ),
@@ -402,6 +434,199 @@ void main() {
     expect(find.text('Today'), findsOneWidget);
     expect(find.text(formatCalendarHeaderDate(today, 'en')), findsOneWidget);
     expect(find.text('Week 1 day 7'), findsNothing);
+  });
+
+  testWidgets('home shell chrome collapses on scroll down and returns upward', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: Builder(
+          builder: (context) {
+            return CustomScrollView(
+              slivers: [
+                const HomeShellTabTopChrome(tab: HomeTabType.diary),
+                SliverList.builder(
+                  itemCount: 40,
+                  itemBuilder: (context, index) {
+                    return SizedBox(
+                      height: 72,
+                      child: Text('Row $index'),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
+    final initialBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -48));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final shiftedTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -172));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final collapsedBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    expect(shiftedTopOffset, lessThan(initialTopOffset));
+    expect(find.byType(HomeTopBar), findsNothing);
+    expect(collapsedBottomOpacity, lessThan(initialBottomOpacity));
+
+    await tester.drag(find.text('Row 8'), const Offset(0, 240));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    expect(find.byType(HomeTopBar), findsOneWidget);
+    final revealedTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
+    final revealedBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    expect(revealedTopOffset, greaterThan(shiftedTopOffset));
+    expect(revealedBottomOpacity, greaterThan(collapsedBottomOpacity));
+    expect(revealedBottomOpacity - collapsedBottomOpacity, greaterThan(0.5));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome ignores non-scrollable page drags', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: const CustomScrollView(
+          slivers: [
+            HomeShellTabTopChrome(tab: HomeTabType.diary),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: Text('Short content')),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    await tester.drag(
+      find.byType(CustomScrollView).first,
+      const Offset(0, -180),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    expect(find.byType(HomeTopBar), findsOneWidget);
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(initialBottomOpacity),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome ignores nested vertical scroll views', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellTabTopChrome(tab: HomeTabType.diary),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 480,
+                child: ListView.builder(
+                  key: const ValueKey('nested-home-scroll'),
+                  primary: false,
+                  itemCount: 30,
+                  itemBuilder: (context, index) {
+                    return SizedBox(
+                      height: 64,
+                      child: Text('Nested row $index'),
+                    );
+                  },
+                ),
+              ),
+            ),
+            SliverList.builder(
+              itemCount: 20,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  height: 72,
+                  child: Text('Outer row $index'),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialTopOffset = tester.getTopLeft(find.byType(HomeTopBar)).dy;
+    final initialBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    await tester.drag(find.text('Nested row 4'), const Offset(0, -220));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    expect(find.byType(HomeTopBar), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byType(HomeTopBar)).dy,
+      moreOrLessEquals(initialTopOffset),
+    );
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(initialBottomOpacity),
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('diary shell bar grows for very large accessibility text', (
@@ -598,6 +823,68 @@ void main() {
       scaffold.floatingActionButtonAnimator,
       FloatingActionButtonAnimator.noAnimation,
     );
+  });
+
+  testWidgets('inventory fab follows the bottom chrome while scrolling', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellTabTopChrome(tab: HomeTabType.inventory),
+            SliverList.builder(
+              itemCount: 40,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  height: 72,
+                  child: Text('Row $index'),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialFabTop = tester.getTopLeft(find.byType(InventoryActionFab)).dy;
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -220));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final collapsedFabTop = tester
+        .getTopLeft(
+          find.byType(InventoryActionFab),
+        )
+        .dy;
+
+    expect(collapsedFabTop, greaterThan(initialFabTop));
+
+    await tester.drag(find.text('Row 8'), const Offset(0, 240));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final revealedFabTop = tester
+        .getTopLeft(find.byType(InventoryActionFab))
+        .dy;
+
+    expect(revealedFabTop, lessThan(collapsedFabTop));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('inventory fab disappears immediately after leaving inventory', (
