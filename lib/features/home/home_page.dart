@@ -45,9 +45,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    _chromeVisibilityController = _HomeShellChromeVisibilityController(
-      onChanged: _refreshChrome,
-    );
+    _chromeVisibilityController = _HomeShellChromeVisibilityController();
   }
 
   @override
@@ -73,14 +71,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       _settingsBranchIndex => HomeTabType.settings,
       _ => HomeTabType.inventory, // coverage:ignore-line
     };
-  }
-
-  void _refreshChrome() {
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {});
   }
 
   List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
@@ -158,11 +148,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: HomeShellBottomChrome(
-                  visibility: _chromeVisibilityController.visibility,
+                child: ValueListenableBuilder<double>(
+                  valueListenable: _chromeVisibilityController,
                   child: HomeBottomNavBar(
                     entries: _navEntries(context, l10n),
                   ),
+                  builder: (context, visibility, bottomNavBar) {
+                    return HomeShellBottomChrome(
+                      visibility: visibility,
+                      child: bottomNavBar!,
+                    );
+                  },
                 ),
               ),
             ],
@@ -172,9 +168,15 @@ class _HomePageState extends ConsumerState<HomePage> {
         floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
         floatingActionButton: floatingActionButton == null
             ? const SizedBox.shrink()
-            : HomeShellFloatingActionButtonChrome(
-                visibility: _chromeVisibilityController.visibility,
+            : ValueListenableBuilder<double>(
+                valueListenable: _chromeVisibilityController,
                 child: floatingActionButton,
+                builder: (context, visibility, fab) {
+                  return HomeShellFloatingActionButtonChrome(
+                    visibility: visibility,
+                    child: fab!,
+                  );
+                },
               ),
       ),
     );
@@ -230,20 +232,14 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-class _HomeShellChromeVisibilityController {
-  _HomeShellChromeVisibilityController({required VoidCallback onChanged})
-    : _onChanged = onChanged;
+class _HomeShellChromeVisibilityController extends ValueNotifier<double> {
+  _HomeShellChromeVisibilityController() : super(1);
 
   static const _hideScrollDistance = 320;
   static const _revealScrollDistance = 140;
   static const _topRevealThreshold = 8;
 
-  final VoidCallback _onChanged;
-  double _visibility = 1;
-  bool _hasPendingRefresh = false;
-  bool _disposed = false;
-
-  double get visibility => _visibility;
+  double get visibility => value;
 
   bool handleScrollNotification(ScrollNotification notification) {
     if (notification.depth != 0 ||
@@ -268,10 +264,6 @@ class _HomeShellChromeVisibilityController {
     _setVisibility(1);
   }
 
-  void dispose() {
-    _disposed = true;
-  }
-
   void _updateFromScrollDelta(double scrollDelta) {
     if (scrollDelta == 0) {
       return;
@@ -280,7 +272,7 @@ class _HomeShellChromeVisibilityController {
     final scrollDistance = scrollDelta > 0
         ? _hideScrollDistance
         : _revealScrollDistance;
-    final nextVisibility = (_visibility - (scrollDelta / scrollDistance)).clamp(
+    final nextVisibility = (visibility - (scrollDelta / scrollDistance)).clamp(
       0.0,
       1.0,
     );
@@ -288,33 +280,12 @@ class _HomeShellChromeVisibilityController {
   }
 
   void _setVisibility(double value) {
-    if (_disposed) {
-      return;
-    }
-
     final targetVisibility = value.clamp(0.0, 1.0);
-    if ((_visibility - targetVisibility).abs() < 0.001) {
+    if ((visibility - targetVisibility).abs() < 0.001) {
       return;
     }
 
-    _visibility = targetVisibility;
-    _scheduleRefresh();
-  }
-
-  void _scheduleRefresh() {
-    if (_disposed || _hasPendingRefresh) {
-      return;
-    }
-
-    _hasPendingRefresh = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _hasPendingRefresh = false;
-      if (_disposed) {
-        return;
-      }
-
-      _onChanged();
-    });
+    this.value = targetVisibility;
   }
 }
 

@@ -90,7 +90,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   ProviderSubscription<AsyncValue<CalorieWeeklyCheckInViewModel>>?
   _weeklyCheckInSubscription;
   bool _didQueueDiaryIntro = false;
-  bool _hasPendingScrollActionRefresh = false;
   String? _hiddenWeeklyCheckInWindowKey;
 
   @override
@@ -113,7 +112,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       fireImmediately: true,
     );
     WidgetsBinding.instance.addObserver(this);
-    _diaryScrollController.addListener(_refreshScrollActions);
   }
 
   @override
@@ -122,9 +120,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     _inventoryItemsSubscription?.close();
     _weeklyCheckInSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
-    _diaryScrollController
-      ..removeListener(_refreshScrollActions)
-      ..dispose();
+    _diaryScrollController.dispose();
     _weeklyCheckInDialogs.dispose();
     super.dispose();
   }
@@ -342,15 +338,20 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                   ? AppSizes.homeShellBottomBarClearance
                   : 0),
           child: Center(
-            child: DiaryScrollShortcut(
-              showJumpToMeals:
-                  !_diaryScrollController.isManualScrolling &&
-                  _diaryScrollController.showJumpToMeals,
-              showScrollToTop:
-                  !_diaryScrollController.isManualScrolling &&
-                  _diaryScrollController.showScrollToTop,
-              onJumpToMeals: _diaryScrollController.scrollToMeals,
-              onScrollToTop: _diaryScrollController.scrollToTop,
+            child: ListenableBuilder(
+              listenable: _diaryScrollController,
+              builder: (context, _) {
+                return DiaryScrollShortcut(
+                  showJumpToMeals:
+                      !_diaryScrollController.isManualScrolling &&
+                      _diaryScrollController.showJumpToMeals,
+                  showScrollToTop:
+                      !_diaryScrollController.isManualScrolling &&
+                      _diaryScrollController.showScrollToTop,
+                  onJumpToMeals: _diaryScrollController.scrollToMeals,
+                  onScrollToTop: _diaryScrollController.scrollToTop,
+                );
+              },
             ),
           ),
         ),
@@ -518,22 +519,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       return;
     }
     showSkippedCalorieIntakeSaveFailedSnackBar(context);
-  }
-
-  void _refreshScrollActions() {
-    if (!mounted || _hasPendingScrollActionRefresh) {
-      return;
-    }
-
-    _hasPendingScrollActionRefresh = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _hasPendingScrollActionRefresh = false;
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {});
-    });
   }
 
   void _handleDiaryIntroTrigger(
