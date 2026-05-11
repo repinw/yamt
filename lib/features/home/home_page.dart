@@ -296,7 +296,7 @@ class HomePage extends ConsumerWidget {
     return Theme(
       data: homeTheme,
       child: Scaffold(
-        extendBody: currentTab != HomeTabType.settings,
+        extendBody: true,
         appBar: HomeTopBar(
           title: topBarTitle,
           subtitle: topBarSubtitle,

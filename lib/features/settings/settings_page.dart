@@ -43,7 +43,7 @@ class SettingsPage extends ConsumerWidget {
         padding: responsivePagePadding(
           context,
           top: AppSpacing.xl,
-          bottom: AppSpacing.xxxl,
+          bottom: homeShellPageBottomPadding(context),
         ),
         children: [
           Center(

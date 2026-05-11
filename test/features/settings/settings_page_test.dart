@@ -212,6 +212,15 @@ ProviderContainer _createSettingsContainer({
 
 Finder _settingsTile(Key key) => find.byKey(key);
 
+Future<void> _scrollToTile(WidgetTester tester, Key key) async {
+  await tester.scrollUntilVisible(
+    _settingsTile(key),
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}
+
 Future<void> _scrollToText(
   WidgetTester tester,
   String text, {
@@ -240,7 +249,8 @@ void main() {
     expect(find.byIcon(Icons.groups_2_outlined), findsOneWidget);
     expect(find.byKey(SettingsPageKeys.profileCard), findsOneWidget);
 
-    expect(find.text('Household'), findsOneWidget);
+    expect(_settingsTile(SettingsPageKeys.householdTile), findsOneWidget);
+    expect(find.text('Household'), findsNWidgets(2));
     expect(
       find.text('Invite members and manage shared access'),
       findsOneWidget,
@@ -600,6 +610,7 @@ void main() {
 
     expect(container.read(themeModeControllerProvider), ThemeMode.system);
 
+    await _scrollToTile(tester, SettingsPageKeys.themeTile);
     await tester.tap(_settingsTile(SettingsPageKeys.themeTile));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dark').last);
