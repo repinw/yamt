@@ -11,9 +11,9 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_goal_calculator_results.dart';
+    'calorie_goal_calculator_reset_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_goal_calculator_sheet.dart';
+    'calorie_goal_calculator_results.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -288,10 +288,9 @@ class _CalorieLearnedTdeeGoalSheetState
 
   Future<void> _openFullReset() async {
     Navigator.of(context).pop();
-    await showCalorieGoalCalculatorSheet(
+    await showCalorieGoalCalculatorResetSheet(
       context,
       initialSettings: widget.initialSettings,
-      preferLearnedTdee: false,
     );
   }
 

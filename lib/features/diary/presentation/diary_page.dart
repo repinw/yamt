@@ -28,6 +28,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';

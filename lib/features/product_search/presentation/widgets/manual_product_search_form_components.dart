@@ -17,7 +17,8 @@ import 'package:yamt/features/product_search/domain/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
 import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_models.dart';
+    'manual_product_search_models.dart'
+    as models;
 import 'package:yamt/l10n/app_localizations.dart';
 
 final TextInputFormatter manualProductSingleDecimalInputFormatter =
@@ -316,8 +317,8 @@ class ManualProductActionSelector extends StatelessWidget {
     super.key,
   });
 
-  final InventoryReceiptManualProductAction selectedAction;
-  final ValueChanged<InventoryReceiptManualProductAction>? onChanged;
+  final models.InventoryReceiptManualProductAction selectedAction;
+  final ValueChanged<models.InventoryReceiptManualProductAction>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -331,13 +332,13 @@ class ManualProductActionSelector extends StatelessWidget {
             onPressed: onChanged == null
                 ? null
                 : () => onChanged!(
-                    InventoryReceiptManualProductAction.addToInventory,
+                    models.InventoryReceiptManualProductAction.addToInventory,
                   ),
             style: _buttonStyle(
               context: context,
               isSelected:
                   selectedAction ==
-                  InventoryReceiptManualProductAction.addToInventory,
+                  models.InventoryReceiptManualProductAction.addToInventory,
             ),
             child: Text(l10n.inventoryManualAddResultActionInventory),
           ),
@@ -348,11 +349,14 @@ class ManualProductActionSelector extends StatelessWidget {
             key: const Key('receipt_review_manual_eat_action_button'),
             onPressed: onChanged == null
                 ? null
-                : () => onChanged!(InventoryReceiptManualProductAction.eatNow),
+                : () => onChanged!(
+                    models.InventoryReceiptManualProductAction.eatNow,
+                  ),
             style: _buttonStyle(
               context: context,
               isSelected:
-                  selectedAction == InventoryReceiptManualProductAction.eatNow,
+                  selectedAction ==
+                  models.InventoryReceiptManualProductAction.eatNow,
             ),
             child: Text(l10n.inventoryManualAddResultActionEat),
           ),
@@ -458,11 +462,12 @@ class OptionalNutritionComposer extends StatelessWidget {
 
   final String valueText;
   final InventoryAmountUnit selectedUnit;
-  final InventoryReceiptOptionalNutritionType? selectedType;
-  final List<InventoryReceiptOptionalNutritionType> availableTypes;
+  final models.InventoryReceiptOptionalNutritionType? selectedType;
+  final List<models.InventoryReceiptOptionalNutritionType> availableTypes;
   final ValueChanged<String?> onValueChanged;
   final ValueChanged<InventoryAmountUnit?> onUnitChanged;
-  final ValueChanged<InventoryReceiptOptionalNutritionType?> onTypeChanged;
+  final ValueChanged<models.InventoryReceiptOptionalNutritionType?>
+  onTypeChanged;
   final VoidCallback onApply;
   final VoidCallback onCancel;
 
@@ -518,29 +523,35 @@ class OptionalNutritionComposer extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               flex: 2,
-              child: FormBuilderDropdown<InventoryReceiptOptionalNutritionType>(
-                key: const Key(
-                  'receipt_review_manual_optional_nutrition_type_field',
-                ),
-                name: ManualProductSearchFormFieldName.optionalNutritionType,
-                initialValue: selectedType,
-                decoration: InputDecoration(
-                  labelText:
-                      l10n.inventoryReceiptReviewManualNutritionTypeLabel,
-                  border: const OutlineInputBorder(),
-                ),
-                items: [
-                  for (final type in availableTypes)
-                    DropdownMenuItem<InventoryReceiptOptionalNutritionType>(
-                      value: type,
-                      child: Text(
-                        _optionalNutritionTypeLabel(l10n, type),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+              child:
+                  FormBuilderDropdown<
+                    models.InventoryReceiptOptionalNutritionType
+                  >(
+                    key: const Key(
+                      'receipt_review_manual_optional_nutrition_type_field',
                     ),
-                ],
-                onChanged: onTypeChanged,
-              ),
+                    name:
+                        ManualProductSearchFormFieldName.optionalNutritionType,
+                    initialValue: selectedType,
+                    decoration: InputDecoration(
+                      labelText:
+                          l10n.inventoryReceiptReviewManualNutritionTypeLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: [
+                      for (final type in availableTypes)
+                        DropdownMenuItem<
+                          models.InventoryReceiptOptionalNutritionType
+                        >(
+                          value: type,
+                          child: Text(
+                            _optionalNutritionTypeLabel(l10n, type),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                    onChanged: onTypeChanged,
+                  ),
             ),
           ],
         ),
@@ -646,12 +657,12 @@ class ManualProductWeightFields extends StatelessWidget {
 
 String _optionalNutritionTypeLabel(
   AppLocalizations l10n,
-  InventoryReceiptOptionalNutritionType type,
+  models.InventoryReceiptOptionalNutritionType type,
 ) {
   return switch (type) {
-    InventoryReceiptOptionalNutritionType.polyunsaturatedFat =>
+    models.InventoryReceiptOptionalNutritionType.polyunsaturatedFat =>
       l10n.caloriesPer100PolyunsaturatedFatLabel,
-    InventoryReceiptOptionalNutritionType.fiber =>
+    models.InventoryReceiptOptionalNutritionType.fiber =>
       l10n.caloriesPer100FiberLabel,
   };
 }

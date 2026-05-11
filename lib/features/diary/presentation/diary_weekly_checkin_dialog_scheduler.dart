@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 
 /// Schedules work after the current frame.
 typedef DiaryPostFrameScheduler = void Function(VoidCallback callback);
