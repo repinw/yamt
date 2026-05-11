@@ -72,18 +72,18 @@ void main() {
       );
     });
 
-    test('Material widget feedback is managed by the app haptic layer', () {
-      expect(light.bottomNavigationBarTheme.enableFeedback, isFalse);
-      expect(light.filledButtonTheme.style?.enableFeedback, isFalse);
-      expect(light.outlinedButtonTheme.style?.enableFeedback, isFalse);
-      expect(light.elevatedButtonTheme.style?.enableFeedback, isFalse);
-      expect(light.textButtonTheme.style?.enableFeedback, isFalse);
-      expect(light.iconButtonTheme.style?.enableFeedback, isFalse);
-      expect(light.floatingActionButtonTheme.enableFeedback, isFalse);
-      expect(light.listTileTheme.enableFeedback, isFalse);
-      expect(light.popupMenuTheme.enableFeedback, isFalse);
-      expect(light.segmentedButtonTheme.style?.enableFeedback, isFalse);
-      expect(light.tooltipTheme.enableFeedback, isFalse);
+    test('Material widgets keep their built-in feedback available', () {
+      expect(light.bottomNavigationBarTheme.enableFeedback, isNull);
+      expect(light.filledButtonTheme.style?.enableFeedback, isNull);
+      expect(light.outlinedButtonTheme.style?.enableFeedback, isNull);
+      expect(light.elevatedButtonTheme.style?.enableFeedback, isNull);
+      expect(light.textButtonTheme.style?.enableFeedback, isNull);
+      expect(light.iconButtonTheme.style?.enableFeedback, isNull);
+      expect(light.floatingActionButtonTheme.enableFeedback, isNull);
+      expect(light.listTileTheme.enableFeedback, isNull);
+      expect(light.popupMenuTheme.enableFeedback, isNull);
+      expect(light.segmentedButtonTheme.style?.enableFeedback, isNull);
+      expect(light.tooltipTheme.enableFeedback, isNull);
     });
   });
 }

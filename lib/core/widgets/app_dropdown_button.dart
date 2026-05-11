@@ -2,6 +2,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
+import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 
 /// App-standard [DropdownButton] with Material feedback disabled centrally.
 class AppDropdownButton<T> extends StatelessWidget {
@@ -78,8 +79,13 @@ class AppDropdownButton<T> extends StatelessWidget {
       value: value,
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged,
-      onTap: onTap,
+      onChanged: AppHapticFeedback.wrapValueChanged<T?>(onChanged),
+      onTap: onChanged == null
+          ? onTap
+          : () {
+              AppHapticFeedback.lightImpact();
+              onTap?.call();
+            },
       elevation: elevation,
       style: style,
       underline: underline,
@@ -189,8 +195,13 @@ class AppDropdownButtonFormField<T> extends StatelessWidget {
       initialValue: initialValue,
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged,
-      onTap: onTap,
+      onChanged: AppHapticFeedback.wrapValueChanged<T?>(onChanged),
+      onTap: onChanged == null
+          ? onTap
+          : () {
+              AppHapticFeedback.lightImpact();
+              onTap?.call();
+            },
       elevation: elevation,
       style: style,
       icon: icon,

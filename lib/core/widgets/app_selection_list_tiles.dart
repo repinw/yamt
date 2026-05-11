@@ -3,6 +3,7 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 
 /// App-standard [CheckboxListTile] with Material feedback disabled centrally.
 class AppCheckboxListTile extends StatelessWidget {
@@ -93,7 +94,7 @@ class AppCheckboxListTile extends StatelessWidget {
     return CheckboxListTile(
       enableFeedback: false,
       value: value,
-      onChanged: onChanged,
+      onChanged: AppHapticFeedback.wrapValueChanged<bool?>(onChanged),
       mouseCursor: mouseCursor,
       activeColor: activeColor,
       fillColor: fillColor,
@@ -222,7 +223,7 @@ class AppRadioListTile<T> extends StatelessWidget {
       enableFeedback: false,
       value: value,
       groupValue: groupValue,
-      onChanged: onChanged,
+      onChanged: AppHapticFeedback.wrapValueChanged<T?>(onChanged),
       mouseCursor: mouseCursor,
       toggleable: toggleable,
       activeColor: activeColor,
@@ -407,7 +408,7 @@ class AppSwitchListTile extends StatelessWidget {
       return SwitchListTile.adaptive(
         enableFeedback: false,
         value: value,
-        onChanged: onChanged,
+        onChanged: AppHapticFeedback.wrapValueChanged<bool>(onChanged),
         activeColor: activeColor,
         activeThumbColor: activeThumbColor,
         activeTrackColor: activeTrackColor,
@@ -454,7 +455,7 @@ class AppSwitchListTile extends StatelessWidget {
     return SwitchListTile(
       enableFeedback: false,
       value: value,
-      onChanged: onChanged,
+      onChanged: AppHapticFeedback.wrapValueChanged<bool>(onChanged),
       activeColor: activeColor,
       activeThumbColor: activeThumbColor,
       activeTrackColor: activeTrackColor,

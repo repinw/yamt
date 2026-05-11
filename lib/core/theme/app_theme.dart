@@ -48,7 +48,6 @@ abstract final class AppTheme {
         selectedItemColor: colorScheme.primary,
         unselectedItemColor: colorScheme.onSurfaceVariant,
         elevation: 0,
-        enableFeedback: false,
       ),
       cardTheme: CardThemeData(
         color: cardColor,
@@ -61,7 +60,6 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          enableFeedback: false,
           padding: const EdgeInsets.symmetric(
             horizontal: AppThemeSpacing.xl,
             vertical: AppThemeSpacing.md,
@@ -74,7 +72,6 @@ abstract final class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          enableFeedback: false,
           padding: const EdgeInsets.symmetric(
             horizontal: AppThemeSpacing.xl,
             vertical: AppThemeSpacing.md,
@@ -88,24 +85,6 @@ abstract final class AppTheme {
           ),
         ),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(enableFeedback: false),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(enableFeedback: false),
-      ),
-      iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(enableFeedback: false),
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        enableFeedback: false,
-      ),
-      listTileTheme: const ListTileThemeData(enableFeedback: false),
-      popupMenuTheme: const PopupMenuThemeData(enableFeedback: false),
-      segmentedButtonTheme: const SegmentedButtonThemeData(
-        style: ButtonStyle(enableFeedback: false),
-      ),
-      tooltipTheme: const TooltipThemeData(enableFeedback: false),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppThemeRadius.md),

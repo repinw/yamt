@@ -2,6 +2,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
+import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 
 /// App-standard [InkWell] with Material feedback disabled centrally.
 class AppInkWell extends StatelessWidget {
@@ -80,9 +81,9 @@ class AppInkWell extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       enableFeedback: false,
-      onTap: onTap,
-      onDoubleTap: onDoubleTap,
-      onLongPress: onLongPress,
+      onTap: AppHapticFeedback.wrap(onTap),
+      onDoubleTap: AppHapticFeedback.wrap(onDoubleTap),
+      onLongPress: AppHapticFeedback.wrap(onLongPress),
       onLongPressUp: onLongPressUp,
       onTapDown: onTapDown,
       onTapUp: onTapUp,
@@ -196,9 +197,9 @@ class AppInkResponse extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkResponse(
       enableFeedback: false,
-      onTap: onTap,
-      onDoubleTap: onDoubleTap,
-      onLongPress: onLongPress,
+      onTap: AppHapticFeedback.wrap(onTap),
+      onDoubleTap: AppHapticFeedback.wrap(onDoubleTap),
+      onLongPress: AppHapticFeedback.wrap(onLongPress),
       onLongPressUp: onLongPressUp,
       onTapDown: onTapDown,
       onTapUp: onTapUp,
