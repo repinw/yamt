@@ -12,6 +12,7 @@ const _compactHomeTopBarHeight = 88.0;
 const _regularHomeTopBarWithSubtitleHeight = 86.0;
 const _compactHomeTopBarWithSubtitleHeight = 96.0;
 const _bottomNavTopIndicatorWidth = 20.0;
+const _shellChromeMotionDuration = Duration(milliseconds: 220);
 const double _homeTopBarTextVerticalPadding = AppSpacing.xxl;
 
 double _effectiveTextScale(
@@ -89,6 +90,10 @@ bool _shouldShowBottomNavLabels(
   return availablePerItem >= _bottomNavLabelMinItemWidth;
 }
 
+double _clampChromeVisibility(double visibility) {
+  return visibility.clamp(0.0, 1.0);
+}
+
 /// Tabs shown in the shared home shell.
 enum HomeTabType {
   /// Inventory.
@@ -105,6 +110,67 @@ enum HomeTabType {
 
   /// Settings.
   settings,
+}
+
+/// Collapses and fades the shared home top chrome.
+class HomeShellTopChrome extends StatelessWidget
+    implements PreferredSizeWidget {
+  /// The shell top chrome transition.
+  const HomeShellTopChrome({
+    required this.child,
+    required this.visibility,
+    super.key,
+  });
+
+  /// The visible app bar.
+  final PreferredSizeWidget child;
+
+  /// How much chrome is visible, from 0 to 1.
+  final double visibility;
+
+  @override
+  Size get preferredSize {
+    return Size.fromHeight(
+      child.preferredSize.height * _clampChromeVisibility(visibility),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statusBarInset = MediaQuery.paddingOf(context).top;
+    final toolbarHeight = child.preferredSize.height;
+    // Keep the glass surface painted behind the system status bar.
+    final expandedHeight = statusBarInset + toolbarHeight;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: _clampChromeVisibility(visibility)),
+      duration: _shellChromeMotionDuration,
+      curve: Curves.easeOutCubic,
+      child: child,
+      builder: (context, effectiveVisibility, chromeChild) {
+        return ClipRect(
+          child: OverflowBox(
+            alignment: Alignment.topCenter,
+            minHeight: expandedHeight,
+            maxHeight: expandedHeight,
+            child: IgnorePointer(
+              ignoring: effectiveVisibility < 0.05,
+              child: Opacity(
+                opacity: effectiveVisibility,
+                child: Transform.translate(
+                  offset: Offset(
+                    0,
+                    -toolbarHeight * (1 - effectiveVisibility),
+                  ),
+                  child: chromeChild,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 /// Top app bar used by the home shell pages.
@@ -319,6 +385,54 @@ class HomeNavEntry {
 
   /// The on tap.
   final VoidCallback onTap;
+}
+
+/// Collapses and fades the shared home bottom chrome.
+class HomeShellBottomChrome extends StatelessWidget {
+  /// The shell bottom chrome transition.
+  const HomeShellBottomChrome({
+    required this.child,
+    required this.visibility,
+    super.key,
+  });
+
+  /// The visible bottom chrome.
+  final Widget child;
+
+  /// How much chrome is visible, from 0 to 1.
+  final double visibility;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: _clampChromeVisibility(visibility)),
+      duration: _shellChromeMotionDuration,
+      curve: Curves.easeOutCubic,
+      child: child,
+      builder: (context, effectiveVisibility, chromeChild) {
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: effectiveVisibility,
+            child: IgnorePointer(
+              ignoring: effectiveVisibility < 0.05,
+              child: Opacity(
+                opacity: effectiveVisibility,
+                child: Transform.translate(
+                  offset: Offset(
+                    0,
+                    AppSizes.homeShellBottomBarClearance *
+                        (1 - effectiveVisibility),
+                  ),
+                  child: chromeChild,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 /// Bottom glass navigation bar used by the home shell pages.

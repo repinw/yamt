@@ -127,6 +127,7 @@ void main() {
     );
     await gesture.moveBy(const Offset(0, -80));
     await tester.pump();
+    await tester.pump();
 
     expect(find.text('To diary').hitTestable(), findsNothing);
 

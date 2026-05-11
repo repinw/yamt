@@ -84,6 +84,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   ProviderSubscription<AsyncValue<CalorieWeeklyCheckInViewModel>>?
   _weeklyCheckInSubscription;
   bool _didQueueDiaryIntro = false;
+  bool _hasPendingScrollActionRefresh = false;
   String? _hiddenWeeklyCheckInWindowKey;
 
   @override
@@ -493,10 +494,19 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   }
 
   void _refreshScrollActions() {
-    if (!mounted) {
+    if (!mounted || _hasPendingScrollActionRefresh) {
       return;
     }
-    setState(() {});
+
+    _hasPendingScrollActionRefresh = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _hasPendingScrollActionRefresh = false;
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {});
+    });
   }
 
   void _handleDiaryIntroTrigger(

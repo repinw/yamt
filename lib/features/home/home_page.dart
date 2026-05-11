@@ -40,22 +40,44 @@ const _settingsBranchIndex = 4;
   ReceiptBatchFlowController,
   receiptCameraSupported,
 ])
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   /// The home page.
   const HomePage({required this.navigationShell, super.key});
 
   /// The navigation shell.
   final StatefulNavigationShell navigationShell;
 
+  @override
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  late final _HomeShellChromeVisibilityController _chromeVisibilityController;
+
+  @override
+  void initState() {
+    super.initState();
+    _chromeVisibilityController = _HomeShellChromeVisibilityController(
+      onChanged: _refreshChrome,
+    );
+  }
+
+  @override
+  void dispose() {
+    _chromeVisibilityController.dispose();
+    super.dispose();
+  }
+
   void _onTabTapped(int index) {
-    navigationShell.goBranch(
+    _chromeVisibilityController.reveal();
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
   HomeTabType _currentTab() {
-    return switch (navigationShell.currentIndex) {
+    return switch (widget.navigationShell.currentIndex) {
       _inventoryBranchIndex => HomeTabType.inventory,
       _diaryBranchIndex => HomeTabType.diary,
       _cookbookBranchIndex => HomeTabType.cookbook,
@@ -63,6 +85,14 @@ class HomePage extends ConsumerWidget {
       _settingsBranchIndex => HomeTabType.settings,
       _ => HomeTabType.inventory, // coverage:ignore-line
     };
+  }
+
+  void _refreshChrome() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {});
   }
 
   String _titleForTab(
@@ -257,7 +287,7 @@ class HomePage extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final localeName = Localizations.localeOf(context).toLanguageTag();
     final colors = Theme.of(context).colorScheme;
@@ -296,33 +326,42 @@ class HomePage extends ConsumerWidget {
     return Theme(
       data: homeTheme,
       child: Scaffold(
-        extendBody: true,
-        appBar: HomeTopBar(
-          title: topBarTitle,
-          subtitle: topBarSubtitle,
-          middle: _buildMiddle(currentTab, burnWeekRunState),
-          titleColor: colors.primary,
-          compact: compactHomeChrome,
-          preferredHeight: HomeTopBar.preferredHeightFor(
-            context,
+        extendBody: currentTab != HomeTabType.settings,
+        appBar: HomeShellTopChrome(
+          visibility: _chromeVisibilityController.visibility,
+          child: HomeTopBar(
+            title: topBarTitle,
+            subtitle: topBarSubtitle,
+            middle: _buildMiddle(currentTab, burnWeekRunState),
+            titleColor: colors.primary,
             compact: compactHomeChrome,
-            hasSubtitle: topBarSubtitle != null,
-          ),
-          actions: _buildActions(
-            context,
-            ref,
-            l10n,
-            selectionState,
-            compactHomeChrome,
-            diaryCalendarState,
+            preferredHeight: HomeTopBar.preferredHeightFor(
+              context,
+              compact: compactHomeChrome,
+              hasSubtitle: topBarSubtitle != null,
+            ),
+            actions: _buildActions(
+              context,
+              ref,
+              l10n,
+              selectionState,
+              compactHomeChrome,
+              diaryCalendarState,
+            ),
           ),
         ),
-        body: navigationShell,
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _chromeVisibilityController.handleScrollNotification,
+          child: widget.navigationShell,
+        ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
         floatingActionButton: floatingActionButton ?? const SizedBox.shrink(),
-        bottomNavigationBar: HomeBottomNavBar(
-          entries: _navEntries(context, l10n),
+        bottomNavigationBar: HomeShellBottomChrome(
+          visibility: _chromeVisibilityController.visibility,
+          child: HomeBottomNavBar(
+            entries: _navEntries(context, l10n),
+          ),
         ),
       ),
     );
@@ -392,6 +431,91 @@ class HomePage extends ConsumerWidget {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _HomeShellChromeVisibilityController {
+  _HomeShellChromeVisibilityController({required VoidCallback onChanged})
+    : _onChanged = onChanged;
+
+  static const _hideScrollDistance = 320.0;
+  static const _revealScrollDistance = 140.0;
+  static const _topRevealThreshold = 8.0;
+
+  final VoidCallback _onChanged;
+  double _visibility = 1.0;
+  bool _hasPendingRefresh = false;
+  bool _disposed = false;
+
+  double get visibility => _visibility;
+
+  bool handleScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+
+    if (notification is ScrollUpdateNotification &&
+        notification.scrollDelta != null) {
+      _updateFromScrollDelta(notification.scrollDelta!);
+    } else if (notification.metrics.pixels <=
+        notification.metrics.minScrollExtent + _topRevealThreshold) {
+      reveal();
+    }
+
+    return false;
+  }
+
+  void reveal() {
+    _setVisibility(1);
+  }
+
+  void dispose() {
+    _disposed = true;
+  }
+
+  void _updateFromScrollDelta(double scrollDelta) {
+    if (scrollDelta == 0) {
+      return;
+    }
+
+    final scrollDistance = scrollDelta > 0
+        ? _hideScrollDistance
+        : _revealScrollDistance;
+    final nextVisibility = (_visibility - (scrollDelta / scrollDistance)).clamp(
+      0.0,
+      1.0,
+    );
+    _setVisibility(nextVisibility);
+  }
+
+  void _setVisibility(double value) {
+    if (_disposed) {
+      return;
+    }
+
+    final targetVisibility = value.clamp(0.0, 1.0);
+    if ((_visibility - targetVisibility).abs() < 0.001) {
+      return;
+    }
+
+    _visibility = targetVisibility;
+    _scheduleRefresh();
+  }
+
+  void _scheduleRefresh() {
+    if (_disposed || _hasPendingRefresh) {
+      return;
+    }
+
+    _hasPendingRefresh = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _hasPendingRefresh = false;
+      if (_disposed) {
+        return;
+      }
+
+      _onChanged();
+    });
   }
 }
 

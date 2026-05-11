@@ -236,6 +236,7 @@ CalorieWeekOverview _weekOverview(DateTime selectedDay) {
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   String initialLocation = AppRoutes.homeCalories,
+  Widget? branchBody,
   InventoryItemRepository? inventoryRepository,
   PreparedMealRepository? preparedMealRepository,
   InventoryItemsController? inventoryItemsController,
@@ -261,7 +262,7 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventory,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) => branchBody ?? const SizedBox(),
               ),
             ],
           ),
@@ -269,7 +270,7 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeCalories,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) => branchBody ?? const SizedBox(),
               ),
             ],
           ),
@@ -277,7 +278,7 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventoryTemplates,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) => branchBody ?? const SizedBox(),
               ),
             ],
           ),
@@ -285,7 +286,7 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeStatistics,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) => branchBody ?? const SizedBox(),
               ),
             ],
           ),
@@ -293,7 +294,7 @@ Widget _buildHarness({
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeSettings,
-                builder: (context, state) => const SizedBox(),
+                builder: (context, state) => branchBody ?? const SizedBox(),
               ),
             ],
           ),
@@ -402,6 +403,104 @@ void main() {
     expect(find.text('Today'), findsOneWidget);
     expect(find.text(formatCalendarHeaderDate(today, 'en')), findsOneWidget);
     expect(find.text('Week 1 day 7'), findsNothing);
+  });
+
+  testWidgets('home shell chrome collapses on scroll down and returns upward', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: ListView.builder(
+          itemCount: 40,
+          itemBuilder: (context, index) {
+            return SizedBox(
+              height: 72,
+              child: Text('Row $index'),
+            );
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    double chromeOpacity(Type chromeType) {
+      return tester
+          .widget<Opacity>(
+            find
+                .descendant(
+                  of: find.byType(chromeType),
+                  matching: find.byType(Opacity),
+                )
+                .first,
+          )
+          .opacity;
+    }
+
+    final initialTopOpacity = chromeOpacity(HomeShellTopChrome);
+    final initialBottomOpacity = chromeOpacity(HomeShellBottomChrome);
+    final initialTopHeight = tester
+        .widget<HomeShellTopChrome>(find.byType(HomeShellTopChrome))
+        .preferredSize
+        .height;
+    final initialBottomHeight = tester
+        .getSize(
+          find.byType(HomeShellBottomChrome),
+        )
+        .height;
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -220));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final collapsedTopOpacity = chromeOpacity(HomeShellTopChrome);
+    final collapsedBottomOpacity = chromeOpacity(HomeShellBottomChrome);
+    final collapsedTopHeight = tester
+        .widget<HomeShellTopChrome>(find.byType(HomeShellTopChrome))
+        .preferredSize
+        .height;
+    final collapsedBottomHeight = tester
+        .getSize(
+          find.byType(HomeShellBottomChrome),
+        )
+        .height;
+
+    expect(collapsedTopOpacity, lessThan(initialTopOpacity));
+    expect(collapsedBottomOpacity, lessThan(initialBottomOpacity));
+    expect(collapsedTopHeight, lessThan(initialTopHeight));
+    expect(collapsedBottomHeight, lessThan(initialBottomHeight));
+
+    await tester.drag(find.text('Row 8'), const Offset(0, 90));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final revealedTopOpacity = chromeOpacity(HomeShellTopChrome);
+    final revealedBottomOpacity = chromeOpacity(HomeShellBottomChrome);
+    final revealedTopHeight = tester
+        .widget<HomeShellTopChrome>(find.byType(HomeShellTopChrome))
+        .preferredSize
+        .height;
+    final revealedBottomHeight = tester
+        .getSize(
+          find.byType(HomeShellBottomChrome),
+        )
+        .height;
+
+    expect(revealedTopOpacity, greaterThan(collapsedTopOpacity));
+    expect(revealedBottomOpacity, greaterThan(collapsedBottomOpacity));
+    expect(revealedTopHeight, greaterThan(collapsedTopHeight));
+    expect(revealedBottomHeight, greaterThan(collapsedBottomHeight));
+    expect(revealedTopOpacity - collapsedTopOpacity, greaterThan(0.5));
+    expect(revealedBottomOpacity - collapsedBottomOpacity, greaterThan(0.5));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('diary shell bar grows for very large accessibility text', (
