@@ -94,22 +94,22 @@ class CalorieGoalOnboardingFinishFlow {
     final runWeekNumber = existingSettings.hasLearnedTdee
         ? burnWeekFirstGameRunWeekNumber
         : burnWeekLearningRunWeekNumber;
-    final burnWeekStarted = await _applyBurnWeekStart(
+    final goalSaved = await _goalController.saveCalculatedGoal(
+      request.profile,
+      goalStartDate: request.goalStartDate,
+      allowFutureGoalStart: true,
+      countGoalStartDayForLearning: request.countGoalStartDayForLearning,
+    );
+    if (!goalSaved || !_isMounted()) {
+      return false;
+    }
+    return _applyBurnWeekStart(
       goalStartDate: request.goalStartDate,
       now: referenceNow,
       dailyGoalKcal: request.dailyGoalKcal,
       runWeekNumber: runWeekNumber,
       catchUpEstimate: request.catchUpEstimate,
       placeholderName: request.placeholderName,
-    );
-    if (!burnWeekStarted || !_isMounted()) {
-      return false;
-    }
-    return _goalController.saveCalculatedGoal(
-      request.profile,
-      goalStartDate: request.goalStartDate,
-      allowFutureGoalStart: true,
-      countGoalStartDayForLearning: request.countGoalStartDayForLearning,
     );
   }
 

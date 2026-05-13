@@ -127,6 +127,29 @@ void main() {
     expect(harness.logRepository.entries, isEmpty);
   });
 
+  testWidgets('shows failure snackbar when calculated goal save fails', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboarding(tester);
+    await _goToStartDateStep(tester);
+
+    await tester.tap(
+      find.byKey(CalorieGoalOnboardingKeys.goalStartLaterOption),
+    );
+    await tester.pumpAndSettle();
+    await _tapNext(tester);
+
+    harness.settingsRepository.saveShouldFail = true;
+    await tester.tap(find.text("Let's go"));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Could not save the calculated calorie target.'),
+      findsOneWidget,
+    );
+    expect(find.text("Let's go"), findsOneWidget);
+  });
+
   testWidgets('blocks personal info step and shows age and height errors', (
     tester,
   ) async {

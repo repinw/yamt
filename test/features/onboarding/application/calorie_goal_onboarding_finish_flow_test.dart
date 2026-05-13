@@ -477,9 +477,51 @@ void main() {
       );
 
       expect(saved, isFalse);
-      expect(saveCallCount, 0);
+      expect(saveCallCount, 1);
       expect(runStateRepository.state, const BurnWeekRunState.initial());
+      expect((await settingsRepository.readSettings()).hasGoal, isTrue);
     });
+
+    test(
+      'does not start Burn Week or write placeholders when goal save fails',
+      () async {
+        final now = DateTime(2026, 4, 22, 12);
+        final settingsRepository = FakeCalorieSettingsRepository()
+          ..saveShouldFail = true;
+        final logRepository = FakeCalorieLogRepository(
+          initialEntries: <CalorieEntry>[
+            _todayLunchEntry(now),
+          ],
+        );
+        final runStateRepository = _FakeBurnWeekRunStateRepository(
+          const BurnWeekRunState.initial(),
+        );
+        addTearDown(settingsRepository.dispose);
+        addTearDown(logRepository.dispose);
+        final container = _buildHarness(
+          settingsRepository: settingsRepository,
+          logRepository: logRepository,
+          runStateRepository: runStateRepository,
+        );
+
+        await _primeHarness(container);
+
+        final saved = await _saveOnboardingGoal(
+          container,
+          goalStartDate: now,
+          catchUpEstimate: CalorieGoalOnboardingCatchUpEstimate.normal,
+          now: now,
+        );
+
+        expect(saved, isFalse);
+        expect(runStateRepository.state, const BurnWeekRunState.initial());
+        expect(
+          logRepository.entries.where((e) => e.name == _placeholderName),
+          isEmpty,
+        );
+        expect((await settingsRepository.readSettings()).hasGoal, isFalse);
+      },
+    );
 
     test('aborts when unmounted after reading settings', () async {
       final settingsRepository = FakeCalorieSettingsRepository();
@@ -586,7 +628,7 @@ void main() {
         logRepository.entries.where((e) => e.name == _placeholderName),
         isEmpty,
       );
-      expect((await settingsRepository.readSettings()).hasGoal, isFalse);
+      expect((await settingsRepository.readSettings()).hasGoal, isTrue);
     });
 
     test('same-day low catch-up keeps placeholders optional', () async {

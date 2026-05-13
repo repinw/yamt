@@ -153,13 +153,14 @@ Generated Riverpod files. They should not be edited manually.
 2. `CalorieOnboardingFinishHandler` reads the calculated profile and final
    daily kcal goal.
 3. `CalorieGoalOnboardingFinishFlow.saveGoal` receives a
-   `CalorieGoalOnboardingFinishRequest` and applies Burn Week setup before
-   saving the calculated goal.
-4. The goal controller saves the calculated goal with the selected start date and
-   optional `countGoalStartDayForLearning` flag.
-5. On success, onboarding writes the completion marker.
-6. The wizard allows route exit and returns to the previous route or diary home.
-7. On failure, saving state is reset and a localized failure snackbar is shown.
+   `CalorieGoalOnboardingFinishRequest`.
+4. The goal controller first saves the calculated goal with the selected start
+   date and optional `countGoalStartDayForLearning` flag.
+5. After the goal is saved, onboarding applies Burn Week setup and optional
+   catch-up placeholder entries.
+6. On success, onboarding writes the completion marker.
+7. The wizard allows route exit and returns to the previous route or diary home.
+8. On failure, saving state is reset and a localized failure snackbar is shown.
 
 ### Starting Today With Exact Tracking
 
