@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/debug/calories/burn_week_mock_page.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/presentation/burn_week_mock_page.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../support/fake_calories_repositories.dart';
+import '../../features/calories/support/fake_calories_repositories.dart';
 
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,

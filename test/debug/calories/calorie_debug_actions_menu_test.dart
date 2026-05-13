@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/debug/calories/calorie_debug_actions_menu.dart';
+import 'package:yamt/debug/calories/calorie_debug_keys.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_debug_actions_menu.dart';
-import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
@@ -14,7 +13,7 @@ import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../../support/fake_calories_repositories.dart';
+import '../../features/calories/support/fake_calories_repositories.dart';
 
 void main() {
   testWidgets('opens app bar debug menu and prints calorie dump', (
@@ -23,21 +22,21 @@ void main() {
     await _pumpDebugMenu(tester);
 
     await tester.tap(
-      find.byKey(CaloriesPageKeys.calorieDebugActionsMenuButton),
+      find.byKey(CalorieDebugKeys.actionsMenuButton),
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(CaloriesPageKeys.calorieDebugDumpButton), findsOneWidget);
+    expect(find.byKey(CalorieDebugKeys.debugDumpButton), findsOneWidget);
     expect(
-      find.byKey(CaloriesPageKeys.calorieSettingsDebugDumpButton),
+      find.byKey(CalorieDebugKeys.settingsDebugDumpButton),
       findsOneWidget,
     );
     expect(
-      find.byKey(CaloriesPageKeys.calorieWeeklyCheckInDebugDumpButton),
+      find.byKey(CalorieDebugKeys.weeklyCheckInDebugDumpButton),
       findsOneWidget,
     );
 
-    await tester.tap(find.byKey(CaloriesPageKeys.calorieDebugDumpButton));
+    await tester.tap(find.byKey(CalorieDebugKeys.debugDumpButton));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Printed calorie debug table'), findsOneWidget);
@@ -54,10 +53,10 @@ void main() {
     await _pumpDebugMenu(tester, logRepository: logRepository);
 
     await tester.tap(
-      find.byKey(CaloriesPageKeys.calorieDebugActionsMenuButton),
+      find.byKey(CalorieDebugKeys.actionsMenuButton),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CaloriesPageKeys.calorieDebugDumpButton));
+    await tester.tap(find.byKey(CalorieDebugKeys.debugDumpButton));
     await tester.pumpAndSettle();
 
     expect(find.text('Could not print calorie debug table.'), findsOneWidget);
@@ -70,7 +69,7 @@ void main() {
 
     await _selectDebugAction(
       tester,
-      CaloriesPageKeys.calorieSettingsDebugDumpButton,
+      CalorieDebugKeys.settingsDebugDumpButton,
     );
 
     expect(
@@ -80,7 +79,7 @@ void main() {
 
     await _selectDebugAction(
       tester,
-      CaloriesPageKeys.calorieWeeklyCheckInDebugDumpButton,
+      CalorieDebugKeys.weeklyCheckInDebugDumpButton,
     );
 
     expect(
@@ -92,7 +91,7 @@ void main() {
 
 Future<void> _selectDebugAction(WidgetTester tester, Key actionKey) async {
   await tester.tap(
-    find.byKey(CaloriesPageKeys.calorieDebugActionsMenuButton),
+    find.byKey(CalorieDebugKeys.actionsMenuButton),
   );
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(actionKey));
