@@ -1,7 +1,7 @@
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/domain/'
     'auth_profile_setup_preferences.dart';
-import 'package:yamt/features/calories/domain/'
+import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 
 class MemoryAppPreferences implements AppPreferences {

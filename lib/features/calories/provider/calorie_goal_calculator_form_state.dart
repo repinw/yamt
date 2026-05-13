@@ -1,7 +1,6 @@
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
 
 /// Defines calorie calculator field error.
 enum CalorieCalculatorFieldError {
@@ -25,9 +24,6 @@ class CalorieGoalCalculatorFormState {
     required this.goalMode,
     required this.goalSpeedKgPerWeekText,
     required this.lastNonMaintainGoalSpeedText,
-    required this.onboardingStartNow,
-    required this.onboardingTodayTracking,
-    required this.onboardingCatchUpEstimate,
     required this.weightError,
     required this.targetWeightError,
     required this.heightError,
@@ -64,9 +60,6 @@ class CalorieGoalCalculatorFormState {
       goalMode: profile.goalMode,
       goalSpeedKgPerWeekText: normalizedGoalSpeedText,
       lastNonMaintainGoalSpeedText: preservedGoalSpeedText,
-      onboardingStartNow: true,
-      onboardingTodayTracking: CalorieGoalOnboardingTodayTracking.exact,
-      onboardingCatchUpEstimate: CalorieGoalOnboardingCatchUpEstimate.normal,
     );
   }
 
@@ -79,9 +72,6 @@ class CalorieGoalCalculatorFormState {
     required CalorieGoalMode goalMode,
     required String goalSpeedKgPerWeekText,
     required String lastNonMaintainGoalSpeedText,
-    required bool onboardingStartNow,
-    required CalorieGoalOnboardingTodayTracking onboardingTodayTracking,
-    required CalorieGoalOnboardingCatchUpEstimate onboardingCatchUpEstimate,
     CalorieCalculatorSex? sex,
     bool isSaving = false,
   }) {
@@ -124,9 +114,6 @@ class CalorieGoalCalculatorFormState {
       goalMode: goalMode,
       goalSpeedKgPerWeekText: goalSpeedKgPerWeekText,
       lastNonMaintainGoalSpeedText: lastNonMaintainGoalSpeedText,
-      onboardingStartNow: onboardingStartNow,
-      onboardingTodayTracking: onboardingTodayTracking,
-      onboardingCatchUpEstimate: onboardingCatchUpEstimate,
       sexError: sexError,
       weightError: weightError,
       targetWeightError: targetWeightError,
@@ -169,15 +156,6 @@ class CalorieGoalCalculatorFormState {
 
   /// The last non maintain goal speed text.
   final String lastNonMaintainGoalSpeedText;
-
-  /// Whether onboarding starts today.
-  final bool onboardingStartNow;
-
-  /// How onboarding should treat today's food.
-  final CalorieGoalOnboardingTodayTracking onboardingTodayTracking;
-
-  /// Same-day onboarding rough eaten estimate.
-  final CalorieGoalOnboardingCatchUpEstimate onboardingCatchUpEstimate;
 
   /// The weight error.
   final CalorieCalculatorFieldError? weightError;
@@ -245,9 +223,6 @@ class CalorieGoalCalculatorFormState {
     CalorieGoalMode? goalMode,
     String? goalSpeedKgPerWeekText,
     String? lastNonMaintainGoalSpeedText,
-    bool? onboardingStartNow,
-    CalorieGoalOnboardingTodayTracking? onboardingTodayTracking,
-    CalorieGoalOnboardingCatchUpEstimate? onboardingCatchUpEstimate,
     bool? isSaving,
   }) {
     return CalorieGoalCalculatorFormState._create(
@@ -262,11 +237,6 @@ class CalorieGoalCalculatorFormState {
           goalSpeedKgPerWeekText ?? this.goalSpeedKgPerWeekText,
       lastNonMaintainGoalSpeedText:
           lastNonMaintainGoalSpeedText ?? this.lastNonMaintainGoalSpeedText,
-      onboardingStartNow: onboardingStartNow ?? this.onboardingStartNow,
-      onboardingTodayTracking:
-          onboardingTodayTracking ?? this.onboardingTodayTracking,
-      onboardingCatchUpEstimate:
-          onboardingCatchUpEstimate ?? this.onboardingCatchUpEstimate,
       isSaving: isSaving ?? this.isSaving,
     );
   }

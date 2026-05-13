@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
-import 'package:yamt/features/calories/domain/onboarding_catch_up_calculator.dart';
+import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.dart';
+import 'package:yamt/features/onboarding/domain/onboarding_catch_up_calculator.dart';
 
 void main() {
   group('calculateOnboardingCatchUpKcal', () {

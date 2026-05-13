@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/features/calorie_goal/presentation/widgets/calorie_goal_calculator_results.dart';
+import 'package:yamt/features/calorie_goal/presentation/widgets/calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -14,11 +16,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_goal_calculator_results.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_food_tracking_dialog.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/'

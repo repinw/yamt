@@ -18,8 +18,6 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -27,11 +25,14 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/onboarding/domain/'
+    'calorie_goal_onboarding_preferences.dart';
+import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
+import 'package:yamt/features/onboarding/provider/'
+    'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 
@@ -434,7 +435,7 @@ void main() {
     await _tapCalorieOnboardingNext(tester);
 
     final startLaterOption = find.byKey(
-      CalorieGoalCalculatorSheetKeys.goalStartLaterOption,
+      CalorieGoalOnboardingKeys.goalStartLaterOption,
     );
     await tester.ensureVisible(startLaterOption);
     await tester.tap(startLaterOption);

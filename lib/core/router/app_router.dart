@@ -17,13 +17,9 @@ import 'package:yamt/features/calories/presentation/'
     'burn_week_mock_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/'
-    'calorie_goal_onboarding_page.dart';
-import 'package:yamt/features/calories/presentation/'
     'calorie_health_trends_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_controller.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -46,6 +42,10 @@ import 'package:yamt/features/meal_templates/presentation/'
     'meal_templates_page.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
+import 'package:yamt/features/onboarding/presentation/'
+    'calorie_goal_onboarding_page.dart';
+import 'package:yamt/features/onboarding/provider/'
+    'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';

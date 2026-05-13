@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/'
+import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 
 part 'calorie_goal_onboarding_completed_provider.g.dart';
@@ -28,18 +28,16 @@ FutureOr<bool> calorieGoalOnboardingCompleted(Ref ref) async {
     return true;
   }
 
-  final settings = await ref
-      .watch(calorieSettingsRepositoryProvider)
-      .readSettings();
+  final settingsRepository = ref.watch(calorieSettingsRepositoryProvider);
+  final settings = await settingsRepository.readSettings();
+  if (!ref.mounted) {
+    return false;
+  }
   if (!settings.hasGoal) {
     return false;
   }
 
-  await markCalorieGoalOnboardingCompleted(
-    ref,
-    userId: userId,
-    invalidate: false,
-  );
+  await _writeCompletionMarker(preferences, userId);
   return true;
 }
 
@@ -55,12 +53,27 @@ Future<void> markCalorieGoalOnboardingCompleted(
   }
 
   final preferences = ref.read(appPreferencesProvider);
-  await preferences.setString(
-    calorieGoalOnboardingKeyForUser(resolvedUserId),
-    calorieGoalOnboardingCompletedValue,
-  );
+  await _writeCompletionMarker(preferences, resolvedUserId);
   if (invalidate && ref.mounted) {
     ref.invalidate(calorieGoalOnboardingCompletedProvider);
+  }
+}
+
+/// Mark calorie goal onboarding completed from a provider container.
+Future<void> markCalorieGoalOnboardingCompletedFromContainer(
+  ProviderContainer container, {
+  String? userId,
+  bool invalidate = true,
+}) async {
+  final resolvedUserId = userId ?? _currentUserIdFromContainer(container);
+  if (resolvedUserId == null || resolvedUserId.isEmpty) {
+    return;
+  }
+
+  final preferences = container.read(appPreferencesProvider);
+  await _writeCompletionMarker(preferences, resolvedUserId);
+  if (invalidate) {
+    container.invalidate(calorieGoalOnboardingCompletedProvider);
   }
 }
 
@@ -69,9 +82,27 @@ bool _hasCompletionMarker(AppPreferences preferences, String userId) {
       calorieGoalOnboardingCompletedValue;
 }
 
+Future<void> _writeCompletionMarker(
+  AppPreferences preferences,
+  String userId,
+) {
+  return preferences.setString(
+    calorieGoalOnboardingKeyForUser(userId),
+    calorieGoalOnboardingCompletedValue,
+  );
+}
+
 String? _currentUserId(Ref ref) {
   try {
     return _userIdFromAuthState(ref.read(authStateChangesProvider));
+  } on Object catch (_) {
+    return null;
+  }
+}
+
+String? _currentUserIdFromContainer(ProviderContainer container) {
+  try {
+    return _userIdFromAuthState(container.read(authStateChangesProvider));
   } on Object catch (_) {
     return null;
   }
