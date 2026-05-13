@@ -182,7 +182,7 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
               followerAnchor: Alignment.bottomRight,
               child: InventoryExpandedFabMenu(
                 actions: _buildActions(
-                  context: overlayContext,
+                  context: context,
                   l10n: l10n,
                   isCameraEnabled: isCameraEnabled,
                 ),

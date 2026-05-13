@@ -8,14 +8,19 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/presentation/'
+    'inventory_receipt_review_page.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -30,7 +35,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 Widget _buildHarness({
   bool embedded = true,
   bool isCameraSupported = true,
+  ReceiptCaptureFlowController Function()? receiptCaptureControllerBuilder,
   ValueChanged<Object?>? onManualAddRouteExtra,
+  ValueChanged<Object?>? onReceiptReviewRouteExtra,
 }) {
   final routeObserver = RouteObserver<ModalRoute<void>>();
   final router = GoRouter(
@@ -60,6 +67,13 @@ Widget _buildHarness({
           return const SizedBox();
         },
       ),
+      GoRoute(
+        path: AppRoutes.homeInventoryReceiptReview,
+        builder: (context, state) {
+          onReceiptReviewRouteExtra?.call(state.extra);
+          return const Scaffold(body: Text('Receipt review route'));
+        },
+      ),
     ],
   );
 
@@ -67,7 +81,8 @@ Widget _buildHarness({
     overrides: <Override>[
       appRouteObserverProvider.overrideWithValue(routeObserver),
       receiptCaptureFlowControllerProvider.overrideWith(
-        _RecordingReceiptCaptureFlowController.new,
+        receiptCaptureControllerBuilder ??
+            _RecordingReceiptCaptureFlowController.new,
       ),
       receiptBatchFlowControllerProvider.overrideWith(
         _RecordingReceiptBatchFlowController.new,
@@ -181,6 +196,37 @@ void main() {
       expect(
         manualAddRouteExtra,
         InventoryManualAddInitialAction.aiSuggestion,
+      );
+    });
+
+    testWidgets('camera action opens receipt review after menu closes', (
+      tester,
+    ) async {
+      Object? receiptReviewRouteExtra;
+
+      await tester.pumpWidget(
+        _buildHarness(
+          embedded: false,
+          receiptCaptureControllerBuilder:
+              _CompletedReceiptCaptureFlowController.new,
+          onReceiptReviewRouteExtra: (extra) {
+            receiptReviewRouteExtra = extra;
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('inventory_action_fab_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('inventory_action_camera_fab')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Receipt review route'), findsOneWidget);
+      final args = receiptReviewRouteExtra;
+      expect(args, isA<InventoryReceiptReviewPageArgs>());
+      expect(
+        (args! as InventoryReceiptReviewPageArgs).items.single.item.name,
+        'Milk',
       );
     });
   });
@@ -324,6 +370,43 @@ class _RecordingReceiptCaptureFlowController
     required ReceiptInputSource source,
   }) async {
     return ReceiptCaptureFlowResult.inputCanceled(source: source);
+  }
+}
+
+class _CompletedReceiptCaptureFlowController
+    extends ReceiptCaptureFlowController {
+  @override
+  FutureOr<ReceiptCaptureFlowResult?> build() {
+    return null;
+  }
+
+  @override
+  Future<ReceiptCaptureFlowResult> run({
+    required ReceiptInputSource source,
+  }) async {
+    state = const AsyncLoading<ReceiptCaptureFlowResult?>();
+    await Future<void>.delayed(Duration.zero);
+
+    final result = ReceiptCaptureFlowResult.completed(
+      source: source,
+      extraction: const ReceiptAnalysisExtraction(
+        root: <String, dynamic>{},
+        items: <ReceiptAnalysisItem>[],
+      ),
+      reviewDrafts: <ReceiptReviewItemDraft>[
+        ReceiptReviewItemDraft(
+          item: InventoryItem.create(
+            id: 'milk',
+            name: 'Milk',
+            entryDate: DateTime.parse('2026-05-13T10:00:00Z'),
+            storeName: 'Store',
+            quantity: 1,
+          ),
+        ),
+      ],
+    );
+    state = AsyncData<ReceiptCaptureFlowResult?>(result);
+    return result;
   }
 }
 
