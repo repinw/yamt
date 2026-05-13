@@ -211,6 +211,31 @@ void main() {
         );
       },
     );
+
+    test('container helper surfaces disposed container errors', () async {
+      final preferences = MemoryAppPreferences();
+      final container = _container(
+        preferences: preferences,
+        user: _user('disposed-container-user'),
+        settingsRepository: const _StaticCalorieSettingsRepository(
+          CalorieGoalSettings.empty(),
+        ),
+      );
+      await _seedAuthState(container);
+      container.dispose();
+
+      await expectLater(
+        markCalorieGoalOnboardingCompletedFromContainer(container),
+        throwsStateError,
+      );
+
+      expect(
+        preferences.getStringSync(
+          calorieGoalOnboardingKeyForUser('disposed-container-user'),
+        ),
+        isNull,
+      );
+    });
   });
 }
 

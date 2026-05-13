@@ -13,12 +13,10 @@ part 'calorie_goal_onboarding_completed_provider.g.dart';
 /// Calorie goal onboarding completed.
 @Riverpod(keepAlive: true)
 FutureOr<bool> calorieGoalOnboardingCompleted(Ref ref) async {
-  String? userId;
-  try {
-    userId = _userIdFromAuthState(ref.watch(authStateChangesProvider));
-  } on Object catch (_) {
+  if (!ref.mounted) {
     return false;
   }
+  final userId = _userIdFromAuthState(ref.watch(authStateChangesProvider));
   if (userId == null) {
     return false;
   }
@@ -93,19 +91,14 @@ Future<void> _writeCompletionMarker(
 }
 
 String? _currentUserId(Ref ref) {
-  try {
-    return _userIdFromAuthState(ref.read(authStateChangesProvider));
-  } on Object catch (_) {
+  if (!ref.mounted) {
     return null;
   }
+  return _userIdFromAuthState(ref.read(authStateChangesProvider));
 }
 
 String? _currentUserIdFromContainer(ProviderContainer container) {
-  try {
-    return _userIdFromAuthState(container.read(authStateChangesProvider));
-  } on Object catch (_) {
-    return null;
-  }
+  return _userIdFromAuthState(container.read(authStateChangesProvider));
 }
 
 String? _userIdFromAuthState(AsyncValue<User?> authState) {
