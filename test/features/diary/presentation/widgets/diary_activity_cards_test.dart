@@ -404,11 +404,11 @@ void main() {
     await tester.tap(find.text('JETZT TRACKEN'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogField),
       '82,1',
     );
     await tester.tap(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogSaveButton),
     );
     await tester.pumpAndSettle();
 
@@ -521,11 +521,11 @@ void main() {
     await tester.tap(find.text('Gewicht eintragen'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogField),
       '81,2',
     );
     await tester.tap(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogSaveButton),
     );
     await tester.pumpAndSettle();
 
@@ -566,11 +566,11 @@ void main() {
     await tester.tap(find.textContaining('78,9 kg').first);
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogField),
       '79,1',
     );
     await tester.tap(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogSaveButton),
     );
     await tester.pumpAndSettle();
 
