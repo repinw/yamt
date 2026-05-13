@@ -7,7 +7,10 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_balance_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
