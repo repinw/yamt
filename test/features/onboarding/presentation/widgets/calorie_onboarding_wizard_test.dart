@@ -97,7 +97,8 @@ void main() {
   testWidgets('saves start-later future date selected through picker', (
     tester,
   ) async {
-    final harness = await _pumpOnboarding(tester);
+    final now = DateTime(2026, 5, 13, 10);
+    final harness = await _pumpOnboarding(tester, now: () => now);
     await _goToStartDateStep(tester);
 
     await tester.tap(
@@ -117,11 +118,9 @@ void main() {
     await tester.tap(find.text("Let's go"));
     await tester.pumpAndSettle();
 
-    final tomorrow = DateUtils.dateOnly(
-      DateTime.now().add(const Duration(days: 1)),
-    );
+    final tomorrow = DateTime(2026, 5, 14);
     final settings = await harness.settingsRepository.readSettings();
-    expect(settings.nextGoalStartAfterDay(DateTime.now()), tomorrow);
+    expect(settings.nextGoalStartAfterDay(now), tomorrow);
     expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);
     expect(harness.runStateRepository.state.runWeekNumber, 1);
     expect(harness.logRepository.entries, isEmpty);
@@ -204,6 +203,7 @@ Future<_OnboardingHarness> _pumpOnboarding(
   WidgetTester tester, {
   CalorieGoalSettings initialSettings = const CalorieGoalSettings.empty(),
   BurnWeekRunState initialRunState = const BurnWeekRunState.initial(),
+  DateTime Function()? now,
 }) async {
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: initialSettings,
@@ -226,6 +226,7 @@ Future<_OnboardingHarness> _pumpOnboarding(
         path: '/onboarding',
         builder: (context, state) => CalorieOnboardingWizard(
           initialSettings: initialSettings,
+          now: now,
         ),
       ),
     ],

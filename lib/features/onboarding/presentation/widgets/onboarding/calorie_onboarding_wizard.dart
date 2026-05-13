@@ -24,11 +24,15 @@ class CalorieOnboardingWizard extends ConsumerStatefulWidget {
   /// Creates calorie onboarding wizard.
   const CalorieOnboardingWizard({
     required this.initialSettings,
+    this.now,
     super.key,
   });
 
   /// Initial calorie settings used to seed the calculator.
   final CalorieGoalSettings initialSettings;
+
+  /// Clock used by date picking and finish handling.
+  final DateTime Function()? now;
 
   @override
   ConsumerState<CalorieOnboardingWizard> createState() =>
@@ -46,8 +50,12 @@ class _CalorieOnboardingWizardState
     super.initState();
     _wizardController = CalorieOnboardingWizardController()
       ..addListener(_handleWizardStateChanged);
-    _startDateController = CalorieOnboardingStartDateController()
+    _startDateController = CalorieOnboardingStartDateController(now: _now())
       ..addListener(_handleWizardStateChanged);
+  }
+
+  DateTime _now() {
+    return widget.now?.call() ?? DateTime.now();
   }
 
   void _handleWizardStateChanged() {
@@ -84,6 +92,7 @@ class _CalorieOnboardingWizardState
       finishFlow: finishFlow,
       wizardController: _wizardController,
       startDateController: _startDateController,
+      now: _now,
     ).finish(
       context: context,
       formState: formState,
@@ -92,14 +101,15 @@ class _CalorieOnboardingWizardState
   }
 
   Future<void> _pickFutureGoalStartDate() async {
-    final today = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+    final now = _now();
+    final today = CalorieGoalStartPicker.normalizeDate(now);
     final pickedDate = await CalorieGoalStartPicker.pickDate(
       context,
       initialGoalStartDate:
           _startDateController.futureGoalStartDate.isAfter(today)
           ? _startDateController.futureGoalStartDate
           : today.add(const Duration(days: 1)),
-      now: DateTime.now(),
+      now: now,
       firstDate: today.add(const Duration(days: 1)),
       lastDate: DateTime(today.year + 10, today.month, today.day),
     );
