@@ -13,8 +13,6 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/'
-    'calorie_health_trends_page.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_health_trend_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -25,6 +23,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/statistics/presentation/'
+    'calorie_health_trends_page.dart';
 import 'package:yamt/features/statistics/presentation/statistics_page.dart';
 import 'package:yamt/features/statistics/presentation/statistics_page_keys.dart';
 import 'package:yamt/features/statistics/presentation/widgets/'

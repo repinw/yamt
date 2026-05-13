@@ -13,7 +13,7 @@ import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/'
-    'calorie_health_trends_page_keys.dart';
+    'calorie_health_trends_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/diary/application/diary_activity_weight_service.dart';
@@ -480,7 +480,7 @@ void main() {
       await tester.tap(find.textContaining('76,8 kg').last);
       await tester.pumpAndSettle();
       await tester.tap(
-        find.byKey(CalorieHealthTrendsPageKeys.weightDialogClearButton),
+        find.byKey(CalorieHealthTrendsKeys.weightDialogClearButton),
       );
       await tester.pumpAndSettle();
 

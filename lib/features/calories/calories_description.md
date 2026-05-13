@@ -44,8 +44,6 @@ features:
 - `calorie_entry_delete_flow.dart`: Deletes entries and can restore inventory
   items or prepared-meal portions first. If deletion fails after restore, the
   flow tries to roll the restore back.
-- `calorie_debug_dump_service.dart`: Builds markdown/table debug dumps for
-  health, intake, and weekly check-in data.
 
 `data/`
 
@@ -245,11 +243,14 @@ Generated Riverpod and JSON files. They should not be edited manually.
   prepared-meal bundles.
 - `features/health`: Steps, workouts, active energy, health weight, and manual
   weight entries.
-- `features/statistics`: Uses health trend and calorie data for statistics.
+- `features/statistics`: Uses health trend and calorie data for statistics and
+  owns the health trends page shell.
 - `features/auth` and `features/household`: Provide the current user ID and
   inventory owner.
 - `features/scanner` / product flows: Provide barcode/OCR profiles and
   `CalorieScannedSourceRef`.
+- `lib/features/calories/debug`: Debug-only calorie dump tools, debug app-bar menu, and
+  the debug Burn Week mock page.
 
 ## Persistence Model
 

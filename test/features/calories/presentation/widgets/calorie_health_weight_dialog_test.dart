@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/presentation/calorie_health_trends_page_keys.dart';
+import 'package:yamt/features/calories/presentation/calorie_health_trends_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_health_weight_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -52,17 +52,17 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogSaveButton),
     );
     await tester.pumpAndSettle();
     expect(find.text('Please enter your weight.'), findsOneWidget);
 
     await tester.enterText(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogField),
       '71,4',
     );
     await tester.tap(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogSaveButton),
     );
     await tester.pumpAndSettle();
 
@@ -96,7 +96,7 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogField),
       '71.4',
     );
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -130,7 +130,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final field = tester.widget<TextField>(
-        find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+        find.byKey(CalorieHealthTrendsKeys.weightDialogField),
       );
       expect(field.keyboardType, TextInputType.text);
       expect(field.textInputAction, TextInputAction.done);
@@ -158,11 +158,11 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogField),
       '71.4',
     );
     await tester.tap(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogSaveButton),
     );
     await tester.pump();
 
@@ -196,7 +196,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('71.2'), findsOneWidget);
     await tester.tap(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogClearButton),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogClearButton),
     );
     await tester.pumpAndSettle();
 
@@ -222,7 +222,7 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     await tester.tap(
-      find.byKey(CalorieHealthTrendsPageKeys.weightDialogClearButton),
+      find.byKey(CalorieHealthTrendsKeys.weightDialogClearButton),
     );
     await tester.pump();
 

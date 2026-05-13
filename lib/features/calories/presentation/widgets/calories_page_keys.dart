@@ -4,24 +4,6 @@ export 'package:yamt/features/calorie_goal/presentation/calorie_goal_calculator_
 
 /// Defines shared calorie feature keys.
 abstract final class CaloriesPageKeys {
-  /// Opens calorie debug actions.
-  static const calorieDebugActionsMenuButton = Key(
-    'calories_debug_actions_menu_button',
-  );
-
-  /// Prints calorie debug dump.
-  static const calorieDebugDumpButton = Key('calories_debug_dump_button');
-
-  /// Prints calorie settings debug dump.
-  static const calorieSettingsDebugDumpButton = Key(
-    'calories_settings_debug_dump_button',
-  );
-
-  /// Prints calorie weekly check-in debug dump.
-  static const calorieWeeklyCheckInDebugDumpButton = Key(
-    'calories_weekly_checkin_debug_dump_button',
-  );
-
   /// Burn Week mock bar.
   static const burnWeekMockBar = Key('calories_burn_week_bar');
 

@@ -21,14 +21,6 @@ void main() {
       const Key('calories_summary_macro_bar_protein'),
     );
     expect(
-      CaloriesPageKeys.calorieDebugActionsMenuButton,
-      const Key('calories_debug_actions_menu_button'),
-    );
-    expect(
-      CaloriesPageKeys.calorieDebugDumpButton,
-      const Key('calories_debug_dump_button'),
-    );
-    expect(
       CaloriesPageKeys.burnWeekMockQuickAction('+500'),
       const Key('calories_burn_week_quick_action_+500'),
     );

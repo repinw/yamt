@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/calories/presentation/calorie_page_actions.dart';
-import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_page_action_controller.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_actions.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
 
 enum _CalorieDebugAction {
   debugDump,
@@ -16,11 +15,11 @@ enum _CalorieDebugAction {
 extension _CalorieDebugActionDetails on _CalorieDebugAction {
   Key get key {
     return switch (this) {
-      _CalorieDebugAction.debugDump => CaloriesPageKeys.calorieDebugDumpButton,
+      _CalorieDebugAction.debugDump => CalorieDebugKeys.debugDumpButton,
       _CalorieDebugAction.settingsDump =>
-        CaloriesPageKeys.calorieSettingsDebugDumpButton,
+        CalorieDebugKeys.settingsDebugDumpButton,
       _CalorieDebugAction.weeklyCheckInDump =>
-        CaloriesPageKeys.calorieWeeklyCheckInDebugDumpButton,
+        CalorieDebugKeys.weeklyCheckInDebugDumpButton,
     };
   }
 
@@ -61,7 +60,7 @@ class CalorieDebugActionsMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return PopupMenuButton<_CalorieDebugAction>(
-      key: CaloriesPageKeys.calorieDebugActionsMenuButton,
+      key: CalorieDebugKeys.actionsMenuButton,
       tooltip: 'Calorie debug actions',
       icon: const Icon(Icons.bug_report_rounded),
       onSelected: (action) {
@@ -107,7 +106,7 @@ class _CalorieDebugMenuItem extends StatelessWidget {
 }
 
 Future<void> _printCalorieDebugDump(BuildContext context, WidgetRef ref) async {
-  final controller = ref.read(caloriePageActionControllerProvider.notifier);
+  final controller = ref.read(calorieDebugActionControllerProvider.notifier);
   final result = await controller.printDebugDump(DateTime.now());
   if (!context.mounted) {
     return;
@@ -119,7 +118,7 @@ Future<void> _printCalorieSettingsDebugDump(
   BuildContext context,
   WidgetRef ref,
 ) async {
-  final controller = ref.read(caloriePageActionControllerProvider.notifier);
+  final controller = ref.read(calorieDebugActionControllerProvider.notifier);
   final result = await controller.printSettingsDebugDump();
   if (!context.mounted) {
     return;
@@ -134,7 +133,7 @@ Future<void> _printCalorieWeeklyCheckInDebugDump(
   BuildContext context,
   WidgetRef ref,
 ) async {
-  final controller = ref.read(caloriePageActionControllerProvider.notifier);
+  final controller = ref.read(calorieDebugActionControllerProvider.notifier);
   final result = await controller.printWeeklyCheckInDebugDump();
   if (!context.mounted) {
     return;

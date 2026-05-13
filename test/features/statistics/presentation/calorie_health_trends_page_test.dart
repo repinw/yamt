@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/presentation/'
-    'calorie_health_trends_page.dart';
-import 'package:yamt/features/calories/presentation/'
-    'calorie_health_trends_page_keys.dart';
+    'calorie_health_trends_keys.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_health_trend_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/statistics/presentation/'
+    'calorie_health_trends_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _buildTestApp({required List<dynamic> overrides}) {
@@ -66,7 +66,7 @@ void main() {
     expect(find.text('Manual'), findsOneWidget);
     expect(find.text('Health Connect'), findsOneWidget);
     expect(
-      find.byKey(CalorieHealthTrendsPageKeys.weightRow('2026-3-15')),
+      find.byKey(CalorieHealthTrendsKeys.weightRow('2026-3-15')),
       findsOneWidget,
     );
   });

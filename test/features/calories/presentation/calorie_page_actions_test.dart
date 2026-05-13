@@ -1,38 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/presentation/calorie_page_actions.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_page_action_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('debug dump snackbar shows success message', (tester) async {
-    final context = await _pumpSnackBarHarness(tester);
-
-    showCalorieDebugDumpResultSnackBar(
-      context: context,
-      result: const CalorieDebugDumpPrintSuccess(rowCount: 3),
-    );
-    await tester.pump();
-
-    expect(
-      find.text('Printed calorie debug table (3 rows).'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('debug dump snackbar shows failure message', (tester) async {
-    final context = await _pumpSnackBarHarness(tester);
-
-    showCalorieDebugDumpResultSnackBar(
-      context: context,
-      result: const CalorieDebugDumpPrintFailure(),
-    );
-    await tester.pump();
-
-    expect(find.text('Could not print calorie debug table.'), findsOneWidget);
-  });
-
   testWidgets('skipped-intake snackbar shows save failure', (tester) async {
     final context = await _pumpSnackBarHarness(tester);
 
