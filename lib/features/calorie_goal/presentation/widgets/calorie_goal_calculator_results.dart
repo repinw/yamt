@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/features/calorie_goal/presentation/calorie_goal_calculator_keys.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Result card showing BMR, TDEE, and the final daily target.

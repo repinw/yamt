@@ -1,5 +1,5 @@
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
+import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.dart';
 
 /// Maximum kcal cap relative to the daily goal. Prevents absurd estimates
 /// (e.g. early-day "high" selections) from producing more than 1.4x of the

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
-import 'package:yamt/features/calories/presentation/widgets/onboarding/steps/onboarding_selectable_card.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/onboarding_selectable_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Onboarding step for daily activity level.

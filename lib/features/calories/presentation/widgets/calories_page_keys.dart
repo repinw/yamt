@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+export 'package:yamt/features/calorie_goal/presentation/calorie_goal_calculator_keys.dart';
+
 /// Defines shared calorie feature keys.
 abstract final class CaloriesPageKeys {
   /// Opens calorie debug actions.
@@ -115,98 +117,6 @@ abstract final class CalorieGoalStartFoodTrackingDialogKeys {
 
   /// The yes/count today button.
   static const yesButton = Key('calorie_goal_start_food_tracking_yes');
-}
-
-/// Defines calorie goal calculator sheet keys.
-abstract final class CalorieGoalCalculatorSheetKeys {
-  /// The step counter.
-  static const stepCounter = Key('calorie_calculator_step_counter');
-
-  /// The weight field.
-  static const weightField = Key('calorie_calculator_weight_field');
-
-  /// The height field.
-  static const heightField = Key('calorie_calculator_height_field');
-
-  /// The age field.
-  static const ageField = Key('calorie_calculator_age_field');
-
-  /// The activity level options.
-  static const activityLevelOptions = Key(
-    'calorie_calculator_activity_level_options',
-  );
-
-  /// The goal mode segment.
-  static const goalModeSegment = Key('calorie_calculator_goal_mode_segment');
-
-  /// The goal speed field.
-  static const goalSpeedField = Key('calorie_calculator_goal_speed_field');
-
-  /// The results card.
-  static const resultsCard = Key('calorie_calculator_results_card');
-
-  /// The goal start card.
-  static const goalStartCard = Key('calorie_calculator_goal_start_card');
-
-  /// The goal start value.
-  static const goalStartValue = Key('calorie_calculator_goal_start_value');
-
-  /// The goal start change button.
-  static const goalStartChangeButton = Key(
-    'calorie_calculator_goal_start_change_button',
-  );
-
-  /// The onboarding start-now option.
-  static const goalStartNowOption = Key(
-    'calorie_calculator_goal_start_now_option',
-  );
-
-  /// The onboarding start-later option.
-  static const goalStartLaterOption = Key(
-    'calorie_calculator_goal_start_later_option',
-  );
-
-  /// The onboarding exact today tracking option.
-  static const todayTrackingExactOption = Key(
-    'calorie_calculator_today_tracking_exact_option',
-  );
-
-  /// The onboarding estimated today tracking option.
-  static const todayTrackingEstimateOption = Key(
-    'calorie_calculator_today_tracking_estimate_option',
-  );
-
-  /// The onboarding catch-up low option.
-  static const catchUpLowOption = Key(
-    'calorie_calculator_catch_up_low_option',
-  );
-
-  /// The onboarding catch-up normal option.
-  static const catchUpNormalOption = Key(
-    'calorie_calculator_catch_up_normal_option',
-  );
-
-  /// The onboarding catch-up high option.
-  static const catchUpHighOption = Key(
-    'calorie_calculator_catch_up_high_option',
-  );
-
-  /// The warning card.
-  static const warningCard = Key('calorie_calculator_warning_card');
-
-  /// The back button.
-  static const backButton = Key('calorie_calculator_back_button');
-
-  /// The next button.
-  static const nextButton = Key('calorie_calculator_next_button');
-
-  /// The save button.
-  static const saveButton = Key('calorie_calculator_save_button');
-
-  /// Activity level option.
-  static Key activityLevelOption(String optionId) {
-    return Key('calorie_calculator_activity_level_option_$optionId');
-  }
 }
 
 /// Defines calorie weekly check in dialog keys.
