@@ -10,11 +10,15 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/onboarding/domain/'
@@ -22,9 +26,6 @@ import 'package:yamt/features/onboarding/domain/'
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-import '../test/features/calories/support/fake_calories_repositories.dart';
-import '../test/helpers/memory_app_preferences.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
@@ -42,10 +43,180 @@ class _CalorieOnboardingIntegrationHarness {
   });
 
   final ProviderContainer container;
-  final MemoryAppPreferences preferences;
-  final FakeCalorieSettingsRepository settingsRepository;
-  final FakeCalorieLogRepository logRepository;
+  final _MemoryAppPreferences preferences;
+  final _FakeCalorieSettingsRepository settingsRepository;
+  final _FakeCalorieLogRepository logRepository;
   final _FakeBurnWeekRunStateRepository runStateRepository;
+}
+
+class _MemoryAppPreferences implements AppPreferences {
+  _MemoryAppPreferences({
+    Set<String> completedProfileSetupUserIds = const <String>{},
+  }) {
+    for (final userId in completedProfileSetupUserIds) {
+      _strings[AuthProfileSetupPreferences.keyForUser(userId)] =
+          AuthProfileSetupPreferences.completedValue;
+    }
+  }
+
+  final Map<String, String> _strings = <String, String>{};
+  final Map<String, int> _ints = <String, int>{};
+
+  @override
+  String? getStringSync(String key) => _strings[key];
+
+  @override
+  int? getIntSync(String key) => _ints[key];
+
+  @override
+  Future<String?> getString(String key) async => _strings[key];
+
+  @override
+  Future<int?> getInt(String key) async => _ints[key];
+
+  @override
+  Future<bool> setString(String key, String value) async {
+    _strings[key] = value;
+    return true;
+  }
+
+  @override
+  Future<bool> setInt(String key, int value) async {
+    _ints[key] = value;
+    return true;
+  }
+}
+
+class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
+  _FakeCalorieSettingsRepository()
+    : _settings = const CalorieGoalSettings.empty();
+
+  CalorieGoalSettings _settings;
+  final _controller = StreamController<CalorieGoalSettings>.broadcast();
+
+  @override
+  Stream<CalorieGoalSettings> watchSettings() {
+    return Stream<CalorieGoalSettings>.multi((controller) {
+      controller.add(_settings);
+      final subscription = _controller.stream.listen(controller.add);
+      controller.onCancel = () {
+        unawaited(subscription.cancel());
+      };
+    });
+  }
+
+  @override
+  Future<CalorieGoalSettings> readSettings() async => _settings;
+
+  @override
+  Future<bool> saveSettings(CalorieGoalSettings settings) async {
+    _settings = settings;
+    _controller.add(_settings);
+    return true;
+  }
+
+  @override
+  Future<bool> setDailyGoal(double dailyKcalGoal) {
+    return saveSettings(
+      CalorieGoalSettings.single(
+        dailyKcalGoal: dailyKcalGoal,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 2, 25, 10),
+      ),
+    );
+  }
+
+  @override
+  Future<bool> clearDailyGoal() {
+    return saveSettings(
+      const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: DateTime(2026, 2, 25, 10),
+        dailyKcalGoal: null,
+        calculatorProfile: null,
+      ),
+    );
+  }
+
+  Future<void> dispose() => _controller.close();
+}
+
+class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
+  final List<CalorieEntry> _entries = <CalorieEntry>[];
+
+  List<CalorieEntry> get entries => List<CalorieEntry>.unmodifiable(_entries);
+
+  @override
+  Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day) {
+    return Stream<List<CalorieEntry>>.value(_entriesForDay(day));
+  }
+
+  @override
+  Future<List<CalorieEntry>> readEntriesForDay(DateTime day) async {
+    return _entriesForDay(day);
+  }
+
+  @override
+  Future<List<CalorieEntry>> readEntriesInRange({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    final start = normalizeDiaryDay(startInclusive);
+    final end = normalizeDiaryDay(endExclusive);
+    return _entries
+        .where(
+          (entry) =>
+              !entry.loggedAt.isBefore(start) && entry.loggedAt.isBefore(end),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Future<DateTime?> readFirstEntryDate() async {
+    if (_entries.isEmpty) {
+      return null;
+    }
+    final sorted = List<CalorieEntry>.from(_entries)
+      ..sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
+    return sorted.first.loggedAt;
+  }
+
+  @override
+  Future<bool> saveEntry(CalorieEntry entry) {
+    return saveEntryForCurrentUser(entry);
+  }
+
+  @override
+  Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
+    final index = _entries.indexWhere((item) => item.id == entry.id);
+    if (index >= 0) {
+      _entries[index] = entry;
+    } else {
+      _entries.add(entry);
+    }
+    return true;
+  }
+
+  @override
+  Future<bool> deleteEntry(String entryId) async {
+    _entries.removeWhere((entry) => entry.id == entryId);
+    return true;
+  }
+
+  @override
+  Future<CalorieEntry?> getById(String entryId) async {
+    final index = _entries.indexWhere((entry) => entry.id == entryId);
+    if (index < 0) {
+      return null;
+    }
+    return _entries[index];
+  }
+
+  List<CalorieEntry> _entriesForDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    return _entries
+        .where((entry) => isSameDiaryDay(entry.loggedAt, normalizedDay))
+        .toList(growable: false);
+  }
 }
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
@@ -179,8 +350,38 @@ void main() {
     expect(find.text('How will you track today?'), findsOneWidget);
     expect(find.text('All set!'), findsNothing);
   });
+
+  testWidgets('calorie onboarding keeps inputs visible above keyboard', (
+    tester,
+  ) async {
+    await _pumpOnboardingApp(tester);
+    addTearDown(tester.view.resetViewInsets);
+
+    await _tapVisible(tester, find.text("Let's start"));
+    await _tapVisible(tester, find.text('Female'));
+
+    await _focusFieldWithKeyboard(tester, find.byType(TextFormField).at(1));
+    _expectAboveKeyboard(tester, find.byType(TextFormField).at(1));
+    await tester.enterText(find.byType(TextFormField).at(0), '30');
+    await tester.enterText(find.byType(TextFormField).at(1), '170');
+    await _dismissKeyboard(tester);
+    await _tapOnboardingNext(tester);
+
+    await _tapActivityOption(tester, 'Lightly active');
+    await _tapOnboardingNext(tester);
+
+    await _focusFieldWithKeyboard(tester, find.byType(TextFormField).at(1));
+    _expectAboveKeyboard(tester, find.byType(TextFormField).at(1));
+    await tester.enterText(find.byType(TextFormField).at(0), '70');
+    await tester.enterText(find.byType(TextFormField).at(1), '70');
+    await _dismissKeyboard(tester);
+    await _tapOnboardingNext(tester);
+
+    expect(find.textContaining('Your Plan is Ready'), findsOneWidget);
+  });
 }
 
+@Dependencies([appRouter])
 Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
   WidgetTester tester,
 ) async {
@@ -205,11 +406,11 @@ _CalorieOnboardingIntegrationHarness _buildHarness({
   final user = _authenticatedUser(uid: userId);
   final authStream = Stream<User?>.value(user).asBroadcastStream();
   final firebaseAuth = _MockFirebaseAuth();
-  final preferences = MemoryAppPreferences(
+  final preferences = _MemoryAppPreferences(
     completedProfileSetupUserIds: {userId},
   );
-  final settingsRepository = FakeCalorieSettingsRepository();
-  final logRepository = FakeCalorieLogRepository();
+  final settingsRepository = _FakeCalorieSettingsRepository();
+  final logRepository = _FakeCalorieLogRepository();
   final runStateRepository = _FakeBurnWeekRunStateRepository(
     const BurnWeekRunState.initial(),
   );
@@ -229,7 +430,6 @@ _CalorieOnboardingIntegrationHarness _buildHarness({
   );
   addTearDown(container.dispose);
   addTearDown(settingsRepository.dispose);
-  addTearDown(logRepository.dispose);
 
   return _CalorieOnboardingIntegrationHarness(
     container: container,
@@ -346,6 +546,7 @@ Future<void> _finishOnboarding(WidgetTester tester) async {
   await _pumpRouterTransition(tester);
 }
 
+@Dependencies([appRouter])
 void _expectHomeDiary(
   _CalorieOnboardingIntegrationHarness harness,
 ) {
@@ -419,7 +620,27 @@ Future<void> _tapActivityOption(WidgetTester tester, String text) async {
   await _tapVisible(tester, find.text(text));
 }
 
+Future<void> _focusFieldWithKeyboard(WidgetTester tester, Finder field) async {
+  await tester.ensureVisible(field);
+  await _pumpVisibleStep(tester);
+  await tester.tap(field);
+  tester.view.viewInsets = FakeViewPadding(
+    bottom: 360 * tester.view.devicePixelRatio,
+  );
+  await _pumpVisibleStep(tester);
+}
+
+void _expectAboveKeyboard(WidgetTester tester, Finder finder) {
+  final fieldBottom = tester.getBottomLeft(finder).dy;
+  final viewHeight =
+      tester.view.physicalSize.height / tester.view.devicePixelRatio;
+  final keyboardHeight =
+      tester.view.viewInsets.bottom / tester.view.devicePixelRatio;
+  expect(fieldBottom, lessThanOrEqualTo(viewHeight - keyboardHeight));
+}
+
 Future<void> _dismissKeyboard(WidgetTester tester) async {
   FocusManager.instance.primaryFocus?.unfocus();
+  tester.view.resetViewInsets();
   await _pumpVisibleStep(tester);
 }
