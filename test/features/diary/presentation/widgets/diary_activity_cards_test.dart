@@ -16,10 +16,24 @@ import 'package:yamt/features/calories/presentation/'
     'calorie_health_trends_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/diary/application/diary_activity_weight_service.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_activity_details_card.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_activity_weight_cards.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_activity_weight_section/diary_activity_weight_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_activity_weight_section/diary_activity_weight_section_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_health_connect_metric_card/diary_health_connect_metric_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weight_card/diary_weight_actions.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weight_card/diary_weight_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weight_card/diary_weight_details_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weight_card/diary_weight_details_content.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_workouts_card.dart';
 import 'package:yamt/features/diary/provider/'
     'diary_activity_weight_data_provider.dart';
@@ -242,7 +256,7 @@ void main() {
 
     await _pumpDiaryWidget(
       tester,
-      DiaryActivityWeightCards(selectedDay: selectedDay),
+      DiaryActivityWeightSection(selectedDay: selectedDay),
       overrides: [
         ..._commonOverrides(),
         _stepsSummaryOverride(
@@ -284,7 +298,7 @@ void main() {
     var shouldFail = true;
     await _pumpDiaryWidget(
       tester,
-      DiaryActivityWeightCards(selectedDay: selectedDay),
+      DiaryActivityWeightSection(selectedDay: selectedDay),
       overrides: [
         ..._commonOverrides(),
         diaryActivityWeightDataProvider(selectedDay).overrideWith((ref) async {
@@ -307,12 +321,12 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(DiaryActivityWeightCardsKeys.retryButton),
+      find.byKey(DiaryActivityWeightSectionKeys.retryButton),
       findsOneWidget,
     );
 
     shouldFail = false;
-    await tester.tap(find.byKey(DiaryActivityWeightCardsKeys.retryButton));
+    await tester.tap(find.byKey(DiaryActivityWeightSectionKeys.retryButton));
     await tester.pumpAndSettle();
 
     expect(
@@ -329,7 +343,7 @@ void main() {
   ) async {
     await _pumpDiaryWidget(
       tester,
-      DiaryActivityWeightCards(selectedDay: selectedDay),
+      DiaryActivityWeightSection(selectedDay: selectedDay),
       overrides: [
         ..._commonOverrides(),
         _activityWeightOverride(
@@ -359,6 +373,69 @@ void main() {
     expect(find.text('GEWICHT'), findsOneWidget);
   });
 
+  testWidgets('weight card track prompt saves manual weight', (tester) async {
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+
+    await _pumpDiaryWidget(
+      tester,
+      DiaryWeightCard(
+        selectedDay: selectedDay,
+        data: _activityWeightData(
+          selectedDay,
+          selectedWeightKg: 80,
+          hasSelectedDayWeight: false,
+        ),
+        isExpanded: false,
+        onToggleExpanded: () {},
+      ),
+      overrides: [
+        ..._commonOverrides(),
+        manualHealthWeightRepositoryProvider.overrideWith(
+          (ref) => manualRepository,
+        ),
+        healthWeightServiceProvider.overrideWith(
+          (ref) => FakeHealthWeightService(const <HealthWeightSample>[]),
+        ),
+      ],
+    );
+
+    await tester.tap(find.text('JETZT TRACKEN'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      '82,1',
+    );
+    await tester.tap(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(manualRepository.entries, hasLength(1));
+    expect(manualRepository.entries.single.weightKg, 82.1);
+  });
+
+  testWidgets('weight card falls back to seven-day footer', (tester) async {
+    await _pumpDiaryWidget(
+      tester,
+      DiaryWeightCard(
+        selectedDay: selectedDay,
+        data: _activityWeightData(
+          selectedDay,
+          selectedWeightKg: 78.4,
+          hasSelectedDayWeight: true,
+          profileWeightKg: null,
+        ),
+        isExpanded: false,
+        onToggleExpanded: () {},
+      ),
+      overrides: _commonOverrides(),
+    );
+
+    expect(find.text('7 Tage'), findsWidgets);
+  });
+
   testWidgets(
     'weight dialog clears manual entry before app-owned health sample',
     (tester) async {
@@ -376,7 +453,7 @@ void main() {
 
       await _pumpDiaryWidget(
         tester,
-        DiaryActivityWeightCards(selectedDay: selectedDay),
+        DiaryActivityWeightSection(selectedDay: selectedDay),
         overrides: [
           ..._commonOverrides(),
           manualHealthWeightRepositoryProvider.overrideWith(
@@ -412,6 +489,268 @@ void main() {
       expect(healthWeightService.deleteWeightSampleCallCount, 0);
     },
   );
+
+  testWidgets('weight details can add manual weight for selected day', (
+    tester,
+  ) async {
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+
+    await _pumpDiaryWidget(
+      tester,
+      DiaryWeightDetailsCard(
+        selectedDay: selectedDay,
+        data: _activityWeightData(
+          selectedDay,
+          selectedWeightKg: 78.4,
+          hasSelectedDayWeight: true,
+        ),
+      ),
+      overrides: [
+        ..._commonOverrides(),
+        manualHealthWeightRepositoryProvider.overrideWith(
+          (ref) => manualRepository,
+        ),
+        healthWeightServiceProvider.overrideWith(
+          (ref) => FakeHealthWeightService(const <HealthWeightSample>[]),
+        ),
+      ],
+    );
+
+    await tester.tap(find.text('Gewicht eintragen'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      '81,2',
+    );
+    await tester.tap(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(manualRepository.entries, hasLength(1));
+    expect(manualRepository.entries.single.day, selectedDay);
+    expect(manualRepository.entries.single.weightKg, 81.2);
+  });
+
+  testWidgets('weight details can edit previous-day manual weight', (
+    tester,
+  ) async {
+    final previousDay = selectedDay.subtract(const Duration(days: 1));
+    final manualRepository = FakeManualHealthWeightRepository([
+      ManualHealthWeightEntry(day: previousDay, weightKg: 78.9),
+    ]);
+
+    await _pumpDiaryWidget(
+      tester,
+      DiaryWeightDetailsCard(
+        selectedDay: selectedDay,
+        data: _activityWeightData(
+          selectedDay,
+          selectedWeightKg: 78.4,
+          hasSelectedDayWeight: true,
+        ),
+      ),
+      overrides: [
+        ..._commonOverrides(),
+        manualHealthWeightRepositoryProvider.overrideWith(
+          (ref) => manualRepository,
+        ),
+        healthWeightServiceProvider.overrideWith(
+          (ref) => FakeHealthWeightService(const <HealthWeightSample>[]),
+        ),
+      ],
+    );
+
+    await tester.tap(find.textContaining('78,9 kg').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      '79,1',
+    );
+    await tester.tap(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(manualRepository.entries.single.day, previousDay);
+    expect(manualRepository.entries.single.weightKg, 79.1);
+  });
+
+  testWidgets('weight details can delete app-owned health sample', (
+    tester,
+  ) async {
+    final healthSample = HealthWeightSample(
+      recordedAt: selectedDay.add(const Duration(hours: 8)),
+      weightKg: 77.1,
+      uuid: 'selected-health-weight',
+      sourcePackageName: 'de.yamt.app',
+      isFromThisApp: true,
+    );
+    final healthWeightService = FakeHealthWeightService([healthSample]);
+
+    await _pumpDiaryWidget(
+      tester,
+      DiaryWeightDetailsCard(
+        selectedDay: selectedDay,
+        data: _activityWeightData(
+          selectedDay,
+          selectedWeightKg: 77.1,
+          hasSelectedDayWeight: true,
+          selectedDayHealthSample: healthSample,
+        ),
+      ),
+      overrides: [
+        ..._commonOverrides(),
+        healthWeightServiceProvider.overrideWith(
+          (ref) => healthWeightService,
+        ),
+        manualHealthWeightRepositoryProvider.overrideWith(
+          (ref) =>
+              FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[]),
+        ),
+      ],
+    );
+
+    await tester.tap(find.byIcon(Icons.close_rounded).first);
+    await tester.pumpAndSettle();
+
+    expect(healthWeightService.deletedSamples, [healthSample]);
+  });
+
+  testWidgets('weight details content renders empty state', (tester) async {
+    await _pumpDiaryWidget(
+      tester,
+      DiaryWeightDetailsContent(
+        days: const <DiaryWeightDayData>[],
+        onAdd: () {},
+        onEdit: (_) {},
+        onDelete: (_) {},
+      ),
+      overrides: _commonOverrides(),
+    );
+
+    expect(find.text('Keine Gewichte'), findsOneWidget);
+  });
+
+  testWidgets('health metric card requests history access', (tester) async {
+    final healthService = FakeHealthConnectionService(
+      _historyRequiredHealthStatus,
+    );
+
+    await _pumpDiaryWidget(
+      tester,
+      const DiaryHealthConnectMetricCard(
+        accessState: HealthDataAccessState.permissionRequired,
+      ),
+      overrides: [
+        ..._commonOverrides(),
+        healthConnectionServiceProvider.overrideWith(
+          (ref) => healthService,
+        ),
+      ],
+    );
+
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+
+    expect(healthService.requestHistoryAuthorizationCallCount, 1);
+  });
+
+  test('diary weight actions refresh only successful mutations', () async {
+    final otherDay = selectedDay.subtract(const Duration(days: 1));
+    final appSample = HealthWeightSample(
+      recordedAt: selectedDay.add(const Duration(hours: 8)),
+      weightKg: 77.1,
+      uuid: 'app-owned-weight',
+      sourcePackageName: 'de.yamt.app',
+      isFromThisApp: true,
+    );
+    final externalSample = HealthWeightSample(
+      recordedAt: selectedDay.add(const Duration(hours: 9)),
+      weightKg: 77.4,
+      uuid: 'external-weight',
+      sourcePackageName: 'external.app',
+    );
+    final savedWeights = <double>[];
+    final deletedDays = <DateTime>[];
+    final deletedSamples = <HealthWeightSample>[];
+    final refreshedDays = <DateTime?>[];
+    final actions = DiaryWeightActions(
+      saveManualWeight: ({required day, required weightKg}) async {
+        savedWeights.add(weightKg);
+        return weightKg > 0;
+      },
+      deleteManualWeight: (day) async {
+        deletedDays.add(day);
+        return true;
+      },
+      deleteHealthWeightSample: (sample) async {
+        deletedSamples.add(sample);
+        return true;
+      },
+      refreshDependents: ({required selectedDay, day}) {
+        refreshedDays.add(day);
+      },
+    );
+
+    expect(
+      await actions.saveManualWeight(
+        selectedDay: selectedDay,
+        day: otherDay,
+        weightKg: 82.3,
+      ),
+      isTrue,
+    );
+    expect(savedWeights, [82.3]);
+    expect(refreshedDays, [otherDay]);
+
+    refreshedDays.clear();
+    expect(
+      await actions.saveManualWeight(
+        selectedDay: selectedDay,
+        day: selectedDay,
+        weightKg: -1,
+      ),
+      isFalse,
+    );
+    expect(refreshedDays, isEmpty);
+
+    expect(
+      await actions.deleteWeight(
+        selectedDay: selectedDay,
+        day: otherDay,
+        hasManualWeight: true,
+        healthSample: appSample,
+      ),
+      isTrue,
+    );
+    expect(deletedDays, [otherDay]);
+    expect(refreshedDays, [otherDay]);
+
+    refreshedDays.clear();
+    expect(
+      await actions.deleteWeight(
+        selectedDay: selectedDay,
+        day: selectedDay,
+        hasManualWeight: false,
+        healthSample: appSample,
+      ),
+      isTrue,
+    );
+    expect(deletedSamples, [appSample]);
+    expect(refreshedDays, [selectedDay]);
+
+    refreshedDays.clear();
+    expect(await actions.deleteAppOwnedHealthWeight(null), isFalse);
+    expect(
+      await actions.deleteAppOwnedHealthWeight(externalSample),
+      isFalse,
+    );
+    expect(deletedSamples, [appSample]);
+    expect(refreshedDays, isEmpty);
+  });
 
   testWidgets(
     'meals section renders collapsed meals and expanded entry macros',
@@ -583,6 +922,13 @@ const _readyHealthStatus = HealthConnectionStatus(
   historyAccess: HealthHistoryAccess.granted,
 );
 
+const _historyRequiredHealthStatus = HealthConnectionStatus(
+  platform: HealthPlatform.android,
+  healthConnectAvailability: HealthConnectAvailability.available,
+  permissionState: HealthPermissionState.granted,
+  historyAccess: HealthHistoryAccess.notGranted,
+);
+
 List<Override> _commonOverrides() {
   return [
     appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
@@ -634,6 +980,7 @@ DiaryActivityWeightData _activityWeightData(
   int? activityKcal,
   int? activeMinutes,
   double? selectedWeightKg,
+  double? profileWeightKg = 80,
   bool selectedDayHasManualWeight = false,
   HealthWeightSample? selectedDayHealthSample,
 }) {
@@ -679,7 +1026,7 @@ DiaryActivityWeightData _activityWeightData(
     healthAccessState: HealthDataAccessState.ready,
     activityKcal: activityKcal,
     activeMinutes: activeMinutes,
-    profileWeightKg: 80,
+    profileWeightKg: profileWeightKg,
     selectedWeightKg: selectedWeightKg,
     hasSelectedDayWeight: hasSelectedDayWeight,
     activityTrend: const [320, 500, 250, 600, 450, 300, 450],

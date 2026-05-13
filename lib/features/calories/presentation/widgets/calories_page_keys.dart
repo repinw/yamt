@@ -38,29 +38,6 @@ abstract final class CaloriesPageKeys {
     'calories_burn_week_target_value',
   );
 
-  /// The weekly check in hint card.
-  static const weeklyCheckInHintCard = Key('calories_weekly_checkin_hint_card');
-
-  /// The weekly check in success card.
-  static const weeklyCheckInSuccessCard = Key(
-    'calories_weekly_checkin_success_card',
-  );
-
-  /// The weekly check in continue button.
-  static const weeklyCheckInContinueButton = Key(
-    'calories_weekly_checkin_continue_button',
-  );
-
-  /// The weekly check in open trends button.
-  static const weeklyCheckInOpenTrendsButton = Key(
-    'calories_weekly_checkin_open_trends_button',
-  );
-
-  /// The weekly check in skip day button.
-  static const weeklyCheckInSkipDayButton = Key(
-    'calories_weekly_checkin_skip_day_button',
-  );
-
   /// Entry image.
   static Key entryImage(String entryId) {
     return Key('calories_entry_image_$entryId');
@@ -103,23 +80,6 @@ abstract final class CalorieGoalStartFoodTrackingDialogKeys {
 
   /// The yes/count today button.
   static const yesButton = Key('calorie_goal_start_food_tracking_yes');
-}
-
-/// Defines calorie weekly check in dialog keys.
-abstract final class CalorieWeeklyCheckInDialogKeys {
-  /// The dialog.
-  static const dialog = Key('calorie_weekly_checkin_dialog');
-
-  /// The later button.
-  static const laterButton = Key('calorie_weekly_checkin_later_button');
-
-  /// The apply button.
-  static const applyButton = Key('calorie_weekly_checkin_apply_button');
-
-  /// The open trends button.
-  static const openTrendsButton = Key(
-    'calorie_weekly_checkin_open_trends_button',
-  );
 }
 
 /// Defines calorie learned tdee sheet keys.

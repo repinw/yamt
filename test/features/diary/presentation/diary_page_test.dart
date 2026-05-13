@@ -24,15 +24,18 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_balance_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
 import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
@@ -167,7 +170,7 @@ void main() {
       ),
     );
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
   });
 
@@ -203,7 +206,7 @@ void main() {
       ),
     );
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
   });
 
@@ -218,13 +221,13 @@ void main() {
       ),
     );
 
-    expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsOneWidget);
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
 
-    await tester.tap(find.byKey(CaloriesPageKeys.weeklyCheckInContinueButton));
+    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.continueButton));
     await _pumpFrames(tester);
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
   });
 
   testWidgets('weekly check-in hint opens Health trends', (tester) async {
@@ -241,12 +244,37 @@ void main() {
     );
 
     expect(
-      find.byKey(CaloriesPageKeys.weeklyCheckInOpenTrendsButton),
+      find.byKey(DiaryWeeklyCheckInCardKeys.openTrendsButton),
       findsOneWidget,
     );
 
     await tester.tap(
-      find.byKey(CaloriesPageKeys.weeklyCheckInOpenTrendsButton),
+      find.byKey(DiaryWeeklyCheckInCardKeys.openTrendsButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Trends'), findsOneWidget);
+  });
+
+  testWidgets('weekly check-in dialog opens Health trends', (tester) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      useGoRouter: true,
+      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+        windowStartDate: DateTime(2026, 4, 21),
+        shouldAutoOpen: false,
+        blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
+      ),
+    );
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.continueButton));
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(DiaryWeeklyCheckInDialogKeys.openTrendsButton),
     );
     await tester.pumpAndSettle();
 
@@ -278,11 +306,11 @@ void main() {
     );
 
     expect(
-      find.byKey(CaloriesPageKeys.weeklyCheckInSkipDayButton),
+      find.byKey(DiaryWeeklyCheckInCardKeys.skipDayButton),
       findsOneWidget,
     );
 
-    await tester.tap(find.byKey(CaloriesPageKeys.weeklyCheckInSkipDayButton));
+    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.skipDayButton));
     await _pumpFrames(tester);
 
     expect(find.text('Could not save calorie goal.'), findsOneWidget);
@@ -299,7 +327,7 @@ void main() {
       ),
     );
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 13 - Apr 19'), findsOneWidget);
 
     container
@@ -312,10 +340,10 @@ void main() {
     expect(find.text('Apr 13 - Apr 19'), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsNothing);
 
-    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.laterButton));
+    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.laterButton));
     await _pumpFrames(tester, count: 12);
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
   });
 
@@ -340,13 +368,13 @@ void main() {
       ),
     );
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
 
-    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton));
+    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.applyButton));
     await _pumpFrames(tester, count: 4);
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsNothing);
-    expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
 
     saveCompleter.complete();
     await _pumpFrames(tester);
@@ -372,13 +400,13 @@ void main() {
       ),
     );
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
 
-    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton));
+    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.applyButton));
     await _pumpFrames(tester);
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsNothing);
-    expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
     expect(find.text('Could not close the weekly check-in.'), findsOneWidget);
   });
 
@@ -443,7 +471,7 @@ void main() {
     );
 
     expect(
-      find.byKey(CaloriesPageKeys.weeklyCheckInSuccessCard),
+      find.byKey(DiaryWeeklyCheckInCardKeys.successCard),
       findsOneWidget,
     );
     expect(find.textContaining('1,800 kcal'), findsOneWidget);
@@ -834,14 +862,14 @@ void main() {
       ],
     );
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
 
     now = DateTime(2026, 4, 15, 8);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await _pumpFrames(tester);
 
-    expect(find.byKey(CalorieWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 8 - Apr 14'), findsOneWidget);
   });
 }
