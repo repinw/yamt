@@ -72,8 +72,8 @@ class CalorieGoalOnboardingCatchUpPlaceholderWriter {
       final placeholderSaved = await _logRepository.saveEntryForCurrentUser(
         placeholder,
       );
-      // TODO: Add repository-level transactional writes. If a later placeholder
-      // fails, earlier placeholder entries may already be persisted.
+      // TODO(wladik): Add repository-level transactional writes. If a later
+      // placeholder fails, earlier entries may already be persisted.
       if (!placeholderSaved || !_isMounted()) {
         return false;
       }

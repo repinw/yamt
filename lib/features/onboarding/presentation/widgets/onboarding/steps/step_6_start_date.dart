@@ -57,6 +57,11 @@ class Step6StartDate extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final startNowSelected = startNow == true;
     final startLaterSelected = startNow == false;
+    final startDateError = _buildError(
+      context,
+      l10n,
+      startNowSelected: startNowSelected,
+    );
 
     return OnboardingStepContent(
       key: CalorieGoalOnboardingKeys.goalStartCard,
@@ -96,7 +101,7 @@ class Step6StartDate extends StatelessWidget {
                 )
               : null,
         ),
-        ?_buildError(context, l10n, startNowSelected: startNowSelected),
+        ?startDateError,
       ],
     );
   }

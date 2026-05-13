@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
@@ -18,13 +17,10 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../test/features/calories/support/fake_calories_repositories.dart';
@@ -67,6 +63,7 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   }
 }
 
+@Dependencies([appRouter])
 class _RouterHarness extends ConsumerWidget {
   const _RouterHarness();
 
@@ -86,12 +83,7 @@ const _routerTransitionDuration = Duration(milliseconds: 350);
 const _visibleStepDuration = Duration(milliseconds: 400);
 const _userId = 'uid-visible-onboarding';
 
-@Dependencies([
-  appRouter,
-  InventoryItemsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
-])
+@Dependencies([appRouter])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
@@ -99,79 +91,122 @@ void main() {
   testWidgets('calorie onboarding start-later flow runs visibly on Android', (
     tester,
   ) async {
-    final harness = _buildHarness();
+    final harness = await _pumpOnboardingApp(tester);
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: harness.container,
-        child: const _RouterHarness(),
-      ),
+    await _completeOnboardingToStartDateStep(
+      tester,
+      validatePersonalInfo: true,
     );
-    await _pumpRouterTransition(tester);
-    await _pumpRouterTransition(tester);
+    await _chooseStartLater(tester);
+    await _finishOnboarding(tester);
 
-    expect(_currentRoute(harness), AppRoutes.calorieGoalSetup);
-    expect(find.text('Glad you are here!'), findsOneWidget);
+    _expectHomeDiary(harness);
+    await _expectStartLaterSaved(harness);
+    _expectOnboardingCompleted(harness);
+  });
 
-    await _tapVisible(tester, find.text("Let's start"));
+  testWidgets('calorie onboarding start-now exact flow saves today', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboardingApp(tester);
 
-    await _tapOnboardingNext(tester);
-    expect(find.text('Please enter your age.'), findsOneWidget);
-    expect(find.text('Please enter your height.'), findsOneWidget);
+    await _completeOnboardingToStartDateStep(tester);
+    await _chooseStartNowExact(tester);
+    await _finishOnboarding(tester);
 
-    await _tapVisible(tester, find.text('Female'));
-    await tester.enterText(find.byType(TextFormField).at(0), '30');
-    await tester.enterText(find.byType(TextFormField).at(1), '170');
-    await _dismissKeyboard(tester);
-    await _tapOnboardingNext(tester);
-
-    await _tapActivityOption(tester, 'Lightly active');
-    await _tapOnboardingNext(tester);
-
-    await tester.enterText(find.byType(TextFormField).at(0), '70');
-    await tester.enterText(find.byType(TextFormField).at(1), '70');
-    await _dismissKeyboard(tester);
-    await _tapOnboardingNext(tester);
-
-    expect(find.textContaining('Your Plan is Ready'), findsOneWidget);
-    await _tapOnboardingNext(tester);
-
-    final startLaterOption = find.byKey(
-      CalorieGoalOnboardingKeys.goalStartLaterOption,
-    );
-    await _tapVisible(tester, startLaterOption);
-    await _tapOnboardingNext(tester);
-
-    expect(find.text('All set!'), findsOneWidget);
-    await _tapVisible(tester, find.text("Let's go"));
-    await _pumpRouterTransition(tester);
-    await _pumpRouterTransition(tester);
-
-    expect(_currentRoute(harness), AppRoutes.homeDiary);
-    expect(find.byKey(const ValueKey<String>('diary-page')), findsOneWidget);
-
-    final settings = await harness.settingsRepository.readSettings();
-    final tomorrow = normalizeDiaryDay(
-      DateTime.now().add(const Duration(days: 1)),
-    );
-    expect(settings.nextGoalStartAfterDay(DateTime.now()), tomorrow);
-    expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);
+    _expectHomeDiary(harness);
+    await _expectStartTodaySaved(harness);
     expect(harness.logRepository.entries, isEmpty);
-    expect(
-      harness.preferences.getStringSync(
-        calorieGoalOnboardingKeyForUser(_userId),
-      ),
-      calorieGoalOnboardingCompletedValue,
+    _expectOnboardingCompleted(harness);
+  });
+
+  testWidgets('calorie onboarding start-now estimate flow saves catch-up', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboardingApp(tester);
+
+    await _completeOnboardingToStartDateStep(tester);
+    await _chooseStartNowEstimateHigh(tester);
+    await _finishOnboarding(tester);
+
+    _expectHomeDiary(harness);
+    await _expectStartTodaySaved(harness);
+    for (final entry in harness.logRepository.entries) {
+      expect(entry.name, 'Estimated meal');
+      expect(entry.totalKcal, greaterThan(0));
+    }
+    _expectOnboardingCompleted(harness);
+  });
+
+  testWidgets('calorie onboarding future date picker opens and saves', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboardingApp(tester);
+
+    await _completeOnboardingToStartDateStep(tester);
+    await _selectStartLater(tester);
+    await _tapVisible(
+      tester,
+      find.byKey(CalorieGoalOnboardingKeys.goalStartChangeButton),
     );
+
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+    await _tapVisible(tester, find.text('OK').last);
+    await _tapOnboardingNext(tester);
+    await _finishOnboarding(tester);
+
+    _expectHomeDiary(harness);
+    await _expectStartLaterSaved(harness);
+    _expectOnboardingCompleted(harness);
+  });
+
+  testWidgets('calorie onboarding start-date step blocks missing choices', (
+    tester,
+  ) async {
+    await _pumpOnboardingApp(tester);
+    await _completeOnboardingToStartDateStep(tester);
+
+    await _tapOnboardingNext(tester);
+    expect(find.text('When should your goal start?'), findsOneWidget);
+    expect(find.text('All set!'), findsNothing);
+
+    await _tapVisible(
+      tester,
+      find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
+    );
+    await _tapOnboardingNext(tester);
+
+    expect(find.text('How will you track today?'), findsOneWidget);
+    expect(find.text('All set!'), findsNothing);
   });
 }
 
-_CalorieOnboardingIntegrationHarness _buildHarness() {
-  final user = _authenticatedUser(uid: _userId);
+Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
+  WidgetTester tester,
+) async {
+  final harness = _buildHarness();
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: harness.container,
+      child: const _RouterHarness(),
+    ),
+  );
+  await _pumpRouterTransition(tester);
+  await _pumpRouterTransition(tester);
+
+  expect(_currentRoute(harness), AppRoutes.calorieGoalSetup);
+  expect(find.text('Glad you are here!'), findsOneWidget);
+  return harness;
+}
+
+_CalorieOnboardingIntegrationHarness _buildHarness({
+  String userId = _userId,
+}) {
+  final user = _authenticatedUser(uid: userId);
   final authStream = Stream<User?>.value(user).asBroadcastStream();
   final firebaseAuth = _MockFirebaseAuth();
   final preferences = MemoryAppPreferences(
-    completedProfileSetupUserIds: {_userId},
+    completedProfileSetupUserIds: {userId},
   );
   final settingsRepository = FakeCalorieSettingsRepository();
   final logRepository = FakeCalorieLogRepository();
@@ -225,8 +260,134 @@ _MockUser _authenticatedUser({
   return user;
 }
 
+@Dependencies([appRouter])
 String _currentRoute(_CalorieOnboardingIntegrationHarness harness) {
   return harness.container.read(appRouterProvider).state.uri.path;
+}
+
+Future<void> _completeOnboardingToStartDateStep(
+  WidgetTester tester, {
+  bool validatePersonalInfo = false,
+}) async {
+  await _tapVisible(tester, find.text("Let's start"));
+  if (validatePersonalInfo) {
+    await _tapOnboardingNext(tester);
+    expect(find.text('Please enter your age.'), findsOneWidget);
+    expect(find.text('Please enter your height.'), findsOneWidget);
+  }
+
+  await _tapVisible(tester, find.text('Female'));
+  await tester.enterText(find.byType(TextFormField).at(0), '30');
+  await tester.enterText(find.byType(TextFormField).at(1), '170');
+  await _dismissKeyboard(tester);
+  await _tapOnboardingNext(tester);
+
+  await _tapActivityOption(tester, 'Lightly active');
+  await _tapOnboardingNext(tester);
+
+  await tester.enterText(find.byType(TextFormField).at(0), '70');
+  await tester.enterText(find.byType(TextFormField).at(1), '70');
+  await _dismissKeyboard(tester);
+  await _tapOnboardingNext(tester);
+
+  expect(find.textContaining('Your Plan is Ready'), findsOneWidget);
+  await _tapOnboardingNext(tester);
+  expect(find.text('When to start?'), findsOneWidget);
+}
+
+Future<void> _chooseStartLater(WidgetTester tester) async {
+  await _selectStartLater(tester);
+  await _tapOnboardingNext(tester);
+}
+
+Future<void> _selectStartLater(WidgetTester tester) async {
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.goalStartLaterOption),
+  );
+  expect(
+    find.byKey(CalorieGoalOnboardingKeys.goalStartChangeButton),
+    findsOneWidget,
+  );
+}
+
+Future<void> _chooseStartNowExact(WidgetTester tester) async {
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
+  );
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.todayTrackingExactOption),
+  );
+  await _tapOnboardingNext(tester);
+}
+
+Future<void> _chooseStartNowEstimateHigh(WidgetTester tester) async {
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
+  );
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.todayTrackingEstimateOption),
+  );
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.catchUpHighOption),
+  );
+  await _tapOnboardingNext(tester);
+}
+
+Future<void> _finishOnboarding(WidgetTester tester) async {
+  expect(find.text('All set!'), findsOneWidget);
+  await _tapVisible(tester, find.text("Let's go"));
+  await _pumpRouterTransition(tester);
+  await _pumpRouterTransition(tester);
+}
+
+void _expectHomeDiary(
+  _CalorieOnboardingIntegrationHarness harness,
+) {
+  expect(_currentRoute(harness), AppRoutes.homeDiary);
+  expect(find.byKey(const ValueKey<String>('diary-page')), findsOneWidget);
+}
+
+Future<void> _expectStartLaterSaved(
+  _CalorieOnboardingIntegrationHarness harness,
+) async {
+  final settings = await harness.settingsRepository.readSettings();
+  final tomorrow = normalizeDiaryDay(
+    DateTime.now().add(const Duration(days: 1)),
+  );
+  expect(settings.nextGoalStartAfterDay(DateTime.now()), tomorrow);
+  expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);
+  expect(harness.logRepository.entries, isEmpty);
+}
+
+Future<void> _expectStartTodaySaved(
+  _CalorieOnboardingIntegrationHarness harness,
+) async {
+  final today = normalizeDiaryDay(DateTime.now());
+  final settings = await harness.settingsRepository.readSettings();
+  final goalEntry = settings.goalHistory.single;
+  expect(goalEntry.effectiveDate, today);
+  expect(goalEntry.effectiveCountingStartDate, today);
+  expect(
+    harness.runStateRepository.state.currentWeekStartDayKey,
+    diaryDayKey(today),
+  );
+}
+
+void _expectOnboardingCompleted(
+  _CalorieOnboardingIntegrationHarness harness,
+) {
+  expect(
+    harness.preferences.getStringSync(
+      calorieGoalOnboardingKeyForUser(_userId),
+    ),
+    calorieGoalOnboardingCompletedValue,
+  );
 }
 
 Future<void> _pumpRouterTransition(WidgetTester tester) async {
@@ -255,11 +416,7 @@ Future<void> _tapOnboardingNext(WidgetTester tester) async {
 }
 
 Future<void> _tapActivityOption(WidgetTester tester, String text) async {
-  final card = find.ancestor(
-    of: find.text(text),
-    matching: find.byType(GestureDetector),
-  );
-  await _tapVisible(tester, card.first);
+  await _tapVisible(tester, find.text(text));
 }
 
 Future<void> _dismissKeyboard(WidgetTester tester) async {

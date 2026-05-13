@@ -36,6 +36,7 @@ class Step6StartDateChoiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final expandedChild = child;
     return OnboardingSelectableCard(
       isSelected: isSelected,
       onTap: onTap,
@@ -88,7 +89,7 @@ class Step6StartDateChoiceCard extends StatelessWidget {
               ),
             ],
           ),
-          ?child,
+          ?expandedChild,
         ],
       ),
     );

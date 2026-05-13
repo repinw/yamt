@@ -44,6 +44,7 @@ class CalorieOnboardingFinishHandler {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
+    final container = ProviderScope.containerOf(context, listen: false);
     final profile = formState.profile;
     final calculation = formState.calculation;
     if (profile == null || calculation == null) {
@@ -70,7 +71,6 @@ class CalorieOnboardingFinishHandler {
     }
 
     if (success) {
-      final container = ProviderScope.containerOf(context, listen: false);
       await _markCompleted(container);
       if (!isMounted()) {
         return;
