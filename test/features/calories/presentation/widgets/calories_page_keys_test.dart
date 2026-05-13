@@ -9,10 +9,6 @@ void main() {
       const Key('calories_entry_image_entry-1'),
     );
     expect(
-      CaloriesPageKeys.bundleComponentImage('entry-1', 2),
-      const Key('calories_bundle_component_image_entry-1_2'),
-    );
-    expect(
       CaloriesPageKeys.summaryMacroCard('protein'),
       const Key('calories_summary_macro_card_protein'),
     );

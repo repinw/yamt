@@ -66,11 +66,6 @@ abstract final class CaloriesPageKeys {
     return Key('calories_entry_image_$entryId');
   }
 
-  /// Bundle component image.
-  static Key bundleComponentImage(String entryId, int index) {
-    return Key('calories_bundle_component_image_${entryId}_$index');
-  }
-
   /// Summary macro card.
   static Key summaryMacroCard(String macro) {
     return Key('calories_summary_macro_card_$macro');
@@ -90,15 +85,6 @@ abstract final class CaloriesPageKeys {
   static Key burnWeekMockQuickAction(String delta) {
     return Key('calories_burn_week_quick_action_$delta');
   }
-}
-
-/// Defines calorie goal dialog keys.
-abstract final class CalorieGoalDialogKeys {
-  /// The value field.
-  static const valueField = Key('calorie_goal_value_field');
-
-  /// The clear button.
-  static const clearButton = Key('calorie_goal_clear_button');
 }
 
 /// Defines calorie goal start dialog keys.
