@@ -5,6 +5,11 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_learned_tdee_goal_sheet.dart';
 
+enum _CalorieGoalCalculatorSheetRoute {
+  learnedTdee,
+  fullCalculator,
+}
+
 /// Show calorie goal calculator sheet.
 Future<void> showCalorieGoalCalculatorSheet(
   BuildContext context, {
@@ -12,17 +17,33 @@ Future<void> showCalorieGoalCalculatorSheet(
   bool preferLearnedTdee = true,
   bool useRootNavigator = false,
 }) {
-  if (preferLearnedTdee && initialSettings.hasLearnedTdee) {
-    return showCalorieLearnedTdeeGoalSheet(
-      context,
-      initialSettings: initialSettings,
-      useRootNavigator: useRootNavigator,
-    );
-  }
-
-  return showCalorieGoalCalculatorResetSheet(
-    context,
+  final route = _resolveCalorieGoalCalculatorSheetRoute(
     initialSettings: initialSettings,
-    useRootNavigator: useRootNavigator,
+    preferLearnedTdee: preferLearnedTdee,
   );
+
+  return switch (route) {
+    _CalorieGoalCalculatorSheetRoute.learnedTdee =>
+      showCalorieLearnedTdeeGoalSheet(
+        context,
+        initialSettings: initialSettings,
+        useRootNavigator: useRootNavigator,
+      ),
+    _CalorieGoalCalculatorSheetRoute.fullCalculator =>
+      showCalorieGoalCalculatorResetSheet(
+        context,
+        initialSettings: initialSettings,
+        useRootNavigator: useRootNavigator,
+      ),
+  };
+}
+
+_CalorieGoalCalculatorSheetRoute _resolveCalorieGoalCalculatorSheetRoute({
+  required CalorieGoalSettings initialSettings,
+  required bool preferLearnedTdee,
+}) {
+  if (preferLearnedTdee && initialSettings.hasLearnedTdee) {
+    return _CalorieGoalCalculatorSheetRoute.learnedTdee;
+  }
+  return _CalorieGoalCalculatorSheetRoute.fullCalculator;
 }
