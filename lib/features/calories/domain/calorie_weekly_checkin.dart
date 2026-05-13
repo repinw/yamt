@@ -34,9 +34,6 @@ const int dailyLearnedTdeeMinimumCompleteDays =
 /// Maximum completed intake days used for daily learned TDEE.
 const dailyLearnedTdeeMaximumLookbackDays = 28;
 
-/// Maximum kcal target movement from one daily learned TDEE update.
-const dailyLearnedTdeeMaxGoalAdjustmentKcal = 50.0;
-
 /// Defines calorie weekly check in weight point.
 class CalorieWeeklyCheckInWeightPoint {
   /// The calorie weekly check in weight point.

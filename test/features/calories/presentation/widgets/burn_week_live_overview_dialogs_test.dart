@@ -220,56 +220,6 @@ void main() {
 
     expect(restartResult, BurnWeekRunLimitAction.startNewRun);
   });
-
-  testWidgets('details dialog maps Burn Week data into shared rows', (
-    tester,
-  ) async {
-    await _pumpDialogLauncher(
-      tester,
-      onPressed: (context) {
-        unawaited(
-          showBurnWeekDetailsDialog(
-            context: context,
-            data: const BurnWeekLiveDetailsData(
-              actualText: '123 kcal',
-              targetText: '456 kcal',
-              dailyGoalText: '2000 kcal',
-              weeklyGoalText: '14000 kcal',
-              currentTimeLabel: 'day 3 noon',
-              weekRatioText: '0.42',
-              targetFormulaText: 'goal x time',
-              weekEatenSoFarText: '4000 kcal',
-              plannedLaterTodayText: '300 kcal',
-              todayBudgetText: '2100 kcal',
-              todayFoodText: '900 kcal',
-              todayLeftText: '1200 kcal',
-              weekActivityBonusText: '80 kcal',
-              weekCarryoverText: '-40 kcal',
-              previousWeekOverflowText: '20 kcal',
-              weekRemainingAfterFoodText: '10000 kcal',
-              safeMinText: '1700 kcal',
-              safeMaxText: '2300 kcal',
-              starsHeartsText: '2 / 1',
-              heartCreditText: '0 kcal',
-            ),
-          ),
-        );
-      },
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Burn Week details'), findsOneWidget);
-    expect(find.text('123 kcal'), findsOneWidget);
-    expect(find.text('456 kcal'), findsOneWidget);
-    expect(_findRichTextContaining('Daily goal: 2000 kcal'), findsOneWidget);
-    expect(_findRichTextContaining('Stars / Hearts: 2 / 1'), findsOneWidget);
-    expect(
-      _findRichTextContaining('Safe zone: 1700 kcal - 2300 kcal'),
-      findsOneWidget,
-    );
-  });
 }
 
 Future<void> _pumpDialogLauncher(
@@ -293,10 +243,4 @@ Future<void> _pumpDialogLauncher(
       ),
     ),
   );
-}
-
-Finder _findRichTextContaining(String text) {
-  return find.byWidgetPredicate((widget) {
-    return widget is RichText && widget.text.toPlainText().contains(text);
-  });
 }

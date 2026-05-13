@@ -26,7 +26,7 @@ almost all of the data and widgets from this feature. In practice,
   intake, weight trend, and activity.
 - Reuses learned TDEE day by day until newer data or a new weekly boundary can
   update it.
-- Calculates 7-day balance, carryover, flexible daily goals, and pacing data.
+- Calculates 7-day carryover and flexible daily goals.
 - Manages Burn Week with stars, hearts, protected days, and week sync.
 - Prints debug dumps for calories, settings, and weekly check-ins.
 
@@ -109,8 +109,6 @@ Connects domain, data, and UI through Riverpod:
   minimum goal floor.
 - `calorieWeekOverviewProvider`: Builds the visible 7-day overview with daily
   goals, intake, carryover, heart days, and future goal starts.
-- `calorieBalanceSummaryProvider`: Calculates balance and pacing data for the
-  diary balance card.
 - `calorieWeeklyCheckInViewModelProvider` and builder: Decide whether a weekly
   check-in is due, blocked, stale, or ready, and load intake, weight, and
   activity data.
@@ -140,9 +138,9 @@ Contains pages, dialogs, models, and reusable widgets:
 - `CalorieEntryEditorDraft` owns text controllers, validation, and parsing.
 - `CalorieEntryEditorFormScaffold` builds the manual entry form.
 - `calorie_entry_details_view/` contains the details bottom-sheet components.
-- Goal widgets such as `calorie_goal_dialog.dart`,
-  `calorie_goal_calculator_sheet.dart`, `calorie_goal_calculator_flow.dart`,
-  and `calorie_learned_tdee_goal_sheet.dart` implement goal setting and the
+- Goal widgets such as `calorie_goal_calculator_sheet.dart`,
+  `calorie_goal_calculator_flow.dart`, and
+  `calorie_learned_tdee_goal_sheet.dart` implement goal setting and the
   calculator UI.
 - Weekly check-in widgets show hints, dialogs, and status messages.
 - Health trend widgets show weight, intake, and burned calories.
@@ -201,8 +199,8 @@ Generated Riverpod and JSON files. They should not be edited manually.
 4. `resolvedCalorieGoalForDayProvider` decides the effective goal for each day:
    stored goal, learned TDEE, or 0/default, plus activity bonus and minimum
    floor.
-5. `calorieWeekOverviewProvider` and `calorieBalanceSummaryProvider` use the
-   resolved goal for the week strip, balance, carryover, and pacing.
+5. `calorieWeekOverviewProvider` uses the resolved goal for the week strip,
+   carryover, and flexible daily goals.
 
 ### Weekly Check-in And Learned TDEE
 

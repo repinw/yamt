@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -8,8 +7,6 @@ import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -144,23 +141,6 @@ double resolveBurnWeekPreviousOverflowKcal({
     return 0;
   }
   return cycleCarryoverBeforeTodayKcal - currentWeekCarryoverBeforeTodayKcal;
-}
-
-/// Resolves eatable activity bonus sum inside current Burn Week.
-double resolveBurnWeekActivityBonusKcal({
-  required CalorieWeekOverview weekOverview,
-  required DateTime currentWeekStartDate,
-  required List<AsyncValue<ResolvedCalorieGoalData>> resolvedGoalStates,
-}) {
-  var total = 0.0;
-  for (var index = 0; index < resolvedGoalStates.length; index += 1) {
-    final day = weekOverview.days[index];
-    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-      continue;
-    }
-    total += resolvedGoalStates[index].asData?.value.activityDeltaKcal ?? 0;
-  }
-  return total;
 }
 
 /// Formats signed kcal string.
@@ -324,11 +304,4 @@ bool resolveBurnWeekLiveMissedTrackingForStoredWeek({
     }
     return day.entryCount == 0;
   });
-}
-
-/// Formats live clock label.
-String formatBurnWeekLiveClockTime(DateTime now) {
-  return '${now.hour.toString().padLeft(2, '0')}:'
-      '${now.minute.toString().padLeft(2, '0')}:'
-      '${now.second.toString().padLeft(2, '0')}';
 }
