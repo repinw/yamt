@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-/// Defines calorie health trends page keys.
-abstract final class CalorieHealthTrendsPageKeys {
+/// Defines calorie health trends widget keys.
+abstract final class CalorieHealthTrendsKeys {
   /// The weight dialog field.
   static const weightDialogField = Key('calorie_health_trends_weight_field');
 

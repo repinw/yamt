@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/debug/calories/calorie_debug_dump_service.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
-import '../../features/calories/support/fake_calories_repositories.dart';
+import '../support/fake_calories_repositories.dart';
 
 const _readyStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,

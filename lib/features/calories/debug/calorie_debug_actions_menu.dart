@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/debug/calories/calorie_debug_keys.dart';
-import 'package:yamt/debug/calories/calorie_page_action_controller.dart';
-import 'package:yamt/debug/calories/calorie_page_actions.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_actions.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
 
 enum _CalorieDebugAction {
   debugDump,

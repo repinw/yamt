@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/presentation/calorie_health_trends_page_keys.dart';
+import 'package:yamt/features/calories/presentation/calorie_health_trends_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_health_weight_dialog.dart';
 import 'package:yamt/features/calories/provider/calorie_health_trend_provider.dart';
@@ -152,7 +152,7 @@ class _WeightDayRow extends StatelessWidget {
         : '${point.weightKg!.toStringAsFixed(1)} ${l10n.caloriesUnitKg}';
 
     return Row(
-      key: CalorieHealthTrendsPageKeys.weightRow(dayKey),
+      key: CalorieHealthTrendsKeys.weightRow(dayKey),
       children: [
         Expanded(
           child: Column(
@@ -183,7 +183,7 @@ class _WeightDayRow extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.sm),
         OutlinedButton(
-          key: CalorieHealthTrendsPageKeys.weightActionButton(dayKey),
+          key: CalorieHealthTrendsKeys.weightActionButton(dayKey),
           onPressed: onTap,
           child: Text(actionLabel),
         ),

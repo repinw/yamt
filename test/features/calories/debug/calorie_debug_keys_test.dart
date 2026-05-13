@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/debug/calories/calorie_debug_keys.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
 
 void main() {
   test('calorie debug keys generate stable values', () {

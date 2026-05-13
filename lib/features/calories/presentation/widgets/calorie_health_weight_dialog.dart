@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:yamt/features/calories/presentation/calorie_health_trends_page_keys.dart';
+import 'package:yamt/features/calories/presentation/calorie_health_trends_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Show calorie health weight dialog.
@@ -94,7 +94,7 @@ class _CalorieHealthWeightDialogContentState
       scrollable: true,
       title: Text(l10n.caloriesHealthTrendsWeightDialogTitle(widget.dayLabel)),
       content: TextField(
-        key: CalorieHealthTrendsPageKeys.weightDialogField,
+        key: CalorieHealthTrendsKeys.weightDialogField,
         controller: _controller,
         keyboardType: _weightKeyboardType,
         textInputAction: TextInputAction.done,
@@ -110,7 +110,7 @@ class _CalorieHealthWeightDialogContentState
       actions: <Widget>[
         if (widget.hasManualWeight)
           TextButton(
-            key: CalorieHealthTrendsPageKeys.weightDialogClearButton,
+            key: CalorieHealthTrendsKeys.weightDialogClearButton,
             onPressed: () => Navigator.of(
               context,
             ).pop(const _CalorieHealthWeightDialogResult.clear()),
@@ -121,7 +121,7 @@ class _CalorieHealthWeightDialogContentState
           child: Text(l10n.inventoryReceiptReviewCancelAction),
         ),
         FilledButton(
-          key: CalorieHealthTrendsPageKeys.weightDialogSaveButton,
+          key: CalorieHealthTrendsKeys.weightDialogSaveButton,
           onPressed: _save,
           child: Text(l10n.caloriesHealthTrendsWeightSaveAction),
         ),

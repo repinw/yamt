@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/debug/calories/calorie_page_action_controller.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shows the calorie debug dump result.

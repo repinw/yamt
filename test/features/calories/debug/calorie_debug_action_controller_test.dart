@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
-import 'package:yamt/debug/calories/calorie_page_action_controller.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
@@ -16,7 +16,7 @@ import 'package:yamt/features/health/provider/health_weight_service_provider.dar
 import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 
-import '../../features/calories/support/fake_calories_repositories.dart';
+import '../support/fake_calories_repositories.dart';
 
 void main() {
   test('printDebugDump returns success result', () async {
