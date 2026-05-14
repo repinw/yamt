@@ -5,11 +5,9 @@ Dependencies that create loops (inversions) are marked with `!`.
 
 ```mermaid
 flowchart TD;
-burn_week_live_overview_dialogs.dart-->calorie_budget_details_dialog.dart;
 burn_week_overview_card.dart-->calorie_metric_stat_card.dart;
 burn_week_zone_dialog_host.dart-->burn_week_live_overview_dialogs.dart;
 calorie_budget_details_dialog.dart-->calorie_metric_stat_card.dart;
-calorie_bundle_details_sheet.dart-->calories_page_keys.dart;
 calorie_entry_details_view-->calories_page_keys.dart;
 calorie_entry_editor_content.dart-->calorie_entry_details_view;
 calorie_entry_editor_content.dart-->calorie_entry_editor_dialogs.dart;
@@ -18,34 +16,18 @@ calorie_entry_editor_form_scaffold.dart-->calories_page_keys.dart;
 calorie_goal_calculator_activity_level_selector.dart-->calories_page_keys.dart;
 calorie_goal_calculator_flow.dart-->calorie_goal_calculator_activity_level_selector.dart;
 calorie_goal_calculator_flow.dart-->calorie_goal_calculator_input_controls.dart;
-calorie_goal_calculator_flow.dart-->calorie_goal_calculator_results.dart;
 calorie_goal_calculator_flow.dart-->calorie_goal_start_food_tracking_dialog.dart;
-calorie_goal_calculator_flow.dart-->calorie_goal_start_picker.dart;
 calorie_goal_calculator_flow.dart-->calories_page_keys.dart;
 calorie_goal_calculator_input_controls.dart-->calories_page_keys.dart;
-calorie_goal_calculator_results.dart-->calories_page_keys.dart;
-calorie_goal_calculator_sheet.dart--!-->calorie_goal_calculator_flow.dart;
-calorie_goal_calculator_sheet.dart--!-->calorie_learned_tdee_goal_sheet.dart;
-calorie_goal_dialog.dart-->calories_page_keys.dart;
-calorie_goal_start_dialog.dart-->calorie_goal_start_picker.dart;
+calorie_goal_calculator_reset_sheet.dart-->calorie_goal_calculator_flow.dart;
+calorie_goal_calculator_sheet.dart-->calorie_goal_calculator_reset_sheet.dart;
+calorie_goal_calculator_sheet.dart-->calorie_learned_tdee_goal_sheet.dart;
 calorie_goal_start_dialog.dart-->calories_page_keys.dart;
 calorie_goal_start_food_tracking_dialog.dart-->calories_page_keys.dart;
 calorie_health_weight_list.dart-->calorie_health_weight_dialog.dart;
 calorie_learned_tdee_goal_sheet.dart-->calorie_goal_calculator_input_controls.dart;
-calorie_learned_tdee_goal_sheet.dart-->calorie_goal_calculator_results.dart;
-calorie_learned_tdee_goal_sheet.dart-->calorie_goal_calculator_sheet.dart;
+calorie_learned_tdee_goal_sheet.dart-->calorie_goal_calculator_reset_sheet.dart;
 calorie_learned_tdee_goal_sheet.dart-->calorie_goal_start_food_tracking_dialog.dart;
-calorie_learned_tdee_goal_sheet.dart-->calorie_goal_start_picker.dart;
 calorie_learned_tdee_goal_sheet.dart-->calories_page_keys.dart;
-calorie_weekly_checkin_dialog.dart-->calorie_weekly_checkin_messages.dart;
-calorie_weekly_checkin_dialog.dart-->calories_page_keys.dart;
-calorie_weekly_checkin_hint_card.dart-->calorie_weekly_checkin_messages.dart;
-calorie_weekly_checkin_hint_card.dart-->calories_page_keys.dart;
 calories_summary_card_macros.dart-->calories_page_keys.dart;
 ```
-
-### Inversions
-
-In this folder: 2
-
-Including sub-folders: 2

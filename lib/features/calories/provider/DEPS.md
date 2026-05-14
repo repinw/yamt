@@ -9,27 +9,19 @@ burn_week_live_sync_provider.dart-->burn_week_run_controller.dart;
 burn_week_live_sync_provider.dart-->calorie_goal_controller.dart;
 burn_week_live_sync_provider.dart-->calorie_week_overview_provider.dart;
 burn_week_run_controller.dart-->calorie_goal_controller.dart;
-calorie_balance_summary_provider.dart--!-->calorie_entries_controller.dart;
-calorie_balance_summary_provider.dart-->calorie_day_controller.dart;
-calorie_balance_summary_provider.dart-->calorie_goal_controller.dart;
-calorie_balance_summary_provider.dart-->calorie_resolved_goal_provider.dart;
 calorie_entries_controller.dart-->calorie_day_controller.dart;
 calorie_entries_controller.dart-->calorie_entry_post_persist_hook.dart;
 calorie_entries_controller.dart-->calorie_goal_controller.dart;
 calorie_entries_controller.dart-->calorie_overview_revision_provider.dart;
 calorie_entries_controller.dart-->calorie_resolved_goal_provider.dart;
-calorie_goal_calculator_form_controller.dart-->burn_week_run_controller.dart;
 calorie_goal_calculator_form_controller.dart-->calorie_goal_calculator_form_state.dart;
 calorie_goal_calculator_form_controller.dart-->calorie_goal_controller.dart;
-calorie_goal_controller.dart-->calorie_goal_onboarding_completed_provider.dart;
 calorie_health_trend_provider.dart-->calorie_goal_controller.dart;
 calorie_health_trend_provider.dart-->calorie_health_trends_window_controller.dart;
 calorie_health_trend_provider.dart-->calorie_visible_window_controller.dart;
 calorie_health_trend_provider.dart-->calorie_week_overview_provider.dart;
-calorie_page_action_controller.dart-->calorie_goal_controller.dart;
 calorie_page_action_controller.dart-->calorie_weekly_checkin_controller.dart;
-calorie_page_action_controller.dart-->calorie_weekly_checkin_provider.dart;
-calorie_resolved_goal_provider.dart--!-->calorie_balance_summary_provider.dart;
+calorie_resolved_goal_provider.dart-->calorie_balance_now_provider.dart;
 calorie_resolved_goal_provider.dart-->calorie_goal_controller.dart;
 calorie_resolved_goal_provider.dart-->daily_learned_tdee_provider.dart;
 calorie_week_overview_provider.dart-->burn_week_run_controller.dart;
@@ -39,17 +31,14 @@ calorie_week_overview_provider.dart-->calorie_resolved_goal_provider.dart;
 calorie_week_overview_provider.dart-->calorie_visible_window_controller.dart;
 calorie_weekly_checkin_controller.dart-->burn_week_run_controller.dart;
 calorie_weekly_checkin_controller.dart-->calorie_goal_controller.dart;
-calorie_weekly_checkin_controller.dart-->calorie_weekly_checkin_provider.dart;
-calorie_weekly_checkin_provider.dart-->burn_week_run_controller.dart;
-calorie_weekly_checkin_provider.dart-->calorie_balance_summary_provider.dart;
-calorie_weekly_checkin_provider.dart-->calorie_goal_controller.dart;
-calorie_weekly_checkin_provider.dart-->calorie_overview_revision_provider.dart;
+calorie_weekly_checkin_controller.dart-->calorie_weekly_checkin_models.dart;
+calorie_weekly_checkin_provider.dart-->calorie_weekly_checkin_models.dart;
+calorie_weekly_checkin_provider.dart-->calorie_weekly_checkin_view_model_builder.dart;
+calorie_weekly_checkin_view_model_builder.dart-->burn_week_run_controller.dart;
+calorie_weekly_checkin_view_model_builder.dart-->calorie_balance_now_provider.dart;
+calorie_weekly_checkin_view_model_builder.dart-->calorie_goal_controller.dart;
+calorie_weekly_checkin_view_model_builder.dart-->calorie_overview_revision_provider.dart;
+calorie_weekly_checkin_view_model_builder.dart-->calorie_weekly_checkin_models.dart;
 daily_learned_tdee_provider.dart-->calorie_goal_controller.dart;
 daily_learned_tdee_provider.dart-->calorie_overview_revision_provider.dart;
 ```
-
-### Inversions
-
-In this folder: 2
-
-Including sub-folders: 2

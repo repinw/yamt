@@ -9,15 +9,11 @@ application-->data;
 application-->domain;
 application-->provider;
 data-->domain;
-debug-->data;
-debug-->domain;
-debug-->presentation;
-debug-->provider;
 presentation-->application;
 presentation-->data;
 presentation-->domain;
 presentation-->provider;
-provider--!-->presentation;
+provider--!-->application;
 provider-->data;
 provider-->domain;
 ```
