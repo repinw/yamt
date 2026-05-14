@@ -1,11 +1,17 @@
-part of 'global_food_item_matcher.dart';
+import 'package:yamt/core/utils/store_name_normalizer.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 const int _globalFoodQueryTokenLimit = 10;
 
-class _GlobalFoodLocalCandidateMatcher {
-  const _GlobalFoodLocalCandidateMatcher();
+/// Scores local global-food products against an inventory item.
+class GlobalFoodLocalCandidateMatcher {
+  /// Creates a local candidate matcher.
+  const GlobalFoodLocalCandidateMatcher();
 
-  _LocalMatchInput buildLocalMatchInput(InventoryItem item) {
+  /// Builds normalized local matching input for [item].
+  LocalMatchInput buildLocalMatchInput(InventoryItem item) {
     final normalizedName = normalizeGlobalFoodText(item.name);
     final normalizedBrand = normalizeGlobalFoodText(item.brand ?? '');
     final normalizedCategory = normalizeGlobalFoodText(item.category ?? '');
@@ -14,7 +20,7 @@ class _GlobalFoodLocalCandidateMatcher {
     );
     final foodFingerprint = _queryFoodFingerprintFor(item);
     final tokens = _queryNameTokensFor(item.name);
-    return _LocalMatchInput(
+    return LocalMatchInput(
       normalizedName: normalizedName,
       normalizedBrand: normalizedBrand,
       normalizedCategory: normalizedCategory,
@@ -26,7 +32,8 @@ class _GlobalFoodLocalCandidateMatcher {
     );
   }
 
-  static _GlobalFoodMatcherQuery? buildQuery(_LocalMatchInput localMatchInput) {
+  /// Builds repository query params from normalized [localMatchInput].
+  static GlobalFoodMatcherQuery? buildQuery(LocalMatchInput localMatchInput) {
     final normalizedName = localMatchInput.normalizedName;
     final searchTokens = localMatchInput.nameTokens;
     final barcode = localMatchInput.barcode;
@@ -40,7 +47,7 @@ class _GlobalFoodLocalCandidateMatcher {
       return null;
     }
 
-    return _GlobalFoodMatcherQuery(
+    return GlobalFoodMatcherQuery(
       normalizedName: normalizedName.isEmpty ? null : normalizedName,
       normalizedStoreName: localMatchInput.normalizedStoreName.isEmpty
           ? null
@@ -51,8 +58,9 @@ class _GlobalFoodLocalCandidateMatcher {
     );
   }
 
+  /// Scores [products] against normalized [item] input.
   List<GlobalFoodMatchCandidate> scoreCandidates(
-    _LocalMatchInput item,
+    LocalMatchInput item,
     Iterable<GlobalFoodItem> products,
   ) {
     return products
@@ -62,6 +70,7 @@ class _GlobalFoodLocalCandidateMatcher {
       ..sort((left, right) => right.score.compareTo(left.score));
   }
 
+  /// Returns the confident default candidate id, if one exists.
   String? defaultSelectionFor(List<GlobalFoodMatchCandidate> candidates) {
     if (candidates.isEmpty) {
       return null;
@@ -79,6 +88,7 @@ class _GlobalFoodLocalCandidateMatcher {
     };
   }
 
+  /// Whether candidate selection needs explicit user review.
   bool defaultSelectionNeedsReviewFor(
     List<GlobalFoodMatchCandidate> candidates,
   ) {
@@ -89,7 +99,7 @@ class _GlobalFoodLocalCandidateMatcher {
   }
 
   GlobalFoodMatchCandidate? _scoreCandidate(
-    _LocalMatchInput item,
+    LocalMatchInput item,
     GlobalFoodItem product,
   ) {
     if (product.status == GlobalFoodItemStatus.merged) {
@@ -188,8 +198,10 @@ class _GlobalFoodLocalCandidateMatcher {
   }
 }
 
-class _GlobalFoodMatcherQuery {
-  const _GlobalFoodMatcherQuery({
+/// Query fields passed to the global food repository.
+class GlobalFoodMatcherQuery {
+  /// Creates global food matcher query fields.
+  const GlobalFoodMatcherQuery({
     required this.normalizedName,
     required this.normalizedStoreName,
     required this.barcode,
@@ -197,15 +209,26 @@ class _GlobalFoodMatcherQuery {
     required this.searchTokens,
   });
 
+  /// Normalized product name when available.
   final String? normalizedName;
+
+  /// Normalized store name when available.
   final String? normalizedStoreName;
+
+  /// Normalized barcode when available.
   final String? barcode;
+
+  /// Resolved food fingerprint when available.
   final String? foodFingerprint;
+
+  /// Search tokens for fuzzy name matching.
   final List<String> searchTokens;
 }
 
-class _LocalMatchInput {
-  const _LocalMatchInput({
+/// Normalized inventory item fields used for local candidate matching.
+class LocalMatchInput {
+  /// Creates normalized local match input.
+  const LocalMatchInput({
     required this.normalizedName,
     required this.normalizedBrand,
     required this.normalizedCategory,
@@ -216,12 +239,27 @@ class _LocalMatchInput {
     this.barcode,
   });
 
+  /// Normalized product name.
   final String normalizedName;
+
+  /// Normalized brand.
   final String normalizedBrand;
+
+  /// Normalized category.
   final String normalizedCategory;
+
+  /// Normalized store name.
   final String normalizedStoreName;
+
+  /// Resolved food fingerprint when useful for matching.
   final String? foodFingerprint;
+
+  /// Ordered name tokens.
   final List<String> nameTokens;
+
+  /// Name token lookup set.
   final Set<String> nameTokenSet;
+
+  /// Normalized barcode when available.
   final String? barcode;
 }

@@ -96,6 +96,33 @@ void main() {
     );
   });
 
+  testWidgets('toggles expanded content after successful load', (tester) async {
+    await _pumpDiaryWidget(
+      tester,
+      DiaryStepsCard(
+        selectedDay: selectedDay,
+        expandedContent: const Text('expanded step details'),
+      ),
+      overrides: [
+        diaryStepsSummaryProvider(
+          selectedDay,
+        ).overrideWith((ref) async => _summary(selectedDay, totalSteps: 7200)),
+      ],
+    );
+
+    expect(find.text('expanded step details'), findsNothing);
+
+    await tester.tap(find.text('Steps'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('expanded step details'), findsOneWidget);
+
+    await tester.tap(find.text('Steps'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('expanded step details'), findsNothing);
+  });
+
   testWidgets('keeps previous data visible while steps reload', (tester) async {
     var reloadToken = 0;
     final reloadCompleter = Completer<DiaryActivitySummary>();
