@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -44,6 +45,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
+  calorieEntryDeleteFlow,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class DiaryPage extends ConsumerStatefulWidget {
@@ -68,6 +70,8 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   _inventoryItemsSubscription;
   ProviderSubscription<AsyncValue<List<PreparedMeal>>>?
   _preparedMealsSubscription;
+  ProviderSubscription<CalorieEntryDeleteFlow>?
+  _calorieEntryDeleteFlowSubscription;
   ProviderSubscription<InventoryBackedCalorieEntrySaveFlow>?
   _inventoryEatFlowSubscription;
   bool _didQueueDiaryIntro = false;
@@ -90,6 +94,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     _diaryIntroSubscription?.close();
     _inventoryItemsSubscription?.close();
     _preparedMealsSubscription?.close();
+    _calorieEntryDeleteFlowSubscription?.close();
     _inventoryEatFlowSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     _diaryScrollController.dispose();
@@ -259,6 +264,12 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     _preparedMealsSubscription ??= ref
         .listenManual<AsyncValue<List<PreparedMeal>>>(
           preparedMealsControllerProvider,
+          _keepDiaryProviderWarm,
+          fireImmediately: true,
+        );
+    _calorieEntryDeleteFlowSubscription ??= ref
+        .listenManual<CalorieEntryDeleteFlow>(
+          calorieEntryDeleteFlowProvider,
           _keepDiaryProviderWarm,
           fireImmediately: true,
         );
