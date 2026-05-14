@@ -114,50 +114,70 @@ class DiaryQuickEatFlow {
     required MealType mealType,
     required DateTime loggedAt,
   }) async {
-    final itemsFuture = ref.read(inventoryItemsControllerProvider.future);
-    final mealsFuture = ref.read(preparedMealsControllerProvider.future);
-    final items = await itemsFuture;
-    final meals = await mealsFuture;
-    if (!context.mounted) {
-      return;
-    }
-    final selection = await showModalBottomSheet<DiaryInventoryFoodSelection>(
-      context: context,
-      useRootNavigator: true,
-      useSafeArea: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return DiaryInventoryFoodPicker(
-          items: items.where(canEatInventoryItem).toList(growable: false),
-          meals: meals
-              .where((meal) => !meal.isDepleted)
-              .toList(
-                growable: false,
-              ),
-        );
-      },
+    final container = ProviderScope.containerOf(context, listen: false);
+    final itemsSubscription = container.listen(
+      inventoryItemsControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
     );
-    if (!context.mounted || selection == null) {
-      return;
-    }
-    switch (selection) {
-      case DiaryInventoryItemFoodSelection(:final item):
-        await _eatInventoryItem(
-          context: context,
-          ref: ref,
-          item: item,
-          mealType: mealType,
-          loggedAt: loggedAt,
-        );
-      case DiaryPreparedMealFoodSelection(:final meal):
-        await _eatPreparedMeal(
-          context: context,
-          ref: ref,
-          meal: meal,
-          mealType: mealType,
-          loggedAt: loggedAt,
-        );
+    final mealsSubscription = container.listen(
+      preparedMealsControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    try {
+      final itemsFuture = container.read(
+        inventoryItemsControllerProvider.future,
+      );
+      final mealsFuture = container.read(
+        preparedMealsControllerProvider.future,
+      );
+      final items = await itemsFuture;
+      final meals = await mealsFuture;
+      if (!context.mounted) {
+        return;
+      }
+      final selection = await showModalBottomSheet<DiaryInventoryFoodSelection>(
+        context: context,
+        useRootNavigator: true,
+        useSafeArea: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) {
+          return DiaryInventoryFoodPicker(
+            items: items.where(canEatInventoryItem).toList(growable: false),
+            meals: meals
+                .where((meal) => !meal.isDepleted)
+                .toList(
+                  growable: false,
+                ),
+          );
+        },
+      );
+      if (!context.mounted || selection == null) {
+        return;
+      }
+      switch (selection) {
+        case DiaryInventoryItemFoodSelection(:final item):
+          await _eatInventoryItem(
+            context: context,
+            ref: ref,
+            item: item,
+            mealType: mealType,
+            loggedAt: loggedAt,
+          );
+        case DiaryPreparedMealFoodSelection(:final meal):
+          await _eatPreparedMeal(
+            context: context,
+            ref: ref,
+            meal: meal,
+            mealType: mealType,
+            loggedAt: loggedAt,
+          );
+      }
+    } finally {
+      itemsSubscription.close();
+      mealsSubscription.close();
     }
   }
 

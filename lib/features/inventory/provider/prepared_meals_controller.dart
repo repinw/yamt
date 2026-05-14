@@ -67,13 +67,17 @@ class PreparedMealsController extends _$PreparedMealsController {
   }
 
   @override
-  FutureOr<List<PreparedMeal>> build() {
+  FutureOr<List<PreparedMeal>> build() async {
     ref
       ..watch(householdDataOwnerUserIdProvider)
       ..watch(preparedMealRepositoryProvider)
       ..onDispose(() {
         unawaited(_disposeSubscription());
       });
+    await waitForHouseholdDataOwnerProfile(ref);
+    if (!ref.mounted) {
+      return const <PreparedMeal>[];
+    }
     _currentDataOwnerUserId = ref.watch(
       effectiveHouseholdDataOwnerUserIdProvider,
     );

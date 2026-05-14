@@ -259,13 +259,17 @@ class InventoryItemsController extends _$InventoryItemsController {
   bool _isRecoveringHouseholdAccess = false;
 
   @override
-  FutureOr<List<InventoryItem>> build() {
+  FutureOr<List<InventoryItem>> build() async {
     ref
       ..watch(householdDataOwnerUserIdProvider)
       ..watch(inventoryItemRepositoryProvider)
       ..onDispose(() {
         unawaited(_disposeRealtimeSubscription());
       });
+    await waitForHouseholdDataOwnerProfile(ref);
+    if (!ref.mounted) {
+      return const <InventoryItem>[];
+    }
     _currentDataOwnerUserId = ref.watch(
       effectiveHouseholdDataOwnerUserIdProvider,
     );

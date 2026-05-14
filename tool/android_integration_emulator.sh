@@ -11,7 +11,7 @@ device_id="${DEVICE_ID:-emulator-5554}"
 snapshot_name="${SNAPSHOT_NAME:-yamt-clean-ready}"
 app_id="${APP_ID:-de.yamt.app}"
 driver="${DRIVER:-test_driver/integration_test.dart}"
-target="${TARGET:-integration_test/calorie_onboarding_visible_flow_test.dart}"
+target="${TARGET:-integration_test/calories/calorie_onboarding_visible_flow_test.dart}"
 keep_emulator="${KEEP_EMULATOR:-0}"
 emulator_log="${EMULATOR_LOG:-/tmp/yamt-android-emulator.log}"
 

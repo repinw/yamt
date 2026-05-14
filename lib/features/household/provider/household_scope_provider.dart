@@ -89,6 +89,22 @@ String? effectiveHouseholdDataOwnerUserId(Ref ref) {
   return normalizedActualDataOwnerUserId;
 }
 
+/// Waits until the signed-in user's profile has resolved before household
+/// scoped data controllers choose a data owner.
+Future<void> waitForHouseholdDataOwnerProfile(Ref ref) async {
+  final user = ref.read(authStateChangesProvider).asData?.value;
+  if (user == null) {
+    return;
+  }
+
+  final profileState = ref.watch(userProfileProvider);
+  if (!profileState.isLoading) {
+    return;
+  }
+
+  await ref.watch(userProfileProvider.future);
+}
+
 /// Household has additional members.
 @riverpod
 bool householdHasAdditionalMembers(Ref ref) {
