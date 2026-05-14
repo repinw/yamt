@@ -605,8 +605,7 @@ void main() {
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
-        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
-            .map((segment) => segment.totalCalories),
+        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
       );
 
       expect(dayData.workouts, isEmpty);
@@ -616,7 +615,7 @@ void main() {
       expect(summary.stepsDuringWorkouts, 0);
       expect(summary.stepsDuringUnassignedActiveEnergy, 1000);
       expect(summary.stepsOutsideWorkouts, 3000);
-      expect(burnedCalories, 620);
+      expect(burnedCalories, 160);
     },
   );
 
@@ -702,8 +701,7 @@ void main() {
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
-        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
-            .map((segment) => segment.totalCalories),
+        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
       );
 
       expect(dayData.workouts.single.totalCalories, 300);
@@ -711,7 +709,7 @@ void main() {
       expect(dayData.unassignedActiveEnergySegments.single.totalCalories, 300);
       expect(dayData.unassignedActiveEnergySegments.single.totalSteps, 500);
       expect(summary.stepsOutsideWorkouts, 1300);
-      expect(burnedCalories, 652);
+      expect(burnedCalories, 372);
       expect(fakeHealth.requestedStepIntervals, <String>[
         _intervalKey(day, dayEnd),
         _intervalKey(workoutEnd, energyEnd),
@@ -809,8 +807,7 @@ void main() {
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
-        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
-            .map((segment) => segment.totalCalories),
+        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
       );
 
       expect(dayData.workouts, isEmpty);
@@ -852,15 +849,14 @@ void main() {
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
-        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
-            .map((segment) => segment.totalCalories),
+        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
       );
 
       expect(dayData.workouts, isEmpty);
       expect(dayData.unassignedActiveEnergySegments, hasLength(1));
       expect(dayData.unassignedActiveEnergySegments.single.totalCalories, 300);
       expect(dayData.unassignedActiveEnergySegments.single.totalSteps, isNull);
-      expect(burnedCalories, 300);
+      expect(burnedCalories, 0);
     },
   );
 }

@@ -60,7 +60,7 @@ void main() {
     expect(data.weightDays.last.canDeleteWeight, isTrue);
   });
 
-  test('includes unassigned active energy in activity totals', () async {
+  test('caps unassigned active energy in activity totals', () async {
     final data = await service.load(
       day: selectedDay,
       goalSettings: _settings(selectedDay),
@@ -90,9 +90,9 @@ void main() {
       ),
     );
 
-    expect(data.activityKcal, 368);
+    expect(data.activityKcal, 310);
     expect(data.activeMinutes, 50);
-    expect(data.activityTrend.last, 368);
+    expect(data.activityTrend.last, 310);
   });
 
   test('uses Health Connect weights when manual entries are empty', () async {

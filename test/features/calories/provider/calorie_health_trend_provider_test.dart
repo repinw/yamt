@@ -269,7 +269,7 @@ void main() {
         CalorieHealthTrendWeightSource.health,
       );
       expect(snapshot.points.last.intakeKcal, 900);
-      expect(snapshot.points.last.burnedKcal, 540);
+      expect(snapshot.points.last.burnedKcal, 480);
       expect(snapshot.points.last.weightKg, 70.8);
       expect(
         snapshot.points.last.weightSource,

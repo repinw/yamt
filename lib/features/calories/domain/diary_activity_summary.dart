@@ -154,16 +154,17 @@ int estimateOutsideActivityStepCalories(int stepsOutsideWorkouts) {
 int? calculateDiaryBurnedCalories({
   required int? stepsOutsideWorkouts,
   required Iterable<int?> workoutCalories,
-  Iterable<int?> unassignedActiveEnergyCalories = const <int?>[],
+  Iterable<HealthEnergySegment> unassignedActiveEnergySegments =
+      const <HealthEnergySegment>[],
 }) {
   final totalWorkoutCalories = workoutCalories.fold<int>(
     0,
     (sum, calories) => sum + (calories ?? 0),
   );
-  final totalUnassignedActiveEnergyCalories = unassignedActiveEnergyCalories
+  final totalUnassignedActiveEnergyCalories = unassignedActiveEnergySegments
       .fold<int>(
         0,
-        (sum, calories) => sum + (calories ?? 0),
+        (sum, segment) => sum + estimateUnassignedActiveEnergyCalories(segment),
       );
   final totalTrackedCalories =
       totalWorkoutCalories + totalUnassignedActiveEnergyCalories;
@@ -172,4 +173,20 @@ int? calculateDiaryBurnedCalories({
   }
   return totalTrackedCalories +
       estimateOutsideActivityStepCalories(stepsOutsideWorkouts);
+}
+
+/// Estimate credited calories for active energy without a matching workout.
+int estimateUnassignedActiveEnergyCalories(HealthEnergySegment segment) {
+  final totalSteps = segment.totalSteps;
+  if (totalSteps == null || totalSteps <= 0) {
+    return 0;
+  }
+
+  final stepCalories = estimateOutsideActivityStepCalories(totalSteps);
+  if (stepCalories <= 0 || segment.totalCalories <= 0) {
+    return 0;
+  }
+  return segment.totalCalories < stepCalories
+      ? segment.totalCalories
+      : stepCalories;
 }

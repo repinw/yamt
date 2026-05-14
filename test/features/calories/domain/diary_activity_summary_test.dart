@@ -6,6 +6,23 @@ import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
 void main() {
+  test('DiaryActivitySummary.locked creates unavailable activity data', () {
+    final summary = DiaryActivitySummary.locked(
+      day: DateTime(2026, 4, 15, 16, 30),
+      accessState: HealthDataAccessState.permissionRequired,
+      stepGoal: 8000,
+    );
+
+    expect(summary.day, DateTime(2026, 4, 15));
+    expect(summary.stepGoal, 8000);
+    expect(summary.accessState, HealthDataAccessState.permissionRequired);
+    expect(summary.totalSteps, isNull);
+    expect(summary.stepsDuringWorkouts, isNull);
+    expect(summary.stepsOutsideWorkouts, isNull);
+    expect(summary.workouts, isEmpty);
+    expect(summary.progress, 0);
+  });
+
   test(
     'buildDiaryActivitySummary uses selected day steps and workout split',
     () {
@@ -120,14 +137,13 @@ void main() {
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
-        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
-            .map((segment) => segment.totalCalories),
+        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
       );
 
       expect(summary.stepsDuringWorkouts, 3100);
       expect(summary.stepsDuringUnassignedActiveEnergy, 900);
       expect(summary.stepsOutsideWorkouts, 3200);
-      expect(burnedCalories, 788);
+      expect(burnedCalories, 664);
     },
   );
 
@@ -171,15 +187,116 @@ void main() {
   );
 
   test(
-    'calculateDiaryBurnedCalories keeps tracked kcal when steps are unknown',
+    'calculateDiaryBurnedCalories ignores unassigned energy without steps',
     () {
+      final day = DateTime(2026, 4, 15);
       final burnedCalories = calculateDiaryBurnedCalories(
         stepsOutsideWorkouts: null,
         workoutCalories: const <int?>[null],
-        unassignedActiveEnergyCalories: const <int?>[120, null],
+        unassignedActiveEnergySegments: [
+          HealthEnergySegment(
+            id: 'energy-1',
+            start: day.add(const Duration(hours: 12)),
+            endExclusive: day.add(const Duration(hours: 13)),
+            durationMinutes: 60,
+            sourceName: 'health-connect',
+            totalCalories: 120,
+            totalSteps: null,
+          ),
+        ],
       );
 
-      expect(burnedCalories, 120);
+      expect(burnedCalories, isNull);
     },
+  );
+
+  test(
+    'calculateDiaryBurnedCalories caps unassigned energy before adding steps',
+    () {
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: 2000,
+        workoutCalories: const <int?>[250],
+        unassignedActiveEnergySegments: [
+          _energySegment(totalCalories: 500, totalSteps: 1000),
+        ],
+      );
+
+      expect(burnedCalories, 370);
+    },
+  );
+
+  group('estimateUnassignedActiveEnergyCalories', () {
+    test('returns zero when segment steps are null', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 120, totalSteps: null),
+        ),
+        0,
+      );
+    });
+
+    test('returns zero when segment steps are not positive', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 120, totalSteps: 0),
+        ),
+        0,
+      );
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 120, totalSteps: -1),
+        ),
+        0,
+      );
+    });
+
+    test('returns zero when segment calories are not positive', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 0, totalSteps: 1000),
+        ),
+        0,
+      );
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: -10, totalSteps: 1000),
+        ),
+        0,
+      );
+    });
+
+    test('keeps calories below estimated step calories', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 30, totalSteps: 1000),
+        ),
+        30,
+      );
+    });
+
+    test('caps calories above estimated step calories', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 120, totalSteps: 1000),
+        ),
+        40,
+      );
+    });
+  });
+}
+
+HealthEnergySegment _energySegment({
+  required int totalCalories,
+  required int? totalSteps,
+}) {
+  final start = DateTime(2026, 4, 15, 12);
+  return HealthEnergySegment(
+    id: 'energy',
+    start: start,
+    endExclusive: start.add(const Duration(minutes: 30)),
+    durationMinutes: 30,
+    sourceName: 'health-connect',
+    totalCalories: totalCalories,
+    totalSteps: totalSteps,
   );
 }
