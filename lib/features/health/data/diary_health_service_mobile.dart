@@ -16,7 +16,6 @@ const _maxDiaryHealthCacheEntries = 30;
 const _defaultCalculatorProfileHeightCm = 180.0;
 const _minPersonalizedHeightCm = 120.0;
 const _maxPersonalizedHeightCm = 250.0;
-const _minimumUnassignedActivityKcalPerMinute = 3.0;
 const _stepBasedWorkoutTypes = <HealthWorkoutActivityType>{
   HealthWorkoutActivityType.HIKING,
   HealthWorkoutActivityType.RUNNING,
@@ -571,8 +570,6 @@ class MobileDiaryHealthService implements DiaryHealthService {
     if (!_shouldCountUnassignedActiveEnergy(
       calories: calories,
       totalSteps: totalSteps,
-      start: start,
-      endExclusive: endExclusive,
     )) {
       return null;
     }
@@ -595,23 +592,11 @@ class MobileDiaryHealthService implements DiaryHealthService {
   bool _shouldCountUnassignedActiveEnergy({
     required double calories,
     required int? totalSteps,
-    required DateTime start,
-    required DateTime endExclusive,
   }) {
     if (calories <= 0) {
       return false;
     }
-    if (totalSteps != null && totalSteps > 0) {
-      return true;
-    }
-
-    final durationMinutes =
-        endExclusive.difference(start).inMilliseconds / 60000;
-    if (durationMinutes <= 0) {
-      return false;
-    }
-    return calories / durationMinutes >=
-        _minimumUnassignedActivityKcalPerMinute;
+    return totalSteps != null && totalSteps > 0;
   }
 
   String _unassignedActiveEnergySegmentId({

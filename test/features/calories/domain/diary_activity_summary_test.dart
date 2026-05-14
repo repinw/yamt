@@ -120,14 +120,13 @@ void main() {
         workoutCalories: summary.workouts.map(
           (workout) => workout.totalCalories,
         ),
-        unassignedActiveEnergyCalories: summary.unassignedActiveEnergySegments
-            .map((segment) => segment.totalCalories),
+        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
       );
 
       expect(summary.stepsDuringWorkouts, 3100);
       expect(summary.stepsDuringUnassignedActiveEnergy, 900);
       expect(summary.stepsOutsideWorkouts, 3200);
-      expect(burnedCalories, 788);
+      expect(burnedCalories, 664);
     },
   );
 
@@ -171,15 +170,26 @@ void main() {
   );
 
   test(
-    'calculateDiaryBurnedCalories keeps tracked kcal when steps are unknown',
+    'calculateDiaryBurnedCalories ignores unassigned energy without steps',
     () {
+      final day = DateTime(2026, 4, 15);
       final burnedCalories = calculateDiaryBurnedCalories(
         stepsOutsideWorkouts: null,
         workoutCalories: const <int?>[null],
-        unassignedActiveEnergyCalories: const <int?>[120, null],
+        unassignedActiveEnergySegments: [
+          HealthEnergySegment(
+            id: 'energy-1',
+            start: day.add(const Duration(hours: 12)),
+            endExclusive: day.add(const Duration(hours: 13)),
+            durationMinutes: 60,
+            sourceName: 'health-connect',
+            totalCalories: 120,
+            totalSteps: null,
+          ),
+        ],
       );
 
-      expect(burnedCalories, 120);
+      expect(burnedCalories, isNull);
     },
   );
 }

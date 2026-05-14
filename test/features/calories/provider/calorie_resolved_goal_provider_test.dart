@@ -333,7 +333,7 @@ void main() {
   );
 
   test(
-    'adds unassigned active energy to pre-learning activity delta',
+    'ignores unassigned active energy without steps',
     () async {
       final today = DateTime(2026, 4, 15);
       final settings = const CalorieGoalSettings.empty()
@@ -374,10 +374,10 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.todayActiveKcal, 300);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.activityDeltaKcal, 50);
-      expect(resolvedGoal.goalKcal, 2150);
+      expect(resolvedGoal.todayActiveKcal, 0);
+      expect(resolvedGoal.activityComparisonKcal, -200);
+      expect(resolvedGoal.activityDeltaKcal, 0);
+      expect(resolvedGoal.goalKcal, 2100);
     },
   );
 
