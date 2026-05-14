@@ -174,15 +174,17 @@ void main() {
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
   });
 
-  testWidgets('does not warm inventory providers when diary opens', (
+  testWidgets('warms inventory quick-eat providers when diary opens', (
     tester,
   ) async {
     var inventoryBuildCount = 0;
     var preparedMealsBuildCount = 0;
+    final providerObserver = _RecordingProviderObserver();
 
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
+      providerObservers: [providerObserver],
       onInventoryBuild: () {
         inventoryBuildCount += 1;
       },
@@ -191,8 +193,9 @@ void main() {
       },
     );
 
-    expect(inventoryBuildCount, 0);
-    expect(preparedMealsBuildCount, 0);
+    expect(inventoryBuildCount, 1);
+    expect(preparedMealsBuildCount, 1);
+    expect(providerObserver.inventoryEatFlowAddCount, 1);
   });
 
   testWidgets('auto-opens already loaded weekly check-in dialog', (
@@ -894,6 +897,7 @@ Future<ProviderContainer> _pumpDiaryPage(
       const <String, DiaryHealthDayData>{},
   VoidCallback? onInventoryBuild,
   VoidCallback? onPreparedMealsBuild,
+  List<ProviderObserver> providerObservers = const [],
   List<Override> overrides = const [],
   bool overrideWeeklyCheckInProvider = true,
   bool includeHomeShellChrome = false,
@@ -913,6 +917,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   when(() => user.uid).thenReturn('user-1');
 
   final container = ProviderContainer(
+    observers: providerObservers,
     overrides: [
       appPreferencesProvider.overrideWithValue(
         appPreferences ?? MemoryAppPreferences(),
@@ -1018,6 +1023,18 @@ Future<ProviderContainer> _pumpDiaryPage(
     await _pumpFrames(tester);
   }
   return container;
+}
+
+@Dependencies([inventoryBackedCalorieEntrySaveFlow])
+final class _RecordingProviderObserver extends ProviderObserver {
+  int inventoryEatFlowAddCount = 0;
+
+  @override
+  void didAddProvider(ProviderObserverContext context, Object? value) {
+    if (context.provider == inventoryBackedCalorieEntrySaveFlowProvider) {
+      inventoryEatFlowAddCount += 1;
+    }
+  }
 }
 
 class _StaticInventoryItemsController extends InventoryItemsController {

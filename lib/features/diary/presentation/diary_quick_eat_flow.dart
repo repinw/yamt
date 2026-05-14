@@ -161,7 +161,6 @@ class DiaryQuickEatFlow {
         case DiaryInventoryItemFoodSelection(:final item):
           await _eatInventoryItem(
             context: context,
-            ref: ref,
             item: item,
             mealType: mealType,
             loggedAt: loggedAt,
@@ -183,7 +182,6 @@ class DiaryQuickEatFlow {
 
   static Future<void> _eatInventoryItem({
     required BuildContext context,
-    required WidgetRef ref,
     required InventoryItem item,
     required MealType mealType,
     required DateTime loggedAt,
@@ -205,7 +203,10 @@ class DiaryQuickEatFlow {
       return;
     }
     final messenger = ScaffoldMessenger.of(context);
-    final controller = ref.read(inventoryItemsControllerProvider.notifier);
+    final container = ProviderScope.containerOf(context, listen: false);
+    final controller = container.read(
+      inventoryItemsControllerProvider.notifier,
+    );
     final pendingConsumption = await controller.stagePendingConsumption(
       item.id,
       request.inventoryAmount,
@@ -220,7 +221,7 @@ class DiaryQuickEatFlow {
     }
     await InventoryItemEatFlow.complete(
       context: context,
-      ref: ref,
+      container: container,
       itemBeforeMutation: item,
       request: request,
       pendingConsumptionId: pendingConsumption.id,

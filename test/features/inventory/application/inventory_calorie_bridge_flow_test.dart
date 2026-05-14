@@ -118,7 +118,7 @@ class _SaveDirectEntryButton extends ConsumerWidget {
     return ElevatedButton(
       onPressed: () async {
         final saved = await InventoryCalorieBridgeFlow.saveDirectEntry(
-          ref: ref,
+          container: ProviderScope.containerOf(context, listen: false),
           profile: profile,
           inventoryContext: inventoryContext,
           scannedSourceRef: null,

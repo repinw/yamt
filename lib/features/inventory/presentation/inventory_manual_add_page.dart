@@ -358,7 +358,6 @@ class _InventoryManualAddPageState
     }
     await completeInventoryManualAddEatFlow(
       context: context,
-      ref: ref,
       item: itemForConsumption,
       request: request,
     );

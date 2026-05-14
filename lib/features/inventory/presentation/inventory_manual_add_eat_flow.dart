@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
@@ -21,7 +23,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 ])
 Future<void> completeInventoryManualAddEatFlow({
   required BuildContext context,
-  required WidgetRef ref,
   required InventoryItem item,
   required InventoryItemEatRequest request,
 }) async {
@@ -37,36 +38,68 @@ Future<void> completeInventoryManualAddEatFlow({
     return;
   }
 
-  final inventoryController = ref.read(
-    inventoryItemsControllerProvider.notifier,
+  final container = ProviderScope.containerOf(context, listen: false);
+  final inventorySubscription = container.listen(
+    inventoryItemsControllerProvider,
+    (previous, next) {},
+    fireImmediately: true,
   );
-  final pendingConsumption = await inventoryController.stagePendingConsumption(
-    item.id,
-    request.inventoryAmount,
-  );
-  if (pendingConsumption == null) {
+  try {
+    final inventoryReady = container.read(
+      inventoryItemsControllerProvider.future,
+    );
+    final inventoryController = container.read(
+      inventoryItemsControllerProvider.notifier,
+    );
+    await inventoryReady;
+    if (!context.mounted) {
+      return;
+    }
+
+    final pendingConsumption = await inventoryController
+        .stagePendingConsumption(
+          item.id,
+          request.inventoryAmount,
+        );
+    if (pendingConsumption == null) {
+      if (context.mounted) {
+        showInventoryManualAddSnackBar(
+          context: context,
+          message: l10n.inventoryItemActionFailed,
+        );
+      }
+      return;
+    }
+    if (!context.mounted) {
+      await inventoryController.discardPendingConsumption(
+        pendingConsumption.id,
+      );
+      return;
+    }
+
+    await InventoryItemEatFlow.complete(
+      context: context,
+      container: container,
+      itemBeforeMutation: item,
+      request: request,
+      pendingConsumptionId: pendingConsumption.id,
+    );
+  } on Object catch (error, stackTrace) {
+    log(
+      'Manual-add eat flow failed while preparing inventory controller.',
+      name: 'InventoryManualAddEatFlow',
+      error: error,
+      stackTrace: stackTrace,
+    );
     if (context.mounted) {
       showInventoryManualAddSnackBar(
         context: context,
         message: l10n.inventoryItemActionFailed,
       );
     }
-    return;
+  } finally {
+    inventorySubscription.close();
   }
-  if (!context.mounted) {
-    await inventoryController.discardPendingConsumption(
-      pendingConsumption.id,
-    );
-    return;
-  }
-
-  await InventoryItemEatFlow.complete(
-    context: context,
-    ref: ref,
-    itemBeforeMutation: item,
-    request: request,
-    pendingConsumptionId: pendingConsumption.id,
-  );
 }
 
 /// Builds eat request from generic AI/manual selection.

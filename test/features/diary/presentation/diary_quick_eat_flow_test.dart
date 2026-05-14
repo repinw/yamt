@@ -227,6 +227,7 @@ void main() {
     tester,
   ) async {
     _stageCallCount = 0;
+    _discardedPendingIds.clear();
     await _pumpInventoryFlowHarness(
       tester,
       inventoryItems: [
@@ -263,6 +264,51 @@ void main() {
     expect(find.textContaining('Action failed'), findsOneWidget);
   });
 
+  testWidgets(
+    'inventory quick eat uses staged consumption from page container',
+    (
+      tester,
+    ) async {
+      _stageCallCount = 0;
+      _discardedPendingIds.clear();
+      await _pumpInventoryFlowHarness(
+        tester,
+        inventoryItems: [
+          _inventoryItem(
+            id: 'item-1',
+            name: 'No Nutrition Food',
+            initialAmount: 100,
+            currentAmount: 100,
+            amountUnit: InventoryAmountUnit.gram,
+            nutrition: null,
+          ),
+        ],
+        preparedMeals: const <PreparedMeal>[],
+      );
+
+      await tester.tap(find.byKey(_openInventoryFlowButtonKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('No Nutrition Food'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        '100',
+      );
+      await tester.pump();
+      final confirmButton = find.byKey(
+        const Key('inventory_item_amount_dialog_confirm_button'),
+      );
+      await tester.ensureVisible(confirmButton);
+      await tester.tap(confirmButton);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(_stageCallCount, 1);
+      expect(_discardedPendingIds, <String>['pending-item-1']);
+      expect(find.textContaining('Action failed'), findsOneWidget);
+    },
+  );
+
   testWidgets('prepared meal consume failure shows prepared meal snackbar', (
     tester,
   ) async {
@@ -291,6 +337,7 @@ const _openFlowButtonKey = Key('open_quick_eat_flow');
 const _openPickerButtonKey = Key('open_inventory_picker');
 const _openInventoryFlowButtonKey = Key('open_inventory_quick_eat_flow');
 int _stageCallCount = 0;
+final _discardedPendingIds = <String>[];
 
 @Dependencies([
   InventoryItemsController,
@@ -533,6 +580,12 @@ class _TestInventoryItemsController extends InventoryItemsController {
       amount: amount,
     );
   }
+
+  @override
+  Future<bool> discardPendingConsumption(String draftId) async {
+    _discardedPendingIds.add(draftId);
+    return true;
+  }
 }
 
 class _DelayedInventoryItemsController extends InventoryItemsController {
@@ -647,6 +700,10 @@ InventoryItem _inventoryItem({
   int initialAmount = 0,
   int currentAmount = 0,
   InventoryAmountUnit? amountUnit,
+  GlobalFoodNutrition? nutrition = const GlobalFoodNutrition(
+    qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+    per100Kcal: 100,
+  ),
 }) {
   return InventoryItem.create(
     id: id,
@@ -660,10 +717,7 @@ InventoryItem _inventoryItem({
     brand: 'Test Brand',
     imageUrl: 'https://example.com/$id.jpg',
     weight: '100g',
-    nutrition: const GlobalFoodNutrition(
-      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-      per100Kcal: 100,
-    ),
+    nutrition: nutrition,
   );
 }
 

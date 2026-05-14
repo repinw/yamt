@@ -120,14 +120,14 @@ class InventoryCalorieBridgeFlow {
 
   /// Save direct entry.
   static Future<bool> saveDirectEntry({
-    required WidgetRef ref,
+    required ProviderContainer container,
     required CalorieProductProfile profile,
     required CalorieInventoryCreateContext inventoryContext,
     required CalorieScannedSourceRef? scannedSourceRef,
     required DateTime loggedAt,
     required MealType mealType,
   }) async {
-    final user = ref.read(firebaseAuthProvider).currentUser;
+    final user = container.read(firebaseAuthProvider).currentUser;
     if (user == null) {
       return false;
     }
@@ -153,14 +153,14 @@ class InventoryCalorieBridgeFlow {
       updatedAt: now,
     );
 
-    return ref
+    return container
         .read(calorieEntriesControllerProvider.notifier)
         .saveEntry(
           entry,
           inventoryContext: inventoryContext,
           scannedSourceRef: scannedSourceRef,
           persistEntry: (entry) {
-            return ref
+            return container
                 .read(inventoryBackedCalorieEntrySaveFlowProvider)
                 .saveEntry(
                   entry: entry,
@@ -172,10 +172,10 @@ class InventoryCalorieBridgeFlow {
 
   /// Discard pending consumption.
   static Future<void> discardPendingConsumption({
-    required WidgetRef ref,
+    required ProviderContainer container,
     required String pendingConsumptionId,
   }) {
-    return ref
+    return container
         .read(inventoryItemsControllerProvider.notifier)
         .discardPendingConsumption(pendingConsumptionId);
   }

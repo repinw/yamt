@@ -232,6 +232,42 @@ class _RecordingStageInventoryItemsController extends InventoryItemsController {
   }
 }
 
+class _DelayedStageInventoryItemsController extends InventoryItemsController {
+  _DelayedStageInventoryItemsController(
+    this._stageRecorder, {
+    required this.gate,
+  });
+
+  final _StageCallRecorder _stageRecorder;
+  final Completer<void> gate;
+  final List<String> discardedPendingIds = <String>[];
+
+  @override
+  Future<List<InventoryItem>> build() async {
+    await gate.future;
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<PendingInventoryConsumption?> stagePendingConsumption(
+    String itemId,
+    int amount,
+  ) async {
+    _stageRecorder.count += 1;
+    return PendingInventoryConsumption(
+      id: 'pending-${_stageRecorder.count}',
+      itemId: itemId,
+      amount: amount,
+    );
+  }
+
+  @override
+  Future<bool> discardPendingConsumption(String draftId) async {
+    discardedPendingIds.add(draftId);
+    return true;
+  }
+}
+
 class _StageCallRecorder {
   int count = 0;
 }
@@ -2250,7 +2286,6 @@ void main() {
                       unawaited(
                         completeInventoryManualAddEatFlow(
                           context: context,
-                          ref: ref,
                           item: item,
                           request: request,
                         ),
@@ -2269,6 +2304,79 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(stageRecorder.count, 0);
+      expect(find.text('Action failed. Please try again.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'immediate eat flow waits for inventory provider before staging',
+    (tester) async {
+      final inventoryReady = Completer<void>();
+      final stageRecorder = _StageCallRecorder();
+      final inventoryController = _DelayedStageInventoryItemsController(
+        stageRecorder,
+        gate: inventoryReady,
+      );
+      final item = InventoryItem.create(
+        id: 'item-1',
+        name: 'Milk',
+        entryDate: DateTime.parse('2026-04-13T10:00:00Z'),
+        storeName: 'Added manually',
+        quantity: 1,
+        initialAmount: 100,
+        currentAmount: 100,
+        amountUnit: InventoryAmountUnit.gram,
+      );
+      final request = InventoryItemEatRequest(
+        inventoryAmount: 100,
+        loggedAt: DateTime.parse('2026-04-13T20:00:00Z'),
+        mealType: MealType.dinner,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            inventoryItemsControllerProvider.overrideWith(() {
+              return inventoryController;
+            }),
+          ],
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  return FilledButton(
+                    onPressed: () {
+                      unawaited(
+                        completeInventoryManualAddEatFlow(
+                          context: context,
+                          item: item,
+                          request: request,
+                        ),
+                      );
+                    },
+                    child: const Text('complete'),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('complete'));
+      await tester.pump();
+
+      expect(stageRecorder.count, 0);
+      expect(find.text('Action failed. Please try again.'), findsNothing);
+
+      inventoryReady.complete();
+      await tester.pumpAndSettle();
+
+      expect(stageRecorder.count, 1);
+      expect(inventoryController.discardedPendingIds, <String>['pending-1']);
       expect(find.text('Action failed. Please try again.'), findsOneWidget);
     },
   );

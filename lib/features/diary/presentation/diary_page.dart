@@ -34,6 +34,8 @@ import 'package:yamt/features/health/provider/health_connection_controller.dart'
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
     show HomeTabType;
 import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -62,6 +64,12 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   ProviderSubscription<DiaryIntroTrigger?>? _diaryIntroSubscription;
+  ProviderSubscription<AsyncValue<List<InventoryItem>>>?
+  _inventoryItemsSubscription;
+  ProviderSubscription<AsyncValue<List<PreparedMeal>>>?
+  _preparedMealsSubscription;
+  ProviderSubscription<InventoryBackedCalorieEntrySaveFlow>?
+  _inventoryEatFlowSubscription;
   bool _didQueueDiaryIntro = false;
   bool _hasAutoOpeningWeeklyCheckIn = true;
 
@@ -80,6 +88,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   @override
   void dispose() {
     _diaryIntroSubscription?.close();
+    _inventoryItemsSubscription?.close();
+    _preparedMealsSubscription?.close();
+    _inventoryEatFlowSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     _diaryScrollController.dispose();
     super.dispose();
@@ -239,7 +250,27 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       _handleDiaryIntroTrigger,
       fireImmediately: true,
     );
+    _inventoryItemsSubscription ??= ref
+        .listenManual<AsyncValue<List<InventoryItem>>>(
+          inventoryItemsControllerProvider,
+          _keepDiaryProviderWarm,
+          fireImmediately: true,
+        );
+    _preparedMealsSubscription ??= ref
+        .listenManual<AsyncValue<List<PreparedMeal>>>(
+          preparedMealsControllerProvider,
+          _keepDiaryProviderWarm,
+          fireImmediately: true,
+        );
+    _inventoryEatFlowSubscription ??= ref
+        .listenManual<InventoryBackedCalorieEntrySaveFlow>(
+          inventoryBackedCalorieEntrySaveFlowProvider,
+          _keepDiaryProviderWarm,
+          fireImmediately: true,
+        );
   }
+
+  void _keepDiaryProviderWarm<T>(T? previous, T next) {}
 
   void _updateHasAutoOpeningWeeklyCheckIn(bool value) {
     if (_hasAutoOpeningWeeklyCheckIn == value || !mounted) {

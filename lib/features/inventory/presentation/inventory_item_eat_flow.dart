@@ -38,7 +38,7 @@ class InventoryItemEatFlow {
   /// Complete.
   static Future<bool> complete({
     required BuildContext context,
-    required WidgetRef ref,
+    required ProviderContainer container,
     required InventoryItem itemBeforeMutation,
     required InventoryItemEatRequest request,
     required String pendingConsumptionId,
@@ -51,7 +51,7 @@ class InventoryItemEatFlow {
       );
       if (profile == null) {
         await _discardPendingConsumption(
-          ref: ref,
+          container: container,
           pendingConsumptionId: pendingConsumptionId,
         );
         if (context.mounted) {
@@ -75,7 +75,7 @@ class InventoryItemEatFlow {
 
       if (canDirectlySaveInventoryItemEatRequest(itemBeforeMutation, request)) {
         final saved = await InventoryCalorieBridgeFlow.saveDirectEntry(
-          ref: ref,
+          container: container,
           profile: profile,
           inventoryContext: inventoryContext,
           scannedSourceRef: scannedSourceRef,
@@ -90,7 +90,7 @@ class InventoryItemEatFlow {
         }
 
         await _discardPendingConsumption(
-          ref: ref,
+          container: container,
           pendingConsumptionId: pendingConsumptionId,
         );
         if (context.mounted) {
@@ -101,7 +101,7 @@ class InventoryItemEatFlow {
 
       if (!context.mounted) {
         await _discardPendingConsumption(
-          ref: ref,
+          container: container,
           pendingConsumptionId: pendingConsumptionId,
         );
         return false;
@@ -129,7 +129,7 @@ class InventoryItemEatFlow {
         stackTrace: stackTrace,
       );
       await _discardPendingConsumption(
-        ref: ref,
+        container: container,
         pendingConsumptionId: pendingConsumptionId,
       );
       if (!context.mounted) {
@@ -144,11 +144,11 @@ class InventoryItemEatFlow {
   }
 
   static Future<void> _discardPendingConsumption({
-    required WidgetRef ref,
+    required ProviderContainer container,
     required String pendingConsumptionId,
   }) {
     return InventoryCalorieBridgeFlow.discardPendingConsumption(
-      ref: ref,
+      container: container,
       pendingConsumptionId: pendingConsumptionId,
     );
   }
