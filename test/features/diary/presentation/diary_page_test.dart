@@ -13,6 +13,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -98,6 +99,7 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
+  calorieEntryDeleteFlow,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
@@ -174,15 +176,17 @@ void main() {
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
   });
 
-  testWidgets('does not warm inventory providers when diary opens', (
+  testWidgets('warms inventory quick-eat providers when diary opens', (
     tester,
   ) async {
     var inventoryBuildCount = 0;
     var preparedMealsBuildCount = 0;
+    final providerObserver = _RecordingProviderObserver();
 
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
+      providerObservers: [providerObserver],
       onInventoryBuild: () {
         inventoryBuildCount += 1;
       },
@@ -191,8 +195,10 @@ void main() {
       },
     );
 
-    expect(inventoryBuildCount, 0);
-    expect(preparedMealsBuildCount, 0);
+    expect(inventoryBuildCount, 1);
+    expect(preparedMealsBuildCount, 1);
+    expect(providerObserver.calorieEntryDeleteFlowAddCount, 1);
+    expect(providerObserver.inventoryEatFlowAddCount, 1);
   });
 
   testWidgets('auto-opens already loaded weekly check-in dialog', (
@@ -877,6 +883,7 @@ void main() {
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
+  calorieEntryDeleteFlow,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 Future<ProviderContainer> _pumpDiaryPage(
@@ -894,6 +901,7 @@ Future<ProviderContainer> _pumpDiaryPage(
       const <String, DiaryHealthDayData>{},
   VoidCallback? onInventoryBuild,
   VoidCallback? onPreparedMealsBuild,
+  List<ProviderObserver> providerObservers = const [],
   List<Override> overrides = const [],
   bool overrideWeeklyCheckInProvider = true,
   bool includeHomeShellChrome = false,
@@ -913,6 +921,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   when(() => user.uid).thenReturn('user-1');
 
   final container = ProviderContainer(
+    observers: providerObservers,
     overrides: [
       appPreferencesProvider.overrideWithValue(
         appPreferences ?? MemoryAppPreferences(),
@@ -1018,6 +1027,25 @@ Future<ProviderContainer> _pumpDiaryPage(
     await _pumpFrames(tester);
   }
   return container;
+}
+
+@Dependencies([
+  calorieEntryDeleteFlow,
+  inventoryBackedCalorieEntrySaveFlow,
+])
+final class _RecordingProviderObserver extends ProviderObserver {
+  int calorieEntryDeleteFlowAddCount = 0;
+  int inventoryEatFlowAddCount = 0;
+
+  @override
+  void didAddProvider(ProviderObserverContext context, Object? value) {
+    if (context.provider == calorieEntryDeleteFlowProvider) {
+      calorieEntryDeleteFlowAddCount += 1;
+    }
+    if (context.provider == inventoryBackedCalorieEntrySaveFlowProvider) {
+      inventoryEatFlowAddCount += 1;
+    }
+  }
 }
 
 class _StaticInventoryItemsController extends InventoryItemsController {

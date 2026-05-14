@@ -129,7 +129,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
       onEatItem: (itemId, request) => _eatItemWithCalorieBridge(
         context: context,
-        ref: ref,
         itemId: itemId,
         request: request,
         itemsSnapshot: items,
@@ -452,12 +451,12 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
 
   Future<bool> _eatItemWithCalorieBridge({
     required BuildContext context,
-    required WidgetRef ref,
     required String itemId,
     required InventoryItemEatRequest request,
     required List<InventoryItem> itemsSnapshot,
   }) async {
-    final inventoryController = ref.read(
+    final container = ProviderScope.containerOf(context, listen: false);
+    final inventoryController = container.read(
       inventoryItemsControllerProvider.notifier,
     );
 
@@ -488,7 +487,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     if (InventoryItemEatFlow.shouldAwaitCompletion(selectedItem, request)) {
       await InventoryItemEatFlow.complete(
         context: context,
-        ref: ref,
+        container: container,
         itemBeforeMutation: selectedItem,
         request: request,
         pendingConsumptionId: pendingConsumption.id,
@@ -499,7 +498,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     unawaited(
       InventoryItemEatFlow.complete(
         context: context,
-        ref: ref,
+        container: container,
         itemBeforeMutation: selectedItem,
         request: request,
         pendingConsumptionId: pendingConsumption.id,

@@ -12,6 +12,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/models/user_profile.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
@@ -38,6 +39,7 @@ import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -52,22 +54,32 @@ class _DiaryInventoryQuickEatHarness {
   const _DiaryInventoryQuickEatHarness({
     required this.app,
     required this.profileController,
-    required this.preparedMealsController,
+    required this.logRepository,
+    required this.inventoryItemsByOwnerId,
+    required this.preparedMealsByOwnerId,
   });
 
   final Widget app;
   final StreamController<UserProfile?> profileController;
-  final _StaticPreparedMealsController preparedMealsController;
+  final FakeCalorieLogRepository logRepository;
+  final Map<String, List<InventoryItem>> inventoryItemsByOwnerId;
+  final Map<String, List<PreparedMeal>> preparedMealsByOwnerId;
+
+  List<PreparedMeal> get householdPreparedMeals {
+    return preparedMealsByOwnerId['household-1'] ?? const <PreparedMeal>[];
+  }
 }
 
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
+  calorieEntryDeleteFlow,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 _DiaryInventoryQuickEatHarness _buildHarness({
   List<InventoryItem>? inventoryItems,
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
+  bool preparedMealSaveShouldFail = false,
 }) {
   final selectedDay = DateTime(2026, 5, 13);
   final profileController = StreamController<UserProfile?>();
@@ -97,11 +109,13 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   addTearDown(settingsRepository.dispose);
   addTearDown(profileController.close);
 
-  final householdItems =
-      inventoryItems ?? [_inventoryItem(id: 'broetchen', name: 'Brötchen')];
-  final preparedMealsController = _StaticPreparedMealsController(
-    preparedMeals,
-  );
+  final inventoryItemsByOwnerId = {
+    'household-1':
+        inventoryItems ?? [_inventoryItem(id: 'broetchen', name: 'Brötchen')],
+  };
+  final preparedMealsByOwnerId = {
+    'household-1': List<PreparedMeal>.from(preparedMeals),
+  };
 
   final container = ProviderContainer(
     overrides: [
@@ -141,13 +155,15 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       inventoryItemRepositoryProvider.overrideWith(
         (ref) => _OwnerScopedInventoryItemRepository(
           ownerId: ref.watch(effectiveHouseholdDataOwnerUserIdProvider),
-          itemsByOwnerId: {
-            'household-1': householdItems,
-          },
+          itemsByOwnerId: inventoryItemsByOwnerId,
         ),
       ),
-      preparedMealsControllerProvider.overrideWith(
-        () => preparedMealsController,
+      preparedMealRepositoryProvider.overrideWith(
+        (ref) => _OwnerScopedPreparedMealRepository(
+          ownerId: ref.watch(effectiveHouseholdDataOwnerUserIdProvider),
+          mealsByOwnerId: preparedMealsByOwnerId,
+          saveShouldFail: preparedMealSaveShouldFail,
+        ),
       ),
     ],
   );
@@ -155,7 +171,9 @@ _DiaryInventoryQuickEatHarness _buildHarness({
 
   return _DiaryInventoryQuickEatHarness(
     profileController: profileController,
-    preparedMealsController: preparedMealsController,
+    logRepository: logRepository,
+    inventoryItemsByOwnerId: inventoryItemsByOwnerId,
+    preparedMealsByOwnerId: preparedMealsByOwnerId,
     app: UncontrolledProviderScope(
       container: container,
       child: MaterialApp.router(
@@ -226,6 +244,33 @@ Future<void> _pumpUntilOnScreen(
   );
 }
 
+Future<void> _openBreakfastInventoryQuickAdd(
+  WidgetTester tester,
+) async {
+  final breakfastAddButton = find.byKey(
+    const Key('diary_quick_add_button_breakfast'),
+  );
+  await tester.scrollUntilVisible(
+    breakfastAddButton,
+    500,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pump();
+
+  await tester.tap(breakfastAddButton);
+  final inventorySource = find.byKey(
+    const Key('diary_quick_add_source_inventory'),
+  );
+  await _pumpUntilFound(
+    tester,
+    inventorySource,
+    description: 'inventory quick-add source',
+  );
+
+  await tester.tap(inventorySource);
+  await tester.pump();
+}
+
 bool _isFinderCenterOnScreen(WidgetTester tester, Finder finder) {
   if (finder.evaluate().isEmpty) {
     return false;
@@ -242,6 +287,7 @@ bool _isFinderCenterOnScreen(WidgetTester tester, Finder finder) {
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
+  calorieEntryDeleteFlow,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
@@ -255,28 +301,7 @@ void main() {
     await tester.pumpWidget(harness.app);
     await tester.pump();
 
-    final breakfastAddButton = find.byKey(
-      const Key('diary_quick_add_button_breakfast'),
-    );
-    await tester.scrollUntilVisible(
-      breakfastAddButton,
-      500,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pump();
-
-    await tester.tap(breakfastAddButton);
-    final inventorySource = find.byKey(
-      const Key('diary_quick_add_source_inventory'),
-    );
-    await _pumpUntilFound(
-      tester,
-      inventorySource,
-      description: 'inventory quick-add source',
-    );
-
-    await tester.tap(inventorySource);
-    await tester.pump();
+    await _openBreakfastInventoryQuickAdd(tester);
 
     expect(find.text('Aus Vorrat essen'), findsNothing);
     expect(find.text('Brötchen'), findsNothing);
@@ -288,6 +313,11 @@ void main() {
       tester,
       find.text('Brötchen'),
       description: 'household inventory item',
+    );
+    await _pumpUntilOnScreen(
+      tester,
+      find.text('Brötchen'),
+      description: 'visible household inventory item',
     );
 
     expect(find.text('Aus Vorrat essen'), findsOneWidget);
@@ -324,28 +354,7 @@ void main() {
     await tester.pumpWidget(harness.app);
     await tester.pump();
 
-    final breakfastAddButton = find.byKey(
-      const Key('diary_quick_add_button_breakfast'),
-    );
-    await tester.scrollUntilVisible(
-      breakfastAddButton,
-      500,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pump();
-
-    await tester.tap(breakfastAddButton);
-    final inventorySource = find.byKey(
-      const Key('diary_quick_add_source_inventory'),
-    );
-    await _pumpUntilFound(
-      tester,
-      inventorySource,
-      description: 'inventory quick-add source',
-    );
-
-    await tester.tap(inventorySource);
-    await tester.pump();
+    await _openBreakfastInventoryQuickAdd(tester);
 
     expect(find.text('Aus Vorrat essen'), findsNothing);
     expect(find.text('Chili sin Carne'), findsNothing);
@@ -357,6 +366,11 @@ void main() {
       tester,
       find.text('Chili sin Carne'),
       description: 'household prepared meal',
+    );
+    await _pumpUntilOnScreen(
+      tester,
+      find.text('Chili sin Carne'),
+      description: 'visible household prepared meal',
     );
 
     expect(find.text('Aus Vorrat essen'), findsOneWidget);
@@ -388,15 +402,164 @@ void main() {
     await tester.tap(confirmButton);
     await _pumpUntil(
       tester,
-      () => harness.preparedMealsController.consumedMeals.length == 1,
+      () =>
+          harness.householdPreparedMeals.single.remainingPortions == 1 &&
+          harness.logRepository.entries.length == 1,
       description: 'prepared meal consumption',
     );
 
-    expect(harness.preparedMealsController.consumedMeals, hasLength(1));
-    final consumption = harness.preparedMealsController.consumedMeals.single;
-    expect(consumption.mealId, 'meal-1');
-    expect(consumption.consumedPortions, 1);
-    expect(consumption.mealType, MealType.breakfast);
+    expect(harness.householdPreparedMeals.single.remainingPortions, 1);
+    expect(harness.logRepository.entries, hasLength(1));
+    expect(harness.logRepository.entries.single.name, 'Chili sin Carne');
+    expect(harness.logRepository.entries.single.mealType, MealType.breakfast);
+  });
+
+  testWidgets(
+    'diary inventory quick add shows empty state after provider load',
+    (
+      tester,
+    ) async {
+      final harness = _buildHarness(
+        inventoryItems: [
+          _inventoryItem(
+            id: 'empty-broetchen',
+            name: 'Leeres Brötchen',
+            currentAmount: 0,
+          ),
+        ],
+      );
+      await tester.pumpWidget(harness.app);
+      await tester.pump();
+
+      await _openBreakfastInventoryQuickAdd(tester);
+
+      expect(find.text('Aus Vorrat essen'), findsNothing);
+      expect(find.text('Leeres Brötchen'), findsNothing);
+
+      harness.profileController.add(
+        const UserProfile(uid: 'user-1', householdId: 'household-1'),
+      );
+      await _pumpUntilFound(
+        tester,
+        find.text('Kein verfügbares Essen im Vorrat.'),
+        description: 'loaded inventory empty state',
+      );
+
+      expect(find.text('Aus Vorrat essen'), findsOneWidget);
+      expect(find.text('Leeres Brötchen'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'diary inventory quick add shows action error without nutrition',
+    (
+      tester,
+    ) async {
+      final harness = _buildHarness(
+        inventoryItems: [
+          _inventoryItem(
+            id: 'no-nutrition',
+            name: 'Mystery Snack',
+            nutrition: null,
+          ),
+        ],
+      );
+      await tester.pumpWidget(harness.app);
+      await tester.pump();
+
+      await _openBreakfastInventoryQuickAdd(tester);
+
+      harness.profileController.add(
+        const UserProfile(uid: 'user-1', householdId: 'household-1'),
+      );
+      await _pumpUntilFound(
+        tester,
+        find.text('Mystery Snack'),
+        description: 'inventory item without nutrition',
+      );
+      await _pumpUntilOnScreen(
+        tester,
+        find.text('Mystery Snack'),
+        description: 'visible inventory item without nutrition',
+      );
+
+      await tester.tap(find.text('Mystery Snack'));
+      await _pumpUntilFound(
+        tester,
+        find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+        description: 'inventory item eat sheet',
+      );
+
+      final confirmButton = find.byKey(
+        const Key('inventory_item_amount_dialog_confirm_button'),
+      );
+      await _pumpUntilOnScreen(
+        tester,
+        confirmButton,
+        description: 'inventory item confirm button',
+      );
+      await tester.tap(confirmButton);
+      await _pumpUntilFound(
+        tester,
+        find.text('Aktion fehlgeschlagen. Bitte erneut versuchen.'),
+        description: 'inventory item action failed snackbar',
+      );
+    },
+  );
+
+  testWidgets('diary prepared meal quick add shows save failure snackbar', (
+    tester,
+  ) async {
+    final harness = _buildHarness(
+      inventoryItems: const <InventoryItem>[],
+      preparedMeals: [
+        _preparedMeal(id: 'meal-fail', name: 'Gulasch'),
+      ],
+      preparedMealSaveShouldFail: true,
+    );
+    await tester.pumpWidget(harness.app);
+    await tester.pump();
+
+    await _openBreakfastInventoryQuickAdd(tester);
+
+    harness.profileController.add(
+      const UserProfile(uid: 'user-1', householdId: 'household-1'),
+    );
+    await _pumpUntilFound(
+      tester,
+      find.text('Gulasch'),
+      description: 'prepared meal with failing save',
+    );
+    await _pumpUntilOnScreen(
+      tester,
+      find.text('Gulasch'),
+      description: 'visible prepared meal with failing save',
+    );
+
+    await tester.tap(find.text('Gulasch'));
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const Key('prepared_meal_eat_confirm_button')),
+      description: 'prepared meal eat sheet',
+    );
+
+    final confirmButton = find.byKey(
+      const Key('prepared_meal_eat_confirm_button'),
+    );
+    await _pumpUntilOnScreen(
+      tester,
+      confirmButton,
+      description: 'prepared meal confirm button',
+    );
+    await tester.tap(confirmButton);
+    await _pumpUntilFound(
+      tester,
+      find.text('Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.'),
+      description: 'prepared meal action failed snackbar',
+    );
+
+    expect(harness.householdPreparedMeals.single.remainingPortions, 2);
+    expect(harness.logRepository.entries, isEmpty);
   });
 }
 
@@ -432,42 +595,6 @@ class _StaticDiaryCalendarController extends DiaryCalendarController {
   }
 }
 
-class _StaticPreparedMealsController extends PreparedMealsController {
-  _StaticPreparedMealsController(this.meals);
-
-  final List<PreparedMeal> meals;
-  final List<_PreparedMealConsumption> consumedMeals =
-      <_PreparedMealConsumption>[];
-
-  @override
-  FutureOr<List<PreparedMeal>> build() {
-    return meals;
-  }
-
-  @override
-  Future<bool> consumePreparedMeal({
-    required String mealId,
-    required num consumedPortions,
-    required MealType mealType,
-    DateTime? loggedDay,
-  }) async {
-    consumedMeals.add((
-      mealId: mealId,
-      consumedPortions: consumedPortions,
-      mealType: mealType,
-      loggedDay: loggedDay,
-    ));
-    return true;
-  }
-}
-
-typedef _PreparedMealConsumption = ({
-  String mealId,
-  num consumedPortions,
-  MealType mealType,
-  DateTime? loggedDay,
-});
-
 class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
   const _OwnerScopedInventoryItemRepository({
     required this.ownerId,
@@ -493,11 +620,24 @@ class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
 
   @override
   Future<bool> saveAll(List<InventoryItem> items) async {
+    final resolvedOwnerId = ownerId;
+    if (resolvedOwnerId == null) {
+      return false;
+    }
+    itemsByOwnerId[resolvedOwnerId] = List<InventoryItem>.from(items);
     return true;
   }
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
+    final resolvedOwnerId = ownerId;
+    if (resolvedOwnerId == null) {
+      return false;
+    }
+    itemsByOwnerId[resolvedOwnerId] = [
+      ...(itemsByOwnerId[resolvedOwnerId] ?? const <InventoryItem>[]),
+      ...items,
+    ];
     return true;
   }
 
@@ -512,27 +652,80 @@ class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
   }
 }
 
+class _OwnerScopedPreparedMealRepository implements PreparedMealRepository {
+  const _OwnerScopedPreparedMealRepository({
+    required this.ownerId,
+    required this.mealsByOwnerId,
+    required this.saveShouldFail,
+  });
+
+  final String? ownerId;
+  final Map<String, List<PreparedMeal>> mealsByOwnerId;
+  final bool saveShouldFail;
+
+  @override
+  Future<List<PreparedMeal>> readAll() async {
+    return _mealsForOwner() ?? const <PreparedMeal>[];
+  }
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() {
+    final meals = _mealsForOwner();
+    if (meals == null) {
+      return const Stream<List<PreparedMeal>>.empty();
+    }
+    return Stream<List<PreparedMeal>>.value(meals);
+  }
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> meals) async {
+    if (saveShouldFail) {
+      return false;
+    }
+    final resolvedOwnerId = ownerId;
+    if (resolvedOwnerId == null) {
+      return false;
+    }
+    mealsByOwnerId[resolvedOwnerId] = List<PreparedMeal>.from(meals);
+    return true;
+  }
+
+  List<PreparedMeal>? _mealsForOwner() {
+    final resolvedOwnerId = ownerId;
+    if (resolvedOwnerId == null) {
+      return null;
+    }
+    return List<PreparedMeal>.from(
+      mealsByOwnerId[resolvedOwnerId] ?? const <PreparedMeal>[],
+    );
+  }
+}
+
 InventoryItem _inventoryItem({
   required String id,
   required String name,
+  int quantity = 1,
+  int initialAmount = 100,
+  int currentAmount = 100,
+  GlobalFoodNutrition? nutrition = const GlobalFoodNutrition(
+    qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+    per100Kcal: 260,
+    per100Protein: 8,
+    per100Carbs: 52,
+    per100Fat: 2,
+  ),
 }) {
   return InventoryItem.create(
     id: id,
     name: name,
     entryDate: DateTime(2026, 5, 13),
     storeName: 'Bäckerei',
-    quantity: 1,
-    initialAmount: 100,
-    currentAmount: 100,
+    quantity: quantity,
+    initialAmount: initialAmount,
+    currentAmount: currentAmount,
     amountUnit: InventoryAmountUnit.gram,
     weight: '100g',
-    nutrition: const GlobalFoodNutrition(
-      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-      per100Kcal: 260,
-      per100Protein: 8,
-      per100Carbs: 52,
-      per100Fat: 2,
-    ),
+    nutrition: nutrition,
   );
 }
 

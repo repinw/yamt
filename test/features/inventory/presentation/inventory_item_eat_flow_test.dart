@@ -135,7 +135,7 @@ class _CompleteEatFlowButton extends ConsumerWidget {
       onPressed: () async {
         await InventoryItemEatFlow.complete(
           context: context,
-          ref: ref,
+          container: ProviderScope.containerOf(context, listen: false),
           itemBeforeMutation: item,
           request: request,
           pendingConsumptionId: pendingConsumptionId,

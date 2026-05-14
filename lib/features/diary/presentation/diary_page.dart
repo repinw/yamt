@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -34,6 +35,8 @@ import 'package:yamt/features/health/provider/health_connection_controller.dart'
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
     show HomeTabType;
 import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -42,6 +45,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
+  calorieEntryDeleteFlow,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class DiaryPage extends ConsumerStatefulWidget {
@@ -62,6 +66,14 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   ProviderSubscription<DiaryIntroTrigger?>? _diaryIntroSubscription;
+  ProviderSubscription<AsyncValue<List<InventoryItem>>>?
+  _inventoryItemsSubscription;
+  ProviderSubscription<AsyncValue<List<PreparedMeal>>>?
+  _preparedMealsSubscription;
+  ProviderSubscription<CalorieEntryDeleteFlow>?
+  _calorieEntryDeleteFlowSubscription;
+  ProviderSubscription<InventoryBackedCalorieEntrySaveFlow>?
+  _inventoryEatFlowSubscription;
   bool _didQueueDiaryIntro = false;
   bool _hasAutoOpeningWeeklyCheckIn = true;
 
@@ -80,6 +92,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   @override
   void dispose() {
     _diaryIntroSubscription?.close();
+    _inventoryItemsSubscription?.close();
+    _preparedMealsSubscription?.close();
+    _calorieEntryDeleteFlowSubscription?.close();
+    _inventoryEatFlowSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     _diaryScrollController.dispose();
     super.dispose();
@@ -239,7 +255,33 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       _handleDiaryIntroTrigger,
       fireImmediately: true,
     );
+    _inventoryItemsSubscription ??= ref
+        .listenManual<AsyncValue<List<InventoryItem>>>(
+          inventoryItemsControllerProvider,
+          _keepDiaryProviderWarm,
+          fireImmediately: true,
+        );
+    _preparedMealsSubscription ??= ref
+        .listenManual<AsyncValue<List<PreparedMeal>>>(
+          preparedMealsControllerProvider,
+          _keepDiaryProviderWarm,
+          fireImmediately: true,
+        );
+    _calorieEntryDeleteFlowSubscription ??= ref
+        .listenManual<CalorieEntryDeleteFlow>(
+          calorieEntryDeleteFlowProvider,
+          _keepDiaryProviderWarm,
+          fireImmediately: true,
+        );
+    _inventoryEatFlowSubscription ??= ref
+        .listenManual<InventoryBackedCalorieEntrySaveFlow>(
+          inventoryBackedCalorieEntrySaveFlowProvider,
+          _keepDiaryProviderWarm,
+          fireImmediately: true,
+        );
   }
+
+  void _keepDiaryProviderWarm<T>(T? previous, T next) {}
 
   void _updateHasAutoOpeningWeeklyCheckIn(bool value) {
     if (_hasAutoOpeningWeeklyCheckIn == value || !mounted) {
