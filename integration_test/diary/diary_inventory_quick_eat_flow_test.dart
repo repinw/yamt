@@ -20,6 +20,7 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
@@ -51,10 +52,12 @@ class _DiaryInventoryQuickEatHarness {
   const _DiaryInventoryQuickEatHarness({
     required this.app,
     required this.profileController,
+    required this.preparedMealsController,
   });
 
   final Widget app;
   final StreamController<UserProfile?> profileController;
+  final _StaticPreparedMealsController preparedMealsController;
 }
 
 @Dependencies([
@@ -62,7 +65,10 @@ class _DiaryInventoryQuickEatHarness {
   PreparedMealsController,
   inventoryBackedCalorieEntrySaveFlow,
 ])
-_DiaryInventoryQuickEatHarness _buildHarness() {
+_DiaryInventoryQuickEatHarness _buildHarness({
+  List<InventoryItem>? inventoryItems,
+  List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
+}) {
   final selectedDay = DateTime(2026, 5, 13);
   final profileController = StreamController<UserProfile?>();
   final user = _MockUser();
@@ -91,7 +97,11 @@ _DiaryInventoryQuickEatHarness _buildHarness() {
   addTearDown(settingsRepository.dispose);
   addTearDown(profileController.close);
 
-  final householdItem = _inventoryItem(id: 'broetchen', name: 'Brötchen');
+  final householdItems =
+      inventoryItems ?? [_inventoryItem(id: 'broetchen', name: 'Brötchen')];
+  final preparedMealsController = _StaticPreparedMealsController(
+    preparedMeals,
+  );
 
   final container = ProviderContainer(
     overrides: [
@@ -132,12 +142,12 @@ _DiaryInventoryQuickEatHarness _buildHarness() {
         (ref) => _OwnerScopedInventoryItemRepository(
           ownerId: ref.watch(effectiveHouseholdDataOwnerUserIdProvider),
           itemsByOwnerId: {
-            'household-1': [householdItem],
+            'household-1': householdItems,
           },
         ),
       ),
       preparedMealsControllerProvider.overrideWith(
-        () => _StaticPreparedMealsController(const <PreparedMeal>[]),
+        () => preparedMealsController,
       ),
     ],
   );
@@ -145,6 +155,7 @@ _DiaryInventoryQuickEatHarness _buildHarness() {
 
   return _DiaryInventoryQuickEatHarness(
     profileController: profileController,
+    preparedMealsController: preparedMealsController,
     app: UncontrolledProviderScope(
       container: container,
       child: MaterialApp.router(
@@ -240,6 +251,72 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('diary breakfast quick add waits for household prepared meals', (
+    tester,
+  ) async {
+    final harness = _buildHarness(
+      inventoryItems: const <InventoryItem>[],
+      preparedMeals: [
+        _preparedMeal(id: 'meal-1', name: 'Chili sin Carne'),
+      ],
+    );
+    await tester.pumpWidget(harness.app);
+    await _pumpVisibleStep(tester);
+
+    final breakfastAddButton = find.byKey(
+      const Key('diary_quick_add_button_breakfast'),
+    );
+    await tester.scrollUntilVisible(
+      breakfastAddButton,
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(breakfastAddButton);
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(
+      find.byKey(const Key('diary_quick_add_source_inventory')),
+    );
+    await _pumpVisibleStep(tester);
+
+    expect(find.text('Aus Vorrat essen'), findsNothing);
+    expect(find.text('Chili sin Carne'), findsNothing);
+
+    harness.profileController.add(
+      const UserProfile(uid: 'user-1', householdId: 'household-1'),
+    );
+    await _pumpVisibleStep(tester);
+
+    expect(find.text('Aus Vorrat essen'), findsOneWidget);
+    expect(find.text('Chili sin Carne'), findsOneWidget);
+
+    await tester.tap(find.text('Chili sin Carne'));
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+
+    expect(find.text('Chili sin Carne'), findsOneWidget);
+    expect(find.text('Frühstück'), findsWidgets);
+    expect(
+      find.byKey(const Key('prepared_meal_portions_field')),
+      findsOneWidget,
+    );
+
+    final confirmButton = find.byKey(
+      const Key('prepared_meal_eat_confirm_button'),
+    );
+    expect(confirmButton, findsOneWidget);
+    await tester.ensureVisible(confirmButton);
+    await tester.tap(confirmButton);
+    await _pumpVisibleStep(tester);
+
+    expect(harness.preparedMealsController.consumedMeals, hasLength(1));
+    final consumption = harness.preparedMealsController.consumedMeals.single;
+    expect(consumption.mealId, 'meal-1');
+    expect(consumption.consumedPortions, 1);
+    expect(consumption.mealType, MealType.breakfast);
+  });
 }
 
 class _MockUser extends Mock implements User {}
@@ -278,12 +355,37 @@ class _StaticPreparedMealsController extends PreparedMealsController {
   _StaticPreparedMealsController(this.meals);
 
   final List<PreparedMeal> meals;
+  final List<_PreparedMealConsumption> consumedMeals =
+      <_PreparedMealConsumption>[];
 
   @override
   FutureOr<List<PreparedMeal>> build() {
     return meals;
   }
+
+  @override
+  Future<bool> consumePreparedMeal({
+    required String mealId,
+    required num consumedPortions,
+    required MealType mealType,
+    DateTime? loggedDay,
+  }) async {
+    consumedMeals.add((
+      mealId: mealId,
+      consumedPortions: consumedPortions,
+      mealType: mealType,
+      loggedDay: loggedDay,
+    ));
+    return true;
+  }
 }
+
+typedef _PreparedMealConsumption = ({
+  String mealId,
+  num consumedPortions,
+  MealType mealType,
+  DateTime? loggedDay,
+});
 
 class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
   const _OwnerScopedInventoryItemRepository({
@@ -350,5 +452,24 @@ InventoryItem _inventoryItem({
       per100Carbs: 52,
       per100Fat: 2,
     ),
+  );
+}
+
+PreparedMeal _preparedMeal({
+  required String id,
+  required String name,
+}) {
+  return PreparedMeal(
+    id: id,
+    name: name,
+    totalPortions: 2,
+    remainingPortions: 2,
+    totalKcal: 520,
+    totalProtein: 24,
+    totalCarbs: 64,
+    totalFat: 18,
+    createdAt: DateTime(2026, 5, 13),
+    updatedAt: DateTime(2026, 5, 13),
+    components: const <PreparedMealComponent>[],
   );
 }

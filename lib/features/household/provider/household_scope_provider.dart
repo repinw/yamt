@@ -91,6 +91,9 @@ String? effectiveHouseholdDataOwnerUserId(Ref ref) {
 
 /// Waits until the signed-in user's profile has resolved before household
 /// scoped data controllers choose a data owner.
+///
+/// Must only be called directly inside a provider's build method to correctly
+/// register dependencies.
 Future<void> waitForHouseholdDataOwnerProfile(Ref ref) async {
   final user = ref.read(authStateChangesProvider).asData?.value;
   if (user == null) {
