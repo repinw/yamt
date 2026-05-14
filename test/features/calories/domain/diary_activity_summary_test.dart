@@ -6,6 +6,23 @@ import 'package:yamt/features/health/domain/health_energy_segment.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
 void main() {
+  test('DiaryActivitySummary.locked creates unavailable activity data', () {
+    final summary = DiaryActivitySummary.locked(
+      day: DateTime(2026, 4, 15, 16, 30),
+      accessState: HealthDataAccessState.permissionRequired,
+      stepGoal: 8000,
+    );
+
+    expect(summary.day, DateTime(2026, 4, 15));
+    expect(summary.stepGoal, 8000);
+    expect(summary.accessState, HealthDataAccessState.permissionRequired);
+    expect(summary.totalSteps, isNull);
+    expect(summary.stepsDuringWorkouts, isNull);
+    expect(summary.stepsOutsideWorkouts, isNull);
+    expect(summary.workouts, isEmpty);
+    expect(summary.progress, 0);
+  });
+
   test(
     'buildDiaryActivitySummary uses selected day steps and workout split',
     () {
@@ -190,6 +207,21 @@ void main() {
       );
 
       expect(burnedCalories, isNull);
+    },
+  );
+
+  test(
+    'calculateDiaryBurnedCalories caps unassigned energy before adding steps',
+    () {
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: 2000,
+        workoutCalories: const <int?>[250],
+        unassignedActiveEnergySegments: [
+          _energySegment(totalCalories: 500, totalSteps: 1000),
+        ],
+      );
+
+      expect(burnedCalories, 370);
     },
   );
 
