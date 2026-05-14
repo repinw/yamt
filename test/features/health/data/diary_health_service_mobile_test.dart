@@ -818,7 +818,7 @@ void main() {
   );
 
   test(
-    'loadDayData ignores high unassigned active energy without steps',
+    'loadDayData keeps high unassigned active energy without steps',
     () async {
       final day = DateTime(2026, 4, 17);
       final dayEnd = day.add(const Duration(days: 1));
@@ -853,7 +853,9 @@ void main() {
       );
 
       expect(dayData.workouts, isEmpty);
-      expect(dayData.unassignedActiveEnergySegments, isEmpty);
+      expect(dayData.unassignedActiveEnergySegments, hasLength(1));
+      expect(dayData.unassignedActiveEnergySegments.single.totalCalories, 300);
+      expect(dayData.unassignedActiveEnergySegments.single.totalSteps, isNull);
       expect(burnedCalories, 0);
     },
   );

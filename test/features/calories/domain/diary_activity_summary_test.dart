@@ -192,4 +192,79 @@ void main() {
       expect(burnedCalories, isNull);
     },
   );
+
+  group('estimateUnassignedActiveEnergyCalories', () {
+    test('returns zero when segment steps are null', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 120, totalSteps: null),
+        ),
+        0,
+      );
+    });
+
+    test('returns zero when segment steps are not positive', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 120, totalSteps: 0),
+        ),
+        0,
+      );
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 120, totalSteps: -1),
+        ),
+        0,
+      );
+    });
+
+    test('returns zero when segment calories are not positive', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 0, totalSteps: 1000),
+        ),
+        0,
+      );
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: -10, totalSteps: 1000),
+        ),
+        0,
+      );
+    });
+
+    test('keeps calories below estimated step calories', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 30, totalSteps: 1000),
+        ),
+        30,
+      );
+    });
+
+    test('caps calories above estimated step calories', () {
+      expect(
+        estimateUnassignedActiveEnergyCalories(
+          _energySegment(totalCalories: 120, totalSteps: 1000),
+        ),
+        40,
+      );
+    });
+  });
+}
+
+HealthEnergySegment _energySegment({
+  required int totalCalories,
+  required int? totalSteps,
+}) {
+  final start = DateTime(2026, 4, 15, 12);
+  return HealthEnergySegment(
+    id: 'energy',
+    start: start,
+    endExclusive: start.add(const Duration(minutes: 30)),
+    durationMinutes: 30,
+    sourceName: 'health-connect',
+    totalCalories: totalCalories,
+    totalSteps: totalSteps,
+  );
 }
