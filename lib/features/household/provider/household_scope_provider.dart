@@ -95,7 +95,7 @@ String? effectiveHouseholdDataOwnerUserId(Ref ref) {
 /// Must only be called directly inside a provider's build method to correctly
 /// register dependencies.
 Future<void> waitForHouseholdDataOwnerProfile(Ref ref) async {
-  final user = ref.read(authStateChangesProvider).asData?.value;
+  final user = ref.watch(authStateChangesProvider).asData?.value;
   if (user == null) {
     return;
   }

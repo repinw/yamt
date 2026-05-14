@@ -183,13 +183,60 @@ CalorieWeeklyCheckInViewModel _emptyWeeklyCheckInViewModel() {
   );
 }
 
-Future<void> _pumpVisibleStep(
-  WidgetTester tester, {
-  Duration observeFor = const Duration(milliseconds: 500),
+Future<void> _pumpUntil(
+  WidgetTester tester,
+  bool Function() condition, {
+  required String description,
+  Duration timeout = const Duration(seconds: 8),
 }) async {
-  await tester.pump();
-  await Future<void>.delayed(observeFor);
-  await tester.pump();
+  final end = tester.binding.clock.fromNowBy(timeout);
+  while (!condition()) {
+    if (tester.binding.clock.now().isAfter(end)) {
+      throw TestFailure('Timed out waiting for $description.');
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
+Future<void> _pumpUntilFound(
+  WidgetTester tester,
+  Finder finder, {
+  required String description,
+  Duration timeout = const Duration(seconds: 8),
+}) {
+  return _pumpUntil(
+    tester,
+    () => finder.evaluate().isNotEmpty,
+    description: description,
+    timeout: timeout,
+  );
+}
+
+Future<void> _pumpUntilOnScreen(
+  WidgetTester tester,
+  Finder finder, {
+  required String description,
+  Duration timeout = const Duration(seconds: 8),
+}) {
+  return _pumpUntil(
+    tester,
+    () => _isFinderCenterOnScreen(tester, finder),
+    description: description,
+    timeout: timeout,
+  );
+}
+
+bool _isFinderCenterOnScreen(WidgetTester tester, Finder finder) {
+  if (finder.evaluate().isEmpty) {
+    return false;
+  }
+  final center = tester.getCenter(finder);
+  final view = tester.view;
+  final logicalSize = Size(
+    view.physicalSize.width / view.devicePixelRatio,
+    view.physicalSize.height / view.devicePixelRatio,
+  );
+  return (Offset.zero & logicalSize).contains(center);
 }
 
 @Dependencies([
@@ -206,7 +253,7 @@ void main() {
   ) async {
     final harness = _buildHarness();
     await tester.pumpWidget(harness.app);
-    await _pumpVisibleStep(tester);
+    await tester.pump();
 
     final breakfastAddButton = find.byKey(
       const Key('diary_quick_add_button_breakfast'),
@@ -216,15 +263,20 @@ void main() {
       500,
       scrollable: find.byType(Scrollable).first,
     );
-    await _pumpVisibleStep(tester);
+    await tester.pump();
 
     await tester.tap(breakfastAddButton);
-    await _pumpVisibleStep(tester);
-
-    await tester.tap(
-      find.byKey(const Key('diary_quick_add_source_inventory')),
+    final inventorySource = find.byKey(
+      const Key('diary_quick_add_source_inventory'),
     );
-    await _pumpVisibleStep(tester);
+    await _pumpUntilFound(
+      tester,
+      inventorySource,
+      description: 'inventory quick-add source',
+    );
+
+    await tester.tap(inventorySource);
+    await tester.pump();
 
     expect(find.text('Aus Vorrat essen'), findsNothing);
     expect(find.text('Brötchen'), findsNothing);
@@ -232,13 +284,21 @@ void main() {
     harness.profileController.add(
       const UserProfile(uid: 'user-1', householdId: 'household-1'),
     );
-    await _pumpVisibleStep(tester);
+    await _pumpUntilFound(
+      tester,
+      find.text('Brötchen'),
+      description: 'household inventory item',
+    );
 
     expect(find.text('Aus Vorrat essen'), findsOneWidget);
     expect(find.text('Brötchen'), findsOneWidget);
 
     await tester.tap(find.text('Brötchen'));
-    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      description: 'inventory item eat sheet',
+    );
 
     expect(find.text('Brötchen'), findsOneWidget);
     expect(find.text('Frühstück'), findsWidgets);
@@ -262,7 +322,7 @@ void main() {
       ],
     );
     await tester.pumpWidget(harness.app);
-    await _pumpVisibleStep(tester);
+    await tester.pump();
 
     final breakfastAddButton = find.byKey(
       const Key('diary_quick_add_button_breakfast'),
@@ -272,15 +332,20 @@ void main() {
       500,
       scrollable: find.byType(Scrollable).first,
     );
-    await _pumpVisibleStep(tester);
+    await tester.pump();
 
     await tester.tap(breakfastAddButton);
-    await _pumpVisibleStep(tester);
-
-    await tester.tap(
-      find.byKey(const Key('diary_quick_add_source_inventory')),
+    final inventorySource = find.byKey(
+      const Key('diary_quick_add_source_inventory'),
     );
-    await _pumpVisibleStep(tester);
+    await _pumpUntilFound(
+      tester,
+      inventorySource,
+      description: 'inventory quick-add source',
+    );
+
+    await tester.tap(inventorySource);
+    await tester.pump();
 
     expect(find.text('Aus Vorrat essen'), findsNothing);
     expect(find.text('Chili sin Carne'), findsNothing);
@@ -288,13 +353,21 @@ void main() {
     harness.profileController.add(
       const UserProfile(uid: 'user-1', householdId: 'household-1'),
     );
-    await _pumpVisibleStep(tester);
+    await _pumpUntilFound(
+      tester,
+      find.text('Chili sin Carne'),
+      description: 'household prepared meal',
+    );
 
     expect(find.text('Aus Vorrat essen'), findsOneWidget);
     expect(find.text('Chili sin Carne'), findsOneWidget);
 
     await tester.tap(find.text('Chili sin Carne'));
-    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const Key('prepared_meal_portions_field')),
+      description: 'prepared meal eat sheet',
+    );
 
     expect(find.text('Chili sin Carne'), findsOneWidget);
     expect(find.text('Frühstück'), findsWidgets);
@@ -307,9 +380,17 @@ void main() {
       const Key('prepared_meal_eat_confirm_button'),
     );
     expect(confirmButton, findsOneWidget);
-    await tester.ensureVisible(confirmButton);
+    await _pumpUntilOnScreen(
+      tester,
+      confirmButton,
+      description: 'prepared meal confirm button',
+    );
     await tester.tap(confirmButton);
-    await _pumpVisibleStep(tester);
+    await _pumpUntil(
+      tester,
+      () => harness.preparedMealsController.consumedMeals.length == 1,
+      description: 'prepared meal consumption',
+    );
 
     expect(harness.preparedMealsController.consumedMeals, hasLength(1));
     final consumption = harness.preparedMealsController.consumedMeals.single;
