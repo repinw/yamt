@@ -1,4 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_local_candidate_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_matcher_limits.dart';
+import 'package:yamt/features/inventory/application/off_product_candidate_source.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'global_food_receipt_alias_repository.dart';
@@ -6,13 +11,6 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-
-// ignore: always_use_package_imports, package imports resolve stale part state here.
-import 'global_food_local_candidate_matcher.dart';
-// ignore: always_use_package_imports, package imports resolve stale part state here.
-import 'global_food_matcher_limits.dart';
-// ignore: always_use_package_imports, package imports resolve stale part state here.
-import 'off_product_candidate_source.dart';
 
 part 'global_food_item_matcher.g.dart';
 

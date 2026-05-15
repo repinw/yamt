@@ -1,10 +1,8 @@
 import 'package:yamt/core/utils/store_name_normalizer.dart';
+import 'package:yamt/features/inventory/application/global_food_matcher_limits.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-
-// ignore: always_use_package_imports, package imports resolve stale part state here.
-import 'global_food_matcher_limits.dart';
 
 /// External Open Food Facts-backed candidate source.
 class OffProductCandidateSource {

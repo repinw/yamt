@@ -48,7 +48,7 @@ class DiaryBalanceProgressBar extends StatelessWidget {
       height: diaryBalanceProgressAreaHeight,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final double width =
+          final width =
               constraints.hasBoundedWidth && constraints.maxWidth.isFinite
               ? math.max<double>(0, constraints.maxWidth)
               : diaryBalanceProgressFallbackWidth;
