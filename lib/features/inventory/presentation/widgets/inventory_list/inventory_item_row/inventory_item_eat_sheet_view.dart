@@ -1,15 +1,41 @@
-part of 'inventory_item_eat_sheet.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-class _InventoryItemEatSheetView extends StatelessWidget {
-  const _InventoryItemEatSheetView({required this.data});
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
+import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_amount_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_quick_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_quick_chip_scroller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_sheet_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_when_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_eat_sheet_display.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_eat_sheet_hero.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_eat_sheet_input_sections.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_eat_sheet_models.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_nutrition_strip.dart';
 
-  final _InventoryItemEatSheetViewData data;
+class InventoryItemEatSheetView extends StatelessWidget {
+  const InventoryItemEatSheetView({required this.data});
+
+  final InventoryItemEatSheetViewData data;
 
   @override
   Widget build(BuildContext context) {
     return InventoryEatFlowSheetScaffold(
       viewInsetsBottom: data.viewInsetsBottom,
-      hero: _InventoryItemEatHero(
+      hero: InventoryItemEatHero(
         itemName: data.hero.itemName,
         eyebrow: data.hero.eyebrow,
         imageUrl: data.hero.imageUrl,
@@ -41,7 +67,7 @@ class _InventoryItemEatSheetView extends StatelessWidget {
         _InventoryItemEatWhenSection(data: data.whenSection),
         if (data.inedibleSection case final inedible?) ...[
           const SizedBox(height: AppSpacing.xxxl),
-          _InventoryItemEatInedibleAmountSection(
+          InventoryItemEatInedibleAmountSection(
             amountController: inedible.controller,
             amountFocusNode: inedible.focusNode,
             amountErrorText: inedible.errorText,
@@ -61,7 +87,7 @@ class _InventoryItemEatSheetView extends StatelessWidget {
 class _InventoryItemEatAmountSection extends StatelessWidget {
   const _InventoryItemEatAmountSection({required this.data});
 
-  final _InventoryItemEatSheetAmountSectionData data;
+  final InventoryItemEatSheetAmountSectionData data;
 
   @override
   Widget build(BuildContext context) {
@@ -136,17 +162,17 @@ class _InventoryItemEatAmountSection extends StatelessWidget {
 class _InventoryItemEatManualSection extends StatelessWidget {
   const _InventoryItemEatManualSection({required this.data});
 
-  final _InventoryItemEatSheetManualPortionSectionData data;
+  final InventoryItemEatSheetManualPortionSectionData data;
 
   @override
   Widget build(BuildContext context) {
-    return _InventoryItemEatSectionCard(
+    return InventoryItemEatSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _InventoryItemEatCardTitle(text: data.title),
+          InventoryItemEatCardTitle(text: data.title),
           const SizedBox(height: AppSpacing.lg),
-          _InventoryItemEatManualPortionSection(
+          InventoryItemEatManualPortionSection(
             amountController: data.controller,
             amountFocusNode: data.focusNode,
             amountErrorText: data.errorText,
@@ -183,7 +209,7 @@ class _InventoryItemEatManualSection extends StatelessWidget {
 class _InventoryItemEatWhenSection extends StatelessWidget {
   const _InventoryItemEatWhenSection({required this.data});
 
-  final _InventoryItemEatSheetWhenSectionData data;
+  final InventoryItemEatSheetWhenSectionData data;
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +229,7 @@ class _InventoryItemEatWhenSection extends StatelessWidget {
 class _InventoryItemEatAmountModeSelector extends StatelessWidget {
   const _InventoryItemEatAmountModeSelector({required this.data});
 
-  final _InventoryItemEatSheetAmountSectionData data;
+  final InventoryItemEatSheetAmountSectionData data;
 
   @override
   Widget build(BuildContext context) {

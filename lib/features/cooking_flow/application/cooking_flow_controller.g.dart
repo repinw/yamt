@@ -29,14 +29,23 @@ final class CookingFlowControllerProvider
           inventoryItemRepositoryProvider,
           preparedMealsControllerProvider,
         ],
-        $allTransitiveDependencies: <ProviderOrFamily>[
+        $allTransitiveDependencies: <ProviderOrFamily>{
           CookingFlowControllerProvider.$allTransitiveDependencies0,
           CookingFlowControllerProvider.$allTransitiveDependencies1,
-        ],
+          CookingFlowControllerProvider.$allTransitiveDependencies2,
+          CookingFlowControllerProvider.$allTransitiveDependencies3,
+          CookingFlowControllerProvider.$allTransitiveDependencies4,
+        },
       );
 
   static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
   static final $allTransitiveDependencies1 = preparedMealsControllerProvider;
+  static final $allTransitiveDependencies2 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies3 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies4 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies3;
 
   @override
   String debugGetCreateSourceHash() => _$cookingFlowControllerHash();

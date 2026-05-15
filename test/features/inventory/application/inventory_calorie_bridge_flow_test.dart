@@ -14,10 +14,10 @@ import 'package:yamt/features/calories/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
+    'calorie_inventory_create_context.dart';
+import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
@@ -26,7 +26,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
 
@@ -95,7 +95,6 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
 }
 
 @Dependencies([
-  InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class _SaveDirectEntryButton extends ConsumerWidget {
@@ -206,8 +205,8 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
 }
 
 @Dependencies([
-  InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  InventoryItemsController,
 ])
 void main() {
   test('buildProfileFromInventoryItem maps nutrition and barcode fallback', () {

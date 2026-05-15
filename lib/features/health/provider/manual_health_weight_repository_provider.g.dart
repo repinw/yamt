@@ -60,4 +60,4 @@ final class ManualHealthWeightRepositoryProvider
 }
 
 String _$manualHealthWeightRepositoryHash() =>
-    r'2aeca9c83a1a934800be11a61d7cb51d135b0f42';
+    r'92ef989ff44812dffa7d510da180a612126c8548';

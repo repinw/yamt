@@ -5,20 +5,18 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
 /// Defines inventory calorie bridge flow.
 @Dependencies([
-  InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class InventoryCalorieBridgeFlow {
@@ -168,15 +166,5 @@ class InventoryCalorieBridgeFlow {
                 );
           },
         );
-  }
-
-  /// Discard pending consumption.
-  static Future<void> discardPendingConsumption({
-    required ProviderContainer container,
-    required String pendingConsumptionId,
-  }) {
-    return container
-        .read(inventoryItemsControllerProvider.notifier)
-        .discardPendingConsumption(pendingConsumptionId);
   }
 }

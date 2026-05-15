@@ -1,7 +1,3 @@
-import 'dart:async';
-import 'dart:developer' show log;
-import 'dart:typed_data';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,10 +7,6 @@ import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/utils/currency_format.dart';
-import 'package:yamt/core/utils/product_image_url.dart';
-import 'package:yamt/core/widgets/app_cached_network_image.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
@@ -22,39 +14,16 @@ import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_discard_reason_dialog.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_primary_action_button.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_tile_header_layout.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_action_dialogs.dart';
+    'prepared_meal_card_actions.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_component_avatar.dart';
+    'prepared_meal_card_content.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_cover.dart';
+    'prepared_meal_card_display.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_item_row_constants.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_item_row_view_data.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_nutrition_strip.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_segmented_button_frame.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_segmented_button_style.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-part 'prepared_meal_card_actions.dart';
-part 'prepared_meal_card_content.dart';
-part 'prepared_meal_card_display.dart';
-part 'prepared_meal_card_pending_ingredient.dart';
-
-const _preparedMealCardLogName = 'PreparedMealCard';
 
 /// Defines prepared meal card.
 @Dependencies([InventoryItemsController, preparedMealImagePicker])
@@ -135,13 +104,13 @@ class PreparedMealCard extends ConsumerStatefulWidget {
 }
 
 class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
-    with _PreparedMealCardActions {
+    with PreparedMealCardActions<PreparedMealCard> {
   static const _inventoryItemListEquality = ListEquality<InventoryItem>();
   static const _ingredientListEquality = ListEquality<String>();
 
   var _isExpanded = false;
   var _isWorking = false;
-  _PreparedMealDisplayMode _displayMode = _PreparedMealDisplayMode.perHundred;
+  PreparedMealDisplayMode _displayMode = PreparedMealDisplayMode.perHundred;
   List<InventoryItem> _cachedSuggestionInventoryItems = const <InventoryItem>[];
   List<String> _cachedPendingIngredients = const <String>[];
   Map<String, List<InventoryItem>> _cachedPendingSuggestions =
@@ -158,6 +127,57 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
 
   @override
   set workingState(bool value) => _isWorking = value;
+
+  @override
+  PreparedMeal get actionMeal => widget.meal;
+
+  @override
+  Future<bool> Function({
+    required DateTime loggedDay,
+    required String mealId,
+    required MealType mealType,
+    required num portions,
+  })
+  get eatPressedAction => widget.onEatPressed;
+
+  @override
+  Future<bool> Function(
+    String mealId,
+    num portions,
+    InventoryDiscardReason reason,
+  )
+  get throwAwayPressedAction => widget.onThrowAwayPressed;
+
+  @override
+  Future<bool> Function(
+    String mealId,
+    String ingredient,
+    List<String> inventoryItemIds,
+  )?
+  get fillPendingIngredientPressedAction =>
+      widget.onFillPendingIngredientPressed;
+
+  @override
+  Future<bool> Function(String mealId, String ingredient)?
+  get ignorePendingIngredientPressedAction =>
+      widget.onIgnorePendingIngredientPressed;
+
+  @override
+  Future<bool> Function(String mealId, PreparedMealEditSheetResult result)
+  get editPressedAction => widget.onEditPressed;
+
+  @override
+  Future<bool> Function(String mealId, PreparedMealEditSheetResult result)?
+  get selectEditIngredientsPressedAction =>
+      widget.onSelectEditIngredientsPressed;
+
+  @override
+  Future<bool> Function(String mealId) get unbundlePressedAction =>
+      widget.onUnbundlePressed;
+
+  @override
+  Future<bool> Function(PreparedMeal meal) get saveTemplatePressedAction =>
+      widget.onSaveTemplatePressed;
 
   @override
   void initState() {
@@ -209,18 +229,21 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
       locale: l10n.localeName,
       currencyCode: meal.currencyCode,
     );
-    final availableDisplayModes = _availableDisplayModes(meal);
+    final availableDisplayModes = availablePreparedMealDisplayModes(meal);
     final selectedDisplayMode = availableDisplayModes.contains(_displayMode)
         ? _displayMode
         : availableDisplayModes.first;
-    final nutritionMetrics = _buildPreparedMealNutritionMetrics(
+    final nutritionMetrics = buildPreparedMealNutritionMetrics(
       l10n: l10n,
       meal: meal,
       mode: selectedDisplayMode,
     );
-    final priceLabel = _priceModeLabel(l10n: l10n, mode: selectedDisplayMode);
+    final priceLabel = preparedMealPriceModeLabel(
+      l10n: l10n,
+      mode: selectedDisplayMode,
+    );
     final priceValue = currency.format(
-      _resolvePreparedMealPrice(meal: meal, mode: selectedDisplayMode),
+      resolvePreparedMealPrice(meal: meal, mode: selectedDisplayMode),
     );
 
     return DecoratedBox(
@@ -237,15 +260,15 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _PreparedMealCardHeader(
+                PreparedMealCardHeader(
                   meal: meal,
                   imageBytes: storedImageBytes,
                   ingredientCount: ingredientCount,
                   isExpanded: _isExpanded,
                   canEat: canEat,
                   enabled: widget.enabled,
-                  onTap: _toggleExpanded,
-                  onEatPressed: _onEatPressed,
+                  onTap: toggleExpanded,
+                  onEatPressed: handleEatPressed,
                 ),
                 SizedBox(height: _isExpanded ? AppSpacing.xxs : 0),
                 AnimatedSize(
@@ -253,7 +276,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
                   curve: Curves.easeOutCubic,
                   alignment: Alignment.topCenter,
                   child: _isExpanded
-                      ? _PreparedMealCardExpandedContent(
+                      ? PreparedMealCardExpandedContent(
                           meal: meal,
                           inventoryItems: inventoryItems,
                           pendingIngredientSuggestions:
@@ -271,12 +294,13 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
                               _displayMode = mode;
                             });
                           },
-                          onFillPendingIngredient: _onFillPendingIngredient,
-                          onIgnorePendingIngredient: _onIgnorePendingIngredient,
-                          onEditPressed: _onEditPressed,
-                          onThrowAwayPressed: _onThrowAwayPressed,
-                          onUnbundlePressed: _onUnbundlePressed,
-                          onSaveTemplatePressed: _onSaveTemplatePressed,
+                          onFillPendingIngredient: handleFillPendingIngredient,
+                          onIgnorePendingIngredient:
+                              handleIgnorePendingIngredient,
+                          onEditPressed: handleEditPressed,
+                          onThrowAwayPressed: handleThrowAwayPressed,
+                          onUnbundlePressed: handleUnbundlePressed,
+                          onSaveTemplatePressed: handleSaveTemplatePressed,
                           hasFillPendingIngredientAction:
                               widget.onFillPendingIngredientPressed != null,
                           hasIgnorePendingIngredientAction:

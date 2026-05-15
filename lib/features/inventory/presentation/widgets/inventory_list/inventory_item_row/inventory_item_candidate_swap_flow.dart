@@ -9,6 +9,8 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -40,7 +42,7 @@ class InventoryItemCandidateSwapRequest {
 }
 
 /// Runs the inventory candidate swap picker and returns the chosen product.
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   required BuildContext context,
   required WidgetRef ref,
@@ -111,7 +113,7 @@ buildInventoryItemCandidateSwapRequestFromCandidate({
   );
 }
 
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 Future<InventoryItemCandidateSwapRequest?> _manualEntryRequest({
   required BuildContext context,
   required InventoryItem item,

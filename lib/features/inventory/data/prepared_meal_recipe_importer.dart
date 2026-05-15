@@ -1,6 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_scraper/recipe_scraper.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_import_formatter.dart';
+
+part 'prepared_meal_recipe_importer.g.dart';
 
 /// Defines prepared meal recipe import.
 class PreparedMealRecipeImport {
@@ -86,8 +88,7 @@ class PreparedMealRecipeImporter {
 }
 
 /// The prepared meal recipe importer provider.
-final preparedMealRecipeImporterProvider = Provider<PreparedMealRecipeImporter>(
-  (ref) {
-    return const PreparedMealRecipeImporter();
-  },
-);
+@Riverpod(keepAlive: true)
+PreparedMealRecipeImporter preparedMealRecipeImporter(Ref ref) {
+  return const PreparedMealRecipeImporter();
+}

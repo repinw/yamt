@@ -38,15 +38,24 @@ final class DiaryProviderWarmupProvider
           DiaryProviderWarmupProvider.$allTransitiveDependencies2,
           DiaryProviderWarmupProvider.$allTransitiveDependencies3,
           DiaryProviderWarmupProvider.$allTransitiveDependencies4,
+          DiaryProviderWarmupProvider.$allTransitiveDependencies5,
+          DiaryProviderWarmupProvider.$allTransitiveDependencies6,
+          DiaryProviderWarmupProvider.$allTransitiveDependencies7,
         },
       );
 
   static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
   static final $allTransitiveDependencies1 =
       InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies3 = calorieEntryDeleteFlowProvider;
+  static final $allTransitiveDependencies2 =
+      InventoryItemsControllerProvider.$allTransitiveDependencies1;
+  static final $allTransitiveDependencies3 = preparedMealsControllerProvider;
   static final $allTransitiveDependencies4 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies5 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies3;
+  static final $allTransitiveDependencies6 = calorieEntryDeleteFlowProvider;
+  static final $allTransitiveDependencies7 =
       inventoryBackedCalorieEntrySaveFlowProvider;
 
   @override

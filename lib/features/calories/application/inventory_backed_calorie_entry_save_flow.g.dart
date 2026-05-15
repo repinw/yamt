@@ -38,12 +38,16 @@ final class InventoryBackedCalorieEntrySaveFlowProvider
               .$allTransitiveDependencies0,
           InventoryBackedCalorieEntrySaveFlowProvider
               .$allTransitiveDependencies1,
+          InventoryBackedCalorieEntrySaveFlowProvider
+              .$allTransitiveDependencies2,
         ],
       );
 
   static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
   static final $allTransitiveDependencies1 =
       InventoryItemsControllerProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies2 =
+      InventoryItemsControllerProvider.$allTransitiveDependencies1;
 
   @override
   String debugGetCreateSourceHash() =>

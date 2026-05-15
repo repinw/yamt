@@ -9,7 +9,7 @@ import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
     show HomeTabType;
 import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/presentation/views/'
     'statistics_calories_view.dart';

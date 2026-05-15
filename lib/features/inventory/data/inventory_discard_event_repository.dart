@@ -1,12 +1,14 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
+
+part 'inventory_discard_event_repository.g.dart';
 
 const _discardEventRepositoryLogName = 'InventoryDiscardEventRepository';
 const _usersCollection = 'users';
@@ -162,23 +164,21 @@ class _UnavailableInventoryDiscardEventRepository
 }
 
 /// The inventory discard event repository provider.
-final inventoryDiscardEventRepositoryProvider =
-    Provider<InventoryDiscardEventRepository>((ref) {
-      ref.watch(authStateChangesProvider);
-      final currentUserId = ref.watch(
-        effectiveHouseholdDataOwnerUserIdProvider,
-      );
-      final firestore = ref.watch(firebaseFirestoreProvider);
-      if (firestore == null) {
-        log(
-          'Falling back to unavailable discard event repository.',
-          name: _discardEventRepositoryLogName,
-        );
-        return const _UnavailableInventoryDiscardEventRepository();
-      }
+@Riverpod(dependencies: [])
+InventoryDiscardEventRepository inventoryDiscardEventRepository(Ref ref) {
+  ref.watch(authStateChangesProvider);
+  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final firestore = ref.watch(firebaseFirestoreProvider);
+  if (firestore == null) {
+    log(
+      'Falling back to unavailable discard event repository.',
+      name: _discardEventRepositoryLogName,
+    );
+    return const _UnavailableInventoryDiscardEventRepository();
+  }
 
-      return FirestoreInventoryDiscardEventRepository(
-        firestore: firestore,
-        currentUserId: currentUserId,
-      );
-    });
+  return FirestoreInventoryDiscardEventRepository(
+    firestore: firestore,
+    currentUserId: currentUserId,
+  );
+}

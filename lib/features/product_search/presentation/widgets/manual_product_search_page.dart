@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_editor_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -13,7 +15,10 @@ import 'package:yamt/features/product_search/provider/'
     'manual_product_search_models.dart';
 
 /// Defines inventory receipt manual product page.
-@Dependencies([inventoryItemRepository])
+@Dependencies([
+  inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
+])
 class InventoryReceiptManualProductPage extends StatelessWidget {
   /// The inventory receipt manual product page.
   const InventoryReceiptManualProductPage({

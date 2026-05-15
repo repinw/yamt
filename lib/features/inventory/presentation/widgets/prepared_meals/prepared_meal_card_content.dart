@@ -1,7 +1,34 @@
-part of 'prepared_meal_card.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-class _PreparedMealCardHeader extends StatelessWidget {
-  const _PreparedMealCardHeader({
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_tile_header_layout.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_card_display.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_card_pending_ingredient.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_component_avatar.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_cover.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_item_row_view_data.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_nutrition_strip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_segmented_button_frame.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class PreparedMealCardHeader extends StatelessWidget {
+  const PreparedMealCardHeader({
     required this.meal,
     required this.imageBytes,
     required this.ingredientCount,
@@ -48,11 +75,11 @@ class _PreparedMealCardHeader extends StatelessWidget {
               : null,
           statusColor: meal.hasPendingRecipeIngredients ? colors.error : null,
           progressRatio: meal.remainingRatio,
-          progressLabel: _preparedMealProgressLabel(l10n: l10n, meal: meal),
+          progressLabel: preparedMealProgressLabel(l10n: l10n, meal: meal),
           segmentedByUnits: false,
           totalUnits: meal.totalPortions,
           remainingUnits: meal.remainingPortions,
-          action: _PreparedMealPrimaryActionButton(
+          action: PreparedMealPrimaryActionButton(
             label: l10n.inventoryItemEatAction,
             onPressed: canEat ? onEatPressed : null,
           ),
@@ -67,8 +94,8 @@ class _PreparedMealCardHeader extends StatelessWidget {
   }
 }
 
-class _PreparedMealCardExpandedContent extends StatelessWidget {
-  const _PreparedMealCardExpandedContent({
+class PreparedMealCardExpandedContent extends StatelessWidget {
+  const PreparedMealCardExpandedContent({
     required this.meal,
     required this.inventoryItems,
     required this.pendingIngredientSuggestions,
@@ -98,11 +125,11 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
   final bool isWorking;
   final bool enabled;
   final List<InventoryNutritionMetric> nutritionMetrics;
-  final List<_PreparedMealDisplayMode> availableDisplayModes;
-  final _PreparedMealDisplayMode selectedDisplayMode;
+  final List<PreparedMealDisplayMode> availableDisplayModes;
+  final PreparedMealDisplayMode selectedDisplayMode;
   final String priceLabel;
   final String priceValue;
-  final ValueChanged<_PreparedMealDisplayMode> onModeChanged;
+  final ValueChanged<PreparedMealDisplayMode> onModeChanged;
   final void Function({
     required String ingredient,
     required List<InventoryItem> inventoryItems,
@@ -130,7 +157,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
           if (nutritionMetrics.isNotEmpty) ...[
             if (availableDisplayModes.length > 1) ...[
               InventorySegmentedButtonFrame(
-                child: _PreparedMealDisplayModeToggle(
+                child: PreparedMealDisplayModeToggle(
                   selectedMode: selectedDisplayMode,
                   availableModes: availableDisplayModes,
                   onModeChanged: onModeChanged,
@@ -143,7 +170,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
               colorScheme: colors,
             ),
             const SizedBox(height: AppSpacing.sm),
-            _PreparedMealPriceCard(label: priceLabel, value: priceValue),
+            PreparedMealPriceCard(label: priceLabel, value: priceValue),
             const SizedBox(height: AppSpacing.md),
           ],
           ...meal.components.map((component) {
@@ -187,7 +214,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
                   const <InventoryItem>[];
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: _PreparedMealPendingIngredientRow(
+                child: PreparedMealPendingIngredientRow(
                   ingredient: ingredient,
                   suggestions: suggestions,
                   onAssignPressed:

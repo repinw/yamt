@@ -52,8 +52,8 @@ import 'package:yamt/features/health/provider/health_weight_service_provider.dar
 import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/memory_app_preferences.dart';

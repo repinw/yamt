@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
@@ -55,6 +56,7 @@ class ManualProductAiSearchResult {
 }
 
 /// Read-only AI food creation page with limited user adjustments.
+@Dependencies([inventoryManualAddQuickEatConfig])
 class ManualProductAiSearchPage extends ConsumerStatefulWidget {
   /// Creates the page.
   const ManualProductAiSearchPage({

@@ -50,7 +50,11 @@ class ReceiptReviewPersistResult {
 }
 
 /// Receipt review resolution service.
-@Riverpod(dependencies: [inventoryItemRepository])
+@Riverpod(
+  dependencies: [
+    inventoryItemRepository,
+  ],
+)
 ReceiptReviewResolutionService receiptReviewResolutionService(Ref ref) {
   return ReceiptReviewResolutionService(
     mapper: ref.watch(receiptToReviewItemDraftMapperProvider),

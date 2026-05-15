@@ -13,8 +13,11 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_amount_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -41,11 +44,14 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_nutrition_strip.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item row.
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  inventoryItemRepository,
+  InventoryItemsController,
+])
 class InventoryItemRow extends ConsumerStatefulWidget {
   /// The inventory item row.
   const InventoryItemRow({

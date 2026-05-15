@@ -20,8 +20,16 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'prepared_meal_selection_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'prepared_meal_templates_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_creation_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -30,12 +38,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/'
-    'prepared_meal_selection_controller.dart';
-import 'package:yamt/features/inventory/provider/'
-    'prepared_meal_templates_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -46,6 +48,7 @@ const _preparedMealImageAssetUuid = Uuid();
 
 /// Defines inventory page.
 @Dependencies([
+  inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
   PreparedMealsController,

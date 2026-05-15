@@ -23,11 +23,11 @@ import 'package:yamt/features/inventory/application/'
     'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/provider/'
+import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/'
+import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/shoppinglist/provider/'
     'shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -42,7 +42,10 @@ part 'widgets/meal_template_detail_hero_section.dart';
 part 'widgets/meal_template_detail_top_bar.dart';
 
 /// Defines meal template detail page.
-@Dependencies([InventoryItemsController, PreparedMealsController])
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+])
 class MealTemplateDetailPage extends ConsumerStatefulWidget {
   /// The meal template detail page.
   const MealTemplateDetailPage({required this.templateId, super.key});

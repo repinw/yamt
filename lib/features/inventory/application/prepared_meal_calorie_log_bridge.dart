@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -9,6 +9,8 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+
+part 'prepared_meal_calorie_log_bridge.g.dart';
 
 /// Defines prepared meal state publisher typedef.
 typedef PreparedMealStatePublisher = void Function(List<PreparedMeal> meals);
@@ -21,35 +23,37 @@ typedef PreparedMealSaveCallback =
     );
 
 /// The prepared meal calorie log bridge provider.
-final preparedMealCalorieLogBridgeProvider =
-    Provider<PreparedMealCalorieLogBridge>((ref) {
-      final commitStore = ref.watch(
-        preparedMealCalorieEntryCommitStoreProvider,
-      );
-      return PreparedMealCalorieLogBridge(
-        saveEntry: (entry) {
-          return ref
-              .read(calorieEntriesControllerProvider.notifier)
-              .saveEntry(entry);
-        },
-        saveEntryAtomically: commitStore == null
-            ? null
-            : (entry) {
-                return ref
-                    .read(calorieEntriesControllerProvider.notifier)
-                    .saveEntry(
-                      entry,
-                      persistEntry: (persistedEntry) {
-                        return commitStore.commitEntryAndPreparedMeal(
-                          entry: persistedEntry,
-                        );
-                      },
+@Riverpod(
+  dependencies: [preparedMealCalorieEntryCommitStore],
+)
+PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
+  final commitStore = ref.watch(preparedMealCalorieEntryCommitStoreProvider);
+  return PreparedMealCalorieLogBridge(
+    saveEntry: (entry) {
+      return ref
+          .read(calorieEntriesControllerProvider.notifier)
+          .saveEntry(
+            entry,
+          );
+    },
+    saveEntryAtomically: commitStore == null
+        ? null
+        : (entry) {
+            return ref
+                .read(calorieEntriesControllerProvider.notifier)
+                .saveEntry(
+                  entry,
+                  persistEntry: (persistedEntry) {
+                    return commitStore.commitEntryAndPreparedMeal(
+                      entry: persistedEntry,
                     );
-              },
-        now: DateTime.now,
-        nextEntryId: const Uuid().v4,
-      );
-    });
+                  },
+                );
+          },
+    now: DateTime.now,
+    nextEntryId: const Uuid().v4,
+  );
+}
 
 /// Defines prepared meal calorie log bridge.
 class PreparedMealCalorieLogBridge {

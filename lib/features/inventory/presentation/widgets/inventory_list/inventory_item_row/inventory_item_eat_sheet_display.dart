@@ -1,7 +1,12 @@
-part of 'inventory_item_eat_sheet.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-class _InventoryItemEatSectionCard extends StatelessWidget {
-  const _InventoryItemEatSectionCard({required this.child});
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+
+class InventoryItemEatSectionCard extends StatelessWidget {
+  const InventoryItemEatSectionCard({required this.child});
 
   final Widget child;
 
@@ -32,8 +37,8 @@ class _InventoryItemEatSectionCard extends StatelessWidget {
   }
 }
 
-class _InventoryItemEatCardTitle extends StatelessWidget {
-  const _InventoryItemEatCardTitle({required this.text});
+class InventoryItemEatCardTitle extends StatelessWidget {
+  const InventoryItemEatCardTitle({required this.text});
 
   final String text;
 

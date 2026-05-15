@@ -15,10 +15,10 @@ import 'package:yamt/features/diary/application/'
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_quick_eat_flow.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Diary quick-eat sources.

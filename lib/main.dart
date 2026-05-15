@@ -14,7 +14,7 @@ import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_entry_post_persist_hook.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 

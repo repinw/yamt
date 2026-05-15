@@ -1,7 +1,15 @@
-part of 'inventory_item_eat_sheet.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-class _NewPortionDialog extends StatefulWidget {
-  const _NewPortionDialog({
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class NewPortionDialog extends StatefulWidget {
+  const NewPortionDialog({
     required this.initialLabel,
     required this.initialAmount,
     required this.initialUnit,
@@ -14,10 +22,10 @@ class _NewPortionDialog extends StatefulWidget {
   final List<ConsumedUnit> availableUnits;
 
   @override
-  State<_NewPortionDialog> createState() => _NewPortionDialogState();
+  State<NewPortionDialog> createState() => _NewPortionDialogState();
 }
 
-class _NewPortionDialogState extends State<_NewPortionDialog> {
+class _NewPortionDialogState extends State<NewPortionDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _labelController;
   late final TextEditingController _amountController;
@@ -131,7 +139,7 @@ class _NewPortionDialogState extends State<_NewPortionDialog> {
     final label = _labelController.text.trim();
     final defaultLabel = l10n.inventoryItemEatSheetDefaultPortionLabel;
     Navigator.of(context).pop(
-      _NewPortionDialogResult(
+      NewPortionDialogResult(
         amount: amount,
         unit: _selectedUnit,
         label: label.isEmpty || label == defaultLabel ? null : label,
@@ -149,8 +157,8 @@ class _NewPortionDialogState extends State<_NewPortionDialog> {
   }
 }
 
-class _NewPortionDialogResult {
-  const _NewPortionDialogResult({
+class NewPortionDialogResult {
+  const NewPortionDialogResult({
     required this.amount,
     required this.unit,
     required this.label,

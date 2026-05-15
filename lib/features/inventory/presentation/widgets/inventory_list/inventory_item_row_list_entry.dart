@@ -5,15 +5,21 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item row list entry.
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  inventoryItemRepository,
+  InventoryItemsController,
+])
 class InventoryItemRowListEntry extends StatelessWidget {
   /// The inventory item row list entry.
   const InventoryItemRowListEntry({

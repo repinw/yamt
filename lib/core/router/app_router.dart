@@ -28,10 +28,12 @@ import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/'
     'kitchen_utensils_page.dart';
 import 'package:yamt/features/meal_templates/presentation/'
@@ -87,6 +89,7 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
   keepAlive: true,
   dependencies: [
     inventoryItemRepository,
+    inventoryManualAddQuickEatConfig,
     calorieEntryDeleteFlow,
     inventoryBackedCalorieEntrySaveFlow,
     diaryProviderWarmup,

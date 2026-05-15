@@ -9,9 +9,9 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meal_templates_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_templates_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_detail_page.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -187,7 +187,10 @@ PreparedMeal _recipeTemplate({
   );
 }
 
-@Dependencies([InventoryItemsController, PreparedMealsController])
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+])
 Widget _buildHarness({
   required _FakePreparedMealTemplateRepository templateRepository,
   List<InventoryItem> inventoryItems = const <InventoryItem>[],

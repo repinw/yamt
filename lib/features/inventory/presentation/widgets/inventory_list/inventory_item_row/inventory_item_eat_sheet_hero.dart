@@ -1,7 +1,14 @@
-part of 'inventory_item_eat_sheet.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-class _InventoryItemEatHero extends StatelessWidget {
-  const _InventoryItemEatHero({
+import 'package:flutter/material.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_hero.dart';
+
+class InventoryItemEatHero extends StatelessWidget {
+  const InventoryItemEatHero({
     required this.itemName,
     required this.eyebrow,
     required this.imageUrl,
@@ -18,15 +25,15 @@ class _InventoryItemEatHero extends StatelessWidget {
       eyebrow: eyebrow,
       imageUrl: imageUrl,
       cancelButtonKey: const Key('inventory_item_amount_dialog_cancel_button'),
-      fallback: _InventoryItemEatHeroFallback(
+      fallback: InventoryItemEatHeroFallback(
         colors: Theme.of(context).colorScheme,
       ),
     );
   }
 }
 
-class _InventoryItemEatHeroFallback extends StatelessWidget {
-  const _InventoryItemEatHeroFallback({required this.colors});
+class InventoryItemEatHeroFallback extends StatelessWidget {
+  const InventoryItemEatHeroFallback({required this.colors});
 
   final ColorScheme colors;
 

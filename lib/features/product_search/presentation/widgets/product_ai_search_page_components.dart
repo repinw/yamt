@@ -1,5 +1,6 @@
 part of 'product_ai_search_page.dart';
 
+@Dependencies([inventoryManualAddQuickEatConfig])
 class _ManualProductAiSearchBody extends ConsumerWidget {
   const _ManualProductAiSearchBody({
     required this.draft,

@@ -11,6 +11,8 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
@@ -39,7 +41,7 @@ import 'package:yamt/features/scanner/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Main receipt review content shown inside the full-screen review flow.
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 class InventoryReceiptReviewSheet extends ConsumerStatefulWidget {
   /// The inventory receipt review sheet.
   const InventoryReceiptReviewSheet({

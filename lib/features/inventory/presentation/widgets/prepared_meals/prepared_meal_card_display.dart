@@ -1,33 +1,52 @@
-part of 'prepared_meal_card.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-enum _PreparedMealDisplayMode { perHundred, perPortion, total }
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart'
+    show InventoryAmountUnit, formatInventoryAmountValue;
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_primary_action_button.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_item_row_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_item_row_view_data.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_nutrition_strip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/'
+    'inventory_segmented_button_style.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-class _PreparedMealDisplayModeToggle extends StatelessWidget {
-  const _PreparedMealDisplayModeToggle({
+enum PreparedMealDisplayMode { perHundred, perPortion, total }
+
+class PreparedMealDisplayModeToggle extends StatelessWidget {
+  const PreparedMealDisplayModeToggle({
     required this.selectedMode,
     required this.availableModes,
     required this.onModeChanged,
   });
 
-  final _PreparedMealDisplayMode selectedMode;
-  final List<_PreparedMealDisplayMode> availableModes;
-  final ValueChanged<_PreparedMealDisplayMode> onModeChanged;
+  final PreparedMealDisplayMode selectedMode;
+  final List<PreparedMealDisplayMode> availableModes;
+  final ValueChanged<PreparedMealDisplayMode> onModeChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return SegmentedButton<_PreparedMealDisplayMode>(
+    return SegmentedButton<PreparedMealDisplayMode>(
       expandedInsets: AppInsets.zero,
       showSelectedIcon: false,
       style: inventorySegmentedButtonStyle(context),
       segments: [
         for (final mode in availableModes)
-          ButtonSegment<_PreparedMealDisplayMode>(
+          ButtonSegment<PreparedMealDisplayMode>(
             value: mode,
             label: Text(_displayModeLabel(l10n, mode)),
           ),
       ],
-      selected: <_PreparedMealDisplayMode>{selectedMode},
+      selected: <PreparedMealDisplayMode>{selectedMode},
       onSelectionChanged: (selection) {
         if (selection.isEmpty) {
           return;
@@ -38,8 +57,8 @@ class _PreparedMealDisplayModeToggle extends StatelessWidget {
   }
 }
 
-class _PreparedMealPrimaryActionButton extends StatelessWidget {
-  const _PreparedMealPrimaryActionButton({
+class PreparedMealPrimaryActionButton extends StatelessWidget {
+  const PreparedMealPrimaryActionButton({
     required this.label,
     required this.onPressed,
   });
@@ -68,8 +87,8 @@ class _PreparedMealPrimaryActionButton extends StatelessWidget {
   }
 }
 
-class _PreparedMealPriceCard extends StatelessWidget {
-  const _PreparedMealPriceCard({required this.label, required this.value});
+class PreparedMealPriceCard extends StatelessWidget {
+  const PreparedMealPriceCard({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -123,21 +142,23 @@ class _PreparedMealPriceCard extends StatelessWidget {
   }
 }
 
-List<_PreparedMealDisplayMode> _availableDisplayModes(PreparedMeal meal) {
+List<PreparedMealDisplayMode> availablePreparedMealDisplayModes(
+  PreparedMeal meal,
+) {
   return [
     if (meal.perHundredAmountBasis != null) ...[
-      _PreparedMealDisplayMode.perHundred,
+      PreparedMealDisplayMode.perHundred,
     ],
     if (meal.totalPortions > 0 && !_isGramTrackedPreparedMeal(meal))
-      _PreparedMealDisplayMode.perPortion,
-    _PreparedMealDisplayMode.total,
+      PreparedMealDisplayMode.perPortion,
+    PreparedMealDisplayMode.total,
   ];
 }
 
-List<InventoryNutritionMetric> _buildPreparedMealNutritionMetrics({
+List<InventoryNutritionMetric> buildPreparedMealNutritionMetrics({
   required AppLocalizations l10n,
   required PreparedMeal meal,
-  required _PreparedMealDisplayMode mode,
+  required PreparedMealDisplayMode mode,
 }) {
   final multiplier = _resolvePreparedMealDisplayMultiplier(
     meal: meal,
@@ -165,9 +186,9 @@ List<InventoryNutritionMetric> _buildPreparedMealNutritionMetrics({
   ];
 }
 
-double _resolvePreparedMealPrice({
+double resolvePreparedMealPrice({
   required PreparedMeal meal,
-  required _PreparedMealDisplayMode mode,
+  required PreparedMealDisplayMode mode,
 }) {
   return meal.totalPrice *
       _resolvePreparedMealDisplayMultiplier(meal: meal, mode: mode);
@@ -175,38 +196,38 @@ double _resolvePreparedMealPrice({
 
 double _resolvePreparedMealDisplayMultiplier({
   required PreparedMeal meal,
-  required _PreparedMealDisplayMode mode,
+  required PreparedMealDisplayMode mode,
 }) {
   return switch (mode) {
-    _PreparedMealDisplayMode.perHundred => meal.perHundredMultiplier ?? 0,
-    _PreparedMealDisplayMode.perPortion =>
+    PreparedMealDisplayMode.perHundred => meal.perHundredMultiplier ?? 0,
+    PreparedMealDisplayMode.perPortion =>
       meal.totalPortions > 0 ? 1 / meal.totalPortions : 0,
-    _PreparedMealDisplayMode.total => 1,
+    PreparedMealDisplayMode.total => 1,
   };
 }
 
-String _displayModeLabel(AppLocalizations l10n, _PreparedMealDisplayMode mode) {
+String _displayModeLabel(AppLocalizations l10n, PreparedMealDisplayMode mode) {
   return switch (mode) {
-    _PreparedMealDisplayMode.perHundred =>
+    PreparedMealDisplayMode.perHundred =>
       l10n.preparedMealNutritionModePerHundred,
-    _PreparedMealDisplayMode.perPortion =>
+    PreparedMealDisplayMode.perPortion =>
       l10n.preparedMealNutritionModePerPortion,
-    _PreparedMealDisplayMode.total => l10n.preparedMealNutritionModeTotal,
+    PreparedMealDisplayMode.total => l10n.preparedMealNutritionModeTotal,
   };
 }
 
-String _priceModeLabel({
+String preparedMealPriceModeLabel({
   required AppLocalizations l10n,
-  required _PreparedMealDisplayMode mode,
+  required PreparedMealDisplayMode mode,
 }) {
   return switch (mode) {
-    _PreparedMealDisplayMode.perHundred => l10n.preparedMealPricePerHundred,
-    _PreparedMealDisplayMode.perPortion => l10n.preparedMealPricePerPortion,
-    _PreparedMealDisplayMode.total => l10n.preparedMealPriceTotal,
+    PreparedMealDisplayMode.perHundred => l10n.preparedMealPricePerHundred,
+    PreparedMealDisplayMode.perPortion => l10n.preparedMealPricePerPortion,
+    PreparedMealDisplayMode.total => l10n.preparedMealPriceTotal,
   };
 }
 
-String _preparedMealProgressLabel({
+String preparedMealProgressLabel({
   required AppLocalizations l10n,
   required PreparedMeal meal,
 }) {

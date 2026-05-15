@@ -2,51 +2,29 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
-import 'package:yamt/core/widgets/app_dropdown_button.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
-import 'package:yamt/features/inventory/application/'
-    'global_food_serving_suggestion_repository.dart';
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_food_serving_suggestion_repository.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/presentation/constants/'
-    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_amount_card.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_hero.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_leading_icon.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_quick_chip.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_quick_chip_scroller.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_sheet_scaffold.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_when_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_eat_sheet_models.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_eat_sheet_view.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_new_portion_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-part 'inventory_item_eat_sheet_display.dart';
-part 'inventory_item_eat_sheet_hero.dart';
-part 'inventory_item_eat_sheet_input_sections.dart';
-part 'inventory_item_eat_sheet_models.dart';
-part 'inventory_item_eat_sheet_view.dart';
-part 'inventory_item_new_portion_dialog.dart';
 
 /// Show inventory item eat sheet.
 Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
@@ -272,14 +250,14 @@ class _InventoryItemEatSheetState
         ? null
         : material.formatMediumDate(_selectedLoggedAt);
 
-    final viewData = _InventoryItemEatSheetViewData(
+    final viewData = InventoryItemEatSheetViewData(
       viewInsetsBottom: MediaQuery.viewInsetsOf(context).bottom,
-      hero: _InventoryItemEatSheetHeroData(
+      hero: InventoryItemEatSheetHeroData(
         itemName: widget.item.name,
         imageUrl: widget.item.imageUrl,
         eyebrow: l10n.inventoryItemEatSheetEyebrow,
       ),
-      amountSection: _InventoryItemEatSheetAmountSectionData(
+      amountSection: InventoryItemEatSheetAmountSectionData(
         clearTooltip: l10n.inventoryItemEatSheetClearAmountAction,
         controller: _activeAmountController,
         focusNode: _activeAmountFocusNode,
@@ -303,7 +281,7 @@ class _InventoryItemEatSheetState
       ),
       manualPortionSection: null,
       nutritionMetrics: nutritionMetrics,
-      whenSection: _InventoryItemEatSheetWhenSectionData(
+      whenSection: InventoryItemEatSheetWhenSectionData(
         isToday: isLoggedAtToday,
         label: loggedAtLabel,
         selectedMealType: _selectedMealType,
@@ -311,7 +289,7 @@ class _InventoryItemEatSheetState
         onMealTypeSelected: _selectMealType,
       ),
       inedibleSection: _supportsInedibleAmountAdjustment
-          ? _InventoryItemEatSheetInedibleSectionData(
+          ? InventoryItemEatSheetInedibleSectionData(
               controller: _inedibleAmountController,
               focusNode: _inedibleAmountFocusNode,
               errorText: _inedibleAmountErrorText,
@@ -323,13 +301,13 @@ class _InventoryItemEatSheetState
               onToggleExpanded: _toggleInedibleAmountExpanded,
             )
           : null,
-      footer: _InventoryItemEatSheetFooterData(
+      footer: InventoryItemEatSheetFooterData(
         confirmActionText: l10n.inventoryItemEatSheetConfirmAction,
         onConfirm: _submit,
       ),
     );
 
-    return _InventoryItemEatSheetView(data: viewData);
+    return InventoryItemEatSheetView(data: viewData);
   }
 
   String? _inventoryUnitLabel(AppLocalizations l10n) {
@@ -423,12 +401,12 @@ class _InventoryItemEatSheetState
     );
   }
 
-  List<_InventoryItemEatAmountModeOption> _buildAmountModeOptions(
+  List<InventoryItemEatAmountModeOption> _buildAmountModeOptions(
     AppLocalizations l10n,
     List<PortionSuggestion> portionSuggestions,
   ) {
-    final options = <_InventoryItemEatAmountModeOption>[
-      _InventoryItemEatAmountModeOption(
+    final options = <InventoryItemEatAmountModeOption>[
+      InventoryItemEatAmountModeOption(
         id: _inventoryAmountModeId,
         label: _inventoryAmountModeLabel(l10n),
       ),
@@ -453,7 +431,7 @@ class _InventoryItemEatSheetState
 
     if (_canUsePortions) {
       options.add(
-        _InventoryItemEatAmountModeOption(
+        InventoryItemEatAmountModeOption(
           id: _newPortionAmountModeId,
           label: l10n.inventoryItemEatSheetNewPortionAction,
           isNewPortion: true,
@@ -463,7 +441,7 @@ class _InventoryItemEatSheetState
     return options;
   }
 
-  _InventoryItemEatAmountModeOption? _currentPortionModeOption(
+  InventoryItemEatAmountModeOption? _currentPortionModeOption(
     AppLocalizations l10n,
   ) {
     if (!_usesPortionMode) {
@@ -483,7 +461,7 @@ class _InventoryItemEatSheetState
     );
   }
 
-  _InventoryItemEatAmountModeOption _portionModeOption({
+  InventoryItemEatAmountModeOption _portionModeOption({
     required AppLocalizations l10n,
     required double amount,
     required ConsumedUnit unit,
@@ -494,7 +472,7 @@ class _InventoryItemEatSheetState
         ? _defaultPortionLabel(l10n)
         : normalizedLabel;
     final amountLabel = formatInventoryNutritionValue(amount);
-    return _InventoryItemEatAmountModeOption(
+    return InventoryItemEatAmountModeOption(
       id: _portionModeId(
         amount: amount,
         unit: unit,
@@ -509,7 +487,7 @@ class _InventoryItemEatSheetState
 
   String _selectedAmountModeId(
     AppLocalizations l10n,
-    List<_InventoryItemEatAmountModeOption> options,
+    List<InventoryItemEatAmountModeOption> options,
   ) {
     if (!_usesPortionMode) {
       return _inventoryAmountModeId;
@@ -733,7 +711,7 @@ class _InventoryItemEatSheetState
         _buildAmountModeOptions(
           l10n,
           _resolveServingResolution().portionSuggestions,
-        ).cast<_InventoryItemEatAmountModeOption?>().firstWhere(
+        ).cast<InventoryItemEatAmountModeOption?>().firstWhere(
           (candidate) => candidate?.id == optionId,
           orElse: () => null,
         );
@@ -762,9 +740,9 @@ class _InventoryItemEatSheetState
 
   Future<void> _showNewPortionDialog() async {
     final l10n = AppLocalizations.of(context)!;
-    final result = await showDialog<_NewPortionDialogResult>(
+    final result = await showDialog<NewPortionDialogResult>(
       context: context,
-      builder: (_) => _NewPortionDialog(
+      builder: (_) => NewPortionDialog(
         initialLabel: _portionLabelForDisplay(l10n),
         initialAmount: _portionAmountController.text.trim(),
         initialUnit: _selectedPortionUnit,

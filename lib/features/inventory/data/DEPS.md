@@ -27,6 +27,7 @@ global_food_item_repository.dart-->global_food_item_store.dart;
 global_food_receipt_alias_repository.dart-->firestore_global_food_receipt_alias_repository.dart;
 global_food_receipt_alias_repository.dart-->global_food_receipt_alias_repository_contract.dart;
 global_food_receipt_alias_repository.dart-->global_food_receipt_alias_store.dart;
+global_food_serving_suggestion_repository.dart-->firestore_global_food_serving_suggestion_repository.dart;
 inventory_item_repository.dart-->firestore_inventory_item_repository.dart;
 inventory_item_repository.dart-->inventory_item_repository_contract.dart;
 inventory_item_repository.dart-->inventory_item_store.dart;
