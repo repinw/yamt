@@ -12,30 +12,30 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_state.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_barcode_scan_result.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_recent_items.dart';
+    'manual_product_search_form/manual_product_preview.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form.dart';
+    'manual_product_search_form/manual_product_search_form.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'product_ai_search_page.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_controller.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_models.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_state.dart';
+    'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Full manual product editor for search, product details, and nutrition input.
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-])
+@Dependencies([inventoryManualAddQuickEatConfig])
 class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   /// Creates a manual product editor page.
   const InventoryReceiptManualProductEditorPage({
@@ -444,24 +444,20 @@ class _InventoryReceiptManualProductEditorPageState
       includeStoreInSearch: widget.config.includeStoreInSearch,
       includeWeightInSearch: widget.config.includeWeightInSearch,
     );
-    final result = await Navigator.of(context)
-        .push<InventoryReceiptManualProductResult>(
-          ManualProductNoAnimationMaterialPageRoute<
-            InventoryReceiptManualProductResult
-          >(
-            fullscreenDialog: true,
-            builder: (routeContext) {
-              return InventoryReceiptManualProductEditorPage(
-                config: config,
-                showEatImmediatelyOption: widget.showEatImmediatelyOption,
-                initialAction: action,
-                closeCurrentEditorOnSave: true,
-                showActionSelector: showActionSelector,
-                onSaved: widget.onSaved,
-                initialInfoMessage: initialInfoMessage,
-              );
-            },
-          ),
+    final result =
+        await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
+          context: context,
+          builder: (routeContext) {
+            return InventoryReceiptManualProductEditorPage(
+              config: config,
+              showEatImmediatelyOption: widget.showEatImmediatelyOption,
+              initialAction: action,
+              closeCurrentEditorOnSave: true,
+              showActionSelector: showActionSelector,
+              onSaved: widget.onSaved,
+              initialInfoMessage: initialInfoMessage,
+            );
+          },
         );
     if (!mounted || result == null) {
       return;
@@ -523,7 +519,7 @@ class _InventoryReceiptManualProductEditorPageState
             title: l10n.inventoryManualAddScanBarcodeAction,
             showActionButtons: widget.showEatImmediatelyOption,
             onProductSelected: (candidate, scannedBarcode, action) async {
-              Navigator.of(sheetContext).pop(
+              sheetContext.pop(
                 ManualBarcodeScanResult.selected(
                   candidate: candidate,
                   scannedBarcode: scannedBarcode,
@@ -533,7 +529,7 @@ class _InventoryReceiptManualProductEditorPageState
               return true;
             },
             onProductNotFound: (scannedBarcode) async {
-              Navigator.of(sheetContext).pop(
+              sheetContext.pop(
                 ManualBarcodeScanResult.notFound(
                   scannedBarcode: scannedBarcode,
                 ),
@@ -628,21 +624,17 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
 
-    final result = await Navigator.of(context)
-        .push<ManualProductAiSearchResult>(
-          ManualProductNoAnimationMaterialPageRoute<
-            ManualProductAiSearchResult
-          >(
-            fullscreenDialog: true,
-            builder: (routeContext) {
-              return ManualProductAiSearchPage(
-                item: widget.config.item,
-                initialPrompt: _searchController.text,
-                showEatImmediatelyOption: widget.showEatImmediatelyOption,
-                initialAction: _selectedAction,
-              );
-            },
-          ),
+    final result =
+        await pushManualProductSearchPage<ManualProductAiSearchResult>(
+          context: context,
+          builder: (routeContext) {
+            return ManualProductAiSearchPage(
+              item: widget.config.item,
+              initialPrompt: _searchController.text,
+              showEatImmediatelyOption: widget.showEatImmediatelyOption,
+              initialAction: _selectedAction,
+            );
+          },
         );
     if (!mounted || result == null) {
       return;
@@ -713,12 +705,7 @@ class _InventoryReceiptManualProductEditorPageState
     }
 
     unawaited(_voiceSearchController.cancelVoiceSearch());
-    final router = GoRouter.maybeOf(context);
-    if (router != null) {
-      router.pop(result);
-      return;
-    }
-    Navigator.of(context).pop(result);
+    popManualProductSearchPage(context, result);
   }
 
   String? _resolveErrorText(

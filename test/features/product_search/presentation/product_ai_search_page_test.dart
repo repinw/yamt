@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -12,10 +14,12 @@ import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'product_ai_search_page.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _FakeProductAiSearchRepository extends FirebaseProductAiSearchRepository {
@@ -189,6 +193,48 @@ Future<void> _cancelLoggedAtDateChange(
   await tester.ensureVisible(cancelButton.last);
   await tester.tap(cancelButton.last);
   await tester.pumpAndSettle();
+}
+
+GoRouter _buildAiPageRouter({
+  required WidgetBuilder pageBuilder,
+  required ValueChanged<ManualProductAiSearchResult?> onResult,
+}) {
+  return GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) {
+          return Scaffold(
+            body: Center(
+              child: FilledButton(
+                onPressed: () async {
+                  final result =
+                      await pushManualProductSearchPage<
+                        ManualProductAiSearchResult
+                      >(
+                        context: context,
+                        builder: pageBuilder,
+                      );
+                  onResult(result);
+                },
+                child: const Text('open'),
+              ),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: (context, state) {
+          final args = state.extra! as ManualProductSearchRouteArgs;
+          return NoTransitionPage<Object?>(
+            key: state.pageKey,
+            child: args.builder(context),
+          );
+        },
+      ),
+    ],
+  );
 }
 
 @Dependencies([inventoryManualAddQuickEatConfig])
@@ -378,43 +424,30 @@ void main() {
       },
     );
 
+    final router = _buildAiPageRouter(
+      onResult: (result) => pageResult = result,
+      pageBuilder: (_) => ManualProductAiSearchPage(
+        item: InventoryItem.create(
+          id: 'item-1',
+          name: 'Placeholder',
+          entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
+          storeName: 'Rewe',
+          quantity: 1,
+        ),
+        initialPrompt: 'pelmeni mit Schweinefleisch',
+      ),
+    );
+    addTearDown(router.dispose);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           productAiSearchRepositoryProvider.overrideWithValue(repository),
         ],
-        child: MaterialApp(
+        child: MaterialApp.router(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Builder(
-            builder: (context) {
-              return Scaffold(
-                body: Center(
-                  child: FilledButton(
-                    onPressed: () async {
-                      pageResult = await Navigator.of(context).push(
-                        MaterialPageRoute<ManualProductAiSearchResult>(
-                          builder: (_) => ManualProductAiSearchPage(
-                            item: InventoryItem.create(
-                              id: 'item-1',
-                              name: 'Placeholder',
-                              entryDate: DateTime.parse(
-                                '2026-04-20T12:00:00Z',
-                              ),
-                              storeName: 'Rewe',
-                              quantity: 1,
-                            ),
-                            initialPrompt: 'pelmeni mit Schweinefleisch',
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('open'),
-                  ),
-                ),
-              );
-            },
-          ),
+          routerConfig: router,
         ),
       ),
     );
@@ -476,36 +509,25 @@ void main() {
       onGenerateFoodFromText: (_) async => _doenerDraft(),
     );
 
+    final router = _buildAiPageRouter(
+      onResult: (result) => pageResult = result,
+      pageBuilder: (_) => ManualProductAiSearchPage(
+        item: _placeholderItem(),
+        initialPrompt: 'doener haehnchen',
+        showEatImmediatelyOption: true,
+      ),
+    );
+    addTearDown(router.dispose);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           productAiSearchRepositoryProvider.overrideWithValue(repository),
         ],
-        child: MaterialApp(
+        child: MaterialApp.router(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Builder(
-            builder: (context) {
-              return Scaffold(
-                body: Center(
-                  child: FilledButton(
-                    onPressed: () async {
-                      pageResult = await Navigator.of(context).push(
-                        MaterialPageRoute<ManualProductAiSearchResult>(
-                          builder: (_) => ManualProductAiSearchPage(
-                            item: _placeholderItem(),
-                            initialPrompt: 'doener haehnchen',
-                            showEatImmediatelyOption: true,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('open'),
-                  ),
-                ),
-              );
-            },
-          ),
+          routerConfig: router,
         ),
       ),
     );
@@ -591,36 +613,25 @@ void main() {
       onGenerateFoodFromText: (_) async => _doenerDraft(),
     );
 
+    final router = _buildAiPageRouter(
+      onResult: (result) => pageResult = result,
+      pageBuilder: (_) => ManualProductAiSearchPage(
+        item: _placeholderItem(),
+        initialPrompt: 'doener haehnchen',
+        showEatImmediatelyOption: true,
+      ),
+    );
+    addTearDown(router.dispose);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           productAiSearchRepositoryProvider.overrideWithValue(repository),
         ],
-        child: MaterialApp(
+        child: MaterialApp.router(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Builder(
-            builder: (context) {
-              return Scaffold(
-                body: Center(
-                  child: FilledButton(
-                    onPressed: () async {
-                      pageResult = await Navigator.of(context).push(
-                        MaterialPageRoute<ManualProductAiSearchResult>(
-                          builder: (_) => ManualProductAiSearchPage(
-                            item: _placeholderItem(),
-                            initialPrompt: 'doener haehnchen',
-                            showEatImmediatelyOption: true,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('open'),
-                  ),
-                ),
-              );
-            },
-          ),
+          routerConfig: router,
         ),
       ),
     );

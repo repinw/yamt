@@ -12,6 +12,10 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
@@ -82,7 +86,11 @@ ReceiptReviewItemDraft _reviewDraft() {
   );
 }
 
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
+@Dependencies([
+  inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 GoRouter _router(GlobalKey<NavigatorState> navigatorKey) {
   return GoRouter(
     navigatorKey: navigatorKey,
@@ -107,6 +115,16 @@ GoRouter _router(GlobalKey<NavigatorState> navigatorKey) {
           return InventoryReceiptReviewPage(args: args);
         },
       ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: (context, state) {
+          final args = state.extra! as ManualProductSearchRouteArgs;
+          return NoTransitionPage<Object?>(
+            key: state.pageKey,
+            child: args.builder(context),
+          );
+        },
+      ),
     ],
   );
 }
@@ -116,6 +134,7 @@ GoRouter _router(GlobalKey<NavigatorState> navigatorKey) {
   inventoryManualAddQuickEatConfig,
   appRouter,
   InventoryItemsController,
+  manualProductRecentItemsService,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
 ])

@@ -24,6 +24,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -80,6 +82,7 @@ InventoryReceiptGroup _group() {
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
+  manualProductRecentItemsService,
 ])
 Widget _buildHarness({
   required ThemeData theme,
@@ -151,6 +154,7 @@ Widget _buildHarness({
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
+  manualProductRecentItemsService,
 ])
 Future<void> _pump(WidgetTester tester, {required ThemeData theme}) async {
   await tester.pumpWidget(_buildHarness(theme: theme, group: _group()));
@@ -166,6 +170,7 @@ Future<void> _toggleExpansion(WidgetTester tester) async {
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
+  manualProductRecentItemsService,
 ])
 void main() {
   final lightTheme = AppTheme.light(seedColor: AppColors.seed);

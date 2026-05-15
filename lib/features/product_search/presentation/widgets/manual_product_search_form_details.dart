@@ -9,11 +9,21 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_components.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart'
     as manual_product_models;
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_action_selector.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_optional_nutrition.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_preview.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_recent_items.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_search_input.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_search_results.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class ManualProductDetailsForm extends StatefulWidget {

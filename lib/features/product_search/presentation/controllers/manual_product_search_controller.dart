@@ -19,9 +19,9 @@ import 'package:yamt/features/product_nutrition/domain/'
 import 'package:yamt/features/product_search/domain/'
     'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search/domain/manual_product_weight_input.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_state.dart';
 
 part 'manual_product_search_controller.g.dart';

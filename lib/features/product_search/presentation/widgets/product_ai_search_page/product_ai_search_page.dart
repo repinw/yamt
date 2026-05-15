@@ -1,36 +1,35 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/core/widgets/app_dropdown_button.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search/data/'
-    'product_ai_search_repository.dart';
+import 'package:yamt/features/product_search/application/'
+    'product_ai_nutrition_selection.dart';
+import 'package:yamt/features/product_search/application/'
+    'product_ai_search_result_builder.dart';
+import 'package:yamt/features/product_search/application/'
+    'product_ai_search_service.dart';
 import 'package:yamt/features/product_search/domain/'
     'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_components.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_search_shell.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'product_ai_search_page/product_ai_search_body.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-part 'product_ai_search_page_components.dart';
 
 /// Result returned from the AI food creation page.
 class ManualProductAiSearchResult {
@@ -184,7 +183,7 @@ class _ManualProductAiSearchPageState
             ),
           ],
         ),
-        body: _ManualProductAiSearchBody(
+        body: ManualProductAiSearchBody(
           draft: _draft,
           selection: selection,
           errorText: _errorText,
@@ -218,16 +217,16 @@ class _ManualProductAiSearchPageState
     );
   }
 
-  _AiNutritionSelection? get _resolvedSelection {
+  ProductAiNutritionSelection? get _resolvedSelection {
     final draft = _draft;
     final weightGrams = _weightGrams;
     if (draft == null || weightGrams == null) {
       return null;
     }
-    return _buildSelection(
+    return buildProductAiNutritionSelection(
       draft: draft,
       weightGrams: weightGrams,
-      selectedPer100Kcal: _selectedPer100Kcal ?? _basePer100Kcal(draft),
+      selectedPer100Kcal: _selectedPer100Kcal ?? baseProductAiPer100Kcal(draft),
     );
   }
 
@@ -250,9 +249,8 @@ class _ManualProductAiSearchPageState
       _errorText = null;
     });
 
-    final draft = await ref
-        .read(productAiSearchRepositoryProvider)
-        .generateFoodFromText(prompt: prompt);
+    final service = ref.read(productAiSearchServiceProvider);
+    final draft = await service.generateDraft(prompt);
     if (!mounted) {
       return;
     }
@@ -266,7 +264,7 @@ class _ManualProductAiSearchPageState
       return;
     }
 
-    final basePer100Kcal = _basePer100Kcal(draft);
+    final basePer100Kcal = baseProductAiPer100Kcal(draft);
     setState(() {
       _isLoading = false;
       _draft = draft;
@@ -299,104 +297,20 @@ class _ManualProductAiSearchPageState
     }
 
     final result = ManualProductAiSearchResult(
-      item: _buildResultItem(selection),
+      item: buildProductAiResultItem(
+        baseItem: widget.item,
+        selection: selection,
+      ),
       action: _selectedAction,
       globalPackageWeight: selection.weightLabel,
-      eatSelection: _buildEatSelection(selection),
-    );
-    _closePage(result);
-  }
-
-  EatSelection? _buildEatSelection(
-    _AiNutritionSelection selection,
-  ) {
-    if (_selectedAction != InventoryReceiptManualProductAction.eatNow) {
-      return null;
-    }
-
-    return EatSelection(
-      inventoryAmount: selection.weightGrams.round(),
-      loggedAt: _selectedLoggedAt,
-      mealType: _selectedMealType,
-    );
-  }
-
-  InventoryItem _buildResultItem(_AiNutritionSelection selection) {
-    final parsedAmount = InventoryAmountParseResult(
-      amount: selection.weightGrams.round(),
-      unit: InventoryAmountUnit.gram,
-    );
-
-    return widget.item
-        .copyWith(
-          name: selection.draft.name,
-          brand: selection.draft.brand,
-          barcode: '',
-          weight: selection.weightLabel,
-          servingSize: selection.weightLabel,
-          servingQuantity: selection.weightGrams,
-          servingQuantityUnit: InventoryAmountUnit.gram.code,
-          nutrition: selection.per100Nutrition,
-          imageUrl: null,
-        )
-        .withResolvedAmount(
-          weight: selection.weightLabel,
-          parsedAmount: parsedAmount,
-          quantity: widget.item.quantity,
-        );
-  }
-
-  double _basePer100Kcal(ProductAiSearchDraft draft) {
-    return _roundToWholeNumber(
-      draft.defaultKcal * 100 / draft.totalWeightGrams,
-    );
-  }
-
-  _AiNutritionSelection _buildSelection({
-    required ProductAiSearchDraft draft,
-    required double weightGrams,
-    required double selectedPer100Kcal,
-  }) {
-    final basePer100Kcal = _basePer100Kcal(draft);
-    final minPer100Kcal = _roundToWholeNumber(
-      draft.totalKcalMin * 100 / draft.totalWeightGrams,
-    );
-    final maxPer100Kcal = _roundToWholeNumber(
-      draft.totalKcalMax * 100 / draft.totalWeightGrams,
-    );
-    final resolvedPer100Kcal = _roundToWholeNumber(
-      selectedPer100Kcal.clamp(
-        minPer100Kcal,
-        maxPer100Kcal,
+      eatSelection: buildProductAiEatSelection(
+        eatNow: _selectedAction == InventoryReceiptManualProductAction.eatNow,
+        selection: selection,
+        loggedAt: _selectedLoggedAt,
+        mealType: _selectedMealType,
       ),
     );
-    final selectedTotalKcal = _roundToWholeNumber(
-      resolvedPer100Kcal * draft.totalWeightGrams / 100,
-    );
-    final fullPortionNutrition = draft.nutritionForKcal(selectedTotalKcal);
-    final portionNutrition = fullPortionNutrition.scaleBy(
-      weightGrams / draft.totalWeightGrams,
-    );
-    final per100Nutrition = fullPortionNutrition.toPer100Nutrition(
-      grams: draft.totalWeightGrams,
-      qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
-    );
-
-    return _AiNutritionSelection(
-      draft: draft,
-      weightGrams: weightGrams,
-      weightLabel: '${formatManualProductDouble(weightGrams)} g',
-      minPer100Kcal: minPer100Kcal,
-      maxPer100Kcal: maxPer100Kcal,
-      basePer100Kcal: basePer100Kcal,
-      per100Kcal: resolvedPer100Kcal,
-      per100Nutrition: per100Nutrition,
-      portionNutrition: portionNutrition,
-    );
-  }
-
-  double _roundToWholeNumber(double value) {
-    return value.roundToDouble();
+    _closePage(result);
   }
 
   bool _isLoggedAtToday() {
@@ -441,35 +355,6 @@ class _ManualProductAiSearchPageState
       return;
     }
 
-    final router = GoRouter.maybeOf(context);
-    if (router != null) {
-      router.pop(result);
-      return;
-    }
-    Navigator.of(context).pop(result);
+    popManualProductSearchPage(context, result);
   }
-}
-
-class _AiNutritionSelection {
-  const _AiNutritionSelection({
-    required this.draft,
-    required this.weightGrams,
-    required this.weightLabel,
-    required this.minPer100Kcal,
-    required this.maxPer100Kcal,
-    required this.basePer100Kcal,
-    required this.per100Kcal,
-    required this.per100Nutrition,
-    required this.portionNutrition,
-  });
-
-  final ProductAiSearchDraft draft;
-  final double weightGrams;
-  final String weightLabel;
-  final double minPer100Kcal;
-  final double maxPer100Kcal;
-  final double basePer100Kcal;
-  final double per100Kcal;
-  final GlobalFoodNutrition per100Nutrition;
-  final ProductAiSearchNutritionEstimate portionNutrition;
 }

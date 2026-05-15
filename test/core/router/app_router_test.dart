@@ -35,6 +35,8 @@ import 'package:yamt/features/onboarding/domain/'
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 
@@ -834,6 +836,43 @@ void main() {
     );
 
     expect(manualAddRoute.path, AppRoutes.homeInventoryManualAdd);
+  });
+
+  testWidgets('product search child flow route renders route args page', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final router = container.read(appRouterProvider);
+    final routes = router.configuration.routes.whereType<GoRoute>().toList();
+    final childRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.productSearchChildFlow,
+    );
+
+    expect(childRoute.path, AppRoutes.productSearchChildFlow);
+
+    unawaited(
+      router.push<void>(
+        AppRoutes.productSearchChildFlow,
+        extra: ManualProductSearchRouteArgs(
+          builder: (_) => const Scaffold(
+            body: Text('Product search child flow'),
+          ),
+        ),
+      ),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(find.text('Product search child flow'), findsOneWidget);
   });
 
   testWidgets('kitchen utensils route is registered on app router', (

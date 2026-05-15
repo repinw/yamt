@@ -39,10 +39,14 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
@@ -405,6 +409,7 @@ class _FakeMobileScannerPlatform extends MobileScannerPlatform {
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  manualProductRecentItemsService,
 ])
 Widget _buildHarness({
   required OffProductSearchRepository offRepository,
@@ -431,6 +436,16 @@ Widget _buildHarness({
         path: AppRoutes.homeInventoryManualAdd,
         builder: (context, state) {
           return InventoryManualAddPage(initialAction: initialAction);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: (context, state) {
+          final args = state.extra! as ManualProductSearchRouteArgs;
+          return NoTransitionPage<Object?>(
+            key: state.pageKey,
+            child: args.builder(context),
+          );
         },
       ),
     ],
@@ -616,6 +631,7 @@ ProductAiSearchDraft _aiDraft() {
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  manualProductRecentItemsService,
 ])
 void main() {
   testWidgets('manual add route maps manual search initial action', (

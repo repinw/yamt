@@ -3,12 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_components.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_preview.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_search_form.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_search_shell.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _wrapForm({

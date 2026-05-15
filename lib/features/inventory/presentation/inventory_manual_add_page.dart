@@ -31,10 +31,12 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_manual_add_product_page.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 export 'package:yamt/features/inventory/presentation/models/'
@@ -72,6 +74,7 @@ class InventoryManualAddRouteArgs {
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  manualProductRecentItemsService,
 ])
 class InventoryManualAddPage extends ConsumerStatefulWidget {
   /// The inventory manual add page.

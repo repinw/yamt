@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
@@ -83,7 +84,7 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
                       candidate: candidate,
                       isSelected:
                           draft.selectedGlobalFoodItemId == candidate.item.id,
-                      onTap: () => Navigator.of(context).pop(
+                      onTap: () => context.pop(
                         ReceiptCandidatePickerSelection.candidate(
                           candidate.item.id,
                         ),
@@ -96,7 +97,7 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
                     icon: Icons.edit_note,
                     isSelected: draft.selectedGlobalFoodItemId == null,
                     onTap: () {
-                      Navigator.of(context).pop(
+                      context.pop(
                         const ReceiptCandidatePickerSelection.manualEntry(),
                       );
                     },
@@ -147,7 +148,7 @@ class _CandidatePickerHeader extends StatelessWidget {
           ),
         ),
         IconButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
           icon: Icon(Icons.close, color: colors.onSurfaceVariant),
           style: IconButton.styleFrom(
             backgroundColor: colors.surfaceContainerHighest,

@@ -24,6 +24,9 @@ abstract final class AppRoutes {
   /// Manual inventory add route.
   static const homeInventoryManualAdd = '/home/inventory/manual-add';
 
+  /// Product-search child flow route.
+  static const productSearchChildFlow = '/product-search/child-flow';
+
   /// Inventory template list route.
   static const homeInventoryTemplates = '/home/inventory/templates';
 

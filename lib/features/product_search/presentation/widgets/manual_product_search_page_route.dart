@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 
-/// Material route without transition animations for nested manual product
-/// flows.
-class ManualProductNoAnimationMaterialPageRoute<T>
-    extends MaterialPageRoute<T> {
-  /// Creates a route that skips transition animations.
-  ManualProductNoAnimationMaterialPageRoute({
-    required super.builder,
-    super.fullscreenDialog,
-  });
+/// Route arguments for a product-search child flow.
+class ManualProductSearchRouteArgs {
+  /// Creates product-search child route args.
+  const ManualProductSearchRouteArgs({required this.builder});
 
-  @override
-  Duration get transitionDuration => Duration.zero;
+  /// Builds the child page.
+  final WidgetBuilder builder;
+}
 
-  @override
-  Duration get reverseTransitionDuration => Duration.zero;
+/// Pushes a nested manual product flow page without route animation.
+Future<T?> pushManualProductSearchPage<T extends Object?>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+}) {
+  return GoRouter.of(context).push<T>(
+    AppRoutes.productSearchChildFlow,
+    extra: ManualProductSearchRouteArgs(builder: builder),
+  );
+}
 
-  @override
-  Widget buildTransitions(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) {
-    return child;
-  }
+/// Pops a manual product flow page through go_router.
+void popManualProductSearchPage<T extends Object?>(
+  BuildContext context, [
+  T? result,
+]) {
+  context.pop<T>(result);
 }

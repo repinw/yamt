@@ -15,10 +15,14 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page.dart';
+    'manual_product_search_page/manual_product_search_page.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
@@ -41,7 +45,11 @@ import 'package:yamt/features/scanner/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Main receipt review content shown inside the full-screen review flow.
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
+@Dependencies([
+  inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 class InventoryReceiptReviewSheet extends ConsumerStatefulWidget {
   /// The inventory receipt review sheet.
   const InventoryReceiptReviewSheet({
@@ -279,17 +287,16 @@ class _InventoryReceiptReviewSheetState
     if (index < 0) {
       return;
     }
-    final result = await Navigator.of(context)
-        .push<InventoryReceiptManualProductResult>(
-          MaterialPageRoute<InventoryReceiptManualProductResult>(
-            builder: (routeContext) {
-              return InventoryReceiptManualProductPage(
-                item: _items[index].item,
-                includeStoreInSearch: false,
-                includeWeightInSearch: false,
-              );
-            },
-          ),
+    final result =
+        await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
+          context: context,
+          builder: (routeContext) {
+            return InventoryReceiptManualProductPage(
+              item: _items[index].item,
+              includeStoreInSearch: false,
+              includeWeightInSearch: false,
+            );
+          },
         );
     if (!mounted || result == null) {
       return;

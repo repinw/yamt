@@ -5,39 +5,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_barcode_scan_result.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_recent_items.dart';
+    'manual_product_search_editor_page/manual_product_search_editor_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_editor_page.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form.dart';
+    'manual_product_search_form/manual_product_search_form.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'product_ai_search_page.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_controller.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_models.dart';
+    'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
 
 /// Launcher surface for manual product search entry points.
 @Dependencies([
-  inventoryItemRepository,
   inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
 ])
 class InventoryReceiptManualProductLauncherPage extends ConsumerStatefulWidget {
   /// Creates a manual product launcher page.
@@ -149,12 +148,15 @@ class _InventoryReceiptManualProductLauncherPageState
 
   Future<void> _loadRecentItems() async {
     try {
-      final items = await ref.read(inventoryItemRepositoryProvider).readAll();
+      final recentItemsService = ref.read(
+        manualProductRecentItemsServiceProvider,
+      );
+      final items = await recentItemsService.readRecentItems();
       if (!mounted) {
         return;
       }
       setState(() {
-        _recentItems = buildManualProductRecentItems(items);
+        _recentItems = items;
       });
     } on Object catch (error, stackTrace) {
       log(
@@ -176,23 +178,19 @@ class _InventoryReceiptManualProductLauncherPageState
 
   Future<void> _openAiSearchPage() async {
     final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
-    final result = await Navigator.of(context)
-        .push<ManualProductAiSearchResult>(
-          ManualProductNoAnimationMaterialPageRoute<
-            ManualProductAiSearchResult
-          >(
-            fullscreenDialog: true,
-            builder: (routeContext) {
-              return ManualProductAiSearchPage(
-                item: widget.config.item,
-                initialPrompt: _searchController.text,
-                showEatImmediatelyOption: widget.showEatImmediatelyOption,
-                initialAction: quickEatConfig.quickEatOnly
-                    ? InventoryReceiptManualProductAction.eatNow
-                    : InventoryReceiptManualProductAction.addToInventory,
-              );
-            },
-          ),
+    final result =
+        await pushManualProductSearchPage<ManualProductAiSearchResult>(
+          context: context,
+          builder: (routeContext) {
+            return ManualProductAiSearchPage(
+              item: widget.config.item,
+              initialPrompt: _searchController.text,
+              showEatImmediatelyOption: widget.showEatImmediatelyOption,
+              initialAction: quickEatConfig.quickEatOnly
+                  ? InventoryReceiptManualProductAction.eatNow
+                  : InventoryReceiptManualProductAction.addToInventory,
+            );
+          },
         );
     if (!mounted || result == null) {
       return;
@@ -272,27 +270,23 @@ class _InventoryReceiptManualProductLauncherPageState
       includeStoreInSearch: widget.config.includeStoreInSearch,
       includeWeightInSearch: widget.config.includeWeightInSearch,
     );
-    final result = await Navigator.of(context)
-        .push<InventoryReceiptManualProductResult>(
-          ManualProductNoAnimationMaterialPageRoute<
-            InventoryReceiptManualProductResult
-          >(
-            fullscreenDialog: true,
-            builder: (routeContext) {
-              return InventoryReceiptManualProductEditorPage(
-                config: config,
-                showEatImmediatelyOption: widget.showEatImmediatelyOption,
-                initialAction: initialAction,
-                closeCurrentEditorOnSave: !autofocusSearch,
-                showActionSelector: showActionSelector,
-                onSaved: widget.onSaved,
-                autofocusSearch: autofocusSearch,
-                initialStartVoiceSearch: initialStartVoiceSearch,
-                initialRecentItem: initialRecentItem,
-                initialInfoMessage: initialInfoMessage,
-              );
-            },
-          ),
+    final result =
+        await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
+          context: context,
+          builder: (routeContext) {
+            return InventoryReceiptManualProductEditorPage(
+              config: config,
+              showEatImmediatelyOption: widget.showEatImmediatelyOption,
+              initialAction: initialAction,
+              closeCurrentEditorOnSave: !autofocusSearch,
+              showActionSelector: showActionSelector,
+              onSaved: widget.onSaved,
+              autofocusSearch: autofocusSearch,
+              initialStartVoiceSearch: initialStartVoiceSearch,
+              initialRecentItem: initialRecentItem,
+              initialInfoMessage: initialInfoMessage,
+            );
+          },
         );
     if (!mounted || result == null) {
       return;
@@ -320,7 +314,7 @@ class _InventoryReceiptManualProductLauncherPageState
             title: l10n.inventoryManualAddScanBarcodeAction,
             showActionButtons: widget.showEatImmediatelyOption,
             onProductSelected: (candidate, scannedBarcode, action) async {
-              Navigator.of(sheetContext).pop(
+              sheetContext.pop(
                 ManualBarcodeScanResult.selected(
                   candidate: candidate,
                   scannedBarcode: scannedBarcode,
@@ -330,7 +324,7 @@ class _InventoryReceiptManualProductLauncherPageState
               return true;
             },
             onProductNotFound: (scannedBarcode) async {
-              Navigator.of(sheetContext).pop(
+              sheetContext.pop(
                 ManualBarcodeScanResult.notFound(
                   scannedBarcode: scannedBarcode,
                 ),
@@ -498,11 +492,6 @@ class _InventoryReceiptManualProductLauncherPageState
       return;
     }
 
-    final router = GoRouter.maybeOf(context);
-    if (router != null) {
-      router.pop(result);
-      return;
-    }
-    Navigator.of(context).pop(result);
+    popManualProductSearchPage(context, result);
   }
 }

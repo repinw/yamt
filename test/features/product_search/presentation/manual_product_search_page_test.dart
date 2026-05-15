@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/data/'
@@ -19,22 +21,26 @@ import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_state.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_editor_page.dart';
+    'manual_product_search_editor_page/manual_product_search_editor_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page.dart';
+    'manual_product_search_page/manual_product_search_page.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_controller.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_models.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 @Dependencies([inventoryManualAddQuickEatConfig])
@@ -72,11 +78,9 @@ Widget _wrapPage({
       if (speechService != null)
         voiceSearchServiceProvider.overrideWithValue(speechService),
     ],
-    child: MaterialApp(
+    child: _ManualProductSearchTestApp(
       locale: locale,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: InventoryReceiptManualProductPage(
+      homeBuilder: (_) => InventoryReceiptManualProductPage(
         item: item,
         selectedProduct: selectedProduct,
         includeStoreInSearch: includeStoreInSearch,
@@ -88,6 +92,58 @@ Widget _wrapPage({
       ),
     ),
   );
+}
+
+class _ManualProductSearchTestApp extends StatefulWidget {
+  const _ManualProductSearchTestApp({
+    required this.homeBuilder,
+    required this.locale,
+  });
+
+  final WidgetBuilder homeBuilder;
+  final Locale locale;
+
+  @override
+  State<_ManualProductSearchTestApp> createState() =>
+      _ManualProductSearchTestAppState();
+}
+
+class _ManualProductSearchTestAppState
+    extends State<_ManualProductSearchTestApp> {
+  late final GoRouter _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => widget.homeBuilder(context),
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: (context, state) {
+          final args = state.extra! as ManualProductSearchRouteArgs;
+          return NoTransitionPage<Object?>(
+            key: state.pageKey,
+            child: args.builder(context),
+          );
+        },
+      ),
+    ],
+  );
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      locale: widget.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: _router,
+    );
+  }
 }
 
 @Dependencies([inventoryManualAddQuickEatConfig])
@@ -421,7 +477,10 @@ FormBuilderDropdown<T> _manualFormDropdown<T>(
   return tester.widget<FormBuilderDropdown<T>>(find.byKey(key));
 }
 
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 void main() {
   testWidgets('editor shows the initial info message after mount', (
     tester,

@@ -46,6 +46,10 @@ import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_page.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
@@ -99,6 +103,7 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     CookingFlowWizardController,
     InventoryItemsController,
     PreparedMealsController,
+    manualProductRecentItemsService,
     preparedMealImagePicker,
     ReceiptCaptureFlowController,
     ReceiptBatchFlowController,
@@ -143,6 +148,22 @@ Raw<GoRouter> appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.home,
         redirect: (context, state) => AppRoutes.homeDiary,
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: (context, state) {
+          final args = state.extra;
+          if (args is! ManualProductSearchRouteArgs) {
+            throw ArgumentError(
+              'Product search child flow route requires '
+              'ManualProductSearchRouteArgs.',
+            );
+          }
+          return NoTransitionPage<Object?>(
+            key: state.pageKey,
+            child: args.builder(context),
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.homeSettingsAccount,

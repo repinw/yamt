@@ -4,16 +4,17 @@ import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_components.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_details.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart'
     as manual_product_models;
-
-export 'manual_product_search_form_components.dart'
-    show InventoryReceiptManualProductPreviewData;
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_preview.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_recent_items.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_search_shell.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form_details.dart';
 
 /// Defines inventory receipt manual product launcher content.
 class InventoryReceiptManualProductLauncherContent extends StatelessWidget {

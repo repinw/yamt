@@ -42,6 +42,8 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -387,6 +389,7 @@ ShoppingListItem _shoppingItem(
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,
+  manualProductRecentItemsService,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
   receiptCameraSupported,
@@ -465,6 +468,7 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   ReceiptBatchFlowController,
   receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
+  manualProductRecentItemsService,
 ])
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {

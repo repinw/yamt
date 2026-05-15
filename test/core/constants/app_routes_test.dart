@@ -11,6 +11,10 @@ void main() {
     expect(AppRoutes.home, '/home');
     expect(AppRoutes.homeInventory, '/home/inventory');
     expect(AppRoutes.homeInventoryManualAdd, '/home/inventory/manual-add');
+    expect(
+      AppRoutes.productSearchChildFlow,
+      '/product-search/child-flow',
+    );
     expect(AppRoutes.homeInventoryTemplates, '/home/inventory/templates');
     expect(
       AppRoutes.homeInventoryTemplateImportReview,
