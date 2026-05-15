@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';

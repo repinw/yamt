@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/core/models/user_profile.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/domain/user_profile.dart';
 
 /// Normalize household scope value.
 String? normalizeHouseholdScopeValue(String? value) {

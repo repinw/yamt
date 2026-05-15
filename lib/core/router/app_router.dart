@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
-import 'package:yamt/features/auth/guest_name_setup_page.dart';
-import 'package:yamt/features/auth/provider/'
+import 'package:yamt/features/auth/application/'
     'auth_profile_setup_status_provider.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
-import 'package:yamt/features/auth/welcome_page.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/presentation/guest_name_setup_page.dart';
+import 'package:yamt/features/auth/presentation/welcome_page.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'

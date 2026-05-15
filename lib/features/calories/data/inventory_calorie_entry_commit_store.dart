@@ -6,7 +6,7 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';

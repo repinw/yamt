@@ -17,7 +17,7 @@ import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_we
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_details_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_details_content.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';

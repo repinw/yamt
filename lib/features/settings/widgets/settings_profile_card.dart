@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart'
+import 'package:yamt/features/auth/data/auth_service.dart'
     show userProfileProvider;
 import 'package:yamt/features/settings/settings_page_keys.dart';
 import 'package:yamt/features/settings/widgets/settings_tiles.dart';

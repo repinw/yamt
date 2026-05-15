@@ -38,7 +38,7 @@ final class HouseholdMembershipControllerProvider
 }
 
 String _$householdMembershipControllerHash() =>
-    r'3e5d1d4ac9cd8b31a38c0029c02f02fcc6d800da';
+    r'9107db4ecba650d26de5a3b778d7592193e1ff33';
 
 /// Defines household membership controller.
 

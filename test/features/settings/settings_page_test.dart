@@ -7,12 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/models/user_profile.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'

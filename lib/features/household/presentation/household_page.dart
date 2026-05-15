@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';

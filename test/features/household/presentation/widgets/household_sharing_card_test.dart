@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:yamt/core/models/user_profile.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
 import 'package:yamt/features/household/provider/'

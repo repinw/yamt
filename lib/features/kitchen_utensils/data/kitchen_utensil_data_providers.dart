@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_image_store.dart';
