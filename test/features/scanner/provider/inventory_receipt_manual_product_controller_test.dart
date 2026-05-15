@@ -9,9 +9,9 @@ import 'package:yamt/features/product_nutrition/data/'
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search/provider/'
     'manual_product_search_models.dart';
-import 'package:yamt/features/scanner/provider/'
-    'inventory_receipt_manual_product_controller.dart';
 
 class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
   _FakeNutritionOcrRepository({required this.onScanNutritionLabel});
