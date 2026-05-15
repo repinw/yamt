@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -11,6 +10,7 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
@@ -24,12 +24,16 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_quick_eat_inventory_provider.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
+    show DiaryWeeklyCheckInData, diaryWeeklyCheckInDataProvider;
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
@@ -37,7 +41,6 @@ import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
-import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -56,10 +59,15 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 
-final _weeklyCheckInViewModelStateProvider =
-    StateProvider<CalorieWeeklyCheckInViewModel>(
-      (ref) => _emptyWeeklyCheckInViewModel(),
-    );
+DiaryWeeklyCheckInData _weeklyCheckInData = _emptyWeeklyCheckInCheckInData();
+
+void _setWeeklyCheckInData(
+  ProviderContainer container,
+  DiaryWeeklyCheckInData data,
+) {
+  _weeklyCheckInData = data;
+  container.invalidate(diaryWeeklyCheckInDataProvider);
+}
 
 class _MockUser extends Mock implements User {}
 
@@ -97,9 +105,12 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
 }
 
 @Dependencies([
+  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
   calorieEntryDeleteFlow,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
@@ -167,7 +178,7 @@ void main() {
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 20),
       ),
     );
@@ -207,7 +218,7 @@ void main() {
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      preloadedWeeklyCheckIn: _weeklyCheckInViewModel(
+      preloadedWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 20),
       ),
     );
@@ -221,7 +232,7 @@ void main() {
       tester,
       selectedDay: selectedDay,
       useGoRouter: true,
-      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 21),
         shouldAutoOpen: false,
       ),
@@ -230,7 +241,10 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
 
-    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.continueButton));
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryWeeklyCheckInCardKeys.continueButton),
+    );
     await _pumpFrames(tester);
 
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
@@ -241,7 +255,7 @@ void main() {
       tester,
       selectedDay: selectedDay,
       useGoRouter: true,
-      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 21),
         shouldAutoOpen: false,
         blockedReason:
@@ -254,7 +268,8 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(
+    await _tapDiaryCardAction(
+      tester,
       find.byKey(DiaryWeeklyCheckInCardKeys.openTrendsButton),
     );
     await tester.pumpAndSettle();
@@ -267,14 +282,17 @@ void main() {
       tester,
       selectedDay: selectedDay,
       useGoRouter: true,
-      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 21),
         shouldAutoOpen: false,
         blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
       ),
     );
 
-    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.continueButton));
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryWeeklyCheckInCardKeys.continueButton),
+    );
     await _pumpFrames(tester);
 
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
@@ -302,7 +320,7 @@ void main() {
       tester,
       selectedDay: selectedDay,
       settingsRepository: settingsRepository,
-      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 21),
         shouldAutoOpen: false,
         days: [
@@ -316,7 +334,10 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.skipDayButton));
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryWeeklyCheckInCardKeys.skipDayButton),
+    );
     await _pumpFrames(tester);
 
     expect(find.text('Could not save calorie goal.'), findsOneWidget);
@@ -328,7 +349,7 @@ void main() {
     final container = await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 13),
       ),
     );
@@ -336,12 +357,13 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 13 - Apr 19'), findsOneWidget);
 
-    container
-        .read(_weeklyCheckInViewModelStateProvider.notifier)
-        .state = _weeklyCheckInViewModel(
-      windowStartDate: DateTime(2026, 4, 20),
+    _setWeeklyCheckInData(
+      container,
+      _weeklyCheckInCheckInData(
+        windowStartDate: DateTime(2026, 4, 20),
+      ),
     );
-    await tester.pump();
+    await _pumpFrames(tester);
 
     expect(find.text('Apr 13 - Apr 19'), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsNothing);
@@ -369,7 +391,7 @@ void main() {
       tester,
       selectedDay: selectedDay,
       settingsRepository: settingsRepository,
-      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 20),
       ),
     );
@@ -401,7 +423,7 @@ void main() {
       tester,
       selectedDay: selectedDay,
       settingsRepository: settingsRepository,
-      initialWeeklyCheckIn: _weeklyCheckInViewModel(
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 20),
       ),
     );
@@ -438,12 +460,11 @@ void main() {
       },
     );
 
-    await tester.scrollUntilVisible(
-      find.text('Steps'),
-      300,
-      scrollable: find.byType(Scrollable).first,
+    await tester.drag(
+      find.byType(CustomScrollView),
+      const Offset(0, -900),
     );
-    await _pumpFrames(tester, count: 3);
+    await _pumpFrames(tester);
 
     expect(find.text('Steps'), findsOneWidget);
     expect(find.textContaining('4,321', findRichText: true), findsOneWidget);
@@ -791,7 +812,10 @@ void main() {
 
     expect(find.byKey(DiaryIntroDialogKeys.replayButton), findsOneWidget);
 
-    await tester.tap(find.byKey(DiaryIntroDialogKeys.replayButton));
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryIntroDialogKeys.replayButton),
+    );
     await _pumpFrames(tester);
 
     expect(find.byKey(DiaryIntroDialogKeys.dialog), findsOneWidget);
@@ -881,17 +905,19 @@ void main() {
 }
 
 @Dependencies([
+  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
-  calorieEntryDeleteFlow,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 Future<ProviderContainer> _pumpDiaryPage(
   WidgetTester tester, {
   required DateTime selectedDay,
   Locale locale = const Locale('en'),
-  CalorieWeeklyCheckInViewModel? initialWeeklyCheckIn,
-  CalorieWeeklyCheckInViewModel? preloadedWeeklyCheckIn,
+  DiaryWeeklyCheckInData? initialWeeklyCheckIn,
+  DiaryWeeklyCheckInData? preloadedWeeklyCheckIn,
   FakeCalorieLogRepository? logRepository,
   FakeCalorieSettingsRepository? settingsRepository,
   HealthConnectionService? healthConnectionService,
@@ -919,6 +945,9 @@ Future<ProviderContainer> _pumpDiaryPage(
       );
   final user = _MockUser();
   when(() => user.uid).thenReturn('user-1');
+
+  _weeklyCheckInData =
+      preloadedWeeklyCheckIn ?? _emptyWeeklyCheckInCheckInData();
 
   final container = ProviderContainer(
     observers: providerObservers,
@@ -962,16 +991,12 @@ Future<ProviderContainer> _pumpDiaryPage(
         FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[]),
       ),
       if (overrideWeeklyCheckInProvider)
-        calorieWeeklyCheckInViewModelProvider.overrideWith(
-          (ref) => ref.watch(_weeklyCheckInViewModelStateProvider),
+        diaryWeeklyCheckInDataProvider.overrideWith(
+          (ref) => _weeklyCheckInData,
         ),
       ...overrides,
     ],
   );
-  if (preloadedWeeklyCheckIn != null) {
-    container.read(_weeklyCheckInViewModelStateProvider.notifier).state =
-        preloadedWeeklyCheckIn;
-  }
   addTearDown(() async {
     await resolvedLogRepository.dispose();
     await resolvedSettingsRepository.dispose();
@@ -1022,11 +1047,20 @@ Future<ProviderContainer> _pumpDiaryPage(
   );
   await _pumpFrames(tester);
   if (initialWeeklyCheckIn != null) {
-    container.read(_weeklyCheckInViewModelStateProvider.notifier).state =
-        initialWeeklyCheckIn;
+    _setWeeklyCheckInData(container, initialWeeklyCheckIn);
     await _pumpFrames(tester);
   }
   return container;
+}
+
+Future<void> _tapDiaryCardAction(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pump();
+  if (finder.hitTestable().evaluate().isEmpty) {
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
+    await tester.pump();
+  }
+  await tester.tap(finder.hitTestable());
 }
 
 @Dependencies([
@@ -1092,8 +1126,8 @@ void _setSmallSurface(WidgetTester tester) {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
-CalorieWeeklyCheckInViewModel _emptyWeeklyCheckInViewModel() {
-  return const CalorieWeeklyCheckInViewModel(
+DiaryWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
+  return const DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: null,
     shouldAutoOpen: false,
     days: <CalorieWeeklyCheckInWindowDay>[],
@@ -1107,7 +1141,7 @@ CalorieWeeklyCheckInViewModel _emptyWeeklyCheckInViewModel() {
   );
 }
 
-CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
+DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
   required DateTime windowStartDate,
   bool shouldAutoOpen = true,
   CalorieWeeklyCheckInBlockedReason? blockedReason,
@@ -1119,7 +1153,7 @@ CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
     windowEndDate: windowStartDate.add(const Duration(days: 6)),
     dueDate: windowStartDate.add(const Duration(days: 7)),
   );
-  return CalorieWeeklyCheckInViewModel(
+  return DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: pending,
     shouldAutoOpen: shouldAutoOpen,
     days: days,

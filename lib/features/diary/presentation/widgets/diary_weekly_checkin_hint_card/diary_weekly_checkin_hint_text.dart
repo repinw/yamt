@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_messages.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -8,10 +8,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Title text for the diary weekly check-in hint.
 class DiaryWeeklyCheckInHintTitle extends StatelessWidget {
   /// Creates diary weekly check-in hint title text.
-  const DiaryWeeklyCheckInHintTitle({required this.viewModel, super.key});
+  const DiaryWeeklyCheckInHintTitle({required this.checkInData, super.key});
 
   /// Weekly check-in view model.
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +26,12 @@ class DiaryWeeklyCheckInHintTitle extends StatelessWidget {
   }
 
   String _title(AppLocalizations l10n) {
-    if (viewModel.hasPending) {
-      return viewModel.isBlocked
+    if (checkInData.hasPending) {
+      return checkInData.isBlocked
           ? l10n.caloriesWeeklyCheckInHintBlockedTitle
           : l10n.caloriesWeeklyCheckInHintReadyTitle;
     }
-    return switch (viewModel.freshness) {
+    return switch (checkInData.freshness) {
       CalorieLearnedTdeeFreshness.urgent =>
         l10n.caloriesWeeklyCheckInHintUrgentTitle,
       _ => l10n.caloriesWeeklyCheckInHintStaleTitle,
@@ -42,10 +42,10 @@ class DiaryWeeklyCheckInHintTitle extends StatelessWidget {
 /// Body text for the diary weekly check-in hint.
 class DiaryWeeklyCheckInHintBody extends StatelessWidget {
   /// Creates diary weekly check-in hint body text.
-  const DiaryWeeklyCheckInHintBody({required this.viewModel, super.key});
+  const DiaryWeeklyCheckInHintBody({required this.checkInData, super.key});
 
   /// Weekly check-in view model.
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +56,12 @@ class DiaryWeeklyCheckInHintBody extends StatelessWidget {
   }
 
   String _body(AppLocalizations l10n, String locale) {
-    if (viewModel.hasPending) {
-      final pending = viewModel.pendingWeeklyCheckIn;
-      final baseMessage = viewModel.isBlocked
+    if (checkInData.hasPending) {
+      final pending = checkInData.pendingWeeklyCheckIn;
+      final baseMessage = checkInData.isBlocked
           ? resolveDiaryWeeklyCheckInBlockedMessage(
               l10n: l10n,
-              viewModel: viewModel,
+              checkInData: checkInData,
               locale: locale,
               fallbackMessage: l10n.caloriesWeeklyCheckInHintBlockedBody,
             )
@@ -74,7 +74,7 @@ class DiaryWeeklyCheckInHintBody extends StatelessWidget {
           '${rangeFormat.format(pending.windowStartDate)} - '
           '${rangeFormat.format(pending.windowEndDate)}.';
     }
-    return switch (viewModel.freshness) {
+    return switch (checkInData.freshness) {
       CalorieLearnedTdeeFreshness.urgent =>
         l10n.caloriesWeeklyCheckInHintUrgentBody,
       _ => l10n.caloriesWeeklyCheckInHintStaleBody,

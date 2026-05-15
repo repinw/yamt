@@ -8,5 +8,7 @@ flowchart TD;
 app_dropdown_button.dart-->app_haptic_feedback.dart;
 app_ink_well.dart-->app_haptic_feedback.dart;
 app_selection_list_tiles.dart-->app_haptic_feedback.dart;
+metric_card_shell-->app_ink_well.dart;
+metric_card_shell-->metric_card_helpers.dart;
 nutrition_profile_card.dart-->nutrition_metrics_strip.dart;
 ```

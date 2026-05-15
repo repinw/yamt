@@ -7,16 +7,22 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_card_constants.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_progress.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
 
 void main() {
-  testWidgets('renders progress bar at resolved Burn Week ratios', (
+  testWidgets('renders weekly pacing without removed safe-zone or flame', (
     tester,
   ) async {
     final selectedDay = DateTime(2026, 4, 27);
@@ -33,28 +39,59 @@ void main() {
 
     final trackRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.progressTrack),
-    );
-    final safeZoneRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.safeZone),
     );
     final targetRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.targetMarker),
     );
-    final consumedRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.consumedMarker),
-    );
 
     expect(find.text('EATEN'), findsOneWidget);
-    expect(find.text('LEFT'), findsOneWidget);
-    expect(targetRect.center.dxRatioWithin(trackRect), closeTo(1 / 7, 0.035));
+    expect(find.text('LEFT TODAY'), findsOneWidget);
+    expect(find.text('Week 1'), findsOneWidget);
+    expect(find.text('Day 1 of 7'), findsOneWidget);
     expect(
-      consumedRect.center.dxRatioWithin(trackRect),
-      closeTo(1 / 14, 0.035),
+      find.byKey(const ValueKey<String>('diary-balance-safe-zone')),
+      findsNothing,
     );
-    expect(safeZoneRect.width / trackRect.width, closeTo(2 / 7, 0.04));
+    expect(
+      find.byKey(const ValueKey<String>('diary-balance-consumed-marker')),
+      findsNothing,
+    );
+    expect(targetRect.center.dxRatioWithin(trackRect), closeTo(1 / 7, 0.035));
+    expect(_findTextContaining('1,000 kcal'), findsWidgets);
+    expect(_findTextContaining('14,000 kcal'), findsOneWidget);
   });
 
-  testWidgets('heart credit moves flame and adjusts left kcal', (
+  testWidgets('weekly progress handles unbounded horizontal constraints', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(
+          body: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DiaryBalanceProgressBar(
+              actualConsumedKcal: 3100,
+              targetKcal: 4915,
+              weeklyGoalKcal: 17204,
+              totalDays: 7,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getSize(find.byKey(DiaryBalanceCardKeys.progressTrack)).width,
+      diaryBalanceProgressFallbackWidth,
+    );
+  });
+
+  testWidgets('daily progress shows activity as an end extension', (
     tester,
   ) async {
     final selectedDay = DateTime(2026, 4, 27);
@@ -66,24 +103,63 @@ void main() {
       dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
       runState: const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: '2026-4-27',
-        heartCreditKcal: 2000,
       ),
+      activityBonusKcal: 200,
     );
 
     final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.progressTrack),
+      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
     );
-    final consumedRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.consumedMarker),
+    final eatenRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
     );
+    final activityRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+    );
+    final targetLabelRect = tester.getRect(find.text('2,200 kcal'));
 
-    expect(
-      consumedRect.center.dxRatioWithin(trackRect),
-      closeTo(3 / 14, 0.035),
-    );
-    expect(find.text('-1,000 kcal'), findsOneWidget);
-    expect(find.text('Real 1,000 kcal · Heart -2,000 kcal'), findsOneWidget);
+    expect(eatenRect.width / trackRect.width, closeTo(1000 / 2200, 0.02));
+    expect(activityRect.width / trackRect.width, closeTo(200 / 2200, 0.02));
+    expect(activityRect.right, closeTo(trackRect.right, 0.5));
+    expect(targetLabelRect.right, closeTo(trackRect.right, 0.5));
+    expect(find.text('+200 kcal'), findsOneWidget);
+    expect(find.text('2,200 kcal'), findsOneWidget);
   });
+
+  testWidgets(
+    'heart credit adjusts daily balance while weekly actual stays real',
+    (
+      tester,
+    ) async {
+      final selectedDay = normalizeDiaryDay(DateTime.now());
+
+      await _pumpBalanceCard(
+        tester,
+        selectedDay: selectedDay,
+        weekStartDate: selectedDay,
+        dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+        runState: const BurnWeekRunState.initial().copyWith(
+          currentWeekStartDayKey: diaryDayKey(selectedDay),
+          heartCreditKcal: 2000,
+        ),
+      );
+
+      expect(
+        find.byKey(const ValueKey<String>('diary-balance-consumed-marker')),
+        findsNothing,
+      );
+      expect(find.text('3,000 kcal', findRichText: true), findsOneWidget);
+      expect(find.text('-1,000 kcal', findRichText: true), findsOneWidget);
+      expect(find.text('1,000 kcal', findRichText: true), findsOneWidget);
+      expect(
+        find.text(
+          'Real 1,000 kcal · Heart -2,000 kcal',
+          findRichText: true,
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('live onboarding buffer appears in eaten tile', (tester) async {
     final today = normalizeDiaryDay(DateTime.now());
@@ -99,41 +175,23 @@ void main() {
       ),
     );
 
-    expect(find.text('3,000 kcal'), findsOneWidget);
+    expect(_findTextContaining('3,000 kcal'), findsOneWidget);
     expect(
       find.text('Real 1,000 kcal · Buffer +2,000 kcal'),
       findsOneWidget,
     );
     expect(find.text('Buffer +2,000 kcal'), findsOneWidget);
-    expect(find.text('-1,000 kcal'), findsOneWidget);
+    expect(_findTextContaining('-1,000 kcal'), findsOneWidget);
   });
 
-  testWidgets('opens below-zone dialog for under-target live metrics', (
-    tester,
-  ) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final weekStartDate = today.subtract(const Duration(days: 6));
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: weekStartDate,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(weekStartDate),
-        runWeekNumber: 2,
-      ),
-    );
-
-    expect(find.text('Too far below target'), findsOneWidget);
-  });
-
-  testWidgets('below-zone heart action spends one positive heart', (
+  testWidgets('under-target live metrics do not open automatic heart dialogs', (
     tester,
   ) async {
     final today = normalizeDiaryDay(DateTime.now());
     final weekStartDate = today.subtract(const Duration(days: 6));
     var positiveHeartUseCount = 0;
+    DateTime? restartedFrom;
+    var continuedRun = false;
 
     await _pumpBalanceCard(
       tester,
@@ -147,32 +205,6 @@ void main() {
       onUsePositiveHeart: (_) {
         positiveHeartUseCount += 1;
       },
-    );
-
-    await tester.tap(find.text('Use heart'));
-    await tester.pumpAndSettle();
-
-    expect(positiveHeartUseCount, 1);
-  });
-
-  testWidgets('below-zone without hearts can continue current run', (
-    tester,
-  ) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final weekStartDate = today.subtract(const Duration(days: 6));
-    DateTime? restartedFrom;
-    var continuedRun = false;
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: weekStartDate,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(weekStartDate),
-        runWeekNumber: 2,
-        heartCount: 0,
-      ),
       onRestartRunFrom: (weekStartDate) {
         restartedFrom = normalizeDiaryDay(weekStartDate);
       },
@@ -181,65 +213,43 @@ void main() {
       },
     );
 
-    expect(find.text('Run cannot finish perfectly'), findsOneWidget);
+    expect(find.text('Too far below target'), findsNothing);
+    expect(find.text('Run cannot finish perfectly'), findsNothing);
+    expect(find.text('Use heart'), findsNothing);
+    expect(positiveHeartUseCount, 0);
     expect(restartedFrom, isNull);
-
-    await tester.tap(find.text('Continue anyway'));
-    await tester.pumpAndSettle();
-
-    expect(continuedRun, isTrue);
-    expect(restartedFrom, isNull);
+    expect(continuedRun, isFalse);
   });
 
-  testWidgets('below-zone without hearts can start a new run', (
-    tester,
-  ) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final weekStartDate = today.subtract(const Duration(days: 6));
-    DateTime? restartedFrom;
-
-    await _pumpBalanceCard(
+  testWidgets(
+    'over-target live metrics do not open automatic warning dialogs',
+    (
       tester,
-      selectedDay: today,
-      weekStartDate: weekStartDate,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(weekStartDate),
-        runWeekNumber: 2,
-        heartCount: 0,
-      ),
-      onRestartRunFrom: (weekStartDate) {
-        restartedFrom = normalizeDiaryDay(weekStartDate);
-      },
-    );
+    ) async {
+      final today = normalizeDiaryDay(DateTime.now());
+      final weekStartDate = today.subtract(const Duration(days: 6));
+      var positiveHeartUseCount = 0;
 
-    expect(find.text('Run cannot finish perfectly'), findsOneWidget);
+      await _pumpBalanceCard(
+        tester,
+        selectedDay: today,
+        weekStartDate: weekStartDate,
+        dayTotals: const [20000, 20000, 20000, 20000, 20000, 20000, 20000],
+        runState: const BurnWeekRunState.initial().copyWith(
+          currentWeekStartDayKey: diaryDayKey(weekStartDate),
+          runWeekNumber: 2,
+        ),
+        onUsePositiveHeart: (_) {
+          positiveHeartUseCount += 1;
+        },
+      );
 
-    await tester.tap(find.text('Start new run'));
-    await tester.pumpAndSettle();
-
-    expect(restartedFrom, nextDiaryDay(today));
-  });
-
-  testWidgets('opens above-zone dialog for over-target live metrics', (
-    tester,
-  ) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final weekStartDate = today.subtract(const Duration(days: 6));
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: weekStartDate,
-      dayTotals: const [20000, 20000, 20000, 20000, 20000, 20000, 20000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(weekStartDate),
-        runWeekNumber: 2,
-      ),
-    );
-
-    expect(find.text('Use heart day?'), findsOneWidget);
-  });
+      expect(find.text('Use heart day?'), findsNothing);
+      expect(find.text('Out of safe zone'), findsNothing);
+      expect(find.text('Run cannot finish perfectly'), findsNothing);
+      expect(positiveHeartUseCount, 0);
+    },
+  );
 
   testWidgets('heart day shows special balance and suppresses zone dialog', (
     tester,
@@ -298,7 +308,7 @@ void main() {
     expect(revertedDay, isNull);
   });
 
-  testWidgets('shows fast-only dialog for recoverable over-target state', (
+  testWidgets('recoverable over-target state keeps card quiet', (
     tester,
   ) async {
     final today = normalizeDiaryDay(DateTime.now());
@@ -314,8 +324,8 @@ void main() {
       ),
     );
 
-    expect(find.text('Out of safe zone'), findsOneWidget);
-    expect(find.textContaining('Fasting'), findsOneWidget);
+    expect(find.text('Out of safe zone'), findsNothing);
+    expect(find.textContaining('Fasting'), findsNothing);
   });
 
   testWidgets('learning week hides game controls and zone dialogs', (
@@ -382,7 +392,7 @@ void main() {
     expect(find.text('Practice day'), findsOneWidget);
     expect(find.textContaining('Burn Week starts on'), findsOneWidget);
     expect(find.text('Goal: 1,200 kcal'), findsOneWidget);
-    expect(find.text('LEFT'), findsNothing);
+    expect(find.text('LEFT TODAY'), findsNothing);
   });
 
   testWidgets('shows practice day card for past day before goal start', (
@@ -409,7 +419,7 @@ void main() {
     expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
     expect(find.text('Practice day'), findsOneWidget);
     expect(find.textContaining('Burn Week starts on'), findsOneWidget);
-    expect(find.text('LEFT'), findsNothing);
+    expect(find.text('LEFT TODAY'), findsNothing);
   });
 
   testWidgets('keeps Burn Week live sync subscribed on non-live days', (
@@ -453,7 +463,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Week 1 day 1'), findsOneWidget);
+    expect(find.text('Day 1 of 7'), findsOneWidget);
     expect(find.byIcon(Icons.stars_rounded), findsNothing);
     expect(find.byIcon(Icons.favorite_rounded), findsNothing);
   });
@@ -475,8 +485,8 @@ void main() {
     );
 
     expect(find.text('EATEN'), findsOneWidget);
-    expect(find.text('LEFT'), findsOneWidget);
-    expect(find.text('-500 kcal'), findsOneWidget);
+    expect(find.text('LEFT TODAY'), findsOneWidget);
+    expect(_findTextContaining('-500 kcal'), findsOneWidget);
   });
 
   testWidgets('renders future non-live day snapshot', (tester) async {
@@ -495,64 +505,9 @@ void main() {
       ),
     );
 
-    expect(find.text('Week 1 day 7'), findsOneWidget);
+    expect(find.text('Day 7 of 7'), findsOneWidget);
     expect(find.byIcon(Icons.stars_rounded), findsNothing);
     expect(find.byIcon(Icons.favorite_rounded), findsNothing);
-  });
-
-  testWidgets('opens and cancels use-heart dialog from live counter', (
-    tester,
-  ) async {
-    final today = normalizeDiaryDay(DateTime.now());
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: today,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(today),
-        runWeekNumber: 2,
-      ),
-      hasAutoOpeningWeeklyCheckIn: true,
-    );
-
-    await tester.tap(find.byIcon(Icons.favorite_rounded));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Use heart day?'), findsOneWidget);
-
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Use heart day?'), findsNothing);
-  });
-
-  testWidgets('applies heart-day dialog action', (tester) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    var positiveHeartUseCount = 0;
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: today,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(today),
-        runWeekNumber: 2,
-      ),
-      hasAutoOpeningWeeklyCheckIn: true,
-      onUsePositiveHeart: (_) {
-        positiveHeartUseCount += 1;
-      },
-    );
-
-    await tester.tap(find.byIcon(Icons.favorite_rounded));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Use heart'));
-    await tester.pumpAndSettle();
-
-    expect(positiveHeartUseCount, 1);
   });
 
   testWidgets('keeps live and non-live balance cards the same height', (
@@ -570,11 +525,10 @@ void main() {
         currentWeekStartDayKey: diaryDayKey(today),
         runWeekNumber: 2,
       ),
-      hasAutoOpeningWeeklyCheckIn: true,
     );
     final liveHeight = tester.getSize(find.byType(DiaryBalanceCard)).height;
-    expect(find.byIcon(Icons.stars_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.stars_rounded), findsNothing);
+    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -612,7 +566,7 @@ void main() {
       todayFlexibleGoalKcal: -838,
     );
 
-    expect(find.text('-838 kcal'), findsOneWidget);
+    expect(_findTextContaining('-838 kcal'), findsOneWidget);
   });
 
   testWidgets('pauses and resumes ticker with app lifecycle', (tester) async {
@@ -680,9 +634,10 @@ Future<void> _pumpBalanceCard(
   VoidCallback? onBurnWeekLiveSyncWatch,
   VoidCallback? onBalanceTickerTick,
   Duration? tickerPeriod,
-  bool hasAutoOpeningWeeklyCheckIn = false,
   bool settle = true,
   double goalKcal = 2000,
+  double? baseGoalKcal,
+  double activityBonusKcal = 0,
   double todayFlexibleGoalKcal = 2000,
   bool goalStartsInFuture = false,
   DateTime? nextGoalStartDate,
@@ -700,6 +655,8 @@ Future<void> _pumpBalanceCard(
     weekStartDate: weekStartDate,
     dayTotals: dayTotals,
     goalKcal: goalKcal,
+    baseGoalKcal: baseGoalKcal,
+    activityBonusKcal: activityBonusKcal,
     todayFlexibleGoalKcal: todayFlexibleGoalKcal,
     goalStartsInFuture: goalStartsInFuture,
     nextGoalStartDate: nextGoalStartDate,
@@ -718,8 +675,22 @@ Future<void> _pumpBalanceCard(
           onBurnWeekLiveSyncWatch?.call();
           return null;
         }),
+        diaryNutritionBarsDataProvider(
+          normalizedSelectedDay,
+        ).overrideWith(
+          (ref) async => const DiaryNutritionBarsData(
+            carbs: 36,
+            protein: 89,
+            fat: 81,
+            goals: DiaryMacroTargets(
+              carbs: 285,
+              protein: 159,
+              fat: 85,
+            ),
+          ),
+        ),
         if (tickerPeriod != null)
-          diaryBalanceTickerPeriodProvider.overrideWithValue(tickerPeriod),
+          diaryBalanceTickerDurationProvider.overrideWithValue(tickerPeriod),
         if (onBalanceTickerTick != null)
           diaryBalanceTickerObserverProvider.overrideWithValue(
             onBalanceTickerTick,
@@ -757,7 +728,6 @@ Future<void> _pumpBalanceCard(
             padding: const EdgeInsets.all(16),
             child: DiaryBalanceCard(
               selectedDay: normalizedSelectedDay,
-              hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
             ),
           ),
         ),
@@ -776,6 +746,8 @@ CalorieWeekOverview _weekOverview({
   required DateTime weekStartDate,
   required List<double> dayTotals,
   double goalKcal = 2000,
+  double? baseGoalKcal,
+  double activityBonusKcal = 0,
   double todayFlexibleGoalKcal = 2000,
   bool goalStartsInFuture = false,
   DateTime? nextGoalStartDate,
@@ -788,6 +760,8 @@ CalorieWeekOverview _weekOverview({
         date: normalizedSelectedDay.subtract(Duration(days: offset)),
         totalKcal: dayTotals[6 - offset],
         goalKcal: goalKcal,
+        baseGoalKcal: baseGoalKcal,
+        activityBonusKcal: offset == 0 ? activityBonusKcal : 0,
         entryCount: dayTotals[6 - offset] > 0 ? 1 : 0,
       ),
   ];
@@ -859,4 +833,8 @@ extension on Offset {
   double dxRatioWithin(Rect rect) {
     return (dx - rect.left) / rect.width;
   }
+}
+
+Finder _findTextContaining(String text) {
+  return find.textContaining(text, findRichText: true);
 }

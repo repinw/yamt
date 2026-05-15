@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 
 /// Schedules work after the current frame.
 typedef DiaryPostFrameScheduler = void Function(VoidCallback callback);
@@ -14,41 +14,41 @@ class DiaryWeeklyCheckInDialogScheduler {
   }) : _schedulePostFrame = schedulePostFrame ?? _defaultSchedulePostFrame;
 
   final DiaryPostFrameScheduler _schedulePostFrame;
-  CalorieWeeklyCheckInViewModel? _deferredViewModel;
+  DiaryWeeklyCheckInData? _deferredCheckInData;
   String? _autoOpenedWindowKey;
   var _isDialogOpen = false;
   var _disposed = false;
 
-  /// Last loaded weekly check-in view model.
-  CalorieWeeklyCheckInViewModel? lastViewModel;
+  /// Last loaded weekly check-in data.
+  DiaryWeeklyCheckInData? lastCheckInData;
 
   /// Whether a weekly check-in dialog is currently open.
   bool get isDialogOpen => _isDialogOpen;
 
-  /// Caches the latest view model and schedules auto-open work when needed.
+  /// Caches the latest data and schedules auto-open work when needed.
   void cacheAndSchedule({
-    required CalorieWeeklyCheckInViewModel? viewModel,
+    required DiaryWeeklyCheckInData? checkInData,
     required bool Function() isMounted,
-    required Future<void> Function(CalorieWeeklyCheckInViewModel viewModel)
+    required Future<void> Function(DiaryWeeklyCheckInData checkInData)
     syncLearnedTdeeCache,
-    required Future<void> Function(CalorieWeeklyCheckInViewModel viewModel)
+    required Future<void> Function(DiaryWeeklyCheckInData checkInData)
     openDialog,
   }) {
-    if (viewModel == null) {
+    if (checkInData == null) {
       return;
     }
 
-    lastViewModel = viewModel;
-    final pending = viewModel.pendingWeeklyCheckIn;
+    lastCheckInData = checkInData;
+    final pending = checkInData.pendingWeeklyCheckIn;
     final willAutoOpen =
         pending != null &&
-        viewModel.shouldAutoOpen &&
+        checkInData.shouldAutoOpen &&
         _autoOpenedWindowKey != pending.windowKey;
     if (!willAutoOpen && !_isDialogOpen) {
-      unawaited(syncLearnedTdeeCache(viewModel));
+      unawaited(syncLearnedTdeeCache(checkInData));
     }
     schedule(
-      viewModel: viewModel,
+      checkInData: checkInData,
       isMounted: isMounted,
       openDialog: openDialog,
     );
@@ -56,17 +56,17 @@ class DiaryWeeklyCheckInDialogScheduler {
 
   /// Schedules an eligible weekly check-in dialog.
   void schedule({
-    required CalorieWeeklyCheckInViewModel? viewModel,
+    required DiaryWeeklyCheckInData? checkInData,
     required bool Function() isMounted,
-    required Future<void> Function(CalorieWeeklyCheckInViewModel viewModel)
+    required Future<void> Function(DiaryWeeklyCheckInData checkInData)
     openDialog,
   }) {
-    final pending = viewModel?.pendingWeeklyCheckIn;
+    final pending = checkInData?.pendingWeeklyCheckIn;
     if (_disposed ||
         !isMounted() ||
-        viewModel == null ||
+        checkInData == null ||
         pending == null ||
-        !viewModel.shouldAutoOpen) {
+        !checkInData.shouldAutoOpen) {
       return;
     }
 
@@ -74,7 +74,7 @@ class DiaryWeeklyCheckInDialogScheduler {
       return;
     }
     if (_isDialogOpen) {
-      _deferredViewModel = viewModel;
+      _deferredCheckInData = checkInData;
       return;
     }
     _autoOpenedWindowKey = pending.windowKey;
@@ -82,18 +82,18 @@ class DiaryWeeklyCheckInDialogScheduler {
       if (_disposed || !isMounted()) {
         return;
       }
-      unawaited(openDialog(viewModel));
+      unawaited(openDialog(checkInData));
     });
   }
 
   /// Attempts to mark a weekly check-in dialog as opening.
   bool beginDialog({
-    required CalorieWeeklyCheckInViewModel viewModel,
+    required DiaryWeeklyCheckInData checkInData,
     required bool Function() isMounted,
   }) {
     if (_disposed ||
         !isMounted() ||
-        viewModel.pendingWeeklyCheckIn == null ||
+        checkInData.pendingWeeklyCheckIn == null ||
         _isDialogOpen) {
       return false;
     }
@@ -105,17 +105,17 @@ class DiaryWeeklyCheckInDialogScheduler {
   /// Marks a weekly check-in dialog as closed and schedules deferred work.
   void endDialog({
     required bool Function() isMounted,
-    required Future<void> Function(CalorieWeeklyCheckInViewModel viewModel)
+    required Future<void> Function(DiaryWeeklyCheckInData checkInData)
     openDialog,
   }) {
     _isDialogOpen = false;
-    final deferredViewModel = _deferredViewModel;
-    _deferredViewModel = null;
-    if (deferredViewModel == null) {
+    final deferredCheckInData = _deferredCheckInData;
+    _deferredCheckInData = null;
+    if (deferredCheckInData == null) {
       return;
     }
     schedule(
-      viewModel: deferredViewModel,
+      checkInData: deferredCheckInData,
       isMounted: isMounted,
       openDialog: openDialog,
     );
@@ -124,7 +124,7 @@ class DiaryWeeklyCheckInDialogScheduler {
   /// Disposes pending scheduler work.
   void dispose() {
     _disposed = true;
-    _deferredViewModel = null;
+    _deferredCheckInData = null;
   }
 
   static void _defaultSchedulePostFrame(VoidCallback callback) {

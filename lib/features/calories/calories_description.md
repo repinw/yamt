@@ -142,7 +142,7 @@ Contains pages, dialogs, models, and reusable widgets:
   calculator UI.
 - Weekly check-in widgets show hints, dialogs, and status messages.
 - Health trend widgets show weight, intake, and burned calories.
-- Burn Week widgets show the live overview, safe zone, dialogs, and mock UI.
+- Burn Week widgets show the live overview and diary pacing state.
 - `*_l10n.dart` files localize enums such as meals and units.
 - `calories_page_keys.dart` collects stable keys for widget tests.
 
@@ -249,8 +249,7 @@ Generated Riverpod and JSON files. They should not be edited manually.
   inventory owner.
 - `features/scanner` / product flows: Provide barcode/OCR profiles and
   `CalorieScannedSourceRef`.
-- `lib/features/calories/debug`: Debug-only calorie dump tools, debug app-bar menu, and
-  the debug Burn Week mock page.
+- `lib/features/calories/debug`: Debug-only calorie dump tools and debug app-bar menu.
 
 ## Persistence Model
 

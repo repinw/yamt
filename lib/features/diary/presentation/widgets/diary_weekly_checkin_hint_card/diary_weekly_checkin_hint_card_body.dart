@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_hint_card/diary_weekly_checkin_hint_actions.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 class DiaryWeeklyCheckInHintCardBody extends StatelessWidget {
   /// Creates a diary weekly check-in hint body.
   const DiaryWeeklyCheckInHintCardBody({
-    required this.viewModel,
+    required this.checkInData,
     required this.selectedDay,
     required this.selectedDayHasEntries,
     required this.onContinue,
@@ -21,7 +21,7 @@ class DiaryWeeklyCheckInHintCardBody extends StatelessWidget {
   });
 
   /// Weekly check-in view model.
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   /// Selected diary day.
   final DateTime selectedDay;
@@ -51,12 +51,12 @@ class DiaryWeeklyCheckInHintCardBody extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            DiaryWeeklyCheckInHintTitle(viewModel: viewModel),
+            DiaryWeeklyCheckInHintTitle(checkInData: checkInData),
             const SizedBox(height: AppSpacing.xs),
-            DiaryWeeklyCheckInHintBody(viewModel: viewModel),
+            DiaryWeeklyCheckInHintBody(checkInData: checkInData),
             const SizedBox(height: AppSpacing.md),
             DiaryWeeklyCheckInHintActions(
-              viewModel: viewModel,
+              checkInData: checkInData,
               selectedDay: selectedDay,
               selectedDayHasEntries: selectedDayHasEntries,
               onContinue: onContinue,

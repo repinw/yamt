@@ -43,79 +43,55 @@ void main() {
     expect(metrics.barMaxKcal, 14000);
   });
 
+  test('metrics expose marker and range ratios', () {
+    const metrics = BurnWeekMockMetrics(
+      dailyGoalKcal: 2000,
+      weeklyGoalKcal: 14000,
+      usesFallbackGoal: false,
+      paceRatio: 2 / 7,
+      targetKcal: 5000,
+      consumedKcal: 3000,
+      safeZoneMinKcal: 2500,
+      safeZoneMaxKcal: 6500,
+      barMinKcal: 1000,
+      barMaxKcal: 9000,
+      plannedLaterKcal: 1000,
+    );
+
+    expect(metrics.targetRatio, closeTo(0.5, 0.001));
+    expect(metrics.consumedRatio, closeTo(0.25, 0.001));
+    expect(metrics.effectiveConsumedRatio, closeTo(0.25, 0.001));
+    expect(metrics.plannedEndRatio, closeTo(0.375, 0.001));
+    expect(metrics.safeZoneStartRatio, closeTo(0.1875, 0.001));
+    expect(metrics.safeZoneEndRatio, closeTo(0.6875, 0.001));
+    expect(metrics.ratioForKcal(0), 0);
+    expect(metrics.ratioForKcal(10000), 1);
+  });
+
+  test('metric ratios use midpoint when the visible range is invalid', () {
+    const metrics = BurnWeekMockMetrics(
+      dailyGoalKcal: 2000,
+      weeklyGoalKcal: 14000,
+      usesFallbackGoal: false,
+      paceRatio: 0,
+      targetKcal: 1000,
+      consumedKcal: 1000,
+      safeZoneMinKcal: 1000,
+      safeZoneMaxKcal: 1000,
+      barMinKcal: 1000,
+      barMaxKcal: 1000,
+    );
+
+    expect(metrics.ratioForKcal(1000), 0.5);
+    expect(metrics.targetRatio, 0.5);
+    expect(metrics.consumedRatio, 0.5);
+  });
+
   test('pace and elapsed days clamp at end of week', () {
     const overWeek = burnWeekMockSecondsPerWeek + 9999;
 
     expect(resolveBurnWeekMockElapsedDays(overWeek), 7);
     expect(resolveBurnWeekMockPaceRatio(overWeek), 1);
-  });
-
-  test('zone decisions follow recovery rules', () {
-    const recoverableBelow = BurnWeekMockMetrics(
-      dailyGoalKcal: 2000,
-      weeklyGoalKcal: 14000,
-      usesFallbackGoal: false,
-      paceRatio: 0.5,
-      targetKcal: 7000,
-      consumedKcal: 5000,
-      safeZoneMinKcal: 6000,
-      safeZoneMaxKcal: 8000,
-      barMinKcal: 0,
-      barMaxKcal: 14000,
-    );
-    const unrecoverableBelow = BurnWeekMockMetrics(
-      dailyGoalKcal: 2000,
-      weeklyGoalKcal: 14000,
-      usesFallbackGoal: false,
-      paceRatio: 0.9,
-      targetKcal: 12600,
-      consumedKcal: 9000,
-      safeZoneMinKcal: 11000,
-      safeZoneMaxKcal: 14200,
-      barMinKcal: 0,
-      barMaxKcal: 14000,
-    );
-    const recoverableAbove = BurnWeekMockMetrics(
-      dailyGoalKcal: 2000,
-      weeklyGoalKcal: 14000,
-      usesFallbackGoal: false,
-      paceRatio: 0.5,
-      targetKcal: 7000,
-      consumedKcal: 9500,
-      safeZoneMinKcal: 6000,
-      safeZoneMaxKcal: 8000,
-      barMinKcal: 0,
-      barMaxKcal: 14000,
-    );
-    const unrecoverableAbove = BurnWeekMockMetrics(
-      dailyGoalKcal: 2000,
-      weeklyGoalKcal: 14000,
-      usesFallbackGoal: false,
-      paceRatio: 0.9,
-      targetKcal: 12600,
-      consumedKcal: 14600,
-      safeZoneMinKcal: 11000,
-      safeZoneMaxKcal: 14200,
-      barMinKcal: 0,
-      barMaxKcal: 14000,
-    );
-
-    expect(
-      resolveBurnWeekZoneDecision(recoverableBelow).type,
-      BurnWeekZoneDecisionType.belowCanEatOrUseHeart,
-    );
-    expect(
-      resolveBurnWeekZoneDecision(unrecoverableBelow).type,
-      BurnWeekZoneDecisionType.belowNeedsHeart,
-    );
-    expect(
-      resolveBurnWeekZoneDecision(recoverableAbove).type,
-      BurnWeekZoneDecisionType.aboveFastOnly,
-    );
-    expect(
-      resolveBurnWeekZoneDecision(unrecoverableAbove).type,
-      BurnWeekZoneDecisionType.aboveNeedsHeart,
-    );
   });
 
   test('heart spend decrements counter and may break star', () {

@@ -3,64 +3,30 @@ import 'dart:async' show unawaited;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/data/local_image_asset_ref.dart';
-import 'package:yamt/core/data/local_image_store_provider.dart';
-import 'package:yamt/core/widgets/app_cached_network_image.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/diary/application/diary_entries_provider.dart';
+import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_quick_eat_inventory_provider.dart';
+import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
-import 'package:yamt/features/diary/presentation/diary_theme.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_card_helpers.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_meal_quick_add_menu.dart';
-import 'package:yamt/features/diary/provider/diary_entries_provider.dart';
-import 'package:yamt/features/diary/provider/diary_meal_sections_provider.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-part 'diary_meal_card.dart';
-part 'diary_meal_media.dart';
-
-/// Stable keys for diary meal section tests.
-abstract final class DiaryMealsSectionKeys {
-  /// Card key for a meal section.
-  static Key mealCard(MealType mealType) {
-    return ValueKey<String>('diary-meal-card-${mealType.jsonValue}');
-  }
-
-  /// Collapsed empty-state key for a meal section.
-  static Key collapsedEmpty(MealType mealType) {
-    return ValueKey<String>(
-      'diary-meal-collapsed-empty-${mealType.jsonValue}',
-    );
-  }
-
-  /// Expanded empty-state key for a meal section.
-  static Key expandedEmpty(MealType mealType) {
-    return ValueKey<String>(
-      'diary-meal-expanded-empty-${mealType.jsonValue}',
-    );
-  }
-
-  /// Retry button key.
-  static const retryButton = ValueKey<String>('diary-meals-retry-button');
-}
 
 /// Collapsible meal cards for the diary page.
 @Dependencies([
   InventoryItemsController,
-  PreparedMealsController,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class DiaryMealsSection extends ConsumerStatefulWidget {
@@ -76,7 +42,7 @@ class DiaryMealsSection extends ConsumerStatefulWidget {
 
 class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
   MealType? _expandedMealType;
-  List<CalorieMealSection>? _lastSections;
+  List<DiaryMealSection>? _lastSections;
 
   @override
   Widget build(BuildContext context) {
@@ -104,8 +70,8 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
         ),
         const SizedBox(height: AppSpacing.xl),
         if (showError)
-          DiaryDetailCardShell(
-            child: DiaryErrorRetryContent(
+          MetricDetailCardShell(
+            child: MetricErrorRetryContent(
               message: l10n.diaryMealsLoadFailed,
               retryLabel: l10n.caloriesRetryAction,
               retryButtonKey: DiaryMealsSectionKeys.retryButton,
@@ -113,13 +79,13 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
             ),
           )
         else if (sections == null)
-          const _MealCardsSkeleton()
+          const DiaryMealCardsSkeleton()
         else
           ...sections.map((section) {
             final isExpanded = _expandedMealType == section.mealType;
             return Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-              child: _DiaryMealCard(
+              child: DiaryMealCard(
                 key: DiaryMealsSectionKeys.mealCard(section.mealType),
                 section: section,
                 isExpanded: isExpanded,

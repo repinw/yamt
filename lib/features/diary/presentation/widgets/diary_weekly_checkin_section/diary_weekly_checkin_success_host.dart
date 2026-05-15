@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_success_card/diary_weekly_checkin_success_card.dart';
 
@@ -13,7 +12,7 @@ class DiaryWeeklyCheckInSuccessHost extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final goalSettings = ref.watch(calorieGoalControllerProvider).value;
+    final goalSettings = ref.watch(diaryCalorieGoalSettingsProvider).value;
     final latestEntry = _latestGoalHistoryEntry(goalSettings);
     if (latestEntry?.isWeeklyCheckIn != true ||
         !DateUtils.isSameDay(latestEntry?.effectiveDate, DateTime.now())) {

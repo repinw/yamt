@@ -27,7 +27,6 @@ void main() {
     expect(AppRoutes.homeShopping, '/home/shopping');
     expect(AppRoutes.homeDiary, '/home/calories');
     expect(AppRoutes.homeCalories, '/home/calories');
-    expect(AppRoutes.homeCaloriesBurnWeekMock, '/home/calories/burn-week');
     expect(
       AppRoutes.homeCaloriesEntryCreate,
       '/home/calories/entry/create',

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -13,7 +12,6 @@ import 'package:yamt/features/calories/application/'
     'calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/calories/debug/burn_week_mock_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
@@ -22,6 +20,9 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_controller.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
+import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
@@ -88,6 +89,9 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     inventoryItemRepository,
     calorieEntryDeleteFlow,
     inventoryBackedCalorieEntrySaveFlow,
+    diaryProviderWarmup,
+    diaryQuickEatInventory,
+    diaryQuickEatInventoryActions,
     CookingFlowController,
     CookingFlowWizardController,
     InventoryItemsController,
@@ -145,13 +149,6 @@ Raw<GoRouter> appRouter(Ref ref) {
         path: AppRoutes.homeSettingsHousehold,
         builder: (context, state) => const HouseholdPage(),
       ),
-      if (kDebugMode)
-        // Burn Week mock route is debug-only. Keep mock pages out of
-        // user-facing builds.
-        GoRoute(
-          path: AppRoutes.homeCaloriesBurnWeekMock,
-          builder: (context, state) => const BurnWeekMockPage(),
-        ),
       GoRoute(
         path: AppRoutes.homeStatisticsWeight,
         builder: (context, state) => const CalorieHealthTrendsPage(),

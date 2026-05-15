@@ -5,19 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/presentation/calorie_page_actions.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_health_trends_window_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_page_action_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_weekly_checkin_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_dialog_scheduler.dart';
+import 'package:yamt/features/diary/presentation/'
+    'diary_weekly_checkin_snackbars.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -31,15 +23,11 @@ class DiaryWeeklyCheckInSection extends ConsumerStatefulWidget {
   /// Creates diary weekly check-in section.
   const DiaryWeeklyCheckInSection({
     required this.selectedDay,
-    required this.onAutoOpeningChanged,
     super.key,
   });
 
   /// Selected diary day.
   final DateTime selectedDay;
-
-  /// Reports whether weekly check-in should suppress other auto dialogs.
-  final ValueChanged<bool> onAutoOpeningChanged;
 
   @override
   ConsumerState<DiaryWeeklyCheckInSection> createState() =>
@@ -51,12 +39,10 @@ class _DiaryWeeklyCheckInSectionState
     with WidgetsBindingObserver {
   final DiaryWeeklyCheckInDialogScheduler _dialogs =
       DiaryWeeklyCheckInDialogScheduler();
-  ProviderSubscription<AsyncValue<CalorieWeeklyCheckInViewModel>>?
-  _subscription;
-  AsyncValue<CalorieWeeklyCheckInViewModel> _state =
-      const AsyncLoading<CalorieWeeklyCheckInViewModel>();
+  ProviderSubscription<AsyncValue<DiaryWeeklyCheckInData>>? _subscription;
+  AsyncValue<DiaryWeeklyCheckInData> _state =
+      const AsyncLoading<DiaryWeeklyCheckInData>();
   String? _hiddenWindowKey;
-  bool? _lastAutoOpening;
 
   @override
   void initState() {
@@ -82,25 +68,26 @@ class _DiaryWeeklyCheckInSectionState
     if (state != AppLifecycleState.resumed || !mounted) {
       return;
     }
-    ref.invalidate(calorieWeeklyCheckInViewModelProvider);
+    ref.read(diaryWeeklyCheckInActionsProvider).refreshCheckInData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = _visibleViewModel;
+    final checkInData = _visibleCheckInData;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        if (viewModel != null && viewModel.showDiaryHint) ...<Widget>[
+        if (checkInData != null && checkInData.showDiaryHint) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           DiaryWeeklyCheckInHintHost(
-            viewModel: viewModel,
+            checkInData: checkInData,
             selectedDay: widget.selectedDay,
-            onContinue: () => _openDialog(viewModel),
+            onContinue: () => _openDialog(checkInData),
             onOpenHealthTrends: () {
               _openHealthTrendsPage(
-                visibleWindowEnd: viewModel.pendingWeeklyCheckIn?.windowEndDate,
+                visibleWindowEnd:
+                    checkInData.pendingWeeklyCheckIn?.windowEndDate,
               );
             },
             onToggleSelectedDaySkipped: _toggleSkippedCalorieIntakeDay,
@@ -111,67 +98,65 @@ class _DiaryWeeklyCheckInSectionState
     );
   }
 
-  CalorieWeeklyCheckInViewModel? get _visibleViewModel {
-    final rawViewModel = _state.value ?? _dialogs.lastViewModel;
-    return _isHidden(rawViewModel) ? null : rawViewModel;
+  DiaryWeeklyCheckInData? get _visibleCheckInData {
+    final rawCheckInData = _state.value ?? _dialogs.lastCheckInData;
+    return _isHidden(rawCheckInData) ? null : rawCheckInData;
   }
 
   void _startSubscription() {
     _subscription ??= ref.listenManual(
-      calorieWeeklyCheckInViewModelProvider,
-      _cacheViewModel,
+      diaryWeeklyCheckInDataProvider,
+      _cacheCheckInData,
       fireImmediately: true,
     );
   }
 
-  void _cacheViewModel(
-    AsyncValue<CalorieWeeklyCheckInViewModel>? previous,
-    AsyncValue<CalorieWeeklyCheckInViewModel> next,
+  void _cacheCheckInData(
+    AsyncValue<DiaryWeeklyCheckInData>? previous,
+    AsyncValue<DiaryWeeklyCheckInData> next,
   ) {
     setState(() {
       _state = next;
       _clearStaleHiddenWindow(next.value);
     });
-    _syncAutoOpening();
 
-    final viewModel = next.value;
-    if (viewModel == null) {
+    final checkInData = next.value;
+    if (checkInData == null) {
       return;
     }
-    final controller = ref.read(
-      calorieWeeklyCheckInControllerProvider.notifier,
-    );
+    final actions = ref.read(diaryWeeklyCheckInActionsProvider);
     _dialogs.cacheAndSchedule(
-      viewModel: viewModel,
+      checkInData: checkInData,
       isMounted: () => mounted,
-      syncLearnedTdeeCache: controller.syncLearnedTdeeCache,
+      syncLearnedTdeeCache: actions.syncLearnedTdeeCache,
       openDialog: _openDialog,
     );
   }
 
-  Future<void> _openDialog(CalorieWeeklyCheckInViewModel viewModel) async {
-    final pending = viewModel.pendingWeeklyCheckIn;
-    if (!_dialogs.beginDialog(viewModel: viewModel, isMounted: () => mounted)) {
+  Future<void> _openDialog(DiaryWeeklyCheckInData checkInData) async {
+    final pending = checkInData.pendingWeeklyCheckIn;
+    if (!_dialogs.beginDialog(
+      checkInData: checkInData,
+      isMounted: () => mounted,
+    )) {
       return;
     }
 
-    final controller = ref.read(
-      calorieWeeklyCheckInControllerProvider.notifier,
-    );
+    final actions = ref.read(diaryWeeklyCheckInActionsProvider);
     final resolvedPending = pending!;
 
     try {
       final action = await showDiaryWeeklyCheckInDialog(
         context,
-        viewModel: viewModel,
+        checkInData: checkInData,
       );
       if (!mounted) {
         return;
       }
       await _handleDialogAction(
         action: action,
-        controller: controller,
-        viewModel: viewModel,
+        actions: actions,
+        checkInData: checkInData,
         pending: resolvedPending,
       );
     } finally {
@@ -181,31 +166,31 @@ class _DiaryWeeklyCheckInSectionState
 
   Future<void> _handleDialogAction({
     required DiaryWeeklyCheckInDialogAction? action,
-    required CalorieWeeklyCheckInController controller,
-    required CalorieWeeklyCheckInViewModel viewModel,
+    required DiaryWeeklyCheckInActions actions,
+    required DiaryWeeklyCheckInData checkInData,
     required PendingCalorieGoalWeeklyCheckIn pending,
   }) async {
     switch (action) {
       case DiaryWeeklyCheckInDialogAction.apply:
-        await _applyWeeklyCheckIn(controller, viewModel, pending);
+        await _applyWeeklyCheckIn(actions, checkInData, pending);
       case DiaryWeeklyCheckInDialogAction.openHealthTrends:
-        await controller.dismissPendingWeeklyCheckIn(pending);
+        await actions.dismissPendingWeeklyCheckIn(pending);
         if (mounted) {
           _openHealthTrendsPage(visibleWindowEnd: pending.windowEndDate);
         }
       case DiaryWeeklyCheckInDialogAction.later:
       case null:
-        await controller.syncLearnedTdeeCache(viewModel);
+        await actions.syncLearnedTdeeCache(checkInData);
     }
   }
 
   Future<void> _applyWeeklyCheckIn(
-    CalorieWeeklyCheckInController controller,
-    CalorieWeeklyCheckInViewModel viewModel,
+    DiaryWeeklyCheckInActions actions,
+    DiaryWeeklyCheckInData checkInData,
     PendingCalorieGoalWeeklyCheckIn pending,
   ) async {
     _hide(pending);
-    final saved = await controller.applyWeeklyCheckIn(viewModel);
+    final saved = await actions.applyWeeklyCheckIn(checkInData);
     if (!mounted || saved) {
       return;
     }
@@ -223,7 +208,6 @@ class _DiaryWeeklyCheckInSectionState
     setState(() {
       _hiddenWindowKey = pending.windowKey;
     });
-    _syncAutoOpening();
   }
 
   void _showAgain(PendingCalorieGoalWeeklyCheckIn pending) {
@@ -233,15 +217,14 @@ class _DiaryWeeklyCheckInSectionState
     setState(() {
       _hiddenWindowKey = null;
     });
-    _syncAutoOpening();
   }
 
   Future<void> _toggleSkippedCalorieIntakeDay({
     required DateTime selectedDay,
     required bool isSkipped,
   }) async {
-    final controller = ref.read(caloriePageActionControllerProvider.notifier);
-    final saved = await controller.setSkippedIntakeDay(
+    final actions = ref.read(diaryWeeklyCheckInActionsProvider);
+    final saved = await actions.setSkippedIntakeDay(
       selectedDay: selectedDay,
       isSkipped: isSkipped,
     );
@@ -254,36 +237,23 @@ class _DiaryWeeklyCheckInSectionState
   void _openHealthTrendsPage({DateTime? visibleWindowEnd}) {
     final resolvedWindowEnd = visibleWindowEnd ?? DateTime.now();
     ref
-        .read(calorieHealthTrendsWindowControllerProvider.notifier)
-        .setWindowEnd(resolvedWindowEnd);
+        .read(diaryWeeklyCheckInActionsProvider)
+        .setHealthTrendsWindowEnd(resolvedWindowEnd);
     unawaited(context.push(AppRoutes.homeStatisticsWeight));
   }
 
-  void _clearStaleHiddenWindow(CalorieWeeklyCheckInViewModel? viewModel) {
+  void _clearStaleHiddenWindow(DiaryWeeklyCheckInData? checkInData) {
     if (_hiddenWindowKey != null &&
-        viewModel?.pendingWeeklyCheckIn?.windowKey != _hiddenWindowKey) {
+        checkInData?.pendingWeeklyCheckIn?.windowKey != _hiddenWindowKey) {
       _hiddenWindowKey = null;
     }
   }
 
-  bool _isHidden(CalorieWeeklyCheckInViewModel? viewModel) {
+  bool _isHidden(DiaryWeeklyCheckInData? checkInData) {
     final hiddenWindowKey = _hiddenWindowKey;
     if (hiddenWindowKey == null) {
       return false;
     }
-    return viewModel?.pendingWeeklyCheckIn?.windowKey == hiddenWindowKey;
-  }
-
-  void _syncAutoOpening() {
-    final viewModel = _visibleViewModel;
-    final next =
-        _state.isLoading ||
-        (viewModel?.pendingWeeklyCheckIn != null &&
-            viewModel?.shouldAutoOpen == true);
-    if (_lastAutoOpening == next) {
-      return;
-    }
-    _lastAutoOpening = next;
-    widget.onAutoOpeningChanged(next);
+    return checkInData?.pendingWeeklyCheckIn?.windowKey == hiddenWindowKey;
   }
 }

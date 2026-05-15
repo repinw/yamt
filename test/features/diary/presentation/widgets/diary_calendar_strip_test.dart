@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:yamt/features/diary/presentation/diary_theme.dart';
+import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -71,8 +71,13 @@ void main() {
     );
 
     final heartDayText = tester.widget<Text>(find.text('28'));
+    final context = tester.element(find.byType(DiaryCalendarStrip));
+    final colors = Theme.of(context).colorScheme;
+    final expectedHeartColor = MetricAccentColors.of(
+      context,
+    ).heartFor(colors.brightness);
 
-    expect(heartDayText.style?.color, DiaryAccentColors.fallback.heart);
+    expect(heartDayText.style?.color, expectedHeartColor);
   });
 }
 

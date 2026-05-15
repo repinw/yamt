@@ -6,9 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -21,7 +23,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 @Dependencies([
   InventoryItemsController,
-  PreparedMealsController,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
@@ -135,19 +138,19 @@ void main() {
 
   test('inventory availability rejects depleted items', () {
     expect(
-      DiaryQuickEatFlow.canEatInventoryItem(
+      canDiaryQuickEatInventoryItem(
         _inventoryItem(id: 'available', name: 'Available'),
       ),
       isTrue,
     );
     expect(
-      DiaryQuickEatFlow.canEatInventoryItem(
+      canDiaryQuickEatInventoryItem(
         _inventoryItem(id: 'depleted', name: 'Depleted', quantity: 0),
       ),
       isFalse,
     );
     expect(
-      DiaryQuickEatFlow.canEatInventoryItem(
+      canDiaryQuickEatInventoryItem(
         _inventoryItem(
           id: 'empty-progress',
           name: 'Empty progress',
@@ -158,7 +161,7 @@ void main() {
       isFalse,
     );
     expect(
-      DiaryQuickEatFlow.canEatInventoryItem(
+      canDiaryQuickEatInventoryItem(
         _inventoryItem(
           id: 'missing-progress-unit',
           name: 'Missing progress unit',
@@ -341,7 +344,8 @@ final _discardedPendingIds = <String>[];
 
 @Dependencies([
   InventoryItemsController,
-  PreparedMealsController,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class _RouteHarness extends StatelessWidget {
@@ -403,7 +407,8 @@ class _RouteHarness extends StatelessWidget {
 
 @Dependencies([
   InventoryItemsController,
-  PreparedMealsController,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class _QuickEatRouteLauncher extends ConsumerWidget {
@@ -526,7 +531,8 @@ Future<void> _pumpDelayedInventoryFlowHarness(
 
 @Dependencies([
   InventoryItemsController,
-  PreparedMealsController,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class _InventoryFlowHarness extends ConsumerWidget {

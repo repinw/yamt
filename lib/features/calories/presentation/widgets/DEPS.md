@@ -5,8 +5,6 @@ Dependencies that create loops (inversions) are marked with `!`.
 
 ```mermaid
 flowchart TD;
-burn_week_overview_card.dart-->calorie_metric_stat_card.dart;
-burn_week_zone_dialog_host.dart-->burn_week_live_overview_dialogs.dart;
 calorie_budget_details_dialog.dart-->calorie_metric_stat_card.dart;
 calorie_entry_details_view-->calories_page_keys.dart;
 calorie_entry_editor_content.dart-->calorie_entry_details_view;

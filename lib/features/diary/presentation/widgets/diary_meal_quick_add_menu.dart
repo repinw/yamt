@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
+import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

@@ -149,3 +149,7 @@ class CalorieWeeklyCheckInViewModel {
         freshness == CalorieLearnedTdeeFreshness.urgent;
   }
 }
+
+/// Data alias for calorie weekly check-in consumers that do not use
+/// controller naming.
+typedef CalorieWeeklyCheckInData = CalorieWeeklyCheckInViewModel;

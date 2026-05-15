@@ -5,6 +5,7 @@ Dependencies that create loops (inversions) are marked with `!`.
 
 ```mermaid
 flowchart TD;
+l10n-->domain;
 router-->constants;
 theme-->preferences;
 widgets-->constants;

@@ -7,7 +7,7 @@ import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions_menu.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
-import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/provider/'

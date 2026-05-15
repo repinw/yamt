@@ -4,22 +4,6 @@ export 'package:yamt/features/calorie_goal/presentation/calorie_goal_calculator_
 
 /// Defines shared calorie feature keys.
 abstract final class CaloriesPageKeys {
-  /// Burn Week mock bar.
-  static const burnWeekMockBar = Key('calories_burn_week_bar');
-
-  /// Burn Week mock info card.
-  static const burnWeekMockInfoCard = Key('calories_burn_week_info_card');
-
-  /// Burn Week mock actual value.
-  static const burnWeekMockActualValue = Key(
-    'calories_burn_week_actual_value',
-  );
-
-  /// Burn Week mock target value.
-  static const burnWeekMockTargetValue = Key(
-    'calories_burn_week_target_value',
-  );
-
   /// Entry image.
   static Key entryImage(String entryId) {
     return Key('calories_entry_image_$entryId');
@@ -38,11 +22,6 @@ abstract final class CaloriesPageKeys {
   /// Summary macro bar.
   static Key summaryMacroBar(String macro) {
     return Key('calories_summary_macro_bar_$macro');
-  }
-
-  /// Burn Week mock quick action.
-  static Key burnWeekMockQuickAction(String delta) {
-    return Key('calories_burn_week_quick_action_$delta');
   }
 }
 

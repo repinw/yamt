@@ -5,11 +5,14 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/application/diary_intro_trigger_provider.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
+    show
+        DiaryWeeklyCheckInData,
+        diaryCalorieGoalSettingsProvider,
+        diaryWeeklyCheckInDataProvider;
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
-import 'package:yamt/features/diary/presentation/diary_intro_trigger_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
@@ -68,7 +71,7 @@ void main() {
   test('returns null while weekly check-in auto-opens', () async {
     final container = _createContainer(
       settings: _calculatorSettings(selectedDay),
-      weeklyCheckIn: _weeklyCheckInViewModel(
+      weeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: selectedDay.subtract(const Duration(days: 7)),
       ),
     );
@@ -83,7 +86,7 @@ ProviderContainer _createContainer({
   AppPreferences? preferences,
   HealthConnectionStatus healthStatus =
       const HealthConnectionStatus.unsupported(),
-  CalorieWeeklyCheckInViewModel? weeklyCheckIn,
+  DiaryWeeklyCheckInData? weeklyCheckIn,
 }) {
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: settings,
@@ -97,8 +100,8 @@ ProviderContainer _createContainer({
       healthConnectionServiceProvider.overrideWithValue(
         FakeHealthConnectionService(healthStatus),
       ),
-      calorieWeeklyCheckInViewModelProvider.overrideWith(
-        (ref) => weeklyCheckIn ?? _emptyWeeklyCheckInViewModel(),
+      diaryWeeklyCheckInDataProvider.overrideWith(
+        (ref) => weeklyCheckIn ?? _emptyWeeklyCheckInCheckInData(),
       ),
     ],
   );
@@ -110,9 +113,9 @@ ProviderContainer _createContainer({
 }
 
 Future<void> _primeIntroDependencies(ProviderContainer container) async {
-  await container.read(calorieGoalControllerProvider.future);
+  await container.read(diaryCalorieGoalSettingsProvider.future);
   await container.read(healthConnectionControllerProvider.future);
-  await container.read(calorieWeeklyCheckInViewModelProvider.future);
+  await container.read(diaryWeeklyCheckInDataProvider.future);
 }
 
 CalorieGoalSettings _calculatorSettings(DateTime effectiveDate) {
@@ -154,8 +157,8 @@ CalorieGoalSettings _learnedTdeeGoalSettings(DateTime effectiveDate) {
   );
 }
 
-CalorieWeeklyCheckInViewModel _emptyWeeklyCheckInViewModel() {
-  return const CalorieWeeklyCheckInViewModel(
+DiaryWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
+  return const DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: null,
     shouldAutoOpen: false,
     days: <CalorieWeeklyCheckInWindowDay>[],
@@ -169,10 +172,10 @@ CalorieWeeklyCheckInViewModel _emptyWeeklyCheckInViewModel() {
   );
 }
 
-CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
+DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
   required DateTime windowStartDate,
 }) {
-  return CalorieWeeklyCheckInViewModel(
+  return DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: windowStartDate,
       windowEndDate: windowStartDate.add(const Duration(days: 6)),

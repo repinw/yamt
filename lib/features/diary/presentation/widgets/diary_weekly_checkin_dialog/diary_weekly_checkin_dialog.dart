@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_actions.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -22,20 +22,20 @@ enum DiaryWeeklyCheckInDialogAction {
 /// Show diary weekly check-in dialog.
 Future<DiaryWeeklyCheckInDialogAction?> showDiaryWeeklyCheckInDialog(
   BuildContext context, {
-  required CalorieWeeklyCheckInViewModel viewModel,
+  required DiaryWeeklyCheckInData checkInData,
 }) {
   return showDialog<DiaryWeeklyCheckInDialogAction>(
     context: context,
     builder: (context) {
-      return _DiaryWeeklyCheckInDialog(viewModel: viewModel);
+      return _DiaryWeeklyCheckInDialog(checkInData: checkInData);
     },
   );
 }
 
 class _DiaryWeeklyCheckInDialog extends StatelessWidget {
-  const _DiaryWeeklyCheckInDialog({required this.viewModel});
+  const _DiaryWeeklyCheckInDialog({required this.checkInData});
 
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +44,9 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
     return AlertDialog(
       key: DiaryWeeklyCheckInDialogKeys.dialog,
       title: Text(l10n.caloriesWeeklyCheckInDialogTitle),
-      content: DiaryWeeklyCheckInDialogContent(viewModel: viewModel),
+      content: DiaryWeeklyCheckInDialogContent(checkInData: checkInData),
       actions: <Widget>[
-        if (_shouldShowOpenTrends(viewModel))
+        if (_shouldShowOpenTrends(checkInData))
           DiaryWeeklyCheckInOpenTrendsAction(
             onPressed: () {
               Navigator.of(
@@ -59,7 +59,7 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
             Navigator.of(context).pop(DiaryWeeklyCheckInDialogAction.later);
           },
         ),
-        if (viewModel.isReady)
+        if (checkInData.isReady)
           DiaryWeeklyCheckInApplyAction(
             onPressed: () {
               Navigator.of(context).pop(DiaryWeeklyCheckInDialogAction.apply);
@@ -69,8 +69,8 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
     );
   }
 
-  bool _shouldShowOpenTrends(CalorieWeeklyCheckInViewModel viewModel) {
-    return switch (viewModel.blockedReason) {
+  bool _shouldShowOpenTrends(DiaryWeeklyCheckInData checkInData) {
+    return switch (checkInData.blockedReason) {
       CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight ||
       CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight ||
       CalorieWeeklyCheckInBlockedReason.unstableWeightData => true,

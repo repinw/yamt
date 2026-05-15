@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/presentation/diary_theme.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_day_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_day_snap_scroll_physics.dart';
@@ -86,7 +86,7 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isDark = colors.brightness == Brightness.dark;
-    final accentColors = DiaryAccentColors.of(context);
+    final accentColors = MetricAccentColors.of(context);
 
     return Container(
       padding: const EdgeInsets.all(6),

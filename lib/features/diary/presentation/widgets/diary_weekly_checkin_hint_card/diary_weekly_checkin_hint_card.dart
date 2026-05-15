@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_hint_card/diary_weekly_checkin_hint_card_body.dart';
 
@@ -7,7 +7,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 class DiaryWeeklyCheckInHintCard extends StatelessWidget {
   /// The diary weekly check-in hint card.
   const DiaryWeeklyCheckInHintCard({
-    required this.viewModel,
+    required this.checkInData,
     required this.selectedDay,
     required this.selectedDayHasEntries,
     required this.onContinue,
@@ -17,7 +17,7 @@ class DiaryWeeklyCheckInHintCard extends StatelessWidget {
   });
 
   /// Weekly check-in view model.
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   /// Selected diary day.
   final DateTime selectedDay;
@@ -37,12 +37,12 @@ class DiaryWeeklyCheckInHintCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!viewModel.showDiaryHint) {
+    if (!checkInData.showDiaryHint) {
       return const SizedBox.shrink();
     }
 
     return DiaryWeeklyCheckInHintCardBody(
-      viewModel: viewModel,
+      checkInData: checkInData,
       selectedDay: selectedDay,
       selectedDayHasEntries: selectedDayHasEntries,
       onContinue: onContinue,

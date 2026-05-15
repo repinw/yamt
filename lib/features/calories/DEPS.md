@@ -11,12 +11,12 @@ application-->provider;
 data-->domain;
 debug-->data;
 debug-->domain;
-debug-->presentation;
 debug-->provider;
 presentation-->application;
 presentation-->data;
 presentation-->domain;
 presentation-->provider;
+provider--!-->application;
 provider--!-->presentation;
 provider-->data;
 provider-->domain;
@@ -24,6 +24,6 @@ provider-->domain;
 
 ### Inversions
 
-In this folder: 1
+In this folder: 2
 
-Including sub-folders: 1
+Including sub-folders: 2

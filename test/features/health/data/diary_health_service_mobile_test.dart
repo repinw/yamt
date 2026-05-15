@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
-import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/health/data/diary_health_service_mobile.dart';
+import 'package:yamt/features/health/domain/diary_activity_summary.dart';
 
 void main() {
   test('loadDayData caches repeated same-day reads', () async {

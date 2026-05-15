@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
+    show DiaryWeeklyCheckInData;
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -15,7 +17,7 @@ void main() {
 
     await tester.pumpWidget(
       _App(
-        viewModel: _viewModel(lowConfidence: true),
+        checkInData: _checkInData(lowConfidence: true),
         onResult: results.add,
       ),
     );
@@ -54,7 +56,7 @@ void main() {
 
     await tester.pumpWidget(
       _App(
-        viewModel: _viewModel(
+        checkInData: _checkInData(
           blockedReason:
               CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
           missingWeightDays: [DateTime(2026, 4)],
@@ -89,11 +91,11 @@ const _openDialogButtonKey = ValueKey<String>('open-dialog');
 
 class _App extends StatelessWidget {
   const _App({
-    required this.viewModel,
+    required this.checkInData,
     required this.onResult,
   });
 
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
   final ValueChanged<DiaryWeeklyCheckInDialogAction?> onResult;
 
   @override
@@ -110,7 +112,7 @@ class _App extends StatelessWidget {
               onPressed: () async {
                 final result = await showDiaryWeeklyCheckInDialog(
                   context,
-                  viewModel: viewModel,
+                  checkInData: checkInData,
                 );
                 onResult(result);
               },
@@ -123,7 +125,7 @@ class _App extends StatelessWidget {
   }
 }
 
-CalorieWeeklyCheckInViewModel _viewModel({
+DiaryWeeklyCheckInData _checkInData({
   CalorieWeeklyCheckInBlockedReason? blockedReason,
   List<DateTime> missingWeightDays = const <DateTime>[],
   bool lowConfidence = false,
@@ -134,7 +136,7 @@ CalorieWeeklyCheckInViewModel _viewModel({
     dueDate: DateTime(2026, 4, 7),
   );
 
-  return CalorieWeeklyCheckInViewModel(
+  return DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: pending,
     shouldAutoOpen: true,
     days: const <CalorieWeeklyCheckInWindowDay>[],

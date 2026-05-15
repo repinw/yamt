@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_hero_image.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Food selected from the diary inventory quick-eat picker.
@@ -219,16 +219,30 @@ class _InventoryFoodImage extends StatelessWidget {
         ),
       ),
     );
+    final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: SizedBox.square(
         dimension: _size,
-        child: InventoryEatFlowHeroImage(
-          imageUrl: imageUrl,
-          imageBytes: imageBytes,
-          fallback: fallback,
-        ),
+        child: imageBytes != null
+            ? Image.memory(
+                imageBytes!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => fallback,
+              )
+            : normalizedImageUrl == null
+            ? fallback
+            : AppCachedNetworkImage(
+                imageUrl: normalizedImageUrl,
+                fit: BoxFit.cover,
+                cacheWidth: (_size * pixelRatio).round(),
+                cacheHeight: (_size * pixelRatio).round(),
+                filterQuality: FilterQuality.low,
+                gaplessPlayback: true,
+                errorBuilder: (_, _, _) => fallback,
+              ),
       ),
     );
   }
