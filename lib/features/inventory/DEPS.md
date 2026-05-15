@@ -7,19 +7,8 @@ Dependencies that create loops (inversions) are marked with `!`.
 flowchart TD;
 application-->data;
 application-->domain;
-application-->provider;
 data-->domain;
 presentation-->application;
 presentation-->data;
 presentation-->domain;
-presentation-->provider;
-provider--!-->application;
-provider-->data;
-provider-->domain;
 ```
-
-### Inversions
-
-In this folder: 1
-
-Including sub-folders: 1

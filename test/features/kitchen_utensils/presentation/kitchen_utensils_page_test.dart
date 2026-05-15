@@ -163,7 +163,9 @@ Widget _buildKitchenHarness({
   );
 }
 
-@Dependencies([preparedMealImagePicker])
+@Dependencies([
+  preparedMealImagePicker,
+])
 Widget _buildCookbookHarness({
   required KitchenUtensilRepository kitchenRepository,
 }) {

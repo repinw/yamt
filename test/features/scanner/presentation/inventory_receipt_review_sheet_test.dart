@@ -18,6 +18,8 @@ import 'package:yamt/features/inventory/domain/'
     'global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
@@ -77,7 +79,7 @@ const _testNutrition = GlobalFoodNutrition(
   per100Kcal: 120,
 );
 
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 Widget _wrap({
   required VoidCallback onCancelTap,
   required Future<void> Function(List<InventoryItem> items) onSaveTap,
@@ -411,7 +413,7 @@ final Uint8List _receiptPreviewPng = Uint8List.fromList(const <int>[
   0x82,
 ]);
 
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 void main() {
   testWidgets('price overview shows total, savable and excluded sums', (
     tester,

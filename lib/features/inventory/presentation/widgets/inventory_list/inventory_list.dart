@@ -23,6 +23,9 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -51,7 +54,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'prepared_meal_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -60,6 +62,7 @@ enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
 /// Defines inventory list.
 @Dependencies([
+  inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,

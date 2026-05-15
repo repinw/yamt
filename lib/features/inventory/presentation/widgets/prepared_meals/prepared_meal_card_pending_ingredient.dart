@@ -1,7 +1,18 @@
-part of 'prepared_meal_card.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-class _PreparedMealPendingIngredientRow extends StatelessWidget {
-  const _PreparedMealPendingIngredientRow({
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
+import 'package:yamt/features/inventory/application/'
+    'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class PreparedMealPendingIngredientRow extends StatelessWidget {
+  const PreparedMealPendingIngredientRow({
     required this.ingredient,
     required this.suggestions,
     this.onAssignPressed,
@@ -108,7 +119,7 @@ class _PendingIngredientPreview extends StatelessWidget {
   }
 }
 
-Future<List<String>?> _showPendingIngredientSelectionSheet({
+Future<List<String>?> showPendingIngredientSelectionSheet({
   required BuildContext context,
   required String ingredient,
   required List<InventoryItem> inventoryItems,

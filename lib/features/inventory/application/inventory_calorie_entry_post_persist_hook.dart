@@ -1,42 +1,42 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
-import 'package:yamt/features/inventory/application/'
+import 'package:yamt/features/inventory/data/'
     'global_food_serving_suggestion_repository.dart';
 
-/// The inventory calorie entry post persist hook provider.
-final inventoryCalorieEntryPostPersistHookProvider =
-    Provider<CalorieEntryPostPersistHook>((ref) {
-      final repository = ref.read(
-        globalFoodServingSuggestionRepositoryProvider,
-      );
+part 'inventory_calorie_entry_post_persist_hook.g.dart';
 
-      return ({
-        required CalorieEntry entry,
-        CalorieInventoryCreateContext? inventoryContext,
-        CalorieScannedSourceRef? scannedSourceRef,
-      }) async {
-        if (inventoryContext == null || entry.consumedAmount <= 0) {
-          return;
-        }
-        final learnedServing = _resolveLearnedServing(
-          entry: entry,
-          inventoryContext: inventoryContext,
-        );
-        await repository.recordSelection(
-          foodFingerprint: inventoryContext.foodFingerprint,
-          globalFoodItemId: inventoryContext.globalFoodItemId,
-          amount: learnedServing.amount,
-          unit: learnedServing.unit,
-          label: learnedServing.label,
-          selectedAt: entry.updatedAt,
-        );
-      };
-    });
+/// The inventory calorie entry post persist hook provider.
+@riverpod
+CalorieEntryPostPersistHook inventoryCalorieEntryPostPersistHook(Ref ref) {
+  final repository = ref.read(globalFoodServingSuggestionRepositoryProvider);
+
+  return ({
+    required CalorieEntry entry,
+    CalorieInventoryCreateContext? inventoryContext,
+    CalorieScannedSourceRef? scannedSourceRef,
+  }) async {
+    if (inventoryContext == null || entry.consumedAmount <= 0) {
+      return;
+    }
+    final learnedServing = _resolveLearnedServing(
+      entry: entry,
+      inventoryContext: inventoryContext,
+    );
+    await repository.recordSelection(
+      foodFingerprint: inventoryContext.foodFingerprint,
+      globalFoodItemId: inventoryContext.globalFoodItemId,
+      amount: learnedServing.amount,
+      unit: learnedServing.unit,
+      label: learnedServing.label,
+      selectedAt: entry.updatedAt,
+    );
+  };
+}
 
 ({double amount, ConsumedUnit unit, String? label}) _resolveLearnedServing({
   required CalorieEntry entry,

@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
 const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';

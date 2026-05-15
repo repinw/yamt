@@ -1,21 +1,15 @@
+// Internal split file. Relative import avoids stale part-file analysis state.
+// ignore_for_file: always_use_package_imports
+
 import 'dart:developer' show log;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_amount_card.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_hero.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_quick_chip.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_quick_chip_scroller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_sheet_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
@@ -24,12 +18,10 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-part 'prepared_meal_eat_sheet_widgets.dart';
+import 'prepared_meal_eat_sheet_widgets.dart';
 
 const _defaultPreparedMealPortions = 1.0;
 const _preparedMealDialogsLogName = 'PreparedMealDialogs';
-
-enum _PreparedMealEatAmountMode { portions, grams }
 
 /// Defines prepared meal day picker typedef.
 typedef PreparedMealDayPicker =
@@ -126,8 +118,8 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
   late final FocusNode _portionsFocusNode = FocusNode();
   late DateTime _selectedLoggedAt;
   late MealType _selectedMealType;
-  _PreparedMealEatAmountMode _selectedAmountMode =
-      _PreparedMealEatAmountMode.portions;
+  PreparedMealEatAmountMode _selectedAmountMode =
+      PreparedMealEatAmountMode.portions;
   bool _hasInitializedPortionsText = false;
   String? _portionsErrorText;
 
@@ -177,7 +169,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
 
     return InventoryEatFlowSheetScaffold(
       viewInsetsBottom: MediaQuery.viewInsetsOf(context).bottom,
-      hero: _PreparedMealEatHero(
+      hero: PreparedMealEatHero(
         meal: widget.meal,
         imageBytes: widget.imageBytes,
       ),
@@ -194,7 +186,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
           ),
           const SizedBox(height: AppSpacing.xxl),
         ],
-        _PreparedMealEatPortionsSection(
+        PreparedMealEatPortionsSection(
           controller: _portionsController,
           focusNode: _portionsFocusNode,
           errorText: _portionsErrorText,
@@ -263,18 +255,18 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     ];
   }
 
-  List<_PreparedMealQuickOption> _buildQuickOptions(AppLocalizations l10n) {
+  List<PreparedMealQuickOption> _buildQuickOptions(AppLocalizations l10n) {
     return switch (_selectedAmountMode) {
-      _PreparedMealEatAmountMode.portions => _buildPortionQuickOptions(l10n),
-      _PreparedMealEatAmountMode.grams => _buildGramQuickOptions(l10n),
+      PreparedMealEatAmountMode.portions => _buildPortionQuickOptions(l10n),
+      PreparedMealEatAmountMode.grams => _buildGramQuickOptions(l10n),
     };
   }
 
-  List<_PreparedMealQuickOption> _buildPortionQuickOptions(
+  List<PreparedMealQuickOption> _buildPortionQuickOptions(
     AppLocalizations l10n,
   ) {
     final values = <num>{};
-    final options = <_PreparedMealQuickOption>[];
+    final options = <PreparedMealQuickOption>[];
 
     void addOption(num value, String label) {
       if (value <= 0 || value > widget.meal.remainingPortions) {
@@ -283,7 +275,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       if (!values.add(value)) {
         return;
       }
-      options.add(_PreparedMealQuickOption(label: label, value: value));
+      options.add(PreparedMealQuickOption(label: label, value: value));
     }
 
     addOption(
@@ -296,13 +288,13 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     return options;
   }
 
-  List<_PreparedMealQuickOption> _buildGramQuickOptions(AppLocalizations l10n) {
+  List<PreparedMealQuickOption> _buildGramQuickOptions(AppLocalizations l10n) {
     final remainingGrams = _remainingGramAmount(widget.meal);
     if (remainingGrams == null || remainingGrams <= 0) {
-      return const <_PreparedMealQuickOption>[];
+      return const <PreparedMealQuickOption>[];
     }
     final values = <num>{};
-    final options = <_PreparedMealQuickOption>[];
+    final options = <PreparedMealQuickOption>[];
 
     void addOption(num value, String label) {
       if (value <= 0 || value > remainingGrams) {
@@ -311,7 +303,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       if (!values.add(value)) {
         return;
       }
-      options.add(_PreparedMealQuickOption(label: label, value: value));
+      options.add(PreparedMealQuickOption(label: label, value: value));
     }
 
     addOption(remainingGrams, l10n.inventoryItemEatSheetAllAction);
@@ -331,13 +323,13 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       return null;
     }
     return switch (_selectedAmountMode) {
-      _PreparedMealEatAmountMode.portions => amount,
-      _PreparedMealEatAmountMode.grams => _gramsToPortions(amount),
+      PreparedMealEatAmountMode.portions => amount,
+      PreparedMealEatAmountMode.grams => _gramsToPortions(amount),
     };
   }
 
   String _remainingAmountLabel(AppLocalizations l10n) {
-    if (_selectedAmountMode == _PreparedMealEatAmountMode.grams) {
+    if (_selectedAmountMode == PreparedMealEatAmountMode.grams) {
       final remainingGrams = _remainingGramAmount(widget.meal) ?? 0;
       final totalGrams = widget.meal.finalNetWeight ?? 0;
       return '${_formatGrams(remainingGrams)} / ${_formatGrams(totalGrams)}';
@@ -348,7 +340,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     );
   }
 
-  void _updateAmountMode(_PreparedMealEatAmountMode mode) {
+  void _updateAmountMode(PreparedMealEatAmountMode mode) {
     if (mode == _selectedAmountMode) {
       return;
     }
@@ -356,10 +348,10 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     final nextAmount = currentAmount == null
         ? null
         : switch (mode) {
-            _PreparedMealEatAmountMode.portions => _gramsToPortions(
+            PreparedMealEatAmountMode.portions => _gramsToPortions(
               currentAmount,
             ),
-            _PreparedMealEatAmountMode.grams => _portionsToGrams(
+            PreparedMealEatAmountMode.grams => _portionsToGrams(
               currentAmount,
             ),
           };
@@ -450,8 +442,8 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     final portions = amount == null
         ? null
         : switch (_selectedAmountMode) {
-            _PreparedMealEatAmountMode.portions => amount,
-            _PreparedMealEatAmountMode.grams => _gramsToPortions(amount),
+            PreparedMealEatAmountMode.portions => amount,
+            PreparedMealEatAmountMode.grams => _gramsToPortions(amount),
           };
     if (amount == null ||
         !_isAmountInRange(amount) ||
@@ -483,9 +475,9 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       return false;
     }
     return switch (_selectedAmountMode) {
-      _PreparedMealEatAmountMode.portions =>
+      PreparedMealEatAmountMode.portions =>
         amount <= widget.meal.remainingPortions,
-      _PreparedMealEatAmountMode.grams =>
+      PreparedMealEatAmountMode.grams =>
         amount <= (_remainingGramAmount(widget.meal) ?? 0),
     };
   }
@@ -512,11 +504,11 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
 
   String _formatModeAmount(num amount) {
     return switch (_selectedAmountMode) {
-      _PreparedMealEatAmountMode.portions => _formatPortions(
+      PreparedMealEatAmountMode.portions => _formatPortions(
         amount,
         AppLocalizations.of(context)!,
       ),
-      _PreparedMealEatAmountMode.grams => formatInventoryAmountValue(
+      PreparedMealEatAmountMode.grams => formatInventoryAmountValue(
         amount: amount.round(),
         unit: InventoryAmountUnit.gram,
       ),

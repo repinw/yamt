@@ -16,7 +16,7 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_intro_portion_scaler.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/provider/'
+import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

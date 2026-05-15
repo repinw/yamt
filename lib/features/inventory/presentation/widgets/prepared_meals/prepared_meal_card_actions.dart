@@ -1,28 +1,93 @@
-part of 'prepared_meal_card.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs
+
+import 'dart:async';
+import 'dart:developer' show log;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
+import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_discard_reason_dialog.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_action_dialogs.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_card_pending_ingredient.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_edit_sheet.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+const preparedMealCardLogName = 'PreparedMealCard';
 
 @Dependencies([InventoryItemsController, preparedMealImagePicker])
-mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
+mixin PreparedMealCardActions<T extends ConsumerStatefulWidget>
+    on ConsumerState<T> {
   bool get expandedState;
   set expandedState(bool value);
 
   bool get workingState;
   set workingState(bool value);
 
-  void _toggleExpanded() {
+  PreparedMeal get actionMeal;
+
+  Future<bool> Function({
+    required String mealId,
+    required num portions,
+    required MealType mealType,
+    required DateTime loggedDay,
+  })
+  get eatPressedAction;
+
+  Future<bool> Function(
+    String mealId,
+    num portions,
+    InventoryDiscardReason reason,
+  )
+  get throwAwayPressedAction;
+
+  Future<bool> Function(
+    String mealId,
+    String ingredient,
+    List<String> inventoryItemIds,
+  )?
+  get fillPendingIngredientPressedAction;
+
+  Future<bool> Function(String mealId, String ingredient)?
+  get ignorePendingIngredientPressedAction;
+
+  Future<bool> Function(String mealId, PreparedMealEditSheetResult result)
+  get editPressedAction;
+
+  Future<bool> Function(String mealId, PreparedMealEditSheetResult result)?
+  get selectEditIngredientsPressedAction;
+
+  Future<bool> Function(String mealId) get unbundlePressedAction;
+
+  Future<bool> Function(PreparedMeal meal) get saveTemplatePressedAction;
+
+  void toggleExpanded() {
     setState(() {
       expandedState = !expandedState;
     });
   }
 
-  void _onEatPressed() {
+  void handleEatPressed() {
     unawaited(_runEatFlow());
   }
 
-  void _onThrowAwayPressed() {
+  void handleThrowAwayPressed() {
     unawaited(_runThrowAwayFlow());
   }
 
-  void _onFillPendingIngredient({
+  void handleFillPendingIngredient({
     required String ingredient,
     required List<InventoryItem> inventoryItems,
   }) {
@@ -34,27 +99,27 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     );
   }
 
-  void _onIgnorePendingIngredient(String ingredient) {
+  void handleIgnorePendingIngredient(String ingredient) {
     unawaited(_runIgnorePendingIngredientFlow(ingredient: ingredient));
   }
 
-  void _onEditPressed() {
+  void handleEditPressed() {
     unawaited(_runEditFlow());
   }
 
-  void _onUnbundlePressed() {
+  void handleUnbundlePressed() {
     unawaited(
       _runAction(
-        () => widget.onUnbundlePressed(widget.meal.id),
+        () => unbundlePressedAction(actionMeal.id),
         failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
       ),
     );
   }
 
-  void _onSaveTemplatePressed() {
+  void handleSaveTemplatePressed() {
     unawaited(
       _runAction(
-        () => widget.onSaveTemplatePressed(widget.meal),
+        () => saveTemplatePressedAction(actionMeal),
         failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
       ),
     );
@@ -62,13 +127,13 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
 
   Future<void> _runEatFlow() async {
     final l10n = AppLocalizations.of(context)!;
-    final imageRef = maybeLocalImageAssetRef(widget.meal.imageAssetId);
+    final imageRef = maybeLocalImageAssetRef(actionMeal.imageAssetId);
     final imageBytes = imageRef == null
         ? null
         : ref.read(localImageBytesProvider(imageRef)).asData?.value;
     final result = await showPreparedMealEatDialog(
       context,
-      widget.meal,
+      actionMeal,
       imageBytes: imageBytes,
     );
     if (!mounted || result == null) {
@@ -76,8 +141,8 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     }
 
     await _runAction(
-      () => widget.onEatPressed(
-        mealId: widget.meal.id,
+      () => eatPressedAction(
+        mealId: actionMeal.id,
         portions: result.portions,
         mealType: result.mealType,
         loggedDay: result.loggedDay,
@@ -92,7 +157,7 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
         const <InventoryItem>[];
     final result = await showPreparedMealEditSheet(
       context: context,
-      meal: widget.meal,
+      meal: actionMeal,
       inventoryItems: inventoryItems,
     );
     if (!mounted || result == null) {
@@ -100,41 +165,40 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     }
 
     if (result.requestIngredientSelection) {
-      final onSelectEditIngredientsPressed =
-          widget.onSelectEditIngredientsPressed;
+      final onSelectEditIngredientsPressed = selectEditIngredientsPressedAction;
       if (onSelectEditIngredientsPressed == null) {
         return;
       }
       await _runAction(
-        () => onSelectEditIngredientsPressed(widget.meal.id, result),
+        () => onSelectEditIngredientsPressed(actionMeal.id, result),
         failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
       );
       return;
     }
 
     await _runAction(
-      () => widget.onEditPressed(widget.meal.id, result),
+      () => editPressedAction(actionMeal.id, result),
       failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
     );
   }
 
   Future<void> _runThrowAwayFlow() async {
     log(
-      '_runThrowAwayFlow(): opening reason dialog for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
+      '_runThrowAwayFlow(): opening reason dialog for ${actionMeal.id}',
+      name: preparedMealCardLogName,
     );
     final reason = await showInventoryDiscardReasonDialog(context);
     if (!mounted || reason == null) {
       log(
-        '_runThrowAwayFlow(): reason dialog cancelled for ${widget.meal.id}',
-        name: _preparedMealCardLogName,
+        '_runThrowAwayFlow(): reason dialog cancelled for ${actionMeal.id}',
+        name: preparedMealCardLogName,
       );
       return;
     }
     log(
       '_runThrowAwayFlow(): confirmed reason=${reason.name} '
-      'for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
+      'for ${actionMeal.id}',
+      name: preparedMealCardLogName,
     );
 
     await Future<void>.delayed(Duration.zero);
@@ -144,28 +208,28 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     }
 
     log(
-      '_runThrowAwayFlow(): opening portion dialog for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
+      '_runThrowAwayFlow(): opening portion dialog for ${actionMeal.id}',
+      name: preparedMealCardLogName,
     );
     final portions = await showPreparedMealPortionDialog(
       context: context,
-      meal: widget.meal,
+      meal: actionMeal,
       title: AppLocalizations.of(context)!.preparedMealThrowAwayTitle,
     );
     if (!mounted || portions == null) {
       log(
-        '_runThrowAwayFlow(): portion dialog cancelled for ${widget.meal.id}',
-        name: _preparedMealCardLogName,
+        '_runThrowAwayFlow(): portion dialog cancelled for ${actionMeal.id}',
+        name: preparedMealCardLogName,
       );
       return;
     }
     log(
-      '_runThrowAwayFlow(): confirmed portions=$portions for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
+      '_runThrowAwayFlow(): confirmed portions=$portions for ${actionMeal.id}',
+      name: preparedMealCardLogName,
     );
 
     await _runAction(
-      () => widget.onThrowAwayPressed(widget.meal.id, portions, reason),
+      () => throwAwayPressedAction(actionMeal.id, portions, reason),
       failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
     );
   }
@@ -174,11 +238,11 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     required String ingredient,
     required List<InventoryItem> inventoryItems,
   }) async {
-    if (widget.onFillPendingIngredientPressed == null) {
+    if (fillPendingIngredientPressedAction == null) {
       return;
     }
 
-    final selectedItemIds = await _showPendingIngredientSelectionSheet(
+    final selectedItemIds = await showPendingIngredientSelectionSheet(
       context: context,
       ingredient: ingredient,
       inventoryItems: inventoryItems,
@@ -188,8 +252,8 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     }
 
     await _runAction(
-      () => widget.onFillPendingIngredientPressed!(
-        widget.meal.id,
+      () => fillPendingIngredientPressedAction!(
+        actionMeal.id,
         ingredient,
         selectedItemIds,
       ),
@@ -202,13 +266,12 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
   Future<void> _runIgnorePendingIngredientFlow({
     required String ingredient,
   }) async {
-    if (widget.onIgnorePendingIngredientPressed == null) {
+    if (ignorePendingIngredientPressedAction == null) {
       return;
     }
 
     await _runAction(
-      () =>
-          widget.onIgnorePendingIngredientPressed!(widget.meal.id, ingredient),
+      () => ignorePendingIngredientPressedAction!(actionMeal.id, ingredient),
       failureMessage: AppLocalizations.of(
         context,
       )!.preparedMealPendingIngredientIgnoreFailed,

@@ -1,7 +1,20 @@
-part of 'inventory_item_eat_sheet.dart';
+// Internal split file. Relative import avoids stale part-file analysis state.
+// ignore_for_file: always_use_package_imports
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-class _InventoryItemEatManualPortionSection extends StatelessWidget {
-  const _InventoryItemEatManualPortionSection({
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_leading_icon.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+import 'inventory_item_eat_sheet_display.dart';
+
+class InventoryItemEatManualPortionSection extends StatelessWidget {
+  const InventoryItemEatManualPortionSection({
     required this.amountController,
     required this.amountFocusNode,
     required this.amountErrorText,
@@ -73,8 +86,8 @@ class _InventoryItemEatManualPortionSection extends StatelessWidget {
   }
 }
 
-class _InventoryItemEatInedibleAmountSection extends StatelessWidget {
-  const _InventoryItemEatInedibleAmountSection({
+class InventoryItemEatInedibleAmountSection extends StatelessWidget {
+  const InventoryItemEatInedibleAmountSection({
     required this.amountController,
     required this.amountFocusNode,
     required this.amountErrorText,
@@ -101,7 +114,7 @@ class _InventoryItemEatInedibleAmountSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
 
-    return _InventoryItemEatSectionCard(
+    return InventoryItemEatSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -123,7 +136,7 @@ class _InventoryItemEatInedibleAmountSection extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _InventoryItemEatCardTitle(
+                          InventoryItemEatCardTitle(
                             text: l10n.inventoryItemEatSheetInedibleAmountLabel,
                           ),
                           const SizedBox(height: AppSpacing.xs),

@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:yamt/features/inventory/data/firestore_global_food_receipt_alias_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
@@ -11,12 +11,14 @@ export 'firestore_global_food_receipt_alias_repository.dart';
 export 'global_food_receipt_alias_repository_contract.dart';
 export 'global_food_receipt_alias_store.dart';
 
+part 'global_food_receipt_alias_repository.g.dart';
+
 /// The global food receipt alias repository provider.
-final globalFoodReceiptAliasRepositoryProvider =
-    Provider<GlobalFoodReceiptAliasRepository>((ref) {
-      final store = _resolveStore();
-      return FirestoreGlobalFoodReceiptAliasRepository(store: store);
-    });
+@Riverpod(keepAlive: true)
+GlobalFoodReceiptAliasRepository globalFoodReceiptAliasRepository(Ref ref) {
+  final store = _resolveStore();
+  return FirestoreGlobalFoodReceiptAliasRepository(store: store);
+}
 
 GlobalFoodReceiptAliasStore _resolveStore() {
   try {

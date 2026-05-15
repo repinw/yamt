@@ -1,7 +1,13 @@
-part of 'inventory_item_eat_sheet.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs
 
-class _InventoryItemEatSheetViewData {
-  const _InventoryItemEatSheetViewData({
+import 'package:flutter/material.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
+
+class InventoryItemEatSheetViewData {
+  const InventoryItemEatSheetViewData({
     required this.viewInsetsBottom,
     required this.hero,
     required this.amountSection,
@@ -13,17 +19,17 @@ class _InventoryItemEatSheetViewData {
   });
 
   final double viewInsetsBottom;
-  final _InventoryItemEatSheetHeroData hero;
-  final _InventoryItemEatSheetAmountSectionData amountSection;
-  final _InventoryItemEatSheetManualPortionSectionData? manualPortionSection;
+  final InventoryItemEatSheetHeroData hero;
+  final InventoryItemEatSheetAmountSectionData amountSection;
+  final InventoryItemEatSheetManualPortionSectionData? manualPortionSection;
   final List<({String label, String value})> nutritionMetrics;
-  final _InventoryItemEatSheetWhenSectionData whenSection;
-  final _InventoryItemEatSheetInedibleSectionData? inedibleSection;
-  final _InventoryItemEatSheetFooterData footer;
+  final InventoryItemEatSheetWhenSectionData whenSection;
+  final InventoryItemEatSheetInedibleSectionData? inedibleSection;
+  final InventoryItemEatSheetFooterData footer;
 }
 
-class _InventoryItemEatSheetHeroData {
-  const _InventoryItemEatSheetHeroData({
+class InventoryItemEatSheetHeroData {
+  const InventoryItemEatSheetHeroData({
     required this.itemName,
     required this.imageUrl,
     required this.eyebrow,
@@ -34,8 +40,8 @@ class _InventoryItemEatSheetHeroData {
   final String eyebrow;
 }
 
-class _InventoryItemEatSheetAmountSectionData {
-  const _InventoryItemEatSheetAmountSectionData({
+class InventoryItemEatSheetAmountSectionData {
+  const InventoryItemEatSheetAmountSectionData({
     required this.clearTooltip,
     required this.controller,
     required this.focusNode,
@@ -56,7 +62,7 @@ class _InventoryItemEatSheetAmountSectionData {
   final String clearTooltip;
   final TextEditingController controller;
   final FocusNode focusNode;
-  final List<_InventoryItemEatAmountModeOption> modeOptions;
+  final List<InventoryItemEatAmountModeOption> modeOptions;
   final String selectedModeId;
   final String? totalLabel;
   final String? errorText;
@@ -70,8 +76,8 @@ class _InventoryItemEatSheetAmountSectionData {
   final ValueChanged<String> onModeSelected;
 }
 
-class _InventoryItemEatAmountModeOption {
-  const _InventoryItemEatAmountModeOption({
+class InventoryItemEatAmountModeOption {
+  const InventoryItemEatAmountModeOption({
     required this.id,
     required this.label,
     this.amount,
@@ -92,8 +98,8 @@ class _InventoryItemEatAmountModeOption {
   }
 }
 
-class _InventoryItemEatSheetManualPortionSectionData {
-  const _InventoryItemEatSheetManualPortionSectionData({
+class InventoryItemEatSheetManualPortionSectionData {
+  const InventoryItemEatSheetManualPortionSectionData({
     required this.title,
     required this.controller,
     required this.focusNode,
@@ -119,8 +125,8 @@ class _InventoryItemEatSheetManualPortionSectionData {
   onSuggestionPressed;
 }
 
-class _InventoryItemEatSheetWhenSectionData {
-  const _InventoryItemEatSheetWhenSectionData({
+class InventoryItemEatSheetWhenSectionData {
+  const InventoryItemEatSheetWhenSectionData({
     required this.isToday,
     required this.label,
     required this.selectedMealType,
@@ -135,8 +141,8 @@ class _InventoryItemEatSheetWhenSectionData {
   final ValueChanged<MealType> onMealTypeSelected;
 }
 
-class _InventoryItemEatSheetInedibleSectionData {
-  const _InventoryItemEatSheetInedibleSectionData({
+class InventoryItemEatSheetInedibleSectionData {
+  const InventoryItemEatSheetInedibleSectionData({
     required this.controller,
     required this.focusNode,
     required this.errorText,
@@ -159,8 +165,8 @@ class _InventoryItemEatSheetInedibleSectionData {
   final VoidCallback onToggleExpanded;
 }
 
-class _InventoryItemEatSheetFooterData {
-  const _InventoryItemEatSheetFooterData({
+class InventoryItemEatSheetFooterData {
+  const InventoryItemEatSheetFooterData({
     required this.confirmActionText,
     required this.onConfirm,
   });

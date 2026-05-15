@@ -7,6 +7,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
@@ -29,7 +31,7 @@ InventoryItem _item({
   );
 }
 
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 Widget _buildHarness({required InventoryReceiptReviewPageArgs args}) {
   final router = GoRouter(
     routes: <RouteBase>[
@@ -97,7 +99,7 @@ class _ReviewLauncherState extends State<_ReviewLauncher> {
   }
 }
 
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 void main() {
   testWidgets('system back closes review page with false result', (
     tester,

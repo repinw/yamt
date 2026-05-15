@@ -35,7 +35,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
 
 /// Launcher surface for manual product search entry points.
-@Dependencies([inventoryItemRepository])
+@Dependencies([
+  inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
+])
 class InventoryReceiptManualProductLauncherPage extends ConsumerStatefulWidget {
   /// Creates a manual product launcher page.
   const InventoryReceiptManualProductLauncherPage({

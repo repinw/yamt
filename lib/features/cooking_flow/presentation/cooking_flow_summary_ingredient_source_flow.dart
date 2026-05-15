@@ -13,8 +13,8 @@ import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_summary_page.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
 /// Resolves an add-ingredient source into a summary ingredient draft.
 @Dependencies([InventoryItemsController])

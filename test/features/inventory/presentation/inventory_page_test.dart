@@ -33,13 +33,15 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -381,6 +383,7 @@ ShoppingListItem _shoppingItem(
 
 @Dependencies([
   inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,
@@ -454,6 +457,7 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
 
 @Dependencies([
   inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,

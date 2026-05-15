@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
@@ -32,6 +33,9 @@ import 'package:yamt/features/product_search/provider/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Full manual product editor for search, product details, and nutrition input.
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+])
 class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   /// Creates a manual product editor page.
   const InventoryReceiptManualProductEditorPage({

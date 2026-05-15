@@ -13,6 +13,9 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -21,7 +24,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -74,7 +76,11 @@ InventoryReceiptGroup _group() {
   ]);
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  inventoryItemRepository,
+  InventoryItemsController,
+])
 Widget _buildHarness({
   required ThemeData theme,
   required InventoryReceiptGroup group,
@@ -141,7 +147,11 @@ Widget _buildHarness({
   );
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  inventoryItemRepository,
+  InventoryItemsController,
+])
 Future<void> _pump(WidgetTester tester, {required ThemeData theme}) async {
   await tester.pumpWidget(_buildHarness(theme: theme, group: _group()));
   await tester.pumpAndSettle();
@@ -152,7 +162,11 @@ Future<void> _toggleExpansion(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  inventoryItemRepository,
+  InventoryItemsController,
+])
 void main() {
   final lightTheme = AppTheme.light(seedColor: AppColors.seed);
   final darkTheme = AppTheme.dark(seedColor: AppColors.seed);

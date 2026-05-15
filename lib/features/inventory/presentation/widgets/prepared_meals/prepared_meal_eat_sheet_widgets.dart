@@ -1,14 +1,33 @@
-part of 'prepared_meal_action_dialogs.dart';
+// Internal split file. Public names are imported only by sibling widgets.
+// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-class _PreparedMealQuickOption {
-  const _PreparedMealQuickOption({required this.label, required this.value});
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_dropdown_button.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_amount_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_hero.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_quick_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_quick_chip_scroller.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+enum PreparedMealEatAmountMode { portions, grams }
+
+class PreparedMealQuickOption {
+  const PreparedMealQuickOption({required this.label, required this.value});
 
   final String label;
   final num value;
 }
 
-class _PreparedMealEatHero extends StatelessWidget {
-  const _PreparedMealEatHero({required this.meal, required this.imageBytes});
+class PreparedMealEatHero extends StatelessWidget {
+  const PreparedMealEatHero({required this.meal, required this.imageBytes});
 
   final PreparedMeal meal;
   final Uint8List? imageBytes;
@@ -24,13 +43,13 @@ class _PreparedMealEatHero extends StatelessWidget {
       imageBytes: imageBytes,
       imageKey: const Key('prepared_meal_eat_sheet_hero_cover'),
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
-      fallback: _PreparedMealEatHeroFallback(label: meal.name),
+      fallback: PreparedMealEatHeroFallback(label: meal.name),
     );
   }
 }
 
-class _PreparedMealEatHeroFallback extends StatelessWidget {
-  const _PreparedMealEatHeroFallback({required this.label});
+class PreparedMealEatHeroFallback extends StatelessWidget {
+  const PreparedMealEatHeroFallback({required this.label});
 
   final String label;
 
@@ -55,8 +74,8 @@ class _PreparedMealEatHeroFallback extends StatelessWidget {
   }
 }
 
-class _PreparedMealEatPortionsSection extends StatelessWidget {
-  const _PreparedMealEatPortionsSection({
+class PreparedMealEatPortionsSection extends StatelessWidget {
+  const PreparedMealEatPortionsSection({
     required this.controller,
     required this.focusNode,
     required this.errorText,
@@ -76,13 +95,13 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final String? errorText;
-  final _PreparedMealEatAmountMode amountMode;
+  final PreparedMealEatAmountMode amountMode;
   final bool canUseGrams;
   final num? selectedAmount;
-  final List<_PreparedMealQuickOption> quickOptions;
+  final List<PreparedMealQuickOption> quickOptions;
   final String remainingLabel;
   final String clearTooltip;
-  final ValueChanged<_PreparedMealEatAmountMode>? onAmountModeChanged;
+  final ValueChanged<PreparedMealEatAmountMode>? onAmountModeChanged;
   final ValueChanged<String> onChanged;
   final VoidCallback onClearAndFocus;
   final VoidCallback onSubmitted;
@@ -103,7 +122,7 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
           clearTooltip: clearTooltip,
           fieldKey: const Key('prepared_meal_portions_field'),
           clearButtonKey: const Key('prepared_meal_portions_clear_button'),
-          trailing: _PreparedMealEatAmountModeSelector(
+          trailing: PreparedMealEatAmountModeSelector(
             amountMode: amountMode,
             canUseGrams: canUseGrams,
             onChanged: onAmountModeChanged,
@@ -142,28 +161,28 @@ class _PreparedMealEatPortionsSection extends StatelessWidget {
   }
 }
 
-class _PreparedMealEatAmountModeSelector extends StatelessWidget {
-  const _PreparedMealEatAmountModeSelector({
+class PreparedMealEatAmountModeSelector extends StatelessWidget {
+  const PreparedMealEatAmountModeSelector({
     required this.amountMode,
     required this.canUseGrams,
     required this.onChanged,
   });
 
-  final _PreparedMealEatAmountMode amountMode;
+  final PreparedMealEatAmountMode amountMode;
   final bool canUseGrams;
-  final ValueChanged<_PreparedMealEatAmountMode>? onChanged;
+  final ValueChanged<PreparedMealEatAmountMode>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final options = [
-      _PreparedMealEatAmountMode.portions,
-      if (canUseGrams) _PreparedMealEatAmountMode.grams,
+      PreparedMealEatAmountMode.portions,
+      if (canUseGrams) PreparedMealEatAmountMode.grams,
     ];
 
     return DropdownButtonHideUnderline(
-      child: AppDropdownButton<_PreparedMealEatAmountMode>(
+      child: AppDropdownButton<PreparedMealEatAmountMode>(
         key: const Key('prepared_meal_amount_mode_dropdown'),
         value: amountMode,
         isExpanded: true,
@@ -176,7 +195,7 @@ class _PreparedMealEatAmountModeSelector extends StatelessWidget {
         ),
         items: [
           for (final option in options)
-            DropdownMenuItem<_PreparedMealEatAmountMode>(
+            DropdownMenuItem<PreparedMealEatAmountMode>(
               value: option,
               child: Text(
                 _labelForMode(option, l10n),
@@ -195,13 +214,12 @@ class _PreparedMealEatAmountModeSelector extends StatelessWidget {
   }
 
   String _labelForMode(
-    _PreparedMealEatAmountMode mode,
+    PreparedMealEatAmountMode mode,
     AppLocalizations l10n,
   ) {
     return switch (mode) {
-      _PreparedMealEatAmountMode.portions =>
-        l10n.preparedMealPortionsToUseLabel,
-      _PreparedMealEatAmountMode.grams => l10n.inventoryItemEatSheetUnitGram,
+      PreparedMealEatAmountMode.portions => l10n.preparedMealPortionsToUseLabel,
+      PreparedMealEatAmountMode.grams => l10n.inventoryItemEatSheetUnitGram,
     };
   }
 }

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
@@ -28,7 +30,7 @@ class InventoryReceiptReviewPageArgs {
 }
 
 /// Full-screen page for reviewing scanned receipt items before saving them.
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 class InventoryReceiptReviewPage extends StatefulWidget {
   /// The inventory receipt review page.
   const InventoryReceiptReviewPage({required this.args, super.key});

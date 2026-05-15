@@ -13,6 +13,8 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
@@ -35,6 +37,7 @@ import 'package:yamt/features/product_search/provider/'
     'manual_product_search_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+@Dependencies([inventoryManualAddQuickEatConfig])
 Widget _wrapPage({
   required InventoryItem item,
   OffProductSearchResult? selectedProduct,
@@ -87,6 +90,7 @@ Widget _wrapPage({
   );
 }
 
+@Dependencies([inventoryManualAddQuickEatConfig])
 Widget _wrapEditorPage({
   required InventoryItem item,
   InventoryItem? initialRecentItem,
@@ -417,7 +421,7 @@ FormBuilderDropdown<T> _manualFormDropdown<T>(
   return tester.widget<FormBuilderDropdown<T>>(find.byKey(key));
 }
 
-@Dependencies([inventoryItemRepository])
+@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 void main() {
   testWidgets('editor shows the initial info message after mount', (
     tester,

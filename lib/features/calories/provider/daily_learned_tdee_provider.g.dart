@@ -80,7 +80,7 @@ final class DailyLearnedTdeeGoalForDayProvider
 }
 
 String _$dailyLearnedTdeeGoalForDayHash() =>
-    r'cb828d019ce440c58082f7d92347b16fc2ce7f3d';
+    r'940fc07b202c2a8e5fb285f4f1d9aeb3e1944878';
 
 /// Resolve optional learned TDEE override for [day].
 

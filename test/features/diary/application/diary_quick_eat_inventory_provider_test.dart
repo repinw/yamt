@@ -4,8 +4,8 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/diary/application/diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
 @Dependencies([diaryQuickEatInventory])
 void main() {

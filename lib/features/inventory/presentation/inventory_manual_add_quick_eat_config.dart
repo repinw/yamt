@@ -1,5 +1,7 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+
+part 'inventory_manual_add_quick_eat_config.g.dart';
 
 /// Scoped quick-eat settings for manual inventory add flows.
 class InventoryManualAddQuickEatConfig {
@@ -24,8 +26,7 @@ class InventoryManualAddQuickEatConfig {
 }
 
 /// Scoped provider for quick-eat settings in manual add subtrees.
-final inventoryManualAddQuickEatConfigProvider =
-    Provider<InventoryManualAddQuickEatConfig>(
-      (ref) => InventoryManualAddQuickEatConfig.standard,
-      dependencies: const [],
-    );
+@Riverpod(keepAlive: true, dependencies: [])
+InventoryManualAddQuickEatConfig inventoryManualAddQuickEatConfig(Ref ref) {
+  return InventoryManualAddQuickEatConfig.standard;
+}

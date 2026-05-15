@@ -27,11 +27,14 @@ final class CookingFlowWizardControllerProvider
         name: r'cookingFlowWizardControllerProvider',
         isAutoDispose: true,
         dependencies: <ProviderOrFamily>[cookingFlowControllerProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>[
+        $allTransitiveDependencies: <ProviderOrFamily>{
           CookingFlowWizardControllerProvider.$allTransitiveDependencies0,
           CookingFlowWizardControllerProvider.$allTransitiveDependencies1,
           CookingFlowWizardControllerProvider.$allTransitiveDependencies2,
-        ],
+          CookingFlowWizardControllerProvider.$allTransitiveDependencies3,
+          CookingFlowWizardControllerProvider.$allTransitiveDependencies4,
+          CookingFlowWizardControllerProvider.$allTransitiveDependencies5,
+        },
       );
 
   static final $allTransitiveDependencies0 = cookingFlowControllerProvider;
@@ -39,6 +42,12 @@ final class CookingFlowWizardControllerProvider
       CookingFlowControllerProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies2 =
       CookingFlowControllerProvider.$allTransitiveDependencies1;
+  static final $allTransitiveDependencies3 =
+      CookingFlowControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies4 =
+      CookingFlowControllerProvider.$allTransitiveDependencies3;
+  static final $allTransitiveDependencies5 =
+      CookingFlowControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$cookingFlowWizardControllerHash();

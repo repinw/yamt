@@ -9,13 +9,15 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -38,6 +40,7 @@ InventoryItem _item({
 }
 
 @Dependencies([
+  inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
@@ -47,6 +50,7 @@ Widget _buildTestApp({required List<InventoryItem> items}) {
 }
 
 @Dependencies([
+  inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
@@ -94,6 +98,7 @@ Widget _buildInventoryTestApp({
 }
 
 @Dependencies([
+  inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
@@ -157,7 +162,11 @@ PreparedMeal _preparedMeal({
   );
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  inventoryItemRepository,
+  InventoryItemsController,
+])
 List<String> _visibleInventoryItemNames(WidgetTester tester) {
   return tester
       .widgetList<InventoryItemRowListEntry>(
@@ -266,6 +275,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
 }
 
 @Dependencies([
+  inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
@@ -315,6 +325,7 @@ class _InventoryListPersistenceHarnessState
 }
 
 @Dependencies([
+  inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
