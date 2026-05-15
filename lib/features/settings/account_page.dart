@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart'
+import 'package:yamt/features/auth/data/auth_service.dart'
     show authStateChangesProvider;
+import 'package:yamt/features/auth/presentation/auth_error_message_mapper.dart';
 import 'package:yamt/features/settings/provider/account_controller.dart';
 import 'package:yamt/features/settings/provider/account_page_flow_service.dart';
 import 'package:yamt/features/settings/widgets/account_cards.dart';
@@ -139,7 +139,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   }
 
   Future<Object?> _showEmailPasswordDialog(AppLocalizations l10n) {
-    final authErrorViewModel = ref.read(authErrorViewModelProvider);
+    final authErrorMessageMapper = ref.read(authErrorMessageMapperProvider);
     final flowService = ref.read(accountPageFlowServiceProvider);
     return showDialog<Object?>(
       context: context,
@@ -165,7 +165,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
             error is FirebaseAuthException &&
             flowService.isCredentialAlreadyInUseError(error),
         errorMessageFor: (error) =>
-            authErrorViewModel.messageFor(l10n: l10n, error: error),
+            authErrorMessageMapper.messageFor(l10n: l10n, error: error),
       ),
     );
   }
@@ -270,7 +270,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
 
   void _showAuthError(AppLocalizations l10n, Object error) {
     final message = ref
-        .read(authErrorViewModelProvider)
+        .read(authErrorMessageMapperProvider)
         .messageFor(l10n: l10n, error: error);
     showAccountStatusSnackBar(context, message: message, isError: true);
   }
@@ -335,7 +335,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
             padding: AppInsets.pageLarge,
             child: Text(
               ref
-                  .read(authErrorViewModelProvider)
+                  .read(authErrorMessageMapperProvider)
                   .messageFor(l10n: l10n, error: error),
               textAlign: TextAlign.center,
             ),

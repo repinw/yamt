@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/provider/household_permission_recovery.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 

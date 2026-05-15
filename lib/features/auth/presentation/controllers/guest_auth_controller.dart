@@ -1,0 +1,86 @@
+import 'dart:async';
+import 'dart:developer' show log;
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/auth/data/auth_repository.dart';
+
+part 'guest_auth_controller.g.dart';
+
+const _guestAuthLogName = 'GuestAuthController';
+
+/// Defines guest auth controller.
+@riverpod
+class GuestAuthController extends _$GuestAuthController {
+  int _operationId = 0;
+  Timer? _loadingTimeout;
+
+  @override
+  FutureOr<void> build() {
+    ref.onDispose(_cancelLoadingTimeout);
+  }
+
+  /// Sign in anonymously.
+  Future<void> signInAnonymously() async {
+    final operationId = ++_operationId;
+    final repository = ref.read(authRepositoryProvider);
+    _trace('Starting anonymous sign-in.');
+    state = const AsyncLoading();
+    _startLoadingTimeout(operationId);
+    final nextState = await AsyncValue.guard(repository.signInAnonymously);
+    _cancelLoadingTimeout();
+    if (operationId != _operationId) {
+      return;
+    }
+    nextState.whenOrNull(
+      data: (_) => _trace('Anonymous sign-in succeeded.'),
+      error: (error, stackTrace) {
+        final code = error is FirebaseAuthException ? error.code : 'unknown';
+        _trace(
+          'Anonymous sign-in failed with code=$code.',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      },
+    );
+    if (!ref.mounted) {
+      return;
+    }
+    state = nextState;
+  }
+
+  void _startLoadingTimeout(int operationId) {
+    _cancelLoadingTimeout();
+    _loadingTimeout = Timer(const Duration(seconds: 20), () {
+      if (!ref.mounted) {
+        return;
+      }
+      if (operationId != _operationId || !state.isLoading) {
+        return;
+      }
+      _trace('Anonymous sign-in forced timeout guard triggered.');
+      state = AsyncError<void>(
+        FirebaseAuthException(
+          code: 'network-request-failed',
+          message: 'Anonymous sign-in exceeded timeout guard.',
+        ),
+        StackTrace.current,
+      );
+    });
+  }
+
+  void _cancelLoadingTimeout() {
+    _loadingTimeout?.cancel();
+    _loadingTimeout = null;
+  }
+}
+
+void _trace(String message, {Object? error, StackTrace? stackTrace}) {
+  log(message, name: _guestAuthLogName, error: error, stackTrace: stackTrace);
+  debugPrint('[$_guestAuthLogName] $message');
+  if (error != null) {
+    debugPrint('[$_guestAuthLogName] error=$error');
+  }
+}

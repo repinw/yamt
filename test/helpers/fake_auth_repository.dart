@@ -1,4 +1,4 @@
-import 'package:yamt/features/auth/provider/auth_repository.dart';
+import 'package:yamt/features/auth/data/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository({

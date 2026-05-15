@@ -4,8 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
-import 'package:yamt/features/auth/provider/google_auth_controller.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
 import 'package:yamt/firebase_options.dart';
 
 part 'account_controller.g.dart';

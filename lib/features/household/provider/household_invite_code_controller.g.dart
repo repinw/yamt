@@ -47,7 +47,7 @@ final class HouseholdInviteCodeControllerProvider
 }
 
 String _$householdInviteCodeControllerHash() =>
-    r'3cc51937d2156ef9cf7947b5bea2a77db353b8e9';
+    r'efa72de373689731872ccb89b90f24effa881520';
 
 /// Defines household invite code controller.
 
