@@ -39,7 +39,8 @@ extension ReceiptReviewItemDraftReviewExtensions on ReceiptReviewItemDraft {
     );
   }
 
-  /// Copies the selected candidate's canonical product data into the draft item.
+  /// Copies the selected candidate's canonical product data into the draft
+  /// item.
   ReceiptReviewItemDraft syncToSelectedCandidate() {
     final selectedCandidate = this.selectedCandidate;
     if (selectedCandidate == null) {

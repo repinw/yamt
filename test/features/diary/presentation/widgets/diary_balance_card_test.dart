@@ -65,11 +65,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('en'),
+      const MaterialApp(
+        locale: Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(
+        home: Scaffold(
           body: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DiaryBalanceProgressBar(

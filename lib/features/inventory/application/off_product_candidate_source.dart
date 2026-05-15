@@ -1,12 +1,19 @@
-part of 'global_food_item_matcher.dart';
+import 'package:yamt/core/utils/store_name_normalizer.dart';
+import 'package:yamt/features/inventory/application/global_food_matcher_limits.dart';
+import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-class _OffProductCandidateSource {
-  const _OffProductCandidateSource({
+/// External Open Food Facts-backed candidate source.
+class OffProductCandidateSource {
+  /// Creates an external candidate source.
+  const OffProductCandidateSource({
     required OffProductSearchRepository? repository,
   }) : _repository = repository;
 
   final OffProductSearchRepository? _repository;
 
+  /// Searches external products for [item].
   Future<List<OffProductSearchResult>> search(InventoryItem item) async {
     final repository = _repository;
     if (repository == null) {
@@ -45,10 +52,11 @@ class _OffProductCandidateSource {
       weight: isNettoSearch || isGeneralCollectionSearch
           ? effectiveWeight
           : null,
-      limit: _globalFoodReviewCandidateLimitPerSource,
+      limit: globalFoodReviewCandidateLimitPerSource,
     );
   }
 
+  /// Maps an external result into a global food item candidate.
   GlobalFoodItem productFrom(OffProductSearchResult result) {
     return GlobalFoodItem.create(
       id: productIdFor(result),
@@ -65,6 +73,7 @@ class _OffProductCandidateSource {
     );
   }
 
+  /// Builds a stable product id for an external result.
   String productIdFor(OffProductSearchResult result) {
     final code = result.code.trim();
     if (code.isNotEmpty) {

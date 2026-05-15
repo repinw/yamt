@@ -1,20 +1,18 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/utils/store_name_normalizer.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_local_candidate_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_matcher_limits.dart';
+import 'package:yamt/features/inventory/application/off_product_candidate_source.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'global_food_receipt_alias_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'global_food_item_matcher.g.dart';
-part 'global_food_local_candidate_matcher.dart';
-part 'off_product_candidate_source.dart';
-
-const int _globalFoodCandidateQueryLimit = 20;
-const int _globalFoodReviewCandidateLimitPerSource = 5;
 
 /// Global food item matcher.
 @riverpod
@@ -37,22 +35,22 @@ class GlobalFoodItemMatcher {
     OffProductSearchRepository? offProductSearchRepository,
   }) : _globalFoodItemRepository = globalFoodItemRepository,
        _globalFoodReceiptAliasRepository = globalFoodReceiptAliasRepository,
-       _localCandidateMatcher = const _GlobalFoodLocalCandidateMatcher(),
-       _externalCandidateSource = _OffProductCandidateSource(
+       _localCandidateMatcher = const GlobalFoodLocalCandidateMatcher(),
+       _externalCandidateSource = OffProductCandidateSource(
          repository: offProductSearchRepository,
        );
 
   final GlobalFoodItemRepository? _globalFoodItemRepository;
   final GlobalFoodReceiptAliasRepository? _globalFoodReceiptAliasRepository;
-  final _GlobalFoodLocalCandidateMatcher _localCandidateMatcher;
-  final _OffProductCandidateSource _externalCandidateSource;
+  final GlobalFoodLocalCandidateMatcher _localCandidateMatcher;
+  final OffProductCandidateSource _externalCandidateSource;
 
   /// Find candidates.
   Future<List<GlobalFoodMatchCandidate>> findCandidates(
     InventoryItem item,
   ) async {
     final localInput = _localCandidateMatcher.buildLocalMatchInput(item);
-    final query = _GlobalFoodLocalCandidateMatcher.buildQuery(localInput);
+    final query = GlobalFoodLocalCandidateMatcher.buildQuery(localInput);
     final aliasMatchesFuture = _findAliasMatches(
       item: item,
       localInput: localInput,
@@ -179,7 +177,7 @@ class GlobalFoodItemMatcher {
           }
           return left.item.id.compareTo(right.item.id);
         }))
-        .take(_globalFoodReviewCandidateLimitPerSource)
+        .take(globalFoodReviewCandidateLimitPerSource)
         .toList(growable: false);
   }
 
@@ -187,13 +185,13 @@ class GlobalFoodItemMatcher {
     List<GlobalFoodMatchCandidate> candidates,
   ) {
     return candidates
-        .take(_globalFoodReviewCandidateLimitPerSource)
+        .take(globalFoodReviewCandidateLimitPerSource)
         .toList(growable: false);
   }
 
   Future<List<GlobalFoodMatchCandidate>> _findAliasMatches({
     required InventoryItem item,
-    required _LocalMatchInput localInput,
+    required LocalMatchInput localInput,
   }) async {
     final repository = _globalFoodReceiptAliasRepository;
     if (repository == null) {
@@ -213,7 +211,7 @@ class GlobalFoodItemMatcher {
     final aliases = await repository.searchCandidates(
       normalizedStoreName: normalizedStoreName,
       normalizedReceiptName: normalizedReceiptName,
-      limit: _globalFoodCandidateQueryLimit,
+      limit: globalFoodCandidateQueryLimit,
     );
     return _buildAliasMatches(
       localInput: localInput,
@@ -229,7 +227,7 @@ class GlobalFoodItemMatcher {
   }
 
   List<GlobalFoodMatchCandidate> _buildAliasMatches({
-    required _LocalMatchInput localInput,
+    required LocalMatchInput localInput,
     required List<GlobalFoodReceiptAlias> aliases,
     required String normalizedReceiptName,
     required String compactReceiptName,
@@ -304,8 +302,8 @@ class GlobalFoodItemMatcher {
   }
 
   Future<List<GlobalFoodMatchCandidate>> _findLocalMatches({
-    required _LocalMatchInput localInput,
-    required _GlobalFoodMatcherQuery query,
+    required LocalMatchInput localInput,
+    required GlobalFoodMatcherQuery query,
   }) async {
     final repository = _globalFoodItemRepository;
     if (repository == null) {

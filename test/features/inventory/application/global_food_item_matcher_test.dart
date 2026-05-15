@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/application/global_food_local_candidate_matcher.dart';
+import 'package:yamt/features/inventory/application/off_product_candidate_source.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/'
     'global_food_receipt_alias_repository_contract.dart';
@@ -258,6 +260,77 @@ GlobalFoodReceiptAlias _receiptAlias({
 }
 
 void main() {
+  test('local matcher builds normalized query input', () {
+    const matcher = GlobalFoodLocalCandidateMatcher();
+
+    final input = matcher.buildLocalMatchInput(
+      _inventoryItem(
+        id: 'item-1',
+        name: 'Bio Hafer Drink Schoko',
+        brand: 'Milsani',
+        storeName: 'Aldi Süd',
+      ),
+    );
+    final query = GlobalFoodLocalCandidateMatcher.buildQuery(input);
+
+    expect(input.normalizedName, 'bio hafer drink schoko');
+    expect(input.normalizedBrand, 'milsani');
+    expect(input.normalizedStoreName, 'aldi');
+    expect(input.nameTokens, containsAll(<String>['hafer', 'drink']));
+    expect(query, isNotNull);
+    expect(query!.normalizedName, 'bio hafer drink schoko');
+    expect(query.normalizedStoreName, 'aldi');
+  });
+
+  test('local matcher returns no query for empty inventory items', () {
+    const matcher = GlobalFoodLocalCandidateMatcher();
+
+    final input = matcher.buildLocalMatchInput(
+      _inventoryItem(id: 'item-1', name: '   ', storeName: ''),
+    );
+
+    expect(GlobalFoodLocalCandidateMatcher.buildQuery(input), isNull);
+  });
+
+  test('OFF source handles missing repository and blank query', () async {
+    const sourceWithoutRepository = OffProductCandidateSource(
+      repository: null,
+    );
+    final blankRepository = _FakeOffProductSearchRepository();
+    final sourceWithRepository = OffProductCandidateSource(
+      repository: blankRepository,
+    );
+
+    expect(
+      await sourceWithoutRepository.search(
+        _inventoryItem(id: 'item-1', name: 'Milk'),
+      ),
+      isEmpty,
+    );
+    expect(
+      await sourceWithRepository.search(
+        _inventoryItem(id: 'item-2', name: '   '),
+      ),
+      isEmpty,
+    );
+    expect(blankRepository.calls, isEmpty);
+  });
+
+  test('OFF source builds fallback ids for barcode-less results', () {
+    const source = OffProductCandidateSource(repository: null);
+
+    expect(
+      source.productIdFor(
+        _offResult(code: '', name: 'Bio Apfel', brand: 'NaturGut'),
+      ),
+      'off-bio apfel-naturgut',
+    );
+    expect(
+      source.productIdFor(_offResult(code: '', name: '   ')),
+      'off-product',
+    );
+  });
+
   test('findCandidates skips OFF search for empty names', () async {
     final repository = _FakeOffProductSearchRepository();
     final matcher = GlobalFoodItemMatcher(

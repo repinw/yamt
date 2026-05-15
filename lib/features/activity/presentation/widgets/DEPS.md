@@ -11,5 +11,6 @@ activity_weight_section-->diary_activity_details_card.dart;
 activity_weight_section-->diary_steps_card.dart;
 activity_weight_section-->health_connect_metric_card;
 activity_weight_section-->weight_card;
+diary_steps_card.dart-->diary_steps_card_content.dart;
 diary_steps_card.dart-->diary_steps_card_keys.dart;
 ```
