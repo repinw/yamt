@@ -48,7 +48,10 @@ class DiaryBalanceProgressBar extends StatelessWidget {
       height: diaryBalanceProgressAreaHeight,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final width = constraints.maxWidth;
+          final double width =
+              constraints.hasBoundedWidth && constraints.maxWidth.isFinite
+              ? math.max<double>(0, constraints.maxWidth)
+              : diaryBalanceProgressFallbackWidth;
           final targetRatio = _ratioForKcal(targetKcal, weeklyGoalKcal);
           final actualConsumedRatio = _ratioForKcal(
             actualConsumedKcal,
@@ -60,7 +63,7 @@ class DiaryBalanceProgressBar extends StatelessWidget {
               (diaryBalanceProgressAreaHeight - diaryBalanceProgressHeight) / 2;
           final labelWidth = math.min<double>(
             diaryBalanceTargetLabelWidth,
-            math.max(0, width),
+            math.max<double>(0, width),
           );
           final labelLeft = (targetCenter - labelWidth / 2).clamp(
             0.0,
@@ -75,114 +78,118 @@ class DiaryBalanceProgressBar extends StatelessWidget {
                 ),
               );
 
-          return Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                top: progressTop,
-                child: ClipRRect(
-                  key: DiaryBalanceCardKeys.progressTrack,
-                  borderRadius: BorderRadius.circular(999),
-                  child: SizedBox(
-                    height: diaryBalanceProgressHeight,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: ColoredBox(color: trackColor),
-                        ),
-                        Positioned(
-                          left: 0,
-                          top: 0,
-                          width: fillWidth,
-                          bottom: 0,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  activity,
-                                  accents.fat,
-                                ],
+          return SizedBox(
+            width: width,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: progressTop,
+                  child: ClipRRect(
+                    key: DiaryBalanceCardKeys.progressTrack,
+                    borderRadius: BorderRadius.circular(999),
+                    child: SizedBox(
+                      height: diaryBalanceProgressHeight,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: ColoredBox(color: trackColor),
+                          ),
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            width: fillWidth,
+                            bottom: 0,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    activity,
+                                    accents.fat,
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        for (var day = 1; day < totalDays; day += 1)
-                          Positioned(
-                            left: (width * day / totalDays) - 1,
-                            top: 0,
-                            width: 2,
-                            bottom: 0,
-                            child: ColoredBox(color: dividerColor),
-                          ),
-                      ],
+                          for (var day = 1; day < totalDays; day += 1)
+                            Positioned(
+                              left: (width * day / totalDays) - 1,
+                              top: 0,
+                              width: 2,
+                              bottom: 0,
+                              child: ColoredBox(color: dividerColor),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: labelLeft,
-                top: 0,
-                width: labelWidth,
-                child: Center(
-                  child: DecoratedBox(
+                Positioned(
+                  left: labelLeft,
+                  top: 0,
+                  width: labelWidth,
+                  child: Center(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: colors.outlineVariant.withValues(
+                            alpha: isDark ? 0.4 : 0.58,
+                          ),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.shadow.withValues(
+                              alpha: isDark ? 0.22 : 0.08,
+                            ),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 3,
+                        ),
+                        child: Text(
+                          targetLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: colors.onSurfaceVariant,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0,
+                                height: 1,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: markerLeft,
+                  top: progressTop - diaryBalanceTargetMarkerOverflowTop,
+                  child: Container(
+                    key: DiaryBalanceCardKeys.targetMarker,
+                    width: diaryBalanceTargetMarkerWidth,
+                    height:
+                        diaryBalanceProgressHeight +
+                        diaryBalanceTargetMarkerOverflowTop +
+                        8,
                     decoration: BoxDecoration(
-                      color: colors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(
-                        color: colors.outlineVariant.withValues(
-                          alpha: isDark ? 0.4 : 0.58,
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colors.shadow.withValues(
-                            alpha: isDark ? 0.22 : 0.08,
-                          ),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 3,
-                      ),
-                      child: Text(
-                        targetLabel,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0,
-                          height: 1,
-                        ),
-                      ),
+                      color: colors.outlineVariant,
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: markerLeft,
-                top: progressTop - diaryBalanceTargetMarkerOverflowTop,
-                child: Container(
-                  key: DiaryBalanceCardKeys.targetMarker,
-                  width: diaryBalanceTargetMarkerWidth,
-                  height:
-                      diaryBalanceProgressHeight +
-                      diaryBalanceTargetMarkerOverflowTop +
-                      8,
-                  decoration: BoxDecoration(
-                    color: colors.outlineVariant,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),

@@ -10,6 +10,9 @@ const diaryBalanceTargetMarkerWidth = 2.0;
 /// Full progress area height including marker overflow.
 const diaryBalanceProgressAreaHeight = 80.0;
 
+/// Fallback width when the progress bar is measured without bounded width.
+const diaryBalanceProgressFallbackWidth = 320.0;
+
 /// Vertical inset for the safe-zone fill.
 const diaryBalanceSafeZoneVerticalInset = 4.0;
 

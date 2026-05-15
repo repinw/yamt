@@ -12,7 +12,11 @@ import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_card_constants.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_progress.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
@@ -55,6 +59,36 @@ void main() {
     expect(targetRect.center.dxRatioWithin(trackRect), closeTo(1 / 7, 0.035));
     expect(_findTextContaining('1,000 kcal'), findsWidgets);
     expect(_findTextContaining('14,000 kcal'), findsOneWidget);
+  });
+
+  testWidgets('weekly progress handles unbounded horizontal constraints', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(
+          body: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DiaryBalanceProgressBar(
+              actualConsumedKcal: 3100,
+              targetKcal: 4915,
+              weeklyGoalKcal: 17204,
+              totalDays: 7,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getSize(find.byKey(DiaryBalanceCardKeys.progressTrack)).width,
+      diaryBalanceProgressFallbackWidth,
+    );
   });
 
   testWidgets('daily progress shows activity as an end extension', (
