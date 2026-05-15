@@ -2,16 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_summary_card_macros.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
+import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars.dart';
-import 'package:yamt/features/diary/provider/diary_nutrition_bars_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
@@ -73,7 +71,7 @@ void main() {
         carbs: 24,
         protein: 18,
         fat: 9,
-        goals: CaloriesSummaryMacroGoals(carbs: 0, protein: 0, fat: 0),
+        goals: DiaryMacroTargets(carbs: 0, protein: 0, fat: 0),
       ),
     );
 
@@ -89,6 +87,32 @@ void main() {
     expect(find.textContaining('24 / 0g', findRichText: true), findsOneWidget);
     expect(find.textContaining('18 / 0g', findRichText: true), findsOneWidget);
     expect(find.textContaining('9 / 0g', findRichText: true), findsOneWidget);
+  });
+
+  testWidgets('embedded mode renders macros without standalone title', (
+    tester,
+  ) async {
+    await _pumpNutritionBars(
+      tester,
+      selectedDay: selectedDay,
+      embedded: true,
+      data: const DiaryNutritionBarsData(
+        carbs: 24,
+        protein: 18,
+        fat: 9,
+        goals: DiaryMacroTargets(carbs: 120, protein: 90, fat: 45),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nutrition'), findsNothing);
+    expect(
+      find.textContaining('24 / 120g', findRichText: true),
+      findsOneWidget,
+    );
+    expect(find.textContaining('18 / 90g', findRichText: true), findsOneWidget);
+    expect(find.textContaining('9 / 45g', findRichText: true), findsOneWidget);
   });
 
   test(
@@ -131,7 +155,7 @@ void main() {
               carbs: 24,
               protein: 18,
               fat: 9,
-              goals: CaloriesSummaryMacroGoals(
+              goals: DiaryMacroTargets(
                 carbs: 120,
                 protein: 90,
                 fat: 45,
@@ -171,18 +195,17 @@ void main() {
   testWidgets('keeps previous data visible while nutrition reloads', (
     tester,
   ) async {
-    final reloadTokenProvider = StateProvider<int>((ref) => 0);
+    var reloadToken = 0;
     final reloadCompleter = Completer<DiaryNutritionBarsData>();
     final container = ProviderContainer(
       overrides: [
         diaryNutritionBarsDataProvider(selectedDay).overrideWith((ref) async {
-          final reloadToken = ref.watch(reloadTokenProvider);
           if (reloadToken == 0) {
             return const DiaryNutritionBarsData(
               carbs: 24,
               protein: 18,
               fat: 9,
-              goals: CaloriesSummaryMacroGoals(
+              goals: DiaryMacroTargets(
                 carbs: 120,
                 protein: 90,
                 fat: 45,
@@ -206,7 +229,8 @@ void main() {
       findsOneWidget,
     );
 
-    container.read(reloadTokenProvider.notifier).state = 1;
+    reloadToken = 1;
+    container.invalidate(diaryNutritionBarsDataProvider(selectedDay));
     await tester.pump();
 
     expect(
@@ -220,7 +244,12 @@ Future<void> _pumpNutritionBars(
   WidgetTester tester, {
   required DateTime selectedDay,
   required DiaryNutritionBarsData data,
+  bool embedded = false,
 }) async {
+  final nutritionBars = embedded
+      ? DiaryNutritionBars.embedded(selectedDay: selectedDay)
+      : DiaryNutritionBars(selectedDay: selectedDay);
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -235,7 +264,7 @@ Future<void> _pumpNutritionBars(
         home: Scaffold(
           body: Padding(
             padding: const EdgeInsets.all(16),
-            child: DiaryNutritionBars(selectedDay: selectedDay),
+            child: nutritionBars,
           ),
         ),
       ),

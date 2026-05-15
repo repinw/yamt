@@ -3,20 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_quick_eat_inventory_provider.dart';
+import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
-import 'package:yamt/features/diary/provider/diary_meal_sections_provider.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 @Dependencies([
   InventoryItemsController,
-  PreparedMealsController,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
@@ -237,13 +239,14 @@ void main() {
 
 @Dependencies([
   InventoryItemsController,
-  PreparedMealsController,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 Future<void> _pumpMealsSection(
   WidgetTester tester, {
   required DateTime selectedDay,
-  required List<CalorieMealSection> sections,
+  required List<DiaryMealSection> sections,
 }) async {
   await _pumpDiaryWidget(
     tester,
@@ -256,11 +259,11 @@ Future<void> _pumpMealsSection(
   );
 }
 
-CalorieMealSection _mealSection(
+DiaryMealSection _mealSection(
   MealType mealType,
-  List<CalorieEntry> entries,
+  List<DiaryMealEntry> entries,
 ) {
-  return CalorieMealSection(
+  return DiaryMealSection(
     mealType: mealType,
     entries: entries,
     totalKcal: entries.fold<double>(
@@ -270,7 +273,7 @@ CalorieMealSection _mealSection(
   );
 }
 
-CalorieEntry _entry({
+DiaryMealEntry _entry({
   required String id,
   required DateTime day,
   required MealType mealType,
@@ -280,24 +283,14 @@ CalorieEntry _entry({
   required double carbs,
   required double fat,
 }) {
-  return CalorieEntry(
+  return DiaryMealEntry(
     id: id,
-    userId: 'user-1',
     name: name,
     mealType: mealType,
-    consumedAmount: 100,
-    consumedUnit: ConsumedUnit.grams,
-    per100Kcal: kcal,
-    per100Protein: protein,
-    per100Carbs: carbs,
-    per100Fat: fat,
     totalKcal: kcal,
     totalProtein: protein,
     totalCarbs: carbs,
     totalFat: fat,
-    loggedAt: day.add(const Duration(hours: 8)),
-    createdAt: day.add(const Duration(hours: 8)),
-    updatedAt: day.add(const Duration(hours: 8)),
   );
 }
 

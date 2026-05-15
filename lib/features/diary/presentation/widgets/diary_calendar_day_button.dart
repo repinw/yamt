@@ -44,8 +44,13 @@ class DiaryCalendarDayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedActiveColor = isHeartDay ? heartColor : activeColor;
-    final textColor = isActive
+    final activeTextColor =
+        ThemeData.estimateBrightnessForColor(resolvedActiveColor) ==
+            Brightness.dark
         ? Colors.white
+        : const Color(0xFF0F172A);
+    final textColor = isActive
+        ? activeTextColor
         : isHeartDay
         ? heartColor
         : inactiveTextColor;
@@ -91,7 +96,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
                       calendarWeekdayLabel(day, localeName).toUpperCase(),
                       style: TextStyle(
                         color: isActive
-                            ? Colors.white.withValues(alpha: 0.9)
+                            ? activeTextColor.withValues(alpha: 0.9)
                             : isHeartDay
                             ? heartColor
                             : inactiveTextColor,
@@ -99,7 +104,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
                         fontWeight: isActive
                             ? FontWeight.w700
                             : FontWeight.w600,
-                        letterSpacing: 1,
+                        letterSpacing: 0,
                       ),
                     ),
                     const SizedBox(height: 3),

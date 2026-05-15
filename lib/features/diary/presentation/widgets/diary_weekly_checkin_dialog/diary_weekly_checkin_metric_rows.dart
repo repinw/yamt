@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Window date row for the diary weekly check-in dialog.

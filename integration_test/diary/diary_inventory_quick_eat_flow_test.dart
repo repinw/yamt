@@ -12,7 +12,6 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/models/user_profile.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
@@ -25,9 +24,12 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
-import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -71,9 +73,11 @@ class _DiaryInventoryQuickEatHarness {
 }
 
 @Dependencies([
+  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
-  calorieEntryDeleteFlow,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 _DiaryInventoryQuickEatHarness _buildHarness({
@@ -285,9 +289,11 @@ bool _isFinderCenterOnScreen(WidgetTester tester, Finder finder) {
 }
 
 @Dependencies([
+  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
-  calorieEntryDeleteFlow,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {

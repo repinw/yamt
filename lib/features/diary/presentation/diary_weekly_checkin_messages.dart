@@ -1,18 +1,18 @@
 import 'package:intl/intl.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Resolves localized blocked reason text for diary weekly check-in UI.
 String resolveDiaryWeeklyCheckInBlockedMessage({
   required AppLocalizations l10n,
-  required CalorieWeeklyCheckInViewModel viewModel,
+  required DiaryWeeklyCheckInData checkInData,
   required String locale,
   required String fallbackMessage,
 }) {
-  final reason = viewModel.blockedReason;
-  final pending = viewModel.pendingWeeklyCheckIn;
+  final reason = checkInData.blockedReason;
+  final pending = checkInData.pendingWeeklyCheckIn;
   final dateFormat = DateFormat.yMMMd(locale);
-  final missingWeightDates = viewModel.missingWeightDays
+  final missingWeightDates = checkInData.missingWeightDays
       .map(dateFormat.format)
       .toList(growable: false);
   return switch (reason) {
@@ -30,8 +30,8 @@ String resolveDiaryWeeklyCheckInBlockedMessage({
     CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight =>
       l10n.caloriesWeeklyCheckInBlockedMissingStartWeightOn(
         dateFormat.format(
-          viewModel.missingWeightDays.isNotEmpty
-              ? viewModel.missingWeightDays.first
+          checkInData.missingWeightDays.isNotEmpty
+              ? checkInData.missingWeightDays.first
               : pending?.windowStartDate ?? DateTime.now(),
         ),
       ),
@@ -43,8 +43,8 @@ String resolveDiaryWeeklyCheckInBlockedMessage({
     CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight =>
       l10n.caloriesWeeklyCheckInBlockedMissingEndWeightOn(
         dateFormat.format(
-          viewModel.missingWeightDays.isNotEmpty
-              ? viewModel.missingWeightDays.last
+          checkInData.missingWeightDays.isNotEmpty
+              ? checkInData.missingWeightDays.last
               : pending?.windowEndDate ?? DateTime.now(),
         ),
       ),

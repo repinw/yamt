@@ -4,8 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -57,71 +56,6 @@ class DiaryIntroHealthAction {
 
   /// Press callback.
   final VoidCallback onPressed;
-}
-
-/// Calculator values shown in the first diary intro.
-class DiaryIntroData {
-  /// Creates intro data.
-  const DiaryIntroData({
-    required this.goalMode,
-    required this.maintenanceKcal,
-    required this.dailyAdjustmentKcal,
-    required this.targetKcal,
-    required this.goalSpeedKgPerWeek,
-    required this.activityLevelOption,
-    required this.expectedActivityKcal,
-  });
-
-  /// Creates intro data from current calorie settings.
-  factory DiaryIntroData.fromSettings(CalorieGoalSettings settings) {
-    final entry = settings.latestGoalEntry;
-    final profile = entry?.calculatorProfile ?? settings.calculatorProfile;
-    final targetKcal = entry?.dailyKcalGoal ?? settings.dailyKcalGoal;
-    if (profile == null || targetKcal == null) {
-      throw ArgumentError('Diary intro needs calculator profile and target.');
-    }
-    final calculation = CalorieGoalCalculator.calculate(profile);
-    return DiaryIntroData(
-      goalMode: profile.goalMode,
-      maintenanceKcal: calculation.tdeeKcal.round(),
-      dailyAdjustmentKcal: calculation.dailyAdjustmentKcal.round(),
-      targetKcal: targetKcal.round(),
-      goalSpeedKgPerWeek: profile.goalSpeedKgPerWeek,
-      activityLevelOption: CalorieActivityLevelOption.fromActivityLevel(
-        profile.activityLevel,
-      ),
-      expectedActivityKcal: calculation.expectedActivityKcal.round(),
-    );
-  }
-
-  /// Whether settings can build intro data.
-  static bool canBuildFrom(CalorieGoalSettings settings) {
-    final entry = settings.latestGoalEntry;
-    final profile = entry?.calculatorProfile ?? settings.calculatorProfile;
-    final targetKcal = entry?.dailyKcalGoal ?? settings.dailyKcalGoal;
-    return profile != null && targetKcal != null;
-  }
-
-  /// Goal mode.
-  final CalorieGoalMode goalMode;
-
-  /// Estimated maintenance calories.
-  final int maintenanceKcal;
-
-  /// Daily goal adjustment from weekly speed.
-  final int dailyAdjustmentKcal;
-
-  /// Initial daily target.
-  final int targetKcal;
-
-  /// Selected weekly speed.
-  final double goalSpeedKgPerWeek;
-
-  /// Selected activity profile.
-  final CalorieActivityLevelOption activityLevelOption;
-
-  /// Expected daily activity calories.
-  final int expectedActivityKcal;
 }
 
 /// Shows the first diary intro dialog.

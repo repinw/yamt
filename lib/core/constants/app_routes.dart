@@ -50,9 +50,6 @@ abstract final class AppRoutes {
   /// Legacy calorie tab route alias.
   static const String homeCalories = homeDiary;
 
-  /// Burn Week mock route.
-  static const homeCaloriesBurnWeekMock = '/home/calories/burn-week';
-
   /// Calorie entry creation route.
   static const homeCaloriesEntryCreate = '/home/calories/entry/create';
 

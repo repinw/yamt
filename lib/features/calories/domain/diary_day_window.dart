@@ -1,64 +1,49 @@
-/// Shared rolling 7-day window helpers for the diary UI and aggregates.
-const int diaryVisibleDayCount = 7;
+import 'package:yamt/core/domain/local_day_window.dart';
 
-/// Normalizes a timestamp to its local calendar day.
+/// Rolling day count used by the calorie diary window.
+const int diaryVisibleDayCount = localVisibleDayCount;
+
+/// Normalizes a timestamp to its local diary day.
 DateTime normalizeDiaryDay(DateTime day) {
-  return DateTime(day.year, day.month, day.day);
+  return normalizeLocalDay(day);
 }
 
-/// Adds whole local calendar days without relying on 24-hour durations.
+/// Adds whole diary days without relying on 24-hour durations.
 DateTime addDiaryDays(DateTime day, int dayOffset) {
-  final normalizedDay = normalizeDiaryDay(day);
-  return DateTime(
-    normalizedDay.year,
-    normalizedDay.month,
-    normalizedDay.day + dayOffset,
-  );
+  return addLocalDays(day, dayOffset);
 }
 
-/// Returns the next local calendar day.
+/// Returns the next local diary day.
 DateTime nextDiaryDay(DateTime day) {
-  return addDiaryDays(day, 1);
+  return nextLocalDay(day);
 }
 
-/// Returns the previous local calendar day.
+/// Returns the previous local diary day.
 DateTime previousDiaryDay(DateTime day) {
-  return addDiaryDays(day, -1);
+  return previousLocalDay(day);
 }
 
-/// Returns the last visible diary day, which is always the current day.
+/// Returns the last visible diary day.
 DateTime resolveDiaryWindowEnd({DateTime? anchorDay}) {
-  return normalizeDiaryDay(anchorDay ?? DateTime.now());
+  return resolveRollingLocalWindowEnd(anchorDay: anchorDay);
 }
 
-/// Returns the first visible diary day in the rolling 7-day window.
+/// Returns the first visible diary day in the rolling window.
 DateTime resolveDiaryWindowStart({DateTime? anchorDay}) {
-  return addDiaryDays(
-    resolveDiaryWindowEnd(anchorDay: anchorDay),
-    -(diaryVisibleDayCount - 1),
-  );
+  return resolveRollingLocalWindowStart(anchorDay: anchorDay);
 }
 
 /// Builds the visible diary days from oldest to newest.
 List<DateTime> buildDiaryVisibleDays({DateTime? anchorDay}) {
-  final start = resolveDiaryWindowStart(anchorDay: anchorDay);
-  return List<DateTime>.unmodifiable([
-    for (var index = 0; index < diaryVisibleDayCount; index += 1)
-      addDiaryDays(start, index),
-  ]);
+  return buildRollingLocalDays(anchorDay: anchorDay);
 }
 
-/// Returns whether two timestamps belong to same local calendar day.
+/// Returns whether two timestamps belong to the same diary day.
 bool isSameDiaryDay(DateTime left, DateTime right) {
-  return left.year == right.year &&
-      left.month == right.month &&
-      left.day == right.day;
+  return isSameLocalDay(left, right);
 }
 
-/// Returns stable string key for one local calendar day.
+/// Returns a stable string key for one diary day.
 String diaryDayKey(DateTime day) {
-  final normalizedDay = normalizeDiaryDay(day);
-  return '${normalizedDay.year}-'
-      '${normalizedDay.month}-'
-      '${normalizedDay.day}';
+  return localDayKey(day);
 }

@@ -13,7 +13,7 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
-import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
@@ -779,6 +779,11 @@ void main() {
 
     await tester.tap(find.byType(HomeHeartCounterButton));
     await tester.pumpAndSettle();
+
+    expect(find.text('Use heart day?'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    expect(find.text('Use heart'), findsOneWidget);
+
     await tester.tap(find.text('Use heart'));
     await tester.pumpAndSettle();
 

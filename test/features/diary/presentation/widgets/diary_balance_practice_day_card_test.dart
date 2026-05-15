@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -40,28 +40,27 @@ void main() {
   test('practice card shows for any selected day before future start', () {
     final selectedDay = DateTime(2026, 4, 23);
     final startDate = DateTime(2026, 4, 24);
-    final overview = _weekOverview(
-      goalStartsInFuture: true,
-      nextGoalStartDate: startDate,
-    );
 
     expect(
-      shouldShowDiaryBalancePracticeDayCard(
-        weekOverview: overview,
+      shouldShowDiaryBalancePracticeDay(
+        goalStartsInFuture: true,
+        startDate: startDate,
         selectedDay: selectedDay,
       ),
       isTrue,
     );
     expect(
-      shouldShowDiaryBalancePracticeDayCard(
-        weekOverview: overview,
+      shouldShowDiaryBalancePracticeDay(
+        goalStartsInFuture: true,
+        startDate: startDate,
         selectedDay: startDate,
       ),
       isFalse,
     );
     expect(
-      shouldShowDiaryBalancePracticeDayCard(
-        weekOverview: overview,
+      shouldShowDiaryBalancePracticeDay(
+        goalStartsInFuture: true,
+        startDate: startDate,
         selectedDay: startDate.add(const Duration(days: 1)),
       ),
       isFalse,
@@ -72,15 +71,17 @@ void main() {
     final selectedDay = DateTime(2026, 4, 23);
 
     expect(
-      shouldShowDiaryBalancePracticeDayCard(
-        weekOverview: _weekOverview(goalStartsInFuture: false),
+      shouldShowDiaryBalancePracticeDay(
+        goalStartsInFuture: false,
+        startDate: DateTime(2026, 4, 24),
         selectedDay: selectedDay,
       ),
       isFalse,
     );
     expect(
-      shouldShowDiaryBalancePracticeDayCard(
-        weekOverview: _weekOverview(goalStartsInFuture: true),
+      shouldShowDiaryBalancePracticeDay(
+        goalStartsInFuture: true,
+        startDate: null,
         selectedDay: selectedDay,
       ),
       isFalse,
@@ -108,23 +109,5 @@ Future<void> _pumpPracticeCard(
         ),
       ),
     ),
-  );
-}
-
-CalorieWeekOverview _weekOverview({
-  required bool goalStartsInFuture,
-  DateTime? nextGoalStartDate,
-}) {
-  return CalorieWeekOverview(
-    days: const <CalorieWeekDayOverview>[],
-    totalConsumedKcal: 0,
-    totalGoalKcal: 0,
-    remainingKcal: 0,
-    balanceStartDate: DateTime(2026, 4, 23),
-    carryoverBeforeTodayKcal: 0,
-    todayFlexibleGoalKcal: 0,
-    goalStartsInFuture: goalStartsInFuture,
-    nextGoalStartDate: nextGoalStartDate,
-    futureGoalKcal: 1200,
   );
 }

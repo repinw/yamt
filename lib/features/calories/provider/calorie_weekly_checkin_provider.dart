@@ -11,3 +11,16 @@ Future<CalorieWeeklyCheckInViewModel> calorieWeeklyCheckInViewModel(
 ) {
   return buildCalorieWeeklyCheckInViewModel(ref);
 }
+
+/// Calorie weekly check-in data.
+@riverpod
+Future<CalorieWeeklyCheckInData> calorieWeeklyCheckInData(Ref ref) {
+  return ref.watch(calorieWeeklyCheckInViewModelProvider.future);
+}
+
+/// Invalidates all calorie weekly check-in data providers.
+void invalidateCalorieWeeklyCheckInData(Ref ref) {
+  ref
+    ..invalidate(calorieWeeklyCheckInViewModelProvider)
+    ..invalidate(calorieWeeklyCheckInDataProvider);
+}

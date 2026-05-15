@@ -138,6 +138,7 @@ final class AppRouterProvider
           inventoryItemRepositoryProvider,
           calorieEntryDeleteFlowProvider,
           inventoryBackedCalorieEntrySaveFlowProvider,
+          diaryProviderWarmupProvider,
           cookingFlowControllerProvider,
           cookingFlowWizardControllerProvider,
           inventoryItemsControllerProvider,
@@ -160,6 +161,7 @@ final class AppRouterProvider
           AppRouterProvider.$allTransitiveDependencies9,
           AppRouterProvider.$allTransitiveDependencies10,
           AppRouterProvider.$allTransitiveDependencies11,
+          AppRouterProvider.$allTransitiveDependencies12,
         },
       );
 
@@ -171,17 +173,18 @@ final class AppRouterProvider
       CalorieEntryDeleteFlowProvider.$allTransitiveDependencies2;
   static final $allTransitiveDependencies4 =
       inventoryBackedCalorieEntrySaveFlowProvider;
-  static final $allTransitiveDependencies5 = cookingFlowControllerProvider;
-  static final $allTransitiveDependencies6 =
+  static final $allTransitiveDependencies5 = diaryProviderWarmupProvider;
+  static final $allTransitiveDependencies6 = cookingFlowControllerProvider;
+  static final $allTransitiveDependencies7 =
       cookingFlowWizardControllerProvider;
-  static final $allTransitiveDependencies7 = preparedMealImagePickerProvider;
-  static final $allTransitiveDependencies8 =
-      receiptCaptureFlowControllerProvider;
+  static final $allTransitiveDependencies8 = preparedMealImagePickerProvider;
   static final $allTransitiveDependencies9 =
-      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
+      receiptCaptureFlowControllerProvider;
   static final $allTransitiveDependencies10 =
-      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies11 =
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies12 =
       receiptBatchFlowControllerProvider;
 
   @override
@@ -206,4 +209,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'65e78ec4a5329d1dd194ade11957518eaee586d8';
+String _$appRouterHash() => r'ae6b30c276aaaa325cca2159def4b368ba320e8f';

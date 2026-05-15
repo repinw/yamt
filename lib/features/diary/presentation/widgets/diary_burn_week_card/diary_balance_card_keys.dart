@@ -7,17 +7,24 @@ abstract final class DiaryBalanceCardKeys {
     'diary-balance-progress-track',
   );
 
-  /// Safe-zone fill key.
-  static const safeZone = ValueKey<String>('diary-balance-safe-zone');
+  /// Daily progress track key.
+  static const dailyProgressTrack = ValueKey<String>(
+    'diary-balance-daily-progress-track',
+  );
+
+  /// Daily eaten progress fill key.
+  static const dailyProgressEatenFill = ValueKey<String>(
+    'diary-balance-daily-progress-eaten-fill',
+  );
+
+  /// Daily activity progress extension key.
+  static const dailyProgressActivityFill = ValueKey<String>(
+    'diary-balance-daily-progress-activity-fill',
+  );
 
   /// Target marker key.
   static const targetMarker = ValueKey<String>(
     'diary-balance-target-marker',
-  );
-
-  /// Consumed marker key.
-  static const consumedMarker = ValueKey<String>(
-    'diary-balance-consumed-marker',
   );
 
   /// Practice day card key.

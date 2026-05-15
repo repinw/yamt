@@ -62,7 +62,8 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en')
+    Locale('en'),
   ];
 
   /// No description provided for @homeInventory.
@@ -178,6 +181,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Spend 1 heart to ignore {day}. Logged food stays in the diary, but this day counts as perfect and is skipped for weekly learning.'**
   String homeHeartUseMessage(String day);
+
+  /// No description provided for @homeHeartUseConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Use heart'**
+  String get homeHeartUseConfirmAction;
 
   /// No description provided for @inventoryFabTooltip.
   ///
@@ -2427,13 +2436,20 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Amount per {sourceUnit} ({unit})'**
-  String preparedMealTemplateDetailSelectionConversionLabel(String sourceUnit, String unit);
+  String preparedMealTemplateDetailSelectionConversionLabel(
+    String sourceUnit,
+    String unit,
+  );
 
   /// No description provided for @preparedMealTemplateDetailSelectionConversionHint.
   ///
   /// In en, this message translates to:
   /// **'How much {unit} does 1 {sourceUnit} of \"{ingredient}\" use?'**
-  String preparedMealTemplateDetailSelectionConversionHint(String sourceUnit, String unit, String ingredient);
+  String preparedMealTemplateDetailSelectionConversionHint(
+    String sourceUnit,
+    String unit,
+    String ingredient,
+  );
 
   /// No description provided for @preparedMealTemplateDetailSelectionConversionError.
   ///
@@ -2445,7 +2461,11 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'1 {sourceUnit} = {amount} {unit}'**
-  String preparedMealTemplateDetailConversionSummary(String sourceUnit, int amount, String unit);
+  String preparedMealTemplateDetailConversionSummary(
+    String sourceUnit,
+    int amount,
+    String unit,
+  );
 
   /// No description provided for @preparedMealTemplateDetailListAction.
   ///
@@ -3509,59 +3529,11 @@ abstract class AppLocalizations {
   /// **'Could not print calorie debug table.'**
   String get caloriesDebugDumpFailed;
 
-  /// No description provided for @burnWeekUseHeartTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Use heart day?'**
-  String get burnWeekUseHeartTitle;
-
-  /// No description provided for @burnWeekUseHeartMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Spend 1 heart to ignore today. Logged food stays in the diary, but today counts as a perfect Burn day and is skipped for weekly learning ({dayKcal} kcal day).'**
-  String burnWeekUseHeartMessage(int dayKcal);
-
-  /// No description provided for @burnWeekActionCancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get burnWeekActionCancel;
-
-  /// No description provided for @burnWeekActionYes.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes'**
-  String get burnWeekActionYes;
-
-  /// No description provided for @burnWeekActionNo.
-  ///
-  /// In en, this message translates to:
-  /// **'No'**
-  String get burnWeekActionNo;
-
   /// No description provided for @burnWeekRunOverTitle.
   ///
   /// In en, this message translates to:
   /// **'Run over'**
   String get burnWeekRunOverTitle;
-
-  /// No description provided for @burnWeekRunLimitTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Run cannot finish perfectly'**
-  String get burnWeekRunLimitTitle;
-
-  /// No description provided for @burnWeekRunLimitContinueAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue anyway'**
-  String get burnWeekRunLimitContinueAction;
-
-  /// No description provided for @burnWeekRunLimitStartNewAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Start new run'**
-  String get burnWeekRunLimitStartNewAction;
 
   /// No description provided for @burnWeekRunRestartsOn.
   ///
@@ -3580,84 +3552,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Today does not count yet. You can try tracking, and Burn Week starts on {date}.'**
   String burnWeekPracticeDayMessage(Object date);
-
-  /// No description provided for @burnWeekZoneOutOfSafeZoneTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Out of safe zone'**
-  String get burnWeekZoneOutOfSafeZoneTitle;
-
-  /// No description provided for @burnWeekZoneBelowRecoverMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'You are below target. Use a heart to protect today as a perfect heart day, or eat more to get back in target.'**
-  String get burnWeekZoneBelowRecoverMessage;
-
-  /// No description provided for @burnWeekZoneBelowRecoverNoHeartsMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'You are below target. No hearts left. Eat more to get back in target.'**
-  String get burnWeekZoneBelowRecoverNoHeartsMessage;
-
-  /// No description provided for @burnWeekZoneBelowNeedsHeartTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Too far below target'**
-  String get burnWeekZoneBelowNeedsHeartTitle;
-
-  /// No description provided for @burnWeekZoneBelowNeedsHeartMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'There are not enough calories left in this week to recover by eating. Use 1 heart to protect today as a perfect heart day?'**
-  String get burnWeekZoneBelowNeedsHeartMessage;
-
-  /// No description provided for @burnWeekZoneBelowRunOverMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'There are not enough calories left in this week to recover by eating, and no hearts are left. Continue this run anyway, or start a fresh run tomorrow.'**
-  String get burnWeekZoneBelowRunOverMessage;
-
-  /// No description provided for @burnWeekZoneEatMoreTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat more'**
-  String get burnWeekZoneEatMoreTitle;
-
-  /// No description provided for @burnWeekZoneEatMoreAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat more'**
-  String get burnWeekZoneEatMoreAction;
-
-  /// No description provided for @burnWeekZoneEatMoreMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat more to get back in target.'**
-  String get burnWeekZoneEatMoreMessage;
-
-  /// No description provided for @burnWeekZoneUseHeartAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Use heart'**
-  String get burnWeekZoneUseHeartAction;
-
-  /// No description provided for @burnWeekZoneAboveFastMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'You tracked too much. Fasting will help to get on track.'**
-  String get burnWeekZoneAboveFastMessage;
-
-  /// No description provided for @burnWeekZoneAboveNeedsHeartMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'You are way over weekly limit. Use 1 heart to protect today as a perfect heart day?'**
-  String get burnWeekZoneAboveNeedsHeartMessage;
-
-  /// No description provided for @burnWeekZoneAboveRunOverMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'You are way over weekly limit and have no hearts left. This run cannot finish perfectly. Continue this run anyway, or start a fresh run tomorrow.'**
-  String get burnWeekZoneAboveRunOverMessage;
 
   /// No description provided for @calorieBudgetDetailsActualLabel.
   ///
@@ -4403,6 +4297,12 @@ abstract class AppLocalizations {
   /// **'Nutrition could not be loaded'**
   String get diaryNutritionLoadFailed;
 
+  /// No description provided for @diaryNutritionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Macronutrients'**
+  String get diaryNutritionTitle;
+
   /// No description provided for @diaryBalanceEatenLabel.
   ///
   /// In en, this message translates to:
@@ -4414,6 +4314,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Left'**
   String get diaryBalanceLeftLabel;
+
+  /// No description provided for @diaryBalanceLeftTodayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Left today'**
+  String get diaryBalanceLeftTodayLabel;
+
+  /// No description provided for @diaryBalanceWeekLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week}'**
+  String diaryBalanceWeekLabel(Object week);
+
+  /// No description provided for @diaryBalanceDayProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day} of {total}'**
+  String diaryBalanceDayProgressLabel(Object day, Object total);
+
+  /// No description provided for @diaryBalanceTargetMarkerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get diaryBalanceTargetMarkerLabel;
+
+  /// No description provided for @diaryBalanceWeekActualLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Week actual'**
+  String get diaryBalanceWeekActualLabel;
+
+  /// No description provided for @diaryBalanceWeekTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Week target'**
+  String get diaryBalanceWeekTargetLabel;
 
   /// No description provided for @diaryBalanceRealEatenLabel.
   ///
@@ -4838,7 +4774,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAccountHouseholdSectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Account & Household'**
+  /// **'Household'**
   String get settingsAccountHouseholdSectionTitle;
 
   /// No description provided for @settingsHealthGoalsSectionTitle.
@@ -6561,13 +6497,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Not enough in inventory: Only {availableAmount} available. {missingAmount} missing.'**
-  String cookflowInventoryConflictMessage(Object availableAmount, Object missingAmount);
+  String cookflowInventoryConflictMessage(
+    Object availableAmount,
+    Object missingAmount,
+  );
 
   /// No description provided for @cookflowInventoryUsagePreview.
   ///
   /// In en, this message translates to:
   /// **'Subtract {usedAmount} · left {remainingAmount}'**
-  String cookflowInventoryUsagePreview(Object usedAmount, Object remainingAmount);
+  String cookflowInventoryUsagePreview(
+    Object usedAmount,
+    Object remainingAmount,
+  );
 
   /// No description provided for @cookflowBuyRemainingButton.
   ///
@@ -6585,7 +6527,10 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Unit conflict: recipe uses \"{recipeUnit}\". Inventory has \"{inventoryUnit}\".'**
-  String cookflowInventoryUnitConflictMessage(Object recipeUnit, Object inventoryUnit);
+  String cookflowInventoryUnitConflictMessage(
+    Object recipeUnit,
+    Object inventoryUnit,
+  );
 
   /// No description provided for @cookflowInventoryUnitConversionPrefix.
   ///
@@ -7044,7 +6989,8 @@ abstract class AppLocalizations {
   String get cookflowResumeLabel;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -7053,25 +6999,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de': return AppLocalizationsDe();
-    case 'en': return AppLocalizationsEn();
+    case 'de':
+      return AppLocalizationsDe();
+    case 'en':
+      return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

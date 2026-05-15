@@ -37,5 +37,4 @@ calorie_weekly_window_resolver.dart-->calorie_calculator_profile.dart;
 calorie_weekly_window_resolver.dart-->calorie_goal_settings.dart;
 calorie_weekly_window_resolver.dart-->calorie_weekly_checkin.dart;
 calorie_weekly_window_resolver.dart-->diary_day_window.dart;
-diary_activity_summary.dart-->diary_day_window.dart;
 ```

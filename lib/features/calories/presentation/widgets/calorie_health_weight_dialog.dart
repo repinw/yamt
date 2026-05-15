@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:yamt/core/widgets/weight_entry_dialog.dart';
 import 'package:yamt/features/calories/presentation/calorie_health_trends_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -13,15 +13,24 @@ Future<void> showCalorieHealthWeightDialog({
   required Future<bool> Function() onClearWeight,
 }) async {
   final l10n = AppLocalizations.of(context)!;
-  final result = await showDialog<_CalorieHealthWeightDialogResult>(
+  final result = await showWeightEntryDialog(
     context: context,
-    builder: (context) {
-      return _CalorieHealthWeightDialogContent(
-        dayLabel: dayLabel,
-        initialWeightKg: initialWeightKg,
-        hasManualWeight: hasManualWeight,
-      );
-    },
+    labels: WeightEntryDialogLabels(
+      title: l10n.caloriesHealthTrendsWeightDialogTitle(dayLabel),
+      fieldLabel: l10n.caloriesCalculatorWeightLabel,
+      emptyErrorText: l10n.caloriesCalculatorWeightEmpty,
+      invalidErrorText: l10n.caloriesCalculatorWeightInvalid,
+      clearActionLabel: l10n.caloriesHealthTrendsWeightClearAction,
+      cancelActionLabel: l10n.inventoryReceiptReviewCancelAction,
+      saveActionLabel: l10n.caloriesHealthTrendsWeightSaveAction,
+    ),
+    keys: const WeightEntryDialogKeys(
+      fieldKey: CalorieHealthTrendsKeys.weightDialogField,
+      clearButtonKey: CalorieHealthTrendsKeys.weightDialogClearButton,
+      saveButtonKey: CalorieHealthTrendsKeys.weightDialogSaveButton,
+    ),
+    initialWeightKg: initialWeightKg,
+    showClearAction: hasManualWeight,
   );
 
   if (!context.mounted || result == null) {
@@ -31,7 +40,7 @@ Future<void> showCalorieHealthWeightDialog({
   final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
 
   switch (result.action) {
-    case _CalorieHealthWeightDialogAction.save:
+    case WeightEntryDialogAction.save:
       final weightKg = result.weightKg;
       if (weightKg == null) {
         return;
@@ -42,7 +51,7 @@ Future<void> showCalorieHealthWeightDialog({
           SnackBar(content: Text(l10n.caloriesHealthTrendsWeightSaveFailed)),
         );
       }
-    case _CalorieHealthWeightDialogAction.clear:
+    case WeightEntryDialogAction.clear:
       final cleared = await onClearWeight();
       if (context.mounted && !cleared) {
         messenger.showSnackBar(
@@ -50,130 +59,4 @@ Future<void> showCalorieHealthWeightDialog({
         );
       }
   }
-}
-
-class _CalorieHealthWeightDialogContent extends StatefulWidget {
-  const _CalorieHealthWeightDialogContent({
-    required this.dayLabel,
-    required this.initialWeightKg,
-    required this.hasManualWeight,
-  });
-
-  final String dayLabel;
-  final double? initialWeightKg;
-  final bool hasManualWeight;
-
-  @override
-  State<_CalorieHealthWeightDialogContent> createState() =>
-      _CalorieHealthWeightDialogContentState();
-}
-
-class _CalorieHealthWeightDialogContentState
-    extends State<_CalorieHealthWeightDialogContent> {
-  late final TextEditingController _controller;
-  String? _errorText;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(
-      text: widget.initialWeightKg?.toStringAsFixed(1) ?? '',
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return AlertDialog(
-      scrollable: true,
-      title: Text(l10n.caloriesHealthTrendsWeightDialogTitle(widget.dayLabel)),
-      content: TextField(
-        key: CalorieHealthTrendsKeys.weightDialogField,
-        controller: _controller,
-        keyboardType: _weightKeyboardType,
-        textInputAction: TextInputAction.done,
-        autocorrect: false,
-        enableSuggestions: false,
-        onSubmitted: (_) => _save(),
-        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-        decoration: InputDecoration(
-          labelText: l10n.caloriesCalculatorWeightLabel,
-          errorText: _errorText,
-        ),
-      ),
-      actions: <Widget>[
-        if (widget.hasManualWeight)
-          TextButton(
-            key: CalorieHealthTrendsKeys.weightDialogClearButton,
-            onPressed: () => Navigator.of(
-              context,
-            ).pop(const _CalorieHealthWeightDialogResult.clear()),
-            child: Text(l10n.caloriesHealthTrendsWeightClearAction),
-          ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.inventoryReceiptReviewCancelAction),
-        ),
-        FilledButton(
-          key: CalorieHealthTrendsKeys.weightDialogSaveButton,
-          onPressed: _save,
-          child: Text(l10n.caloriesHealthTrendsWeightSaveAction),
-        ),
-      ],
-    );
-  }
-
-  void _save() {
-    final l10n = AppLocalizations.of(context)!;
-    final rawWeight = _controller.text.trim().replaceAll(',', '.');
-    if (rawWeight.isEmpty) {
-      setState(() {
-        _errorText = l10n.caloriesCalculatorWeightEmpty;
-      });
-      return;
-    }
-
-    final parsedWeight = double.tryParse(rawWeight);
-    if (parsedWeight == null || parsedWeight <= 0) {
-      setState(() {
-        _errorText = l10n.caloriesCalculatorWeightInvalid;
-      });
-      return;
-    }
-
-    Navigator.of(
-      context,
-    ).pop(_CalorieHealthWeightDialogResult.save(parsedWeight));
-  }
-}
-
-class _CalorieHealthWeightDialogResult {
-  const _CalorieHealthWeightDialogResult._({
-    required this.action,
-    this.weightKg,
-  });
-
-  const _CalorieHealthWeightDialogResult.clear()
-    : this._(action: _CalorieHealthWeightDialogAction.clear);
-
-  const _CalorieHealthWeightDialogResult.save(double weightKg)
-    : this._(action: _CalorieHealthWeightDialogAction.save, weightKg: weightKg);
-
-  final _CalorieHealthWeightDialogAction action;
-  final double? weightKg;
-}
-
-enum _CalorieHealthWeightDialogAction { save, clear }
-
-TextInputType get _weightKeyboardType {
-  if (defaultTargetPlatform == TargetPlatform.iOS) {
-    return TextInputType.text;
-  }
-  return const TextInputType.numberWithOptions(decimal: true);
 }

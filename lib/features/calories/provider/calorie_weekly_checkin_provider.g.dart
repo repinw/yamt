@@ -55,3 +55,50 @@ final class CalorieWeeklyCheckInViewModelProvider
 
 String _$calorieWeeklyCheckInViewModelHash() =>
     r'3cc89414c38fdce8969cbeadf3ad3dd53f3f9f11';
+
+/// Calorie weekly check-in data.
+
+@ProviderFor(calorieWeeklyCheckInData)
+final calorieWeeklyCheckInDataProvider = CalorieWeeklyCheckInDataProvider._();
+
+/// Calorie weekly check-in data.
+
+final class CalorieWeeklyCheckInDataProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<CalorieWeeklyCheckInData>,
+          CalorieWeeklyCheckInData,
+          FutureOr<CalorieWeeklyCheckInData>
+        >
+    with
+        $FutureModifier<CalorieWeeklyCheckInData>,
+        $FutureProvider<CalorieWeeklyCheckInData> {
+  /// Calorie weekly check-in data.
+  CalorieWeeklyCheckInDataProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'calorieWeeklyCheckInDataProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$calorieWeeklyCheckInDataHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<CalorieWeeklyCheckInData> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<CalorieWeeklyCheckInData> create(Ref ref) {
+    return calorieWeeklyCheckInData(ref);
+  }
+}
+
+String _$calorieWeeklyCheckInDataHash() =>
+    r'054e3e8502eb11fc6ec62e15379d66555f438279';

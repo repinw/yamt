@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_messages.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -10,22 +10,22 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Content for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInDialogContent extends StatelessWidget {
   /// Creates diary weekly check-in dialog content.
-  const DiaryWeeklyCheckInDialogContent({required this.viewModel, super.key});
+  const DiaryWeeklyCheckInDialogContent({required this.checkInData, super.key});
 
   /// Weekly check-in view model.
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   @override
   Widget build(BuildContext context) {
-    final pending = viewModel.pendingWeeklyCheckIn;
-    final calculation = viewModel.calculation;
+    final pending = checkInData.pendingWeeklyCheckIn;
+    final calculation = checkInData.calculation;
 
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          DiaryWeeklyCheckInDialogIntro(viewModel: viewModel),
+          DiaryWeeklyCheckInDialogIntro(checkInData: checkInData),
           if (pending != null) ...<Widget>[
             const SizedBox(height: AppSpacing.md),
             DiaryWeeklyCheckInWindowRow(pending: pending),
@@ -34,12 +34,12 @@ class DiaryWeeklyCheckInDialogContent extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             DiaryWeeklyCheckInCalculationRows(
               calculation: calculation,
-              lowConfidence: viewModel.lowConfidence,
+              lowConfidence: checkInData.lowConfidence,
             ),
           ],
-          if (viewModel.isBlocked) ...<Widget>[
+          if (checkInData.isBlocked) ...<Widget>[
             const SizedBox(height: AppSpacing.md),
-            DiaryWeeklyCheckInBlockedMessage(viewModel: viewModel),
+            DiaryWeeklyCheckInBlockedMessage(checkInData: checkInData),
           ],
         ],
       ),
@@ -50,17 +50,17 @@ class DiaryWeeklyCheckInDialogContent extends StatelessWidget {
 /// Intro text for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInDialogIntro extends StatelessWidget {
   /// Creates diary weekly check-in dialog intro text.
-  const DiaryWeeklyCheckInDialogIntro({required this.viewModel, super.key});
+  const DiaryWeeklyCheckInDialogIntro({required this.checkInData, super.key});
 
   /// Weekly check-in view model.
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Text(
-      viewModel.isReady
+      checkInData.isReady
           ? l10n.caloriesWeeklyCheckInDialogReadyBody
           : l10n.caloriesWeeklyCheckInDialogBlockedBody,
     );
@@ -70,10 +70,13 @@ class DiaryWeeklyCheckInDialogIntro extends StatelessWidget {
 /// Blocked reason text for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInBlockedMessage extends StatelessWidget {
   /// Creates blocked reason text.
-  const DiaryWeeklyCheckInBlockedMessage({required this.viewModel, super.key});
+  const DiaryWeeklyCheckInBlockedMessage({
+    required this.checkInData,
+    super.key,
+  });
 
   /// Weekly check-in view model.
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +86,7 @@ class DiaryWeeklyCheckInBlockedMessage extends StatelessWidget {
     return Text(
       resolveDiaryWeeklyCheckInBlockedMessage(
         l10n: l10n,
-        viewModel: viewModel,
+        checkInData: checkInData,
         locale: locale,
         fallbackMessage: '',
       ),

@@ -29,51 +29,6 @@ class BurnWeekMockDifficulty {
   final double safeZoneMultiplier;
 }
 
-/// Burn Week zone state for current metrics.
-enum BurnWeekZoneStatus {
-  /// Actual sits inside safe zone.
-  inside,
-
-  /// Actual sits left of safe zone and needs more kcal.
-  below,
-
-  /// Actual sits right of safe zone and needs less kcal.
-  above,
-}
-
-/// Next game-loop step when user leaves safe zone.
-enum BurnWeekZoneDecisionType {
-  /// No dialog or correction needed.
-  inside,
-
-  /// User can recover by eating more or spending one heart.
-  belowCanEatOrUseHeart,
-
-  /// User can no longer recover by eating alone.
-  belowNeedsHeart,
-
-  /// Fasting alone can still recover this week.
-  aboveFastOnly,
-
-  /// User is beyond weekly limit and needs one heart.
-  aboveNeedsHeart,
-}
-
-/// Pure game-loop decision from current Burn Week state.
-class BurnWeekZoneDecision {
-  /// Creates Burn Week zone decision.
-  const BurnWeekZoneDecision({
-    required this.type,
-    required this.status,
-  });
-
-  /// Decision type for UI flow.
-  final BurnWeekZoneDecisionType type;
-
-  /// Coarse zone status.
-  final BurnWeekZoneStatus status;
-}
-
 /// Result after spending one Burn Week heart.
 class BurnWeekHeartSpendResult {
   /// Creates Burn Week heart spend result.
@@ -233,45 +188,6 @@ BurnWeekMockDifficulty resolveBurnWeekMockDifficulty(int starCount) {
     minimumHearts: burnWeekInitialHeartCount,
     safeZoneMultiplier: 1,
   );
-}
-
-/// Resolves zone state from current metrics.
-BurnWeekZoneStatus resolveBurnWeekZoneStatus(BurnWeekMockMetrics metrics) {
-  if (metrics.consumedKcal < metrics.safeZoneMinKcal) {
-    return BurnWeekZoneStatus.below;
-  }
-  if (metrics.consumedKcal > metrics.safeZoneMaxKcal) {
-    return BurnWeekZoneStatus.above;
-  }
-  return BurnWeekZoneStatus.inside;
-}
-
-/// Resolves full Burn Week decision for out-of-zone state.
-BurnWeekZoneDecision resolveBurnWeekZoneDecision(BurnWeekMockMetrics metrics) {
-  final status = resolveBurnWeekZoneStatus(metrics);
-  switch (status) {
-    case BurnWeekZoneStatus.inside:
-      return const BurnWeekZoneDecision(
-        type: BurnWeekZoneDecisionType.inside,
-        status: BurnWeekZoneStatus.inside,
-      );
-    case BurnWeekZoneStatus.below:
-      final underTargetKcal = metrics.targetKcal - metrics.consumedKcal;
-      final remainingWeekKcal = metrics.weeklyGoalKcal - metrics.targetKcal;
-      return BurnWeekZoneDecision(
-        type: underTargetKcal > remainingWeekKcal
-            ? BurnWeekZoneDecisionType.belowNeedsHeart
-            : BurnWeekZoneDecisionType.belowCanEatOrUseHeart,
-        status: BurnWeekZoneStatus.below,
-      );
-    case BurnWeekZoneStatus.above:
-      return BurnWeekZoneDecision(
-        type: metrics.consumedKcal > metrics.weeklyGoalKcal
-            ? BurnWeekZoneDecisionType.aboveNeedsHeart
-            : BurnWeekZoneDecisionType.aboveFastOnly,
-        status: BurnWeekZoneStatus.above,
-      );
-  }
 }
 
 /// Whether current week earns one new star.

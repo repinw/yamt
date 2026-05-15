@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -11,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class DiaryWeeklyCheckInHintActions extends StatelessWidget {
   /// Creates diary weekly check-in hint actions.
   const DiaryWeeklyCheckInHintActions({
-    required this.viewModel,
+    required this.checkInData,
     required this.selectedDay,
     required this.selectedDayHasEntries,
     required this.onContinue,
@@ -21,7 +20,7 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
   });
 
   /// Weekly check-in view model.
-  final CalorieWeeklyCheckInViewModel viewModel;
+  final DiaryWeeklyCheckInData checkInData;
 
   /// Selected diary day.
   final DateTime selectedDay;
@@ -41,7 +40,7 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pending = viewModel.pendingWeeklyCheckIn;
+    final pending = checkInData.pendingWeeklyCheckIn;
     final skipDayData = _resolveSkippableDay(pending);
 
     return Wrap(
@@ -49,7 +48,7 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
       runSpacing: AppSpacing.sm,
       children: <Widget>[
         if (pending != null) _ContinueButton(onPressed: onContinue),
-        if (_canOpenTrends(viewModel))
+        if (_canOpenTrends(checkInData))
           _OpenTrendsButton(onPressed: onOpenHealthTrends),
         if (skipDayData != null)
           _SkipDayButton(
@@ -68,7 +67,7 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
         selectedDay.isAfter(pending.windowEndDate)) {
       return null;
     }
-    final selectedDayData = viewModel.days
+    final selectedDayData = checkInData.days
         .where((day) => DateUtils.isSameDay(day.day, selectedDay))
         .firstOrNull;
     if (selectedDayData == null ||
@@ -78,8 +77,8 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
     return selectedDayData;
   }
 
-  bool _canOpenTrends(CalorieWeeklyCheckInViewModel viewModel) {
-    return switch (viewModel.blockedReason) {
+  bool _canOpenTrends(DiaryWeeklyCheckInData checkInData) {
+    return switch (checkInData.blockedReason) {
       CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight ||
       CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight ||
       CalorieWeeklyCheckInBlockedReason.unstableWeightData => true,

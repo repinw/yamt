@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
+    show DiaryWeeklyCheckInData;
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_hint_card/diary_weekly_checkin_hint_card.dart';
@@ -13,7 +15,9 @@ void main() {
     await tester.pumpWidget(
       _App(
         child: DiaryWeeklyCheckInHintCard(
-          viewModel: _viewModel(freshness: CalorieLearnedTdeeFreshness.none),
+          checkInData: _checkInData(
+            freshness: CalorieLearnedTdeeFreshness.none,
+          ),
           selectedDay: DateTime(2026, 4, 3),
           selectedDayHasEntries: false,
           onContinue: () {},
@@ -36,7 +40,7 @@ void main() {
     await tester.pumpWidget(
       _App(
         child: DiaryWeeklyCheckInHintCard(
-          viewModel: _viewModel(
+          checkInData: _checkInData(
             pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
             days: [
               _windowDay(day: selectedDay),
@@ -72,7 +76,7 @@ void main() {
     await tester.pumpWidget(
       _App(
         child: DiaryWeeklyCheckInHintCard(
-          viewModel: _viewModel(
+          checkInData: _checkInData(
             pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
             blockedReason:
                 CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
@@ -114,7 +118,7 @@ void main() {
       await tester.pumpWidget(
         _App(
           child: DiaryWeeklyCheckInHintCard(
-            viewModel: _viewModel(freshness: freshness),
+            checkInData: _checkInData(freshness: freshness),
             selectedDay: DateTime(2026, 4, 3),
             selectedDayHasEntries: false,
             onContinue: () {},
@@ -160,7 +164,7 @@ CalorieWeeklyCheckInWindowDay _windowDay({
   );
 }
 
-CalorieWeeklyCheckInViewModel _viewModel({
+DiaryWeeklyCheckInData _checkInData({
   PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
   CalorieWeeklyCheckInBlockedReason? blockedReason,
   List<DateTime> missingWeightDays = const <DateTime>[],
@@ -168,7 +172,7 @@ CalorieWeeklyCheckInViewModel _viewModel({
       const <CalorieWeeklyCheckInWindowDay>[],
   CalorieLearnedTdeeFreshness freshness = CalorieLearnedTdeeFreshness.fresh,
 }) {
-  return CalorieWeeklyCheckInViewModel(
+  return DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
     shouldAutoOpen: pendingWeeklyCheckIn != null,
     days: days,

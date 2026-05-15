@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
+    show DiaryWeeklyCheckInData;
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_dialog_scheduler.dart';
 
@@ -12,14 +14,14 @@ void main() {
       schedulePostFrame: postFrameCallbacks.add,
     );
     addTearDown(scheduler.dispose);
-    final opened = <CalorieWeeklyCheckInViewModel>[];
-    final viewModel = _viewModel(DateTime(2026, 4, 20));
+    final opened = <DiaryWeeklyCheckInData>[];
+    final checkInData = _checkInData(DateTime(2026, 4, 20));
 
     scheduler.schedule(
-      viewModel: viewModel,
+      checkInData: checkInData,
       isMounted: () => true,
-      openDialog: (viewModel) {
-        opened.add(viewModel);
+      openDialog: (checkInData) {
+        opened.add(checkInData);
         return Future<void>.value();
       },
     );
@@ -29,7 +31,7 @@ void main() {
 
     postFrameCallbacks.removeAt(0)();
 
-    expect(opened, [viewModel]);
+    expect(opened, [checkInData]);
   });
 
   test('defers second dialog while one is open', () {
@@ -38,23 +40,23 @@ void main() {
       schedulePostFrame: postFrameCallbacks.add,
     );
     addTearDown(scheduler.dispose);
-    final opened = <CalorieWeeklyCheckInViewModel>[];
-    final firstViewModel = _viewModel(DateTime(2026, 4, 13));
-    final secondViewModel = _viewModel(DateTime(2026, 4, 20));
+    final opened = <DiaryWeeklyCheckInData>[];
+    final firstCheckInData = _checkInData(DateTime(2026, 4, 13));
+    final secondCheckInData = _checkInData(DateTime(2026, 4, 20));
 
     expect(
       scheduler.beginDialog(
-        viewModel: firstViewModel,
+        checkInData: firstCheckInData,
         isMounted: () => true,
       ),
       isTrue,
     );
 
     scheduler.schedule(
-      viewModel: secondViewModel,
+      checkInData: secondCheckInData,
       isMounted: () => true,
-      openDialog: (viewModel) {
-        opened.add(viewModel);
+      openDialog: (checkInData) {
+        opened.add(checkInData);
         return Future<void>.value();
       },
     );
@@ -64,8 +66,8 @@ void main() {
 
     scheduler.endDialog(
       isMounted: () => true,
-      openDialog: (viewModel) {
-        opened.add(viewModel);
+      openDialog: (checkInData) {
+        opened.add(checkInData);
         return Future<void>.value();
       },
     );
@@ -73,7 +75,7 @@ void main() {
 
     postFrameCallbacks.removeAt(0)();
 
-    expect(opened, [secondViewModel]);
+    expect(opened, [secondCheckInData]);
   });
 
   test('dispose cancels pending dialog opens', () {
@@ -81,13 +83,13 @@ void main() {
     final scheduler = DiaryWeeklyCheckInDialogScheduler(
       schedulePostFrame: postFrameCallbacks.add,
     );
-    final opened = <CalorieWeeklyCheckInViewModel>[];
+    final opened = <DiaryWeeklyCheckInData>[];
 
     scheduler.schedule(
-      viewModel: _viewModel(DateTime(2026, 4, 20)),
+      checkInData: _checkInData(DateTime(2026, 4, 20)),
       isMounted: () => true,
-      openDialog: (viewModel) {
-        opened.add(viewModel);
+      openDialog: (checkInData) {
+        opened.add(checkInData);
         return Future<void>.value();
       },
     );
@@ -101,8 +103,8 @@ void main() {
   });
 }
 
-CalorieWeeklyCheckInViewModel _viewModel(DateTime windowStartDate) {
-  return CalorieWeeklyCheckInViewModel(
+DiaryWeeklyCheckInData _checkInData(DateTime windowStartDate) {
+  return DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: windowStartDate,
       windowEndDate: windowStartDate.add(const Duration(days: 6)),

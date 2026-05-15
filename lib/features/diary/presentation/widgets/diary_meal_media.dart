@@ -1,9 +1,18 @@
-part of 'diary_meals_section.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
+import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
-class _CollapsedMealThumb extends ConsumerWidget {
-  const _CollapsedMealThumb({required this.entry});
+/// Compact thumbnail used for collapsed meal entry previews.
+class CollapsedMealThumb extends ConsumerWidget {
+  /// Creates a compact meal thumbnail.
+  const CollapsedMealThumb({required this.entry, super.key});
 
-  final CalorieEntry entry;
+  /// Entry whose media should be rendered.
+  final DiaryMealEntry entry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,22 +28,25 @@ class _CollapsedMealThumb extends ConsumerWidget {
         child: storedImageBytes != null
             ? Image.memory(storedImageBytes, fit: BoxFit.cover)
             : entry.imageUrl == null
-            ? _MealThumbFallback(label: entry.name, compact: true)
+            ? MealThumbFallback(label: entry.name, compact: true)
             : AppCachedNetworkImage(
                 imageUrl: entry.imageUrl!,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) =>
-                    _MealThumbFallback(label: entry.name, compact: true),
+                    MealThumbFallback(label: entry.name, compact: true),
               ),
       ),
     );
   }
 }
 
-class _MealThumb extends ConsumerWidget {
-  const _MealThumb({required this.entry});
+/// Thumbnail used in expanded meal entry rows.
+class MealThumb extends ConsumerWidget {
+  /// Creates a meal thumbnail.
+  const MealThumb({required this.entry, super.key});
 
-  final CalorieEntry entry;
+  /// Entry whose media should be rendered.
+  final DiaryMealEntry entry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,11 +62,11 @@ class _MealThumb extends ConsumerWidget {
         child: storedImageBytes != null
             ? Image.memory(storedImageBytes, fit: BoxFit.cover)
             : entry.imageUrl == null
-            ? _MealThumbFallback(label: entry.name)
+            ? MealThumbFallback(label: entry.name)
             : AppCachedNetworkImage(
                 imageUrl: entry.imageUrl!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _MealThumbFallback(
+                errorBuilder: (_, _, _) => MealThumbFallback(
                   label: entry.name,
                 ),
               ),
@@ -63,10 +75,19 @@ class _MealThumb extends ConsumerWidget {
   }
 }
 
-class _MealThumbFallback extends StatelessWidget {
-  const _MealThumbFallback({required this.label, this.compact = false});
+/// Initial-letter fallback used when an entry has no loadable image.
+class MealThumbFallback extends StatelessWidget {
+  /// Creates a meal thumbnail fallback.
+  const MealThumbFallback({
+    required this.label,
+    super.key,
+    this.compact = false,
+  });
 
+  /// Text used to derive the fallback initial.
   final String label;
+
+  /// Whether to render the compact fallback style.
   final bool compact;
 
   @override

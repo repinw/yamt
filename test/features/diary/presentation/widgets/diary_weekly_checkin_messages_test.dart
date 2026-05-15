@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
+    show DiaryWeeklyCheckInData;
 import 'package:yamt/features/diary/presentation/diary_weekly_checkin_messages.dart';
 import 'package:yamt/l10n/app_localizations_en.dart';
 
@@ -15,7 +17,7 @@ void main() {
 
     final message = resolveDiaryWeeklyCheckInBlockedMessage(
       l10n: l10n,
-      viewModel: _viewModel(blockedReason: null),
+      checkInData: _checkInData(blockedReason: null),
       locale: 'en',
       fallbackMessage: 'Fallback',
     );
@@ -47,7 +49,7 @@ void main() {
     for (final (reason, expectedMessage) in cases) {
       final message = resolveDiaryWeeklyCheckInBlockedMessage(
         l10n: l10n,
-        viewModel: _viewModel(blockedReason: reason),
+        checkInData: _checkInData(blockedReason: reason),
         locale: 'en',
         fallbackMessage: 'Fallback',
       );
@@ -65,7 +67,7 @@ void main() {
 
     final message = resolveDiaryWeeklyCheckInBlockedMessage(
       l10n: l10n,
-      viewModel: _viewModel(
+      checkInData: _checkInData(
         blockedReason:
             CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
         missingWeightDays: missingWeightDays,
@@ -92,7 +94,7 @@ void main() {
 
     final message = resolveDiaryWeeklyCheckInBlockedMessage(
       l10n: l10n,
-      viewModel: _viewModel(
+      checkInData: _checkInData(
         blockedReason:
             CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
         pendingWeeklyCheckIn: pending,
@@ -116,7 +118,7 @@ void main() {
 
     final message = resolveDiaryWeeklyCheckInBlockedMessage(
       l10n: l10n,
-      viewModel: _viewModel(
+      checkInData: _checkInData(
         blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
         missingWeightDays: missingWeightDays,
       ),
@@ -142,7 +144,7 @@ void main() {
 
     final message = resolveDiaryWeeklyCheckInBlockedMessage(
       l10n: l10n,
-      viewModel: _viewModel(
+      checkInData: _checkInData(
         blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
         missingWeightDays: <DateTime>[DateTime(2026, 4, 5)],
         pendingWeeklyCheckIn: pending,
@@ -167,7 +169,7 @@ void main() {
 
     final message = resolveDiaryWeeklyCheckInBlockedMessage(
       l10n: l10n,
-      viewModel: _viewModel(
+      checkInData: _checkInData(
         blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
         pendingWeeklyCheckIn: pending,
       ),
@@ -182,12 +184,12 @@ void main() {
   });
 }
 
-CalorieWeeklyCheckInViewModel _viewModel({
+DiaryWeeklyCheckInData _checkInData({
   required CalorieWeeklyCheckInBlockedReason? blockedReason,
   List<DateTime> missingWeightDays = const <DateTime>[],
   PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
 }) {
-  return CalorieWeeklyCheckInViewModel(
+  return DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
     shouldAutoOpen: false,
     days: const <CalorieWeeklyCheckInWindowDay>[],

@@ -66,6 +66,7 @@ class CalorieWeekDayOverview {
     required this.goalKcal,
     required this.entryCount,
     double? baseGoalKcal,
+    this.activityBonusKcal = 0,
     this.isHeartDay = false,
   }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
 
@@ -80,6 +81,9 @@ class CalorieWeekDayOverview {
 
   /// The saved base goal kcal before daily activity adjustment.
   final double baseGoalKcal;
+
+  /// Eatable activity kcal counted toward the day.
+  final double activityBonusKcal;
 
   /// The entry count.
   final int entryCount;
@@ -241,6 +245,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
           totalKcal: entry.value.totalKcal,
           goalKcal: resolvedGoals[entry.key].goalKcal,
           baseGoalKcal: resolvedGoals[entry.key].storedGoalKcal,
+          activityBonusKcal: resolvedGoals[entry.key].activityDeltaKcal,
           entryCount: entry.value.entryCount,
           isHeartDay: runState?.isHeartDay(entry.value.date) ?? false,
         ),
@@ -299,6 +304,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
           totalKcal: overview.totalKcal,
           goalKcal: overview.goalKcal,
           baseGoalKcal: overview.baseGoalKcal,
+          activityBonusKcal: overview.activityBonusKcal,
           entryCount: overview.entryCount,
           isHeartDay: overview.isHeartDay,
         ),
@@ -367,6 +373,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
     totalKcal: totalKcal,
     goalKcal: resolvedGoal.goalKcal,
     baseGoalKcal: resolvedGoal.storedGoalKcal,
+    activityBonusKcal: resolvedGoal.activityDeltaKcal,
     entryCount: entries.length,
     isHeartDay: runState?.isHeartDay(normalizedDay) ?? false,
   );

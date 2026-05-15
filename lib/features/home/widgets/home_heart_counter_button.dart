@@ -5,7 +5,7 @@ import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
-import 'package:yamt/features/diary/provider/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shared heart counter shown in the home shell app bar.
@@ -92,11 +92,13 @@ class HomeHeartCounterButton extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(dialogL10n.burnWeekActionCancel),
+              child: Text(
+                MaterialLocalizations.of(dialogContext).cancelButtonLabel,
+              ),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(dialogL10n.burnWeekZoneUseHeartAction),
+              child: Text(dialogL10n.homeHeartUseConfirmAction),
             ),
           ],
         );

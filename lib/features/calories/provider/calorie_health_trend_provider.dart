@@ -1,6 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
@@ -8,6 +7,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/health/domain/diary_activity_summary.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';

@@ -5,6 +5,9 @@ Dependencies that create loops (inversions) are marked with `!`.
 
 ```mermaid
 flowchart TD;
+activity-->auth;
+activity-->calories;
+activity-->health;
 auth--!-->shared;
 calorie_goal-->calories;
 calories--!-->calorie_goal;
@@ -16,6 +19,7 @@ cooking_flow-->inventory;
 cooking_flow-->kitchen_utensils;
 cooking_flow-->recipes;
 cooking_flow-->shoppinglist;
+diary-->activity;
 diary-->calories;
 diary-->health;
 diary-->home;
@@ -75,4 +79,4 @@ statistics-->inventory;
 
 In this folder: 11
 
-Including sub-folders: 13
+Including sub-folders: 14

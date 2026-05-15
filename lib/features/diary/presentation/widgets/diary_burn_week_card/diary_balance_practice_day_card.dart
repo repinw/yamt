@@ -1,23 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Whether the diary balance card should show the pre-start practice state.
-bool shouldShowDiaryBalancePracticeDayCard({
-  required CalorieWeekOverview weekOverview,
-  required DateTime selectedDay,
-}) {
-  final startDate = weekOverview.nextGoalStartDate;
-  if (!weekOverview.goalStartsInFuture || startDate == null) {
-    return false;
-  }
-  return normalizeDiaryDay(selectedDay).isBefore(normalizeDiaryDay(startDate));
-}
 
 /// Practice-day state shown before official Burn Week counting starts.
 class DiaryBalancePracticeDayCard extends StatelessWidget {

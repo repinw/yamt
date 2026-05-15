@@ -1,7 +1,21 @@
-part of 'diary_meals_section.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/meal_type_l10n.dart';
+import 'package:yamt/core/theme/metric_accent_colors.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/diary/domain/diary_meal_section.dart';
+import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_media.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_quick_add_menu.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-class _DiaryMealCard extends StatelessWidget {
-  const _DiaryMealCard({
+/// A collapsible diary meal card with quick-add actions and entries.
+class DiaryMealCard extends StatelessWidget {
+  /// Creates a diary meal card.
+  const DiaryMealCard({
     required this.section,
     required this.isExpanded,
     required this.onToggle,
@@ -10,10 +24,19 @@ class _DiaryMealCard extends StatelessWidget {
     super.key,
   });
 
-  final CalorieMealSection section;
+  /// Meal section data rendered by the card.
+  final DiaryMealSection section;
+
+  /// Whether entries are currently visible.
   final bool isExpanded;
+
+  /// Toggles the card expansion state.
   final VoidCallback onToggle;
-  final ValueChanged<CalorieEntry> onTapEntry;
+
+  /// Called when an entry row is selected.
+  final ValueChanged<DiaryMealEntry> onTapEntry;
+
+  /// Called when a quick-add source is selected.
   final ValueChanged<DiaryQuickEatSource> onQuickAdd;
 
   @override
@@ -24,7 +47,7 @@ class _DiaryMealCard extends StatelessWidget {
       Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
-    final accentColors = DiaryAccentColors.of(context);
+    final accentColors = MetricAccentColors.of(context);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -129,8 +152,8 @@ class _CollapsedMealBody extends StatelessWidget {
     required this.onTapEntry,
   });
 
-  final CalorieMealSection section;
-  final ValueChanged<CalorieEntry> onTapEntry;
+  final DiaryMealSection section;
+  final ValueChanged<DiaryMealEntry> onTapEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +205,7 @@ class _CollapsedMealBody extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 2),
                     child: Row(
                       children: [
-                        _CollapsedMealThumb(entry: entry),
+                        CollapsedMealThumb(entry: entry),
                         const SizedBox(width: AppSpacing.xs),
                         Expanded(
                           child: Align(
@@ -227,8 +250,8 @@ class _ExpandedMealBody extends StatelessWidget {
     required this.onTapEntry,
   });
 
-  final CalorieMealSection section;
-  final ValueChanged<CalorieEntry> onTapEntry;
+  final DiaryMealSection section;
+  final ValueChanged<DiaryMealEntry> onTapEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +315,7 @@ class _ExpandedEmptyMeal extends StatelessWidget {
 class _ExpandedMealEntry extends StatelessWidget {
   const _ExpandedMealEntry({required this.entry, required this.onTap});
 
-  final CalorieEntry entry;
+  final DiaryMealEntry entry;
   final VoidCallback onTap;
 
   @override
@@ -303,7 +326,7 @@ class _ExpandedMealEntry extends StatelessWidget {
       Localizations.localeOf(context).toLanguageTag(),
     );
     final l10n = AppLocalizations.of(context)!;
-    final accentColors = DiaryAccentColors.of(context);
+    final accentColors = MetricAccentColors.of(context);
 
     return Material(
       color: Colors.transparent,
@@ -331,7 +354,7 @@ class _ExpandedMealEntry extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [
-                _MealThumb(entry: entry),
+                MealThumb(entry: entry),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
@@ -381,13 +404,13 @@ class _ExpandedMealEntry extends StatelessWidget {
 class _MacroDots extends StatelessWidget {
   const _MacroDots({required this.entry, required this.numberFormat});
 
-  final CalorieEntry entry;
+  final DiaryMealEntry entry;
   final NumberFormat numberFormat;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final accentColors = DiaryAccentColors.of(context);
+    final accentColors = MetricAccentColors.of(context);
     return Wrap(
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.xs,
@@ -453,7 +476,7 @@ class _MealIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final accentColors = DiaryAccentColors.of(context);
+    final accentColors = MetricAccentColors.of(context);
     return Container(
       width: 42,
       height: 42,
@@ -470,8 +493,10 @@ class _MealIcon extends StatelessWidget {
   }
 }
 
-class _MealCardsSkeleton extends StatelessWidget {
-  const _MealCardsSkeleton();
+/// Skeleton shown while meal cards are loading.
+class DiaryMealCardsSkeleton extends StatelessWidget {
+  /// Creates the meal card loading skeleton.
+  const DiaryMealCardsSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {

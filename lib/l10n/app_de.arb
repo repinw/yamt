@@ -30,6 +30,7 @@
   "homeHeartUseTitle": "Herztag nutzen?",
   "homeHeartUseMessage":
       "Gib 1 Herz aus, um {day} zu ignorieren. Erfasstes Essen bleibt im Tagebuch, aber der Tag zählt als perfekt und wird beim Wochenlernen übersprungen.",
+  "homeHeartUseConfirmAction": "Herz nutzen",
   "@homeHeartUseMessage": {
     "placeholders": {
       "day": {
@@ -978,23 +979,7 @@
   },
   "caloriesDebugDumpFailed":
       "Kalorien-Debug-Tabelle konnte nicht ausgegeben werden.",
-  "burnWeekUseHeartTitle": "Herztag nutzen?",
-  "burnWeekUseHeartMessage":
-      "Setze 1 Herz ein, um heute zu ignorieren. Eingetragenes Essen bleibt im Tagebuch, aber heute zählt als perfekter Burn-Tag und wird beim wöchentlichen Lernen übersprungen ({dayKcal} kcal Tag).",
-  "@burnWeekUseHeartMessage": {
-    "placeholders": {
-      "dayKcal": {
-        "type": "int"
-      }
-    }
-  },
-  "burnWeekActionCancel": "Abbrechen",
-  "burnWeekActionYes": "Ja",
-  "burnWeekActionNo": "Nein",
   "burnWeekRunOverTitle": "Run beendet",
-  "burnWeekRunLimitTitle": "Run kann nicht perfekt enden",
-  "burnWeekRunLimitContinueAction": "Trotzdem weitermachen",
-  "burnWeekRunLimitStartNewAction": "Neuen Run starten",
   "burnWeekRunRestartsOn": "Frischer Run startet am {date}.",
   "@burnWeekRunRestartsOn": {
     "placeholders": {
@@ -1009,27 +994,6 @@
       "date": {}
     }
   },
-  "burnWeekZoneOutOfSafeZoneTitle": "Außerhalb der Sicherheitszone",
-  "burnWeekZoneBelowRecoverMessage":
-      "Du liegst unter dem Ziel. Nutze 1 Herz, um heute als perfekten Herztag zu markieren, oder iss mehr, um wieder ins Ziel zu kommen.",
-  "burnWeekZoneBelowRecoverNoHeartsMessage":
-      "Du liegst unter dem Ziel. Keine Herzen mehr übrig. Iss mehr, um wieder ins Ziel zu kommen.",
-  "burnWeekZoneBelowNeedsHeartTitle": "Zu weit unter dem Ziel",
-  "burnWeekZoneBelowNeedsHeartMessage":
-      "In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. 1 Herz nutzen und heute als perfekten Herztag markieren?",
-  "burnWeekZoneBelowRunOverMessage":
-      "In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen, und keine Herzen sind übrig. Mach trotzdem weiter oder starte morgen einen frischen Run.",
-  "burnWeekZoneEatMoreTitle": "Mehr essen",
-  "burnWeekZoneEatMoreAction": "Mehr essen",
-  "burnWeekZoneEatMoreMessage":
-      "Iss mehr, um wieder ins Ziel zu kommen.",
-  "burnWeekZoneUseHeartAction": "Herz nutzen",
-  "burnWeekZoneAboveFastMessage":
-      "Du hast zu viel getrackt. Fasten hilft dir, wieder in Spur zu kommen.",
-  "burnWeekZoneAboveNeedsHeartMessage":
-      "Du liegst weit über dem Wochenlimit. 1 Herz nutzen und heute als perfekten Herztag markieren?",
-  "burnWeekZoneAboveRunOverMessage":
-      "Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run kann nicht perfekt enden. Mach trotzdem weiter oder starte morgen einen frischen Run.",
   "calorieBudgetDetailsActualLabel": "Ist (du)",
   "calorieBudgetDetailsTargetLabel": "Soll (Ziel)",
   "calorieBudgetDetailsBalanceExplanation":
@@ -1228,8 +1192,26 @@
   "diaryQuickEatInventoryEmpty": "Kein verfügbares Essen im Vorrat.",
   "diaryBalanceLoadFailed": "Balance konnte nicht geladen werden",
   "diaryNutritionLoadFailed": "Nährwerte konnten nicht geladen werden",
+  "diaryNutritionTitle": "Makronährstoffe",
   "diaryBalanceEatenLabel": "Gegessen",
   "diaryBalanceLeftLabel": "Übrig",
+  "diaryBalanceLeftTodayLabel": "Übrig heute",
+  "diaryBalanceWeekLabel": "Woche {week}",
+  "@diaryBalanceWeekLabel": {
+    "placeholders": {
+      "week": {}
+    }
+  },
+  "diaryBalanceDayProgressLabel": "Tag {day} von {total}",
+  "@diaryBalanceDayProgressLabel": {
+    "placeholders": {
+      "day": {},
+      "total": {}
+    }
+  },
+  "diaryBalanceTargetMarkerLabel": "Soll",
+  "diaryBalanceWeekActualLabel": "Ist (Woche)",
+  "diaryBalanceWeekTargetLabel": "Wochenziel",
   "diaryBalanceRealEatenLabel": "Echt {kcal}",
   "@diaryBalanceRealEatenLabel": {
     "placeholders": {
