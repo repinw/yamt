@@ -20,6 +20,7 @@ import 'package:yamt/features/product_search/presentation/widgets/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_review_item_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
@@ -27,8 +28,6 @@ import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_preview_button.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_preview_dialog.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_review_draft_helpers.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_header.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
@@ -85,9 +84,7 @@ class _InventoryReceiptReviewSheetState
     final result = _itemProcessor.process(widget.items);
     _items = [
       for (final draft in result.items)
-        prepareReceiptReviewDraftForReview(
-          syncReceiptReviewDraftToSelectedCandidate(draft),
-        ),
+        draft.syncToSelectedCandidate().prepareForReceiptReview(),
     ];
     _receiptMetadata = result.metadata;
   }
@@ -200,7 +197,7 @@ class _InventoryReceiptReviewSheetState
               onEditTap: _openItemEditor,
               onSwitchTap: _openCandidatePicker,
               onConfirmTap: () => _toggleItemConfirmed(entry.$2.item.id),
-              canConfirm: canConfirmReceiptReviewDraft(entry.$2),
+              canConfirm: entry.$2.canConfirmReceiptReview,
               isActionLoading: _candidateLoadingItemId == entry.$2.item.id,
             ),
             const SizedBox(height: 12),
@@ -230,9 +227,7 @@ class _InventoryReceiptReviewSheetState
     }
 
     _replaceDraftByItemId(itemId, (currentDraft) {
-      return prepareReceiptReviewDraftForReview(
-        currentDraft.copyWith(item: editedItem),
-      );
+      return currentDraft.copyWith(item: editedItem).prepareForReceiptReview();
     });
   }
 
@@ -267,10 +262,10 @@ class _InventoryReceiptReviewSheetState
           return;
         }
         _replaceDraftByItemId(itemId, (draft) {
-          final updatedDraft = syncReceiptReviewDraftToSelectedCandidate(
-            draft.selectCandidate(candidateId),
-          );
-          return prepareReceiptReviewDraftForReview(updatedDraft);
+          return draft
+              .selectCandidate(candidateId)
+              .syncToSelectedCandidate()
+              .prepareForReceiptReview();
         });
       case ReceiptCandidatePickerSelectionKind.manualEntry:
         await _openManualProductEntry(itemId);
@@ -303,15 +298,15 @@ class _InventoryReceiptReviewSheetState
       final selectedProduct = result.selectedProduct;
       final selectedGlobalFoodItemId = result.selectedGlobalFoodItemId;
       if (selectedProduct == null && selectedGlobalFoodItemId == null) {
-        return prepareReceiptReviewDraftForReview(
-          draft.copyWith(item: result.item).selectNewItem(),
-        );
+        return draft
+            .copyWith(item: result.item)
+            .selectNewItem()
+            .prepareForReceiptReview();
       }
 
       final scannedCandidate = selectedProduct != null
           ? matcher.candidateFromExternalResult(selectedProduct)
-          : candidateFromRecentReceiptReviewItem(
-              item: result.item,
+          : result.item.toRecentReceiptReviewCandidate(
               globalFoodItemId: selectedGlobalFoodItemId!,
             );
       final mergedCandidates = <GlobalFoodMatchCandidate>[
@@ -327,7 +322,7 @@ class _InventoryReceiptReviewSheetState
             selectionNeedsReview: false,
           )
           .selectCandidate(scannedCandidate.item.id);
-      return prepareReceiptReviewDraftForReview(updatedDraft);
+      return updatedDraft.prepareForReceiptReview();
     });
   }
 
@@ -369,9 +364,9 @@ class _InventoryReceiptReviewSheetState
               candidates,
             ),
           );
-      final syncedDraft = prepareReceiptReviewDraftForReview(
-        syncReceiptReviewDraftToSelectedCandidate(updatedDraft),
-      );
+      final syncedDraft = updatedDraft
+          .syncToSelectedCandidate()
+          .prepareForReceiptReview();
       setState(() {
         _items[currentIndex] = syncedDraft;
       });
@@ -474,7 +469,7 @@ class _InventoryReceiptReviewSheetState
       });
       return;
     }
-    if (!canConfirmReceiptReviewDraft(draft)) {
+    if (!draft.canConfirmReceiptReview) {
       return;
     }
 

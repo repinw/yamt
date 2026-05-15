@@ -35,11 +35,17 @@ InventoryItem _item({
   DateTime? receiptDate,
   String storeName = 'Store',
   String? brand,
+  String? barcode,
+  String? category,
+  String? imageUrl,
   String? weight,
+  String? foodFingerprint,
   int quantity = 1,
   double unitPrice = 1.0,
   String? currencyCode,
   GlobalFoodNutrition? nutrition,
+  InventoryItemOrigin origin = InventoryItemOrigin.standard,
+  String? globalFoodItemId,
   Map<String, double> discounts = const <String, double>{},
 }) {
   return InventoryItem.create(
@@ -51,8 +57,14 @@ InventoryItem _item({
     unitPrice: unitPrice,
     currencyCode: currencyCode,
     brand: brand,
+    barcode: barcode,
+    category: category,
+    imageUrl: imageUrl,
     weight: weight,
+    foodFingerprint: foodFingerprint,
     nutrition: nutrition,
+    origin: origin,
+    globalFoodItemId: globalFoodItemId,
     discounts: discounts,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
@@ -72,6 +84,7 @@ Widget _wrap({
   List<InventoryItem>? items,
   List<ReceiptReviewItemDraft>? drafts,
   Uint8List? receiptPreviewBytes,
+  Future<void> Function(List<ReceiptReviewItemDraft> drafts)? onDraftSaveTap,
   List<Override> overrides = const <Override>[],
 }) {
   assert(
@@ -94,6 +107,10 @@ Widget _wrap({
           receiptPreviewBytes: receiptPreviewBytes,
           onCancelTap: onCancelTap,
           onSaveTap: (drafts) {
+            final draftSaveTap = onDraftSaveTap;
+            if (draftSaveTap != null) {
+              return draftSaveTap(drafts);
+            }
             return onSaveTap(
               drafts.map((draft) => draft.item).toList(growable: false),
             );
@@ -128,6 +145,32 @@ class _RecordingOffProductSearchRepository
     required String barcode,
   }) async {
     return results;
+  }
+}
+
+class _FakeInventoryItemRepository implements InventoryItemRepository {
+  _FakeInventoryItemRepository(this.items);
+
+  final List<InventoryItem> items;
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return List<InventoryItem>.of(items);
+  }
+
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield List<InventoryItem>.of(items);
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    return true;
+  }
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    return true;
   }
 }
 
@@ -739,6 +782,47 @@ void main() {
     expect(find.byIcon(Icons.check), findsOneWidget);
   });
 
+  testWidgets('confirming last item keeps earlier pending item active', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <InventoryItem>[
+          _item(
+            id: 'first-food',
+            isDeposit: false,
+            isDiscount: false,
+            name: 'First Food',
+            weight: '250 g',
+            nutrition: _testNutrition,
+          ),
+          _item(
+            id: 'second-food',
+            isDeposit: false,
+            isDiscount: false,
+            name: 'Second Food',
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await _confirmReviewItem(tester, 1);
+
+    expect(find.byIcon(Icons.undo), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const Key('receipt_review_confirm_button_0')),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
+
   testWidgets('determine action fetches candidates and opens candidate sheet', (
     tester,
   ) async {
@@ -969,6 +1053,224 @@ void main() {
     expect(savedItems, isNotNull);
     expect(savedItems!.single.barcode, '4006381333931');
     expect(savedItems!.single.nutrition?.per100Kcal, 120);
+  });
+
+  testWidgets('manual recent item keeps selected global food item on save', (
+    tester,
+  ) async {
+    List<ReceiptReviewItemDraft>? savedDrafts;
+    final offRepository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[],
+    );
+    final matcher = GlobalFoodItemMatcher(
+      offProductSearchRepository: offRepository,
+    );
+    final recentItem = _item(
+      id: 'recent-yogurt',
+      isDeposit: false,
+      isDiscount: false,
+      name: 'Recent Yogurt',
+      brand: 'Local Dairy',
+      barcode: '4006381333931',
+      category: 'Yogurt',
+      imageUrl: 'https://example.test/yogurt.png',
+      weight: '150 g',
+      foodFingerprint: 'recent-yogurt-local-dairy',
+      nutrition: _testNutrition,
+      origin: InventoryItemOrigin.manualAdd,
+      globalFoodItemId: 'global-recent-yogurt',
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'Mystery Product',
+            ),
+          ),
+        ],
+        overrides: <Override>[
+          inventoryItemRepositoryProvider.overrideWithValue(
+            _FakeInventoryItemRepository(<InventoryItem>[recentItem]),
+          ),
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+          offProductSearchRepositoryProvider.overrideWithValue(offRepository),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+        onDraftSaveTap: (drafts) async {
+          savedDrafts = drafts;
+        },
+      ),
+    );
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_determine_button_0')),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+    await tester.tap(find.text(l10n.inventoryReceiptReviewManualDataAction));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_recent_item_recent-yogurt')),
+    );
+    await tester.pumpAndSettle();
+
+    final manualSaveFinder = find.byKey(
+      const Key('receipt_review_manual_save_button'),
+    );
+    await tester.ensureVisible(manualSaveFinder);
+    await tester.pumpAndSettle();
+    final manualSaveButton = tester.widget<FilledButton>(manualSaveFinder);
+    expect(manualSaveButton.onPressed, isNotNull);
+    manualSaveButton.onPressed!.call();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Recent Yogurt'), findsOneWidget);
+    expect(find.text('150 g'), findsOneWidget);
+
+    await _confirmReviewItem(tester, 0);
+
+    final saveButton = find.byKey(const Key('receipt_review_save_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(savedDrafts, isNotNull);
+    expect(savedDrafts, hasLength(1));
+    final savedDraft = savedDrafts!.single;
+    expect(savedDraft.selectedGlobalFoodItemId, 'global-recent-yogurt');
+    expect(savedDraft.selectedCandidate?.item.id, 'global-recent-yogurt');
+    expect(savedDraft.item.name, 'Recent Yogurt');
+    expect(savedDraft.item.brand, 'Local Dairy');
+    expect(savedDraft.item.nutrition, _testNutrition);
+  });
+
+  testWidgets('manual search result replaces duplicate external candidate', (
+    tester,
+  ) async {
+    List<ReceiptReviewItemDraft>? savedDrafts;
+    final offRepository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[
+        OffProductSearchResult(
+          code: '4006381333931',
+          name: 'External Yogurt',
+          brand: 'Search Brand',
+          packageWeight: '150 g',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 90,
+            per100Fat: 3,
+            per100SaturatedFat: 2,
+            per100Carbs: 11,
+            per100Sugar: 10,
+            per100Protein: 4,
+            per100Salt: 0.1,
+          ),
+          score: 99,
+        ),
+      ],
+    );
+    final matcher = GlobalFoodItemMatcher(
+      offProductSearchRepository: offRepository,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'Mystery Product',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'off-4006381333931',
+                name: 'Old Yogurt',
+                brand: 'Old Brand',
+              ),
+            ],
+          ),
+        ],
+        overrides: <Override>[
+          inventoryItemRepositoryProvider.overrideWithValue(
+            _FakeInventoryItemRepository(const <InventoryItem>[]),
+          ),
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+          offProductSearchRepositoryProvider.overrideWithValue(offRepository),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+        onDraftSaveTap: (drafts) async {
+          savedDrafts = drafts;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+    await tester.tap(find.text(l10n.inventoryReceiptReviewManualDataAction));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      'Yogurt',
+    );
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(
+        const Key('receipt_review_manual_search_result_4006381333931'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final manualSaveFinder = find.byKey(
+      const Key('receipt_review_manual_save_button'),
+    );
+    await tester.ensureVisible(manualSaveFinder);
+    await tester.pumpAndSettle();
+    final manualSaveButton = tester.widget<FilledButton>(manualSaveFinder);
+    expect(manualSaveButton.onPressed, isNotNull);
+    manualSaveButton.onPressed!.call();
+    await tester.pumpAndSettle();
+
+    await _confirmReviewItem(tester, 0);
+
+    final saveButton = find.byKey(const Key('receipt_review_save_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(savedDrafts, isNotNull);
+    expect(savedDrafts, hasLength(1));
+    final savedDraft = savedDrafts!.single;
+    expect(savedDraft.selectedGlobalFoodItemId, 'off-4006381333931');
+    expect(savedDraft.item.name, 'External Yogurt');
+    expect(savedDraft.item.brand, 'Search Brand');
+    expect(
+      savedDraft.candidates.where(
+        (candidate) => candidate.item.id == 'off-4006381333931',
+      ),
+      hasLength(1),
+    );
   });
 
   testWidgets(

@@ -4,8 +4,7 @@ import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_review_draft_helpers.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 
 const _nutrition = GlobalFoodNutrition(
   qualityStatus: GlobalFoodNutritionQualityStatus.verified,
@@ -94,7 +93,7 @@ ReceiptReviewItemDraft _draft({
 }
 
 void main() {
-  group('prepareReceiptReviewDraftForReview', () {
+  group('prepareForReceiptReview', () {
     test('uses receipt weight and clears previous confirmation', () {
       final draft = _draft(
         item: _item(
@@ -104,7 +103,7 @@ void main() {
         ),
       ).copyWith(isConfirmed: true, weightNeedsAttention: true);
 
-      final result = prepareReceiptReviewDraftForReview(draft);
+      final result = draft.prepareForReceiptReview();
 
       expect(result.isConfirmed, isFalse);
       expect(result.weightNeedsAttention, isFalse);
@@ -115,11 +114,9 @@ void main() {
 
     test('uses selected candidate weight when receipt weight is missing', () {
       final candidate = _candidate();
-      final result = prepareReceiptReviewDraftForReview(
-        _draft(
-          candidates: <GlobalFoodMatchCandidate>[candidate],
-        ).selectCandidate(candidate.item.id),
-      );
+      final result = _draft(
+        candidates: <GlobalFoodMatchCandidate>[candidate],
+      ).selectCandidate(candidate.item.id).prepareForReceiptReview();
 
       expect(result.weightNeedsAttention, isTrue);
       expect(result.item.weight, '750 g');
@@ -129,12 +126,10 @@ void main() {
 
     test('keeps receipt weight and marks mismatched candidate weight', () {
       final candidate = _candidate();
-      final result = prepareReceiptReviewDraftForReview(
-        _draft(
-          item: _item(weight: '500 g'),
-          candidates: <GlobalFoodMatchCandidate>[candidate],
-        ).selectCandidate(candidate.item.id),
-      );
+      final result = _draft(
+        item: _item(weight: '500 g'),
+        candidates: <GlobalFoodMatchCandidate>[candidate],
+      ).selectCandidate(candidate.item.id).prepareForReceiptReview();
 
       expect(result.weightNeedsAttention, isTrue);
       expect(result.item.weight, '500 g');
@@ -143,7 +138,7 @@ void main() {
     });
 
     test('leaves amount empty when no receipt or candidate weight exists', () {
-      final result = prepareReceiptReviewDraftForReview(_draft());
+      final result = _draft().prepareForReceiptReview();
 
       expect(result.weightNeedsAttention, isTrue);
       expect(result.item.initialAmount, 0);
@@ -152,21 +147,19 @@ void main() {
     });
   });
 
-  group('syncReceiptReviewDraftToSelectedCandidate', () {
+  group('syncToSelectedCandidate', () {
     test('returns the original draft without a selected candidate', () {
       final draft = _draft();
 
-      expect(syncReceiptReviewDraftToSelectedCandidate(draft), same(draft));
+      expect(draft.syncToSelectedCandidate(), same(draft));
     });
 
     test('copies canonical candidate product fields to the draft item', () {
       final candidate = _candidate();
-      final result = syncReceiptReviewDraftToSelectedCandidate(
-        _draft(
-          item: _item(name: 'OCR Milk'),
-          candidates: <GlobalFoodMatchCandidate>[candidate],
-        ).selectCandidate(candidate.item.id),
-      );
+      final result = _draft(
+        item: _item(name: 'OCR Milk'),
+        candidates: <GlobalFoodMatchCandidate>[candidate],
+      ).selectCandidate(candidate.item.id).syncToSelectedCandidate();
 
       expect(result.item.name, 'Canonical Milk');
       expect(result.item.brand, 'Brand');
@@ -178,63 +171,55 @@ void main() {
     });
   });
 
-  group('canConfirmReceiptReviewDraft', () {
+  group('canConfirmReceiptReview', () {
     test('requires a savable item with usable weight and calories', () {
       expect(
-        canConfirmReceiptReviewDraft(
-          _draft(item: _item(isDiscount: true, weight: '500 g')),
-        ),
+        _draft(
+          item: _item(isDiscount: true, weight: '500 g'),
+        ).canConfirmReceiptReview,
         isFalse,
       );
       expect(
-        canConfirmReceiptReviewDraft(
-          _draft(
-            item: _item(weight: '500 g', nutrition: _nutrition),
-          ),
-        ),
+        _draft(
+          item: _item(weight: '500 g', nutrition: _nutrition),
+        ).canConfirmReceiptReview,
         isFalse,
       );
       expect(
-        canConfirmReceiptReviewDraft(
-          _draft(
-            item: _item(weight: '500 g', amountUnit: InventoryAmountUnit.gram),
-          ),
-        ),
+        _draft(
+          item: _item(weight: '500 g', amountUnit: InventoryAmountUnit.gram),
+        ).canConfirmReceiptReview,
         isFalse,
       );
     });
 
     test('accepts calories from either item or selected candidate', () {
       expect(
-        canConfirmReceiptReviewDraft(
-          _draft(
-            item: _item(
-              weight: '500 g',
-              amountUnit: InventoryAmountUnit.gram,
-              nutrition: _nutrition,
-            ),
+        _draft(
+          item: _item(
+            weight: '500 g',
+            amountUnit: InventoryAmountUnit.gram,
+            nutrition: _nutrition,
           ),
-        ),
+        ).canConfirmReceiptReview,
         isTrue,
       );
 
       final candidate = _candidate();
       expect(
-        canConfirmReceiptReviewDraft(
-          _draft(
-            item: _item(
-              weight: '500 g',
-              amountUnit: InventoryAmountUnit.gram,
-            ),
-            candidates: <GlobalFoodMatchCandidate>[candidate],
-          ).selectCandidate(candidate.item.id),
-        ),
+        _draft(
+          item: _item(
+            weight: '500 g',
+            amountUnit: InventoryAmountUnit.gram,
+          ),
+          candidates: <GlobalFoodMatchCandidate>[candidate],
+        ).selectCandidate(candidate.item.id).canConfirmReceiptReview,
         isTrue,
       );
     });
   });
 
-  test('candidateFromRecentReceiptReviewItem maps inventory item fields', () {
+  test('toRecentReceiptReviewCandidate maps inventory item fields', () {
     final item = _item(
       name: 'Recent Yogurt',
       brand: 'Local Dairy',
@@ -246,8 +231,7 @@ void main() {
       nutrition: _nutrition,
     );
 
-    final candidate = candidateFromRecentReceiptReviewItem(
-      item: item,
+    final candidate = item.toRecentReceiptReviewCandidate(
       globalFoodItemId: 'global-recent-yogurt',
     );
 
