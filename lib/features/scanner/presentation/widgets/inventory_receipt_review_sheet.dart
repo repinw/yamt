@@ -9,24 +9,21 @@ import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_review_item_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
-import 'package:yamt/features/scanner/domain/'
-    'receipt_review_weight_confirmation.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_preview_button.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
@@ -87,7 +84,7 @@ class _InventoryReceiptReviewSheetState
     final result = _itemProcessor.process(widget.items);
     _items = [
       for (final draft in result.items)
-        _prepareDraftForReview(_syncDraftToSelectedCandidate(draft)),
+        draft.syncToSelectedCandidate().prepareForReceiptReview(),
     ];
     _receiptMetadata = result.metadata;
   }
@@ -200,7 +197,7 @@ class _InventoryReceiptReviewSheetState
               onEditTap: _openItemEditor,
               onSwitchTap: _openCandidatePicker,
               onConfirmTap: () => _toggleItemConfirmed(entry.$2.item.id),
-              canConfirm: _canConfirmDraft(entry.$2),
+              canConfirm: entry.$2.canConfirmReceiptReview,
               isActionLoading: _candidateLoadingItemId == entry.$2.item.id,
             ),
             const SizedBox(height: 12),
@@ -230,7 +227,7 @@ class _InventoryReceiptReviewSheetState
     }
 
     _replaceDraftByItemId(itemId, (currentDraft) {
-      return _prepareDraftForReview(currentDraft.copyWith(item: editedItem));
+      return currentDraft.copyWith(item: editedItem).prepareForReceiptReview();
     });
   }
 
@@ -265,10 +262,10 @@ class _InventoryReceiptReviewSheetState
           return;
         }
         _replaceDraftByItemId(itemId, (draft) {
-          final updatedDraft = _syncDraftToSelectedCandidate(
-            draft.selectCandidate(candidateId),
-          );
-          return _prepareDraftForReview(updatedDraft);
+          return draft
+              .selectCandidate(candidateId)
+              .syncToSelectedCandidate()
+              .prepareForReceiptReview();
         });
       case ReceiptCandidatePickerSelectionKind.manualEntry:
         await _openManualProductEntry(itemId);
@@ -301,15 +298,15 @@ class _InventoryReceiptReviewSheetState
       final selectedProduct = result.selectedProduct;
       final selectedGlobalFoodItemId = result.selectedGlobalFoodItemId;
       if (selectedProduct == null && selectedGlobalFoodItemId == null) {
-        return _prepareDraftForReview(
-          draft.copyWith(item: result.item).selectNewItem(),
-        );
+        return draft
+            .copyWith(item: result.item)
+            .selectNewItem()
+            .prepareForReceiptReview();
       }
 
       final scannedCandidate = selectedProduct != null
           ? matcher.candidateFromExternalResult(selectedProduct)
-          : _candidateFromRecentItem(
-              item: result.item,
+          : result.item.toRecentReceiptReviewCandidate(
               globalFoodItemId: selectedGlobalFoodItemId!,
             );
       final mergedCandidates = <GlobalFoodMatchCandidate>[
@@ -325,33 +322,8 @@ class _InventoryReceiptReviewSheetState
             selectionNeedsReview: false,
           )
           .selectCandidate(scannedCandidate.item.id);
-      return _prepareDraftForReview(updatedDraft);
+      return updatedDraft.prepareForReceiptReview();
     });
-  }
-
-  GlobalFoodMatchCandidate _candidateFromRecentItem({
-    required InventoryItem item,
-    required String globalFoodItemId,
-  }) {
-    return GlobalFoodMatchCandidate(
-      item: GlobalFoodItem.create(
-        id: globalFoodItemId,
-        name: item.name,
-        now: item.entryDate,
-        brand: item.brand,
-        category: item.category,
-        barcode: item.barcode,
-        imageUrl: item.imageUrl,
-        packageWeight: item.weight,
-        servingSize: item.servingSize,
-        servingQuantity: item.servingQuantity,
-        servingQuantityUnit: item.servingQuantityUnit,
-        foodFingerprint: item.resolvedFoodFingerprint,
-        nutrition: item.nutrition,
-      ),
-      score: 100,
-      reason: GlobalFoodMatchReason.nameExact,
-    );
   }
 
   Future<ReceiptReviewItemDraft?> _prepareDraftForCandidateSelection(
@@ -392,9 +364,9 @@ class _InventoryReceiptReviewSheetState
               candidates,
             ),
           );
-      final syncedDraft = _prepareDraftForReview(
-        _syncDraftToSelectedCandidate(updatedDraft),
-      );
+      final syncedDraft = updatedDraft
+          .syncToSelectedCandidate()
+          .prepareForReceiptReview();
       setState(() {
         _items[currentIndex] = syncedDraft;
       });
@@ -497,7 +469,7 @@ class _InventoryReceiptReviewSheetState
       });
       return;
     }
-    if (!_canConfirmDraft(draft)) {
+    if (!draft.canConfirmReceiptReview) {
       return;
     }
 
@@ -509,71 +481,6 @@ class _InventoryReceiptReviewSheetState
       );
     });
     _scrollToNextPendingItem(afterItemId: itemId);
-  }
-
-  ReceiptReviewItemDraft _prepareDraftForReview(ReceiptReviewItemDraft draft) {
-    final itemWeight = normalizeReceiptReviewWeight(draft.item.weight);
-    final candidateWeight = normalizeReceiptReviewWeight(
-      draft.selectedCandidate?.item.packageWeight,
-    );
-    final needsWeightAttention =
-        itemWeight == null || shouldRequireReceiptWeightConfirmation(draft);
-    final nextItem = itemWeight != null
-        ? draft.item.withDerivedAmount(
-            weight: itemWeight,
-            quantity: draft.item.quantity,
-            fallbackUnit: draft.item.amountUnit,
-          )
-        : candidateWeight != null
-        ? draft.item.withDerivedAmount(
-            weight: candidateWeight,
-            quantity: draft.item.quantity,
-          )
-        : draft.item;
-
-    return draft.copyWith(
-      item: nextItem,
-      isConfirmed: false,
-      weightNeedsAttention: needsWeightAttention,
-    );
-  }
-
-  ReceiptReviewItemDraft _syncDraftToSelectedCandidate(
-    ReceiptReviewItemDraft draft,
-  ) {
-    final selectedCandidate = draft.selectedCandidate;
-    if (selectedCandidate == null) {
-      return draft;
-    }
-
-    final candidateItem = selectedCandidate.item;
-    return draft.copyWith(
-      item: draft.item.copyWith(
-        name: candidateItem.name,
-        brand: candidateItem.brand,
-        category: candidateItem.category,
-        barcode: candidateItem.barcode,
-        imageUrl: candidateItem.imageUrl,
-        foodFingerprint: candidateItem.resolvedFoodFingerprint,
-        nutrition: candidateItem.nutrition,
-      ),
-    );
-  }
-
-  bool _canConfirmDraft(ReceiptReviewItemDraft draft) {
-    if (!draft.canBeSavedToInventory) {
-      return false;
-    }
-    final weight = normalizeReceiptReviewWeight(draft.item.weight);
-    final hasUsableWeight = weight != null && draft.item.amountUnit != null;
-    if (!hasUsableWeight) {
-      return false;
-    }
-
-    final kcal =
-        draft.item.nutrition?.per100Kcal ??
-        draft.selectedCandidate?.item.nutrition?.per100Kcal;
-    return kcal != null;
   }
 
   void _scrollToNextPendingItem({required String afterItemId}) {
