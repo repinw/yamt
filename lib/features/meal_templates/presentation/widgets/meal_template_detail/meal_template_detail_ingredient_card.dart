@@ -1,15 +1,35 @@
-part of 'meal_template_detail_page.dart';
+// Internal detail split files expose widgets only to sibling files.
+// Local imports avoid stale package resolution across worktrees.
+// ignore_for_file: always_use_package_imports, public_member_api_docs
 
-class _MealTemplateIngredientCard extends StatelessWidget {
-  const _MealTemplateIngredientCard({
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/inventory/application/'
+    'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'recipe_ingredient_assignment_support.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+import 'meal_template_detail_actions.dart';
+import 'meal_template_detail_helpers.dart';
+
+class MealTemplateIngredientCard extends StatelessWidget {
+  const MealTemplateIngredientCard({
     required this.row,
     required this.inventoryItems,
+    super.key,
     this.onAddToShoppingListPressed,
     this.onToggleIgnoredPressed,
     this.onAssignmentChanged,
   });
 
-  final _IngredientRowData row;
+  final IngredientRowData row;
   final List<InventoryItem> inventoryItems;
   final Future<void> Function()? onAddToShoppingListPressed;
   final Future<void> Function()? onToggleIgnoredPressed;
@@ -32,7 +52,7 @@ class _MealTemplateIngredientCard extends StatelessWidget {
           ).take(3).toList(growable: false);
     final missingAssignedCount =
         row.assignedInventoryItemIds.length - assignedItems.length;
-    final previewImageUrl = _resolvePreviewImageUrl(
+    final previewImageUrl = resolvePreviewImageUrl(
       assignedItems: assignedItems,
       suggestions: suggestions,
     );
@@ -46,18 +66,18 @@ class _MealTemplateIngredientCard extends StatelessWidget {
     final hasCompatibleAssignment = row.requirement == null
         ? assignedItems.isNotEmpty
         : effectiveRequirement != null;
-    final state = _ingredientCardState(
+    final state = ingredientCardState(
       row: row,
       assignedItems: assignedItems,
       hasCompatibleAssignment: hasCompatibleAssignment,
     );
 
     return switch (state) {
-      _IngredientCardState.ignored => _IgnoredIngredientCard(
+      IngredientCardState.ignored => _IgnoredIngredientCard(
         row: row,
         onToggleIgnoredPressed: onToggleIgnoredPressed,
       ),
-      _IngredientCardState.matched => _MatchedIngredientCard(
+      IngredientCardState.matched => _MatchedIngredientCard(
         row: row,
         assignedItems: assignedItems,
         previewImageUrl: previewImageUrl,
@@ -65,14 +85,14 @@ class _MealTemplateIngredientCard extends StatelessWidget {
         onAssignmentChanged: onAssignmentChanged,
         inventoryItems: inventoryItems,
       ),
-      _IngredientCardState.missing => _MissingIngredientCard(
+      IngredientCardState.missing => _MissingIngredientCard(
         row: row,
         onAddToShoppingListPressed: onAddToShoppingListPressed,
         onToggleIgnoredPressed: onToggleIgnoredPressed,
         onAssignmentChanged: onAssignmentChanged,
         inventoryItems: inventoryItems,
       ),
-      _IngredientCardState.plain => _PlainIngredientCard(
+      IngredientCardState.plain => _PlainIngredientCard(
         row: row,
         previewImageUrl: previewImageUrl,
       ),
@@ -89,7 +109,7 @@ class _MissingIngredientCard extends StatelessWidget {
     required this.inventoryItems,
   });
 
-  final _IngredientRowData row;
+  final IngredientRowData row;
   final Future<void> Function()? onAddToShoppingListPressed;
   final Future<void> Function()? onToggleIgnoredPressed;
   final void Function(MealTemplateIngredientAssignmentSelection selection)?
@@ -118,7 +138,7 @@ class _MissingIngredientCard extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    _ingredientDisplayTitle(row),
+                    ingredientDisplayTitle(row),
                     style: textTheme.titleLarge?.copyWith(
                       color: colors.tertiary,
                       fontWeight: FontWeight.w800,
@@ -147,7 +167,7 @@ class _MissingIngredientCard extends StatelessWidget {
                   onPressed: onAssignmentChanged == null
                       ? null
                       : () async {
-                          await _selectInventoryAssignments(
+                          await selectInventoryAssignments(
                             context: context,
                             row: row,
                             inventoryItems: inventoryItems,
@@ -183,7 +203,7 @@ class _MatchedIngredientCard extends StatelessWidget {
     required this.inventoryItems,
   });
 
-  final _IngredientRowData row;
+  final IngredientRowData row;
   final List<InventoryItem> assignedItems;
   final String? previewImageUrl;
   final int missingAssignedCount;
@@ -196,7 +216,7 @@ class _MatchedIngredientCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final assignedLabel = _assignedInventoryLabel(
+    final assignedLabel = assignedInventoryLabel(
       l10n: l10n,
       assignedItems: assignedItems,
     );
@@ -230,7 +250,7 @@ class _MatchedIngredientCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _ingredientDisplayTitle(row),
+                    ingredientDisplayTitle(row),
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -238,7 +258,7 @@ class _MatchedIngredientCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Row(
                     children: [
-                      _IngredientPreviewThumbnail(
+                      IngredientPreviewThumbnail(
                         imageUrl: previewImageUrl,
                         size: 28,
                         borderRadius: 8,
@@ -258,7 +278,7 @@ class _MatchedIngredientCard extends StatelessWidget {
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       l10n.preparedMealTemplateDetailConversionSummary(
-                        _conversionSourceUnitLabel(
+                        conversionSourceUnitLabel(
                           requirement: row.requirement,
                           l10n: l10n,
                         ),
@@ -287,7 +307,7 @@ class _MatchedIngredientCard extends StatelessWidget {
               onPressed: onAssignmentChanged == null
                   ? null
                   : () async {
-                      await _selectInventoryAssignments(
+                      await selectInventoryAssignments(
                         context: context,
                         row: row,
                         inventoryItems: inventoryItems,
@@ -309,7 +329,7 @@ class _IgnoredIngredientCard extends StatelessWidget {
     required this.onToggleIgnoredPressed,
   });
 
-  final _IngredientRowData row;
+  final IngredientRowData row;
   final Future<void> Function()? onToggleIgnoredPressed;
 
   @override
@@ -339,7 +359,7 @@ class _IgnoredIngredientCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
-                  _ingredientDisplayTitle(row),
+                  ingredientDisplayTitle(row),
                   style: textTheme.titleMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                     decoration: TextDecoration.lineThrough,
@@ -372,7 +392,7 @@ class _PlainIngredientCard extends StatelessWidget {
     required this.previewImageUrl,
   });
 
-  final _IngredientRowData row;
+  final IngredientRowData row;
   final String? previewImageUrl;
 
   @override
@@ -389,7 +409,7 @@ class _PlainIngredientCard extends StatelessWidget {
         padding: AppInsets.card,
         child: Row(
           children: [
-            _IngredientPreviewThumbnail(imageUrl: previewImageUrl),
+            IngredientPreviewThumbnail(imageUrl: previewImageUrl),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
@@ -467,9 +487,10 @@ class _IngredientActionPill extends StatelessWidget {
   }
 }
 
-class _IngredientPreviewThumbnail extends StatelessWidget {
-  const _IngredientPreviewThumbnail({
+class IngredientPreviewThumbnail extends StatelessWidget {
+  const IngredientPreviewThumbnail({
     required this.imageUrl,
+    super.key,
     this.size = 48,
     this.borderRadius = 12,
   });
@@ -566,8 +587,8 @@ class MealTemplateIngredientCardTestHarness extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _MealTemplateIngredientCard(
-      row: _IngredientRowData(
+    return MealTemplateIngredientCard(
+      row: IngredientRowData(
         name: name,
         amountLabel: amountLabel,
         rawIngredient: rawIngredient,

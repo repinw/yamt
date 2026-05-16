@@ -1,26 +1,12 @@
-import 'dart:async';
-import 'dart:ui';
+// Local imports avoid stale package resolution across worktrees.
+// ignore_for_file: always_use_package_imports
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/data/local_image_asset_ref.dart';
-import 'package:yamt/core/data/local_image_store_provider.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
-import 'package:yamt/core/utils/product_image_url.dart';
-import 'package:yamt/core/widgets/app_cached_network_image.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
-import 'package:yamt/features/inventory/application/'
-    'ingredient_inventory_matcher.dart';
-import 'package:yamt/features/inventory/application/'
-    'recipe_ingredient_assignment_support.dart';
-import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -28,18 +14,12 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/shoppinglist/provider/'
-    'shopping_list_controller.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-part 'meal_template_detail_actions.dart';
-part 'meal_template_detail_content.dart';
-part 'meal_template_detail_helpers.dart';
-part 'meal_template_detail_ingredient_card.dart';
-part 'widgets/meal_template_detail_empty_ingredients_card.dart';
-part 'widgets/meal_template_detail_footer.dart';
-part 'widgets/meal_template_detail_hero_section.dart';
-part 'widgets/meal_template_detail_top_bar.dart';
+import 'widgets/meal_template_detail/meal_template_detail.dart';
+import 'widgets/meal_template_detail/meal_template_detail_actions.dart';
+import 'widgets/meal_template_detail/meal_template_detail_helpers.dart';
 
 /// Defines meal template detail page.
 @Dependencies([
@@ -75,7 +55,7 @@ class _MealTemplateDetailPageState
       extendBody: true,
       body: templatesAsync.when(
         data: (templates) {
-          final template = _findTemplate(
+          final template = findTemplate(
             templates: templates,
             templateId: widget.templateId,
           );
@@ -89,19 +69,19 @@ class _MealTemplateDetailPageState
           }
 
           final selectedPortions =
-              _selectedPortions ?? _defaultPortions(template.totalPortions);
+              _selectedPortions ?? defaultPortions(template.totalPortions);
           final inventoryItems =
               ref.watch(inventoryItemsControllerProvider).asData?.value ??
               const <InventoryItem>[];
           final ingredientParser = ref.read(templateIngredientParserProvider);
-          final assignments = _effectiveAssignments(
+          final assignments = effectiveAssignments(
             template: template,
             draftAssignments: _draftAssignments,
             inventoryItems: inventoryItems,
             ingredientParser: ingredientParser,
             localeCode: l10n.localeName,
           );
-          final assignmentConversions = _effectiveAssignmentConversions(
+          final assignmentConversions = effectiveAssignmentConversions(
             template: template,
             draftAssignmentConversions: _draftAssignmentConversions,
             recipeIngredientAssignments: assignments,
@@ -109,16 +89,16 @@ class _MealTemplateDetailPageState
             ingredientParser: ingredientParser,
           );
           final hasAssignmentChanges =
-              !_assignmentMapsEqual(
+              !assignmentMapsEqual(
                 template.recipeIngredientAssignments,
                 assignments,
               ) ||
-              !_assignmentConversionMapsEqual(
+              !assignmentConversionMapsEqual(
                 template.recipeIngredientAmountConversions,
                 assignmentConversions,
               );
 
-          return _MealTemplateDetailContent(
+          return MealTemplateDetail(
             template: template,
             selectedPortions: selectedPortions,
             inventoryItems: inventoryItems,
@@ -146,12 +126,12 @@ class _MealTemplateDetailPageState
                   required amountConversion,
                 }) {
                   setState(() {
-                    _draftAssignments = _updatedAssignments(
+                    _draftAssignments = updatedAssignments(
                       assignments: assignments,
                       ingredient: ingredient,
                       inventoryItemIds: inventoryItemIds,
                     );
-                    _draftAssignmentConversions = _updatedAssignmentConversions(
+                    _draftAssignmentConversions = updatedAssignmentConversions(
                       conversions: assignmentConversions,
                       ingredient: ingredient,
                       amountConversion: amountConversion,
@@ -166,10 +146,10 @@ class _MealTemplateDetailPageState
               recipeIngredientAmountConversions: assignmentConversions,
             ),
             onAddIngredientsToShoppingListPressed: () =>
-                _addTemplateIngredientsToShoppingList(
+                addTemplateIngredientsToShoppingList(
                   context: context,
                   ref: ref,
-                  ingredientRows: _buildIngredientRows(
+                  ingredientRows: buildIngredientRows(
                     template: template,
                     recipeIngredientAssignments: assignments,
                     recipeIngredientAmountConversions: assignmentConversions,
@@ -234,11 +214,11 @@ class _MealTemplateDetailPageState
     }
 
     final l10n = AppLocalizations.of(context)!;
-    _showSnackBar(
+    showSnackBar(
       context,
       result.isSuccess
           ? l10n.preparedMealCreatedMessage
-          : _createMealFailureMessage(l10n, result.failureReason),
+          : createMealFailureMessage(l10n, result.failureReason),
     );
   }
 
@@ -272,7 +252,7 @@ class _MealTemplateDetailPageState
     });
 
     final l10n = AppLocalizations.of(context)!;
-    _showSnackBar(
+    showSnackBar(
       context,
       saved
           ? l10n.preparedMealTemplateUpdatedMessage

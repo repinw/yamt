@@ -228,9 +228,8 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
     });
   }
 
-  // TODO(wladik): Keep this map in sync with the registered form fields.
   Map<String, dynamic> _formValuesFor(ManualProductDetailsForm form) {
-    return <String, dynamic>{
+    final values = <String, dynamic>{
       ManualProductSearchFormFieldName.name: form.nameText,
       ManualProductSearchFormFieldName.brand: form.brandText,
       ManualProductSearchFormFieldName.weightAmount: form.weightAmount,
@@ -252,6 +251,11 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
       ManualProductSearchFormFieldName.optionalNutritionType:
           form.optionalNutritionType,
     };
+    assert(
+      _hasRegisteredFormValueNames(values),
+      'Manual product form values must match registered field names.',
+    );
+    return values;
   }
 
   void _onTextChanged(String? value, ValueChanged<String> onChanged) {
@@ -566,4 +570,12 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
       ),
     );
   }
+}
+
+bool _hasRegisteredFormValueNames(Map<String, dynamic> values) {
+  final valueNames = values.keys.toSet();
+  final registeredNames = ManualProductSearchFormFieldName.registeredNames
+      .toSet();
+  return valueNames.length == registeredNames.length &&
+      valueNames.containsAll(registeredNames);
 }

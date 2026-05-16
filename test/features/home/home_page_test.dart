@@ -502,6 +502,41 @@ void main() {
     }
   });
 
+  testWidgets('tab top chrome renders caller-owned actions', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventoryTemplates,
+        branchBody: CustomScrollView(
+          slivers: [
+            HomeShellTabTopChrome(
+              tab: HomeTabType.cookbook,
+              actions: [
+                IconButton(
+                  tooltip: 'Import recipe',
+                  onPressed: () {},
+                  icon: const Icon(Icons.upload_file_rounded),
+                ),
+              ],
+            ),
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: SizedBox(),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cookbook'), findsOneWidget);
+    expect(find.byTooltip('Import recipe'), findsOneWidget);
+    expect(find.byIcon(Icons.upload_file_rounded), findsOneWidget);
+  });
+
   testWidgets('home shell chrome collapses on scroll down and returns upward', (
     tester,
   ) async {

@@ -7,10 +7,11 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'recipe_ingredient_assignment_support.dart';
 import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
+    'template_ingredient_unit_mapper.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 /// Builds a prepared meal from a template and ingredient assignments.
 PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
@@ -168,7 +169,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
       pendingIngredients.add(
         ingredientParser.formatPendingIngredient(
           amount: remainingAmount,
-          unit: effectiveRequirement.unit,
+          unit: effectiveRequirement.unit.toTemplateIngredientUnit(),
           name: effectiveRequirement.name,
         ),
       );

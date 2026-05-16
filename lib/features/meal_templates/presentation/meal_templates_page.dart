@@ -41,7 +41,15 @@ class MealTemplatesPage extends ConsumerWidget {
     final templatesAsync = ref.watch(preparedMealTemplatesControllerProvider);
     final topChromeSlivers = includeAppBar
         ? const <Widget>[]
-        : const [HomeShellTabTopChrome(tab: HomeTabType.cookbook)];
+        : const [
+            HomeShellTabTopChrome(
+              tab: HomeTabType.cookbook,
+              actions: [
+                KitchenUtensilsButton(),
+                MealTemplateRecipeImportButton(),
+              ],
+            ),
+          ];
 
     return Scaffold(
       appBar: includeAppBar

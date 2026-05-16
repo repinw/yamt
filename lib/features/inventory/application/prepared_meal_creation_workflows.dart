@@ -6,11 +6,10 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_template_creation_support.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_workflow_context.dart';
-import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 /// Handles prepared meal creation workflows.
 class PreparedMealCreationWorkflows {

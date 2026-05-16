@@ -1,7 +1,15 @@
-part of '../meal_template_detail_page.dart';
+// Internal detail widget is public only for sibling split files.
+// ignore_for_file: public_member_api_docs
 
-class _MealTemplateEmptyIngredientsCard extends StatelessWidget {
-  const _MealTemplateEmptyIngredientsCard({required this.message});
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+
+class MealTemplateEmptyIngredientsCard extends StatelessWidget {
+  const MealTemplateEmptyIngredientsCard({
+    required this.message,
+    super.key,
+  });
 
   final String message;
 

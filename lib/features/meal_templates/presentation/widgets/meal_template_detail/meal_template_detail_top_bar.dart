@@ -1,7 +1,20 @@
-part of '../meal_template_detail_page.dart';
+// Internal detail widget is public only for sibling split files.
+// ignore_for_file: public_member_api_docs
 
-class _MealTemplateTopBar extends StatelessWidget {
-  const _MealTemplateTopBar({required this.title, required this.height});
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+
+class MealTemplateTopBar extends StatelessWidget {
+  const MealTemplateTopBar({
+    required this.title,
+    required this.height,
+    super.key,
+  });
 
   final String title;
   final double height;

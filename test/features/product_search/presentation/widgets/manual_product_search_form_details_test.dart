@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form/manual_product_preview.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form/manual_product_search_input.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form_details.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -14,6 +17,25 @@ Widget _wrapDetailsForm({
   required bool showDetails,
   required VoidCallback? onScanNutritionLabel,
   String nameText = 'Banane',
+  String brandText = 'Ja!',
+  String weightAmount = '200',
+  InventoryAmountUnit selectedWeightUnit = InventoryAmountUnit.gram,
+  String kcalText = '89',
+  String saturatedFatText = '0.1',
+  String polyunsaturatedFatText = '',
+  bool showPolyunsaturatedFatField = false,
+  String fatText = '0.2',
+  String carbsText = '20',
+  String sugarText = '18',
+  String fiberText = '',
+  bool showFiberField = false,
+  String proteinText = '1',
+  String saltText = '0',
+  bool canAddOptionalNutrition = false,
+  bool isAddingOptionalNutrition = false,
+  String optionalNutritionValueText = '',
+  InventoryAmountUnit optionalNutritionUnit = InventoryAmountUnit.gram,
+  InventoryReceiptOptionalNutritionType? optionalNutritionType,
 }) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -40,25 +62,25 @@ Widget _wrapDetailsForm({
                       )
                     : null,
                 nameText: nameText,
-                brandText: 'Ja!',
-                weightAmount: '200',
-                selectedWeightUnit: InventoryAmountUnit.gram,
-                kcalText: '89',
-                saturatedFatText: '0.1',
-                polyunsaturatedFatText: '',
-                showPolyunsaturatedFatField: false,
-                fatText: '0.2',
-                carbsText: '20',
-                sugarText: '18',
-                fiberText: '',
-                showFiberField: false,
-                proteinText: '1',
-                saltText: '0',
-                canAddOptionalNutrition: false,
-                isAddingOptionalNutrition: false,
-                optionalNutritionValueText: '',
-                optionalNutritionUnit: InventoryAmountUnit.gram,
-                optionalNutritionType: null,
+                brandText: brandText,
+                weightAmount: weightAmount,
+                selectedWeightUnit: selectedWeightUnit,
+                kcalText: kcalText,
+                saturatedFatText: saturatedFatText,
+                polyunsaturatedFatText: polyunsaturatedFatText,
+                showPolyunsaturatedFatField: showPolyunsaturatedFatField,
+                fatText: fatText,
+                carbsText: carbsText,
+                sugarText: sugarText,
+                fiberText: fiberText,
+                showFiberField: showFiberField,
+                proteinText: proteinText,
+                saltText: saltText,
+                canAddOptionalNutrition: canAddOptionalNutrition,
+                isAddingOptionalNutrition: isAddingOptionalNutrition,
+                optionalNutritionValueText: optionalNutritionValueText,
+                optionalNutritionUnit: optionalNutritionUnit,
+                optionalNutritionType: optionalNutritionType,
                 availableOptionalNutritionTypes:
                     const <InventoryReceiptOptionalNutritionType>[
                       InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
@@ -121,7 +143,146 @@ Future<void> _settleScrollAnimation(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 240));
 }
 
+Set<String> _registeredFieldNames(WidgetTester tester) {
+  final state = tester.state<FormBuilderState>(find.byType(FormBuilder));
+  return state.fields.keys.toSet();
+}
+
+Object? _fieldValue(WidgetTester tester, String fieldName) {
+  final state = tester.state<FormBuilderState>(find.byType(FormBuilder));
+  return state.fields[fieldName]?.value;
+}
+
 void main() {
+  testWidgets('registered field names match the full details form', (
+    tester,
+  ) async {
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
+
+    await tester.pumpWidget(
+      _wrapDetailsForm(
+        scrollController: scrollController,
+        showDetails: true,
+        onScanNutritionLabel: null,
+        showPolyunsaturatedFatField: true,
+        showFiberField: true,
+        isAddingOptionalNutrition: true,
+        optionalNutritionType:
+            InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
+      ),
+    );
+
+    expect(
+      _registeredFieldNames(tester),
+      ManualProductSearchFormFieldName.registeredNames.toSet(),
+    );
+  });
+
+  testWidgets('patches every registered field from updated props', (
+    tester,
+  ) async {
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
+
+    await tester.pumpWidget(
+      _wrapDetailsForm(
+        scrollController: scrollController,
+        showDetails: true,
+        onScanNutritionLabel: null,
+        showPolyunsaturatedFatField: true,
+        showFiberField: true,
+        isAddingOptionalNutrition: true,
+        optionalNutritionType:
+            InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
+      ),
+    );
+
+    await tester.pumpWidget(
+      _wrapDetailsForm(
+        scrollController: scrollController,
+        showDetails: true,
+        onScanNutritionLabel: null,
+        nameText: 'Apfel',
+        brandText: 'Biohof',
+        weightAmount: '250',
+        selectedWeightUnit: InventoryAmountUnit.milliliter,
+        kcalText: '52',
+        saturatedFatText: '0.0',
+        polyunsaturatedFatText: '0.2',
+        showPolyunsaturatedFatField: true,
+        fatText: '0.4',
+        carbsText: '14',
+        sugarText: '10',
+        fiberText: '2.4',
+        showFiberField: true,
+        proteinText: '0.3',
+        saltText: '0.01',
+        isAddingOptionalNutrition: true,
+        optionalNutritionValueText: '2.4',
+        optionalNutritionUnit: InventoryAmountUnit.milliliter,
+        optionalNutritionType: InventoryReceiptOptionalNutritionType.fiber,
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(_fieldValue(tester, ManualProductSearchFormFieldName.name), 'Apfel');
+    expect(
+      _fieldValue(tester, ManualProductSearchFormFieldName.brand),
+      'Biohof',
+    );
+    expect(
+      _fieldValue(tester, ManualProductSearchFormFieldName.weightAmount),
+      '250',
+    );
+    expect(
+      _fieldValue(tester, ManualProductSearchFormFieldName.weightUnit),
+      InventoryAmountUnit.milliliter,
+    );
+    expect(_fieldValue(tester, ManualProductSearchFormFieldName.kcal), '52');
+    expect(_fieldValue(tester, ManualProductSearchFormFieldName.fat), '0.4');
+    expect(
+      _fieldValue(tester, ManualProductSearchFormFieldName.saturatedFat),
+      '0.0',
+    );
+    expect(_fieldValue(tester, ManualProductSearchFormFieldName.carbs), '14');
+    expect(_fieldValue(tester, ManualProductSearchFormFieldName.sugar), '10');
+    expect(
+      _fieldValue(tester, ManualProductSearchFormFieldName.protein),
+      '0.3',
+    );
+    expect(_fieldValue(tester, ManualProductSearchFormFieldName.salt), '0.01');
+    expect(
+      _fieldValue(tester, ManualProductSearchFormFieldName.polyunsaturatedFat),
+      '0.2',
+    );
+    expect(
+      _fieldValue(tester, ManualProductSearchFormFieldName.fiber),
+      '2.4',
+    );
+    expect(
+      _fieldValue(
+        tester,
+        ManualProductSearchFormFieldName.optionalNutritionValue,
+      ),
+      '2.4',
+    );
+    expect(
+      _fieldValue(
+        tester,
+        ManualProductSearchFormFieldName.optionalNutritionUnit,
+      ),
+      InventoryAmountUnit.milliliter,
+    );
+    expect(
+      _fieldValue(
+        tester,
+        ManualProductSearchFormFieldName.optionalNutritionType,
+      ),
+      InventoryReceiptOptionalNutritionType.fiber,
+    );
+  });
+
   testWidgets('scrolls when details become visible', (tester) async {
     final scrollController = ScrollController();
     addTearDown(scrollController.dispose);

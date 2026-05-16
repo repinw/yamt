@@ -4,9 +4,12 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
-import 'package:yamt/features/inventory/application/template_ingredient_parser.dart';
+import 'package:yamt/features/inventory/application/'
+    'template_ingredient_unit_mapper.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 /// Builds edited prepared meal and reconciled inventory state.
 PreparedMealBuildResult buildPreparedMealEditResult({
@@ -297,7 +300,7 @@ bool _coverageSatisfiesRequirement({
   required TemplateIngredientRequirement requirement,
 }) {
   final component = coverage.component;
-  if (component.usedUnit != requirement.unit ||
+  if (component.usedUnit != requirement.inventoryUnit ||
       coverage.remainingAmount < requirement.amount) {
     return false;
   }

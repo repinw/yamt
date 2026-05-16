@@ -1,7 +1,17 @@
-part of '../meal_template_detail_page.dart';
+// Internal detail widget is public only for sibling split files.
+// ignore_for_file: public_member_api_docs
 
-class _MealTemplateHeroSection extends StatelessWidget {
-  const _MealTemplateHeroSection({
+import 'dart:typed_data';
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
+
+class MealTemplateHeroSection extends StatelessWidget {
+  const MealTemplateHeroSection({
     required this.templateName,
     required this.imageBytes,
     required this.imageUrl,
@@ -9,6 +19,7 @@ class _MealTemplateHeroSection extends StatelessWidget {
     required this.basePortionsLabel,
     required this.onDecreasePortions,
     required this.onIncreasePortions,
+    super.key,
   });
 
   static const _heroHeight = 252.0;

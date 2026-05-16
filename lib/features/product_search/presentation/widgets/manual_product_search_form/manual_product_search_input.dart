@@ -77,6 +77,26 @@ abstract final class ManualProductSearchFormFieldName {
 
   /// Optional nutrition type field.
   static const optionalNutritionType = 'manual_product_optional_type';
+
+  /// All registered manual product form field names.
+  static const registeredNames = [
+    name,
+    brand,
+    weightAmount,
+    weightUnit,
+    kcal,
+    fat,
+    saturatedFat,
+    carbs,
+    sugar,
+    protein,
+    salt,
+    polyunsaturatedFat,
+    fiber,
+    optionalNutritionValue,
+    optionalNutritionUnit,
+    optionalNutritionType,
+  ];
 }
 
 /// Weight amount and unit fields.

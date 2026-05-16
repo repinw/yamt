@@ -1,8 +1,31 @@
-part of 'meal_template_detail_page.dart';
+// Internal detail split files expose helpers only to sibling files.
+// Local imports avoid stale package resolution across worktrees.
+// ignore_for_file: always_use_package_imports, public_member_api_docs
 
-Future<void> _selectInventoryAssignments({
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
+import 'package:yamt/features/inventory/application/'
+    'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'recipe_ingredient_assignment_support.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'prepared_meal_templates_controller.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
+import 'package:yamt/features/shoppinglist/provider/'
+    'shopping_list_controller.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+import 'meal_template_detail_helpers.dart';
+import 'meal_template_detail_ingredient_card.dart';
+
+Future<void> selectInventoryAssignments({
   required BuildContext context,
-  required _IngredientRowData row,
+  required IngredientRowData row,
   required List<InventoryItem> inventoryItems,
   required void Function(MealTemplateIngredientAssignmentSelection selection)
   onAssignmentChanged,
@@ -27,7 +50,7 @@ Future<void> _selectInventoryAssignments({
   );
   final selectedAmountUnit = resolveSharedAmountProgressUnit(selectedItems);
   final requiresConversion =
-      row.requirement?.unit == InventoryAmountUnit.piece &&
+      row.requirement?.unit == TemplateIngredientUnit.piece &&
       selectedAmountUnit != null;
 
   if (!requiresConversion) {
@@ -67,7 +90,7 @@ class _IngredientAssignmentBottomSheet extends StatefulWidget {
     required this.inventoryItems,
   });
 
-  final _IngredientRowData row;
+  final IngredientRowData row;
   final List<InventoryItem> inventoryItems;
 
   @override
@@ -148,11 +171,11 @@ class _IngredientAssignmentBottomSheetState
                           return AppCheckboxListTile(
                             value: isSelected,
                             contentPadding: EdgeInsets.zero,
-                            secondary: _IngredientPreviewThumbnail(
+                            secondary: IngredientPreviewThumbnail(
                               imageUrl: item.imageUrl,
                             ),
                             title: Text(item.name),
-                            subtitle: Text(_inventoryAmountLabel(item)),
+                            subtitle: Text(inventoryAmountLabel(item)),
                             onChanged: isSelected
                                 ? (_) => _toggleSelection(item.id, false)
                                 : !isSelectable
@@ -203,7 +226,7 @@ class _IngredientAssignmentBottomSheetState
 
 Future<RecipeIngredientAmountConversion?> _selectAssignmentConversion({
   required BuildContext context,
-  required _IngredientRowData row,
+  required IngredientRowData row,
   required InventoryAmountUnit targetUnit,
   required int? initialAmount,
 }) async {
@@ -227,7 +250,7 @@ class _IngredientAssignmentConversionSheet extends StatefulWidget {
     required this.initialAmount,
   });
 
-  final _IngredientRowData row;
+  final IngredientRowData row;
   final InventoryAmountUnit targetUnit;
   final int? initialAmount;
 
@@ -259,7 +282,7 @@ class _IngredientAssignmentConversionSheetState
     final l10n = AppLocalizations.of(context)!;
     final maxHeight = MediaQuery.sizeOf(context).height * 0.5;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    final conversionSourceUnit = _conversionSourceUnitLabel(
+    final conversionSourceUnit = conversionSourceUnitLabel(
       requirement: widget.row.requirement,
       l10n: l10n,
     );
@@ -343,7 +366,7 @@ class _IngredientAssignmentConversionSheetState
 }
 
 List<String> _normalizedDialogSelectionIds({
-  required _IngredientRowData row,
+  required IngredientRowData row,
   required List<InventoryItem> inventoryItems,
 }) {
   final availableItemIds = inventoryItems
@@ -385,7 +408,7 @@ List<InventoryItem> _selectedInventoryItems({
       .toList(growable: false);
 }
 
-Future<void> _addIngredientToShoppingList({
+Future<void> addIngredientToShoppingList({
   required BuildContext context,
   required WidgetRef ref,
   required String? shoppingListLabel,
@@ -400,7 +423,7 @@ Future<void> _addIngredientToShoppingList({
     return;
   }
 
-  _showSnackBar(
+  showSnackBar(
     context,
     AppLocalizations.of(
       context,
@@ -408,16 +431,16 @@ Future<void> _addIngredientToShoppingList({
   );
 }
 
-Future<void> _addTemplateIngredientsToShoppingList({
+Future<void> addTemplateIngredientsToShoppingList({
   required BuildContext context,
   required WidgetRef ref,
-  required List<_IngredientRowData> ingredientRows,
+  required List<IngredientRowData> ingredientRows,
   required List<InventoryItem> inventoryItems,
 }) async {
   final labelsToAdd = ingredientRows
       .map(
         (row) =>
-            _shoppingListLabelForRow(row: row, inventoryItems: inventoryItems),
+            shoppingListLabelForRow(row: row, inventoryItems: inventoryItems),
       )
       .whereType<String>()
       .where((label) => label.trim().isNotEmpty)
@@ -435,7 +458,7 @@ Future<void> _addTemplateIngredientsToShoppingList({
       return;
     }
     if (!added) {
-      _showSnackBar(
+      showSnackBar(
         context,
         AppLocalizations.of(
           context,
@@ -446,7 +469,7 @@ Future<void> _addTemplateIngredientsToShoppingList({
     addedCount += 1;
   }
 
-  _showSnackBar(
+  showSnackBar(
     context,
     AppLocalizations.of(
       context,
@@ -454,7 +477,7 @@ Future<void> _addTemplateIngredientsToShoppingList({
   );
 }
 
-Future<void> _toggleIgnored({
+Future<void> toggleIgnored({
   required BuildContext context,
   required WidgetRef ref,
   required String templateId,
@@ -472,13 +495,13 @@ Future<void> _toggleIgnored({
     return;
   }
 
-  _showSnackBar(
+  showSnackBar(
     context,
     AppLocalizations.of(context)!.preparedMealTemplateDetailIgnoreSaveFailed,
   );
 }
 
-void _showSnackBar(BuildContext context, String message) {
+void showSnackBar(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(message)));

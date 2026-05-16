@@ -1,36 +1,8 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/flexible_decimal_parser.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
-/// Defines template ingredient requirement.
-class TemplateIngredientRequirement {
-  /// The template ingredient requirement.
-  const TemplateIngredientRequirement({
-    required this.amount,
-    required this.unit,
-    required this.name,
-    this.countMeasureLabel,
-    this.packageCountLabel,
-    this.allowsDirectPieceInventoryMatch = true,
-  });
-
-  /// The amount.
-  final int amount;
-
-  /// The unit.
-  final InventoryAmountUnit unit;
-
-  /// The name.
-  final String name;
-
-  /// The count measure label.
-  final String? countMeasureLabel;
-
-  /// Package count display label, for example `1x`.
-  final String? packageCountLabel;
-
-  /// Whether direct piece inventory match.
-  final bool allowsDirectPieceInventoryMatch;
-}
+part 'template_ingredient_parser.g.dart';
 
 /// Defines template ingredient parser.
 class TemplateIngredientParser {
@@ -133,14 +105,14 @@ class TemplateIngredientParser {
   /// Format pending ingredient.
   String formatPendingIngredient({
     required int amount,
-    required InventoryAmountUnit unit,
+    required TemplateIngredientUnit unit,
     required String name,
     String? countMeasureLabel,
     String? packageCountLabel,
   }) {
     final packageLabel = packageCountLabel?.trim();
     final amountLabel = countMeasureLabel?.trim();
-    final unitLabel = unit == InventoryAmountUnit.piece ? '' : unit.code;
+    final unitLabel = unit == TemplateIngredientUnit.piece ? '' : unit.code;
     if (packageLabel?.isNotEmpty == true && unitLabel.isNotEmpty) {
       return '$packageLabel $amount$unitLabel $name';
     }
@@ -202,7 +174,7 @@ class TemplateIngredientParser {
         normalizedToken: normalizedToken,
       )) {
         return const _TemplateIngredientUnitConversion(
-          unit: InventoryAmountUnit.piece,
+          unit: TemplateIngredientUnit.piece,
           multiplier: 1,
           consumesUnitToken: false,
         );
@@ -210,7 +182,7 @@ class TemplateIngredientParser {
       final mappedConversion = _unitConversions[normalizedToken];
       final conversion = mappedConversion == null
           ? null
-          : mappedConversion.unit == InventoryAmountUnit.piece
+          : mappedConversion.unit == TemplateIngredientUnit.piece
           ? mappedConversion.copyWith(countMeasureLabel: rawToken)
           : mappedConversion;
       if (conversion != null) {
@@ -222,7 +194,7 @@ class TemplateIngredientParser {
     }
 
     return const _TemplateIngredientUnitConversion(
-      unit: InventoryAmountUnit.piece,
+      unit: TemplateIngredientUnit.piece,
       multiplier: 1,
       consumesUnitToken: false,
     );
@@ -260,7 +232,7 @@ class TemplateIngredientParser {
     if (parsedQuantity == null ||
         parsedQuantity <= 0 ||
         conversion == null ||
-        conversion.unit == InventoryAmountUnit.piece) {
+        conversion.unit == TemplateIngredientUnit.piece) {
       return null;
     }
 
@@ -310,7 +282,7 @@ class TemplateIngredientParser {
     String rawTail,
     _TemplateIngredientUnitConversion conversion,
   ) {
-    if (conversion.unit != InventoryAmountUnit.piece) {
+    if (conversion.unit != TemplateIngredientUnit.piece) {
       return false;
     }
     final tokens = rawTail.split(RegExp(r'\s+'));
@@ -377,6 +349,12 @@ class TemplateIngredientParser {
   }
 }
 
+/// Provides the template ingredient parser.
+@Riverpod(keepAlive: true)
+TemplateIngredientParser templateIngredientParser(Ref ref) {
+  return const TemplateIngredientParser();
+}
+
 class _TemplateIngredientUnitConversion {
   const _TemplateIngredientUnitConversion({
     required this.unit,
@@ -386,7 +364,7 @@ class _TemplateIngredientUnitConversion {
     this.allowsDirectPieceInventoryMatch = true,
   });
 
-  final InventoryAmountUnit unit;
+  final TemplateIngredientUnit unit;
   final double multiplier;
   final bool consumesUnitToken;
   final String? countMeasureLabel;
@@ -405,211 +383,211 @@ class _TemplateIngredientUnitConversion {
 
 const _unitConversions = <String, _TemplateIngredientUnitConversion>{
   'g': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'gr': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'gramm': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'gram': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'grams': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'kg': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'kgs': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'kilogramm': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'kilogram': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'kilograms': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.gram,
+    unit: TemplateIngredientUnit.gram,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'ml': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'milliliter': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'milliliters': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'millilitre': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'millilitres': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'cl': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 10,
     consumesUnitToken: true,
   ),
   'dl': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 100,
     consumesUnitToken: true,
   ),
   'l': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'liter': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'liters': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'litre': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'litres': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.milliliter,
+    unit: TemplateIngredientUnit.milliliter,
     multiplier: 1000,
     consumesUnitToken: true,
   ),
   'pc': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'piece': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'pieces': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'stk': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'stuck': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'stueck': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'stück': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'stücke': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
   ),
   'el': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'essloeffel': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'esslöffel': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'tbsp': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'tl': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'teeloeffel': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'teelöffel': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'teaspoon': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'teaspoons': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,
   ),
   'tsp': _TemplateIngredientUnitConversion(
-    unit: InventoryAmountUnit.piece,
+    unit: TemplateIngredientUnit.piece,
     multiplier: 1,
     consumesUnitToken: true,
     allowsDirectPieceInventoryMatch: false,

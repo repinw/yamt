@@ -11,11 +11,10 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_pending_ingredient_support.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_template_creation_support.dart';
-import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 void main() {
   const parser = TemplateIngredientParser();
@@ -149,6 +148,90 @@ void main() {
         expect(result!.nextItems.single.currentAmount, 0);
         expect(result.components, hasLength(1));
         expect(result.remainingIngredient, '50 g rice');
+      },
+    );
+
+    test(
+      'buildPreparedMealCreationFromTemplateResult maps recipe pieces to '
+      'inventory grams with conversion',
+      () {
+        final carrots = _measuredItem(
+          id: 'carrots',
+          name: 'Carrots',
+          currentAmount: 150,
+          initialAmount: 200,
+          initialQuantity: 1,
+        );
+        final template = PreparedMeal(
+          id: 'template-1',
+          name: 'Carrot salad',
+          totalPortions: 1,
+          remainingPortions: 1,
+          totalKcal: 0,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+          createdAt: now,
+          updatedAt: now,
+          components: const <PreparedMealComponent>[],
+          recipeIngredients: const <String>['2 Carrots'],
+        );
+
+        final result = buildPreparedMealCreationFromTemplateResult(
+          currentItems: <InventoryItem>[carrots],
+          preparedMealId: 'meal-1',
+          now: now,
+          template: template,
+          totalPortions: 1,
+          recipeIngredientAssignments: const <String, List<String>>{
+            '2 Carrots': <String>['carrots'],
+          },
+          recipeIngredientAmountConversions:
+              const <String, RecipeIngredientAmountConversion>{
+                '2 Carrots': RecipeIngredientAmountConversion(
+                  amountPerPiece: 100,
+                  unit: InventoryAmountUnit.gram,
+                ),
+              },
+          ingredientParser: parser,
+        );
+
+        expect(result.nextItems.single.currentAmount, 0);
+        expect(result.preparedMeal.components.single.usedAmount, 150);
+        expect(
+          result.preparedMeal.components.single.usedUnit,
+          InventoryAmountUnit.gram,
+        );
+        expect(result.preparedMeal.pendingRecipeIngredients, <String>[
+          '50 g Carrots',
+        ]);
+      },
+    );
+
+    test(
+      'buildPreparedMealPendingIngredientFillResult consumes weighted item '
+      'for recipe piece requirement',
+      () {
+        final carrots = _measuredItem(
+          id: 'carrots',
+          name: 'Carrots',
+          currentAmount: 150,
+          initialAmount: 200,
+          initialQuantity: 1,
+        );
+
+        final result = buildPreparedMealPendingIngredientFillResult(
+          currentItems: <InventoryItem>[carrots],
+          ingredient: '2 Carrots',
+          inventoryItemIds: const <String>['carrots'],
+          ingredientParser: parser,
+        );
+
+        expect(result, isNotNull);
+        expect(result!.nextItems.single.currentAmount, 0);
+        expect(result.components.single.usedAmount, 150);
+        expect(result.components.single.usedUnit, InventoryAmountUnit.gram);
+        expect(result.remainingIngredient, '1 pc Carrots');
       },
     );
 
