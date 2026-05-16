@@ -10,7 +10,7 @@ class DiaryWeeklyCheckInHintTitle extends StatelessWidget {
   /// Creates diary weekly check-in hint title text.
   const DiaryWeeklyCheckInHintTitle({required this.checkInData, super.key});
 
-  /// Weekly check-in view model.
+  /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
 
   @override
@@ -44,7 +44,7 @@ class DiaryWeeklyCheckInHintBody extends StatelessWidget {
   /// Creates diary weekly check-in hint body text.
   const DiaryWeeklyCheckInHintBody({required this.checkInData, super.key});
 
-  /// Weekly check-in view model.
+  /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
 
   @override

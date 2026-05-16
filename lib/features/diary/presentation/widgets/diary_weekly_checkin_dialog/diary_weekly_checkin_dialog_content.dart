@@ -12,7 +12,7 @@ class DiaryWeeklyCheckInDialogContent extends StatelessWidget {
   /// Creates diary weekly check-in dialog content.
   const DiaryWeeklyCheckInDialogContent({required this.checkInData, super.key});
 
-  /// Weekly check-in view model.
+  /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
 
   @override
@@ -52,7 +52,7 @@ class DiaryWeeklyCheckInDialogIntro extends StatelessWidget {
   /// Creates diary weekly check-in dialog intro text.
   const DiaryWeeklyCheckInDialogIntro({required this.checkInData, super.key});
 
-  /// Weekly check-in view model.
+  /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
 
   @override
@@ -75,7 +75,7 @@ class DiaryWeeklyCheckInBlockedMessage extends StatelessWidget {
     super.key,
   });
 
-  /// Weekly check-in view model.
+  /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
 
   @override

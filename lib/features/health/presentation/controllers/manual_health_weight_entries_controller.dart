@@ -1,26 +1,25 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
+import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
 part 'manual_health_weight_entries_controller.g.dart';
 
 const _logName = 'ManualHealthWeightEntriesController';
 
 /// Provides the current clock for manual weight timestamps.
-final manualHealthWeightNowProvider = Provider<DateTime Function()>((ref) {
+@riverpod
+DateTime Function() manualHealthWeightNow(Ref ref) {
   return DateTime.now;
-});
+}
 
 /// Defines manual health weight entries controller.
 @riverpod
@@ -43,7 +42,7 @@ class ManualHealthWeightEntriesController
     );
     final now = ref.read(manualHealthWeightNowProvider)();
     final previousEntries = await _loadCurrentEntries(repository);
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     final connectionStatus = await connectionStatusFuture;
 
     if (connectionStatus.accessState == HealthDataAccessState.ready) {
@@ -68,9 +67,9 @@ class ManualHealthWeightEntriesController
   Future<bool> deleteEntryForDay(DateTime day) async {
     final repository = ref.read(manualHealthWeightRepositoryProvider);
     final previousEntries = await _loadCurrentEntries(repository);
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     final nextEntries = previousEntries
-        .where((entry) => !isSameDiaryDay(entry.day, normalizedDay))
+        .where((entry) => !isSameLocalDay(entry.day, normalizedDay))
         .toList(growable: false);
     if (ref.mounted) {
       state = AsyncData(
@@ -86,7 +85,6 @@ class ManualHealthWeightEntriesController
       if (!deleted) {
         return false;
       }
-      await _invalidateWeeklyCheckInSnapshotsForDay(normalizedDay);
       return deleted;
     } on Object catch (error, stackTrace) {
       log(
@@ -148,7 +146,6 @@ class ManualHealthWeightEntriesController
           name: _logName,
         );
       }
-      await _invalidateWeeklyCheckInSnapshotsForDay(normalizedDay);
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -172,7 +169,7 @@ class ManualHealthWeightEntriesController
   }) async {
     final nextEntries = [
       for (final existingEntry in previousEntries)
-        if (!isSameDiaryDay(existingEntry.day, entry.day)) existingEntry,
+        if (!isSameLocalDay(existingEntry.day, entry.day)) existingEntry,
       entry,
     ]..sort((left, right) => left.day.compareTo(right.day));
     if (ref.mounted) {
@@ -189,7 +186,6 @@ class ManualHealthWeightEntriesController
       if (!saved) {
         return false;
       }
-      await _invalidateWeeklyCheckInSnapshotsForDay(entry.day);
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -205,42 +201,12 @@ class ManualHealthWeightEntriesController
     }
   }
 
-  Future<void> _invalidateWeeklyCheckInSnapshotsForDay(DateTime day) async {
-    if (!ref.mounted) {
-      return;
-    }
-    try {
-      await ref.read(calorieGoalControllerProvider.future);
-      if (!ref.mounted) {
-        return;
-      }
-      final goalController = ref.read(calorieGoalControllerProvider.notifier);
-      final saved = await goalController
-          .invalidateWeeklyCheckInSnapshotsFromDay(
-            day,
-          );
-      if (!saved) {
-        log(
-          'Failed to dirty weekly check-in snapshots after weight change.',
-          name: _logName,
-        );
-      }
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to dirty weekly check-in snapshots after weight change.',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
   List<ManualHealthWeightEntry> _entriesWithoutDay(
     List<ManualHealthWeightEntry> entries,
     DateTime day,
   ) {
     return List<ManualHealthWeightEntry>.unmodifiable(
-      entries.where((entry) => !isSameDiaryDay(entry.day, day)),
+      entries.where((entry) => !isSameLocalDay(entry.day, day)),
     );
   }
 }
@@ -250,7 +216,7 @@ DateTime _weightRecordedAtForDay(DateTime day, DateTime now) {
   // for same day when user edits weight multiple times.
   final dayStart = DateTime(day.year, day.month, day.day);
   final midday = DateTime(day.year, day.month, day.day, 12);
-  if (!isSameDiaryDay(day, now) || !midday.isAfter(now)) {
+  if (!isSameLocalDay(day, now) || !midday.isAfter(now)) {
     return midday;
   }
 

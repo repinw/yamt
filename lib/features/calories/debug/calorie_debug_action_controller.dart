@@ -12,12 +12,12 @@ import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
-import 'package:yamt/features/health/provider/'
-    'health_connection_controller.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/'
+import 'package:yamt/features/health/data/diary_health_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
+import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/presentation/controllers/'
+    'health_connection_controller.dart';
 
 /// Result from printing calorie debug dump.
 sealed class CalorieDebugDumpPrintResult {
@@ -154,15 +154,15 @@ class CalorieDebugActionController extends AsyncNotifier<void> {
   Future<CalorieWeeklyCheckInDebugDumpPrintResult>
   printWeeklyCheckInDebugDump() async {
     try {
-      final viewModel = await ref.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await ref.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
       final encoded = const JsonEncoder.withIndent(
         '  ',
-      ).convert(_weeklyCheckInViewModelDebugJson(viewModel));
+      ).convert(_weeklyCheckInDataDebugJson(checkInData));
       _logDebugDump(
         name: 'CalorieWeeklyCheckInDebugDump',
-        dump: 'calorieWeeklyCheckInViewModel\n$encoded',
+        dump: 'calorieWeeklyCheckInData\n$encoded',
       );
       return const CalorieWeeklyCheckInDebugDumpPrintSuccess();
     } on Object catch (error, stackTrace) {
@@ -188,35 +188,36 @@ Object? _jsonDebugValue(Object? value) {
   };
 }
 
-Map<String, Object?> _weeklyCheckInViewModelDebugJson(
-  CalorieWeeklyCheckInViewModel viewModel,
+Map<String, Object?> _weeklyCheckInDataDebugJson(
+  CalorieWeeklyCheckInData checkInData,
 ) {
   return <String, Object?>{
     'today': diaryDayKey(DateTime.now()),
-    'has_pending': viewModel.hasPending,
-    'should_auto_open': viewModel.shouldAutoOpen,
-    'show_diary_hint': viewModel.showDiaryHint,
-    'is_ready': viewModel.isReady,
-    'is_blocked': viewModel.isBlocked,
-    'blocked_reason': viewModel.blockedReason?.name,
-    'missing_intake_days': viewModel.missingIntakeDays
+    'has_pending': checkInData.hasPending,
+    'should_auto_open': checkInData.shouldAutoOpen,
+    'show_diary_hint': checkInData.showDiaryHint,
+    'is_ready': checkInData.isReady,
+    'is_blocked': checkInData.isBlocked,
+    'blocked_reason': checkInData.blockedReason?.name,
+    'missing_intake_days': checkInData.missingIntakeDays
         .map(diaryDayKey)
         .toList(growable: false),
-    'missing_weight_days': viewModel.missingWeightDays
+    'missing_weight_days': checkInData.missingWeightDays
         .map(diaryDayKey)
         .toList(growable: false),
-    'freshness': viewModel.freshness.name,
-    'latest_learned_tdee_at': viewModel.latestLearnedTdeeAt?.toIso8601String(),
-    'low_confidence': viewModel.lowConfidence,
-    'input_hash': viewModel.inputHash,
+    'freshness': checkInData.freshness.name,
+    'latest_learned_tdee_at': checkInData.latestLearnedTdeeAt
+        ?.toIso8601String(),
+    'low_confidence': checkInData.lowConfidence,
+    'input_hash': checkInData.inputHash,
     'pending_weekly_check_in': _pendingWeeklyCheckInDebugJson(
-      viewModel.pendingWeeklyCheckIn,
+      checkInData.pendingWeeklyCheckIn,
     ),
     'cache_weekly_check_in': _pendingWeeklyCheckInDebugJson(
-      viewModel.cacheWeeklyCheckIn,
+      checkInData.cacheWeeklyCheckIn,
     ),
-    'calculation': _calculationDebugJson(viewModel.calculation),
-    'days': viewModel.days.map(_windowDayDebugJson).toList(growable: false),
+    'calculation': _calculationDebugJson(checkInData.calculation),
+    'days': checkInData.days.map(_windowDayDebugJson).toList(growable: false),
   };
 }
 

@@ -5,12 +5,12 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions_menu.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/'
+import 'package:yamt/features/health/data/diary_health_service_provider.dart';
+import 'package:yamt/features/health/data/health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
+import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';

@@ -13,9 +13,9 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
         diaryCalorieGoalSettingsProvider,
         diaryWeeklyCheckInDataProvider;
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
+import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';

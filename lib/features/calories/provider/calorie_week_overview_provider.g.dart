@@ -122,7 +122,7 @@ final class CalorieWeekConsumptionSnapshotForWindowProvider
 }
 
 String _$calorieWeekConsumptionSnapshotForWindowHash() =>
-    r'ceb8e50f957df9ea2c52fd25afc0995625a90724';
+    r'196a369450e8d9fa60d5ca3b47ba906645fb7a1f';
 
 /// Calorie week consumption snapshot for window.
 

@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
 
 part 'health_connection_controller.g.dart';
 
@@ -83,6 +82,9 @@ class HealthConnectionController extends _$HealthConnectionController {
     try {
       final service = ref.read(healthConnectionServiceProvider);
       final result = await service.disconnect();
+      if (!ref.mounted) {
+        return result;
+      }
       final nextStatus = await _loadStatusFallback(
         previousStatus: previousStatus,
       );
@@ -107,7 +109,12 @@ class HealthConnectionController extends _$HealthConnectionController {
     required HealthConnectionStatus? previousStatus,
   }) async {
     try {
-      return await ref.read(healthConnectionServiceProvider).loadStatus();
+      final service = ref.read(healthConnectionServiceProvider);
+      final status = await service.loadStatus();
+      if (!ref.mounted) {
+        return previousStatus ?? status;
+      }
+      return status;
     } on Object catch (error, stackTrace) {
       return _buildFallbackStatus(
         previousStatus: previousStatus,
@@ -143,7 +150,6 @@ class HealthConnectionController extends _$HealthConnectionController {
 
     try {
       final nextStatus = await action();
-      await _markActivityTrackingStartedIfReady(nextStatus);
       if (ref.mounted) {
         state = AsyncData(nextStatus);
       }
@@ -175,23 +181,5 @@ class HealthConnectionController extends _$HealthConnectionController {
 
     return (previousStatus ?? const HealthConnectionStatus.unsupported())
         .copyWith(errorMessage: error.toString());
-  }
-
-  Future<void> _markActivityTrackingStartedIfReady(
-    HealthConnectionStatus status,
-  ) async {
-    if (status.accessState != HealthDataAccessState.ready || !ref.mounted) {
-      return;
-    }
-
-    final repository = ref.read(calorieSettingsRepositoryProvider);
-    final settings = await repository.readSettings();
-    if (!ref.mounted || settings.activityTrackingStartDate != null) {
-      return;
-    }
-
-    await repository.saveSettings(
-      settings.markActivityTrackingStarted(DateTime.now()),
-    );
   }
 }

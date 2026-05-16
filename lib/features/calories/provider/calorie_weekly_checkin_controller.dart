@@ -68,15 +68,15 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
 
   /// Sync learned TDEE cache for a ready weekly check in.
   Future<bool> syncLearnedTdeeCache(
-    CalorieWeeklyCheckInViewModel viewModel,
+    CalorieWeeklyCheckInData checkInData,
   ) async {
-    final pendingWeeklyCheckIn = viewModel.pendingWeeklyCheckIn;
+    final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
     final cacheWeeklyCheckIn =
-        viewModel.cacheWeeklyCheckIn ?? pendingWeeklyCheckIn;
-    final calculation = viewModel.calculation;
+        checkInData.cacheWeeklyCheckIn ?? pendingWeeklyCheckIn;
+    final calculation = checkInData.calculation;
     if (cacheWeeklyCheckIn == null ||
         calculation == null ||
-        viewModel.isBlocked) {
+        checkInData.isBlocked) {
       return true;
     }
 
@@ -94,8 +94,8 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     final weeklyCheckInSnapshot = _weeklyCheckInSnapshot(
       weeklyCheckIn: cacheWeeklyCheckIn,
       calculation: calculation,
-      lowConfidence: viewModel.lowConfidence,
-      inputHash: viewModel.inputHash,
+      lowConfidence: checkInData.lowConfidence,
+      inputHash: checkInData.inputHash,
     );
     final settings = await ref.read(calorieGoalControllerProvider.future);
     if (!ref.mounted) {
@@ -120,13 +120,13 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
 
   /// Apply weekly check in.
   Future<bool> applyWeeklyCheckIn(
-    CalorieWeeklyCheckInViewModel viewModel,
+    CalorieWeeklyCheckInData checkInData,
   ) async {
-    final pendingWeeklyCheckIn = viewModel.pendingWeeklyCheckIn;
-    final calculation = viewModel.calculation;
+    final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
+    final calculation = checkInData.calculation;
     if (pendingWeeklyCheckIn == null ||
         calculation == null ||
-        viewModel.isBlocked) {
+        checkInData.isBlocked) {
       return false;
     }
 
@@ -144,7 +144,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     }
 
     final goalController = ref.read(calorieGoalControllerProvider.notifier);
-    final savedSnapshot = await syncLearnedTdeeCache(viewModel);
+    final savedSnapshot = await syncLearnedTdeeCache(checkInData);
 
     if (!ref.mounted) {
       return savedSnapshot;

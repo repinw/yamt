@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -10,10 +12,14 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/health/data/'
+    'health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
+import 'package:yamt/features/health/data/'
+    'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
-import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -33,6 +39,14 @@ CalorieEntry _entry(String id, DateTime loggedAt) {
     createdAt: loggedAt,
     updatedAt: loggedAt,
   );
+}
+
+class _WatchErrorCalorieSettingsRepository
+    extends FakeCalorieSettingsRepository {
+  @override
+  Stream<CalorieGoalSettings> watchSettings() {
+    return Stream<CalorieGoalSettings>.error(StateError('watch failed'));
+  }
 }
 
 void main() {
@@ -115,6 +129,109 @@ void main() {
     expect(settings.calculatorProfile, isNull);
     expect(settings.goalKcalForDay(DateTime(2026, 2, 25)), 2200);
     expect(settings.goalKcalForDay(DateTime.now()), 2300);
+    expect(settings.goalHistory, hasLength(2));
+  });
+
+  test('setGoal rejects non-positive values', () async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .setGoal(0);
+
+    expect(saved, isFalse);
+    final settings = await repository.readSettings();
+    expect(settings.hasGoal, isFalse);
+  });
+
+  test('build surfaces initial settings stream errors', () async {
+    final repository = _WatchErrorCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await expectLater(
+      container.read(calorieGoalControllerProvider.future),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('setGoal restores previous state when save throws', () async {
+    final previousSettings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2100,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 4, 8),
+    );
+    final repository =
+        FakeCalorieSettingsRepository(
+            initialSettings: previousSettings,
+          )
+          ..onSaveSettings = (settings) async {
+            throw StateError('save failed');
+          };
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .setGoal(2200);
+
+    expect(saved, isFalse);
+    expect(
+      container.read(calorieGoalControllerProvider).asData?.value,
+      previousSettings,
+    );
+  });
+
+  test('clearGoal removes active goal', () async {
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2100,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4, 8),
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .clearGoal();
+
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.hasGoal, isFalse);
     expect(settings.goalHistory, hasLength(2));
   });
 
@@ -365,6 +482,65 @@ void main() {
   );
 
   test(
+    'saveCalculatedGoal skips seed when Health already has start weight',
+    () async {
+      final repository = FakeCalorieSettingsRepository();
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[],
+      );
+      final healthWeightService = FakeHealthWeightService(
+        <HealthWeightSample>[
+          HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 80),
+        ],
+      );
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+          healthConnectionServiceProvider.overrideWithValue(
+            FakeHealthConnectionService(
+              const HealthConnectionStatus(
+                platform: HealthPlatform.android,
+                healthConnectAvailability: HealthConnectAvailability.available,
+                permissionState: HealthPermissionState.granted,
+                historyAccess: HealthHistoryAccess.granted,
+              ),
+            ),
+          ),
+          healthWeightServiceProvider.overrideWithValue(healthWeightService),
+          manualHealthWeightRepositoryProvider.overrideWithValue(
+            manualRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 80,
+        heightCm: 180,
+        ageYears: 30,
+        activityLevel: 1.2,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      );
+
+      final saved = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .saveCalculatedGoal(
+            profile,
+            goalStartDate: DateTime(2026, 4, 8, 16),
+          );
+
+      expect(saved, isTrue);
+      expect(manualRepository.entries, isEmpty);
+    },
+  );
+
+  test(
     'saveCalculatedGoal with unchanged date updates window only '
     'and preserves pending dismissal',
     () async {
@@ -421,6 +597,54 @@ void main() {
       expect(settings.goalHistory, hasLength(1));
       expect(settings.pendingWeeklyCheckIn?.windowKey, pending.windowKey);
       expect(settings.pendingWeeklyCheckIn?.dismissedAt, dismissedAt);
+    },
+  );
+
+  test(
+    'saveCalculatedGoal refreshes expected activity when profile unchanged',
+    () async {
+      final today = normalizeDiaryDay(DateTime.now());
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 80,
+        heightCm: 180,
+        ageYears: 30,
+        activityLevel: 1.6,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      );
+      final calculation = CalorieGoalCalculator.calculate(profile);
+      final repository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: calculation.finalGoalKcal,
+          calculatorProfile: profile.copyWith(),
+          effectiveDate: today,
+          expectedActivityKcal: calculation.expectedActivityKcal + 25,
+          source: CalorieGoalSource.calculator,
+        ),
+      );
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+
+      final saved = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .saveCalculatedGoal(profile, goalStartDate: today);
+
+      expect(saved, isTrue);
+      final settings = await repository.readSettings();
+      expect(settings.goalHistory, hasLength(1));
+      expect(
+        settings.latestGoalEntry?.expectedActivityKcal,
+        calculation.expectedActivityKcal,
+      );
     },
   );
 
@@ -835,6 +1059,55 @@ void main() {
     },
   );
 
+  test('shiftGoalStart returns false without a goal', () async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .shiftGoalStart(goalStartDate: DateTime(2026, 4, 8));
+
+    expect(saved, isFalse);
+  });
+
+  test('shiftGoalStart keeps unchanged start as success', () async {
+    final startDate = DateTime(2026, 4, 8);
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2100,
+        calculatorProfile: null,
+        effectiveDate: startDate,
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .shiftGoalStart(goalStartDate: startDate);
+
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.goalHistory, hasLength(1));
+  });
+
   test('setSkippedIntakeDay rejects days that already have entries', () async {
     final skippedDay = DateTime(2026, 4, 10);
     final settingsRepository = FakeCalorieSettingsRepository(
@@ -870,6 +1143,87 @@ void main() {
     final settings = await settingsRepository.readSettings();
     expect(settings.isSkippedIntakeDay(skippedDay), isFalse);
   });
+
+  test('clearSkippedIntakeDay removes skipped day', () async {
+    final skippedDay = DateTime(2026, 4, 10);
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4, 8),
+      ).setSkippedIntakeDay(day: skippedDay, isSkipped: true),
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .clearSkippedIntakeDay(skippedDay);
+
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.isSkippedIntakeDay(skippedDay), isFalse);
+  });
+
+  test('markActivityTrackingStarted stores first tracking day', () async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final controller = container.read(calorieGoalControllerProvider.notifier);
+    final saved = await controller.markActivityTrackingStarted(
+      startedAt: DateTime(2026, 4, 8, 10),
+    );
+    final savedAgain = await controller.markActivityTrackingStarted(
+      startedAt: DateTime(2026, 4, 8, 12),
+    );
+
+    expect(saved, isTrue);
+    expect(savedAgain, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.activityTrackingStartDate, DateTime(2026, 4, 8));
+  });
+
+  test(
+    'dismissPendingWeeklyCheckIn succeeds when nothing is pending',
+    () async {
+      final repository = FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+
+      final dismissed = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .dismissPendingWeeklyCheckIn();
+
+      expect(dismissed, isTrue);
+      final settings = await repository.readSettings();
+      expect(settings.pendingWeeklyCheckIn, isNull);
+    },
+  );
 
   test(
     'dismissPendingWeeklyCheckIn keeps pending window and stores dismissal',
@@ -970,6 +1324,65 @@ void main() {
     expect(
       settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot?.windowEndDate,
       DateTime(2026, 4, 14),
+    );
+  });
+
+  test('saveWeeklyCheckInGoal refreshes copied calculator snapshot', () async {
+    final oldSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: DateTime(2026, 4, 8),
+      windowEndDate: DateTime(2026, 4, 14),
+      trendWeightChangePerDay: -0.08,
+      calculatedTrueTdeeKcal: 2315,
+      averageActiveKcal: 220,
+      lowConfidence: false,
+      inputHash: 'v1:old',
+    );
+    final newSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: DateTime(2026, 4, 8),
+      windowEndDate: DateTime(2026, 4, 14),
+      trendWeightChangePerDay: -0.04,
+      calculatedTrueTdeeKcal: 2340,
+      averageActiveKcal: 230,
+      lowConfidence: false,
+      inputHash: 'v1:new',
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: const CalorieCalculatorProfile.defaults(),
+        effectiveDate: DateTime(2026, 4, 15, 9),
+        source: CalorieGoalSource.calculator,
+        weeklyCheckInSnapshot: oldSnapshot,
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveWeeklyCheckInGoal(
+          completedAt: DateTime(2026, 4, 15, 10),
+          dailyKcalGoal: 2300,
+          weeklyCheckInSnapshot: newSnapshot,
+        );
+
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    final calculatorEntry = settings.goalHistory.firstWhere(
+      (entry) => !entry.isWeeklyCheckIn,
+    );
+    expect(calculatorEntry.weeklyCheckInSnapshot?.inputHash, 'v1:new');
+    expect(
+      calculatorEntry.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal,
+      2340,
     );
   });
 

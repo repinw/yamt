@@ -9,12 +9,12 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/'
+import 'package:yamt/features/health/data/diary_health_service_provider.dart';
+import 'package:yamt/features/health/data/health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
+import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -79,8 +79,8 @@ void main() {
   test('printWeeklyCheckInDebugDump returns success result', () async {
     final harness = _createHarness(
       overrides: [
-        calorieWeeklyCheckInViewModelProvider.overrideWith(
-          (ref) => _weeklyCheckInViewModel(),
+        calorieWeeklyCheckInDataProvider.overrideWith(
+          (ref) => _weeklyCheckInData(),
         ),
       ],
     );
@@ -94,7 +94,7 @@ void main() {
   test('printWeeklyCheckInDebugDump returns failure result', () async {
     final harness = _createHarness(
       overrides: [
-        calorieWeeklyCheckInViewModelProvider.overrideWith((ref) {
+        calorieWeeklyCheckInDataProvider.overrideWith((ref) {
           throw StateError('weekly check-in dump failed');
         }),
       ],
@@ -165,7 +165,7 @@ class _CaloriePageActionHarness {
   }
 }
 
-CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel() {
+CalorieWeeklyCheckInData _weeklyCheckInData() {
   final windowStartDate = DateTime(2026, 2, 18);
   final windowEndDate = DateTime(2026, 2, 24);
   final dueDate = DateTime(2026, 2, 25);
@@ -175,7 +175,7 @@ CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel() {
     dueDate: dueDate,
   );
 
-  return CalorieWeeklyCheckInViewModel(
+  return CalorieWeeklyCheckInData(
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
     cacheWeeklyCheckIn: pendingWeeklyCheckIn.copyWith(
       dismissedAt: DateTime(2026, 2, 25, 8),

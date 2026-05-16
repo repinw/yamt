@@ -41,15 +41,15 @@ import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
+import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
+import 'package:yamt/features/health/data/health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
+import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';

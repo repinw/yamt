@@ -1,7 +1,8 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_health_connection_actions.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
 part 'diary_health_connect_action_provider.g.dart';
 
@@ -36,7 +37,7 @@ DiaryHealthConnectActionData diaryHealthConnectAction(
   HealthDataAccessState fallbackAccessState,
 ) {
   final statusState = ref.watch(healthConnectionControllerProvider);
-  final controller = ref.read(healthConnectionControllerProvider.notifier);
+  final actions = ref.read(calorieHealthConnectionActionsProvider);
   final status = statusState.value;
   final latestAccessState = status?.accessState;
   final hasConnectionError = status?.errorMessage != null;
@@ -54,10 +55,10 @@ DiaryHealthConnectActionData diaryHealthConnectAction(
     HealthDataAccessState.historyRequired =>
       hasConnectionError
           ? needsAppPermissionSettings
-                ? controller.openAppPermissionSettings
-                : controller.openHealthPermissionSettings
-          : controller.connect,
-    HealthDataAccessState.installRequired => controller.installHealthConnect,
+                ? actions.openAppPermissionSettings
+                : actions.openHealthPermissionSettings
+          : actions.connect,
+    HealthDataAccessState.installRequired => actions.installHealthConnect,
     HealthDataAccessState.ready || HealthDataAccessState.unsupported => null,
   };
 

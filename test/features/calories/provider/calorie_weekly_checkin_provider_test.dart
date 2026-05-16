@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -8,21 +9,27 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
-import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_balance_now_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
+import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
+import 'package:yamt/features/health/data/'
+    'health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
+import 'package:yamt/features/health/data/'
+    'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -148,23 +155,23 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final viewModel = await container.read(
-      calorieWeeklyCheckInViewModelProvider.future,
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
     );
 
-    expect(viewModel.hasPending, isTrue);
-    expect(viewModel.shouldAutoOpen, isTrue);
-    expect(viewModel.isReady, isTrue);
+    expect(checkInData.hasPending, isTrue);
+    expect(checkInData.shouldAutoOpen, isTrue);
+    expect(checkInData.isReady, isTrue);
     expect(
-      viewModel.pendingWeeklyCheckIn?.windowStartDate,
+      checkInData.pendingWeeklyCheckIn?.windowStartDate,
       DateTime(2026, 4, 8),
     );
     expect(
-      viewModel.pendingWeeklyCheckIn?.windowEndDate,
+      checkInData.pendingWeeklyCheckIn?.windowEndDate,
       DateTime(2026, 4, 14),
     );
-    expect(viewModel.lowConfidence, isTrue);
-    expect(viewModel.calculation?.newGoalKcal, greaterThan(0));
+    expect(checkInData.lowConfidence, isTrue);
+    expect(checkInData.calculation?.newGoalKcal, greaterThan(0));
   });
 
   test(
@@ -213,29 +220,29 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
+      expect(checkInData.isReady, isTrue);
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        checkInData.pendingWeeklyCheckIn?.windowStartDate,
         DateTime(2026, 4, 8),
       );
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        checkInData.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 14),
       );
-      expect(viewModel.days, hasLength(7));
+      expect(checkInData.days, hasLength(7));
 
-      final heartWindowDay = viewModel.days.firstWhere(
+      final heartWindowDay = checkInData.days.firstWhere(
         (day) => day.day == heartDay,
       );
       expect(heartWindowDay.isHeartDay, isTrue);
       expect(heartWindowDay.hasEntries, isFalse);
       expect(heartWindowDay.loggedIntakeKcal, 8000);
       expect(heartWindowDay.resolvedIntakeKcal, isNull);
-      expect(viewModel.calculation?.averageIntakeKcal, closeTo(2100, 0.01));
+      expect(checkInData.calculation?.averageIntakeKcal, closeTo(2100, 0.01));
     },
   );
 
@@ -266,22 +273,22 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.hasPending, isTrue);
-      expect(viewModel.shouldAutoOpen, isTrue);
+      expect(checkInData.hasPending, isTrue);
+      expect(checkInData.shouldAutoOpen, isTrue);
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        checkInData.pendingWeeklyCheckIn?.windowStartDate,
         DateTime(2026, 4, 9),
       );
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        checkInData.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 14),
       );
-      expect(viewModel.days, hasLength(6));
-      expect(viewModel.calculation, isNull);
+      expect(checkInData.days, hasLength(6));
+      expect(checkInData.calculation, isNull);
     },
   );
 
@@ -324,22 +331,22 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
+      expect(checkInData.isReady, isTrue);
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        checkInData.pendingWeeklyCheckIn?.windowStartDate,
         DateTime(2026, 4, 9),
       );
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        checkInData.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 14),
       );
-      expect(viewModel.days.first.day, DateTime(2026, 4, 9));
-      expect(viewModel.days.first.weightKg, 82);
-      expect(viewModel.days, hasLength(6));
+      expect(checkInData.days.first.day, DateTime(2026, 4, 9));
+      expect(checkInData.days.first.weightKg, 82);
+      expect(checkInData.days, hasLength(6));
     },
   );
 
@@ -383,17 +390,112 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final viewModel = await container.read(
-      calorieWeeklyCheckInViewModelProvider.future,
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
     );
 
-    expect(viewModel.hasPending, isTrue);
-    expect(viewModel.isBlocked, isTrue);
+    expect(checkInData.hasPending, isTrue);
+    expect(checkInData.isBlocked, isTrue);
     expect(
-      viewModel.blockedReason,
+      checkInData.blockedReason,
       CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays,
     );
-    expect(viewModel.calculation, isNull);
+    expect(checkInData.calculation, isNull);
+  });
+
+  test('complete intake without weights blocks on start weight', () async {
+    final today = DateTime(2026, 4, 15);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2400,
+        calculatorProfile: null,
+        effectiveDate: goalStart,
+      ),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 7; index += 1)
+          _entry(
+            'entry-$index',
+            goalStart.add(Duration(days: index, hours: 8)),
+            2100 + (index * 10),
+          ),
+      ],
+    );
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
+
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
+
+    expect(
+      checkInData.blockedReason,
+      CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
+    );
+    expect(checkInData.missingWeightDays, <DateTime>[goalStart]);
+  });
+
+  test('complete intake without end weight blocks on end weight', () async {
+    final today = DateTime(2026, 4, 15);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2400,
+        calculatorProfile: null,
+        effectiveDate: goalStart,
+      ),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 7; index += 1)
+          _entry(
+            'entry-$index',
+            goalStart.add(Duration(days: index, hours: 8)),
+            2100 + (index * 10),
+          ),
+      ],
+    );
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
+
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
+
+    expect(
+      checkInData.blockedReason,
+      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
+    );
+    expect(
+      checkInData.missingWeightDays,
+      <DateTime>[DateTime(2026, 4, 14)],
+    );
   });
 
   test(
@@ -446,12 +548,12 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
-      expect(viewModel.days.first.weightKg, 82);
+      expect(checkInData.isReady, isTrue);
+      expect(checkInData.days.first.weightKg, 82);
     },
   );
 
@@ -537,20 +639,20 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
+      expect(checkInData.isReady, isTrue);
       expect(
-        viewModel.days
+        checkInData.days
             .firstWhere((day) => day.day == DateTime(2026, 4, 11))
             .weightKg,
         closeTo(82.65, 0.0001),
       );
-      expect(viewModel.blockedReason, isNull);
-      expect(viewModel.calculation, isNotNull);
-      expect(viewModel.calculation!.newGoalKcal, greaterThan(2426.88));
+      expect(checkInData.blockedReason, isNull);
+      expect(checkInData.calculation, isNotNull);
+      expect(checkInData.calculation!.newGoalKcal, greaterThan(2426.88));
     },
   );
 
@@ -607,14 +709,14 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
-      expect(viewModel.missingWeightDays, isEmpty);
-      expect(viewModel.days.first.weightKg, 82);
-      expect(viewModel.days.last.weightKg, 81.4);
+      expect(checkInData.isReady, isTrue);
+      expect(checkInData.missingWeightDays, isEmpty);
+      expect(checkInData.days.first.weightKg, 82);
+      expect(checkInData.days.last.weightKg, 81.4);
     },
   );
 
@@ -671,14 +773,14 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
-      expect(viewModel.blockedReason, isNull);
-      expect(viewModel.missingWeightDays, isEmpty);
-      expect(viewModel.calculation, isNotNull);
+      expect(checkInData.isReady, isTrue);
+      expect(checkInData.blockedReason, isNull);
+      expect(checkInData.missingWeightDays, isEmpty);
+      expect(checkInData.calculation, isNotNull);
     },
   );
 
@@ -760,45 +862,45 @@ void main() {
       );
       addTearDown(container.dispose);
       final subscription = container.listen(
-        calorieWeeklyCheckInViewModelProvider,
+        calorieWeeklyCheckInDataProvider,
         (_, _) {},
         fireImmediately: true,
       );
       addTearDown(subscription.close);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
+      expect(checkInData.isReady, isTrue);
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        checkInData.pendingWeeklyCheckIn?.windowStartDate,
         DateTime(2026, 4, 15),
       );
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        checkInData.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 21),
       );
-      expect(viewModel.missingWeightDays, isEmpty);
-      expect(viewModel.days.first.weightKg, 82);
-      expect(viewModel.days.last.weightKg, 81.4);
+      expect(checkInData.missingWeightDays, isEmpty);
+      expect(checkInData.days.first.weightKg, 82);
+      expect(checkInData.days.last.weightKg, 81.4);
       expect(
-        viewModel.calculation?.trendWeightChangePerDay,
+        checkInData.calculation?.trendWeightChangePerDay,
         closeTo(-0.08571, 0.00001),
       );
-      expect(viewModel.calculation?.averageIntakeKcal, closeTo(2130, 0.01));
+      expect(checkInData.calculation?.averageIntakeKcal, closeTo(2130, 0.01));
 
       await logRepository.saveEntry(
         _entry('previous-entry-0', DateTime(2026, 4, 8, 8), 3000),
       );
       container.read(calorieOverviewRevisionProvider.notifier).markChanged();
 
-      final recomputedViewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final recomputedData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
       expect(
-        recomputedViewModel.calculation?.averageIntakeKcal,
+        recomputedData.calculation?.averageIntakeKcal,
         closeTo(2130, 0.01),
       );
     },
@@ -854,13 +956,13 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.hasPending, isTrue);
-      expect(viewModel.shouldAutoOpen, isFalse);
-      expect(viewModel.showDiaryHint, isFalse);
+      expect(checkInData.hasPending, isTrue);
+      expect(checkInData.shouldAutoOpen, isFalse);
+      expect(checkInData.showDiaryHint, isFalse);
     },
   );
 
@@ -918,22 +1020,22 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        checkInData.pendingWeeklyCheckIn?.windowStartDate,
         DateTime(2026, 4, 8),
       );
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        checkInData.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 14),
       );
-      expect(viewModel.isReady, isFalse);
-      expect(viewModel.calculation, isNull);
-      expect(viewModel.shouldAutoOpen, isFalse);
-      expect(viewModel.showDiaryHint, isFalse);
+      expect(checkInData.isReady, isFalse);
+      expect(checkInData.calculation, isNull);
+      expect(checkInData.shouldAutoOpen, isFalse);
+      expect(checkInData.showDiaryHint, isFalse);
       expect(rangeReadCount, 0);
     },
   );
@@ -993,20 +1095,20 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        checkInData.pendingWeeklyCheckIn?.windowStartDate,
         DateTime(2026, 4, 15),
       );
-      expect(viewModel.isReady, isTrue);
+      expect(checkInData.isReady, isTrue);
       expect(
-        viewModel.calculation?.calculatedTrueTdeeKcal,
+        checkInData.calculation?.calculatedTrueTdeeKcal,
         closeTo(2706, 0.01),
       );
-      expect(viewModel.calculation?.newGoalKcal, closeTo(2706, 0.01));
+      expect(checkInData.calculation?.newGoalKcal, closeTo(2706, 0.01));
     },
   );
 
@@ -1078,15 +1180,15 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
+      expect(checkInData.isReady, isTrue);
       expect(rangeStart, DateTime(2026, 4, 15));
       expect(rangeEnd, DateTime(2026, 4, 22));
-      expect(viewModel.inputHash, startsWith('v1:'));
-      expect(viewModel.calculation?.averageIntakeKcal, closeTo(3000, 0.01));
+      expect(checkInData.inputHash, startsWith('v1:'));
+      expect(checkInData.calculation?.averageIntakeKcal, closeTo(3000, 0.01));
     },
   );
 
@@ -1144,18 +1246,18 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.hasPending, isTrue);
-      expect(viewModel.pendingWeeklyCheckIn?.windowStartDate, goalStart);
+      expect(checkInData.hasPending, isTrue);
+      expect(checkInData.pendingWeeklyCheckIn?.windowStartDate, goalStart);
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        checkInData.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 14),
       );
-      expect(viewModel.isReady, isTrue);
-      expect(viewModel.inputHash, startsWith('v1:'));
+      expect(checkInData.isReady, isTrue);
+      expect(checkInData.inputHash, startsWith('v1:'));
     },
   );
 
@@ -1218,15 +1320,15 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.hasPending, isFalse);
-      expect(viewModel.pendingWeeklyCheckIn, isNull);
-      expect(viewModel.cacheWeeklyCheckIn, isNull);
-      expect(viewModel.calculation, isNull);
-      expect(viewModel.showDiaryHint, isFalse);
+      expect(checkInData.hasPending, isFalse);
+      expect(checkInData.pendingWeeklyCheckIn, isNull);
+      expect(checkInData.cacheWeeklyCheckIn, isNull);
+      expect(checkInData.calculation, isNull);
+      expect(checkInData.showDiaryHint, isFalse);
       expect(rangeReadCount, 0);
     },
   );
@@ -1273,11 +1375,11 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.freshness, CalorieLearnedTdeeFreshness.urgent);
+      expect(checkInData.freshness, CalorieLearnedTdeeFreshness.urgent);
     },
   );
 
@@ -1323,11 +1425,111 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.freshness, CalorieLearnedTdeeFreshness.stale);
+      expect(checkInData.freshness, CalorieLearnedTdeeFreshness.stale);
+    },
+  );
+
+  test(
+    'stale learned TDEE refreshes latest completed cache window',
+    () async {
+      final today = DateTime(2026, 4, 28);
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4),
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 8),
+            dailyKcalGoal: 2350,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: DateTime(2026, 4),
+              windowEndDate: DateTime(2026, 4, 7),
+              trendWeightChangePerDay: -0.05,
+              calculatedTrueTdeeKcal: 2400,
+              averageActiveKcal: 200,
+              lowConfidence: false,
+            ),
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 14),
+            dailyKcalGoal: 2380,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: DateTime(2026, 4, 8),
+              windowEndDate: DateTime(2026, 4, 14),
+              trendWeightChangePerDay: -0.04,
+              calculatedTrueTdeeKcal: 2380,
+              averageActiveKcal: 210,
+              lowConfidence: false,
+            ),
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 14, 10),
+            dailyKcalGoal: 2360,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: DateTime(2026, 4, 15),
+              windowEndDate: DateTime(2026, 4, 21),
+              trendWeightChangePerDay: -0.03,
+              calculatedTrueTdeeKcal: 2360,
+              averageActiveKcal: 220,
+              lowConfidence: false,
+            ),
+          );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: settings,
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 7; index += 1)
+            _entry(
+              'entry-$index',
+              DateTime(2026, 4, 15).add(Duration(days: index, hours: 8)),
+              2100 + (index * 10),
+            ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 15), weightKg: 82),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 81.4),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
+      );
+
+      expect(checkInData.pendingWeeklyCheckIn, isNull);
+      expect(
+        checkInData.cacheWeeklyCheckIn?.windowStartDate,
+        DateTime(2026, 4, 15),
+      );
+      expect(
+        checkInData.cacheWeeklyCheckIn?.windowEndDate,
+        DateTime(2026, 4, 21),
+      );
+      expect(checkInData.freshness, CalorieLearnedTdeeFreshness.stale);
+      expect(checkInData.days, isNotEmpty);
     },
   );
 
@@ -1381,17 +1583,17 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.hasPending, isTrue);
-      expect(viewModel.pendingWeeklyCheckIn?.isDismissed, isTrue);
-      expect(viewModel.isBlocked, isFalse);
-      expect(viewModel.days, isEmpty);
-      expect(viewModel.calculation, isNull);
-      expect(viewModel.freshness, CalorieLearnedTdeeFreshness.stale);
-      expect(viewModel.showDiaryHint, isFalse);
+      expect(checkInData.hasPending, isTrue);
+      expect(checkInData.pendingWeeklyCheckIn?.isDismissed, isTrue);
+      expect(checkInData.isBlocked, isFalse);
+      expect(checkInData.days, isEmpty);
+      expect(checkInData.calculation, isNull);
+      expect(checkInData.freshness, CalorieLearnedTdeeFreshness.stale);
+      expect(checkInData.showDiaryHint, isFalse);
     },
   );
 
@@ -1450,17 +1652,17 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.hasPending, isTrue);
+      expect(checkInData.hasPending, isTrue);
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        checkInData.pendingWeeklyCheckIn?.windowStartDate,
         DateTime(2026, 4, 8),
       );
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        checkInData.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 14),
       );
     },
@@ -1515,17 +1717,17 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.hasPending, isTrue);
+      expect(checkInData.hasPending, isTrue);
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        checkInData.pendingWeeklyCheckIn?.windowStartDate,
         DateTime(2026, 4, 15),
       );
       expect(
-        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        checkInData.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 21),
       );
     },
@@ -1589,17 +1791,17 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final viewModel = await container.read(
-      calorieWeeklyCheckInViewModelProvider.future,
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
     );
 
-    expect(viewModel.hasPending, isTrue);
+    expect(checkInData.hasPending, isTrue);
     expect(
-      viewModel.pendingWeeklyCheckIn?.windowStartDate,
+      checkInData.pendingWeeklyCheckIn?.windowStartDate,
       DateTime(2026, 4, 20),
     );
     expect(
-      viewModel.pendingWeeklyCheckIn?.windowEndDate,
+      checkInData.pendingWeeklyCheckIn?.windowEndDate,
       DateTime(2026, 4, 26),
     );
   });
@@ -1651,12 +1853,12 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.hasPending, isFalse);
-      expect(viewModel.pendingWeeklyCheckIn, isNull);
+      expect(checkInData.hasPending, isFalse);
+      expect(checkInData.pendingWeeklyCheckIn, isNull);
     },
   );
 
@@ -1702,12 +1904,12 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final viewModel = await container.read(
-        calorieWeeklyCheckInViewModelProvider.future,
+      final checkInData = await container.read(
+        calorieWeeklyCheckInDataProvider.future,
       );
 
-      expect(viewModel.isReady, isTrue);
-      final skippedDay = viewModel.days.firstWhere(
+      expect(checkInData.isReady, isTrue);
+      final skippedDay = checkInData.days.firstWhere(
         (day) => day.day == DateTime(2026, 4, 11),
       );
       expect(skippedDay.isSkippedIntakeDay, isTrue);

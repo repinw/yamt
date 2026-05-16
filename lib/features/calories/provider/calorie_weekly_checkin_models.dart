@@ -76,10 +76,10 @@ class CalorieWeeklyCheckInWindowDay {
   final double? weightKg;
 }
 
-/// Defines calorie weekly check in view model.
-class CalorieWeeklyCheckInViewModel {
-  /// The calorie weekly check in view model.
-  const CalorieWeeklyCheckInViewModel({
+/// Defines calorie weekly check in data.
+class CalorieWeeklyCheckInData {
+  /// The calorie weekly check in data.
+  const CalorieWeeklyCheckInData({
     required this.pendingWeeklyCheckIn,
     required this.shouldAutoOpen,
     required this.days,
@@ -149,7 +149,3 @@ class CalorieWeeklyCheckInViewModel {
         freshness == CalorieLearnedTdeeFreshness.urgent;
   }
 }
-
-/// Data alias for calorie weekly check-in consumers that do not use
-/// controller naming.
-typedef CalorieWeeklyCheckInData = CalorieWeeklyCheckInViewModel;

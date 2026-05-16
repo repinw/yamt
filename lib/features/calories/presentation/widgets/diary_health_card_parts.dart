@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/features/calories/application/calorie_health_connection_actions.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines diary health card frame.
@@ -183,7 +184,7 @@ class DiaryHealthConnectionPrompt extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statusAsync = ref.watch(healthConnectionControllerProvider);
     final status = statusAsync.asData?.value;
-    final controller = ref.read(healthConnectionControllerProvider.notifier);
+    final actions = ref.read(calorieHealthConnectionActionsProvider);
 
     return DiaryHealthAccessPrompt(
       accessState: accessState,
@@ -195,9 +196,9 @@ class DiaryHealthConnectionPrompt extends ConsumerWidget {
       historyBody: historyBody,
       installBody: installBody,
       unsupportedBody: unsupportedBody,
-      onGrantAccess: controller.requestAuthorization,
-      onGrantHistoryAccess: controller.requestHistoryAuthorization,
-      onInstallHealthConnect: controller.installHealthConnect,
+      onGrantAccess: actions.requestAuthorization,
+      onGrantHistoryAccess: actions.requestHistoryAuthorization,
+      onInstallHealthConnect: actions.installHealthConnect,
     );
   }
 }

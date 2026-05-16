@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -12,16 +13,19 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_week_overview_provider.dart';
+import 'package:yamt/features/health/data/diary_health_service_provider.dart';
+import 'package:yamt/features/health/data/'
+    'health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -63,6 +67,38 @@ CalorieEntry _entry(
     loggedAt: loggedAt,
     createdAt: loggedAt,
     updatedAt: loggedAt,
+  );
+}
+
+Future<List<CalorieEntry>> _readLogEntriesInRange(
+  FakeCalorieLogRepository logRepository, {
+  required DateTime startInclusive,
+  required DateTime endExclusive,
+}) {
+  return Future.value(
+    logRepository.entries
+        .where((entry) {
+          final loggedAt = entry.loggedAt;
+          return !loggedAt.isBefore(startInclusive) &&
+              loggedAt.isBefore(endExclusive);
+        })
+        .toList(growable: false),
+  );
+}
+
+Future<List<CalorieEntry>> _readLogEntriesForDay(
+  FakeCalorieLogRepository logRepository,
+  DateTime day,
+) {
+  return Future.value(
+    logRepository.entries
+        .where((entry) {
+          final loggedAt = entry.loggedAt;
+          return loggedAt.year == day.year &&
+              loggedAt.month == day.month &&
+              loggedAt.day == day.day;
+        })
+        .toList(growable: false),
   );
 }
 
@@ -408,14 +444,7 @@ void main() {
           if (day == failingDay) {
             throw StateError('day read failed');
           }
-          return logRepository.entries
-              .where((entry) {
-                final loggedAt = entry.loggedAt;
-                return loggedAt.year == day.year &&
-                    loggedAt.month == day.month &&
-                    loggedAt.day == day.day;
-              })
-              .toList(growable: false);
+          return _readLogEntriesForDay(logRepository, day);
         };
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
@@ -475,14 +504,10 @@ void main() {
       logRepository
         ..onReadEntriesInRange = (startInclusive, endExclusive) {
           rangeReadCount += 1;
-          return Future.value(
-            logRepository.entries
-                .where((entry) {
-                  final loggedAt = entry.loggedAt;
-                  return !loggedAt.isBefore(startInclusive) &&
-                      loggedAt.isBefore(endExclusive);
-                })
-                .toList(growable: false),
+          return _readLogEntriesInRange(
+            logRepository,
+            startInclusive: startInclusive,
+            endExclusive: endExclusive,
           );
         }
         ..onReadEntriesForDay = (day) async {
@@ -905,8 +930,8 @@ void main() {
   );
 
   test(
-    'calorieWeekOverview does not reload visible range '
-    'when goal resolves later',
+    'calorieWeekOverview does not reload visible range when goal '
+    'resolves later',
     () async {
       final today = normalizeDiaryDay(DateTime.now());
       final logRepository = FakeCalorieLogRepository(
@@ -923,26 +948,15 @@ void main() {
       logRepository
         ..onReadEntriesInRange = (startInclusive, endExclusive) {
           rangeReadCount += 1;
-          return Future.value(
-            logRepository.entries
-                .where((entry) {
-                  final loggedAt = entry.loggedAt;
-                  return !loggedAt.isBefore(startInclusive) &&
-                      loggedAt.isBefore(endExclusive);
-                })
-                .toList(growable: false),
+          return _readLogEntriesInRange(
+            logRepository,
+            startInclusive: startInclusive,
+            endExclusive: endExclusive,
           );
         }
         ..onReadEntriesForDay = (day) async {
           dayReadCount += 1;
-          return logRepository.entries
-              .where((entry) {
-                final loggedAt = entry.loggedAt;
-                return loggedAt.year == day.year &&
-                    loggedAt.month == day.month &&
-                    loggedAt.day == day.day;
-              })
-              .toList(growable: false);
+          return _readLogEntriesForDay(logRepository, day);
         };
 
       final settingsRepository = _DelayedCalorieSettingsRepository();

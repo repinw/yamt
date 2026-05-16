@@ -103,7 +103,7 @@ void main() {
   });
 
   test(
-    'syncLearnedTdeeCache ignores blocked or incomplete view models',
+    'syncLearnedTdeeCache ignores blocked or incomplete datas',
     () async {
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: _settingsWithGoal(),
@@ -122,13 +122,13 @@ void main() {
         calorieWeeklyCheckInControllerProvider.notifier,
       );
       final incomplete = await controller.syncLearnedTdeeCache(
-        _weeklyCheckInViewModel(
+        _weeklyCheckInData(
           pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
           withoutCalculation: true,
         ),
       );
       final blocked = await controller.syncLearnedTdeeCache(
-        _weeklyCheckInViewModel(
+        _weeklyCheckInData(
           pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
           blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
         ),
@@ -161,7 +161,7 @@ void main() {
     final applied = await container
         .read(calorieWeeklyCheckInControllerProvider.notifier)
         .applyWeeklyCheckIn(
-          _weeklyCheckInViewModel(
+          _weeklyCheckInData(
             pendingWeeklyCheckIn: pendingWeeklyCheckIn,
           ),
         );
@@ -173,7 +173,7 @@ void main() {
     );
   });
 
-  test('applyWeeklyCheckIn returns false for blocked view model', () async {
+  test('applyWeeklyCheckIn returns false for blocked data', () async {
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: _settingsWithGoal(),
     );
@@ -190,7 +190,7 @@ void main() {
     final applied = await container
         .read(calorieWeeklyCheckInControllerProvider.notifier)
         .applyWeeklyCheckIn(
-          _weeklyCheckInViewModel(
+          _weeklyCheckInData(
             pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
             blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
           ),
@@ -248,7 +248,7 @@ void main() {
       final saved = await container
           .read(calorieWeeklyCheckInControllerProvider.notifier)
           .applyWeeklyCheckIn(
-            _weeklyCheckInViewModel(
+            _weeklyCheckInData(
               pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
                 windowStartDate: goalStart,
                 windowEndDate: DateTime(2026, 4, 14),
@@ -313,7 +313,7 @@ void main() {
       final saved = await container
           .read(calorieWeeklyCheckInControllerProvider.notifier)
           .syncLearnedTdeeCache(
-            _weeklyCheckInViewModel(
+            _weeklyCheckInData(
               pendingWeeklyCheckIn: pendingWeeklyCheckIn,
             ),
           );
@@ -384,7 +384,7 @@ void main() {
     final refreshed = await container
         .read(calorieWeeklyCheckInControllerProvider.notifier)
         .syncLearnedTdeeCache(
-          _weeklyCheckInViewModel(
+          _weeklyCheckInData(
             pendingWeeklyCheckIn: pendingWeeklyCheckIn,
           ),
         );
@@ -453,12 +453,74 @@ void main() {
     final refreshed = await container
         .read(calorieWeeklyCheckInControllerProvider.notifier)
         .syncLearnedTdeeCache(
-          _weeklyCheckInViewModel(cacheWeeklyCheckIn: cacheWeeklyCheckIn),
+          _weeklyCheckInData(cacheWeeklyCheckIn: cacheWeeklyCheckIn),
         );
 
     expect(refreshed, isTrue);
     final settings = await settingsRepository.readSettings();
     expect(settings.pendingWeeklyCheckIn, isNull);
+    expect(settings.latestLearnedTdeeKcal, 2665.82);
+  });
+
+  test('syncLearnedTdeeCache skips save for matching cache snapshot', () async {
+    final goalStart = DateTime(2026, 4, 8);
+    final cacheWeeklyCheckIn = PendingCalorieGoalWeeklyCheckIn(
+      windowStartDate: goalStart,
+      windowEndDate: DateTime(2026, 4, 14),
+      dueDate: DateTime(2026, 4, 15),
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings:
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2426.875,
+            calculatorProfile: const CalorieCalculatorProfile(
+              sex: CalorieCalculatorSex.male,
+              weightKg: 84,
+              heightCm: 172,
+              ageYears: 31,
+              activityLevel: 1.375,
+              goalMode: CalorieGoalMode.maintain,
+              goalSpeedKgPerWeek: 0,
+            ),
+            effectiveDate: goalStart,
+            source: CalorieGoalSource.calculator,
+          ).applyGoalChange(
+            changedAt: cacheWeeklyCheckIn.dueDate,
+            dailyKcalGoal: _defaultWeeklyCheckInCalculation.newGoalKcal,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: cacheWeeklyCheckIn.windowStartDate,
+              windowEndDate: cacheWeeklyCheckIn.windowEndDate,
+              trendWeightChangePerDay:
+                  _defaultWeeklyCheckInCalculation.trendWeightChangePerDay,
+              calculatedTrueTdeeKcal:
+                  _defaultWeeklyCheckInCalculation.calculatedTrueTdeeKcal,
+              averageActiveKcal:
+                  _defaultWeeklyCheckInCalculation.lastWeekAverageActiveKcal,
+              lowConfidence: false,
+            ),
+          ),
+    )..saveShouldFail = true;
+    addTearDown(settingsRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final synced = await container
+        .read(calorieWeeklyCheckInControllerProvider.notifier)
+        .syncLearnedTdeeCache(
+          _weeklyCheckInData(cacheWeeklyCheckIn: cacheWeeklyCheckIn),
+        );
+
+    expect(synced, isTrue);
+    final settings = await settingsRepository.readSettings();
     expect(settings.latestLearnedTdeeKcal, 2665.82);
   });
 
@@ -532,7 +594,7 @@ void main() {
     final refreshed = await container
         .read(calorieWeeklyCheckInControllerProvider.notifier)
         .syncLearnedTdeeCache(
-          _weeklyCheckInViewModel(
+          _weeklyCheckInData(
             pendingWeeklyCheckIn: pendingWeeklyCheckIn,
           ),
         );
@@ -562,7 +624,7 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   }
 }
 
-CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
+CalorieWeeklyCheckInData _weeklyCheckInData({
   PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
   PendingCalorieGoalWeeklyCheckIn? cacheWeeklyCheckIn,
   bool withoutCalculation = false,
@@ -573,7 +635,7 @@ CalorieWeeklyCheckInViewModel _weeklyCheckInViewModel({
     pendingWeeklyCheckIn != null || cacheWeeklyCheckIn != null,
     'A pending or cache weekly check-in is required.',
   );
-  return CalorieWeeklyCheckInViewModel(
+  return CalorieWeeklyCheckInData(
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
     cacheWeeklyCheckIn: cacheWeeklyCheckIn,
     shouldAutoOpen: false,

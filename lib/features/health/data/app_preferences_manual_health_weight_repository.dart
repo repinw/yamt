@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:developer' show log;
 
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
@@ -62,7 +62,7 @@ class AppPreferencesManualHealthWeightRepository
     final existingEntries = await readEntries();
     final nextEntries = [
       for (final existingEntry in existingEntries)
-        if (!isSameDiaryDay(existingEntry.day, entry.day)) existingEntry,
+        if (!isSameLocalDay(existingEntry.day, entry.day)) existingEntry,
       entry,
     ]..sort((left, right) => left.day.compareTo(right.day));
     return _writeEntries(nextEntries);
@@ -70,10 +70,10 @@ class AppPreferencesManualHealthWeightRepository
 
   @override
   Future<bool> deleteEntryForDay(DateTime day) async {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     final existingEntries = await readEntries();
     final nextEntries = existingEntries
-        .where((entry) => !isSameDiaryDay(entry.day, normalizedDay))
+        .where((entry) => !isSameLocalDay(entry.day, normalizedDay))
         .toList(growable: false);
     return _writeEntries(nextEntries);
   }

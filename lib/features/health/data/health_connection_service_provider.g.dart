@@ -59,4 +59,4 @@ final class HealthConnectionServiceProvider
 }
 
 String _$healthConnectionServiceHash() =>
-    r'23a69eddcab7a9b051017e938958028c32ae6643';
+    r'e61db6e56956c235f96d61cc83fb2623bce636df';

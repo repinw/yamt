@@ -7,6 +7,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
+import 'package:yamt/features/calories/application/calorie_health_connection_actions.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -29,7 +30,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_scroll_shortcut.d
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
     show HomeTabType;
 import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
@@ -327,16 +328,16 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     final hasConnectionError = status.errorMessage != null;
     final needsAppPermissionSettings =
         status.errorMessage == healthActivityRecognitionPermissionErrorMessage;
-    final controller = ref.read(healthConnectionControllerProvider.notifier);
+    final actions = ref.read(calorieHealthConnectionActionsProvider);
     final action = switch (status.accessState) {
       HealthDataAccessState.permissionRequired ||
       HealthDataAccessState.historyRequired =>
         hasConnectionError
             ? needsAppPermissionSettings
-                  ? controller.openAppPermissionSettings
-                  : controller.openHealthPermissionSettings
-            : controller.connect,
-      HealthDataAccessState.installRequired => controller.installHealthConnect,
+                  ? actions.openAppPermissionSettings
+                  : actions.openHealthPermissionSettings
+            : actions.connect,
+      HealthDataAccessState.installRequired => actions.installHealthConnect,
       HealthDataAccessState.ready || HealthDataAccessState.unsupported => null,
     };
     if (action == null) {
