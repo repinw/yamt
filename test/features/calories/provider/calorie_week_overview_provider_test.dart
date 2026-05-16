@@ -400,23 +400,23 @@ void main() {
           ),
         ],
       );
-      logRepository.onReadEntriesInRange =
-          (startInclusive, endExclusive) async {
-            throw StateError('range read failed');
-          };
-      logRepository.onReadEntriesForDay = (day) async {
-        if (day == failingDay) {
-          throw StateError('day read failed');
+      logRepository
+        ..onReadEntriesInRange = (startInclusive, endExclusive) async {
+          throw StateError('range read failed');
         }
-        return logRepository.entries
-            .where((entry) {
-              final loggedAt = entry.loggedAt;
-              return loggedAt.year == day.year &&
-                  loggedAt.month == day.month &&
-                  loggedAt.day == day.day;
-            })
-            .toList(growable: false);
-      };
+        ..onReadEntriesForDay = (day) async {
+          if (day == failingDay) {
+            throw StateError('day read failed');
+          }
+          return logRepository.entries
+              .where((entry) {
+                final loggedAt = entry.loggedAt;
+                return loggedAt.year == day.year &&
+                    loggedAt.month == day.month &&
+                    loggedAt.day == day.day;
+              })
+              .toList(growable: false);
+        };
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2000,
@@ -472,22 +472,23 @@ void main() {
       );
       var rangeReadCount = 0;
       var dayReadCount = 0;
-      logRepository.onReadEntriesInRange = (startInclusive, endExclusive) {
-        rangeReadCount += 1;
-        return Future.value(
-          logRepository.entries
-              .where((entry) {
-                final loggedAt = entry.loggedAt;
-                return !loggedAt.isBefore(startInclusive) &&
-                    loggedAt.isBefore(endExclusive);
-              })
-              .toList(growable: false),
-        );
-      };
-      logRepository.onReadEntriesForDay = (day) async {
-        dayReadCount += 1;
-        return const <CalorieEntry>[];
-      };
+      logRepository
+        ..onReadEntriesInRange = (startInclusive, endExclusive) {
+          rangeReadCount += 1;
+          return Future.value(
+            logRepository.entries
+                .where((entry) {
+                  final loggedAt = entry.loggedAt;
+                  return !loggedAt.isBefore(startInclusive) &&
+                      loggedAt.isBefore(endExclusive);
+                })
+                .toList(growable: false),
+          );
+        }
+        ..onReadEntriesForDay = (day) async {
+          dayReadCount += 1;
+          return const <CalorieEntry>[];
+        };
       final settingsRepository = FakeCalorieSettingsRepository();
       addTearDown(logRepository.dispose);
       addTearDown(settingsRepository.dispose);
@@ -904,7 +905,8 @@ void main() {
   );
 
   test(
-    'calorieWeekOverview does not reload visible range when goal resolves later',
+    'calorieWeekOverview does not reload visible range '
+    'when goal resolves later',
     () async {
       final today = normalizeDiaryDay(DateTime.now());
       final logRepository = FakeCalorieLogRepository(
@@ -918,29 +920,30 @@ void main() {
       );
       var rangeReadCount = 0;
       var dayReadCount = 0;
-      logRepository.onReadEntriesInRange = (startInclusive, endExclusive) {
-        rangeReadCount += 1;
-        return Future.value(
-          logRepository.entries
+      logRepository
+        ..onReadEntriesInRange = (startInclusive, endExclusive) {
+          rangeReadCount += 1;
+          return Future.value(
+            logRepository.entries
+                .where((entry) {
+                  final loggedAt = entry.loggedAt;
+                  return !loggedAt.isBefore(startInclusive) &&
+                      loggedAt.isBefore(endExclusive);
+                })
+                .toList(growable: false),
+          );
+        }
+        ..onReadEntriesForDay = (day) async {
+          dayReadCount += 1;
+          return logRepository.entries
               .where((entry) {
                 final loggedAt = entry.loggedAt;
-                return !loggedAt.isBefore(startInclusive) &&
-                    loggedAt.isBefore(endExclusive);
+                return loggedAt.year == day.year &&
+                    loggedAt.month == day.month &&
+                    loggedAt.day == day.day;
               })
-              .toList(growable: false),
-        );
-      };
-      logRepository.onReadEntriesForDay = (day) async {
-        dayReadCount += 1;
-        return logRepository.entries
-            .where((entry) {
-              final loggedAt = entry.loggedAt;
-              return loggedAt.year == day.year &&
-                  loggedAt.month == day.month &&
-                  loggedAt.day == day.day;
-            })
-            .toList(growable: false);
-      };
+              .toList(growable: false);
+        };
 
       final settingsRepository = _DelayedCalorieSettingsRepository();
       addTearDown(logRepository.dispose);

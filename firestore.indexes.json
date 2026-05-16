@@ -25,6 +25,28 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "inventory_items",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "origin",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "is_deposit",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "is_discount",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "entry_date",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

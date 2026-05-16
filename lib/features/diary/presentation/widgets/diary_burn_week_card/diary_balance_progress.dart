@@ -6,8 +6,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-const _progressAnimationDuration = Duration(milliseconds: 1000);
-const _progressAnimationCurve = Curves.easeOut;
+const Duration _progressAnimationDuration = Duration(milliseconds: 1000);
+const Curve _progressAnimationCurve = Curves.easeOut;
 
 /// Burn Week pacing progress bar.
 class DiaryBalanceProgressBar extends StatelessWidget {

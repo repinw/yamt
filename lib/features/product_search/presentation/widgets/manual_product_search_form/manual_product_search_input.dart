@@ -5,6 +5,11 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+final int _zeroCodeUnit = '0'.codeUnitAt(0);
+final int _nineCodeUnit = '9'.codeUnitAt(0);
+final int _commaCodeUnit = ','.codeUnitAt(0);
+final int _periodCodeUnit = '.'.codeUnitAt(0);
+
 /// Decimal input formatter used by manual product nutrition fields.
 final TextInputFormatter manualProductSingleDecimalInputFormatter =
     TextInputFormatter.withFunction((oldValue, newValue) {
@@ -222,13 +227,14 @@ String _sanitizeDecimalInput(String rawText) {
   var hasSeparator = false;
 
   for (final codeUnit in rawText.codeUnits) {
-    final isDigit = codeUnit >= 48 && codeUnit <= 57;
+    final isDigit = codeUnit >= _zeroCodeUnit && codeUnit <= _nineCodeUnit;
     if (isDigit) {
       buffer.writeCharCode(codeUnit);
       continue;
     }
 
-    final isSeparator = codeUnit == 44 || codeUnit == 46;
+    final isSeparator =
+        codeUnit == _commaCodeUnit || codeUnit == _periodCodeUnit;
     if (!hasSeparator && isSeparator) {
       hasSeparator = true;
       buffer.writeCharCode(codeUnit);
