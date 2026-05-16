@@ -133,8 +133,7 @@ Widget _wrap({
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) =>
-            buildManualProductSearchRoutePage(state),
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
     ],
   );

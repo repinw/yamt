@@ -104,7 +104,10 @@ class OptionalNutritionComposer extends StatelessWidget {
           fieldKey: const Key(
             'receipt_review_manual_optional_nutrition_value_field',
           ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+            signed: true,
+          ),
           inputFormatters: manualProductNumericInputFormatters,
           onChanged: onValueChanged,
         ),

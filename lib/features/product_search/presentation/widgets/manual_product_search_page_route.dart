@@ -1,11 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -22,44 +21,67 @@ import 'package:yamt/features/product_search/presentation/widgets/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'product_ai_search_page/product_ai_search_page.dart';
 
-const _flowParam = 'flow';
-const _itemParam = 'item';
-const _selectedProductParam = 'selectedProduct';
-const _initialRecentItemParam = 'initialRecentItem';
-const _initialPromptParam = 'initialPrompt';
-const _initialActionParam = 'initialAction';
-const _includeStoreParam = 'includeStore';
-const _includeWeightParam = 'includeWeight';
-const _showEatParam = 'showEat';
-const _closeCurrentEditorParam = 'closeCurrentEditor';
-const _showActionSelectorParam = 'showActionSelector';
-const _autofocusSearchParam = 'autofocusSearch';
-const _initialVoiceSearchParam = 'initialVoiceSearch';
-const _initialInfoMessageParam = 'initialInfoMessage';
-const _onSavedHandlerParam = 'onSavedHandler';
+part 'manual_product_search_page_route.g.dart';
 
-final _saveHandlers = <String, ManualProductSearchRouteSaveHandler>{};
-var _nextSaveHandlerId = 0;
+const _flowParam = 'flow';
+const _payloadParam = 'payload';
+
+/// In-memory payload store for internal product-search child routes.
+@Riverpod(keepAlive: true)
+ManualProductSearchRoutePayloadStore manualProductSearchRoutePayloadStore(
+  Ref ref,
+) {
+  final store = ManualProductSearchRoutePayloadStore();
+  ref.onDispose(store.clear);
+  return store;
+}
 
 /// Handles a save result emitted by a product-search route.
 typedef ManualProductSearchRouteSaveHandler =
     Future<void> Function(InventoryReceiptManualProductResult result);
 
-/// Registers a route-local save handler and returns its URL-safe id.
-String registerManualProductSearchRouteSaveHandler(
-  ManualProductSearchRouteSaveHandler handler,
-) {
-  final id = 'manual_product_search_save_${_nextSaveHandlerId++}';
-  _saveHandlers[id] = handler;
-  return id;
-}
+/// Stores transient route payloads behind short URL-safe ids.
+class ManualProductSearchRoutePayloadStore {
+  /// Creates a route payload store.
+  ManualProductSearchRoutePayloadStore();
 
-/// Removes a previously registered route save handler.
-void unregisterManualProductSearchRouteSaveHandler(String? id) {
-  if (id == null) {
-    return;
+  final _payloads = <String, ManualProductSearchRouteArgs>{};
+  var _nextPayloadId = 0;
+
+  /// Stores args and returns the generated payload id.
+  String put(ManualProductSearchRouteArgs args) {
+    final payloadId = 'manual_product_search_${_nextPayloadId++}';
+    _payloads[payloadId] = args;
+    return payloadId;
   }
-  _saveHandlers.remove(id);
+
+  /// Reads args for a payload id when it belongs to the requested flow.
+  ManualProductSearchRouteArgs? read({
+    required ManualProductSearchChildFlow flow,
+    required String? payloadId,
+  }) {
+    if (payloadId == null || payloadId.isEmpty) {
+      return null;
+    }
+    final args = _payloads[payloadId];
+    if (args == null || args.flow != flow) {
+      return null;
+    }
+    return args;
+  }
+
+  /// Removes a payload after its route has completed.
+  void remove(String? payloadId) {
+    if (payloadId == null) {
+      return;
+    }
+    _payloads.remove(payloadId);
+  }
+
+  /// Clears all payloads when the owning provider scope is disposed.
+  void clear() {
+    _payloads.clear();
+  }
 }
 
 /// Product-search child route types.
@@ -107,7 +129,7 @@ class ManualProductSearchRouteArgs {
     this.initialRecentItem,
     this.initialPrompt,
     this.initialInfoMessage,
-    this.onSavedHandlerId,
+    this.onSaved,
   });
 
   /// Creates manual product page route args.
@@ -144,7 +166,7 @@ class ManualProductSearchRouteArgs {
     bool initialStartVoiceSearch = false,
     InventoryItem? initialRecentItem,
     String? initialInfoMessage,
-    String? onSavedHandlerId,
+    ManualProductSearchRouteSaveHandler? onSaved,
   }) {
     return ManualProductSearchRouteArgs._(
       flow: ManualProductSearchChildFlow.editor,
@@ -160,7 +182,7 @@ class ManualProductSearchRouteArgs {
       initialStartVoiceSearch: initialStartVoiceSearch,
       initialRecentItem: initialRecentItem,
       initialInfoMessage: initialInfoMessage,
-      onSavedHandlerId: onSavedHandlerId,
+      onSaved: onSaved,
     );
   }
 
@@ -187,8 +209,11 @@ class ManualProductSearchRouteArgs {
   }
 
   /// Parses route args from a go_router state.
-  factory ManualProductSearchRouteArgs.fromState(GoRouterState state) {
-    final args = ManualProductSearchRouteArgs.tryParse(state);
+  factory ManualProductSearchRouteArgs.fromState(
+    GoRouterState state,
+    ManualProductSearchRoutePayloadStore payloadStore,
+  ) {
+    final args = ManualProductSearchRouteArgs.tryParse(state, payloadStore);
     if (args == null) {
       throw FormatException(
         'Invalid product-search child route: ${state.uri}',
@@ -198,42 +223,19 @@ class ManualProductSearchRouteArgs {
   }
 
   /// Parses route args, returning null when required URL data is missing.
-  static ManualProductSearchRouteArgs? tryParse(GoRouterState state) {
+  static ManualProductSearchRouteArgs? tryParse(
+    GoRouterState state,
+    ManualProductSearchRoutePayloadStore payloadStore,
+  ) {
     final flow = ManualProductSearchChildFlow.fromPathSegment(
       state.pathParameters[_flowParam],
     );
     if (flow == null) {
       return null;
     }
-    final query = state.uri.queryParameters;
-    final item = _decodeInventoryItem(query[_itemParam]);
-    if (item == null) {
-      return null;
-    }
-    final initialAction = _readEnum(
-      query[_initialActionParam],
-      InventoryReceiptManualProductAction.values,
-    );
-    if (initialAction == null) {
-      return null;
-    }
-
-    return ManualProductSearchRouteArgs._(
+    return payloadStore.read(
       flow: flow,
-      item: item,
-      selectedProduct: _decodeProduct(query[_selectedProductParam]),
-      initialRecentItem: _decodeInventoryItem(query[_initialRecentItemParam]),
-      initialPrompt: query[_initialPromptParam],
-      includeStoreInSearch: _readBool(query[_includeStoreParam]),
-      includeWeightInSearch: _readBool(query[_includeWeightParam]),
-      showEatImmediatelyOption: _readBool(query[_showEatParam]),
-      initialAction: initialAction,
-      closeCurrentEditorOnSave: _readBool(query[_closeCurrentEditorParam]),
-      showActionSelector: _readBool(query[_showActionSelectorParam]),
-      autofocusSearch: _readBool(query[_autofocusSearchParam]),
-      initialStartVoiceSearch: _readBool(query[_initialVoiceSearchParam]),
-      initialInfoMessage: query[_initialInfoMessageParam],
-      onSavedHandlerId: query[_onSavedHandlerParam],
+      payloadId: state.uri.queryParameters[_payloadParam],
     );
   }
 
@@ -279,44 +281,12 @@ class ManualProductSearchRouteArgs {
   /// Optional editor info message.
   final String? initialInfoMessage;
 
-  /// Optional id for an in-memory save handler.
-  final String? onSavedHandlerId;
+  /// Optional route-local save handler.
+  final ManualProductSearchRouteSaveHandler? onSaved;
 
-  /// Concrete URL location for this route.
-  String get location {
-    final query = <String, String>{
-      _itemParam: _encodeJson(item.toJson()),
-      _initialActionParam: initialAction.name,
-      _includeStoreParam: _writeBool(includeStoreInSearch),
-      _includeWeightParam: _writeBool(includeWeightInSearch),
-      _showEatParam: _writeBool(showEatImmediatelyOption),
-      _closeCurrentEditorParam: _writeBool(closeCurrentEditorOnSave),
-      _showActionSelectorParam: _writeBool(showActionSelector),
-      _autofocusSearchParam: _writeBool(autofocusSearch),
-      _initialVoiceSearchParam: _writeBool(initialStartVoiceSearch),
-    };
-    final selectedProduct = this.selectedProduct;
-    if (selectedProduct != null) {
-      query[_selectedProductParam] = _encodeJson(
-        _productToJson(selectedProduct),
-      );
-    }
-    final initialRecentItem = this.initialRecentItem;
-    if (initialRecentItem != null) {
-      query[_initialRecentItemParam] = _encodeJson(initialRecentItem.toJson());
-    }
-    final initialPrompt = this.initialPrompt;
-    if (initialPrompt != null) {
-      query[_initialPromptParam] = initialPrompt;
-    }
-    final initialInfoMessage = this.initialInfoMessage;
-    if (initialInfoMessage != null) {
-      query[_initialInfoMessageParam] = initialInfoMessage;
-    }
-    final onSavedHandlerId = this.onSavedHandlerId;
-    if (onSavedHandlerId != null) {
-      query[_onSavedHandlerParam] = onSavedHandlerId;
-    }
+  /// Concrete URL location for this route payload.
+  String locationForPayload(String payloadId) {
+    final query = <String, String>{_payloadParam: payloadId};
     return Uri(
       path: AppRoutes.productSearchChildFlowPath(flow.pathSegment),
       queryParameters: query,
@@ -329,8 +299,14 @@ class ManualProductSearchRouteArgs {
   inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
 ])
-Page<Object?> buildManualProductSearchRoutePage(GoRouterState state) {
-  final args = ManualProductSearchRouteArgs.tryParse(state);
+Page<Object?> buildManualProductSearchRoutePage(
+  BuildContext context,
+  GoRouterState state,
+) {
+  final payloadStore = ProviderScope.containerOf(context, listen: false).read(
+    manualProductSearchRoutePayloadStoreProvider,
+  );
+  final args = ManualProductSearchRouteArgs.tryParse(state, payloadStore);
   if (args == null) {
     return NoTransitionPage<Object?>(
       key: state.pageKey,
@@ -349,7 +325,6 @@ Page<Object?> buildManualProductSearchRoutePage(GoRouterState state) {
   manualProductRecentItemsService,
 ])
 Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
-  final onSaved = _saveHandlers[args.onSavedHandlerId];
   return switch (args.flow) {
     ManualProductSearchChildFlow.manualProduct =>
       InventoryReceiptManualProductPage(
@@ -376,7 +351,7 @@ Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
         initialStartVoiceSearch: args.initialStartVoiceSearch,
         initialRecentItem: args.initialRecentItem,
         initialInfoMessage: args.initialInfoMessage,
-        onSaved: onSaved,
+        onSaved: args.onSaved,
       ),
     ManualProductSearchChildFlow.aiSearch => ManualProductAiSearchPage(
       item: args.item,
@@ -388,8 +363,14 @@ Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
 }
 
 /// Redirect target for invalid product-search child URLs.
-String? redirectInvalidManualProductSearchRoute(GoRouterState state) {
-  return ManualProductSearchRouteArgs.tryParse(state) == null
+String? redirectInvalidManualProductSearchRoute(
+  BuildContext context,
+  GoRouterState state,
+) {
+  final payloadStore = ProviderScope.containerOf(context, listen: false).read(
+    manualProductSearchRoutePayloadStoreProvider,
+  );
+  return ManualProductSearchRouteArgs.tryParse(state, payloadStore) == null
       ? AppRoutes.homeInventoryManualAdd
       : null;
 }
@@ -398,8 +379,18 @@ String? redirectInvalidManualProductSearchRoute(GoRouterState state) {
 Future<T?> pushManualProductSearchPage<T extends Object?>({
   required BuildContext context,
   required ManualProductSearchRouteArgs args,
-}) {
-  return GoRouter.of(context).push<T>(args.location);
+}) async {
+  final payloadStore = ProviderScope.containerOf(context, listen: false).read(
+    manualProductSearchRoutePayloadStoreProvider,
+  );
+  final payloadId = payloadStore.put(args);
+  try {
+    return await GoRouter.of(context).push<T>(
+      args.locationForPayload(payloadId),
+    );
+  } finally {
+    payloadStore.remove(payloadId);
+  }
 }
 
 /// Pops a manual product flow page through go_router.
@@ -408,120 +399,4 @@ void popManualProductSearchPage<T extends Object?>(
   T? result,
 ]) {
   context.pop<T>(result);
-}
-
-String _encodeJson(Map<String, dynamic> json) {
-  return base64Url.encode(utf8.encode(jsonEncode(json)));
-}
-
-Map<String, dynamic>? _decodeJson(String? value) {
-  if (value == null || value.isEmpty) {
-    return null;
-  }
-  try {
-    final decoded = utf8.decode(base64Url.decode(value));
-    final json = jsonDecode(decoded);
-    if (json is Map<String, dynamic>) {
-      return json;
-    }
-  } on Object {
-    return null;
-  }
-  return null;
-}
-
-InventoryItem? _decodeInventoryItem(String? value) {
-  final json = _decodeJson(value);
-  if (json == null) {
-    return null;
-  }
-  try {
-    return InventoryItem.fromJson(json);
-  } on Object {
-    return null;
-  }
-}
-
-OffProductSearchResult? _decodeProduct(String? value) {
-  final json = _decodeJson(value);
-  if (json == null) {
-    return null;
-  }
-  try {
-    return OffProductSearchResult(
-      code: _readString(json['code']),
-      name: _readString(json['name']),
-      score: _readDouble(json['score']) ?? 0,
-      brand: _readOptionalString(json['brand']),
-      imageUrl: _readOptionalString(json['image_url']),
-      packageWeight: _readOptionalString(json['package_weight']),
-      servingSize: _readOptionalString(json['serving_size']),
-      servingQuantity: _readDouble(json['serving_quantity']),
-      servingQuantityUnit: _readOptionalString(json['serving_quantity_unit']),
-      nutrition: _readNutrition(json['nutrition']),
-    );
-  } on Object {
-    return null;
-  }
-}
-
-Map<String, dynamic> _productToJson(OffProductSearchResult product) {
-  return <String, dynamic>{
-    'code': product.code,
-    'name': product.name,
-    'score': product.score,
-    'brand': product.brand,
-    'image_url': product.imageUrl,
-    'package_weight': product.packageWeight,
-    'serving_size': product.servingSize,
-    'serving_quantity': product.servingQuantity,
-    'serving_quantity_unit': product.servingQuantityUnit,
-    'nutrition': product.nutrition?.toJson(),
-  };
-}
-
-GlobalFoodNutrition? _readNutrition(Object? value) {
-  if (value is Map<String, dynamic>) {
-    return GlobalFoodNutrition.fromJson(value);
-  }
-  return null;
-}
-
-T? _readEnum<T extends Enum>(String? value, List<T> values) {
-  if (value == null) {
-    return null;
-  }
-  for (final enumValue in values) {
-    if (enumValue.name == value) {
-      return enumValue;
-    }
-  }
-  return null;
-}
-
-bool _readBool(String? value) {
-  return value == '1' || value == 'true';
-}
-
-String _writeBool(bool value) {
-  return value ? '1' : '0';
-}
-
-String _readString(Object? value) {
-  return value is String ? value : '';
-}
-
-String? _readOptionalString(Object? value) {
-  final string = _readString(value).trim();
-  return string.isEmpty ? null : string;
-}
-
-double? _readDouble(Object? value) {
-  if (value is num) {
-    return value.toDouble();
-  }
-  if (value is String) {
-    return double.tryParse(value);
-  }
-  return null;
 }

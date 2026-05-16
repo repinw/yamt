@@ -61,6 +61,8 @@ void main() {
     await tester.tap(find.byKey(const Key('open_manual_product_route')));
     await tester.pump();
 
+    expect(router.state.uri.queryParameters.keys, <String>['payload']);
+    expect(router.state.uri.toString().length, lessThan(160));
     expect(find.byType(InventoryReceiptManualProductPage), findsOneWidget);
 
     popManualProductSearchPage(
@@ -111,18 +113,15 @@ void main() {
     expect(find.byKey(const Key('open_go_router_route')), findsOneWidget);
   });
 
-  testWidgets('editor route resolves registered save handler by id', (
+  testWidgets('editor route uses route-local save handler', (
     tester,
   ) async {
     InventoryReceiptManualProductResult? savedResult;
-    final handlerId = registerManualProductSearchRouteSaveHandler((
-      result,
+    Future<void> handleSaved(
+      InventoryReceiptManualProductResult result,
     ) async {
       savedResult = result;
-    });
-    addTearDown(() {
-      unregisterManualProductSearchRouteSaveHandler(handlerId);
-    });
+    }
 
     await tester.pumpWidget(
       _wrapChild(
@@ -134,7 +133,7 @@ void main() {
             closeCurrentEditorOnSave: false,
             showActionSelector: true,
             autofocusSearch: true,
-            onSavedHandlerId: handlerId,
+            onSaved: handleSaved,
           ),
         ),
       ),
@@ -201,8 +200,7 @@ GoRouter _buildManualProductRouteTestRouter({
       GoRoute(path: '/', builder: (context, state) => homeBuilder(context)),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) =>
-            buildManualProductSearchRoutePage(state),
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
     ],
   );

@@ -133,7 +133,10 @@ class AiWeightField extends StatelessWidget {
       child: TextField(
         key: const Key('manual_product_ai_weight_field'),
         controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        keyboardType: const TextInputType.numberWithOptions(
+          decimal: true,
+          signed: true,
+        ),
         inputFormatters: <TextInputFormatter>[
           manualProductSingleDecimalInputFormatter,
         ],

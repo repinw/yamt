@@ -151,10 +151,8 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        redirect: (context, state) =>
-            redirectInvalidManualProductSearchRoute(state),
-        pageBuilder: (context, state) =>
-            buildManualProductSearchRoutePage(state),
+        redirect: redirectInvalidManualProductSearchRoute,
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
       GoRoute(
         path: AppRoutes.homeSettingsAccount,

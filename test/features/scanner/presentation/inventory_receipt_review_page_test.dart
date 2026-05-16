@@ -56,8 +56,7 @@ Widget _buildHarness({required InventoryReceiptReviewPageArgs args}) {
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) =>
-            buildManualProductSearchRoutePage(state),
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
     ],
   );

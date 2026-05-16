@@ -877,21 +877,28 @@ void main() {
 
     expect(childRoute.path, AppRoutes.productSearchChildFlow);
 
-    unawaited(
-      router.push<void>(
-        ManualProductSearchRouteArgs.aiSearch(
-          item: InventoryItem.create(
-            id: 'item-1',
-            name: 'Placeholder',
-            entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
-            storeName: 'Store',
-            quantity: 1,
-          ),
-          initialPrompt: 'banana',
-          showEatImmediatelyOption: false,
-          initialAction: InventoryReceiptManualProductAction.addToInventory,
-        ).location,
+    final args = ManualProductSearchRouteArgs.aiSearch(
+      item: InventoryItem.create(
+        id: 'item-1',
+        name: 'Placeholder',
+        entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
+        storeName: 'Store',
+        quantity: 1,
       ),
+      initialPrompt: 'banana',
+      showEatImmediatelyOption: false,
+      initialAction: InventoryReceiptManualProductAction.addToInventory,
+    );
+    final payloadStore = container.read(
+      manualProductSearchRoutePayloadStoreProvider,
+    );
+    final payloadId = payloadStore.put(args);
+    addTearDown(() {
+      payloadStore.remove(payloadId);
+    });
+
+    unawaited(
+      router.push<void>(args.locationForPayload(payloadId)),
     );
     await _pumpRouterTransition(tester);
 

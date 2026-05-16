@@ -117,8 +117,7 @@ GoRouter _router(GlobalKey<NavigatorState> navigatorKey) {
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) =>
-            buildManualProductSearchRoutePage(state),
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
     ],
   );

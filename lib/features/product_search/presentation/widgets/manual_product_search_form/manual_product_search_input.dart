@@ -122,7 +122,10 @@ class ManualProductWeightFields extends StatelessWidget {
             initialValue: amountValue,
             label: amountLabel,
             fieldKey: amountFieldKey,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+              signed: true,
+            ),
             inputFormatters: manualProductNumericInputFormatters,
             onChanged: onAmountChanged,
           ),

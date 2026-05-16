@@ -267,34 +267,22 @@ class _InventoryReceiptManualProductLauncherPageState
       includeWeightInSearch: widget.config.includeWeightInSearch,
     );
     final keepEditorOpenOnSave = autofocusSearch && widget.onSaved != null;
-    final onSavedHandlerId = keepEditorOpenOnSave
-        ? registerManualProductSearchRouteSaveHandler(
-            _handleNestedEditorSaved,
-          )
-        : null;
-    InventoryReceiptManualProductResult? result;
-    try {
-      result =
-          await pushManualProductSearchPage<
-            InventoryReceiptManualProductResult
-          >(
-            context: context,
-            args: ManualProductSearchRouteArgs.editor(
-              config: config,
-              showEatImmediatelyOption: widget.showEatImmediatelyOption,
-              initialAction: initialAction,
-              closeCurrentEditorOnSave: !autofocusSearch,
-              showActionSelector: showActionSelector,
-              autofocusSearch: autofocusSearch,
-              initialStartVoiceSearch: initialStartVoiceSearch,
-              initialRecentItem: initialRecentItem,
-              initialInfoMessage: initialInfoMessage,
-              onSavedHandlerId: onSavedHandlerId,
-            ),
-          );
-    } finally {
-      unregisterManualProductSearchRouteSaveHandler(onSavedHandlerId);
-    }
+    final result =
+        await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
+          context: context,
+          args: ManualProductSearchRouteArgs.editor(
+            config: config,
+            showEatImmediatelyOption: widget.showEatImmediatelyOption,
+            initialAction: initialAction,
+            closeCurrentEditorOnSave: !autofocusSearch,
+            showActionSelector: showActionSelector,
+            autofocusSearch: autofocusSearch,
+            initialStartVoiceSearch: initialStartVoiceSearch,
+            initialRecentItem: initialRecentItem,
+            initialInfoMessage: initialInfoMessage,
+            onSaved: keepEditorOpenOnSave ? _handleNestedEditorSaved : null,
+          ),
+        );
     if (!mounted || result == null) {
       return;
     }
