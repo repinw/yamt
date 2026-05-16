@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +7,28 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 
 const int _maxPreparedMealImageBytes = 350 * 1024;
+
+class _FakePreparedMealImageFilePicker {
+  _FakePreparedMealImageFilePicker({required this.onPickFiles});
+
+  final Future<FilePickerResult?> Function({
+    required bool withData,
+    required FileType type,
+  })
+  onPickFiles;
+
+  bool? lastWithData;
+  FileType? lastType;
+
+  Future<FilePickerResult?> pickFiles({
+    required bool withData,
+    required FileType type,
+  }) async {
+    lastWithData = withData;
+    lastType = type;
+    return onPickFiles(withData: withData, type: type);
+  }
+}
 
 @Dependencies([preparedMealImagePicker])
 void main() {
@@ -28,6 +51,94 @@ void main() {
       expect(picker.supportsCamera, isFalse);
     },
   );
+
+  test('pickFromFile returns bytes when image file is selected', () async {
+    final originalImage = _createNoisyImage(width: 32, height: 32);
+    final originalBytes = Uint8List.fromList(img.encodePng(originalImage));
+    final filePicker = _FakePreparedMealImageFilePicker(
+      onPickFiles: ({required withData, required type}) async {
+        return FilePickerResult([
+          PlatformFile(
+            name: 'meal.png',
+            size: originalBytes.length,
+            bytes: originalBytes,
+          ),
+        ]);
+      },
+    );
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealImageFilePickerProvider.overrideWithValue(
+          filePicker.pickFiles,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final bytes = await container
+        .read(preparedMealImagePickerProvider)
+        .pickFromFile();
+
+    expect(bytes, orderedEquals(originalBytes));
+    expect(filePicker.lastWithData, isTrue);
+    expect(filePicker.lastType, FileType.image);
+  });
+
+  test(
+    'pickFromFile returns null when image file picking is canceled',
+    () async {
+      final filePicker = _FakePreparedMealImageFilePicker(
+        onPickFiles: ({required withData, required type}) async {
+          return null;
+        },
+      );
+      final container = ProviderContainer(
+        overrides: [
+          preparedMealImageFilePickerProvider.overrideWithValue(
+            filePicker.pickFiles,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final bytes = await container
+          .read(preparedMealImagePickerProvider)
+          .pickFromFile();
+
+      expect(bytes, isNull);
+      expect(filePicker.lastWithData, isTrue);
+      expect(filePicker.lastType, FileType.image);
+    },
+  );
+
+  test('pickFromFile throws filePickFailed when picker crashes', () async {
+    final filePicker = _FakePreparedMealImageFilePicker(
+      onPickFiles: ({required withData, required type}) async {
+        throw StateError('picker-boom');
+      },
+    );
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealImageFilePickerProvider.overrideWithValue(
+          filePicker.pickFiles,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await expectLater(
+      () => container.read(preparedMealImagePickerProvider).pickFromFile(),
+      throwsA(
+        isA<PreparedMealImagePickerException>().having(
+          (error) => error.code,
+          'code',
+          PreparedMealImagePickerErrorCodes.filePickFailed,
+        ),
+      ),
+    );
+    expect(filePicker.lastWithData, isTrue);
+    expect(filePicker.lastType, FileType.image);
+  });
 
   test('optimizePreparedMealImageBytes downscales oversized images', () async {
     final originalImage = _createNoisyImage(width: 512, height: 512);
