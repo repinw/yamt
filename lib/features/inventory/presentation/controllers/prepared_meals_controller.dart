@@ -14,8 +14,6 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_workflows.dart';
-import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -23,6 +21,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 export 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart'

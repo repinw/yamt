@@ -12,19 +12,22 @@ import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_selection_controller.dart';
-import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
-    'kitchen_utensils_button.dart';
-import 'package:yamt/features/meal_templates/presentation/widgets/'
-    'meal_template_recipe_import_button.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shared top chrome rendered inside each home tab scroll view.
 class HomeShellTabTopChrome extends ConsumerWidget {
   /// The home tab top chrome.
-  const HomeShellTabTopChrome({required this.tab, super.key});
+  const HomeShellTabTopChrome({
+    required this.tab,
+    super.key,
+    this.actions = const <Widget>[],
+  });
 
   /// The tab currently rendering this top chrome.
   final HomeTabType tab;
+
+  /// Optional tab-owned actions rendered by the caller.
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,11 +35,15 @@ class HomeShellTabTopChrome extends ConsumerWidget {
     final localeName = Localizations.localeOf(context).toLanguageTag();
     final colors = Theme.of(context).colorScheme;
     final compact = shouldUseCompactHomeChrome(context);
-    final selectionState = ref.watch(preparedMealSelectionControllerProvider);
+    final selectionState = tab == HomeTabType.inventory
+        ? ref.watch(preparedMealSelectionControllerProvider)
+        : const PreparedMealSelectionState();
     final diaryCalendarState = tab == HomeTabType.diary
         ? ref.watch(diaryCalendarControllerProvider)
         : null;
-    final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
+    final runState = tab == HomeTabType.diary
+        ? ref.watch(burnWeekRunControllerProvider).asData?.value
+        : null;
     final subtitle = _subtitleForTab(diaryCalendarState, localeName);
 
     return HomeShellTopSliverChrome(
@@ -133,17 +140,14 @@ class HomeShellTabTopChrome extends ConsumerWidget {
           onPressed: () => context.push(AppRoutes.homeShopping),
           icon: const Icon(Icons.shopping_cart_rounded),
         ),
+        ...actions,
       ],
-      HomeTabType.diary => _buildDiaryActions(
-        ref,
-        l10n,
-        diaryCalendarState,
-      ),
-      HomeTabType.cookbook => const [
-        KitchenUtensilsButton(),
-        MealTemplateRecipeImportButton(),
+      HomeTabType.diary => [
+        ..._buildDiaryActions(ref, l10n, diaryCalendarState),
+        ...actions,
       ],
-      HomeTabType.statistics || HomeTabType.settings => const <Widget>[],
+      HomeTabType.cookbook => actions,
+      HomeTabType.statistics || HomeTabType.settings => actions,
     };
   }
 

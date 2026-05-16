@@ -8,6 +8,7 @@ import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 /// Known piece unit used inside cookflow ingredient drafts.
 const String cookingFlowPieceUnitCode = cookingFlowParserPieceUnitCode;

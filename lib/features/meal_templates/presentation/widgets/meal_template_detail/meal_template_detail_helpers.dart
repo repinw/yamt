@@ -1,9 +1,23 @@
-part of 'meal_template_detail_page.dart';
+// Internal detail helpers are public only for sibling split files.
+// ignore_for_file: public_member_api_docs
 
-enum _IngredientCardState { plain, missing, matched, ignored }
+import 'package:yamt/features/inventory/application/'
+    'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_mutation_models.dart'
+    show PreparedMealCreationFailureReason;
+import 'package:yamt/features/inventory/application/'
+    'recipe_ingredient_assignment_support.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-class _IngredientRowData {
-  const _IngredientRowData({
+enum IngredientCardState { plain, missing, matched, ignored }
+
+class IngredientRowData {
+  const IngredientRowData({
     required this.name,
     required this.amountLabel,
     this.rawIngredient,
@@ -37,7 +51,7 @@ class MealTemplateIngredientAssignmentSelection {
   final RecipeIngredientAmountConversion? amountConversion;
 }
 
-PreparedMeal? _findTemplate({
+PreparedMeal? findTemplate({
   required List<PreparedMeal> templates,
   required String templateId,
 }) {
@@ -49,11 +63,11 @@ PreparedMeal? _findTemplate({
   return null;
 }
 
-int _defaultPortions(int totalPortions) {
+int defaultPortions(int totalPortions) {
   return totalPortions > 0 ? totalPortions : 1;
 }
 
-Map<String, List<String>> _effectiveAssignments({
+Map<String, List<String>> effectiveAssignments({
   required PreparedMeal template,
   required Map<String, List<String>>? draftAssignments,
   required List<InventoryItem> inventoryItems,
@@ -76,7 +90,7 @@ Map<String, List<String>> _effectiveAssignments({
   );
 }
 
-Map<String, List<String>> _updatedAssignments({
+Map<String, List<String>> updatedAssignments({
   required Map<String, List<String>> assignments,
   required String ingredient,
   required List<String> inventoryItemIds,
@@ -135,7 +149,7 @@ Map<String, RecipeIngredientAmountConversion> _normalizedAssignmentConversions(
   return normalized;
 }
 
-bool _assignmentMapsEqual(
+bool assignmentMapsEqual(
   Map<String, List<String>> left,
   Map<String, List<String>> right,
 ) {
@@ -159,7 +173,7 @@ bool _assignmentMapsEqual(
   return true;
 }
 
-bool _assignmentConversionMapsEqual(
+bool assignmentConversionMapsEqual(
   Map<String, RecipeIngredientAmountConversion> left,
   Map<String, RecipeIngredientAmountConversion> right,
 ) {
@@ -177,7 +191,7 @@ bool _assignmentConversionMapsEqual(
   return true;
 }
 
-Map<String, RecipeIngredientAmountConversion> _updatedAssignmentConversions({
+Map<String, RecipeIngredientAmountConversion> updatedAssignmentConversions({
   required Map<String, RecipeIngredientAmountConversion> conversions,
   required String ingredient,
   required RecipeIngredientAmountConversion? amountConversion,
@@ -261,7 +275,7 @@ Map<String, List<String>> _withAutomaticAssignments({
   return nextAssignments;
 }
 
-List<_IngredientRowData> _buildIngredientRows({
+List<IngredientRowData> buildIngredientRows({
   required PreparedMeal template,
   required Map<String, List<String>> recipeIngredientAssignments,
   required Map<String, RecipeIngredientAmountConversion>
@@ -272,7 +286,7 @@ List<_IngredientRowData> _buildIngredientRows({
   if (template.components.isNotEmpty) {
     return template.components
         .map(
-          (component) => _IngredientRowData(
+          (component) => IngredientRowData(
             name: component.name,
             amountLabel: _scaledComponentAmount(
               component: component,
@@ -313,7 +327,7 @@ List<_IngredientRowData> _buildIngredientRows({
       .toList(growable: false);
 }
 
-_IngredientRowData _scaledRecipeIngredient(
+IngredientRowData _scaledRecipeIngredient(
   String ingredient, {
   required bool isIgnored,
   required List<String> assignedInventoryItemIds,
@@ -403,7 +417,7 @@ _IngredientRowData _scaledRecipeIngredient(
   );
 }
 
-_IngredientRowData _ingredientRowFromRequirement({
+IngredientRowData _ingredientRowFromRequirement({
   required String ingredient,
   required bool isIgnored,
   required List<String> assignedInventoryItemIds,
@@ -412,11 +426,11 @@ _IngredientRowData _ingredientRowFromRequirement({
 }) {
   final countMeasureLabel = requirement.countMeasureLabel?.trim();
   final packageCountLabel = requirement.packageCountLabel?.trim();
-  return _IngredientRowData(
+  return IngredientRowData(
     name: requirement.name,
     amountLabel:
         packageCountLabel?.isNotEmpty == true &&
-            requirement.unit != InventoryAmountUnit.piece
+            requirement.unit != TemplateIngredientUnit.piece
         ? '$packageCountLabel ${requirement.amount}${requirement.unit.code}'
         : [
             requirement.amount.toString(),
@@ -433,7 +447,7 @@ _IngredientRowData _ingredientRowFromRequirement({
   );
 }
 
-_IngredientRowData _scaledParsedIngredient({
+IngredientRowData _scaledParsedIngredient({
   required String ingredient,
   required String rawQuantity,
   required String name,
@@ -449,7 +463,7 @@ _IngredientRowData _scaledParsedIngredient({
   final baseAmountLabel = [rawQuantity, ?amountSuffix].join(' ');
   final parsedQuantity = double.tryParse(rawQuantity.replaceAll(',', '.'));
   if (parsedQuantity == null || basePortions <= 0) {
-    return _IngredientRowData(
+    return IngredientRowData(
       name: trimmedName,
       amountLabel: baseAmountLabel,
       rawIngredient: ingredient,
@@ -465,7 +479,7 @@ _IngredientRowData _scaledParsedIngredient({
     _formatAmount(scaledQuantity),
     ?amountSuffix,
   ].join(' ');
-  return _IngredientRowData(
+  return IngredientRowData(
     name: trimmedName,
     amountLabel: scaledAmountLabel,
     rawIngredient: ingredient,
@@ -476,7 +490,7 @@ _IngredientRowData _scaledParsedIngredient({
   );
 }
 
-_IngredientRowData _fallbackIngredientRow({
+IngredientRowData _fallbackIngredientRow({
   required String ingredient,
   required bool isIgnored,
   required List<String> assignedInventoryItemIds,
@@ -484,7 +498,7 @@ _IngredientRowData _fallbackIngredientRow({
   required RecipeIngredientAmountConversion? amountConversion,
 }) {
   final trimmed = ingredient.trim();
-  return _IngredientRowData(
+  return IngredientRowData(
     name: trimmed,
     amountLabel: '-',
     rawIngredient: ingredient,
@@ -544,7 +558,7 @@ bool _containsNormalizedIngredient(
   return false;
 }
 
-Map<String, RecipeIngredientAmountConversion> _effectiveAssignmentConversions({
+Map<String, RecipeIngredientAmountConversion> effectiveAssignmentConversions({
   required PreparedMeal template,
   required Map<String, RecipeIngredientAmountConversion>?
   draftAssignmentConversions,
@@ -637,22 +651,22 @@ String _formatAmount(double value) {
   return value.toStringAsFixed(1).replaceAll('.', ',');
 }
 
-String _inventoryAmountLabel(InventoryItem item) {
+String inventoryAmountLabel(InventoryItem item) {
   if (item.usesAmountProgress && item.amountUnit != null) {
     return '${item.currentAmount} ${item.amountUnit!.code}';
   }
   return '${item.quantity}x';
 }
 
-String _shoppingListLabel(_IngredientRowData row) {
+String _shoppingListLabel(IngredientRowData row) {
   if (row.amountLabel == '-') {
     return row.name;
   }
   return '${row.amountLabel} ${row.name}';
 }
 
-String? _shoppingListLabelForRow({
-  required _IngredientRowData row,
+String? shoppingListLabelForRow({
+  required IngredientRowData row,
   required List<InventoryItem> inventoryItems,
 }) {
   if (row.isIgnored) {
@@ -735,7 +749,7 @@ int _availableShoppingListAmount({
 }
 
 String _formattedShoppingListRemainingLabel({
-  required _IngredientRowData row,
+  required IngredientRowData row,
   required int amount,
   required InventoryAmountUnit unit,
   required String name,
@@ -749,31 +763,31 @@ String _formattedShoppingListRemainingLabel({
   return '$amount ${unit.code} $name';
 }
 
-_IngredientCardState _ingredientCardState({
-  required _IngredientRowData row,
+IngredientCardState ingredientCardState({
+  required IngredientRowData row,
   required List<InventoryItem> assignedItems,
   required bool hasCompatibleAssignment,
 }) {
   if (row.isIgnored) {
-    return _IngredientCardState.ignored;
+    return IngredientCardState.ignored;
   }
   if (row.rawIngredient == null) {
-    return _IngredientCardState.plain;
+    return IngredientCardState.plain;
   }
   if (assignedItems.isNotEmpty && hasCompatibleAssignment) {
-    return _IngredientCardState.matched;
+    return IngredientCardState.matched;
   }
-  return _IngredientCardState.missing;
+  return IngredientCardState.missing;
 }
 
-String _ingredientDisplayTitle(_IngredientRowData row) {
+String ingredientDisplayTitle(IngredientRowData row) {
   if (row.amountLabel == '-') {
     return row.name;
   }
   return '${row.amountLabel} ${row.name}';
 }
 
-String _conversionSourceUnitLabel({
+String conversionSourceUnitLabel({
   required TemplateIngredientRequirement? requirement,
   required AppLocalizations l10n,
 }) {
@@ -781,13 +795,13 @@ String _conversionSourceUnitLabel({
   if (countMeasureLabel != null && countMeasureLabel.isNotEmpty) {
     return countMeasureLabel;
   }
-  if (requirement?.unit == InventoryAmountUnit.piece) {
+  if (requirement?.unit == TemplateIngredientUnit.piece) {
     return l10n.inventoryUnitPiece;
   }
   return requirement?.unit.code ?? l10n.inventoryUnitPiece;
 }
 
-String _assignedInventoryLabel({
+String assignedInventoryLabel({
   required AppLocalizations l10n,
   required List<InventoryItem> assignedItems,
 }) {
@@ -797,13 +811,13 @@ String _assignedInventoryLabel({
 
   if (assignedItems.length == 1) {
     final item = assignedItems.first;
-    return '${item.name} - ${_inventoryAmountLabel(item)}';
+    return '${item.name} - ${inventoryAmountLabel(item)}';
   }
 
   return l10n.preparedMealTemplateDetailAssignedCount(assignedItems.length);
 }
 
-String? _resolvePreviewImageUrl({
+String? resolvePreviewImageUrl({
   required List<InventoryItem> assignedItems,
   required List<InventoryItem> suggestions,
 }) {
@@ -816,7 +830,7 @@ String? _resolvePreviewImageUrl({
   return null;
 }
 
-String _createMealFailureMessage(
+String createMealFailureMessage(
   AppLocalizations l10n,
   PreparedMealCreationFailureReason? failureReason,
 ) {

@@ -11,13 +11,12 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_workflow_context.dart';
-import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 /// Runs prepared meal business workflows outside the controller.
 class PreparedMealMutationWorkflows {

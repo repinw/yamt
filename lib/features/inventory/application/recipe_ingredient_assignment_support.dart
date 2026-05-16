@@ -1,7 +1,8 @@
 import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
+    'template_ingredient_unit_mapper.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 /// Defines recipe ingredient effective requirement.
 class RecipeIngredientEffectiveRequirement {
@@ -62,14 +63,15 @@ bool canAutoAssignInventoryItem({
     return true;
   }
 
-  if (requirement.unit == InventoryAmountUnit.piece) {
+  final requiredUnit = requirement.inventoryUnit;
+  if (requiredUnit == InventoryAmountUnit.piece) {
     if (!requirement.allowsDirectPieceInventoryMatch) {
       return false;
     }
     return !item.usesAmountProgress;
   }
 
-  return item.usesAmountProgress && item.amountUnit == requirement.unit;
+  return item.usesAmountProgress && item.amountUnit == requiredUnit;
 }
 
 /// Resolve effective requirement for items.
@@ -83,14 +85,15 @@ RecipeIngredientEffectiveRequirement? resolveEffectiveRequirementForItems({
   }
 
   final sharedAmountUnit = resolveSharedAmountProgressUnit(assignedItems);
+  final requiredUnit = requirement.inventoryUnit;
   if (sharedAmountUnit != null) {
-    if (requirement.unit != InventoryAmountUnit.piece) {
-      if (sharedAmountUnit != requirement.unit) {
+    if (requiredUnit != InventoryAmountUnit.piece) {
+      if (sharedAmountUnit != requiredUnit) {
         return null;
       }
       return RecipeIngredientEffectiveRequirement(
         amount: requirement.amount,
-        unit: requirement.unit,
+        unit: requiredUnit,
         name: requirement.name,
       );
     }
@@ -109,7 +112,7 @@ RecipeIngredientEffectiveRequirement? resolveEffectiveRequirementForItems({
   }
 
   if (!usesOnlyPieceTrackedItems(assignedItems) ||
-      requirement.unit != InventoryAmountUnit.piece) {
+      requiredUnit != InventoryAmountUnit.piece) {
     return null;
   }
   if (!requirement.allowsDirectPieceInventoryMatch) {
@@ -118,7 +121,7 @@ RecipeIngredientEffectiveRequirement? resolveEffectiveRequirementForItems({
 
   return RecipeIngredientEffectiveRequirement(
     amount: requirement.amount,
-    unit: requirement.unit,
+    unit: requiredUnit,
     name: requirement.name,
   );
 }
@@ -133,9 +136,9 @@ bool canSelectInventoryItemForRequirement({
     return true;
   }
 
-  if (requirement.unit != InventoryAmountUnit.piece) {
-    return candidate.usesAmountProgress &&
-        candidate.amountUnit == requirement.unit;
+  final requiredUnit = requirement.inventoryUnit;
+  if (requiredUnit != InventoryAmountUnit.piece) {
+    return candidate.usesAmountProgress && candidate.amountUnit == requiredUnit;
   }
 
   if (selectedItems.isEmpty) {

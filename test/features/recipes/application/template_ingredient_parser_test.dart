@@ -1,10 +1,26 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 void main() {
   const parser = TemplateIngredientParser();
+
+  test('provider exposes template ingredient parser', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    expect(
+      container.read(templateIngredientParserProvider),
+      isA<TemplateIngredientParser>(),
+    );
+  });
+
+  test('ingredient unit codes stay stable for cross-feature labels', () {
+    expect(TemplateIngredientUnit.gram.code, 'g');
+    expect(TemplateIngredientUnit.milliliter.code, 'ml');
+    expect(TemplateIngredientUnit.piece.code, 'pc');
+  });
 
   test('parses decimal gram requirements with scaling', () {
     final requirement = parser.parseRequirement(
@@ -15,7 +31,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 750);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Kartoffeln');
   });
 
@@ -28,7 +44,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 1001);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Mehl');
   });
 
@@ -41,7 +57,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 500);
-    expect(requirement.unit, InventoryAmountUnit.milliliter);
+    expect(requirement.unit, TemplateIngredientUnit.milliliter);
     expect(requirement.name, 'Brühe');
   });
 
@@ -54,7 +70,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 500);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Nudeln');
   });
 
@@ -67,7 +83,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 500);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Nudeln');
   });
 
@@ -80,7 +96,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 1500);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Kartoffeln');
   });
 
@@ -143,7 +159,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 2);
-    expect(requirement.unit, InventoryAmountUnit.piece);
+    expect(requirement.unit, TemplateIngredientUnit.piece);
     expect(requirement.name, 'Zwiebeln');
   });
 
@@ -156,7 +172,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 4);
-    expect(requirement.unit, InventoryAmountUnit.piece);
+    expect(requirement.unit, TemplateIngredientUnit.piece);
     expect(requirement.name, 'Tomatenmark');
     expect(requirement.countMeasureLabel, 'EL');
     expect(requirement.allowsDirectPieceInventoryMatch, isFalse);
@@ -173,7 +189,7 @@ void main() {
 
       expect(requirement, isNotNull);
       expect(requirement!.amount, 800);
-      expect(requirement.unit, InventoryAmountUnit.gram);
+      expect(requirement.unit, TemplateIngredientUnit.gram);
       expect(requirement.name, 'Tomaten, stückig');
     },
   );
@@ -187,7 +203,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 800);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Tomaten, stückige');
   });
 
@@ -200,7 +216,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 800);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Tomaten, stückige');
   });
 
@@ -213,7 +229,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 800);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Tomaten, passiert');
     expect(requirement.packageCountLabel, '1x');
   });
@@ -227,7 +243,7 @@ void main() {
 
     expect(requirement, isNotNull);
     expect(requirement!.amount, 800);
-    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.unit, TemplateIngredientUnit.gram);
     expect(requirement.name, 'Tomaten, stückige');
     expect(requirement.packageCountLabel, '1x');
   });
@@ -237,7 +253,7 @@ void main() {
       originalIngredient: '1 kg Kartoffeln',
       requirement: const TemplateIngredientRequirement(
         amount: 500,
-        unit: InventoryAmountUnit.gram,
+        unit: TemplateIngredientUnit.gram,
         name: 'Kartoffeln',
       ),
     );
@@ -250,7 +266,7 @@ void main() {
       originalIngredient: '4 EL Tomatenmark',
       requirement: const TemplateIngredientRequirement(
         amount: 4,
-        unit: InventoryAmountUnit.piece,
+        unit: TemplateIngredientUnit.piece,
         name: 'Tomatenmark',
         countMeasureLabel: 'EL',
         allowsDirectPieceInventoryMatch: false,
@@ -265,7 +281,7 @@ void main() {
       originalIngredient: '1 Dose Tomaten, passiert (ca 800g)',
       requirement: const TemplateIngredientRequirement(
         amount: 800,
-        unit: InventoryAmountUnit.gram,
+        unit: TemplateIngredientUnit.gram,
         name: 'Tomaten, passiert',
         packageCountLabel: '1x',
       ),

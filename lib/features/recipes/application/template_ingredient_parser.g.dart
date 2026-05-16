@@ -8,12 +8,12 @@ part of 'template_ingredient_parser.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The template ingredient parser provider.
+/// Provides the template ingredient parser.
 
 @ProviderFor(templateIngredientParser)
 final templateIngredientParserProvider = TemplateIngredientParserProvider._();
 
-/// The template ingredient parser provider.
+/// Provides the template ingredient parser.
 
 final class TemplateIngredientParserProvider
     extends
@@ -23,7 +23,7 @@ final class TemplateIngredientParserProvider
           TemplateIngredientParser
         >
     with $Provider<TemplateIngredientParser> {
-  /// The template ingredient parser provider.
+  /// Provides the template ingredient parser.
   TemplateIngredientParserProvider._()
     : super(
         from: null,

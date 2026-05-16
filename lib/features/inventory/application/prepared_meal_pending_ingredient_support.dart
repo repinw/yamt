@@ -3,10 +3,11 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
-    'template_ingredient_parser.dart';
+    'template_ingredient_unit_mapper.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 /// Consumes inventory to fill one pending template ingredient entry.
 PreparedMealPendingIngredientFillResult?
@@ -29,6 +30,7 @@ buildPreparedMealPendingIngredientFillResult({
   final components = <PreparedMealComponent>[];
   var remainingAmount = requirement.amount;
   var consumedAnyAmount = false;
+  final requiredUnit = requirement.inventoryUnit;
 
   for (final itemId in inventoryItemIds) {
     if (remainingAmount <= 0) {
@@ -43,14 +45,14 @@ buildPreparedMealPendingIngredientFillResult({
     final currentItem = nextItems[itemIndex];
     if (!hasCompatibleTemplateRequirement(
       item: currentItem,
-      requiredUnit: requirement.unit,
+      requiredUnit: requiredUnit,
     )) {
       continue;
     }
 
     final consumableAmount = consumableAmountForRequirement(
       item: currentItem,
-      requiredUnit: requirement.unit,
+      requiredUnit: requiredUnit,
       remainingAmount: remainingAmount,
     );
     if (consumableAmount < 1) {
@@ -77,14 +79,14 @@ buildPreparedMealPendingIngredientFillResult({
         usedAmount: consumableAmount,
         usedUnit: resolveTemplateUsedUnit(
           item: currentItem,
-          requiredUnit: requirement.unit,
+          requiredUnit: requiredUnit,
         ),
         nutrition: resolvedNutrition,
       ),
     );
     remainingAmount = remainingRequirementAfterConsumption(
       item: currentItem,
-      requiredUnit: requirement.unit,
+      requiredUnit: requiredUnit,
       remainingAmount: remainingAmount,
       consumedAmount: consumableAmount,
     );

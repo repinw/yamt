@@ -1,7 +1,17 @@
-part of '../meal_template_detail_page.dart';
+// Internal detail widget is public only for sibling split files.
+// ignore_for_file: public_member_api_docs
 
-class _MealTemplateFooter extends StatelessWidget {
-  const _MealTemplateFooter({
+import 'dart:async';
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class MealTemplateFooter extends StatelessWidget {
+  const MealTemplateFooter({
     required this.hasAssignmentChanges,
     required this.isCreatingMeal,
     required this.isSavingTemplate,
@@ -9,6 +19,7 @@ class _MealTemplateFooter extends StatelessWidget {
     required this.onSaveTemplatePressed,
     required this.onAddIngredientsToShoppingListPressed,
     required this.onCreateMealPressed,
+    super.key,
   });
 
   final bool hasAssignmentChanges;
@@ -338,7 +349,7 @@ class MealTemplateFooterTestHarness extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _MealTemplateFooter(
+    return MealTemplateFooter(
       hasAssignmentChanges: hasAssignmentChanges,
       isCreatingMeal: isCreatingMeal,
       isSavingTemplate: isSavingTemplate,

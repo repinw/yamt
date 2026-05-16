@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -6,6 +8,7 @@ import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.da
 import 'package:yamt/features/onboarding/domain/onboarding_catch_up_calculator.dart';
 
 const _uuid = Uuid();
+const _writerLogName = 'CalorieGoalOnboardingCatchUpPlaceholderWriter';
 const _minimumPlaceholderKcal = 100.0;
 
 /// Writes estimated calorie entries for same-day onboarding catch-up.
@@ -58,9 +61,14 @@ class CalorieGoalOnboardingCatchUpPlaceholderWriter {
       totalKcal: remainingKcal,
       now: now,
     );
+    final savedPlaceholderIds = <String>[];
     for (final entry in perMeal.entries) {
       if (entry.value < 1) {
         continue;
+      }
+      if (!_isMounted()) {
+        await _rollbackPlaceholders(savedPlaceholderIds);
+        return false;
       }
       final placeholder = CalorieEntry.placeholder(
         id: _idGenerator(),
@@ -72,13 +80,30 @@ class CalorieGoalOnboardingCatchUpPlaceholderWriter {
       final placeholderSaved = await _logRepository.saveEntryForCurrentUser(
         placeholder,
       );
-      // TODO(wladik): Add repository-level transactional writes. If a later
-      // placeholder fails, earlier entries may already be persisted.
-      if (!placeholderSaved || !_isMounted()) {
+      if (!placeholderSaved) {
+        await _rollbackPlaceholders(savedPlaceholderIds);
+        return false;
+      }
+      savedPlaceholderIds.add(placeholder.id);
+      if (!_isMounted()) {
+        await _rollbackPlaceholders(savedPlaceholderIds);
         return false;
       }
     }
     return true;
+  }
+
+  Future<void> _rollbackPlaceholders(List<String> placeholderIds) async {
+    for (final placeholderId in placeholderIds.reversed) {
+      final deleted = await _logRepository.deleteEntry(placeholderId);
+      if (deleted) {
+        continue;
+      }
+      log(
+        'Failed to roll back onboarding placeholder $placeholderId.',
+        name: _writerLogName,
+      );
+    }
   }
 }
 

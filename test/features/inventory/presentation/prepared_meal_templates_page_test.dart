@@ -148,12 +148,14 @@ Widget _buildHarness({
   required PreparedMealTemplateRepository repository,
   required PreparedMealRecipeImporter importer,
   LocalImageStore? localImageStore,
+  bool includeAppBar = true,
 }) {
   final router = GoRouter(
     routes: [
       GoRoute(
         path: AppRoutes.root,
-        builder: (context, state) => const MealTemplatesPage(),
+        builder: (context, state) =>
+            MealTemplatesPage(includeAppBar: includeAppBar),
       ),
       GoRoute(
         path: AppRoutes.homeInventoryTemplateImportReview,
@@ -187,6 +189,31 @@ Widget _buildHarness({
 }
 
 void main() {
+  testWidgets('renders home chrome actions when embedded in home shell', (
+    tester,
+  ) async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[
+        _template(id: 'template-1', name: 'Lunch Box'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(null),
+        includeAppBar: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cookbook'), findsOneWidget);
+    expect(find.byIcon(Icons.kitchen_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.add_link_rounded), findsOneWidget);
+    expect(find.text('Templates'), findsNothing);
+  });
+
   testWidgets('renders templates and deletes one from the list', (
     tester,
   ) async {

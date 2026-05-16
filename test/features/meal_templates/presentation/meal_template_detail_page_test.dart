@@ -14,6 +14,16 @@ import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_t
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_detail_page.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_template_detail/meal_template_detail_empty_ingredients_card.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_template_detail/meal_template_detail_footer.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_template_detail/meal_template_detail_hero_section.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_template_detail/meal_template_detail_ingredient_card.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_template_detail/meal_template_detail_top_bar.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -658,6 +668,71 @@ void main() {
 
     final textWidget = tester.widget<Text>(find.text('1 kg Parsley'));
     expect(textWidget.style?.decoration, TextDecoration.lineThrough);
+  });
+
+  testWidgets('renders embedded recipe amount with recipe unit label', (
+    tester,
+  ) async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[
+        _recipeTemplate(
+          recipeIngredients: const <String>[
+            'Dose/n Tomaten, stückige (ca. 800 g)',
+          ],
+          totalPortions: 1,
+        ),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(templateRepository: repository));
+    await tester.pumpAndSettle();
+
+    expect(find.text('800 g Tomaten, stückige'), findsOneWidget);
+  });
+
+  testWidgets('renders empty ingredient detail surface', (tester) async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[_recipeTemplate(recipeIngredients: [])],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(templateRepository: repository));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MealTemplateEmptyIngredientsCard), findsOneWidget);
+    expect(find.text('No ingredients available yet.'), findsOneWidget);
+    expect(find.byIcon(Icons.menu_book_rounded), findsOneWidget);
+    expect(find.text('Ingredients to shopping list'), findsNothing);
+  });
+
+  testWidgets('renders split detail hero and top bar widgets', (tester) async {
+    await tester.pumpWidget(
+      _buildStandaloneHarness(
+        Column(
+          children: [
+            const MealTemplateTopBar(title: 'Soup detail', height: 76),
+            MealTemplateHeroSection(
+              templateName: 'Soup',
+              imageBytes: null,
+              imageUrl: null,
+              portionsLabel: '2 portions',
+              basePortionsLabel: 'Base: 2 portions',
+              onDecreasePortions: () {},
+              onIncreasePortions: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Soup detail'), findsOneWidget);
+    expect(find.byTooltip('Close'), findsOneWidget);
+    expect(find.text('S'), findsOneWidget);
+    expect(find.text('2 portions'), findsOneWidget);
+    expect(find.byIcon(Icons.add_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.remove_rounded), findsOneWidget);
   });
 
   testWidgets('renders matched ingredient state with check icon and swap', (
