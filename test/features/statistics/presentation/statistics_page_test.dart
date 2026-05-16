@@ -23,12 +23,16 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/statistics/domain/statistics_models.dart';
+import 'package:yamt/features/statistics/domain/waste_metrics.dart';
 import 'package:yamt/features/statistics/presentation/'
     'calorie_health_trends_page.dart';
 import 'package:yamt/features/statistics/presentation/statistics_page.dart';
 import 'package:yamt/features/statistics/presentation/statistics_page_keys.dart';
 import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_error_card.dart';
+import 'package:yamt/features/statistics/provider/'
+    'statistics_waste_data_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
@@ -54,6 +58,16 @@ class _FakeInventoryDiscardEventRepository
     return true;
   }
 }
+
+const _emptyWasteSnapshot = StatisticsWasteSnapshot(
+  totalEvents: 0,
+  totalDiscardedValue: 0,
+  currencyCode: null,
+  topReason: null,
+  topReasonCount: 0,
+  topItemName: null,
+  topItemCount: 0,
+);
 
 @Dependencies([InventoryItemsController])
 void main() {
@@ -399,6 +413,10 @@ Widget _buildHarness({
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
         const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
+      for (final timeframe in StatisticsTimeframe.values)
+        statisticsWasteDataProvider(timeframe).overrideWith(
+          (ref) async => _emptyWasteSnapshot,
+        ),
     ],
   );
   addTearDown(container.dispose);
@@ -443,6 +461,10 @@ Widget _buildRouterHarness({
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
         const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
+      for (final timeframe in StatisticsTimeframe.values)
+        statisticsWasteDataProvider(timeframe).overrideWith(
+          (ref) async => _emptyWasteSnapshot,
+        ),
     ],
   );
   addTearDown(container.dispose);

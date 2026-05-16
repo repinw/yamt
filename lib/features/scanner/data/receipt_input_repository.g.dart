@@ -62,8 +62,13 @@ final filePickerProvider = FilePickerProvider._();
 /// File picker.
 
 final class FilePickerProvider
-    extends $FunctionalProvider<FilePicker, FilePicker, FilePicker>
-    with $Provider<FilePicker> {
+    extends
+        $FunctionalProvider<
+          ReceiptFilePicker,
+          ReceiptFilePicker,
+          ReceiptFilePicker
+        >
+    with $Provider<ReceiptFilePicker> {
   /// File picker.
   FilePickerProvider._()
     : super(
@@ -81,24 +86,25 @@ final class FilePickerProvider
 
   @$internal
   @override
-  $ProviderElement<FilePicker> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<ReceiptFilePicker> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
-  FilePicker create(Ref ref) {
+  ReceiptFilePicker create(Ref ref) {
     return filePicker(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FilePicker value) {
+  Override overrideWithValue(ReceiptFilePicker value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<FilePicker>(value),
+      providerOverride: $SyncValueProvider<ReceiptFilePicker>(value),
     );
   }
 }
 
-String _$filePickerHash() => r'bae1fe0c95c85532cffec63b62cfe564b8356d75';
+String _$filePickerHash() => r'8efe115e064e993f5730f7fc74b29da429daed41';
 
 /// Receipt input repository.
 

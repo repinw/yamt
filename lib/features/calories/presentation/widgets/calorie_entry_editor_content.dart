@@ -84,9 +84,11 @@ class _CalorieEntryEditorContentState
   static const _uuid = Uuid();
 
   final _draft = CalorieEntryEditorDraft();
+  ProviderContainer? _providerContainer;
   ProviderSubscription<AsyncValue<CalorieEntry?>>? _entrySubscription;
   bool _isSaving = false;
   bool _didCommitPendingConsumption = false;
+  bool _didDiscardPendingConsumption = false;
   bool _allowDirtyDetailsDismiss = false;
   bool _isShowingDiscardDialog = false;
 
@@ -95,6 +97,15 @@ class _CalorieEntryEditorContentState
     super.initState();
     _initializeForCreate();
     _subscribeToEntry();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _providerContainer ??= ProviderScope.containerOf(
+      context,
+      listen: false,
+    );
   }
 
   @override
@@ -128,6 +139,7 @@ class _CalorieEntryEditorContentState
     _initializeForCreate();
     _subscribeToEntry();
     _didCommitPendingConsumption = false;
+    _didDiscardPendingConsumption = false;
     if (mounted) {
       setState(() {});
     }
@@ -135,6 +147,12 @@ class _CalorieEntryEditorContentState
 
   @override
   void dispose() {
+    final providerContainer = _providerContainer;
+    if (providerContainer != null) {
+      _discardPendingConsumptionIfNeeded(
+        providerContainer.read(inventoryItemsControllerProvider.notifier),
+      );
+    }
     _entrySubscription?.close();
     _draft.dispose();
     super.dispose();
@@ -706,7 +724,19 @@ class _CalorieEntryEditorContentState
   }
 
   void _onPopInvokedWithResult(bool didPop, Object? result) {
-    if (!didPop || _didCommitPendingConsumption) {
+    if (!didPop) {
+      return;
+    }
+
+    _discardPendingConsumptionIfNeeded(
+      ref.read(inventoryItemsControllerProvider.notifier),
+    );
+  }
+
+  void _discardPendingConsumptionIfNeeded(
+    InventoryItemsController inventoryController,
+  ) {
+    if (_didCommitPendingConsumption || _didDiscardPendingConsumption) {
       return;
     }
 
@@ -715,10 +745,9 @@ class _CalorieEntryEditorContentState
       return;
     }
 
+    _didDiscardPendingConsumption = true;
     unawaited(
-      ref
-          .read(inventoryItemsControllerProvider.notifier)
-          .discardPendingConsumption(pendingConsumptionId),
+      inventoryController.discardPendingConsumption(pendingConsumptionId),
     );
   }
 }

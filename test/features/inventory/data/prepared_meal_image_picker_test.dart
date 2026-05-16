@@ -1,12 +1,34 @@
-import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 
 const int _maxPreparedMealImageBytes = 350 * 1024;
 
+@Dependencies([preparedMealImagePicker])
 void main() {
+  test(
+    'preparedMealImagePickerProvider exposes platform camera support',
+    () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() {
+        debugDefaultTargetPlatformOverride = null;
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final picker = container.read(preparedMealImagePickerProvider);
+
+      expect(picker.supportsCamera, isTrue);
+
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+
+      expect(picker.supportsCamera, isFalse);
+    },
+  );
+
   test('optimizePreparedMealImageBytes downscales oversized images', () async {
     final originalImage = _createNoisyImage(width: 512, height: 512);
     final originalBytes = Uint8List.fromList(img.encodeBmp(originalImage));
@@ -51,6 +73,28 @@ void main() {
       expect(optimizedImage, isNotNull);
       expect(optimizedImage!.width, lessThanOrEqualTo(1600));
       expect(optimizedImage.height, lessThanOrEqualTo(1600));
+    },
+  );
+
+  test(
+    'optimizePreparedMealImageBytes keeps alpha images as png while resizing',
+    () async {
+      final originalImage = img.Image(
+        width: 1800,
+        height: 16,
+        numChannels: 4,
+      );
+      img.fill(originalImage, color: img.ColorRgba8(180, 120, 90, 96));
+      final originalBytes = Uint8List.fromList(img.encodePng(originalImage));
+
+      final optimizedBytes = await optimizePreparedMealImageBytes(
+        originalBytes,
+      );
+      final optimizedImage = img.decodeImage(optimizedBytes);
+
+      expect(optimizedImage, isNotNull);
+      expect(optimizedImage!.width, lessThanOrEqualTo(1600));
+      expect(optimizedImage.hasAlpha, isTrue);
     },
   );
 

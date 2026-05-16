@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
@@ -31,33 +32,23 @@ class _FakeImagePicker extends ImagePicker {
   }
 }
 
-class _FakeFilePicker extends FilePicker {
+class _FakeFilePicker {
   _FakeFilePicker({required this.onPickFiles});
 
   final Future<FilePickerResult?> Function({
     required bool withData,
     required bool allowMultiple,
-    required List<String>? allowedExtensions,
+    required List<String> allowedExtensions,
   })
   onPickFiles;
 
   bool? lastWithData;
   bool? lastAllowMultiple;
 
-  @override
   Future<FilePickerResult?> pickFiles({
-    String? dialogTitle,
-    String? initialDirectory,
-    FileType type = FileType.any,
-    List<String>? allowedExtensions,
-    void Function(FilePickerStatus)? onFileLoading,
-    bool allowCompression = false,
-    int compressionQuality = 0,
-    bool allowMultiple = false,
-    bool withData = false,
-    bool withReadStream = false,
-    bool lockParentWindow = false,
-    bool readSequential = false,
+    required bool allowMultiple,
+    required bool withData,
+    required List<String> allowedExtensions,
   }) async {
     lastWithData = withData;
     lastAllowMultiple = allowMultiple;
@@ -70,6 +61,29 @@ class _FakeFilePicker extends FilePicker {
 }
 
 void main() {
+  test('providers create plugin-backed receipt input dependencies', () {
+    final container = ProviderContainer(
+      overrides: [
+        imagePickerProvider.overrideWithValue(_FakeImagePicker()),
+        filePickerProvider.overrideWithValue(
+          ({
+            required allowMultiple,
+            required withData,
+            required allowedExtensions,
+          }) async {
+            return null;
+          },
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(
+      container.read(receiptInputRepositoryProvider),
+      isA<ReceiptInputRepository>(),
+    );
+  });
+
   test(
     'pickFromFile falls back to octet-stream for unknown file type',
     () async {
@@ -92,7 +106,7 @@ void main() {
 
       final repository = DeviceReceiptInputRepository(
         imagePicker: _FakeImagePicker(),
-        filePicker: filePicker,
+        filePicker: filePicker.pickFiles,
       );
 
       final result = await repository.pickFromFile();
@@ -127,7 +141,7 @@ void main() {
 
     final repository = DeviceReceiptInputRepository(
       imagePicker: imagePicker,
-      filePicker: filePicker,
+      filePicker: filePicker.pickFiles,
     );
 
     final result = await repository.pickFromCamera();
@@ -168,7 +182,7 @@ void main() {
 
       final repository = DeviceReceiptInputRepository(
         imagePicker: _FakeImagePicker(),
-        filePicker: filePicker,
+        filePicker: filePicker.pickFiles,
       );
 
       final result = await repository.pickFromFile();
@@ -202,7 +216,7 @@ void main() {
 
     final repository = DeviceReceiptInputRepository(
       imagePicker: _FakeImagePicker(),
-      filePicker: filePicker,
+      filePicker: filePicker.pickFiles,
     );
 
     final result = await repository.pickFromFile();
@@ -238,7 +252,7 @@ void main() {
 
       final repository = DeviceReceiptInputRepository(
         imagePicker: _FakeImagePicker(),
-        filePicker: filePicker,
+        filePicker: filePicker.pickFiles,
       );
 
       final result = await repository.pickFromFiles();
@@ -274,7 +288,7 @@ void main() {
 
       final repository = DeviceReceiptInputRepository(
         imagePicker: _FakeImagePicker(),
-        filePicker: filePicker,
+        filePicker: filePicker.pickFiles,
       );
 
       final result = await repository.pickFromFiles();
@@ -301,7 +315,7 @@ void main() {
 
     final repository = DeviceReceiptInputRepository(
       imagePicker: _FakeImagePicker(),
-      filePicker: filePicker,
+      filePicker: filePicker.pickFiles,
     );
 
     final result = await repository.pickFromFiles();
@@ -329,7 +343,7 @@ void main() {
 
       final repository = DeviceReceiptInputRepository(
         imagePicker: _FakeImagePicker(),
-        filePicker: filePicker,
+        filePicker: filePicker.pickFiles,
       );
 
       final result = await repository.pickFromFiles();
@@ -362,7 +376,7 @@ void main() {
 
       final repository = DeviceReceiptInputRepository(
         imagePicker: _FakeImagePicker(),
-        filePicker: filePicker,
+        filePicker: filePicker.pickFiles,
       );
 
       final result = await repository.pickFromFiles();
@@ -397,7 +411,7 @@ void main() {
 
       final repository = DeviceReceiptInputRepository(
         imagePicker: _FakeImagePicker(),
-        filePicker: filePicker,
+        filePicker: filePicker.pickFiles,
       );
 
       final result = await repository.pickFromFiles();
@@ -432,7 +446,7 @@ void main() {
 
     final repository = DeviceReceiptInputRepository(
       imagePicker: _FakeImagePicker(),
-      filePicker: filePicker,
+      filePicker: filePicker.pickFiles,
     );
 
     final result = await repository.pickFromFiles();

@@ -65,21 +65,14 @@ abstract interface class PreparedMealImagePicker {
 /// Prepared meal image picker.
 @Riverpod(dependencies: [])
 PreparedMealImagePicker preparedMealImagePicker(Ref ref) {
-  return _DevicePreparedMealImagePicker(
-    imagePicker: ImagePicker(),
-    filePicker: FilePicker.platform,
-  );
+  return _DevicePreparedMealImagePicker(imagePicker: ImagePicker());
 }
 
 class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
-  _DevicePreparedMealImagePicker({
-    required ImagePicker imagePicker,
-    required FilePicker filePicker,
-  }) : _imagePicker = imagePicker,
-       _filePicker = filePicker;
+  _DevicePreparedMealImagePicker({required ImagePicker imagePicker})
+    : _imagePicker = imagePicker;
 
   final ImagePicker _imagePicker;
-  final FilePicker _filePicker;
 
   @override
   bool get supportsCamera {
@@ -125,7 +118,7 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
   @override
   Future<Uint8List?> pickFromFile() async {
     try {
-      final result = await _filePicker.pickFiles(
+      final result = await FilePicker.pickFiles(
         withData: true,
         type: FileType.image,
       );
