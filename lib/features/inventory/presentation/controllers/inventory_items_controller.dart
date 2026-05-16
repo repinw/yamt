@@ -1265,6 +1265,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     DateTime? happenedAt,
     String? reason,
   }) {
+    assert(amount >= 0, 'Amount cannot be negative');
     final actor = ref.read(inventoryActivityActorProvider);
     if (actor == null || item == null) {
       return null;
