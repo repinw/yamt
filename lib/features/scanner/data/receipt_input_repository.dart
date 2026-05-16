@@ -19,8 +19,8 @@ ImagePicker imagePicker(Ref ref) {
 
 /// File picker.
 @riverpod
-FilePicker filePicker(Ref ref) {
-  return FilePicker.platform;
+ReceiptFilePicker filePicker(Ref ref) {
+  return _pickReceiptFiles;
 }
 
 /// Receipt input repository.
@@ -44,6 +44,27 @@ abstract interface class ReceiptInputRepository {
   Future<ReceiptInputBatchResult> pickFromFiles();
 }
 
+/// Picks receipt files from the host platform.
+typedef ReceiptFilePicker =
+    Future<FilePickerResult?> Function({
+      required bool allowMultiple,
+      required bool withData,
+      required List<String> allowedExtensions,
+    });
+
+Future<FilePickerResult?> _pickReceiptFiles({
+  required bool allowMultiple,
+  required bool withData,
+  required List<String> allowedExtensions,
+}) {
+  return FilePicker.pickFiles(
+    allowMultiple: allowMultiple,
+    withData: withData,
+    type: FileType.custom,
+    allowedExtensions: allowedExtensions,
+  );
+}
+
 /// Plugin-backed implementation using `image_picker` and `file_picker`.
 ///
 /// Note: This class calls platform channels directly. We cover its decision
@@ -53,12 +74,12 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
   /// Creates an instance.
   DeviceReceiptInputRepository({
     required ImagePicker imagePicker,
-    required FilePicker filePicker,
+    required ReceiptFilePicker filePicker,
   }) : _imagePicker = imagePicker,
        _filePicker = filePicker;
 
   final ImagePicker _imagePicker;
-  final FilePicker _filePicker;
+  final ReceiptFilePicker _filePicker;
 
   @override
   Future<ReceiptInputResult> pickFromCamera() {
@@ -202,10 +223,9 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
   }
 
   Future<FilePickerResult?> _pickFiles({required bool allowMultiple}) {
-    return _filePicker.pickFiles(
+    return _filePicker(
       allowMultiple: allowMultiple,
       withData: _shouldPreloadFileBytes,
-      type: FileType.custom,
       allowedExtensions: ReceiptInputSelectionLoader.allowedFileExtensions,
     );
   }

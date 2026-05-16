@@ -62,24 +62,48 @@ abstract interface class PreparedMealImagePicker {
   bool get supportsCamera;
 }
 
+/// Picks prepared meal image files from the host platform.
+typedef PreparedMealImageFilePicker =
+    Future<FilePickerResult?> Function({
+      required bool withData,
+      required FileType type,
+    });
+
+/// Prepared meal image file picker.
+@riverpod
+PreparedMealImageFilePicker preparedMealImageFilePicker(Ref ref) {
+  return _pickPreparedMealImageFile;
+}
+
+Future<FilePickerResult?> _pickPreparedMealImageFile({
+  required bool withData,
+  required FileType type,
+}) {
+  return FilePicker.pickFiles(
+    withData: withData,
+    type: type,
+  );
+}
+
 /// Prepared meal image picker.
 @Riverpod(dependencies: [])
 PreparedMealImagePicker preparedMealImagePicker(Ref ref) {
+  final filePicker = ref.watch(preparedMealImageFilePickerProvider);
   return _DevicePreparedMealImagePicker(
     imagePicker: ImagePicker(),
-    filePicker: FilePicker.platform,
+    filePicker: filePicker,
   );
 }
 
 class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
   _DevicePreparedMealImagePicker({
     required ImagePicker imagePicker,
-    required FilePicker filePicker,
+    required PreparedMealImageFilePicker filePicker,
   }) : _imagePicker = imagePicker,
        _filePicker = filePicker;
 
   final ImagePicker _imagePicker;
-  final FilePicker _filePicker;
+  final PreparedMealImageFilePicker _filePicker;
 
   @override
   bool get supportsCamera {
@@ -125,7 +149,7 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
   @override
   Future<Uint8List?> pickFromFile() async {
     try {
-      final result = await _filePicker.pickFiles(
+      final result = await _filePicker(
         withData: true,
         type: FileType.image,
       );

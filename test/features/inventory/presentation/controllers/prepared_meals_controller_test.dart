@@ -9,6 +9,8 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -973,6 +975,13 @@ void main() {
             preparedMealRepository,
           ),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          preparedMealCalorieLogBridgeProvider.overrideWithValue(
+            PreparedMealCalorieLogBridge(
+              saveEntry: calorieLogRepository.saveEntry,
+              now: () => DateTime(2026, 3, 20, 12),
+              nextEntryId: () => 'entry-1',
+            ),
+          ),
         ],
       );
       addTearDown(container.dispose);

@@ -350,6 +350,9 @@ Widget _buildHarness({
 
   final container = ProviderContainer(
     overrides: [
+      authStateChangesProvider.overrideWith(
+        (ref) => const Stream<User?>.empty(),
+      ),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       burnWeekRunStateRepositoryProvider.overrideWithValue(
         burnWeekRunStateRepository ??
@@ -362,9 +365,6 @@ Widget _buildHarness({
       ),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
-      authStateChangesProvider.overrideWith(
-        (ref) => Stream<User?>.value(null),
-      ),
       householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
       inventoryItemRepositoryProvider.overrideWithValue(
         inventoryRepository ??

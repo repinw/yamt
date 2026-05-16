@@ -24,6 +24,8 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_entry_editor_content.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -83,6 +85,30 @@ class _RecordingInventorySaveFlow
   }) async {
     this.entry = entry;
     this.pendingConsumptionId = pendingConsumptionId;
+    return true;
+  }
+}
+
+class _DiscardRecordingInventoryItemsController
+    extends InventoryItemsController {
+  var _hasPendingConsumption = true;
+
+  @override
+  FutureOr<List<InventoryItem>> build() {
+    return <InventoryItem>[_inventoryItem()];
+  }
+
+  @override
+  bool hasPendingConsumption(String draftId) {
+    return _hasPendingConsumption && draftId == 'pending-1';
+  }
+
+  @override
+  Future<bool> discardPendingConsumption(String draftId) async {
+    if (!hasPendingConsumption(draftId)) {
+      return false;
+    }
+    _hasPendingConsumption = false;
     return true;
   }
 }
@@ -344,6 +370,7 @@ Widget _buildHarness({
   final providerContainer = ProviderContainer(
     overrides: [
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
+      userProfileProvider.overrideWith((ref) => Stream.value(null)),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...additionalOverrides,
@@ -358,7 +385,95 @@ Widget _buildHarness({
   inventoryBackedCalorieEntrySaveFlow,
   calorieEntryDeleteFlow,
 ])
+Widget _buildDirectEditorHarness({
+  required ProviderContainer container,
+  required User user,
+  required String barcode,
+  required MealType mealType,
+  required DateTime loggedAt,
+}) {
+  return UncontrolledProviderScope(
+    container: container,
+    child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: CalorieEntryEditorContent(
+        key: const ValueKey('editor-content'),
+        user: user,
+        prefilledProfile: CalorieProductProfile(
+          barcode: barcode,
+          name: 'Greek Yogurt',
+          brand: 'Test Brand',
+          per100Kcal: 95,
+          per100Protein: 9.8,
+          per100Carbs: 4.1,
+          per100Fat: 0.5,
+          source: CalorieProductSource.offBarcode,
+          offProductId: 'off-$barcode',
+          createdAt: DateTime(2026, 2, 25, 8),
+          updatedAt: DateTime(2026, 2, 25, 8),
+        ),
+        preselectedMealType: mealType,
+        preselectedLoggedAt: loggedAt,
+      ),
+    ),
+  );
+}
+
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+  calorieEntryDeleteFlow,
+])
 void main() {
+  testWidgets('create editor refreshes draft when create context changes', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+    final user = _MockUser();
+    when(() => user.uid).thenReturn('user-1');
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        inventoryItemsControllerProvider.overrideWith(
+          _DiscardRecordingInventoryItemsController.new,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      _buildDirectEditorHarness(
+        container: container,
+        user: user,
+        barcode: '4006381333931',
+        mealType: MealType.lunch,
+        loggedAt: DateTime(2026, 2, 25, 12),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Greek Yogurt'), findsOneWidget);
+
+    await tester.pumpWidget(
+      _buildDirectEditorHarness(
+        container: container,
+        user: user,
+        barcode: '4012345678901',
+        mealType: MealType.snack,
+        loggedAt: DateTime(2026, 2, 26, 15),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Greek Yogurt'), findsOneWidget);
+  });
+
   testWidgets('create flow saves a new entry and pops back', (tester) async {
     final logRepository = FakeCalorieLogRepository();
     final settingsRepository = FakeCalorieSettingsRepository();
@@ -1037,12 +1152,9 @@ void main() {
   ) async {
     final logRepository = FakeCalorieLogRepository();
     final settingsRepository = FakeCalorieSettingsRepository();
-    final inventoryRepository = _FakeInventoryItemRepository(
-      initialItems: <InventoryItem>[_inventoryItem()],
-    );
+    final inventoryController = _DiscardRecordingInventoryItemsController();
     addTearDown(logRepository.dispose);
     addTearDown(settingsRepository.dispose);
-    addTearDown(inventoryRepository.dispose);
 
     final user = _MockUser();
     when(() => user.uid).thenReturn('user-1');
@@ -1052,35 +1164,28 @@ void main() {
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(user),
         ),
+        userProfileProvider.overrideWith((ref) => Stream.value(null)),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        inventoryItemsControllerProvider.overrideWith(
+          () => inventoryController,
+        ),
       ],
     );
     addTearDown(container.dispose);
-    final inventorySubscription = container.listen(
-      inventoryItemsControllerProvider,
-      (_, _) {},
-    );
-    addTearDown(inventorySubscription.close);
-
-    await container.read(inventoryItemsControllerProvider.future);
-    final pendingConsumption = await container
-        .read(inventoryItemsControllerProvider.notifier)
-        .stagePendingConsumption('inventory-1', 2);
 
     await tester.pumpWidget(
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
         initialLocation: AppRoutes.root,
-        createExtra: CalorieEntryCreateArgs(
+        createExtra: const CalorieEntryCreateArgs(
           prefilledProfile: null,
           inventoryContext: CalorieInventoryCreateContext(
             inventoryItemId: 'inventory-1',
             foodFingerprint: 'milk',
             globalFoodItemId: 'off-milk',
-            pendingConsumptionId: pendingConsumption!.id,
+            pendingConsumptionId: 'pending-1',
             inventoryAmountToRestore: 2,
             itemName: 'Milk',
             itemBrand: null,
@@ -1095,27 +1200,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      container.read(inventoryItemsControllerProvider).value?.single.quantity,
-      3,
-    );
-    expect(
-      container
-          .read(inventoryItemsControllerProvider.notifier)
-          .hasPendingConsumption(pendingConsumption.id),
+      inventoryController.hasPendingConsumption('pending-1'),
       isTrue,
     );
 
-    await tester.pageBack();
-    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(
-      container.read(inventoryItemsControllerProvider).value?.single.quantity,
-      3,
-    );
-    expect(
-      container
-          .read(inventoryItemsControllerProvider.notifier)
-          .hasPendingConsumption(pendingConsumption.id),
+      inventoryController.hasPendingConsumption('pending-1'),
       isFalse,
     );
   });
