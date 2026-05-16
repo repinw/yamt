@@ -47,7 +47,7 @@ final class CalorieWeeklyCheckInControllerProvider
 }
 
 String _$calorieWeeklyCheckInControllerHash() =>
-    r'bfaff0cfc32118b7537d1a9634dac1240f8fefbd';
+    r'79b81b6f689622af2056c9b36fd94c0da577d6e7';
 
 /// Defines calorie weekly check in controller.
 

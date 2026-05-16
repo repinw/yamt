@@ -23,7 +23,7 @@ settings.
 - `settings_page.dart` is the main settings page.
 - `account_page.dart` is the account management page.
 - `widgets/settings_health_connect_tile.dart` is the settings-owned tile that
-  delegates health actions through calorie-aware application actions.
+  delegates Health connection actions to the Health feature.
 - Reusable settings tile components under `widgets/`.
 
 Other features should compose the page or complete settings widgets instead of
@@ -47,9 +47,9 @@ Current providers:
 - `core` for routes, theme controllers, app version, shared layout, and common
   widgets.
 - `features/auth` for account data, auth actions, and auth error mapping.
-- `features/calories` for calorie goal settings surfaces and calorie-aware
-  Health connection actions.
-- `features/health` for Health connection status and domain result models.
+- `features/calories` for calorie goal settings surfaces.
+- `features/health` for Health connection status, actions, and domain result
+  models.
 - `features/home` for optional shell chrome when Settings is embedded.
 - `features/shared` for shared credential form widgets.
 

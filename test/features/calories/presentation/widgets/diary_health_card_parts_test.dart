@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/application/calorie_health_connection_actions.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'diary_health_card_parts.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -63,16 +62,15 @@ void main() {
     expect(find.byType(FilledButton), findsNothing);
   });
 
-  testWidgets('permission prompt uses calorie connection actions', (
+  testWidgets('permission prompt uses Health controller action', (
     tester,
   ) async {
-    final actions = _RecordingHealthActions();
+    final healthService = FakeHealthConnectionService(_iosPermissionStatus);
 
     await _pumpConnectionPrompt(
       tester,
-      status: _iosPermissionStatus,
+      healthService: healthService,
       accessState: HealthDataAccessState.permissionRequired,
-      actions: actions.value,
     );
 
     expect(find.text('ios permission body'), findsOneWidget);
@@ -80,36 +78,39 @@ void main() {
     await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
-    expect(actions.requestAuthorizationCallCount, 1);
+    expect(healthService.requestAuthorizationCallCount, 1);
   });
 
-  testWidgets('history and install prompts use calorie connection actions', (
+  testWidgets('history and install prompts use Health controller actions', (
     tester,
   ) async {
-    final actions = _RecordingHealthActions();
+    final historyHealthService = FakeHealthConnectionService(
+      _androidHistoryStatus,
+    );
 
     await _pumpConnectionPrompt(
       tester,
-      status: _androidHistoryStatus,
+      healthService: historyHealthService,
       accessState: HealthDataAccessState.historyRequired,
-      actions: actions.value,
     );
     await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
-    await _pumpConnectionPrompt(
-      tester,
-      status: _androidHistoryStatus.copyWith(
+    final installHealthService = FakeHealthConnectionService(
+      _androidHistoryStatus.copyWith(
         healthConnectAvailability: HealthConnectAvailability.notInstalled,
       ),
+    );
+    await _pumpConnectionPrompt(
+      tester,
+      healthService: installHealthService,
       accessState: HealthDataAccessState.installRequired,
-      actions: actions.value,
     );
     await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
-    expect(actions.requestHistoryAuthorizationCallCount, 1);
-    expect(actions.installHealthConnectCallCount, 1);
+    expect(historyHealthService.requestHistoryAuthorizationCallCount, 1);
+    expect(installHealthService.installHealthConnectCallCount, 1);
   });
 }
 
@@ -130,17 +131,16 @@ Future<void> _pumpPlainWidget(
 
 Future<void> _pumpConnectionPrompt(
   WidgetTester tester, {
-  required HealthConnectionStatus status,
+  required FakeHealthConnectionService healthService,
   required HealthDataAccessState accessState,
-  required CalorieHealthConnectionActions actions,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
+      key: UniqueKey(),
       overrides: [
         healthConnectionServiceProvider.overrideWith(
-          (ref) => FakeHealthConnectionService(status),
+          (ref) => healthService,
         ),
-        calorieHealthConnectionActionsProvider.overrideWithValue(actions),
       ],
       child: MaterialApp(
         locale: const Locale('en'),
@@ -163,32 +163,3 @@ Future<void> _pumpConnectionPrompt(
 }
 
 Future<void> _noopAction() async {}
-
-class _RecordingHealthActions {
-  int requestAuthorizationCallCount = 0;
-  int requestHistoryAuthorizationCallCount = 0;
-  int installHealthConnectCallCount = 0;
-
-  late final value = CalorieHealthConnectionActions(
-    connect: _returnReadyStatus,
-    requestAuthorization: () async {
-      requestAuthorizationCallCount += 1;
-      return _iosPermissionStatus;
-    },
-    requestHistoryAuthorization: () async {
-      requestHistoryAuthorizationCallCount += 1;
-      return _androidHistoryStatus;
-    },
-    installHealthConnect: () async {
-      installHealthConnectCallCount += 1;
-      return _androidHistoryStatus;
-    },
-    openHealthPermissionSettings: _returnReadyStatus,
-    openAppPermissionSettings: _returnReadyStatus,
-    disconnect: () async => HealthDisconnectResult.disconnected,
-  );
-
-  Future<HealthConnectionStatus> _returnReadyStatus() async {
-    return _androidHistoryStatus;
-  }
-}

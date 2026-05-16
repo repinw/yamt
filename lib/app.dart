@@ -7,6 +7,8 @@ import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/widgets/app_background.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_health_connection_sync.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/presentation/shared_receipt_listener.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
@@ -27,6 +29,7 @@ class YAMT extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    ref.watch(calorieHealthConnectionSyncProvider);
     final themeMode = ref.watch(themeModeControllerProvider);
     final seedColor = ref.watch(seedColorControllerProvider);
 

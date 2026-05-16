@@ -78,7 +78,7 @@ final class DiaryHealthConnectActionProvider
 }
 
 String _$diaryHealthConnectActionHash() =>
-    r'f6249e34d5030767c0e92df193f6adc8300ba838';
+    r'a1177bae99bbad317bede74977efde7f2b4bd8ca';
 
 /// Resolves the Health Connect card state and action.
 

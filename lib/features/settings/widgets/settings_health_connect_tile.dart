@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_health_connection_actions.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
@@ -70,12 +68,12 @@ class SettingsHealthConnectTile extends ConsumerWidget {
                 ? shouldOpenAppPermissionSettings
                       ? () => unawaited(
                           ref
-                              .read(calorieHealthConnectionActionsProvider)
+                              .read(healthConnectionControllerProvider.notifier)
                               .openAppPermissionSettings(),
                         )
                       : () => unawaited(
                           ref
-                              .read(calorieHealthConnectionActionsProvider)
+                              .read(healthConnectionControllerProvider.notifier)
                               .openHealthPermissionSettings(),
                         )
                 : () => _connectHealth(context, ref)
@@ -85,9 +83,8 @@ class SettingsHealthConnectTile extends ConsumerWidget {
 
   Future<void> _connectHealth(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
-    final status = await ref
-        .read(calorieHealthConnectionActionsProvider)
-        .connect();
+    final controller = ref.read(healthConnectionControllerProvider.notifier);
+    final status = await controller.connect();
     if (!context.mounted) {
       return;
     }
@@ -97,9 +94,8 @@ class SettingsHealthConnectTile extends ConsumerWidget {
   }
 
   Future<void> _installHealthConnect(WidgetRef ref) async {
-    await ref
-        .read(calorieHealthConnectionActionsProvider)
-        .installHealthConnect();
+    final controller = ref.read(healthConnectionControllerProvider.notifier);
+    await controller.installHealthConnect();
   }
 
   Future<void> _confirmDisconnect(
@@ -131,9 +127,10 @@ class SettingsHealthConnectTile extends ConsumerWidget {
     }
 
     final container = ProviderScope.containerOf(context, listen: false);
-    final result = await container
-        .read(calorieHealthConnectionActionsProvider)
-        .disconnect();
+    final controller = container.read(
+      healthConnectionControllerProvider.notifier,
+    );
+    final result = await controller.disconnect();
     if (!context.mounted) {
       return;
     }

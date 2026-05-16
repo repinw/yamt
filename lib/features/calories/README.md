@@ -9,7 +9,7 @@ weight changes.
 - Calorie repositories and commit stores under `data/`.
 - Calorie entries, goals, calculator inputs, weekly check-in, Burn Week, and
   trend domain models under `domain/`.
-- Calorie use-case providers and cross-feature action wrappers under
+- Calorie use-case providers and reactive cross-feature sync under
   `application/`.
 - Calorie pages, dialogs, sheets, and section widgets under `presentation/`.
 - Legacy calorie controllers and derived providers under `provider/`.
@@ -23,8 +23,8 @@ weight changes.
 
 ## Public Edge
 
-- `application/calorie_health_connection_actions.dart` wraps Health connection
-  actions with calorie-owned side effects.
+- `application/calorie_health_connection_sync.dart` reacts to Health
+  connection readiness and records the calorie activity-tracking start day.
 - `application/calorie_weight_state_refresh.dart` refreshes calorie state after
   health weight changes.
 - Legacy controllers and derived providers under `provider/` are current public
@@ -34,10 +34,10 @@ weight changes.
 - Complete presentation surfaces such as calorie entry editors, goal dialogs,
   calculator sheets, health trend widgets, and diary health card parts.
 
-Other features should depend on these public actions, domain types, or complete
-widgets instead of reassembling Calories internals. New cross-feature behavior
-should prefer `application/` providers or complete widgets over expanding the
-legacy `provider/` surface.
+Other features should depend on domain types or complete widgets instead of
+reassembling Calories internals. New calorie-owned side effects should live in
+`application/` providers that react to owner feature state, instead of expanding
+the legacy `provider/` surface or exposing action wrappers to sibling features.
 
 ## Providers
 
@@ -51,7 +51,7 @@ legacy `provider/` surface.
 
 Main application providers:
 
-- `application/calorie_health_connection_actions.dart`
+- `application/calorie_health_connection_sync.dart`
 - `application/calorie_weight_state_refresh.dart`
 - `application/calorie_entry_delete_flow.dart`
 - `application/inventory_backed_calorie_entry_save_flow.dart`
@@ -61,7 +61,7 @@ Main application providers:
 - `core` for routing, theme tokens, shared widgets, and local day helpers.
 - `features/auth` for user-scoped calorie repositories and cache storage.
 - `features/health` for public health controllers, services, and domain data
-  used by calorie goals, trends, and connection actions.
+  used by calorie goals, trends, and connection sync.
 - `features/inventory` for inventory-backed calorie entry save/delete flows.
 - `features/household` for household-scoped inventory commit storage.
 - `features/calorie_goal` for shared calorie goal picker/result widgets.
