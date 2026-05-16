@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -16,12 +17,37 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_loading.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_progress.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_shell.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_daily_goal_progress_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
 
 void main() {
+  testWidgets('loading skeleton reserves daily and weekly balance cards', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: Padding(
+            padding: EdgeInsets.all(16),
+            child: DiaryBalanceLoading(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(DiaryBalanceShell), findsNWidgets(2));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('renders weekly pacing without removed safe-zone or flame', (
     tester,
   ) async {
@@ -91,6 +117,58 @@ void main() {
     );
   });
 
+  testWidgets('weekly progress animates fill and target marker', (
+    tester,
+  ) async {
+    await _pumpWeeklyProgressBar(
+      tester,
+      actualConsumedKcal: 0,
+      targetKcal: 0,
+    );
+
+    await _pumpWeeklyProgressBar(
+      tester,
+      actualConsumedKcal: 500,
+      targetKcal: 700,
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final midTrackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.progressTrack),
+    );
+    final midFillRect = tester.getRect(_weeklyProgressFillFinder());
+    final midTargetRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.targetMarker),
+    );
+
+    expect(midFillRect.width, greaterThan(0));
+    expect(midFillRect.width, lessThan(midTrackRect.width * 0.5));
+    expect(midTargetRect.center.dxRatioWithin(midTrackRect), greaterThan(0));
+    expect(
+      midTargetRect.center.dxRatioWithin(midTrackRect),
+      lessThan(0.7),
+    );
+
+    await tester.pumpAndSettle();
+
+    final settledTrackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.progressTrack),
+    );
+    final settledFillRect = tester.getRect(_weeklyProgressFillFinder());
+    final settledTargetRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.targetMarker),
+    );
+
+    expect(
+      settledFillRect.width / settledTrackRect.width,
+      closeTo(0.5, 0.02),
+    );
+    expect(
+      settledTargetRect.center.dxRatioWithin(settledTrackRect),
+      closeTo(0.7, 0.02),
+    );
+  });
+
   testWidgets('daily progress shows activity as an end extension', (
     tester,
   ) async {
@@ -124,6 +202,61 @@ void main() {
     expect(targetLabelRect.right, closeTo(trackRect.right, 0.5));
     expect(find.text('+200 kcal'), findsOneWidget);
     expect(find.text('2,200 kcal'), findsOneWidget);
+  });
+
+  testWidgets('daily progress animates eaten and activity segments', (
+    tester,
+  ) async {
+    await _pumpDailyProgressBar(
+      tester,
+      eatenKcal: 0,
+      targetKcal: 1200,
+      activitySegmentKcal: 0,
+    );
+
+    await _pumpDailyProgressBar(
+      tester,
+      eatenKcal: 600,
+      targetKcal: 1200,
+      activitySegmentKcal: 300,
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final midTrackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
+    );
+    final midEatenRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
+    );
+    final midActivityRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+    );
+
+    expect(midEatenRect.width, greaterThan(0));
+    expect(midEatenRect.width, lessThan(midTrackRect.width * 0.5));
+    expect(midActivityRect.width, greaterThan(0));
+    expect(midActivityRect.width, lessThan(midTrackRect.width * 0.25));
+
+    await tester.pumpAndSettle();
+
+    final settledTrackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
+    );
+    final settledEatenRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
+    );
+    final settledActivityRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+    );
+
+    expect(
+      settledEatenRect.width / settledTrackRect.width,
+      closeTo(0.5, 0.02),
+    );
+    expect(
+      settledActivityRect.width / settledTrackRect.width,
+      closeTo(0.25, 0.02),
+    );
   });
 
   testWidgets(
@@ -739,6 +872,68 @@ Future<void> _pumpBalanceCard(
   } else {
     await tester.pump();
   }
+}
+
+Future<void> _pumpWeeklyProgressBar(
+  WidgetTester tester, {
+  required double actualConsumedKcal,
+  required double targetKcal,
+}) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 300,
+            child: DiaryBalanceProgressBar(
+              actualConsumedKcal: actualConsumedKcal,
+              targetKcal: targetKcal,
+              weeklyGoalKcal: 1000,
+              totalDays: 7,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> _pumpDailyProgressBar(
+  WidgetTester tester, {
+  required double eatenKcal,
+  required double targetKcal,
+  required double activitySegmentKcal,
+}) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 300,
+            child: DiaryDailyGoalProgressBar(
+              eatenKcal: eatenKcal,
+              targetKcal: targetKcal,
+              activitySegmentKcal: activitySegmentKcal,
+              numberFormat: NumberFormat.decimalPattern('en'),
+              unit: 'kcal',
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Finder _weeklyProgressFillFinder() {
+  return find
+      .descendant(
+        of: find.byKey(DiaryBalanceCardKeys.progressTrack),
+        matching: find.byType(DecoratedBox),
+      )
+      .first;
 }
 
 CalorieWeekOverview _weekOverview({

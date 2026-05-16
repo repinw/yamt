@@ -174,15 +174,16 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
   ref.watch(calorieOverviewRevisionProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final days = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
-
-  final entriesByDay = await Future.wait(
-    days.map((day) => _readEntriesForDaySafely(repository, day)),
+  final entriesByDay = await _readVisibleEntriesByDaySafely(
+    repository: repository,
+    days: days,
   );
 
   final snapshots = <CalorieWeekConsumptionDaySnapshot>[];
   var totalConsumedKcal = 0.0;
   for (var index = 0; index < days.length; index += 1) {
-    final entries = entriesByDay[index];
+    final day = days[index];
+    final entries = entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
     final totalKcal = entries.fold<double>(
       0,
       (sum, entry) => sum + entry.totalKcal,
@@ -190,7 +191,7 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
     totalConsumedKcal += totalKcal;
     snapshots.add(
       CalorieWeekConsumptionDaySnapshot(
-        date: days[index],
+        date: day,
         totalKcal: totalKcal,
         entryCount: entries.length,
       ),
@@ -201,6 +202,39 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
     days: List<CalorieWeekConsumptionDaySnapshot>.unmodifiable(snapshots),
     totalConsumedKcal: totalConsumedKcal,
   );
+}
+
+Future<Map<String, List<CalorieEntry>>> _readVisibleEntriesByDaySafely({
+  required CalorieLogRepositoryContract repository,
+  required List<DateTime> days,
+}) async {
+  if (days.isEmpty) {
+    return const <String, List<CalorieEntry>>{};
+  }
+
+  try {
+    final entries = await repository.readEntriesInRange(
+      startInclusive: days.first,
+      endExclusive: nextDiaryDay(days.last),
+    );
+    return entries.groupByDiaryDayKey();
+  } on Object catch (error, stackTrace) {
+    log(
+      'Failed to load calorie visible range for week overview.',
+      name: _weekOverviewLogName,
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
+  final entriesByDay = <String, List<CalorieEntry>>{};
+  final dayEntries = await Future.wait(
+    days.map((day) => _readEntriesForDaySafely(repository, day)),
+  );
+  for (var index = 0; index < days.length; index += 1) {
+    entriesByDay[diaryDayKey(days[index])] = dayEntries[index];
+  }
+  return entriesByDay;
 }
 
 /// Calorie week overview.

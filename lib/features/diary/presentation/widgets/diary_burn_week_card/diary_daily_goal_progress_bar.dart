@@ -7,6 +7,9 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 
+const _progressAnimationDuration = Duration(milliseconds: 1000);
+const _progressAnimationCurve = Curves.easeOut;
+
 /// Daily kcal progress bar with an activity extension segment.
 class DiaryDailyGoalProgressBar extends StatelessWidget {
   /// Creates a daily goal progress bar.
@@ -100,8 +103,6 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
         LayoutBuilder(
           builder: (context, constraints) {
             final width = constraints.maxWidth;
-            final eatenWidth = width * eatenRatio;
-            final activityWidth = width * activitySegmentRatio;
             return ClipRRect(
               key: DiaryBalanceCardKeys.dailyProgressTrack,
               borderRadius: BorderRadius.circular(999),
@@ -110,11 +111,19 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
                 child: Stack(
                   children: [
                     Positioned.fill(child: ColoredBox(color: trackColor)),
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: eatenWidth,
+                    TweenAnimationBuilder<double>(
+                      duration: _progressAnimationDuration,
+                      curve: _progressAnimationCurve,
+                      tween: Tween<double>(begin: 0, end: eatenRatio),
+                      builder: (context, value, child) {
+                        return Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: width * value,
+                          child: child!,
+                        );
+                      },
                       child: DecoratedBox(
                         key: DiaryBalanceCardKeys.dailyProgressEatenFill,
                         decoration: BoxDecoration(
@@ -123,29 +132,51 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (activityWidth > 0) ...[
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: activityWidth,
-                        child: ColoredBox(
-                          key: DiaryBalanceCardKeys.dailyProgressActivityFill,
-                          color: activityColor,
+                    TweenAnimationBuilder<double>(
+                      duration: _progressAnimationDuration,
+                      curve: _progressAnimationCurve,
+                      tween: Tween<double>(begin: 0, end: activitySegmentRatio),
+                      builder: (context, value, child) {
+                        if (value <= 0) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: width * value,
+                          child: child!,
+                        );
+                      },
+                      child: ColoredBox(
+                        key: DiaryBalanceCardKeys.dailyProgressActivityFill,
+                        color: activityColor,
+                      ),
+                    ),
+                    TweenAnimationBuilder<double>(
+                      duration: _progressAnimationDuration,
+                      curve: _progressAnimationCurve,
+                      tween: Tween<double>(begin: 0, end: activitySegmentRatio),
+                      builder: (context, value, child) {
+                        if (value <= 0) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Positioned(
+                          right: width * value,
+                          top: 0,
+                          bottom: 0,
+                          width: 1,
+                          child: child!,
+                        );
+                      },
+                      child: ColoredBox(
+                        color: colors.surfaceContainerLowest.withValues(
+                          alpha: 0.92,
                         ),
                       ),
-                      Positioned(
-                        right: activityWidth,
-                        top: 0,
-                        bottom: 0,
-                        width: 1,
-                        child: ColoredBox(
-                          color: colors.surfaceContainerLowest.withValues(
-                            alpha: 0.92,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ],
                 ),
               ),

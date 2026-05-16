@@ -22,8 +22,7 @@ DiaryIntroTrigger? diaryIntroTrigger(Ref ref) {
   }
 
   final settings = ref.watch(diaryCalorieGoalSettingsProvider).value;
-  final healthConnectionState = ref.watch(healthConnectionControllerProvider);
-  if (settings == null || healthConnectionState.isLoading) {
+  if (settings == null) {
     return null;
   }
   if (settings.hasLearnedTdee || !DiaryIntroData.canBuildFrom(settings)) {
@@ -32,6 +31,11 @@ DiaryIntroTrigger? diaryIntroTrigger(Ref ref) {
 
   final preferences = ref.watch(appPreferencesProvider);
   if (DiaryIntroPreferences.isSeen(preferences)) {
+    return null;
+  }
+
+  final healthConnectionState = ref.watch(healthConnectionControllerProvider);
+  if (healthConnectionState.isLoading) {
     return null;
   }
 

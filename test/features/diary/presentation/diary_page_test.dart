@@ -117,7 +117,7 @@ void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
   testWidgets(
-    'scroll shortcut jumps to lazily rendered meals section via fallback',
+    'scroll shortcut jumps to lazily rendered meals section',
     (tester) async {
       _setSmallSurface(tester);
       await _pumpDiaryPage(tester, selectedDay: selectedDay);
@@ -128,6 +128,30 @@ void main() {
       await tester.tap(find.text('To diary').hitTestable());
       await _pumpFrames(tester, count: 16);
 
+      expect(find.text('Diary'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'scroll shortcut settles on meals without a second correction jump',
+    (tester) async {
+      _setSmallSurface(tester);
+      await _pumpDiaryPage(tester, selectedDay: selectedDay);
+
+      final scrollView = tester.widget<CustomScrollView>(
+        find.byType(CustomScrollView).first,
+      );
+      final position = scrollView.controller!.position;
+
+      await tester.tap(find.text('To diary').hitTestable());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 520));
+      final offsetAfterPrimaryAnimation = position.pixels;
+
+      await tester.pump(const Duration(milliseconds: 300));
+      final settledOffset = position.pixels;
+
+      expect(offsetAfterPrimaryAnimation, closeTo(settledOffset, 16));
       expect(find.text('Diary'), findsOneWidget);
     },
   );
@@ -210,6 +234,64 @@ void main() {
     expect(preparedMealsBuildCount, 1);
     expect(providerObserver.calorieEntryDeleteFlowAddCount, 1);
     expect(providerObserver.inventoryEatFlowAddCount, 1);
+  });
+
+  testWidgets('delays quick-eat warmup until after diary first paint', (
+    tester,
+  ) async {
+    var inventoryBuildCount = 0;
+    var preparedMealsBuildCount = 0;
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      initialFrameCount: 0,
+      onInventoryBuild: () {
+        inventoryBuildCount += 1;
+      },
+      onPreparedMealsBuild: () {
+        preparedMealsBuildCount += 1;
+      },
+    );
+
+    expect(inventoryBuildCount, 0);
+    expect(preparedMealsBuildCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 599));
+
+    expect(inventoryBuildCount, 0);
+    expect(preparedMealsBuildCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump();
+
+    expect(inventoryBuildCount, 1);
+    expect(preparedMealsBuildCount, 1);
+  });
+
+  testWidgets('cancels delayed quick-eat warmup when diary closes', (
+    tester,
+  ) async {
+    var inventoryBuildCount = 0;
+    var preparedMealsBuildCount = 0;
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      initialFrameCount: 0,
+      onInventoryBuild: () {
+        inventoryBuildCount += 1;
+      },
+      onPreparedMealsBuild: () {
+        preparedMealsBuildCount += 1;
+      },
+    );
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 700));
+
+    expect(inventoryBuildCount, 0);
+    expect(preparedMealsBuildCount, 0);
   });
 
   testWidgets('auto-opens already loaded weekly check-in dialog', (
@@ -460,10 +542,16 @@ void main() {
       },
     );
 
-    await tester.drag(
-      find.byType(CustomScrollView),
-      const Offset(0, -900),
-    );
+    for (var index = 0; index < 12; index += 1) {
+      if (find.text('Steps').evaluate().isNotEmpty) {
+        break;
+      }
+      await tester.drag(
+        find.byType(CustomScrollView),
+        const Offset(0, -120),
+      );
+      await tester.pump();
+    }
     await _pumpFrames(tester);
 
     expect(find.text('Steps'), findsOneWidget);
@@ -932,6 +1020,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   bool overrideWeeklyCheckInProvider = true,
   bool includeHomeShellChrome = false,
   bool useGoRouter = false,
+  int initialFrameCount = 8,
 }) async {
   final resolvedLogRepository = logRepository ?? FakeCalorieLogRepository();
   final resolvedSettingsRepository =
@@ -1045,7 +1134,9 @@ Future<ProviderContainer> _pumpDiaryPage(
       child: app,
     ),
   );
-  await _pumpFrames(tester);
+  if (initialFrameCount > 0) {
+    await _pumpFrames(tester, count: initialFrameCount);
+  }
   if (initialWeeklyCheckIn != null) {
     _setWeeklyCheckInData(container, initialWeeklyCheckIn);
     await _pumpFrames(tester);
