@@ -20,29 +20,45 @@ class DiaryBalanceLoading extends StatelessWidget {
         ? const Color(0xFF374151)
         : const Color(0xFFF8FAFC);
 
-    return DiaryBalanceShell(
-      child: _DiaryBalanceSkeleton(
-        baseColor: baseColor,
-        highlightColor: highlightColor,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DiaryBalanceShell(
+          child: _ShimmerSkeleton(
+            baseColor: baseColor,
+            highlightColor: highlightColor,
+            child: const _DiaryDailyBalanceSkeleton(),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        DiaryBalanceShell(
+          child: _ShimmerSkeleton(
+            baseColor: baseColor,
+            highlightColor: highlightColor,
+            child: const _DiaryWeeklyBalanceSkeleton(),
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _DiaryBalanceSkeleton extends StatefulWidget {
-  const _DiaryBalanceSkeleton({
+class _ShimmerSkeleton extends StatefulWidget {
+  const _ShimmerSkeleton({
     required this.baseColor,
     required this.highlightColor,
+    required this.child,
   });
 
   final Color baseColor;
   final Color highlightColor;
+  final Widget child;
 
   @override
-  State<_DiaryBalanceSkeleton> createState() => _DiaryBalanceSkeletonState();
+  State<_ShimmerSkeleton> createState() => _ShimmerSkeletonState();
 }
 
-class _DiaryBalanceSkeletonState extends State<_DiaryBalanceSkeleton>
+class _ShimmerSkeletonState extends State<_ShimmerSkeleton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
@@ -91,42 +107,177 @@ class _DiaryBalanceSkeletonState extends State<_DiaryBalanceSkeleton>
           child: child,
         );
       },
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            height: diaryBalanceProgressAreaHeight,
-            child: Align(
-              child: _SkeletonBlock(height: diaryBalanceProgressHeight),
-            ),
-          ),
-          SizedBox(height: AppSpacing.md),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _SkeletonBlock(width: 52, height: 14),
-              _SkeletonBlock(width: 86, height: 14),
-            ],
-          ),
-          SizedBox(height: AppSpacing.xxl),
-          Row(
-            children: [
-              Expanded(
-                child: _SkeletonBlock(height: diaryBalanceStatTileHeight),
-              ),
-              SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _SkeletonBlock(height: diaryBalanceStatTileHeight),
-              ),
-            ],
-          ),
-        ],
-      ),
+      child: widget.child,
     );
   }
 
   double boundsWidthMultiplier(double animationValue) {
     return -1 + (animationValue * 2);
+  }
+}
+
+class _DiaryDailyBalanceSkeleton extends StatelessWidget {
+  const _DiaryDailyBalanceSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _DailyMetricSkeleton(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                labelWidth: 54,
+                valueWidth: 96,
+                subtitleWidth: 76,
+              ),
+            ),
+            SizedBox(width: AppSpacing.xl),
+            Expanded(
+              child: _DailyMetricSkeleton(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                labelWidth: 84,
+                valueWidth: 118,
+                subtitleWidth: 82,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppSpacing.xxl),
+        _DailyProgressSkeleton(),
+        SizedBox(height: AppSpacing.xxl),
+        Divider(height: 1, thickness: 1),
+        SizedBox(height: AppSpacing.xxl),
+        _MacroBarsSkeleton(),
+      ],
+    );
+  }
+}
+
+class _DailyMetricSkeleton extends StatelessWidget {
+  const _DailyMetricSkeleton({
+    required this.crossAxisAlignment,
+    required this.labelWidth,
+    required this.valueWidth,
+    required this.subtitleWidth,
+  });
+
+  final CrossAxisAlignment crossAxisAlignment;
+  final double labelWidth;
+  final double valueWidth;
+  final double subtitleWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: crossAxisAlignment,
+      children: [
+        _SkeletonBlock(width: labelWidth, height: 12),
+        const SizedBox(height: AppSpacing.sm),
+        _SkeletonBlock(width: valueWidth, height: 34),
+        const SizedBox(height: AppSpacing.xs),
+        _SkeletonBlock(width: subtitleWidth, height: 12),
+      ],
+    );
+  }
+}
+
+class _DailyProgressSkeleton extends StatelessWidget {
+  const _DailyProgressSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _SkeletonBlock(width: 20, height: 12),
+            _SkeletonBlock(width: 78, height: 12),
+          ],
+        ),
+        SizedBox(height: AppSpacing.xs),
+        _SkeletonBlock(height: 12),
+      ],
+    );
+  }
+}
+
+class _MacroBarsSkeleton extends StatelessWidget {
+  const _MacroBarsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        Expanded(child: _MacroBarSkeleton()),
+        SizedBox(width: AppSpacing.xl),
+        Expanded(child: _MacroBarSkeleton()),
+        SizedBox(width: AppSpacing.xl),
+        Expanded(child: _MacroBarSkeleton()),
+      ],
+    );
+  }
+}
+
+class _MacroBarSkeleton extends StatelessWidget {
+  const _MacroBarSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SkeletonBlock(width: 48, height: 12),
+        SizedBox(height: AppSpacing.xs),
+        _SkeletonBlock(height: 8),
+        SizedBox(height: AppSpacing.xs),
+        _SkeletonBlock(width: 64, height: 12),
+      ],
+    );
+  }
+}
+
+class _DiaryWeeklyBalanceSkeleton extends StatelessWidget {
+  const _DiaryWeeklyBalanceSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: diaryBalanceProgressAreaHeight,
+          child: Align(
+            child: _SkeletonBlock(height: diaryBalanceProgressHeight),
+          ),
+        ),
+        SizedBox(height: AppSpacing.md),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _SkeletonBlock(width: 52, height: 14),
+            _SkeletonBlock(width: 86, height: 14),
+          ],
+        ),
+        SizedBox(height: AppSpacing.xxl),
+        Row(
+          children: [
+            Expanded(
+              child: _SkeletonBlock(height: diaryBalanceStatTileHeight),
+            ),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _SkeletonBlock(height: diaryBalanceStatTileHeight),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
 

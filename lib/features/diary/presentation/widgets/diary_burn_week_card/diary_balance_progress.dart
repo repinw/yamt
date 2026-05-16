@@ -6,6 +6,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _progressAnimationDuration = Duration(milliseconds: 1000);
+const _progressAnimationCurve = Curves.easeOut;
+
 /// Burn Week pacing progress bar.
 class DiaryBalanceProgressBar extends StatelessWidget {
   /// Creates a diary balance progress bar.
@@ -57,26 +60,12 @@ class DiaryBalanceProgressBar extends StatelessWidget {
             actualConsumedKcal,
             weeklyGoalKcal,
           );
-          final fillWidth = width * actualConsumedRatio;
-          final targetCenter = width * targetRatio;
           const progressTop =
               (diaryBalanceProgressAreaHeight - diaryBalanceProgressHeight) / 2;
           final labelWidth = math.min<double>(
             diaryBalanceTargetLabelWidth,
             math.max<double>(0, width),
           );
-          final labelLeft = (targetCenter - labelWidth / 2).clamp(
-            0.0,
-            math.max<double>(0, width - labelWidth),
-          );
-          final markerLeft = (targetCenter - diaryBalanceTargetMarkerWidth / 2)
-              .clamp(
-                0.0,
-                math.max<double>(
-                  0,
-                  width - diaryBalanceTargetMarkerWidth,
-                ),
-              );
 
           return SizedBox(
             width: width,
@@ -97,11 +86,22 @@ class DiaryBalanceProgressBar extends StatelessWidget {
                           Positioned.fill(
                             child: ColoredBox(color: trackColor),
                           ),
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            width: fillWidth,
-                            bottom: 0,
+                          TweenAnimationBuilder<double>(
+                            duration: _progressAnimationDuration,
+                            curve: _progressAnimationCurve,
+                            tween: Tween<double>(
+                              begin: 0,
+                              end: actualConsumedRatio,
+                            ),
+                            builder: (context, value, child) {
+                              return Positioned(
+                                left: 0,
+                                top: 0,
+                                width: width * value,
+                                bottom: 0,
+                                child: child!,
+                              );
+                            },
                             child: DecoratedBox(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -126,10 +126,25 @@ class DiaryBalanceProgressBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
-                  left: labelLeft,
-                  top: 0,
-                  width: labelWidth,
+                TweenAnimationBuilder<double>(
+                  duration: _progressAnimationDuration,
+                  curve: _progressAnimationCurve,
+                  tween: Tween<double>(begin: 0, end: targetRatio),
+                  builder: (context, value, child) {
+                    final targetCenter = width * value;
+                    final animatedLabelLeft = (targetCenter - labelWidth / 2)
+                        .clamp(
+                          0.0,
+                          math.max<double>(0, width - labelWidth),
+                        );
+
+                    return Positioned(
+                      left: animatedLabelLeft,
+                      top: 0,
+                      width: labelWidth,
+                      child: child!,
+                    );
+                  },
                   child: Center(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -172,9 +187,28 @@ class DiaryBalanceProgressBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
-                  left: markerLeft,
-                  top: progressTop - diaryBalanceTargetMarkerOverflowTop,
+                TweenAnimationBuilder<double>(
+                  duration: _progressAnimationDuration,
+                  curve: _progressAnimationCurve,
+                  tween: Tween<double>(begin: 0, end: targetRatio),
+                  builder: (context, value, child) {
+                    final targetCenter = width * value;
+                    final animatedMarkerLeft =
+                        (targetCenter - diaryBalanceTargetMarkerWidth / 2)
+                            .clamp(
+                              0.0,
+                              math.max<double>(
+                                0,
+                                width - diaryBalanceTargetMarkerWidth,
+                              ),
+                            );
+
+                    return Positioned(
+                      left: animatedMarkerLeft,
+                      top: progressTop - diaryBalanceTargetMarkerOverflowTop,
+                      child: child!,
+                    );
+                  },
                   child: Container(
                     key: DiaryBalanceCardKeys.targetMarker,
                     width: diaryBalanceTargetMarkerWidth,

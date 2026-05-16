@@ -48,36 +48,51 @@ void main() {
   });
 
   test('returns null when intro was already completed', () async {
+    final healthService = _CountingHealthConnectionService(
+      const HealthConnectionStatus.unsupported(),
+    );
     final container = _createContainer(
       preferences: MemoryAppPreferences(
         initialStrings: DiaryIntroPreferences.initialSeenStrings(),
       ),
       settings: _calculatorSettings(selectedDay),
+      healthConnectionService: healthService,
     );
-    await _primeIntroDependencies(container);
+    await _primeIntroDependencies(container, primeHealth: false);
 
     expect(container.read(diaryIntroTriggerProvider), isNull);
+    expect(healthService.loadStatusCallCount, 0);
   });
 
   test('returns null after TDEE was learned', () async {
+    final healthService = _CountingHealthConnectionService(
+      const HealthConnectionStatus.unsupported(),
+    );
     final container = _createContainer(
       settings: _learnedTdeeGoalSettings(selectedDay),
+      healthConnectionService: healthService,
     );
-    await _primeIntroDependencies(container);
+    await _primeIntroDependencies(container, primeHealth: false);
 
     expect(container.read(diaryIntroTriggerProvider), isNull);
+    expect(healthService.loadStatusCallCount, 0);
   });
 
   test('returns null while weekly check-in auto-opens', () async {
+    final healthService = _CountingHealthConnectionService(
+      const HealthConnectionStatus.unsupported(),
+    );
     final container = _createContainer(
       settings: _calculatorSettings(selectedDay),
+      healthConnectionService: healthService,
       weeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: selectedDay.subtract(const Duration(days: 7)),
       ),
     );
-    await _primeIntroDependencies(container);
+    await _primeIntroDependencies(container, primeHealth: false);
 
     expect(container.read(diaryIntroTriggerProvider), isNull);
+    expect(healthService.loadStatusCallCount, 0);
   });
 }
 
@@ -86,6 +101,7 @@ ProviderContainer _createContainer({
   AppPreferences? preferences,
   HealthConnectionStatus healthStatus =
       const HealthConnectionStatus.unsupported(),
+  FakeHealthConnectionService? healthConnectionService,
   DiaryWeeklyCheckInData? weeklyCheckIn,
 }) {
   final settingsRepository = FakeCalorieSettingsRepository(
@@ -98,7 +114,7 @@ ProviderContainer _createContainer({
       ),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       healthConnectionServiceProvider.overrideWithValue(
-        FakeHealthConnectionService(healthStatus),
+        healthConnectionService ?? FakeHealthConnectionService(healthStatus),
       ),
       diaryWeeklyCheckInDataProvider.overrideWith(
         (ref) => weeklyCheckIn ?? _emptyWeeklyCheckInCheckInData(),
@@ -112,10 +128,27 @@ ProviderContainer _createContainer({
   return container;
 }
 
-Future<void> _primeIntroDependencies(ProviderContainer container) async {
+Future<void> _primeIntroDependencies(
+  ProviderContainer container, {
+  bool primeHealth = true,
+}) async {
   await container.read(diaryCalorieGoalSettingsProvider.future);
-  await container.read(healthConnectionControllerProvider.future);
+  if (primeHealth) {
+    await container.read(healthConnectionControllerProvider.future);
+  }
   await container.read(diaryWeeklyCheckInDataProvider.future);
+}
+
+class _CountingHealthConnectionService extends FakeHealthConnectionService {
+  _CountingHealthConnectionService(super.status);
+
+  int loadStatusCallCount = 0;
+
+  @override
+  Future<HealthConnectionStatus> loadStatus() async {
+    loadStatusCallCount += 1;
+    return super.loadStatus();
+  }
 }
 
 CalorieGoalSettings _calculatorSettings(DateTime effectiveDate) {

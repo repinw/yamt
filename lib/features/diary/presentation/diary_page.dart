@@ -37,6 +37,8 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _diaryProviderWarmupDelay = Duration(milliseconds: 600);
+
 /// Diary content.
 @Dependencies([
   diaryProviderWarmup,
@@ -65,6 +67,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   final DiaryScrollController _diaryScrollController = DiaryScrollController();
   ProviderSubscription<DiaryIntroTrigger?>? _diaryIntroSubscription;
   ProviderSubscription<void>? _providerWarmupSubscription;
+  Timer? _providerWarmupTimer;
   bool _didQueueDiaryIntro = false;
 
   @override
@@ -83,6 +86,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   void dispose() {
     _diaryIntroSubscription?.close();
     _providerWarmupSubscription?.close();
+    _providerWarmupTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _diaryScrollController.dispose();
     super.dispose();
@@ -99,19 +103,22 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPagePadding = responsivePageHorizontalPadding(context);
+    final bottomPagePadding = homeShellPageBottomPadding(context);
     final calendarState = ref.watch(diaryCalendarControllerProvider);
     final calendarController = ref.read(
       diaryCalendarControllerProvider.notifier,
     );
     final goalSettings = ref.watch(diaryCalorieGoalSettingsProvider).value;
-    final healthConnectionState = ref.watch(healthConnectionControllerProvider);
-    final healthStatus = healthConnectionState.value;
     final runState = ref.watch(burnWeekRunControllerProvider).value;
     final showIntroReplayButton =
         runState?.runWeekNumber == burnWeekLearningRunWeekNumber &&
         goalSettings != null &&
         !goalSettings.hasLearnedTdee &&
         DiaryIntroData.canBuildFrom(goalSettings);
+    final healthStatus = showIntroReplayButton
+        ? ref.watch(healthConnectionControllerProvider).value
+        : null;
 
     return Stack(
       children: [
@@ -125,10 +132,11 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
               if (widget.includeHomeShellChrome)
                 const HomeShellTabTopChrome(tab: HomeTabType.diary),
               SliverPadding(
-                padding: responsivePagePadding(
-                  context,
-                  top: AppSpacing.lg,
-                  bottom: homeShellPageBottomPadding(context),
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPagePadding,
+                  AppSpacing.lg,
+                  horizontalPagePadding,
+                  0,
                 ),
                 sliver: SliverList.list(
                   children: [
@@ -177,13 +185,29 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                       selectedDay: calendarState.selectedDay,
                     ),
                     const SizedBox(height: AppSpacing.xl),
-                    KeyedSubtree(
-                      key: _diaryScrollController.mealsSectionKey,
-                      child: DiaryMealsSection(
-                        selectedDay: calendarState.selectedDay,
-                      ),
-                    ),
                   ],
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  key: _diaryScrollController.mealsSectionKey,
+                  height: 0,
+                ),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPagePadding,
+                  0,
+                  horizontalPagePadding,
+                  bottomPagePadding,
+                ),
+                sliver: SliverList.builder(
+                  itemCount: 1,
+                  itemBuilder: (context, index) {
+                    return DiaryMealsSection(
+                      selectedDay: calendarState.selectedDay,
+                    );
+                  },
                 ),
               ),
             ],
@@ -227,6 +251,15 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       _handleDiaryIntroTrigger,
       fireImmediately: true,
     );
+    _providerWarmupTimer ??= Timer(_diaryProviderWarmupDelay, () {
+      if (!mounted) {
+        return;
+      }
+      _startProviderWarmup();
+    });
+  }
+
+  void _startProviderWarmup() {
     _providerWarmupSubscription ??= ref.listenManual<void>(
       diaryProviderWarmupProvider,
       _keepDiaryProviderWarm,
