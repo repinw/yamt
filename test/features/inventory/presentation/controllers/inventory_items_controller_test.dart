@@ -5,9 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
@@ -135,6 +138,22 @@ class _FakeGlobalBarcodeCandidateRepository
   }
 }
 
+class _FakeInventoryActivityEventRepository
+    implements InventoryActivityEventRepository {
+  final List<InventoryActivityEvent> events = <InventoryActivityEvent>[];
+
+  @override
+  Future<bool> appendAll(List<InventoryActivityEvent> events) async {
+    this.events.addAll(events);
+    return true;
+  }
+
+  @override
+  Stream<List<InventoryActivityEvent>> watchRecent({int limit = 100}) {
+    return Stream<List<InventoryActivityEvent>>.value(events);
+  }
+}
+
 @Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepControllerAlive(
   ProviderContainer container,
@@ -186,11 +205,21 @@ void main() {
       final repository = _FakeInventoryItemRepository(
         initialItems: const <InventoryItem>[],
       )..emitRealtimeOnAppend = false;
+      final activityRepository = _FakeInventoryActivityEventRepository();
       addTearDown(repository.dispose);
 
       final container = ProviderContainer(
         overrides: [
           inventoryItemRepositoryProvider.overrideWithValue(repository),
+          inventoryActivityActorProvider.overrideWithValue(
+            const InventoryActivityActor(
+              userId: 'user-1',
+              displayName: 'Alex',
+            ),
+          ),
+          inventoryActivityEventRepositoryProvider.overrideWithValue(
+            activityRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -210,6 +239,12 @@ void main() {
         container.read(inventoryItemsControllerProvider).value,
         <InventoryItem>[addedItem],
       );
+      expect(
+        activityRepository.events.single.type,
+        InventoryActivityEventType.itemAdded,
+      );
+      expect(activityRepository.events.single.actorDisplayName, 'Alex');
+      expect(activityRepository.events.single.itemName, 'Oat Milk');
     },
   );
 

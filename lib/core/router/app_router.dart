@@ -26,6 +26,8 @@ import 'package:yamt/features/diary/application/'
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -105,6 +107,7 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     PreparedMealsController,
     manualProductRecentItemsService,
     preparedMealImagePicker,
+    inventoryActivityEvents,
     ReceiptCaptureFlowController,
     ReceiptBatchFlowController,
     receiptCameraSupported,

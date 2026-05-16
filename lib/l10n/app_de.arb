@@ -145,7 +145,119 @@
   "inventoryReceiptSaveFailed": "Positionen konnten nicht gespeichert werden.",
   "inventoryListModeByReceipt": "Nach Beleg",
   "inventoryListModeAllItems": "Alle Lebensmittel",
+  "inventoryViewStock": "Vorrat",
+  "inventoryViewHistory": "Historie",
   "inventoryRecentSectionTitle": "Lebensmittel",
+  "inventoryActivityLoading": "Historie wird geladen...",
+  "inventoryActivityLoadFailed": "Historie konnte nicht geladen werden.",
+  "inventoryActivityEmptyTitle": "Noch keine Vorratshistorie.",
+  "inventoryActivityActorFallback": "Haushaltsmitglied",
+  "inventoryActivityPieceAmount": "{amount, plural, =1{1 Artikel} other{{amount} Artikel}}",
+  "@inventoryActivityPieceAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryActivityItemAdded": "{actor} hat {amount} {item} hinzugefügt.",
+  "@inventoryActivityItemAdded": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemConsumed": "{actor} hat {amount} {item} gegessen.",
+  "@inventoryActivityItemConsumed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemDiscarded": "{actor} hat {amount} {item} aussortiert.",
+  "@inventoryActivityItemDiscarded": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemDeleted": "{actor} hat {amount} {item} gelöscht.",
+  "@inventoryActivityItemDeleted": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemRestored": "{actor} hat {amount} {item} wiederhergestellt.",
+  "@inventoryActivityItemRestored": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemUsedInPreparedMeal": "{actor} hat {amount} {item} für eine vorbereitete Mahlzeit verwendet.",
+  "@inventoryActivityItemUsedInPreparedMeal": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemReturnedFromPreparedMeal": "{actor} hat {amount} {item} aus einer vorbereiteten Mahlzeit zurückgelegt.",
+  "@inventoryActivityItemReturnedFromPreparedMeal": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "inventorySearchLabel": "Im Vorrat suchen",
   "inventorySearchClearAction": "Suche leeren",
   "inventoryFilterAction": "Artikel filtern",

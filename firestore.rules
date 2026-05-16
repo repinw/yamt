@@ -843,6 +843,11 @@ service cloud.firestore {
       allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
     }
 
+    match /users/{uid}/inventory_activity_events/{eventId} {
+      allow read, create: if canAccessHouseholdOwnedData(uid);
+      allow update, delete: if false;
+    }
+
     match /users/{uid}/calorie_entries/{entryId} {
       allow read, create, update, delete: if isOwner(uid);
     }

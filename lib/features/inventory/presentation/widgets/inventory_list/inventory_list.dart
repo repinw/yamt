@@ -95,6 +95,7 @@ class InventoryList extends ConsumerStatefulWidget {
     this.expandedPreparedMealId,
     this.includeHomeShellChrome = false,
     this.inventorySelectionFocusToken = 0,
+    this.topChromeActions = const <Widget>[],
   });
 
   /// The items.
@@ -111,6 +112,9 @@ class InventoryList extends ConsumerStatefulWidget {
 
   /// Token used to focus the inventory item list for selection.
   final int inventorySelectionFocusToken;
+
+  /// Actions rendered in home shell chrome.
+  final List<Widget> topChromeActions;
 
   /// The empty state action button.
   final Widget emptyStateActionButton;
@@ -260,7 +264,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     return CustomScrollView(
       slivers: [
         if (widget.includeHomeShellChrome)
-          const HomeShellTabTopChrome(tab: HomeTabType.inventory),
+          HomeShellTabTopChrome(
+            tab: HomeTabType.inventory,
+            actions: widget.topChromeActions,
+          ),
         InventoryListTopControlsSliver(
           modeToggle: InventoryModeToolbar(modeToggle: modeToggle),
           showSearch: hasAnySourceItems,

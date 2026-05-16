@@ -17,9 +17,12 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/data/'
     'global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
+    'inventory_activity_event_repository.dart';
+import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -243,6 +246,7 @@ typedef InventoryItemDiscardResult = ({
 /// Defines inventory items controller.
 @Riverpod(
   dependencies: [
+    inventoryActivityEventRepository,
     inventoryDiscardEventRepository,
     inventoryItemRepository,
   ],
@@ -475,6 +479,14 @@ class InventoryItemsController extends _$InventoryItemsController {
           item: currentItems[itemIndex],
           index: itemIndex,
         );
+        await _recordActivityEvent(
+          _buildActivityEvent(
+            type: InventoryActivityEventType.itemDeleted,
+            item: currentItems[itemIndex],
+            amount: _availableActivityAmount(currentItems[itemIndex]),
+            beforeItem: currentItems[itemIndex],
+          ),
+        );
       }
       return saved;
     });
@@ -508,6 +520,14 @@ class InventoryItemsController extends _$InventoryItemsController {
         nextItems: nextItems,
       );
       if (saved) {
+        await _recordActivityEvent(
+          _buildActivityEvent(
+            type: InventoryActivityEventType.itemRestored,
+            item: pendingDeletedItem.item,
+            amount: _availableActivityAmount(pendingDeletedItem.item),
+            afterItem: pendingDeletedItem.item,
+          ),
+        );
         _pendingDeletedItem = null;
       }
       return saved;
@@ -563,6 +583,17 @@ class InventoryItemsController extends _$InventoryItemsController {
           return null;
         }
 
+        final beforeItem = _findItem(currentItems, itemId);
+        await _recordActivityEvent(
+          _buildActivityEvent(
+            type: InventoryActivityEventType.itemConsumed,
+            item: beforeItem,
+            amount: removedAmount,
+            beforeItem: beforeItem,
+            afterItem: _findItem(nextItems, itemId),
+            happenedAt: consumedAt,
+          ),
+        );
         return (removedAmount: removedAmount);
       },
       fallbackValue: null,
@@ -635,6 +666,16 @@ class InventoryItemsController extends _$InventoryItemsController {
             .read(inventoryDiscardEventRepositoryProvider)
             .saveEvent(discardEvent);
         if (eventSaved) {
+          await _recordActivityEvent(
+            _buildActivityEvent(
+              type: InventoryActivityEventType.itemDiscarded,
+              item: item,
+              amount: discardedAmount,
+              beforeItem: item,
+              afterItem: _findItem(nextItems, itemId),
+              reason: reason.name,
+            ),
+          );
           return (
             discardEventId: discardEventId,
             removedAmount: discardedAmount,
@@ -663,7 +704,24 @@ class InventoryItemsController extends _$InventoryItemsController {
       if (nextItems == null) {
         return false;
       }
-      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+      final restored = await _saveItems(
+        previousItems: currentItems,
+        nextItems: nextItems,
+      );
+      if (restored) {
+        final beforeItem = _findItem(currentItems, itemId);
+        final afterItem = _findItem(nextItems, itemId);
+        await _recordActivityEvent(
+          _buildActivityEvent(
+            type: InventoryActivityEventType.itemRestored,
+            item: afterItem ?? beforeItem,
+            amount: amount,
+            beforeItem: beforeItem,
+            afterItem: afterItem,
+          ),
+        );
+      }
+      return restored;
     });
   }
 
@@ -696,6 +754,17 @@ class InventoryItemsController extends _$InventoryItemsController {
         if (!restored) {
           return false;
         }
+        final beforeItem = _findItem(currentItems, itemId);
+        final afterItem = _findItem(restoredItems, itemId);
+        await _recordActivityEvent(
+          _buildActivityEvent(
+            type: InventoryActivityEventType.itemRestored,
+            item: afterItem ?? beforeItem,
+            amount: amount,
+            beforeItem: beforeItem,
+            afterItem: afterItem,
+          ),
+        );
 
         final deleted = await ref
             .read(inventoryDiscardEventRepositoryProvider)
@@ -846,6 +915,15 @@ class InventoryItemsController extends _$InventoryItemsController {
         if (!saved) {
           _persistedItems = previousItems;
           _publishVisibleItems();
+        } else {
+          await _recordActivityEvent(
+            _buildActivityEvent(
+              type: InventoryActivityEventType.itemAdded,
+              item: item,
+              amount: _availableActivityAmount(item),
+              afterItem: item,
+            ),
+          );
         }
         return saved;
       } on Object catch (error, stackTrace) {
@@ -1177,6 +1255,51 @@ class InventoryItemsController extends _$InventoryItemsController {
     _pendingConsumptionDraftCounter += 1;
     return 'pending-consumption-$_pendingConsumptionDraftCounter';
   }
+
+  InventoryActivityEvent? _buildActivityEvent({
+    required InventoryActivityEventType type,
+    required InventoryItem? item,
+    required int amount,
+    InventoryItem? beforeItem,
+    InventoryItem? afterItem,
+    DateTime? happenedAt,
+    String? reason,
+  }) {
+    final actor = ref.read(inventoryActivityActorProvider);
+    if (actor == null || item == null) {
+      return null;
+    }
+
+    return InventoryActivityEvent.fromStockChange(
+      id: _uuid.v4(),
+      type: type,
+      actor: actor,
+      item: item,
+      amount: amount < 0 ? 0 : amount,
+      beforeQuantity: beforeItem?.quantity,
+      afterQuantity: afterItem?.quantity,
+      beforeCurrentAmount: beforeItem?.currentAmount,
+      afterCurrentAmount: afterItem?.currentAmount,
+      happenedAt: happenedAt,
+      reason: reason,
+    );
+  }
+
+  Future<void> _recordActivityEvent(InventoryActivityEvent? event) async {
+    if (event == null) {
+      return;
+    }
+
+    final saved = await ref
+        .read(inventoryActivityEventRepositoryProvider)
+        .appendAll(<InventoryActivityEvent>[event]);
+    if (!saved) {
+      log(
+        'Failed to record inventory activity event ${event.id}.',
+        name: _controllerLogName,
+      );
+    }
+  }
 }
 
 int _safeInsertIndex({required int index, required int maxLength}) {
@@ -1187,4 +1310,26 @@ int _safeInsertIndex({required int index, required int maxLength}) {
     return maxLength;
   }
   return index;
+}
+
+InventoryItem? _findItem(List<InventoryItem> items, String itemId) {
+  for (final item in items) {
+    if (item.id == itemId) {
+      return item;
+    }
+  }
+  return null;
+}
+
+int _availableActivityAmount(InventoryItem item) {
+  if (item.usesAmountProgress) {
+    if (item.currentAmount > 0) {
+      return item.currentAmount;
+    }
+    return item.initialAmount;
+  }
+  if (item.quantity > 0) {
+    return item.quantity;
+  }
+  return item.initialQuantity;
 }

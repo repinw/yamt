@@ -148,6 +148,7 @@ final class AppRouterProvider
           preparedMealsControllerProvider,
           manualProductRecentItemsServiceProvider,
           preparedMealImagePickerProvider,
+          inventoryActivityEventsProvider,
           receiptCaptureFlowControllerProvider,
           receiptBatchFlowControllerProvider,
           receiptCameraSupportedProvider,
@@ -173,6 +174,8 @@ final class AppRouterProvider
           AppRouterProvider.$allTransitiveDependencies17,
           AppRouterProvider.$allTransitiveDependencies18,
           AppRouterProvider.$allTransitiveDependencies19,
+          AppRouterProvider.$allTransitiveDependencies20,
+          AppRouterProvider.$allTransitiveDependencies21,
         },
       );
 
@@ -191,24 +194,27 @@ final class AppRouterProvider
   static final $allTransitiveDependencies7 =
       CalorieEntryDeleteFlowProvider.$allTransitiveDependencies5;
   static final $allTransitiveDependencies8 =
+      CalorieEntryDeleteFlowProvider.$allTransitiveDependencies6;
+  static final $allTransitiveDependencies9 =
       inventoryBackedCalorieEntrySaveFlowProvider;
-  static final $allTransitiveDependencies9 = diaryProviderWarmupProvider;
-  static final $allTransitiveDependencies10 = diaryQuickEatInventoryProvider;
-  static final $allTransitiveDependencies11 =
+  static final $allTransitiveDependencies10 = diaryProviderWarmupProvider;
+  static final $allTransitiveDependencies11 = diaryQuickEatInventoryProvider;
+  static final $allTransitiveDependencies12 =
       diaryQuickEatInventoryActionsProvider;
-  static final $allTransitiveDependencies12 = cookingFlowControllerProvider;
-  static final $allTransitiveDependencies13 =
-      cookingFlowWizardControllerProvider;
+  static final $allTransitiveDependencies13 = cookingFlowControllerProvider;
   static final $allTransitiveDependencies14 =
+      cookingFlowWizardControllerProvider;
+  static final $allTransitiveDependencies15 =
       manualProductRecentItemsServiceProvider;
-  static final $allTransitiveDependencies15 = preparedMealImagePickerProvider;
-  static final $allTransitiveDependencies16 =
-      receiptCaptureFlowControllerProvider;
-  static final $allTransitiveDependencies17 =
-      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies16 = preparedMealImagePickerProvider;
+  static final $allTransitiveDependencies17 = inventoryActivityEventsProvider;
   static final $allTransitiveDependencies18 =
-      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+      receiptCaptureFlowControllerProvider;
   static final $allTransitiveDependencies19 =
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies20 =
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies21 =
       receiptBatchFlowControllerProvider;
 
   @override
@@ -233,4 +239,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'7f7d131e58377d08ac0692e54e8155948b7e82d0';
+String _$appRouterHash() => r'f75883d8304b977b03bf9b52bd2719199f8255a7';

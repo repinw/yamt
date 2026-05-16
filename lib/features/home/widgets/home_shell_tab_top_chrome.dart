@@ -130,17 +130,12 @@ class HomeShellTabTopChrome extends ConsumerWidget {
 
     return switch (tab) {
       HomeTabType.inventory => [
-        IconButton(
-          tooltip: l10n.commonNotImplementedYet,
-          onPressed: () => _showSnackBar(context, l10n.commonNotImplementedYet),
-          icon: const Icon(Icons.assignment_outlined),
-        ),
+        ...actions,
         IconButton(
           tooltip: l10n.homeShopping,
           onPressed: () => context.push(AppRoutes.homeShopping),
           icon: const Icon(Icons.shopping_cart_rounded),
         ),
-        ...actions,
       ],
       HomeTabType.diary => [
         ..._buildDiaryActions(ref, l10n, diaryCalendarState),
@@ -241,11 +236,5 @@ class HomeShellTabTopChrome extends ConsumerWidget {
       return null;
     }
     return HomeHeartCounterButton(runState: runState);
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }

@@ -23,6 +23,8 @@ import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
+    'inventory_activity_event_repository.dart';
+import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
@@ -394,21 +396,25 @@ ShoppingListItem _shoppingItem(
   ReceiptBatchFlowController,
   receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
+  inventoryActivityEvents,
 ])
 Widget _buildTestApp(
   InventoryItemRepository repository, {
   List<Override> overrides = const <Override>[],
   GoRoute? calorieEntryRoute,
   InventoryDiscardEventRepository? discardEventRepository,
+  bool includeHomeShellChrome = false,
   Widget Function(Widget child)? shellBuilder,
 }) {
   final routes = <RouteBase>[
     GoRoute(
       path: AppRoutes.root,
       builder: (context, state) {
-        const page = InventoryPage();
+        final page = InventoryPage(
+          includeHomeShellChrome: includeHomeShellChrome,
+        );
         if (shellBuilder == null) {
-          return const Scaffold(body: InventoryPage());
+          return Scaffold(body: page);
         }
         return shellBuilder(page);
       },
@@ -469,6 +475,7 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
+  inventoryActivityEvents,
 ])
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {
@@ -499,6 +506,29 @@ void main() {
     );
     expect(fabCenter.dx, moreOrLessEquals(highlightCenter.dx));
     expect(fabCenter.dy, moreOrLessEquals(highlightCenter.dy));
+  });
+
+  testWidgets('top bar history action opens the inventory timeline', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => const <InventoryItem>[],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(repository, includeHomeShellChrome: true),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.history_rounded), findsOneWidget);
+    expect(find.text('Stock'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.history_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No inventory history yet.'), findsOneWidget);
+    expect(find.byIcon(Icons.inventory_2_outlined), findsOneWidget);
   });
 
   testWidgets('empty state card stays above fab overlay chrome', (

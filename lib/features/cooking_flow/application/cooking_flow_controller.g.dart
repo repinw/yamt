@@ -35,6 +35,7 @@ final class CookingFlowControllerProvider
           CookingFlowControllerProvider.$allTransitiveDependencies2,
           CookingFlowControllerProvider.$allTransitiveDependencies3,
           CookingFlowControllerProvider.$allTransitiveDependencies4,
+          CookingFlowControllerProvider.$allTransitiveDependencies5,
         },
       );
 
@@ -43,9 +44,11 @@ final class CookingFlowControllerProvider
   static final $allTransitiveDependencies2 =
       PreparedMealsControllerProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies3 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies2;
+      PreparedMealsControllerProvider.$allTransitiveDependencies1;
   static final $allTransitiveDependencies4 =
       PreparedMealsControllerProvider.$allTransitiveDependencies3;
+  static final $allTransitiveDependencies5 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$cookingFlowControllerHash();

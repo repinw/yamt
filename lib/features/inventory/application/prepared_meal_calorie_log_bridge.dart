@@ -28,27 +28,22 @@ typedef PreparedMealSaveCallback =
 )
 PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
   final commitStore = ref.watch(preparedMealCalorieEntryCommitStoreProvider);
+  final calorieEntriesController = ref.read(
+    calorieEntriesControllerProvider.notifier,
+  );
   return PreparedMealCalorieLogBridge(
-    saveEntry: (entry) {
-      return ref
-          .read(calorieEntriesControllerProvider.notifier)
-          .saveEntry(
-            entry,
-          );
-    },
+    saveEntry: calorieEntriesController.saveEntry,
     saveEntryAtomically: commitStore == null
         ? null
         : (entry) {
-            return ref
-                .read(calorieEntriesControllerProvider.notifier)
-                .saveEntry(
-                  entry,
-                  persistEntry: (persistedEntry) {
-                    return commitStore.commitEntryAndPreparedMeal(
-                      entry: persistedEntry,
-                    );
-                  },
+            return calorieEntriesController.saveEntry(
+              entry,
+              persistEntry: (persistedEntry) {
+                return commitStore.commitEntryAndPreparedMeal(
+                  entry: persistedEntry,
                 );
+              },
+            );
           },
     now: DateTime.now,
     nextEntryId: const Uuid().v4,

@@ -34,6 +34,7 @@ final class CookingFlowWizardControllerProvider
           CookingFlowWizardControllerProvider.$allTransitiveDependencies3,
           CookingFlowWizardControllerProvider.$allTransitiveDependencies4,
           CookingFlowWizardControllerProvider.$allTransitiveDependencies5,
+          CookingFlowWizardControllerProvider.$allTransitiveDependencies6,
         },
       );
 
@@ -48,6 +49,8 @@ final class CookingFlowWizardControllerProvider
       CookingFlowControllerProvider.$allTransitiveDependencies3;
   static final $allTransitiveDependencies5 =
       CookingFlowControllerProvider.$allTransitiveDependencies4;
+  static final $allTransitiveDependencies6 =
+      CookingFlowControllerProvider.$allTransitiveDependencies5;
 
   @override
   String debugGetCreateSourceHash() => _$cookingFlowWizardControllerHash();

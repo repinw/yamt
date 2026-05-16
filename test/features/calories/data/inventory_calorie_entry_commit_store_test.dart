@@ -5,12 +5,18 @@ import 'package:yamt/features/calories/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
 const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';
 const _inventoryItemsCollection = 'inventory_items';
+const _activityEventsCollection = 'inventory_activity_events';
+const _actor = InventoryActivityActor(
+  userId: 'user-1',
+  displayName: 'Alex',
+);
 
 CollectionReference<Map<String, dynamic>> _inventoryCollection({
   required FirebaseFirestore firestore,
@@ -30,6 +36,16 @@ CollectionReference<Map<String, dynamic>> _entryCollection({
       .collection(_usersCollection)
       .doc(userId)
       .collection(_calorieEntriesCollection);
+}
+
+CollectionReference<Map<String, dynamic>> _activityCollection({
+  required FirebaseFirestore firestore,
+  String userId = 'user-1',
+}) {
+  return firestore
+      .collection(_usersCollection)
+      .doc(userId)
+      .collection(_activityEventsCollection);
 }
 
 InventoryItem _inventoryItem({int currentAmount = 750}) {
@@ -84,6 +100,7 @@ void main() {
         firestore: firestore,
         currentUserId: 'user-1',
         inventoryOwnerUserId: 'user-1',
+        actor: _actor,
       );
 
       final result = await store.commitEntryAndInventory(
@@ -118,6 +135,20 @@ void main() {
       expect(savedItem.currentAmount, 500);
       expect(savedItem.quantity, 1);
       expect(savedItem.lastConsumedAt, _entry().loggedAt);
+
+      final activitySnapshot = await _activityCollection(
+        firestore: firestore,
+      ).get();
+      final activityEvent = InventoryActivityEvent.fromJson(
+        activitySnapshot.docs.single.data(),
+      );
+      expect(activityEvent.type, InventoryActivityEventType.itemConsumed);
+      expect(activityEvent.actorUserId, 'user-1');
+      expect(activityEvent.actorDisplayName, 'Alex');
+      expect(activityEvent.itemId, 'inventory-1');
+      expect(activityEvent.amount, 250);
+      expect(activityEvent.beforeCurrentAmount, 750);
+      expect(activityEvent.afterCurrentAmount, 500);
     },
   );
 
@@ -133,6 +164,7 @@ void main() {
         firestore: firestore,
         currentUserId: 'user-1',
         inventoryOwnerUserId: 'user-1',
+        actor: _actor,
       );
 
       final result = await store.commitEntryAndInventory(
@@ -176,6 +208,7 @@ void main() {
         firestore: firestore,
         currentUserId: 'user-1',
         inventoryOwnerUserId: 'user-1',
+        actor: _actor,
       );
 
       await store.commitEntryAndInventory(
@@ -210,6 +243,10 @@ void main() {
         firestore: firestore,
         currentUserId: 'member-1',
         inventoryOwnerUserId: 'host-1',
+        actor: const InventoryActivityActor(
+          userId: 'member-1',
+          displayName: 'Jamie',
+        ),
       );
       final entry = _entry().copyWith(userId: 'member-1');
 
@@ -236,6 +273,11 @@ void main() {
       expect(savedEntry.exists, isTrue);
       expect(savedEntry.data()?['user_id'], 'member-1');
       expect(savedItem.data()?['current_amount'], 500);
+      final activity = await _activityCollection(
+        firestore: firestore,
+        userId: 'host-1',
+      ).get();
+      expect(activity.docs.single.data()['actor_user_id'], 'member-1');
     },
   );
 }

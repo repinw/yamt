@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
@@ -15,9 +16,12 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_workflows.dart';
 import 'package:yamt/features/inventory/data/'
+    'inventory_activity_event_repository.dart';
+import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -38,6 +42,7 @@ const _preparedMealsControllerLogName = 'PreparedMealsController';
 /// Defines prepared meals controller.
 @Riverpod(
   dependencies: [
+    inventoryActivityEventRepository,
     inventoryDiscardEventRepository,
     inventoryItemRepository,
     preparedMealCalorieLogBridge,
@@ -107,15 +112,15 @@ class PreparedMealsController extends _$PreparedMealsController {
     String? imageAssetId,
   }) {
     return _runCreationMutation(
-      operation: () {
-        return _mutationWorkflows.createPreparedMeal(
+      operation: () => _runInventoryTrackedCreation(
+        (inventoryRepository) => _mutationWorkflows.createPreparedMeal(
           name: name,
           totalPortions: totalPortions,
           items: items,
           imageAssetId: imageAssetId,
-          inventoryRepository: ref.read(inventoryItemRepositoryProvider),
-        );
-      },
+          inventoryRepository: inventoryRepository,
+        ),
+      ),
       unexpectedErrorMessage: 'Unexpected prepared meal creation error.',
     );
   }
@@ -133,19 +138,21 @@ class PreparedMealsController extends _$PreparedMealsController {
     Map<String, String> sourceKeysByIngredient = const <String, String>{},
   }) {
     return _runCreationMutation(
-      operation: () {
-        return _mutationWorkflows.createPreparedMealFromTemplate(
-          template: template,
-          totalPortions: totalPortions,
-          recipeIngredientAssignments: recipeIngredientAssignments,
-          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-          inventoryRepository: ref.read(inventoryItemRepositoryProvider),
-          ingredientParser: ref.read(templateIngredientParserProvider),
-          additionalItems: additionalItems,
-          finalNetWeight: finalNetWeight,
-          sourceKeysByIngredient: sourceKeysByIngredient,
-        );
-      },
+      operation: () => _runInventoryTrackedCreation(
+        (inventoryRepository) =>
+            _mutationWorkflows.createPreparedMealFromTemplate(
+              template: template,
+              totalPortions: totalPortions,
+              recipeIngredientAssignments: recipeIngredientAssignments,
+              recipeIngredientAmountConversions:
+                  recipeIngredientAmountConversions,
+              inventoryRepository: inventoryRepository,
+              ingredientParser: ref.read(templateIngredientParserProvider),
+              additionalItems: additionalItems,
+              finalNetWeight: finalNetWeight,
+              sourceKeysByIngredient: sourceKeysByIngredient,
+            ),
+      ),
       unexpectedErrorMessage: 'Unexpected template meal creation error.',
     );
   }
@@ -163,19 +170,21 @@ class PreparedMealsController extends _$PreparedMealsController {
         const <PreparedMealItemInput>[],
   }) {
     return _runCreationMutation(
-      operation: () {
-        return _mutationWorkflows.createPreparedMealsFromTemplateContainers(
-          template: template,
-          totalPortions: totalPortions,
-          recipeIngredientAssignments: recipeIngredientAssignments,
-          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-          inventoryRepository: ref.read(inventoryItemRepositoryProvider),
-          ingredientParser: ref.read(templateIngredientParserProvider),
-          containers: containers,
-          sourceKeysByIngredient: sourceKeysByIngredient,
-          additionalItems: additionalItems,
-        );
-      },
+      operation: () => _runInventoryTrackedCreation(
+        (inventoryRepository) =>
+            _mutationWorkflows.createPreparedMealsFromTemplateContainers(
+              template: template,
+              totalPortions: totalPortions,
+              recipeIngredientAssignments: recipeIngredientAssignments,
+              recipeIngredientAmountConversions:
+                  recipeIngredientAmountConversions,
+              inventoryRepository: inventoryRepository,
+              ingredientParser: ref.read(templateIngredientParserProvider),
+              containers: containers,
+              sourceKeysByIngredient: sourceKeysByIngredient,
+              additionalItems: additionalItems,
+            ),
+      ),
       unexpectedErrorMessage: 'Unexpected split template meal creation error.',
     );
   }
@@ -191,14 +200,16 @@ class PreparedMealsController extends _$PreparedMealsController {
   }) {
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(
-      () => _mutationWorkflows.updatePreparedMealDetails(
-        mealId: mealId,
-        name: name,
-        imageChanged: imageChanged,
-        imageAssetId: imageAssetId,
-        totalPortions: totalPortions,
-        items: items,
-        inventoryRepository: ref.read(inventoryItemRepositoryProvider),
+      () => _runInventoryTrackedBool(
+        (inventoryRepository) => _mutationWorkflows.updatePreparedMealDetails(
+          mealId: mealId,
+          name: name,
+          imageChanged: imageChanged,
+          imageAssetId: imageAssetId,
+          totalPortions: totalPortions,
+          items: items,
+          inventoryRepository: inventoryRepository,
+        ),
       ),
     ).whenComplete(keepAliveLink.close);
   }
@@ -211,12 +222,15 @@ class PreparedMealsController extends _$PreparedMealsController {
   }) {
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(
-      () => _mutationWorkflows.fillPreparedMealPendingIngredient(
-        mealId: mealId,
-        ingredient: ingredient,
-        inventoryItemIds: inventoryItemIds,
-        inventoryRepository: ref.read(inventoryItemRepositoryProvider),
-        ingredientParser: ref.read(templateIngredientParserProvider),
+      () => _runInventoryTrackedBool(
+        (inventoryRepository) =>
+            _mutationWorkflows.fillPreparedMealPendingIngredient(
+              mealId: mealId,
+              ingredient: ingredient,
+              inventoryItemIds: inventoryItemIds,
+              inventoryRepository: inventoryRepository,
+              ingredientParser: ref.read(templateIngredientParserProvider),
+            ),
       ),
     ).whenComplete(keepAliveLink.close);
   }
@@ -243,6 +257,10 @@ class PreparedMealsController extends _$PreparedMealsController {
     DateTime? loggedDay,
   }) {
     final keepAliveLink = ref.keepAlive();
+    final calorieEntriesSubscription = ref.listen(
+      calorieEntriesControllerProvider,
+      (_, _) {},
+    );
     return _runSerializedMutation(
       () => _mutationWorkflows.consumePreparedMeal(
         mealId: mealId,
@@ -251,7 +269,10 @@ class PreparedMealsController extends _$PreparedMealsController {
         loggedDay: loggedDay,
         calorieLogBridge: ref.read(preparedMealCalorieLogBridgeProvider),
       ),
-    ).whenComplete(keepAliveLink.close);
+    ).whenComplete(() {
+      calorieEntriesSubscription.close();
+      keepAliveLink.close();
+    });
   }
 
   /// Throw away prepared meal.
@@ -291,9 +312,11 @@ class PreparedMealsController extends _$PreparedMealsController {
   Future<bool> unbundlePreparedMeal(String mealId) {
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(
-      () => _mutationWorkflows.unbundlePreparedMeal(
-        mealId: mealId,
-        inventoryRepository: ref.read(inventoryItemRepositoryProvider),
+      () => _runInventoryTrackedBool(
+        (inventoryRepository) => _mutationWorkflows.unbundlePreparedMeal(
+          mealId: mealId,
+          inventoryRepository: inventoryRepository,
+        ),
       ),
     ).whenComplete(keepAliveLink.close);
   }
@@ -459,6 +482,86 @@ class PreparedMealsController extends _$PreparedMealsController {
     );
   }
 
+  Future<PreparedMealCreationResult> _runInventoryTrackedCreation(
+    Future<PreparedMealCreationResult> Function(
+      InventoryItemRepository inventoryRepository,
+    )
+    operation,
+  ) async {
+    final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
+    final beforeItems = await _readInventoryForActivity(inventoryRepository);
+    final result = await operation(inventoryRepository);
+    if (result.isSuccess) {
+      await _recordPreparedMealInventoryDiff(
+        beforeItems: beforeItems,
+        afterItems: await _readInventoryForActivity(inventoryRepository),
+      );
+    }
+    return result;
+  }
+
+  Future<bool> _runInventoryTrackedBool(
+    Future<bool> Function(InventoryItemRepository inventoryRepository)
+    operation,
+  ) async {
+    final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
+    final beforeItems = await _readInventoryForActivity(inventoryRepository);
+    final saved = await operation(inventoryRepository);
+    if (saved) {
+      await _recordPreparedMealInventoryDiff(
+        beforeItems: beforeItems,
+        afterItems: await _readInventoryForActivity(inventoryRepository),
+      );
+    }
+    return saved;
+  }
+
+  Future<List<InventoryItem>> _readInventoryForActivity(
+    InventoryItemRepository inventoryRepository,
+  ) async {
+    try {
+      return inventoryRepository.readAll();
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to read inventory for prepared meal activity tracking.',
+        name: _preparedMealsControllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <InventoryItem>[];
+    }
+  }
+
+  Future<void> _recordPreparedMealInventoryDiff({
+    required List<InventoryItem> beforeItems,
+    required List<InventoryItem> afterItems,
+  }) async {
+    final actor = ref.read(inventoryActivityActorProvider);
+    if (actor == null) {
+      return;
+    }
+
+    final events = _buildPreparedMealInventoryDiffEvents(
+      actor: actor,
+      beforeItems: beforeItems,
+      afterItems: afterItems,
+      buildId: _uuid.v4,
+    );
+    if (events.isEmpty) {
+      return;
+    }
+
+    final saved = await ref
+        .read(inventoryActivityEventRepositoryProvider)
+        .appendAll(events);
+    if (!saved) {
+      log(
+        'Failed to record prepared meal inventory activity events.',
+        name: _preparedMealsControllerLogName,
+      );
+    }
+  }
+
   Future<PreparedMealCreationResult> _runCreationMutation({
     required Future<PreparedMealCreationResult> Function() operation,
     required String unexpectedErrorMessage,
@@ -481,4 +584,61 @@ class PreparedMealsController extends _$PreparedMealsController {
         )
         .whenComplete(keepAliveLink.close);
   }
+}
+
+List<InventoryActivityEvent> _buildPreparedMealInventoryDiffEvents({
+  required InventoryActivityActor actor,
+  required List<InventoryItem> beforeItems,
+  required List<InventoryItem> afterItems,
+  required String Function() buildId,
+}) {
+  final beforeById = <String, InventoryItem>{
+    for (final item in beforeItems) item.id: item,
+  };
+  final afterById = <String, InventoryItem>{
+    for (final item in afterItems) item.id: item,
+  };
+  final itemIds = <String>{...beforeById.keys, ...afterById.keys};
+  final events = <InventoryActivityEvent>[];
+
+  for (final itemId in itemIds) {
+    final beforeItem = beforeById[itemId];
+    final afterItem = afterById[itemId];
+    final beforeAmount = beforeItem == null ? 0 : _stockAmount(beforeItem);
+    final afterAmount = afterItem == null ? 0 : _stockAmount(afterItem);
+    final delta = afterAmount - beforeAmount;
+    if (delta == 0) {
+      continue;
+    }
+
+    final eventItem = delta < 0 ? beforeItem : afterItem;
+    if (eventItem == null) {
+      continue;
+    }
+
+    events.add(
+      InventoryActivityEvent.fromStockChange(
+        id: buildId(),
+        type: delta < 0
+            ? InventoryActivityEventType.itemUsedInPreparedMeal
+            : InventoryActivityEventType.itemReturnedFromPreparedMeal,
+        actor: actor,
+        item: eventItem,
+        amount: delta.abs(),
+        beforeQuantity: beforeItem?.quantity,
+        afterQuantity: afterItem?.quantity,
+        beforeCurrentAmount: beforeItem?.currentAmount,
+        afterCurrentAmount: afterItem?.currentAmount,
+      ),
+    );
+  }
+
+  return events;
+}
+
+int _stockAmount(InventoryItem item) {
+  if (item.usesAmountProgress) {
+    return item.currentAmount;
+  }
+  return item.quantity;
 }
