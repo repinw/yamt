@@ -1323,13 +1323,7 @@ InventoryItem? _findItem(List<InventoryItem> items, String itemId) {
 
 int _availableActivityAmount(InventoryItem item) {
   if (item.usesAmountProgress) {
-    if (item.currentAmount > 0) {
-      return item.currentAmount;
-    }
-    return item.initialAmount;
+    return item.currentAmount > 0 ? item.currentAmount : 0;
   }
-  if (item.quantity > 0) {
-    return item.quantity;
-  }
-  return item.initialQuantity;
+  return item.quantity > 0 ? item.quantity : 0;
 }

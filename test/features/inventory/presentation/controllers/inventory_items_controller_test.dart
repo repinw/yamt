@@ -7,10 +7,13 @@ import 'package:yamt/features/inventory/data/global_barcode_candidate_repository
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
@@ -154,6 +157,33 @@ class _FakeInventoryActivityEventRepository
   }
 }
 
+class _FakeInventoryDiscardEventRepository
+    implements InventoryDiscardEventRepository {
+  final List<InventoryDiscardEvent> events = <InventoryDiscardEvent>[];
+
+  @override
+  Future<List<InventoryDiscardEvent>> readAll() async {
+    return List<InventoryDiscardEvent>.from(events);
+  }
+
+  @override
+  Future<bool> saveEvent(InventoryDiscardEvent event) async {
+    events.add(event);
+    return true;
+  }
+
+  @override
+  Future<bool> deleteEvent(String eventId) async {
+    events.removeWhere((event) => event.id == eventId);
+    return true;
+  }
+}
+
+const _testActor = InventoryActivityActor(
+  userId: 'user-1',
+  displayName: 'Alex',
+);
+
 @Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepControllerAlive(
   ProviderContainer container,
@@ -161,6 +191,26 @@ ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepControllerAlive(
   return container.listen(
     inventoryItemsControllerProvider,
     (previous, next) {},
+  );
+}
+
+ProviderContainer _controllerContainer({
+  required InventoryItemRepository itemRepository,
+  required InventoryActivityEventRepository activityRepository,
+  InventoryDiscardEventRepository? discardEventRepository,
+}) {
+  return ProviderContainer(
+    overrides: [
+      inventoryItemRepositoryProvider.overrideWithValue(itemRepository),
+      inventoryActivityActorProvider.overrideWithValue(_testActor),
+      inventoryActivityEventRepositoryProvider.overrideWithValue(
+        activityRepository,
+      ),
+      if (discardEventRepository != null)
+        inventoryDiscardEventRepositoryProvider.overrideWithValue(
+          discardEventRepository,
+        ),
+    ],
   );
 }
 
@@ -247,6 +297,155 @@ void main() {
       expect(activityRepository.events.single.itemName, 'Oat Milk');
     },
   );
+
+  test(
+    'delete and undo deleted empty amount item record zero stock events',
+    () async {
+      final emptyItem = _item(
+        id: 'empty',
+        name: 'Empty Flour',
+        weight: '500g',
+      ).copyWith(currentAmount: 0, quantity: 0);
+      final repository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[emptyItem],
+      );
+      final activityRepository = _FakeInventoryActivityEventRepository();
+      addTearDown(repository.dispose);
+
+      final container = _controllerContainer(
+        itemRepository: repository,
+        activityRepository: activityRepository,
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final deleted = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .deleteItem('empty');
+      final restored = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .undoLastDeletedItem();
+
+      expect(deleted, isTrue);
+      expect(restored, isTrue);
+      expect(activityRepository.events, hasLength(2));
+      expect(
+        activityRepository.events.map((event) => (event.type, event.amount)),
+        <(InventoryActivityEventType, int)>[
+          (InventoryActivityEventType.itemDeleted, 0),
+          (InventoryActivityEventType.itemRestored, 0),
+        ],
+      );
+      expect(activityRepository.events.first.beforeCurrentAmount, 0);
+      expect(activityRepository.events.last.afterCurrentAmount, 0);
+    },
+  );
+
+  test('eatItem records consumed activity event', () async {
+    final item = _item(id: 'a', weight: '500g');
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[item],
+    );
+    final activityRepository = _FakeInventoryActivityEventRepository();
+    addTearDown(repository.dispose);
+
+    final container = _controllerContainer(
+      itemRepository: repository,
+      activityRepository: activityRepository,
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final result = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .eatItemDetailed(
+          'a',
+          125,
+          consumedAt: DateTime.parse('2026-04-07T13:00:00Z'),
+        );
+
+    expect(result?.removedAmount, 125);
+    expect(
+      activityRepository.events.single.type,
+      InventoryActivityEventType.itemConsumed,
+    );
+    expect(activityRepository.events.single.amount, 125);
+    expect(activityRepository.events.single.beforeCurrentAmount, 500);
+    expect(activityRepository.events.single.afterCurrentAmount, 375);
+  });
+
+  test('throwAwayItem records discarded activity event with reason', () async {
+    final item = _item(id: 'a', weight: '500g');
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[item],
+    );
+    final activityRepository = _FakeInventoryActivityEventRepository();
+    final discardRepository = _FakeInventoryDiscardEventRepository();
+    addTearDown(repository.dispose);
+
+    final container = _controllerContainer(
+      itemRepository: repository,
+      activityRepository: activityRepository,
+      discardEventRepository: discardRepository,
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final result = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .throwAwayItemDetailed('a', 200, InventoryDiscardReason.spoiled);
+
+    expect(result?.removedAmount, 200);
+    expect(discardRepository.events, hasLength(1));
+    expect(
+      activityRepository.events.single.type,
+      InventoryActivityEventType.itemDiscarded,
+    );
+    expect(activityRepository.events.single.amount, 200);
+    expect(activityRepository.events.single.beforeCurrentAmount, 500);
+    expect(activityRepository.events.single.afterCurrentAmount, 300);
+    expect(activityRepository.events.single.reason, 'spoiled');
+  });
+
+  test('restoreConsumedItem records restored activity event', () async {
+    final item = _item(
+      id: 'a',
+      weight: '500g',
+    ).copyWith(currentAmount: 300);
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[item],
+    );
+    final activityRepository = _FakeInventoryActivityEventRepository();
+    addTearDown(repository.dispose);
+
+    final container = _controllerContainer(
+      itemRepository: repository,
+      activityRepository: activityRepository,
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final restored = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .restoreConsumedItem('a', 100);
+
+    expect(restored, isTrue);
+    expect(
+      activityRepository.events.single.type,
+      InventoryActivityEventType.itemRestored,
+    );
+    expect(activityRepository.events.single.amount, 100);
+    expect(activityRepository.events.single.beforeCurrentAmount, 300);
+    expect(activityRepository.events.single.afterCurrentAmount, 400);
+  });
 
   test('addItem replaces an existing item with the same id', () async {
     final repository = _FakeInventoryItemRepository(
