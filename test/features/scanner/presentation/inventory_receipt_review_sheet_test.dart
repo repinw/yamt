@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -24,6 +26,10 @@ import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
@@ -79,7 +85,11 @@ const _testNutrition = GlobalFoodNutrition(
   per100Kcal: 120,
 );
 
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
+@Dependencies([
+  inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 Widget _wrap({
   required VoidCallback onCancelTap,
   required Future<void> Function(List<InventoryItem> items) onSaveTap,
@@ -94,31 +104,47 @@ Widget _wrap({
     'Provide either items or drafts.',
   );
 
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) {
+          return Scaffold(
+            body: InventoryReceiptReviewSheet(
+              items:
+                  drafts ??
+                  items!
+                      .map((item) => ReceiptReviewItemDraft(item: item))
+                      .toList(growable: false),
+              receiptPreviewBytes: receiptPreviewBytes,
+              onCancelTap: onCancelTap,
+              onSaveTap: (drafts) {
+                final draftSaveTap = onDraftSaveTap;
+                if (draftSaveTap != null) {
+                  return draftSaveTap(drafts);
+                }
+                return onSaveTap(
+                  drafts.map((draft) => draft.item).toList(growable: false),
+                );
+              },
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: buildManualProductSearchRoutePage,
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+
   return ProviderScope(
     overrides: overrides,
-    child: MaterialApp(
+    child: MaterialApp.router(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: InventoryReceiptReviewSheet(
-          items:
-              drafts ??
-              items!
-                  .map((item) => ReceiptReviewItemDraft(item: item))
-                  .toList(growable: false),
-          receiptPreviewBytes: receiptPreviewBytes,
-          onCancelTap: onCancelTap,
-          onSaveTap: (drafts) {
-            final draftSaveTap = onDraftSaveTap;
-            if (draftSaveTap != null) {
-              return draftSaveTap(drafts);
-            }
-            return onSaveTap(
-              drafts.map((draft) => draft.item).toList(growable: false),
-            );
-          },
-        ),
-      ),
+      routerConfig: router,
     ),
   );
 }
@@ -150,14 +176,25 @@ class _RecordingOffProductSearchRepository
   }
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
   _FakeInventoryItemRepository(this.items);
 
   final List<InventoryItem> items;
 
   @override
+  bool get supportsLimitedRecentManualReads => true;
+
+  @override
   Future<List<InventoryItem>> readAll() async {
     return List<InventoryItem>.of(items);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return List<InventoryItem>.of(items.take(limit));
   }
 
   @override
@@ -413,7 +450,11 @@ final Uint8List _receiptPreviewPng = Uint8List.fromList(const <int>[
   0x82,
 ]);
 
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
+@Dependencies([
+  inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 void main() {
   testWidgets('price overview shows total, savable and excluded sums', (
     tester,

@@ -1,22 +1,18 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page.dart';
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 
@@ -42,7 +38,6 @@ class InventoryItemCandidateSwapRequest {
 }
 
 /// Runs the inventory candidate swap picker and returns the chosen product.
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   required BuildContext context,
   required WidgetRef ref,
@@ -113,23 +108,18 @@ buildInventoryItemCandidateSwapRequestFromCandidate({
   );
 }
 
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
 Future<InventoryItemCandidateSwapRequest?> _manualEntryRequest({
   required BuildContext context,
   required InventoryItem item,
   required GlobalFoodItemMatcher matcher,
 }) async {
-  final result = await Navigator.of(context, rootNavigator: true)
-      .push<InventoryReceiptManualProductResult>(
-        MaterialPageRoute<InventoryReceiptManualProductResult>(
-          fullscreenDialog: true,
-          builder: (routeContext) {
-            return InventoryReceiptManualProductPage(
-              item: item,
-              includeStoreInSearch: false,
-              includeWeightInSearch: false,
-            );
-          },
+  final result =
+      await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
+        context: context,
+        args: ManualProductSearchRouteArgs.manualProduct(
+          item: item,
+          includeStoreInSearch: false,
+          includeWeightInSearch: false,
         ),
       );
   if (!context.mounted || result == null) {

@@ -40,8 +40,21 @@ abstract interface class InventoryItemStore {
   });
 }
 
+/// Reads limited inventory item projections.
+abstract interface class InventoryItemRecentManualStore {
+  /// Whether recent manual reads are query-limited by the store.
+  bool get supportsLimitedRecentManualQuery;
+
+  /// Reads recent manual item documents, newest first.
+  Future<List<InventoryItemDocument>> readRecentManual({
+    required String userId,
+    required int limit,
+  });
+}
+
 /// Defines firestore inventory item store.
-class FirestoreInventoryItemStore implements InventoryItemStore {
+class FirestoreInventoryItemStore
+    implements InventoryItemStore, InventoryItemRecentManualStore {
   /// The firestore inventory item store.
   const FirestoreInventoryItemStore({required FirebaseFirestore firestore})
     : _firestore = firestore;
@@ -53,8 +66,30 @@ class FirestoreInventoryItemStore implements InventoryItemStore {
   }
 
   @override
+  bool get supportsLimitedRecentManualQuery => true;
+
+  @override
   Future<List<InventoryItemDocument>> readAll({required String userId}) async {
     final snapshot = await _collection(userId).get();
+    return _mapSnapshot(snapshot);
+  }
+
+  @override
+  Future<List<InventoryItemDocument>> readRecentManual({
+    required String userId,
+    required int limit,
+  }) async {
+    if (limit <= 0) {
+      return const <InventoryItemDocument>[];
+    }
+
+    final snapshot = await _collection(userId)
+        .where('origin', isEqualTo: 'manualAdd')
+        .where('is_deposit', isEqualTo: false)
+        .where('is_discount', isEqualTo: false)
+        .orderBy('entry_date', descending: true)
+        .limit(limit)
+        .get();
     return _mapSnapshot(snapshot);
   }
 

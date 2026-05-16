@@ -3,7 +3,7 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/domain/nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search/domain/manual_product_search_value_utils.dart';
-import 'package:yamt/features/product_search/provider/manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/controllers/manual_product_search_models.dart';
 
 const _keepValue = Object();
 

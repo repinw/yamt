@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_form_components.dart';
+    'manual_product_search_form/manual_product_preview.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form_details.dart';
-import 'package:yamt/features/product_search/provider/'
-    'manual_product_search_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _wrapDetailsForm({

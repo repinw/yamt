@@ -54,6 +54,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'prepared_meal_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -66,6 +68,7 @@ enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
+  manualProductRecentItemsService,
 ])
 class InventoryList extends ConsumerStatefulWidget {
   /// The inventory list.

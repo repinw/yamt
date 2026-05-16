@@ -1,6 +1,6 @@
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
-import 'package:yamt/features/product_search/provider/manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/controllers/manual_product_search_models.dart';
 
 /// Outcome kind from the manual product barcode scanner sheet.
 enum ManualBarcodeScanResultKind {

@@ -38,6 +38,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -57,6 +59,7 @@ const _preparedMealImageAssetUuid = Uuid();
   ReceiptBatchFlowController,
   receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
+  manualProductRecentItemsService,
 ])
 class InventoryPage extends ConsumerStatefulWidget {
   /// The inventory page.

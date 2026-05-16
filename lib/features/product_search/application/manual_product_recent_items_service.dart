@@ -1,8 +1,44 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+part 'manual_product_recent_items_service.g.dart';
+
 const _manualProductRecentItemLimit = 6;
+
+/// Application service for recent manual product candidates.
+@Riverpod(dependencies: [inventoryItemRepository])
+ManualProductRecentItemsService manualProductRecentItemsService(Ref ref) {
+  return ManualProductRecentItemsService(
+    ref.read(inventoryItemRepositoryProvider),
+  );
+}
+
+/// Reads and prepares recent manual product items.
+class ManualProductRecentItemsService {
+  /// Creates a recent item service.
+  const ManualProductRecentItemsService(this._repository);
+
+  final InventoryItemRepository _repository;
+
+  /// Reads recent manual products, newest first and deduped.
+  Future<List<InventoryItem>> readRecentItems() async {
+    final repository = _repository;
+    if (repository is InventoryItemRecentManualReader) {
+      final recentReader = repository as InventoryItemRecentManualReader;
+      final items = await recentReader.readRecentManualItems(
+        limit: _manualProductRecentItemLimit,
+      );
+      return buildManualProductRecentItems(items);
+    }
+
+    throw StateError(
+      'Inventory repository must support limited recent manual reads.',
+    );
+  }
+}
 
 /// Builds recent manual products, newest first and deduped by stable identity.
 List<InventoryItem> buildManualProductRecentItems(List<InventoryItem> items) {

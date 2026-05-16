@@ -14,7 +14,8 @@ class _FakeInventoryUserSession implements InventoryUserSession {
   final String? currentUserId;
 }
 
-class _FakeInventoryItemStore implements InventoryItemStore {
+class _FakeInventoryItemStore
+    implements InventoryItemStore, InventoryItemRecentManualStore {
   _FakeInventoryItemStore({
     Map<String, List<InventoryItemDocument>>? initialDocumentsByUser,
   }) : _documentsByUser =
@@ -33,8 +34,33 @@ class _FakeInventoryItemStore implements InventoryItemStore {
   int maxConcurrentUpserts = 0;
 
   @override
+  bool get supportsLimitedRecentManualQuery => true;
+
+  @override
   Future<List<InventoryItemDocument>> readAll({required String userId}) async {
     return _copyDocuments(userId);
+  }
+
+  @override
+  Future<List<InventoryItemDocument>> readRecentManual({
+    required String userId,
+    required int limit,
+  }) async {
+    if (limit <= 0) {
+      return const <InventoryItemDocument>[];
+    }
+
+    final documents =
+        _copyDocuments(userId)
+            .where(
+              (document) =>
+                  document.data['origin'] == InventoryItemOrigin.manualAdd.name,
+            )
+            .where((document) => document.data['is_deposit'] != true)
+            .where((document) => document.data['is_discount'] != true)
+            .toList(growable: false)
+          ..sort(_compareEntryDateDescending);
+    return documents.take(limit).toList(growable: false);
   }
 
   @override
@@ -144,16 +170,40 @@ class _FakeInventoryItemStore implements InventoryItemStore {
     }
     controller.add(_copyDocuments(userId));
   }
+
+  int _compareEntryDateDescending(
+    InventoryItemDocument left,
+    InventoryItemDocument right,
+  ) {
+    return _entryDate(right).compareTo(_entryDate(left));
+  }
+
+  DateTime _entryDate(InventoryItemDocument document) {
+    final raw = document.data['entry_date'];
+    if (raw is String) {
+      return DateTime.tryParse(raw) ?? DateTime.fromMillisecondsSinceEpoch(0);
+    }
+    return DateTime.fromMillisecondsSinceEpoch(0);
+  }
 }
 
-InventoryItem _item(String id) {
+InventoryItem _item(
+  String id, {
+  DateTime? entryDate,
+  InventoryItemOrigin origin = InventoryItemOrigin.standard,
+  bool isDeposit = false,
+  bool isDiscount = false,
+}) {
   return InventoryItem.create(
     id: id,
     name: 'Milk',
-    entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+    entryDate: entryDate ?? DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
     unitPrice: 1,
+    origin: origin,
+    isDeposit: isDeposit,
+    isDiscount: isDiscount,
   );
 }
 
@@ -196,6 +246,85 @@ void main() {
       expect(items.single.id, 'doc-a');
     },
   );
+
+  test(
+    'readRecentManualItems returns empty list when user is signed out',
+    () async {
+      final store = _FakeInventoryItemStore();
+      addTearDown(store.dispose);
+      final repository = FirestoreInventoryItemRepository(
+        session: _FakeInventoryUserSession(),
+        sessionShutdownSignal: SessionShutdownSignal(),
+        store: store,
+      );
+
+      final items = await repository.readRecentManualItems(limit: 6);
+
+      expect(items, isEmpty);
+    },
+  );
+
+  test('readRecentManualItems reads filtered newest limited items', () async {
+    final store = _FakeInventoryItemStore(
+      initialDocumentsByUser: <String, List<InventoryItemDocument>>{
+        'user-1': <InventoryItemDocument>[
+          InventoryItemDocument(
+            id: 'standard',
+            data: _item(
+              'standard',
+              entryDate: DateTime.utc(2026, 1, 5),
+            ).toJson(),
+          ),
+          InventoryItemDocument(
+            id: 'deposit',
+            data: _item(
+              'deposit',
+              entryDate: DateTime.utc(2026, 1, 6),
+              origin: InventoryItemOrigin.manualAdd,
+              isDeposit: true,
+            ).toJson(),
+          ),
+          InventoryItemDocument(
+            id: 'manual-old',
+            data: _item(
+              'manual-old',
+              entryDate: DateTime.utc(2026, 1, 2),
+              origin: InventoryItemOrigin.manualAdd,
+            ).toJson(),
+          ),
+          InventoryItemDocument(
+            id: 'manual-new',
+            data: _item(
+              'manual-new',
+              entryDate: DateTime.utc(2026, 1, 7),
+              origin: InventoryItemOrigin.manualAdd,
+            ).toJson(),
+          ),
+          InventoryItemDocument(
+            id: 'manual-middle',
+            data: _item(
+              'manual-middle',
+              entryDate: DateTime.utc(2026, 1, 4),
+              origin: InventoryItemOrigin.manualAdd,
+            ).toJson(),
+          ),
+        ],
+      },
+    );
+    addTearDown(store.dispose);
+    final repository = FirestoreInventoryItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
+      store: store,
+    );
+
+    final items = await repository.readRecentManualItems(limit: 2);
+
+    expect(items.map((item) => item.id), <String>[
+      'manual-new',
+      'manual-middle',
+    ]);
+  });
 
   test('appendAll upserts by id and appends new items', () async {
     final store = _FakeInventoryItemStore(

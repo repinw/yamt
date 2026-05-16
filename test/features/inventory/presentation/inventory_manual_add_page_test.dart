@@ -37,12 +37,18 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
     'product_ai_search_models.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
@@ -51,11 +57,15 @@ class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class _MockUser extends Mock implements User {}
 
-class _RecordingInventoryItemRepository implements InventoryItemRepository {
+class _RecordingInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
   final StreamController<List<InventoryItem>> _controller =
       StreamController<List<InventoryItem>>.broadcast();
   final List<InventoryItem> appendedItems = <InventoryItem>[];
   final List<InventoryItem> _items = <InventoryItem>[];
+
+  @override
+  bool get supportsLimitedRecentManualReads => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
@@ -68,6 +78,13 @@ class _RecordingInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<List<InventoryItem>> readAll() async {
     return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return List<InventoryItem>.from(_items.take(limit));
   }
 
   @override
@@ -405,6 +422,8 @@ class _FakeMobileScannerPlatform extends MobileScannerPlatform {
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
 ])
 Widget _buildHarness({
   required OffProductSearchRepository offRepository,
@@ -432,6 +451,10 @@ Widget _buildHarness({
         builder: (context, state) {
           return InventoryManualAddPage(initialAction: initialAction);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
     ],
   );
@@ -616,6 +639,8 @@ ProductAiSearchDraft _aiDraft() {
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
 ])
 void main() {
   testWidgets('manual add route maps manual search initial action', (

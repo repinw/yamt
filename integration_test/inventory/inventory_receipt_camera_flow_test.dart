@@ -15,6 +15,10 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
@@ -44,6 +48,7 @@ class _ReceiptCameraIntegrationHarness {
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
   receiptCameraSupported,
+  manualProductRecentItemsService,
 ])
 _ReceiptCameraIntegrationHarness _buildHarness() {
   final routeObserver = RouteObserver<ModalRoute<void>>();
@@ -63,6 +68,10 @@ _ReceiptCameraIntegrationHarness _buildHarness() {
           final args = state.extra! as InventoryReceiptReviewPageArgs;
           return InventoryReceiptReviewPage(args: args);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
     ],
   );
@@ -112,6 +121,7 @@ Future<void> _pumpVisibleStep(
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
   receiptCameraSupported,
+  manualProductRecentItemsService,
 ])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =

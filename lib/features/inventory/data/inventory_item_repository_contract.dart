@@ -14,3 +14,12 @@ abstract interface class InventoryItemRepository {
   /// Append all.
   Future<bool> appendAll(List<InventoryItem> items);
 }
+
+/// Reads limited recent manual inventory items.
+abstract interface class InventoryItemRecentManualReader {
+  /// Whether recent manual reads are handled without loading all items.
+  bool get supportsLimitedRecentManualReads;
+
+  /// Reads recent manual items, newest first.
+  Future<List<InventoryItem>> readRecentManualItems({required int limit});
+}

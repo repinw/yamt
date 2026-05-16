@@ -16,6 +16,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -82,6 +84,7 @@ class ReceiptGroupSelectionOptions {
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
+  manualProductRecentItemsService,
 ])
 class ReceiptGroupTile extends StatefulWidget {
   /// The receipt group tile.

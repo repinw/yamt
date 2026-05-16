@@ -7,8 +7,8 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 
-const _progressAnimationDuration = Duration(milliseconds: 1000);
-const _progressAnimationCurve = Curves.easeOut;
+const Duration _progressAnimationDuration = Duration(milliseconds: 1000);
+const Curve _progressAnimationCurve = Curves.easeOut;
 
 /// Daily kcal progress bar with an activity extension segment.
 class DiaryDailyGoalProgressBar extends StatelessWidget {

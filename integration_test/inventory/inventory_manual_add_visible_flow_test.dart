@@ -22,13 +22,23 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class _RecordingInventoryItemRepository implements InventoryItemRepository {
+class _RecordingInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
   final StreamController<List<InventoryItem>> _controller =
       StreamController<List<InventoryItem>>.broadcast();
   final List<InventoryItem> appendedItems = <InventoryItem>[];
   final List<InventoryItem> _items = <InventoryItem>[];
+
+  @override
+  bool get supportsLimitedRecentManualReads => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
@@ -41,6 +51,13 @@ class _RecordingInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<List<InventoryItem>> readAll() async {
     return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return List<InventoryItem>.from(_items.take(limit));
   }
 
   @override
@@ -187,6 +204,8 @@ class _ManualAddIntegrationHarness {
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
 ])
 _ManualAddIntegrationHarness _buildHarness() {
   final inventoryRepository = _RecordingInventoryItemRepository();
@@ -222,6 +241,10 @@ _ManualAddIntegrationHarness _buildHarness() {
       GoRoute(
         path: AppRoutes.homeInventoryManualAdd,
         builder: (context, state) => const InventoryManualAddPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
     ],
   );
@@ -277,6 +300,8 @@ Future<void> _showStep(
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
 ])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =

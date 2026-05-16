@@ -44,6 +44,8 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_nutrition_strip.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item row.
@@ -51,6 +53,7 @@ import 'package:yamt/l10n/app_localizations.dart';
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
+  manualProductRecentItemsService,
 ])
 class InventoryItemRow extends ConsumerStatefulWidget {
   /// The inventory item row.

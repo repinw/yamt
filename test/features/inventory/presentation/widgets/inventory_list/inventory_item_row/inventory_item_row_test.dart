@@ -16,12 +16,15 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'remaining_progress_bar.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 @Dependencies([
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
+  manualProductRecentItemsService,
 ])
 class _InventoryItemRowHost extends StatelessWidget {
   const _InventoryItemRowHost({
@@ -89,6 +92,7 @@ class _InventoryItemRowHost extends StatelessWidget {
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
+  manualProductRecentItemsService,
 ])
 void main() {
   testWidgets('positions expand indicator in the top-right header area', (

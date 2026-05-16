@@ -9,6 +9,10 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
@@ -31,7 +35,11 @@ InventoryItem _item({
   );
 }
 
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
+@Dependencies([
+  inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 Widget _buildHarness({required InventoryReceiptReviewPageArgs args}) {
   final router = GoRouter(
     routes: <RouteBase>[
@@ -45,6 +53,10 @@ Widget _buildHarness({required InventoryReceiptReviewPageArgs args}) {
           final args = state.extra! as InventoryReceiptReviewPageArgs;
           return InventoryReceiptReviewPage(args: args);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        pageBuilder: buildManualProductSearchRoutePage,
       ),
     ],
   );
@@ -99,7 +111,11 @@ class _ReviewLauncherState extends State<_ReviewLauncher> {
   }
 }
 
-@Dependencies([inventoryItemRepository, inventoryManualAddQuickEatConfig])
+@Dependencies([
+  inventoryItemRepository,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 void main() {
   testWidgets('system back closes review page with false result', (
     tester,

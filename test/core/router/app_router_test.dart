@@ -15,6 +15,8 @@ import 'package:yamt/features/auth/application/'
     'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -27,14 +29,27 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 
@@ -161,9 +176,13 @@ const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
 
 @Dependencies([
   appRouter,
+  inventoryItemRepository,
+  inventoryBackedCalorieEntrySaveFlow,
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
   InventoryItemsController,
-  ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  ReceiptCaptureFlowController,
 ])
 void main() {
   testWidgets('shows splash while auth state is loading', (tester) async {
@@ -835,6 +854,84 @@ void main() {
 
     expect(manualAddRoute.path, AppRoutes.homeInventoryManualAdd);
   });
+
+  testWidgets('product search child flow route renders route args page', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final router = container.read(appRouterProvider);
+    final routes = router.configuration.routes.whereType<GoRoute>().toList();
+    final childRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.productSearchChildFlow,
+    );
+
+    expect(childRoute.path, AppRoutes.productSearchChildFlow);
+
+    final args = ManualProductSearchRouteArgs.aiSearch(
+      item: InventoryItem.create(
+        id: 'item-1',
+        name: 'Placeholder',
+        entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
+        storeName: 'Store',
+        quantity: 1,
+      ),
+      initialPrompt: 'banana',
+      showEatImmediatelyOption: false,
+      initialAction: InventoryReceiptManualProductAction.addToInventory,
+    );
+    final payloadStore = container.read(
+      manualProductSearchRoutePayloadStoreProvider,
+    );
+    final payloadId = payloadStore.put(args);
+    addTearDown(() {
+      payloadStore.remove(payloadId);
+    });
+
+    unawaited(
+      router.push<void>(args.locationForPayload(payloadId)),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(find.byType(ManualProductAiSearchPage), findsOneWidget);
+  });
+
+  testWidgets(
+    'restored product search child flow without args redirects to manual add',
+    (tester) async {
+      final container = _createContainerWithAuth(
+        Stream<User?>.value(_authenticatedUser()),
+        completedProfileSetupUserIds: {'uid-123'},
+        completedCalorieGoalOnboardingUserIds: {'uid-123'},
+      );
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await _pumpRouterTransition(tester);
+
+      final router = container.read(appRouterProvider)
+        ..go(
+          AppRoutes.productSearchChildFlowPath(
+            ManualProductSearchChildFlow.aiSearch.pathSegment,
+          ),
+        );
+      await _pumpRouterTransition(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(router.state.uri.path, AppRoutes.homeInventoryManualAdd);
+      expect(find.byType(InventoryManualAddPage), findsOneWidget);
+    },
+  );
 
   testWidgets('kitchen utensils route is registered on app router', (
     tester,

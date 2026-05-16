@@ -18,6 +18,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -44,6 +46,7 @@ InventoryItem _item({
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
+  manualProductRecentItemsService,
 ])
 Widget _buildTestApp({required List<InventoryItem> items}) {
   return _buildInventoryTestApp(items: items);
@@ -54,6 +57,7 @@ Widget _buildTestApp({required List<InventoryItem> items}) {
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
+  manualProductRecentItemsService,
 ])
 Widget _buildInventoryTestApp({
   required List<InventoryItem> items,
@@ -102,6 +106,7 @@ Widget _buildInventoryTestApp({
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
+  manualProductRecentItemsService,
 ])
 Widget _buildInventoryListBody({
   required List<InventoryItem> items,
@@ -166,6 +171,7 @@ PreparedMeal _preparedMeal({
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
   InventoryItemsController,
+  manualProductRecentItemsService,
 ])
 List<String> _visibleInventoryItemNames(WidgetTester tester) {
   return tester
@@ -279,6 +285,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
+  manualProductRecentItemsService,
 ])
 class _InventoryListPersistenceHarness extends StatefulWidget {
   const _InventoryListPersistenceHarness({
@@ -329,6 +336,7 @@ class _InventoryListPersistenceHarnessState
   inventoryItemRepository,
   InventoryItemsController,
   preparedMealImagePicker,
+  manualProductRecentItemsService,
 ])
 void main() {
   testWidgets('filter switch updates in sheet and hides fully consumed items', (

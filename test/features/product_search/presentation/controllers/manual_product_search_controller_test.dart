@@ -7,11 +7,11 @@ import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_controller.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
-import 'package:yamt/features/product_search/provider/'
+import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_state.dart';
 
 class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
