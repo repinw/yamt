@@ -133,13 +133,8 @@ Widget _wrap({
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) {
-          final args = state.extra! as ManualProductSearchRouteArgs;
-          return NoTransitionPage<Object?>(
-            key: state.pageKey,
-            child: args.builder(context),
-          );
-        },
+        pageBuilder: (context, state) =>
+            buildManualProductSearchRoutePage(state),
       ),
     ],
   );
@@ -182,14 +177,25 @@ class _RecordingOffProductSearchRepository
   }
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
   _FakeInventoryItemRepository(this.items);
 
   final List<InventoryItem> items;
 
   @override
+  bool get supportsLimitedRecentManualReads => true;
+
+  @override
   Future<List<InventoryItem>> readAll() async {
     return List<InventoryItem>.of(items);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return List<InventoryItem>.of(items.take(limit));
   }
 
   @override

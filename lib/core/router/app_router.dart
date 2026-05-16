@@ -151,19 +151,10 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) {
-          final args = state.extra;
-          if (args is! ManualProductSearchRouteArgs) {
-            throw ArgumentError(
-              'Product search child flow route requires '
-              'ManualProductSearchRouteArgs.',
-            );
-          }
-          return NoTransitionPage<Object?>(
-            key: state.pageKey,
-            child: args.builder(context),
-          );
-        },
+        redirect: (context, state) =>
+            redirectInvalidManualProductSearchRoute(state),
+        pageBuilder: (context, state) =>
+            buildManualProductSearchRoutePage(state),
       ),
       GoRoute(
         path: AppRoutes.homeSettingsAccount,

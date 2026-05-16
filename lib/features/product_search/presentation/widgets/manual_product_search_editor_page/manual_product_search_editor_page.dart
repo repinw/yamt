@@ -447,17 +447,14 @@ class _InventoryReceiptManualProductEditorPageState
     final result =
         await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
           context: context,
-          builder: (routeContext) {
-            return InventoryReceiptManualProductEditorPage(
-              config: config,
-              showEatImmediatelyOption: widget.showEatImmediatelyOption,
-              initialAction: action,
-              closeCurrentEditorOnSave: true,
-              showActionSelector: showActionSelector,
-              onSaved: widget.onSaved,
-              initialInfoMessage: initialInfoMessage,
-            );
-          },
+          args: ManualProductSearchRouteArgs.editor(
+            config: config,
+            showEatImmediatelyOption: widget.showEatImmediatelyOption,
+            initialAction: action,
+            closeCurrentEditorOnSave: true,
+            showActionSelector: showActionSelector,
+            initialInfoMessage: initialInfoMessage,
+          ),
         );
     if (!mounted || result == null) {
       return;
@@ -627,14 +624,12 @@ class _InventoryReceiptManualProductEditorPageState
     final result =
         await pushManualProductSearchPage<ManualProductAiSearchResult>(
           context: context,
-          builder: (routeContext) {
-            return ManualProductAiSearchPage(
-              item: widget.config.item,
-              initialPrompt: _searchController.text,
-              showEatImmediatelyOption: widget.showEatImmediatelyOption,
-              initialAction: _selectedAction,
-            );
-          },
+          args: ManualProductSearchRouteArgs.aiSearch(
+            item: widget.config.item,
+            initialPrompt: _searchController.text,
+            showEatImmediatelyOption: widget.showEatImmediatelyOption,
+            initialAction: _selectedAction,
+          ),
         );
     if (!mounted || result == null) {
       return;

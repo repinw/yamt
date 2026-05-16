@@ -37,6 +37,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/product_search/application/'
@@ -55,11 +57,15 @@ class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class _MockUser extends Mock implements User {}
 
-class _RecordingInventoryItemRepository implements InventoryItemRepository {
+class _RecordingInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
   final StreamController<List<InventoryItem>> _controller =
       StreamController<List<InventoryItem>>.broadcast();
   final List<InventoryItem> appendedItems = <InventoryItem>[];
   final List<InventoryItem> _items = <InventoryItem>[];
+
+  @override
+  bool get supportsLimitedRecentManualReads => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
@@ -72,6 +78,13 @@ class _RecordingInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<List<InventoryItem>> readAll() async {
     return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return List<InventoryItem>.from(_items.take(limit));
   }
 
   @override
@@ -409,6 +422,7 @@ class _FakeMobileScannerPlatform extends MobileScannerPlatform {
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
 ])
 Widget _buildHarness({
@@ -440,13 +454,8 @@ Widget _buildHarness({
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) {
-          final args = state.extra! as ManualProductSearchRouteArgs;
-          return NoTransitionPage<Object?>(
-            key: state.pageKey,
-            child: args.builder(context),
-          );
-        },
+        pageBuilder: (context, state) =>
+            buildManualProductSearchRoutePage(state),
       ),
     ],
   );
@@ -631,6 +640,7 @@ ProductAiSearchDraft _aiDraft() {
   inventoryItemRepository,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
 ])
 void main() {

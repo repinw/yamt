@@ -10,6 +10,8 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
@@ -195,8 +197,12 @@ Future<void> _cancelLoggedAtDateChange(
   await tester.pumpAndSettle();
 }
 
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 GoRouter _buildAiPageRouter({
-  required WidgetBuilder pageBuilder,
+  required ManualProductSearchRouteArgs args,
   required ValueChanged<ManualProductAiSearchResult?> onResult,
 }) {
   return GoRouter(
@@ -213,7 +219,7 @@ GoRouter _buildAiPageRouter({
                         ManualProductAiSearchResult
                       >(
                         context: context,
-                        builder: pageBuilder,
+                        args: args,
                       );
                   onResult(result);
                 },
@@ -225,19 +231,17 @@ GoRouter _buildAiPageRouter({
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) {
-          final args = state.extra! as ManualProductSearchRouteArgs;
-          return NoTransitionPage<Object?>(
-            key: state.pageKey,
-            child: args.builder(context),
-          );
-        },
+        pageBuilder: (context, state) =>
+            buildManualProductSearchRoutePage(state),
       ),
     ],
   );
 }
 
-@Dependencies([inventoryManualAddQuickEatConfig])
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 void main() {
   testWidgets('ai page shows error when generation fails', (tester) async {
     final repository = _FakeProductAiSearchRepository(
@@ -426,7 +430,7 @@ void main() {
 
     final router = _buildAiPageRouter(
       onResult: (result) => pageResult = result,
-      pageBuilder: (_) => ManualProductAiSearchPage(
+      args: ManualProductSearchRouteArgs.aiSearch(
         item: InventoryItem.create(
           id: 'item-1',
           name: 'Placeholder',
@@ -435,6 +439,8 @@ void main() {
           quantity: 1,
         ),
         initialPrompt: 'pelmeni mit Schweinefleisch',
+        showEatImmediatelyOption: false,
+        initialAction: InventoryReceiptManualProductAction.addToInventory,
       ),
     );
     addTearDown(router.dispose);
@@ -511,10 +517,11 @@ void main() {
 
     final router = _buildAiPageRouter(
       onResult: (result) => pageResult = result,
-      pageBuilder: (_) => ManualProductAiSearchPage(
+      args: ManualProductSearchRouteArgs.aiSearch(
         item: _placeholderItem(),
         initialPrompt: 'doener haehnchen',
         showEatImmediatelyOption: true,
+        initialAction: InventoryReceiptManualProductAction.addToInventory,
       ),
     );
     addTearDown(router.dispose);
@@ -615,10 +622,11 @@ void main() {
 
     final router = _buildAiPageRouter(
       onResult: (result) => pageResult = result,
-      pageBuilder: (_) => ManualProductAiSearchPage(
+      args: ManualProductSearchRouteArgs.aiSearch(
         item: _placeholderItem(),
         initialPrompt: 'doener haehnchen',
         showEatImmediatelyOption: true,
+        initialAction: InventoryReceiptManualProductAction.addToInventory,
       ),
     );
     addTearDown(router.dispose);

@@ -25,7 +25,7 @@ abstract final class AppRoutes {
   static const homeInventoryManualAdd = '/home/inventory/manual-add';
 
   /// Product-search child flow route.
-  static const productSearchChildFlow = '/product-search/child-flow';
+  static const productSearchChildFlow = '/product-search/child-flow/:flow';
 
   /// Inventory template list route.
   static const homeInventoryTemplates = '/home/inventory/templates';
@@ -78,6 +78,11 @@ abstract final class AppRoutes {
   /// Builds calorie entry details path for concrete entry id.
   static String homeCaloriesEntryDetailsPath(String entryId) {
     return '/home/calories/entry/$entryId/details';
+  }
+
+  /// Builds product-search child flow path for concrete flow segment.
+  static String productSearchChildFlowPath(String flow) {
+    return '/product-search/child-flow/$flow';
   }
 
   /// Builds inventory template detail path for concrete template id.

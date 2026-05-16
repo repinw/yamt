@@ -55,11 +55,23 @@ class _CurrentInventoryUserSession implements InventoryUserSession {
   String? get currentUserId => _currentUserId;
 }
 
-class _UnavailableInventoryItemStore implements InventoryItemStore {
+class _UnavailableInventoryItemStore
+    implements InventoryItemStore, InventoryItemRecentManualStore {
   const _UnavailableInventoryItemStore();
 
   @override
+  bool get supportsLimitedRecentManualQuery => true;
+
+  @override
   Future<List<InventoryItemDocument>> readAll({required String userId}) async {
+    return const <InventoryItemDocument>[];
+  }
+
+  @override
+  Future<List<InventoryItemDocument>> readRecentManual({
+    required String userId,
+    required int limit,
+  }) async {
     return const <InventoryItemDocument>[];
   }
 

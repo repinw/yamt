@@ -20,8 +20,6 @@ import 'package:yamt/features/product_search/presentation/controllers/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_barcode_scan_result.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_editor_page/manual_product_search_editor_page.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form/manual_product_search_form.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
@@ -181,16 +179,14 @@ class _InventoryReceiptManualProductLauncherPageState
     final result =
         await pushManualProductSearchPage<ManualProductAiSearchResult>(
           context: context,
-          builder: (routeContext) {
-            return ManualProductAiSearchPage(
-              item: widget.config.item,
-              initialPrompt: _searchController.text,
-              showEatImmediatelyOption: widget.showEatImmediatelyOption,
-              initialAction: quickEatConfig.quickEatOnly
-                  ? InventoryReceiptManualProductAction.eatNow
-                  : InventoryReceiptManualProductAction.addToInventory,
-            );
-          },
+          args: ManualProductSearchRouteArgs.aiSearch(
+            item: widget.config.item,
+            initialPrompt: _searchController.text,
+            showEatImmediatelyOption: widget.showEatImmediatelyOption,
+            initialAction: quickEatConfig.quickEatOnly
+                ? InventoryReceiptManualProductAction.eatNow
+                : InventoryReceiptManualProductAction.addToInventory,
+          ),
         );
     if (!mounted || result == null) {
       return;
@@ -270,24 +266,35 @@ class _InventoryReceiptManualProductLauncherPageState
       includeStoreInSearch: widget.config.includeStoreInSearch,
       includeWeightInSearch: widget.config.includeWeightInSearch,
     );
-    final result =
-        await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
-          context: context,
-          builder: (routeContext) {
-            return InventoryReceiptManualProductEditorPage(
+    final keepEditorOpenOnSave = autofocusSearch && widget.onSaved != null;
+    final onSavedHandlerId = keepEditorOpenOnSave
+        ? registerManualProductSearchRouteSaveHandler(
+            _handleNestedEditorSaved,
+          )
+        : null;
+    InventoryReceiptManualProductResult? result;
+    try {
+      result =
+          await pushManualProductSearchPage<
+            InventoryReceiptManualProductResult
+          >(
+            context: context,
+            args: ManualProductSearchRouteArgs.editor(
               config: config,
               showEatImmediatelyOption: widget.showEatImmediatelyOption,
               initialAction: initialAction,
               closeCurrentEditorOnSave: !autofocusSearch,
               showActionSelector: showActionSelector,
-              onSaved: widget.onSaved,
               autofocusSearch: autofocusSearch,
               initialStartVoiceSearch: initialStartVoiceSearch,
               initialRecentItem: initialRecentItem,
               initialInfoMessage: initialInfoMessage,
-            );
-          },
-        );
+              onSavedHandlerId: onSavedHandlerId,
+            ),
+          );
+    } finally {
+      unregisterManualProductSearchRouteSaveHandler(onSavedHandlerId);
+    }
     if (!mounted || result == null) {
       return;
     }
@@ -298,6 +305,19 @@ class _InventoryReceiptManualProductLauncherPageState
       return;
     }
     _closePage(result);
+  }
+
+  Future<void> _handleNestedEditorSaved(
+    InventoryReceiptManualProductResult result,
+  ) async {
+    if (!mounted) {
+      return;
+    }
+    final onSaved = widget.onSaved;
+    if (onSaved == null) {
+      return;
+    }
+    await onSaved(result);
   }
 
   Future<void> _openBarcodeScanner() async {

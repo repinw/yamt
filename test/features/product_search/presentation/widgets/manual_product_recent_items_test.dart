@@ -118,7 +118,45 @@ void main() {
     final recent = await service.readRecentItems();
 
     expect(recent.map((item) => item.id), <String>['new', 'old']);
+    expect(repository.readRecentManualLimit, 6);
+    expect(repository.didCallReadAll, isFalse);
   });
+
+  test(
+    'service limits recent reads when repository has ten thousand items',
+    () async {
+      final items = List<InventoryItem>.generate(10000, (index) {
+        return _item(
+          id: 'item-$index',
+          name: 'Item $index',
+          entryDate: DateTime.utc(2026).add(Duration(seconds: index)),
+        );
+      }).reversed.toList(growable: false);
+      final repository = _FakeInventoryItemRepository(items);
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final service = container.read(manualProductRecentItemsServiceProvider);
+      final recent = await service.readRecentItems();
+
+      expect(repository.totalItems, 10000);
+      expect(repository.readRecentManualLimit, 6);
+      expect(repository.readRecentManualReturnedCount, 6);
+      expect(repository.didCallReadAll, isFalse);
+      expect(recent.map((item) => item.id), <String>[
+        'item-9999',
+        'item-9998',
+        'item-9997',
+        'item-9996',
+        'item-9995',
+        'item-9994',
+      ]);
+    },
+  );
 
   test('recent item global id hides pending and empty ids', () {
     expect(
@@ -200,17 +238,37 @@ void main() {
   });
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
-  const _FakeInventoryItemRepository(this._items);
+class _FakeInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
+  _FakeInventoryItemRepository(this._items);
 
   final List<InventoryItem> _items;
+  int? readRecentManualLimit;
+  int? readRecentManualReturnedCount;
+  bool didCallReadAll = false;
+  int get totalItems => _items.length;
+
+  @override
+  bool get supportsLimitedRecentManualReads => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async => true;
 
   @override
-  Future<List<InventoryItem>> readAll() async =>
-      List<InventoryItem>.from(_items);
+  Future<List<InventoryItem>> readAll() async {
+    didCallReadAll = true;
+    return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    readRecentManualLimit = limit;
+    final items = List<InventoryItem>.from(_items.take(limit));
+    readRecentManualReturnedCount = items.length;
+    return items;
+  }
 
   @override
   Future<bool> saveAll(List<InventoryItem> items) async => true;

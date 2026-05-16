@@ -84,7 +84,47 @@ class AiEatWhenCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final hasLabel = !isToday && label != null;
+    final Widget content;
+    if (label case final String text when !isToday) {
+      content = Row(
+        key: const Key('manual_product_ai_logged_at_labeled'),
+        children: [
+          Icon(
+            Icons.calendar_today_rounded,
+            color: colors.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: colors.onSurfaceVariant,
+          ),
+        ],
+      );
+    } else {
+      content = Row(
+        key: const Key('manual_product_ai_logged_at_compact'),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.calendar_today_rounded,
+            color: colors.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: colors.onSurfaceVariant,
+          ),
+        ],
+      );
+    }
 
     return Material(
       color: Colors.transparent,
@@ -105,43 +145,7 @@ class AiEatWhenCard extends StatelessWidget {
                 horizontal: AppSpacing.lg,
                 vertical: AppSpacing.lg,
               ),
-              child: hasLabel
-                  ? Row(
-                      key: const Key('manual_product_ai_logged_at_labeled'),
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          color: colors.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Text(
-                            label!,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ],
-                    )
-                  : Row(
-                      key: const Key('manual_product_ai_logged_at_compact'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          color: colors.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ],
-                    ),
+              child: content,
             ),
           ),
         ),

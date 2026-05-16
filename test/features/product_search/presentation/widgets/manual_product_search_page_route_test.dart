@@ -1,12 +1,33 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/product_search/application/'
+    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/controllers/'
+    'manual_product_search_models.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_editor_page/manual_product_search_editor_page.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page/manual_product_search_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_page_types.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 void main() {
   testWidgets('push helper returns typed result without route animation', (
     tester,
@@ -22,21 +43,9 @@ void main() {
               unawaited(
                 pushManualProductSearchPage<String>(
                   context: context,
-                  builder: (_) {
-                    return Builder(
-                      builder: (routeContext) {
-                        return Scaffold(
-                          body: FilledButton(
-                            key: const Key('close_manual_product_route'),
-                            onPressed: () {
-                              popManualProductSearchPage(routeContext, 'done');
-                            },
-                            child: const Text('close'),
-                          ),
-                        );
-                      },
-                    );
-                  },
+                  args: ManualProductSearchRouteArgs.manualProduct(
+                    item: _item(),
+                  ),
                 ).then((value) => result = value),
               );
             },
@@ -47,17 +56,17 @@ void main() {
     );
     addTearDown(router.dispose);
 
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(_wrapRouter(router));
 
     await tester.tap(find.byKey(const Key('open_manual_product_route')));
     await tester.pump();
 
-    expect(
-      find.byKey(const Key('close_manual_product_route')),
-      findsOneWidget,
-    );
+    expect(find.byType(InventoryReceiptManualProductPage), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('close_manual_product_route')));
+    popManualProductSearchPage(
+      tester.element(find.byType(InventoryReceiptManualProductPage)),
+      'done',
+    );
     await tester.pumpAndSettle();
 
     expect(result, 'done');
@@ -74,17 +83,9 @@ void main() {
             onPressed: () => unawaited(
               pushManualProductSearchPage<String>(
                 context: context,
-                builder: (routeContext) {
-                  return Scaffold(
-                    body: FilledButton(
-                      key: const Key('close_go_router_route'),
-                      onPressed: () {
-                        popManualProductSearchPage(routeContext, 'done');
-                      },
-                      child: const Text('child'),
-                    ),
-                  );
-                },
+                args: ManualProductSearchRouteArgs.manualProduct(
+                  item: _item(),
+                ),
               ),
             ),
             child: const Text('home'),
@@ -94,20 +95,104 @@ void main() {
     );
     addTearDown(router.dispose);
 
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(_wrapRouter(router));
 
     await tester.tap(find.byKey(const Key('open_go_router_route')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('close_go_router_route')), findsOneWidget);
+    expect(find.byType(InventoryReceiptManualProductPage), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('close_go_router_route')));
+    popManualProductSearchPage(
+      tester.element(find.byType(InventoryReceiptManualProductPage)),
+      'done',
+    );
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('open_go_router_route')), findsOneWidget);
   });
+
+  testWidgets('editor route resolves registered save handler by id', (
+    tester,
+  ) async {
+    InventoryReceiptManualProductResult? savedResult;
+    final handlerId = registerManualProductSearchRouteSaveHandler((
+      result,
+    ) async {
+      savedResult = result;
+    });
+    addTearDown(() {
+      unregisterManualProductSearchRouteSaveHandler(handlerId);
+    });
+
+    await tester.pumpWidget(
+      _wrapChild(
+        buildManualProductSearchChild(
+          ManualProductSearchRouteArgs.editor(
+            config: InventoryReceiptManualProductConfig(item: _item()),
+            showEatImmediatelyOption: false,
+            initialAction: InventoryReceiptManualProductAction.addToInventory,
+            closeCurrentEditorOnSave: false,
+            showActionSelector: true,
+            autofocusSearch: true,
+            onSavedHandlerId: handlerId,
+          ),
+        ),
+      ),
+    );
+
+    final page = tester.widget<InventoryReceiptManualProductEditorPage>(
+      find.byType(InventoryReceiptManualProductEditorPage),
+    );
+    final result = InventoryReceiptManualProductResult(
+      item: _item(),
+      action: InventoryReceiptManualProductAction.addToInventory,
+    );
+
+    expect(page.closeCurrentEditorOnSave, isFalse);
+    expect(page.onSaved, isNotNull);
+
+    await page.onSaved!(result);
+
+    expect(savedResult, same(result));
+  });
 }
 
+Widget _wrapRouter(GoRouter router) {
+  return ProviderScope(
+    overrides: [
+      inventoryItemRepositoryProvider.overrideWithValue(
+        const _EmptyInventoryItemRepository(),
+      ),
+    ],
+    child: MaterialApp.router(
+      locale: const Locale('en'),
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+    ),
+  );
+}
+
+Widget _wrapChild(Widget child) {
+  return ProviderScope(
+    overrides: [
+      inventoryItemRepositoryProvider.overrideWithValue(
+        const _EmptyInventoryItemRepository(),
+      ),
+    ],
+    child: MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: child,
+    ),
+  );
+}
+
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 GoRouter _buildManualProductRouteTestRouter({
   required WidgetBuilder homeBuilder,
 }) {
@@ -116,14 +201,54 @@ GoRouter _buildManualProductRouteTestRouter({
       GoRoute(path: '/', builder: (context, state) => homeBuilder(context)),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) {
-          final args = state.extra! as ManualProductSearchRouteArgs;
-          return NoTransitionPage<Object?>(
-            key: state.pageKey,
-            child: args.builder(context),
-          );
-        },
+        pageBuilder: (context, state) =>
+            buildManualProductSearchRoutePage(state),
       ),
     ],
   );
+}
+
+InventoryItem _item() {
+  return InventoryItem.create(
+    id: 'item-1',
+    name: 'Milk',
+    entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+  );
+}
+
+class _EmptyInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
+  const _EmptyInventoryItemRepository();
+
+  @override
+  bool get supportsLimitedRecentManualReads => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    return true;
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    return true;
+  }
+
+  @override
+  Stream<List<InventoryItem>> watchAll() {
+    return Stream<List<InventoryItem>>.value(const <InventoryItem>[]);
+  }
 }

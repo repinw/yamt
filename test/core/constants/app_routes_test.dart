@@ -13,7 +13,11 @@ void main() {
     expect(AppRoutes.homeInventoryManualAdd, '/home/inventory/manual-add');
     expect(
       AppRoutes.productSearchChildFlow,
-      '/product-search/child-flow',
+      '/product-search/child-flow/:flow',
+    );
+    expect(
+      AppRoutes.productSearchChildFlowPath('ai-search'),
+      '/product-search/child-flow/ai-search',
     );
     expect(AppRoutes.homeInventoryTemplates, '/home/inventory/templates');
     expect(

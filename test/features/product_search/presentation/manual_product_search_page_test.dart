@@ -94,6 +94,10 @@ Widget _wrapPage({
   );
 }
 
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 class _ManualProductSearchTestApp extends StatefulWidget {
   const _ManualProductSearchTestApp({
     required this.homeBuilder,
@@ -108,6 +112,10 @@ class _ManualProductSearchTestApp extends StatefulWidget {
       _ManualProductSearchTestAppState();
 }
 
+@Dependencies([
+  inventoryManualAddQuickEatConfig,
+  manualProductRecentItemsService,
+])
 class _ManualProductSearchTestAppState
     extends State<_ManualProductSearchTestApp> {
   late final GoRouter _router = GoRouter(
@@ -118,13 +126,8 @@ class _ManualProductSearchTestAppState
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
-        pageBuilder: (context, state) {
-          final args = state.extra! as ManualProductSearchRouteArgs;
-          return NoTransitionPage<Object?>(
-            key: state.pageKey,
-            child: args.builder(context),
-          );
-        },
+        pageBuilder: (context, state) =>
+            buildManualProductSearchRoutePage(state),
       ),
     ],
   );
@@ -207,12 +210,16 @@ class _RecordingOffProductSearchRepository
   }
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
   _FakeInventoryItemRepository({
     List<InventoryItem> initialItems = const <InventoryItem>[],
   }) : _items = initialItems;
 
   final List<InventoryItem> _items;
+
+  @override
+  bool get supportsLimitedRecentManualReads => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
@@ -222,6 +229,13 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<List<InventoryItem>> readAll() async {
     return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return List<InventoryItem>.from(_items.take(limit));
   }
 
   @override
@@ -235,7 +249,11 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 }
 
-class _ThrowingInventoryItemRepository implements InventoryItemRepository {
+class _ThrowingInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
+  @override
+  bool get supportsLimitedRecentManualReads => true;
+
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
     return true;
@@ -244,6 +262,13 @@ class _ThrowingInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<List<InventoryItem>> readAll() async {
     throw StateError('readAll failed');
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    throw StateError('readRecentManualItems failed');
   }
 
   @override

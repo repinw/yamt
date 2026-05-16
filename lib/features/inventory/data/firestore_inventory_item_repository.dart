@@ -10,7 +10,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 const String _repositoryLogName = 'FirestoreInventoryItemRepository';
 
 /// Defines firestore inventory item repository.
-class FirestoreInventoryItemRepository implements InventoryItemRepository {
+class FirestoreInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
   /// Creates an instance.
   FirestoreInventoryItemRepository({
     required InventoryUserSession session,
@@ -24,6 +25,9 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
   final SessionShutdownSignal _sessionShutdownSignal;
   final InventoryItemStore _store;
   Future<void> _writeBarrier = Future<void>.value();
+
+  @override
+  bool get supportsLimitedRecentManualReads => true;
 
   @override
   Stream<List<InventoryItem>> watchAll() {
@@ -41,6 +45,17 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
       return const <InventoryItem>[];
     }
     return _readAllForUser(userId);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    final userId = _currentUserId();
+    if (userId == null || limit <= 0) {
+      return const <InventoryItem>[];
+    }
+    return _readRecentManualForUser(userId: userId, limit: limit);
   }
 
   @override
@@ -135,6 +150,49 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read inventory items from firestore for user $userId.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<List<InventoryItem>> _readRecentManualForUser({
+    required String userId,
+    required int limit,
+  }) async {
+    final collectionPath = 'users/$userId/inventory_items';
+    try {
+      final store = _store;
+      if (store is InventoryItemRecentManualStore) {
+        final recentStore = store as InventoryItemRecentManualStore;
+        final documents = await recentStore.readRecentManual(
+          userId: userId,
+          limit: limit,
+        );
+        return _decodeDocuments(documents);
+      }
+
+      throw StateError(
+        'Inventory item store does not support recent manual reads.',
+      );
+    } on FirebaseException catch (error, stackTrace) {
+      log(
+        _isPermissionDenied(error)
+            ? 'Recent manual inventory read denied by Firestore rules for '
+                  '$collectionPath.'
+            : 'Failed to read recent manual inventory items from firestore '
+                  'for user $userId.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to read recent manual inventory items from firestore for '
+        'user $userId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,

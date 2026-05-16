@@ -25,8 +25,18 @@ class ManualProductRecentItemsService {
 
   /// Reads recent manual products, newest first and deduped.
   Future<List<InventoryItem>> readRecentItems() async {
-    final items = await _repository.readAll();
-    return buildManualProductRecentItems(items);
+    final repository = _repository;
+    if (repository is InventoryItemRecentManualReader) {
+      final recentReader = repository as InventoryItemRecentManualReader;
+      final items = await recentReader.readRecentManualItems(
+        limit: _manualProductRecentItemLimit,
+      );
+      return buildManualProductRecentItems(items);
+    }
+
+    throw StateError(
+      'Inventory repository must support limited recent manual reads.',
+    );
   }
 }
 

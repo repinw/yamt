@@ -20,8 +20,6 @@ import 'package:yamt/features/product_search/application/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page/manual_product_search_page.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
@@ -290,13 +288,11 @@ class _InventoryReceiptReviewSheetState
     final result =
         await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
           context: context,
-          builder: (routeContext) {
-            return InventoryReceiptManualProductPage(
-              item: _items[index].item,
-              includeStoreInSearch: false,
-              includeWeightInSearch: false,
-            );
-          },
+          args: ManualProductSearchRouteArgs.manualProduct(
+            item: _items[index].item,
+            includeStoreInSearch: false,
+            includeWeightInSearch: false,
+          ),
         );
     if (!mounted || result == null) {
       return;

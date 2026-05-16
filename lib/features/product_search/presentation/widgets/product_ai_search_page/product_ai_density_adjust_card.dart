@@ -127,6 +127,7 @@ class AiWeightField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: 110,
       child: TextField(
@@ -140,7 +141,7 @@ class AiWeightField extends StatelessWidget {
         decoration: InputDecoration(
           isDense: true,
           labelText: labelText,
-          suffixText: 'g',
+          suffixText: l10n.inventoryUnitGram,
           errorText: errorText,
         ),
         onChanged: onChanged,
