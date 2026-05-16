@@ -23,7 +23,6 @@ const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';
 const _inventoryItemsCollection = 'inventory_items';
 const _inventoryActivityEventsCollection = 'inventory_activity_events';
-const _uuid = Uuid();
 
 /// The inventory calorie entry commit store provider.
 final inventoryCalorieEntryCommitStoreProvider =
@@ -365,7 +364,7 @@ InventoryActivityEvent? _buildActivityEvent({
   }
 
   return InventoryActivityEvent.fromStockChange(
-    id: _uuid.v4(),
+    id: _newActivityEventId(),
     type: InventoryActivityEventType.itemConsumed,
     actor: actor,
     item: beforeItem,
@@ -376,4 +375,8 @@ InventoryActivityEvent? _buildActivityEvent({
     afterCurrentAmount: afterItem.currentAmount,
     happenedAt: happenedAt,
   );
+}
+
+String _newActivityEventId() {
+  return const Uuid().v4();
 }

@@ -38,6 +38,33 @@ void main() {
       ),
     );
   });
+
+  test('repository chunks appends beyond Firestore batch limit', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreInventoryActivityEventRepository(
+      firestore: firestore,
+      currentUserId: 'owner-1',
+    );
+    final events = List<InventoryActivityEvent>.generate(501, (index) {
+      return _event(
+        id: 'event-$index',
+        happenedAt: DateTime.utc(
+          2026,
+          4,
+          7,
+          10,
+        ).add(Duration(minutes: index)),
+      );
+    });
+
+    final saved = await repository.appendAll(events);
+
+    expect(saved, isTrue);
+    final watchedEvents = await repository.watchRecent(limit: 501).first;
+    expect(watchedEvents, hasLength(501));
+    expect(watchedEvents.first.id, 'event-500');
+    expect(watchedEvents.last.id, 'event-0');
+  });
 }
 
 InventoryActivityEvent _event({

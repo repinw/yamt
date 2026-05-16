@@ -49,8 +49,6 @@ const _preparedMealsControllerLogName = 'PreparedMealsController';
   ],
 )
 class PreparedMealsController extends _$PreparedMealsController {
-  static const _uuid = Uuid();
-
   // Subscription is cancelled by `_disposeSubscription`.
   // ignore: cancel_subscriptions
   StreamSubscription<List<PreparedMeal>>? _mealsSubscription;
@@ -70,7 +68,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         }
         state = AsyncData(meals);
       },
-      buildId: _uuid.v4,
+      buildId: _newId,
       buildNow: DateTime.now,
       logName: _preparedMealsControllerLogName,
     );
@@ -490,11 +488,18 @@ class PreparedMealsController extends _$PreparedMealsController {
   ) async {
     final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
     final beforeItems = await _readInventoryForActivity(inventoryRepository);
-    final result = await operation(inventoryRepository);
+    if (beforeItems == null) {
+      return operation(inventoryRepository);
+    }
+    final trackingRepository = _ActivityTrackingInventoryItemRepository(
+      delegate: inventoryRepository,
+      initialItems: beforeItems,
+    );
+    final result = await operation(trackingRepository);
     if (result.isSuccess) {
       await _recordPreparedMealInventoryDiff(
         beforeItems: beforeItems,
-        afterItems: await _readInventoryForActivity(inventoryRepository),
+        afterItems: trackingRepository.latestItems,
       );
     }
     return result;
@@ -506,17 +511,24 @@ class PreparedMealsController extends _$PreparedMealsController {
   ) async {
     final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
     final beforeItems = await _readInventoryForActivity(inventoryRepository);
-    final saved = await operation(inventoryRepository);
+    if (beforeItems == null) {
+      return operation(inventoryRepository);
+    }
+    final trackingRepository = _ActivityTrackingInventoryItemRepository(
+      delegate: inventoryRepository,
+      initialItems: beforeItems,
+    );
+    final saved = await operation(trackingRepository);
     if (saved) {
       await _recordPreparedMealInventoryDiff(
         beforeItems: beforeItems,
-        afterItems: await _readInventoryForActivity(inventoryRepository),
+        afterItems: trackingRepository.latestItems,
       );
     }
     return saved;
   }
 
-  Future<List<InventoryItem>> _readInventoryForActivity(
+  Future<List<InventoryItem>?> _readInventoryForActivity(
     InventoryItemRepository inventoryRepository,
   ) async {
     try {
@@ -528,7 +540,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         error: error,
         stackTrace: stackTrace,
       );
-      return const <InventoryItem>[];
+      return null;
     }
   }
 
@@ -545,7 +557,7 @@ class PreparedMealsController extends _$PreparedMealsController {
       actor: actor,
       beforeItems: beforeItems,
       afterItems: afterItems,
-      buildId: _uuid.v4,
+      buildId: _newId,
     );
     if (events.isEmpty) {
       return;
@@ -584,6 +596,71 @@ class PreparedMealsController extends _$PreparedMealsController {
         )
         .whenComplete(keepAliveLink.close);
   }
+
+  String _newId() {
+    return const Uuid().v4();
+  }
+}
+
+class _ActivityTrackingInventoryItemRepository
+    implements InventoryItemRepository {
+  _ActivityTrackingInventoryItemRepository({
+    required InventoryItemRepository delegate,
+    required List<InventoryItem> initialItems,
+  }) : _delegate = delegate,
+       _latestItems = List<InventoryItem>.from(initialItems);
+
+  final InventoryItemRepository _delegate;
+  List<InventoryItem> _latestItems;
+
+  List<InventoryItem> get latestItems => List<InventoryItem>.from(
+    _latestItems,
+  );
+
+  @override
+  Stream<List<InventoryItem>> watchAll() {
+    return _delegate.watchAll();
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return latestItems;
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    final saved = await _delegate.saveAll(items);
+    if (saved) {
+      _latestItems = List<InventoryItem>.from(items);
+    }
+    return saved;
+  }
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    final saved = await _delegate.appendAll(items);
+    if (saved) {
+      _latestItems = _upsertItems(_latestItems, items);
+    }
+    return saved;
+  }
+}
+
+List<InventoryItem> _upsertItems(
+  List<InventoryItem> currentItems,
+  List<InventoryItem> items,
+) {
+  if (items.isEmpty) {
+    return List<InventoryItem>.from(currentItems);
+  }
+
+  final itemsById = <String, InventoryItem>{
+    for (final item in currentItems) item.id: item,
+  };
+  for (final item in items) {
+    itemsById[item.id] = item;
+  }
+  return itemsById.values.toList(growable: false);
 }
 
 List<InventoryActivityEvent> _buildPreparedMealInventoryDiffEvents({

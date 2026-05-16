@@ -34,6 +34,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
       StreamController<List<InventoryItem>>.broadcast();
   List<InventoryItem> _items;
   bool saveShouldFail = false;
+  int readAllCount = 0;
   List<InventoryItem> savedItems = const <InventoryItem>[];
   final List<List<InventoryItem>> saveHistory = <List<InventoryItem>>[];
 
@@ -50,6 +51,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
 
   @override
   Future<List<InventoryItem>> readAll() async {
+    readAllCount += 1;
     return List<InventoryItem>.from(_items);
   }
 
@@ -429,6 +431,7 @@ void main() {
       );
       expect(activityRepository.events.first.beforeCurrentAmount, 300);
       expect(activityRepository.events.first.afterCurrentAmount, 100);
+      expect(inventoryRepository.readAllCount, 1);
     },
   );
 
@@ -1519,6 +1522,7 @@ void main() {
     expect(activityRepository.events.single.amount, 100);
     expect(activityRepository.events.single.beforeCurrentAmount, 50);
     expect(activityRepository.events.single.afterCurrentAmount, 150);
+    expect(inventoryRepository.readAllCount, 1);
   });
 
   test(

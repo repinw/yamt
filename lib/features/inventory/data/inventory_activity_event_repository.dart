@@ -14,6 +14,7 @@ const _activityLogName = 'InventoryActivityEventRepository';
 const _usersCollection = 'users';
 const _activityEventsCollection = 'inventory_activity_events';
 const _defaultRecentLimit = 100;
+const _firestoreBatchWriteLimit = 500;
 
 /// Inventory activity event repository.
 abstract interface class InventoryActivityEventRepository {
@@ -63,12 +64,20 @@ class FirestoreInventoryActivityEventRepository
     }
 
     try {
-      final batch = _firestore.batch();
       final collection = _collection(userId);
-      for (final event in events) {
-        batch.set(collection.doc(event.id), event.toJson());
+      for (
+        var start = 0;
+        start < events.length;
+        start += _firestoreBatchWriteLimit
+      ) {
+        final batch = _firestore.batch();
+        final end = _chunkEnd(start: start, itemCount: events.length);
+        for (var index = start; index < end; index += 1) {
+          final event = events[index];
+          batch.set(collection.doc(event.id), event.toJson());
+        }
+        await batch.commit();
       }
-      await batch.commit();
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -116,6 +125,14 @@ class FirestoreInventoryActivityEventRepository
     }
     return events;
   }
+}
+
+int _chunkEnd({required int start, required int itemCount}) {
+  final cappedEnd = start + _firestoreBatchWriteLimit;
+  if (cappedEnd > itemCount) {
+    return itemCount;
+  }
+  return cappedEnd;
 }
 
 class _UnavailableInventoryActivityEventRepository
