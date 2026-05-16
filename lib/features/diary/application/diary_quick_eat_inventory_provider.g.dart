@@ -44,6 +44,7 @@ final class DiaryQuickEatInventoryProvider
           DiaryQuickEatInventoryProvider.$allTransitiveDependencies3,
           DiaryQuickEatInventoryProvider.$allTransitiveDependencies4,
           DiaryQuickEatInventoryProvider.$allTransitiveDependencies5,
+          DiaryQuickEatInventoryProvider.$allTransitiveDependencies6,
         },
       );
 
@@ -52,11 +53,13 @@ final class DiaryQuickEatInventoryProvider
       InventoryItemsControllerProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies2 =
       InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies4 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies3 =
+      InventoryItemsControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
   static final $allTransitiveDependencies5 =
       PreparedMealsControllerProvider.$allTransitiveDependencies3;
+  static final $allTransitiveDependencies6 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$diaryQuickEatInventoryHash();
@@ -111,6 +114,7 @@ final class DiaryQuickEatInventoryActionsProvider
           DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies3,
           DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies4,
           DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies5,
+          DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies6,
         },
       );
 
@@ -119,11 +123,13 @@ final class DiaryQuickEatInventoryActionsProvider
       InventoryItemsControllerProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies2 =
       InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies4 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies3 =
+      InventoryItemsControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
   static final $allTransitiveDependencies5 =
       PreparedMealsControllerProvider.$allTransitiveDependencies3;
+  static final $allTransitiveDependencies6 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$diaryQuickEatInventoryActionsHash();

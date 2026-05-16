@@ -6,6 +6,7 @@ discard events, and inventory-backed calorie handoff context.
 ## Owns
 
 - Inventory item domain models, amount parsing, consumption, discard events.
+- Household inventory activity events and timeline UI for shared stock changes.
 - Prepared meal domain models and mutation workflows.
 - Inventory repositories and stores for Firestore-backed inventory data.
 - Inventory pages, widgets, controllers, and presentation-only helpers.
@@ -32,6 +33,7 @@ Other features may consume these public Inventory entry points:
 - `PreparedMealsController`
 - `PreparedMealTemplatesController`
 - `PreparedMealSelectionController`
+- `InventoryActivityEvent` and `InventoryActivityEventRepository`
 - Inventory domain types such as `InventoryItem`, `PreparedMeal`, and
   `InventoryItemEatRequest`
 - Repository providers from `data/` when tests or app composition need explicit
@@ -46,6 +48,13 @@ already documented as a reusable presentation surface.
 - Use-case/service providers live in `application/`.
 - Controller providers live in `presentation/controllers/`.
 - `provider/` is legacy and should stay empty; do not add new files there.
+
+## Inventory Activity
+
+Activity events are append-only household timeline entries stored under the
+effective inventory owner. They record shared stock facts only: actor, item,
+amount, timestamp, and before/after stock. Personal calorie diary data remains
+owned by `calories` and is not exposed through the activity timeline.
 
 ## Accepted Dependencies
 

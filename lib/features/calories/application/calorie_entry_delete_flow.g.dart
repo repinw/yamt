@@ -43,6 +43,7 @@ final class CalorieEntryDeleteFlowProvider
           CalorieEntryDeleteFlowProvider.$allTransitiveDependencies3,
           CalorieEntryDeleteFlowProvider.$allTransitiveDependencies4,
           CalorieEntryDeleteFlowProvider.$allTransitiveDependencies5,
+          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies6,
         },
       );
 
@@ -50,11 +51,13 @@ final class CalorieEntryDeleteFlowProvider
   static final $allTransitiveDependencies1 = inventoryItemsControllerProvider;
   static final $allTransitiveDependencies2 =
       InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies3 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies4 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies3 =
+      InventoryItemsControllerProvider.$allTransitiveDependencies1;
+  static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
   static final $allTransitiveDependencies5 =
       PreparedMealsControllerProvider.$allTransitiveDependencies3;
+  static final $allTransitiveDependencies6 =
+      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$calorieEntryDeleteFlowHash();

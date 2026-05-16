@@ -26,6 +26,7 @@ final class PreparedMealsControllerProvider
         name: r'preparedMealsControllerProvider',
         isAutoDispose: true,
         dependencies: <ProviderOrFamily>[
+          inventoryActivityEventRepositoryProvider,
           inventoryDiscardEventRepositoryProvider,
           inventoryItemRepositoryProvider,
           preparedMealCalorieLogBridgeProvider,
@@ -35,15 +36,18 @@ final class PreparedMealsControllerProvider
           PreparedMealsControllerProvider.$allTransitiveDependencies1,
           PreparedMealsControllerProvider.$allTransitiveDependencies2,
           PreparedMealsControllerProvider.$allTransitiveDependencies3,
+          PreparedMealsControllerProvider.$allTransitiveDependencies4,
         },
       );
 
   static final $allTransitiveDependencies0 =
+      inventoryActivityEventRepositoryProvider;
+  static final $allTransitiveDependencies1 =
       inventoryDiscardEventRepositoryProvider;
-  static final $allTransitiveDependencies1 = inventoryItemRepositoryProvider;
-  static final $allTransitiveDependencies2 =
-      preparedMealCalorieLogBridgeProvider;
+  static final $allTransitiveDependencies2 = inventoryItemRepositoryProvider;
   static final $allTransitiveDependencies3 =
+      preparedMealCalorieLogBridgeProvider;
+  static final $allTransitiveDependencies4 =
       PreparedMealCalorieLogBridgeProvider.$allTransitiveDependencies0;
 
   @override
@@ -55,7 +59,7 @@ final class PreparedMealsControllerProvider
 }
 
 String _$preparedMealsControllerHash() =>
-    r'8f7ae80b74183d2edac6033af586b96bcb0a854a';
+    r'118809918c80901a2df501c88bb745fe7821fe14';
 
 /// Defines prepared meals controller.
 

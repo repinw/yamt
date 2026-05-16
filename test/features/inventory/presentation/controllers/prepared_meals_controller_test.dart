@@ -10,12 +10,15 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/data/'
+    'inventory_activity_event_repository.dart';
+import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -31,6 +34,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
       StreamController<List<InventoryItem>>.broadcast();
   List<InventoryItem> _items;
   bool saveShouldFail = false;
+  int readAllCount = 0;
   List<InventoryItem> savedItems = const <InventoryItem>[];
   final List<List<InventoryItem>> saveHistory = <List<InventoryItem>>[];
 
@@ -47,6 +51,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
 
   @override
   Future<List<InventoryItem>> readAll() async {
+    readAllCount += 1;
     return List<InventoryItem>.from(_items);
   }
 
@@ -157,6 +162,22 @@ class _FakeInventoryDiscardEventRepository
   }
 }
 
+class _FakeInventoryActivityEventRepository
+    implements InventoryActivityEventRepository {
+  final List<InventoryActivityEvent> events = <InventoryActivityEvent>[];
+
+  @override
+  Future<bool> appendAll(List<InventoryActivityEvent> events) async {
+    this.events.addAll(events);
+    return true;
+  }
+
+  @override
+  Stream<List<InventoryActivityEvent>> watchRecent({int limit = 100}) {
+    return Stream<List<InventoryActivityEvent>>.value(events);
+  }
+}
+
 class _FakePreparedMealCalorieEntryCommitStore
     implements PreparedMealCalorieEntryCommitStore {
   bool shouldSucceed = true;
@@ -170,6 +191,11 @@ class _FakePreparedMealCalorieEntryCommitStore
     return shouldSucceed;
   }
 }
+
+const _testActor = InventoryActivityActor(
+  userId: 'user-1',
+  displayName: 'Alex',
+);
 
 @Dependencies([PreparedMealsController])
 ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepControllerAlive(
@@ -339,6 +365,7 @@ void main() {
         initialMeals: const <PreparedMeal>[],
       );
       final calorieLogRepository = FakeCalorieLogRepository();
+      final activityRepository = _FakeInventoryActivityEventRepository();
       addTearDown(inventoryRepository.dispose);
       addTearDown(preparedMealRepository.dispose);
       addTearDown(calorieLogRepository.dispose);
@@ -352,6 +379,10 @@ void main() {
             preparedMealRepository,
           ),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryActivityActorProvider.overrideWithValue(_testActor),
+          inventoryActivityEventRepositoryProvider.overrideWithValue(
+            activityRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -381,6 +412,26 @@ void main() {
         'asset-created-meal',
       );
       expect(preparedMealRepository.savedMeals.single.components, hasLength(2));
+      expect(
+        activityRepository.events.map(
+          (event) => (event.type, event.itemId, event.amount),
+        ),
+        <(InventoryActivityEventType, String, int)>[
+          (
+            InventoryActivityEventType.itemUsedInPreparedMeal,
+            'rice',
+            200,
+          ),
+          (
+            InventoryActivityEventType.itemUsedInPreparedMeal,
+            'beans',
+            100,
+          ),
+        ],
+      );
+      expect(activityRepository.events.first.beforeCurrentAmount, 300);
+      expect(activityRepository.events.first.afterCurrentAmount, 100);
+      expect(inventoryRepository.readAllCount, 1);
     },
   );
 
@@ -792,6 +843,7 @@ void main() {
         initialMeals: [existingMeal],
       );
       final calorieLogRepository = FakeCalorieLogRepository();
+      final activityRepository = _FakeInventoryActivityEventRepository();
       addTearDown(inventoryRepository.dispose);
       addTearDown(preparedMealRepository.dispose);
       addTearDown(calorieLogRepository.dispose);
@@ -805,6 +857,10 @@ void main() {
             preparedMealRepository,
           ),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryActivityActorProvider.overrideWithValue(_testActor),
+          inventoryActivityEventRepositoryProvider.overrideWithValue(
+            activityRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -827,6 +883,14 @@ void main() {
         preparedMealRepository.savedMeals.single.pendingRecipeIngredients,
         const <String>['500 ml Broth'],
       );
+      expect(
+        activityRepository.events.single.type,
+        InventoryActivityEventType.itemUsedInPreparedMeal,
+      );
+      expect(activityRepository.events.single.itemId, 'broth');
+      expect(activityRepository.events.single.amount, 1000);
+      expect(activityRepository.events.single.beforeCurrentAmount, 1000);
+      expect(activityRepository.events.single.afterCurrentAmount, 0);
     },
   );
 
@@ -1420,6 +1484,7 @@ void main() {
       initialMeals: [meal],
     );
     final calorieLogRepository = FakeCalorieLogRepository();
+    final activityRepository = _FakeInventoryActivityEventRepository();
     addTearDown(inventoryRepository.dispose);
     addTearDown(preparedMealRepository.dispose);
     addTearDown(calorieLogRepository.dispose);
@@ -1431,6 +1496,10 @@ void main() {
           preparedMealRepository,
         ),
         calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        inventoryActivityActorProvider.overrideWithValue(_testActor),
+        inventoryActivityEventRepositoryProvider.overrideWithValue(
+          activityRepository,
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -1445,6 +1514,15 @@ void main() {
     expect(saved, isTrue);
     expect(inventoryRepository.savedItems.single.currentAmount, 150);
     expect(preparedMealRepository.savedMeals, isEmpty);
+    expect(
+      activityRepository.events.single.type,
+      InventoryActivityEventType.itemReturnedFromPreparedMeal,
+    );
+    expect(activityRepository.events.single.itemId, 'rice');
+    expect(activityRepository.events.single.amount, 100);
+    expect(activityRepository.events.single.beforeCurrentAmount, 50);
+    expect(activityRepository.events.single.afterCurrentAmount, 150);
+    expect(inventoryRepository.readAllCount, 1);
   });
 
   test(
@@ -1463,6 +1541,7 @@ void main() {
         initialMeals: [meal],
       );
       final calorieLogRepository = FakeCalorieLogRepository();
+      final activityRepository = _FakeInventoryActivityEventRepository();
       addTearDown(inventoryRepository.dispose);
       addTearDown(preparedMealRepository.dispose);
       addTearDown(calorieLogRepository.dispose);
@@ -1476,6 +1555,10 @@ void main() {
             preparedMealRepository,
           ),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryActivityActorProvider.overrideWithValue(_testActor),
+          inventoryActivityEventRepositoryProvider.overrideWithValue(
+            activityRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -1492,6 +1575,14 @@ void main() {
       expect(inventoryRepository.savedItems.single.id, 'rice');
       expect(inventoryRepository.savedItems.single.currentAmount, 100);
       expect(inventoryRepository.savedItems.single.name, 'Rice');
+      expect(
+        activityRepository.events.single.type,
+        InventoryActivityEventType.itemReturnedFromPreparedMeal,
+      );
+      expect(activityRepository.events.single.itemId, 'rice');
+      expect(activityRepository.events.single.amount, 100);
+      expect(activityRepository.events.single.beforeCurrentAmount, isNull);
+      expect(activityRepository.events.single.afterCurrentAmount, 100);
     },
   );
 }

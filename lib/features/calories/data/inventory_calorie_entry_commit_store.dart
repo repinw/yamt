@@ -5,11 +5,15 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_activity_event_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -18,6 +22,7 @@ const _commitStoreLogName = 'InventoryCalorieEntryCommitStore';
 const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';
 const _inventoryItemsCollection = 'inventory_items';
+const _inventoryActivityEventsCollection = 'inventory_activity_events';
 
 /// The inventory calorie entry commit store provider.
 final inventoryCalorieEntryCommitStoreProvider =
@@ -39,6 +44,7 @@ final inventoryCalorieEntryCommitStoreProvider =
         firestore: firestore,
         currentUserId: currentUserId,
         inventoryOwnerUserId: inventoryOwnerUserId,
+        actor: ref.watch(inventoryActivityActorProvider),
       );
     });
 
@@ -78,13 +84,16 @@ class FirestoreInventoryCalorieEntryCommitStore
     required FirebaseFirestore firestore,
     required String? currentUserId,
     required String? inventoryOwnerUserId,
+    required InventoryActivityActor? actor,
   }) : _firestore = firestore,
        _currentUserId = currentUserId,
-       _inventoryOwnerUserId = inventoryOwnerUserId;
+       _inventoryOwnerUserId = inventoryOwnerUserId,
+       _actor = actor;
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
   final String? _inventoryOwnerUserId;
+  final InventoryActivityActor? _actor;
 
   @override
   Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
@@ -169,6 +178,21 @@ class FirestoreInventoryCalorieEntryCommitStore
             normalizedEntry.toJson(),
           )
           ..update(inventoryRef, _buildInventoryUpdate(committedItem));
+        final activityEvent = _buildActivityEvent(
+          actor: _actor,
+          beforeItem: currentItem,
+          afterItem: committedItem,
+          amount: pendingConsumption.amount,
+          happenedAt: normalizedEntry.loggedAt,
+        );
+        if (activityEvent != null) {
+          transaction.set(
+            _activityEventsCollectionRef(inventoryUserId).doc(
+              activityEvent.id,
+            ),
+            activityEvent.toJson(),
+          );
+        }
 
         log(
           'Transaction prepared for calorie entry ${entry.id} '
@@ -238,6 +262,15 @@ class FirestoreInventoryCalorieEntryCommitStore
         .collection(_usersCollection)
         .doc(userId)
         .collection(_calorieEntriesCollection);
+  }
+
+  CollectionReference<Map<String, dynamic>> _activityEventsCollectionRef(
+    String userId,
+  ) {
+    return _firestore
+        .collection(_usersCollection)
+        .doc(userId)
+        .collection(_inventoryActivityEventsCollection);
   }
 }
 
@@ -317,4 +350,33 @@ Map<String, dynamic> _buildInventoryUpdate(InventoryItem item) {
     'current_amount': item.currentAmount,
     'last_consumed_at': item.lastConsumedAt?.toIso8601String(),
   };
+}
+
+InventoryActivityEvent? _buildActivityEvent({
+  required InventoryActivityActor? actor,
+  required InventoryItem beforeItem,
+  required InventoryItem afterItem,
+  required int amount,
+  required DateTime happenedAt,
+}) {
+  if (actor == null) {
+    return null;
+  }
+
+  return InventoryActivityEvent.fromStockChange(
+    id: _newActivityEventId(),
+    type: InventoryActivityEventType.itemConsumed,
+    actor: actor,
+    item: beforeItem,
+    amount: amount,
+    beforeQuantity: beforeItem.quantity,
+    afterQuantity: afterItem.quantity,
+    beforeCurrentAmount: beforeItem.currentAmount,
+    afterCurrentAmount: afterItem.currentAmount,
+    happenedAt: happenedAt,
+  );
+}
+
+String _newActivityEventId() {
+  return const Uuid().v4();
 }

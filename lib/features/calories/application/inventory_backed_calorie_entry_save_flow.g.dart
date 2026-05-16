@@ -33,14 +33,16 @@ final class InventoryBackedCalorieEntrySaveFlowProvider
         name: r'inventoryBackedCalorieEntrySaveFlowProvider',
         isAutoDispose: true,
         dependencies: <ProviderOrFamily>[inventoryItemsControllerProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>[
+        $allTransitiveDependencies: <ProviderOrFamily>{
           InventoryBackedCalorieEntrySaveFlowProvider
               .$allTransitiveDependencies0,
           InventoryBackedCalorieEntrySaveFlowProvider
               .$allTransitiveDependencies1,
           InventoryBackedCalorieEntrySaveFlowProvider
               .$allTransitiveDependencies2,
-        ],
+          InventoryBackedCalorieEntrySaveFlowProvider
+              .$allTransitiveDependencies3,
+        },
       );
 
   static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
@@ -48,6 +50,8 @@ final class InventoryBackedCalorieEntrySaveFlowProvider
       InventoryItemsControllerProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies2 =
       InventoryItemsControllerProvider.$allTransitiveDependencies1;
+  static final $allTransitiveDependencies3 =
+      InventoryItemsControllerProvider.$allTransitiveDependencies2;
 
   @override
   String debugGetCreateSourceHash() =>

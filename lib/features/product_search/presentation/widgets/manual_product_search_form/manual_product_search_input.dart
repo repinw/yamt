@@ -79,7 +79,7 @@ abstract final class ManualProductSearchFormFieldName {
   static const optionalNutritionType = 'manual_product_optional_type';
 
   /// All registered manual product form field names.
-  static const registeredNames = [
+  static const List<String> registeredNames = [
     name,
     brand,
     weightAmount,

@@ -137,6 +137,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   }) {
     final keepAliveLink = ref.keepAlive();
     final selectedDay = ref.read(calorieDayControllerProvider);
+    final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
     log(
       'Starting save for calorie entry ${entry.id} '
       '(selectedDay=$selectedDay, '
@@ -180,9 +181,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           'Persisting calorie entry ${entry.id} via calorie log repository.',
           name: _entriesControllerLogName,
         );
-        final saved = await ref
-            .read(calorieLogRepositoryProvider)
-            .saveEntry(entry);
+        final saved = await calorieLogRepository.saveEntry(entry);
         log(
           'Calorie log repository save for ${entry.id} returned $saved.',
           name: _entriesControllerLogName,

@@ -14,6 +14,8 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
     show HomeTabType;
 import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -34,6 +36,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_creation_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_activity_timeline/inventory_activity_timeline.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -48,6 +52,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _deleteUndoSnackBarDuration = Duration(seconds: 5);
 const _preparedMealImageAssetUuid = Uuid();
 
+enum _InventoryPageView { stock, history }
+
 /// Defines inventory page.
 @Dependencies([
   inventoryManualAddQuickEatConfig,
@@ -60,6 +66,7 @@ const _preparedMealImageAssetUuid = Uuid();
   receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
+  inventoryActivityEvents,
 ])
 class InventoryPage extends ConsumerStatefulWidget {
   /// The inventory page.
@@ -81,6 +88,7 @@ class InventoryPage extends ConsumerStatefulWidget {
 
 class _InventoryPageState extends ConsumerState<InventoryPage> {
   _PendingPreparedMealEditSelection? _pendingEditSelection;
+  _InventoryPageView _selectedView = _InventoryPageView.stock;
   var _inventorySelectionFocusToken = 0;
 
   @override
@@ -95,6 +103,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       );
 
     final l10n = AppLocalizations.of(context)!;
+    final topChromeActions = [_buildViewToggleAction(l10n)];
+    if (_selectedView == _InventoryPageView.history) {
+      return InventoryActivityTimeline(
+        includeHomeShellChrome: widget.includeHomeShellChrome,
+        topChromeActions: topChromeActions,
+      );
+    }
+
     final controller = ref.read(inventoryItemsControllerProvider.notifier);
     final itemsAsync = ref.watch(inventoryItemsControllerProvider);
     final mealsController = ref.read(preparedMealsControllerProvider.notifier);
@@ -104,6 +120,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     if (itemsAsync.isLoading || mealsAsync.isLoading) {
       return _InventoryLoadingView(
         includeHomeShellChrome: widget.includeHomeShellChrome,
+        topChromeActions: topChromeActions,
       );
     }
 
@@ -118,6 +135,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         message: l10n.inventoryLoadFailed,
         retryLabel: l10n.inventoryRetryAction,
         includeHomeShellChrome: widget.includeHomeShellChrome,
+        topChromeActions: topChromeActions,
       );
     }
 
@@ -130,6 +148,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       expandedPreparedMealId: widget.expandedPreparedMealId,
       includeHomeShellChrome: widget.includeHomeShellChrome,
       inventorySelectionFocusToken: _inventorySelectionFocusToken,
+      topChromeActions: topChromeActions,
       emptyStateActionButton: const InventoryActionFab.embedded(),
       onDeleteItem: (itemId) =>
           _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
@@ -202,6 +221,25 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             .read(preparedMealSelectionControllerProvider.notifier)
             .toggleSelection(itemId);
       },
+    );
+  }
+
+  Widget _buildViewToggleAction(AppLocalizations l10n) {
+    final showHistory = _selectedView == _InventoryPageView.stock;
+    return IconButton(
+      tooltip: showHistory
+          ? l10n.inventoryViewHistory
+          : l10n.inventoryViewStock,
+      onPressed: () {
+        setState(() {
+          _selectedView = showHistory
+              ? _InventoryPageView.history
+              : _InventoryPageView.stock;
+        });
+      },
+      icon: Icon(
+        showHistory ? Icons.history_rounded : Icons.inventory_2_outlined,
+      ),
     );
   }
 
@@ -541,16 +579,23 @@ int _defaultInventoryItemAmount(InventoryItem item) {
 }
 
 class _InventoryLoadingView extends StatelessWidget {
-  const _InventoryLoadingView({required this.includeHomeShellChrome});
+  const _InventoryLoadingView({
+    required this.includeHomeShellChrome,
+    required this.topChromeActions,
+  });
 
   final bool includeHomeShellChrome;
+  final List<Widget> topChromeActions;
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
         if (includeHomeShellChrome)
-          const HomeShellTabTopChrome(tab: HomeTabType.inventory),
+          HomeShellTabTopChrome(
+            tab: HomeTabType.inventory,
+            actions: topChromeActions,
+          ),
         const SliverFillRemaining(
           hasScrollBody: false,
           child: Center(
@@ -573,12 +618,14 @@ class _InventoryErrorView extends StatelessWidget {
     required this.message,
     required this.retryLabel,
     required this.includeHomeShellChrome,
+    required this.topChromeActions,
   });
 
   final Future<void> Function() onRetry;
   final String message;
   final String retryLabel;
   final bool includeHomeShellChrome;
+  final List<Widget> topChromeActions;
 
   @override
   Widget build(BuildContext context) {
@@ -588,7 +635,10 @@ class _InventoryErrorView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         if (includeHomeShellChrome)
-          const HomeShellTabTopChrome(tab: HomeTabType.inventory),
+          HomeShellTabTopChrome(
+            tab: HomeTabType.inventory,
+            actions: topChromeActions,
+          ),
         SliverFillRemaining(
           hasScrollBody: false,
           child: Center(

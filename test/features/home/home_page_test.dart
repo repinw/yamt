@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -360,6 +362,9 @@ Widget _buildHarness({
       ),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
+      authStateChangesProvider.overrideWith(
+        (ref) => Stream<User?>.value(null),
+      ),
       householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
       inventoryItemRepositoryProvider.overrideWithValue(
         inventoryRepository ??
@@ -878,7 +883,7 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('inventory top bar actions show placeholder and shopping route', (
+  testWidgets('inventory top bar actions show shopping route', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -892,10 +897,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.assignment_outlined));
-    await tester.pump();
-
-    expect(find.text('Not implemented yet'), findsOneWidget);
+    expect(find.byIcon(Icons.assignment_outlined), findsNothing);
 
     await tester.tap(find.byIcon(Icons.shopping_cart_rounded));
     await tester.pumpAndSettle();

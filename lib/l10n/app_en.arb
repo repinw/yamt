@@ -145,7 +145,119 @@
   "inventoryReceiptSaveFailed": "Could not save receipt items. Please try again.",
   "inventoryListModeByReceipt": "By receipt",
   "inventoryListModeAllItems": "All foods",
+  "inventoryViewStock": "Stock",
+  "inventoryViewHistory": "History",
   "inventoryRecentSectionTitle": "Foods",
+  "inventoryActivityLoading": "Loading history...",
+  "inventoryActivityLoadFailed": "Could not load history.",
+  "inventoryActivityEmptyTitle": "No inventory history yet.",
+  "inventoryActivityActorFallback": "Household member",
+  "inventoryActivityPieceAmount": "{amount, plural, =1{1 item} other{{amount} items}}",
+  "@inventoryActivityPieceAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryActivityItemAdded": "{actor} added {amount} of {item}.",
+  "@inventoryActivityItemAdded": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemConsumed": "{actor} ate {amount} of {item}.",
+  "@inventoryActivityItemConsumed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemDiscarded": "{actor} discarded {amount} of {item}.",
+  "@inventoryActivityItemDiscarded": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemDeleted": "{actor} deleted {amount} of {item}.",
+  "@inventoryActivityItemDeleted": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemRestored": "{actor} restored {amount} of {item}.",
+  "@inventoryActivityItemRestored": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemUsedInPreparedMeal": "{actor} used {amount} of {item} for a prepared meal.",
+  "@inventoryActivityItemUsedInPreparedMeal": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryActivityItemReturnedFromPreparedMeal": "{actor} returned {amount} of {item} from a prepared meal.",
+  "@inventoryActivityItemReturnedFromPreparedMeal": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "inventorySearchLabel": "Search inventory",
   "inventorySearchClearAction": "Clear search",
   "inventoryFilterAction": "Filter items",
