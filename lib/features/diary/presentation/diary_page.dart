@@ -29,7 +29,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_scroll_shortcut.d
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
     show HomeTabType;
 import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';

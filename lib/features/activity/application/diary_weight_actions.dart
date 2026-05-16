@@ -2,16 +2,16 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weight_state_refresh.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/manual_health_weight_entries_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/manual_health_weight_entries_controller.dart';
 
 part 'diary_weight_actions.g.dart';
 
 /// Weight actions used by diary weight widgets.
 @riverpod
 DiaryWeightActions diaryWeightActions(Ref ref) {
-  final refreshCalorieWeightState = ref.watch(
+  final refreshCalorieWeightChange = ref.watch(
     calorieWeightStateRefreshProvider,
   );
   final manualWeightEntries = ref.watch(
@@ -23,12 +23,15 @@ DiaryWeightActions diaryWeightActions(Ref ref) {
     saveManualWeight: manualWeightEntries.saveEntry,
     deleteManualWeight: manualWeightEntries.deleteEntryForDay,
     deleteHealthWeightSample: healthWeightService.deleteWeightSample,
-    refreshDependents: ({required selectedDay, day}) {
+    refreshDependents: ({required selectedDay, day}) async {
       if (!ref.mounted) {
         return;
       }
       ref.invalidate(diaryActivityWeightDataProvider(selectedDay));
-      refreshCalorieWeightState();
+      await refreshCalorieWeightChange(day: day ?? selectedDay);
+      if (!ref.mounted) {
+        return;
+      }
       if (day != null && !isSameDiaryDay(day, selectedDay)) {
         ref.invalidate(diaryActivityWeightDataProvider(day));
       }
@@ -48,7 +51,7 @@ class DiaryWeightActions {
     required Future<bool> Function(DateTime day) deleteManualWeight,
     required Future<bool> Function(HealthWeightSample sample)
     deleteHealthWeightSample,
-    required void Function({
+    required Future<void> Function({
       required DateTime selectedDay,
       DateTime? day,
     })
@@ -66,7 +69,7 @@ class DiaryWeightActions {
   final Future<bool> Function(DateTime day) _deleteManualWeight;
   final Future<bool> Function(HealthWeightSample sample)
   _deleteHealthWeightSample;
-  final void Function({required DateTime selectedDay, DateTime? day})
+  final Future<void> Function({required DateTime selectedDay, DateTime? day})
   _refreshDependents;
 
   /// Saves a manual weight and refreshes dependent diary providers.
@@ -77,7 +80,7 @@ class DiaryWeightActions {
   }) async {
     final saved = await _saveManualWeight(day: day, weightKg: weightKg);
     if (saved) {
-      _refreshDependents(selectedDay: selectedDay, day: day);
+      await _refreshDependents(selectedDay: selectedDay, day: day);
     }
     return saved;
   }
@@ -93,7 +96,7 @@ class DiaryWeightActions {
         ? await _deleteManualWeight(day)
         : await deleteAppOwnedHealthWeight(healthSample);
     if (deleted) {
-      _refreshDependents(selectedDay: selectedDay, day: day);
+      await _refreshDependents(selectedDay: selectedDay, day: day);
     }
     return deleted;
   }

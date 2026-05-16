@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/'
+    'health_connection_controller.dart';
 import 'package:yamt/features/settings/settings_page_keys.dart';
 import 'package:yamt/features/settings/widgets/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -65,18 +66,25 @@ class SettingsHealthConnectTile extends ConsumerWidget {
           : showsConnect
           ? shouldOpenPermissionSettings
                 ? shouldOpenAppPermissionSettings
-                      ? () => _openAppPermissionSettings(ref)
-                      : () => _openHealthPermissionSettings(ref)
+                      ? () => unawaited(
+                          ref
+                              .read(healthConnectionControllerProvider.notifier)
+                              .openAppPermissionSettings(),
+                        )
+                      : () => unawaited(
+                          ref
+                              .read(healthConnectionControllerProvider.notifier)
+                              .openHealthPermissionSettings(),
+                        )
                 : () => _connectHealth(context, ref)
-          : () => _confirmDisconnect(context, ref),
+          : () => _confirmDisconnect(context, status),
     );
   }
 
   Future<void> _connectHealth(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
-    final status = await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .connect();
+    final controller = ref.read(healthConnectionControllerProvider.notifier);
+    final status = await controller.connect();
     if (!context.mounted) {
       return;
     }
@@ -86,26 +94,15 @@ class SettingsHealthConnectTile extends ConsumerWidget {
   }
 
   Future<void> _installHealthConnect(WidgetRef ref) async {
-    await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .installHealthConnect();
+    final controller = ref.read(healthConnectionControllerProvider.notifier);
+    await controller.installHealthConnect();
   }
 
-  Future<void> _openHealthPermissionSettings(WidgetRef ref) async {
-    await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .openHealthPermissionSettings();
-  }
-
-  Future<void> _openAppPermissionSettings(WidgetRef ref) async {
-    await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .openAppPermissionSettings();
-  }
-
-  Future<void> _confirmDisconnect(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmDisconnect(
+    BuildContext context,
+    HealthConnectionStatus? status,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
-    final status = ref.read(healthConnectionControllerProvider).asData?.value;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -129,13 +126,15 @@ class SettingsHealthConnectTile extends ConsumerWidget {
       return;
     }
 
-    final result = await ref
-        .read(healthConnectionControllerProvider.notifier)
-        .disconnect();
+    final container = ProviderScope.containerOf(context, listen: false);
+    final controller = container.read(
+      healthConnectionControllerProvider.notifier,
+    );
+    final result = await controller.disconnect();
     if (!context.mounted) {
       return;
     }
-    final nextStatus = ref
+    final nextStatus = container
         .read(healthConnectionControllerProvider)
         .asData
         ?.value;

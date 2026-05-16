@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
@@ -118,7 +118,7 @@ class FirestoreManualHealthWeightRepository
 }
 
 String _documentIdForDay(DateTime day) {
-  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedDay = normalizeLocalDay(day);
   final month = normalizedDay.month.toString().padLeft(2, '0');
   final date = normalizedDay.day.toString().padLeft(2, '0');
   return '${normalizedDay.year}-$month-$date';

@@ -5,7 +5,7 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
 part 'diary_intro_trigger_provider.g.dart';
 

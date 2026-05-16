@@ -18,8 +18,9 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
+import 'package:yamt/features/health/data/'
+    'health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
@@ -73,6 +74,9 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   _FakeHealthConnectionService({
     required this.disconnectResult,
     HealthConnectionStatus? status,
+    this.requestAuthorizationResult,
+    this.requestHistoryAuthorizationResult,
+    this.statusAfterDisconnect,
   }) : _status =
            status ??
            const HealthConnectionStatus(
@@ -83,6 +87,9 @@ class _FakeHealthConnectionService implements HealthConnectionService {
            );
 
   final HealthDisconnectResult disconnectResult;
+  final HealthConnectionStatus? requestAuthorizationResult;
+  final HealthConnectionStatus? requestHistoryAuthorizationResult;
+  final HealthConnectionStatus? statusAfterDisconnect;
   HealthConnectionStatus _status;
   int disconnectCallCount = 0;
   int installCallCount = 0;
@@ -94,14 +101,16 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   @override
   Future<HealthDisconnectResult> disconnect() async {
     disconnectCallCount += 1;
-    _status = HealthConnectionStatus(
-      platform: _status.platform,
-      healthConnectAvailability: _status.healthConnectAvailability,
-      permissionState: HealthPermissionState.notGranted,
-      historyAccess: _status.platform == HealthPlatform.android
-          ? HealthHistoryAccess.notGranted
-          : HealthHistoryAccess.notApplicable,
-    );
+    _status =
+        statusAfterDisconnect ??
+        HealthConnectionStatus(
+          platform: _status.platform,
+          healthConnectAvailability: _status.healthConnectAvailability,
+          permissionState: HealthPermissionState.notGranted,
+          historyAccess: _status.platform == HealthPlatform.android
+              ? HealthHistoryAccess.notGranted
+              : HealthHistoryAccess.notApplicable,
+        );
     return disconnectResult;
   }
 
@@ -128,12 +137,22 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   @override
   Future<HealthConnectionStatus> requestAuthorization() async {
     requestAuthorizationCallCount += 1;
+    final result = requestAuthorizationResult;
+    if (result != null) {
+      _status = result;
+      return result;
+    }
     return _status;
   }
 
   @override
   Future<HealthConnectionStatus> requestHistoryAuthorization() async {
     requestHistoryAuthorizationCallCount += 1;
+    final result = requestHistoryAuthorizationResult;
+    if (result != null) {
+      _status = result;
+      return result;
+    }
     return _status;
   }
 }
@@ -454,6 +473,218 @@ void main() {
     expect(healthService.requestAuthorizationCallCount, 1);
   });
 
+  testWidgets('health connect tile opens health permission settings', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: const HealthConnectionStatus(
+        platform: HealthPlatform.android,
+        healthConnectAvailability: HealthConnectAvailability.available,
+        permissionState: HealthPermissionState.notGranted,
+        historyAccess: HealthHistoryAccess.notGranted,
+        errorMessage: 'permission denied',
+      ),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+
+    expect(healthService.openHealthPermissionSettingsCallCount, 1);
+  });
+
+  testWidgets('health connect tile opens app permission settings', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: const HealthConnectionStatus(
+        platform: HealthPlatform.android,
+        healthConnectAvailability: HealthConnectAvailability.available,
+        permissionState: HealthPermissionState.notGranted,
+        historyAccess: HealthHistoryAccess.notGranted,
+        errorMessage: healthActivityRecognitionPermissionErrorMessage,
+      ),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+
+    expect(healthService.openAppPermissionSettingsCallCount, 1);
+  });
+
+  testWidgets('health connect tile shows history prompt', (tester) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: const HealthConnectionStatus(
+        platform: HealthPlatform.android,
+        healthConnectAvailability: HealthConnectAvailability.available,
+        permissionState: HealthPermissionState.granted,
+        historyAccess: HealthHistoryAccess.notGranted,
+      ),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    expect(
+      find.text(
+        'Allow older Health Connect history so past diary days can load '
+        'activity data.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+
+    expect(healthService.requestHistoryAuthorizationCallCount, 1);
+    expect(find.text('Health access could not be connected.'), findsOneWidget);
+  });
+
+  testWidgets('health connect tile accepts history authorization', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: const HealthConnectionStatus(
+        platform: HealthPlatform.android,
+        healthConnectAvailability: HealthConnectAvailability.available,
+        permissionState: HealthPermissionState.granted,
+        historyAccess: HealthHistoryAccess.notGranted,
+      ),
+      requestHistoryAuthorizationResult: _connectedHealthStatus(),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+
+    expect(healthService.requestHistoryAuthorizationCallCount, 1);
+    expect(find.text('Health access could not be connected.'), findsNothing);
+    expect(find.text('Remove Health Connect access for YAMT.'), findsOneWidget);
+  });
+
+  testWidgets('health connect tile handles install-required connect result', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: const HealthConnectionStatus(
+        platform: HealthPlatform.android,
+        healthConnectAvailability: HealthConnectAvailability.available,
+        permissionState: HealthPermissionState.notGranted,
+        historyAccess: HealthHistoryAccess.notGranted,
+      ),
+      requestAuthorizationResult: const HealthConnectionStatus(
+        platform: HealthPlatform.android,
+        healthConnectAvailability: HealthConnectAvailability.notInstalled,
+        permissionState: HealthPermissionState.notGranted,
+        historyAccess: HealthHistoryAccess.notApplicable,
+      ),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Health access could not be connected.'), findsOneWidget);
+  });
+
+  testWidgets('health connect tile handles unsupported connect result', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: const HealthConnectionStatus(
+        platform: HealthPlatform.android,
+        healthConnectAvailability: HealthConnectAvailability.available,
+        permissionState: HealthPermissionState.notGranted,
+        historyAccess: HealthHistoryAccess.notGranted,
+      ),
+      requestAuthorizationResult: const HealthConnectionStatus.unsupported(),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Health access could not be connected.'), findsOneWidget);
+  });
+
+  testWidgets('health connect tile is disabled when unsupported', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: const HealthConnectionStatus.unsupported(),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    expect(
+      find.text(
+        'Health Connect or Apple Health is not available on this '
+        'device.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+
+    expect(healthService.requestAuthorizationCallCount, 0);
+    expect(healthService.installCallCount, 0);
+  });
+
   testWidgets('health connect tile installs provider when unavailable', (
     tester,
   ) async {
@@ -515,6 +746,123 @@ void main() {
       find.text(
         'Health access disconnected. Restart YAMT before reconnecting '
         'Health Connect.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('health connect tile can cancel disconnect', (tester) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: _connectedHealthStatus(),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(healthService.disconnectCallCount, 0);
+    expect(find.text('Disconnect health access?'), findsNothing);
+  });
+
+  testWidgets('health connect tile reports opened settings disconnect', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.openedSettings,
+      status: const HealthConnectionStatus(
+        platform: HealthPlatform.ios,
+        healthConnectAvailability: HealthConnectAvailability.notApplicable,
+        permissionState: HealthPermissionState.granted,
+        historyAccess: HealthHistoryAccess.notApplicable,
+      ),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Apple Health');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Disconnect'));
+    await tester.pumpAndSettle();
+
+    expect(healthService.disconnectCallCount, 1);
+    expect(
+      find.text('Opened Settings so you can manage Apple Health access.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('health connect tile reports unsupported disconnect error', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.unsupported,
+      status: _connectedHealthStatus(),
+      statusAfterDisconnect: _connectedHealthStatus().copyWith(
+        errorMessage: 'disconnect failed',
+      ),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Disconnect'));
+    await tester.pumpAndSettle();
+
+    expect(healthService.disconnectCallCount, 1);
+    expect(
+      find.text('Health access could not be disconnected.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('health connect tile reports unsupported disconnect hint', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.unsupported,
+      status: _connectedHealthStatus(),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Health Connect');
+    await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Disconnect'));
+    await tester.pumpAndSettle();
+
+    expect(healthService.disconnectCallCount, 1);
+    expect(
+      find.text(
+        'Health Connect or Apple Health is not available on this device.',
       ),
       findsOneWidget,
     );

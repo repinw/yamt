@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/calories/application/calorie_weight_state_refresh.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/calorie_health_trends_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_health_weight_dialog.dart';
-import 'package:yamt/features/calories/provider/calorie_health_trend_provider.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/'
+import 'package:yamt/features/health/presentation/controllers/'
     'manual_health_weight_entries_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -75,37 +74,57 @@ class CalorieHealthWeightList extends ConsumerWidget {
     required BuildContext context,
     required CalorieHealthTrendPoint point,
     required String dayLabel,
-  }) {
+  }) async {
     final container = ProviderScope.containerOf(context, listen: false);
+    final controllerSubscription = container.listen(
+      manualHealthWeightEntriesControllerProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    final refreshSubscription = container.listen(
+      calorieWeightStateRefreshProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     final controller = container.read(
       manualHealthWeightEntriesControllerProvider.notifier,
     );
-    return showCalorieHealthWeightDialog(
-      context: context,
-      dayLabel: dayLabel,
-      initialWeightKg: point.weightKg,
-      hasManualWeight:
-          point.weightSource == CalorieHealthTrendWeightSource.manual,
-      onSaveWeight: (weightKg) async {
-        final saved = await controller.saveEntry(
-          day: point.day,
-          weightKg: weightKg,
-        );
-        _refreshWeightDependents(container);
-        return saved;
-      },
-      onClearWeight: () async {
-        final deleted = await controller.deleteEntryForDay(point.day);
-        _refreshWeightDependents(container);
-        return deleted;
-      },
-    );
+    try {
+      await showCalorieHealthWeightDialog(
+        context: context,
+        dayLabel: dayLabel,
+        initialWeightKg: point.weightKg,
+        hasManualWeight:
+            point.weightSource == CalorieHealthTrendWeightSource.manual,
+        onSaveWeight: (weightKg) async {
+          final saved = await controller.saveEntry(
+            day: point.day,
+            weightKg: weightKg,
+          );
+          if (saved) {
+            await _refreshWeightDependents(container, day: point.day);
+          }
+          return saved;
+        },
+        onClearWeight: () async {
+          final deleted = await controller.deleteEntryForDay(point.day);
+          if (deleted) {
+            await _refreshWeightDependents(container, day: point.day);
+          }
+          return deleted;
+        },
+      );
+    } finally {
+      refreshSubscription.close();
+      controllerSubscription.close();
+    }
   }
 
-  void _refreshWeightDependents(ProviderContainer container) {
-    container
-      ..invalidate(calorieHealthTrendSnapshotProvider)
-      ..invalidate(calorieWeeklyCheckInViewModelProvider);
+  Future<void> _refreshWeightDependents(
+    ProviderContainer container, {
+    required DateTime day,
+  }) {
+    return container.read(calorieWeightStateRefreshProvider)(day: day);
   }
 
   String _weightSourceLabel({

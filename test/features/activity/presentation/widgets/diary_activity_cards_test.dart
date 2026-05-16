@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,16 +24,16 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/health/data/diary_health_service_provider.dart';
+import 'package:yamt/features/health/data/health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
+import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/diary_activity_summary.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
-import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/memory_app_preferences.dart';
@@ -667,7 +669,7 @@ void main() {
         deletedSamples.add(sample);
         return true;
       },
-      refreshDependents: ({required selectedDay, day}) {
+      refreshDependents: ({required selectedDay, day}) async {
         refreshedDays.add(day);
       },
     );
@@ -727,6 +729,33 @@ void main() {
     );
     expect(deletedSamples, [appSample]);
     expect(refreshedDays, isEmpty);
+  });
+
+  test('diary weight actions wait for refresh before completing', () async {
+    final refreshCompleter = Completer<void>();
+    var refreshCompleted = false;
+    final actions = DiaryWeightActions(
+      saveManualWeight: ({required day, required weightKg}) async => true,
+      deleteManualWeight: (day) async => true,
+      deleteHealthWeightSample: (sample) async => true,
+      refreshDependents: ({required selectedDay, day}) async {
+        await refreshCompleter.future;
+        refreshCompleted = true;
+      },
+    );
+
+    final saveFuture = actions.saveManualWeight(
+      selectedDay: selectedDay,
+      day: selectedDay,
+      weightKg: 82.3,
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(refreshCompleted, isFalse);
+
+    refreshCompleter.complete();
+    await expectLater(saveFuture, completion(isTrue));
+    expect(refreshCompleted, isTrue);
   });
 
   test(

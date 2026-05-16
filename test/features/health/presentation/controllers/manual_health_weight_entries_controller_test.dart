@@ -2,23 +2,20 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
+import 'package:yamt/features/health/data/'
+    'health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
+import 'package:yamt/features/health/data/'
+    'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
-import 'package:yamt/features/health/provider/'
-    'health_connection_service_provider.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/'
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/'
     'manual_health_weight_entries_controller.dart';
-import 'package:yamt/features/health/provider/'
-    'manual_health_weight_repository_provider.dart';
 
 const _readyStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,
@@ -163,49 +160,15 @@ class _FakeManualHealthWeightRepository
   }
 }
 
-class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
-  _FakeCalorieSettingsRepository({
-    this.settings = const CalorieGoalSettings.empty(),
-  });
-
-  CalorieGoalSettings settings;
-  int saveCallCount = 0;
-
-  @override
-  Future<bool> clearDailyGoal() async => false;
-
-  @override
-  Future<CalorieGoalSettings> readSettings() async => settings;
-
-  @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async {
-    saveCallCount += 1;
-    this.settings = settings;
-    return true;
-  }
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) async => false;
-
-  @override
-  Stream<CalorieGoalSettings> watchSettings() {
-    return Stream<CalorieGoalSettings>.value(settings);
-  }
-}
-
 void main() {
   ProviderContainer buildContainer({
     required _FakeManualHealthWeightRepository repository,
     HealthConnectionStatus status = _permissionRequiredStatus,
     _FakeHealthWeightService? healthWeightService,
-    _FakeCalorieSettingsRepository? calorieSettingsRepository,
     DateTime Function()? now,
   }) {
     return ProviderContainer(
       overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(
-          calorieSettingsRepository ?? _FakeCalorieSettingsRepository(),
-        ),
         manualHealthWeightNowProvider.overrideWithValue(
           now ?? () => DateTime(2026, 4, 1, 12),
         ),
@@ -217,24 +180,6 @@ void main() {
           (ref) => healthWeightService ?? _FakeHealthWeightService(),
         ),
       ],
-    );
-  }
-
-  CalorieGoalSettings settingsWithTrustedSnapshot() {
-    return const CalorieGoalSettings.empty().applyGoalChange(
-      changedAt: DateTime(2026, 3, 21),
-      dailyKcalGoal: 2300,
-      calculatorProfile: null,
-      source: CalorieGoalSource.weeklyCheckIn,
-      weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-        windowStartDate: DateTime(2026, 3, 14),
-        windowEndDate: DateTime(2026, 3, 20),
-        trendWeightChangePerDay: 0,
-        calculatedTrueTdeeKcal: 2300,
-        averageActiveKcal: 0,
-        lowConfidence: false,
-        inputHash: 'v1:trusted',
-      ),
     );
   }
 
@@ -333,40 +278,6 @@ void main() {
       expect(stateEntries.single.weightKg, 71.2);
     },
   );
-
-  test('saveEntry dirties weekly snapshots that include weight day', () async {
-    final repository = _FakeManualHealthWeightRepository();
-    final calorieSettingsRepository = _FakeCalorieSettingsRepository(
-      settings: settingsWithTrustedSnapshot(),
-    );
-    final container = buildContainer(
-      repository: repository,
-      calorieSettingsRepository: calorieSettingsRepository,
-    );
-    addTearDown(container.dispose);
-
-    await container.read(manualHealthWeightEntriesControllerProvider.future);
-    final saved = await container
-        .read(manualHealthWeightEntriesControllerProvider.notifier)
-        .saveEntry(day: DateTime(2026, 3, 20, 18), weightKg: 71.2);
-
-    expect(saved, isTrue);
-    expect(calorieSettingsRepository.saveCallCount, 1);
-    final snapshot = calorieSettingsRepository
-        .settings
-        .goalHistory
-        .single
-        .weeklyCheckInSnapshot!;
-    expect(snapshot.inputHash, isNull);
-    expect(snapshot.invalidatedAt, isNotNull);
-    final controllerSettings = container
-        .read(calorieGoalControllerProvider)
-        .requireValue;
-    expect(
-      controllerSettings.goalHistory.single.weeklyCheckInSnapshot?.inputHash,
-      isNull,
-    );
-  });
 
   test('saveEntry falls back to repository when health save fails', () async {
     final repository = _FakeManualHealthWeightRepository();
@@ -522,37 +433,6 @@ void main() {
     expect(stateEntries, hasLength(1));
     expect(stateEntries.single.day, DateTime(2026, 3, 18));
     expect(stateEntries.single.weightKg, 72.1);
-  });
-
-  test('deleteEntryForDay dirties weekly snapshots that include day', () async {
-    final repository = _FakeManualHealthWeightRepository(
-      entries: [
-        ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 71.2),
-      ],
-    );
-    final calorieSettingsRepository = _FakeCalorieSettingsRepository(
-      settings: settingsWithTrustedSnapshot(),
-    );
-    final container = buildContainer(
-      repository: repository,
-      calorieSettingsRepository: calorieSettingsRepository,
-    );
-    addTearDown(container.dispose);
-
-    await container.read(manualHealthWeightEntriesControllerProvider.future);
-    final deleted = await container
-        .read(manualHealthWeightEntriesControllerProvider.notifier)
-        .deleteEntryForDay(DateTime(2026, 3, 20, 18));
-
-    expect(deleted, isTrue);
-    expect(calorieSettingsRepository.saveCallCount, 1);
-    final snapshot = calorieSettingsRepository
-        .settings
-        .goalHistory
-        .single
-        .weeklyCheckInSnapshot!;
-    expect(snapshot.inputHash, isNull);
-    expect(snapshot.invalidatedAt, isNotNull);
   });
 
   test(

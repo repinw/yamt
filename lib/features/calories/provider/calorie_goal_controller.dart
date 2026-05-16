@@ -9,10 +9,10 @@ import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
-import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
-import 'package:yamt/features/health/provider/'
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/'
     'manual_health_weight_entries_controller.dart';
 
 part 'calorie_goal_controller.g.dart';
@@ -534,9 +534,12 @@ class CalorieGoalController extends _$CalorieGoalController {
       }
     }
 
-    await ref
+    final saved = await ref
         .read(manualHealthWeightEntriesControllerProvider.notifier)
         .saveEntry(day: normalizedDay, weightKg: weightKg);
+    if (saved && ref.mounted) {
+      await invalidateWeeklyCheckInSnapshotsFromDay(normalizedDay);
+    }
   }
 }
 

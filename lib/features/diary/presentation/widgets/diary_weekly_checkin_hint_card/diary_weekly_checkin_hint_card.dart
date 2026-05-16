@@ -16,7 +16,7 @@ class DiaryWeeklyCheckInHintCard extends StatelessWidget {
     super.key,
   });
 
-  /// Weekly check-in view model.
+  /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
 
   /// Selected diary day.

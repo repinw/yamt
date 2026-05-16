@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines diary health card frame.
@@ -129,17 +129,12 @@ class DiaryHealthAccessPrompt extends StatelessWidget {
                       onInstallHealthConnect,
                     HealthDataAccessState.historyRequired =>
                       onGrantHistoryAccess,
-                    HealthDataAccessState.permissionRequired ||
-                    HealthDataAccessState.ready ||
-                    HealthDataAccessState.unsupported => onGrantAccess,
+                    _ => onGrantAccess,
                   },
             child: Text(switch (accessState) {
               HealthDataAccessState.installRequired => l10n.healthInstallAction,
               HealthDataAccessState.historyRequired => l10n.healthHistoryAction,
-              HealthDataAccessState.permissionRequired ||
-              HealthDataAccessState.ready ||
-              HealthDataAccessState.unsupported =>
-                l10n.settingsHealthConnectTitle,
+              _ => l10n.settingsHealthConnectTitle,
             }),
           ),
         ],
