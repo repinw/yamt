@@ -5,11 +5,6 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
 part 'calorie_entry_delete_flow.g.dart';
 
@@ -58,25 +53,11 @@ class CalorieEntryDeleteResult {
 }
 
 /// The calorie entry delete flow provider.
-@Riverpod(
-  dependencies: [
-    inventoryItemRepository,
-    InventoryItemsController,
-    PreparedMealsController,
-  ],
-)
+@riverpod
 CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
   final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
   final calorieSettingsRepository = ref.read(calorieSettingsRepositoryProvider);
-  final inventoryItemRepository = ref.read(inventoryItemRepositoryProvider);
-  final inventoryController = ref.read(
-    inventoryItemsControllerProvider.notifier,
-  );
   final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);
-  final preparedMealRepository = ref.read(preparedMealRepositoryProvider);
-  final preparedMealsController = ref.read(
-    preparedMealsControllerProvider.notifier,
-  );
 
   return CalorieEntryDeleteFlow(
     deleteEntryById: (entryId) async {
@@ -86,60 +67,17 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
       }
       return deleted;
     },
-    restoreConsumedItem: inventoryController.restoreConsumedItem,
-    rollbackRestoredItem: inventoryController.eatItem,
-    sourceInventoryItemExists: (itemId) async {
-      final normalizedItemId = itemId.trim();
-      if (normalizedItemId.isEmpty) {
-        return false;
-      }
-      try {
-        final loadedItems = await inventoryItemRepository.readAll();
-        return loadedItems.any((item) => item.id == normalizedItemId);
-      } on Object catch (error, stackTrace) {
-        log(
-          'Failed to check inventory restore source. Trying restore anyway '
-          '(itemId=$normalizedItemId).',
-          name: _deleteFlowLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-        return true;
-      }
-    },
-    restorePreparedMealPortions:
-        preparedMealsController.restorePreparedMealPortions,
-    rollbackRestoredPreparedMeal:
-        ({required mealId, required discardedPortions}) =>
-            preparedMealsController.throwAwayPreparedMeal(
-              mealId: mealId,
-              discardedPortions: discardedPortions,
-              reason: InventoryDiscardReason.other,
-            ),
+    restoreConsumedItem: _restoreConsumedItemUnavailable,
+    rollbackRestoredItem: _rollbackRestoredItemUnavailable,
+    sourceInventoryItemExists: _sourceInventoryItemUnavailable,
+    restorePreparedMealPortions: _restorePreparedMealPortionsUnavailable,
+    rollbackRestoredPreparedMeal: _rollbackPreparedMealUnavailable,
     invalidateSnapshotsFromDay: (day) =>
-        _invalidateWeeklyCheckInSnapshotsFromDay(
+        invalidateCalorieWeeklyCheckInSnapshotsFromDay(
           day: day,
           settingsRepository: calorieSettingsRepository,
         ),
-    sourcePreparedMealExists: (mealId) async {
-      final normalizedMealId = mealId.trim();
-      if (normalizedMealId.isEmpty) {
-        return false;
-      }
-      try {
-        final loadedMeals = await preparedMealRepository.readAll();
-        return loadedMeals.any((meal) => meal.id == normalizedMealId);
-      } on Object catch (error, stackTrace) {
-        log(
-          'Failed to check prepared meal restore source. Trying restore '
-          'anyway (mealId=$normalizedMealId).',
-          name: _deleteFlowLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-        return true;
-      }
-    },
+    sourcePreparedMealExists: _sourcePreparedMealUnavailable,
   );
 }
 
@@ -410,7 +348,42 @@ Future<bool> _noopInvalidateSnapshotsFromDay(DateTime day) async {
   return true;
 }
 
-Future<bool> _invalidateWeeklyCheckInSnapshotsFromDay({
+Future<bool> _restoreConsumedItemUnavailable(String itemId, int amount) async {
+  return false;
+}
+
+Future<bool> _rollbackRestoredItemUnavailable(
+  String itemId,
+  int amount, {
+  DateTime? consumedAt,
+}) async {
+  return false;
+}
+
+Future<bool> _sourceInventoryItemUnavailable(String itemId) async {
+  return false;
+}
+
+Future<bool> _restorePreparedMealPortionsUnavailable({
+  required String mealId,
+  required num portions,
+}) async {
+  return false;
+}
+
+Future<bool> _rollbackPreparedMealUnavailable({
+  required String mealId,
+  required num discardedPortions,
+}) async {
+  return false;
+}
+
+Future<bool> _sourcePreparedMealUnavailable(String mealId) async {
+  return false;
+}
+
+/// Invalidates weekly check-in snapshots from the provided diary day.
+Future<bool> invalidateCalorieWeeklyCheckInSnapshotsFromDay({
   required DateTime day,
   required CalorieSettingsRepository settingsRepository,
 }) async {

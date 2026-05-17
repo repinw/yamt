@@ -54,7 +54,7 @@ Main application providers:
 - `application/calorie_health_connection_sync.dart`
 - `application/calorie_weight_state_refresh.dart`
 - `application/calorie_entry_delete_flow.dart`
-- `application/inventory_backed_calorie_entry_save_flow.dart`
+- `application/calorie_inventory_entry_save_handler.dart`
 
 ## Accepted Dependencies
 
@@ -62,9 +62,10 @@ Main application providers:
 - `features/auth` for user-scoped calorie repositories and cache storage.
 - `features/health` for public health controllers, services, and domain data
   used by calorie goals, trends, and connection sync.
-- `features/inventory` for inventory-backed calorie entry save/delete flows.
-- `features/household` for household-scoped inventory commit storage.
-- `features/calorie_goal` for shared calorie goal picker/result widgets.
+
+Inventory-backed save/delete behavior is supplied through calorie-owned ports.
+The concrete inventory adapters live in `features/inventory` so Calories does
+not depend on Inventory.
 
 Keep health-triggered calorie effects in Calories application providers. Health
 must not depend on Calories.

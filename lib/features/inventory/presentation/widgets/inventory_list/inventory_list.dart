@@ -11,11 +11,10 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
-    show HomeTabType;
-import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -34,6 +33,8 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'prepared_meal_sorter.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_home_shell_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -54,8 +55,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'prepared_meal_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -117,7 +116,7 @@ class InventoryList extends ConsumerStatefulWidget {
   final List<Widget> topChromeActions;
 
   /// The empty state action button.
-  final Widget emptyStateActionButton;
+  final Widget? emptyStateActionButton;
 
   /// The on delete item.
   final Future<bool> Function(String itemId) onDeleteItem;
@@ -264,10 +263,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     return CustomScrollView(
       slivers: [
         if (widget.includeHomeShellChrome)
-          HomeShellTabTopChrome(
-            tab: HomeTabType.inventory,
-            actions: widget.topChromeActions,
-          ),
+          InventoryHomeShellTopChrome(actions: widget.topChromeActions),
         InventoryListTopControlsSliver(
           modeToggle: InventoryModeToolbar(modeToggle: modeToggle),
           showSearch: hasAnySourceItems,

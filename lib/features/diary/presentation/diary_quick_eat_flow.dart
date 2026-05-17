@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
 import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
@@ -16,9 +14,11 @@ import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dar
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
-import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_quick_eat_flow.dart';
+import 'package:yamt/features/product_search/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Diary quick-eat sources.

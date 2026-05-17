@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calorie_goal/presentation/widgets/calorie_goal_calculator_results.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_results.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Final onboarding step that saves the calculated goal.

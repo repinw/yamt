@@ -7,8 +7,6 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/diary/application/diary_intro_trigger_provider.dart';
@@ -23,6 +21,8 @@ import 'package:yamt/features/diary/presentation/diary_scroll_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_home_shell_top_chrome.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_scroll_shortcut.dart';
@@ -30,11 +30,10 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
-    show HomeTabType;
-import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _diaryProviderWarmupDelay = Duration(milliseconds: 600);
@@ -130,7 +129,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
             cacheExtent: 0,
             slivers: [
               if (widget.includeHomeShellChrome)
-                const HomeShellTabTopChrome(tab: HomeTabType.diary),
+                const DiaryHomeShellTopChrome(),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(
                   horizontalPagePadding,

@@ -15,6 +15,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_calorie_entry_delete_flow.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -208,7 +210,7 @@ ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepPreparedMealsAlive(
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  calorieEntryDeleteFlow,
+  inventoryCalorieEntryDeleteFlow,
 ])
 class _DeleteFlowHarness {
   const _DeleteFlowHarness({
@@ -231,7 +233,7 @@ class _DeleteFlowHarness {
     required bool restoreToInventory,
   }) {
     return container
-        .read(calorieEntryDeleteFlowProvider)
+        .read(inventoryCalorieEntryDeleteFlowProvider)
         .deleteEntry(
           entry: calorieRepository.entries.single,
           restoreToInventory: restoreToInventory,
@@ -260,7 +262,7 @@ class _DeleteFlowHarness {
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  calorieEntryDeleteFlow,
+  inventoryCalorieEntryDeleteFlow,
 ])
 _DeleteFlowHarness _buildDeleteFlowHarness({
   required List<CalorieEntry> entries,
@@ -347,7 +349,7 @@ CalorieEntryDeleteFlow _deleteFlow({
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  calorieEntryDeleteFlow,
+  inventoryCalorieEntryDeleteFlow,
 ])
 void main() {
   test(

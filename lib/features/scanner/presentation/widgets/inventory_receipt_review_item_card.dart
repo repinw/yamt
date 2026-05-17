@@ -6,9 +6,9 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
-import 'package:yamt/features/shared/widgets/'
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_receipt_product_selection_widgets.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Receipt review list row that shows one mapped or unresolved item.

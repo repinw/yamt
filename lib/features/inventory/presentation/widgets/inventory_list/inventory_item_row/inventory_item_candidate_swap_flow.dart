@@ -7,14 +7,14 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/domain/'
+import 'package:yamt/features/inventory/domain/'
     'receipt_review_item_draft.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_product_search_launcher.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page_route.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page_types.dart';
 
 const _swapGlobalFoodIdPrefix = 'global-food-';
 
@@ -44,6 +44,9 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   required InventoryItem item,
 }) async {
   final matcher = ref.read(globalFoodItemMatcherProvider);
+  final manualProductSearchLauncher = ref.read(
+    inventoryManualProductSearchLauncherProvider,
+  );
   final candidates = await matcher.findCandidates(item);
   if (!context.mounted) {
     return null;
@@ -81,6 +84,7 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
       context: context,
       item: item,
       matcher: matcher,
+      manualProductSearchLauncher: manualProductSearchLauncher,
     ),
   };
 }
@@ -112,16 +116,16 @@ Future<InventoryItemCandidateSwapRequest?> _manualEntryRequest({
   required BuildContext context,
   required InventoryItem item,
   required GlobalFoodItemMatcher matcher,
+  required InventoryManualProductSearchLauncher manualProductSearchLauncher,
 }) async {
-  final result =
-      await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
-        context: context,
-        args: ManualProductSearchRouteArgs.manualProduct(
-          item: item,
-          includeStoreInSearch: false,
-          includeWeightInSearch: false,
-        ),
-      );
+  final result = await manualProductSearchLauncher(
+    context: context,
+    request: InventoryManualProductSearchRequest(
+      item: item,
+      includeStoreInSearch: false,
+      includeWeightInSearch: false,
+    ),
+  );
   if (!context.mounted || result == null) {
     return null;
   }

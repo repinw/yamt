@@ -5,13 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
+    'calorie_inventory_entry_save_handler.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
@@ -28,17 +27,11 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_editor_form_scaffold.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _editorLogName = 'CalorieEntryEditorPage';
 
 /// Stateful editor content used by calorie entry route.
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-  calorieEntryDeleteFlow,
-])
 class CalorieEntryEditorContent extends ConsumerStatefulWidget {
   /// Creates editor content.
   const CalorieEntryEditorContent({
@@ -84,8 +77,8 @@ class _CalorieEntryEditorContentState
   static const _uuid = Uuid();
 
   final _draft = CalorieEntryEditorDraft();
-  ProviderContainer? _providerContainer;
   ProviderSubscription<AsyncValue<CalorieEntry?>>? _entrySubscription;
+  CalorieInventoryPendingConsumptionDiscarder? _discardPendingConsumption;
   bool _isSaving = false;
   bool _didCommitPendingConsumption = false;
   bool _didDiscardPendingConsumption = false;
@@ -95,17 +88,11 @@ class _CalorieEntryEditorContentState
   @override
   void initState() {
     super.initState();
+    _discardPendingConsumption = ref.read(
+      calorieInventoryPendingConsumptionDiscarderProvider,
+    );
     _initializeForCreate();
     _subscribeToEntry();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _providerContainer ??= ProviderScope.containerOf(
-      context,
-      listen: false,
-    );
   }
 
   @override
@@ -147,12 +134,7 @@ class _CalorieEntryEditorContentState
 
   @override
   void dispose() {
-    final providerContainer = _providerContainer;
-    if (providerContainer != null) {
-      _discardPendingConsumptionIfNeeded(
-        providerContainer.read(inventoryItemsControllerProvider.notifier),
-      );
-    }
+    _discardPendingInventoryConsumptionIfNeeded();
     _entrySubscription?.close();
     _draft.dispose();
     super.dispose();
@@ -431,27 +413,33 @@ class _CalorieEntryEditorContentState
     final inventoryBackedPendingConsumptionId = initialEntry == null
         ? pendingConsumptionId
         : null;
-    final inventoryBackedSaveFlow = inventoryBackedPendingConsumptionId == null
+    final inventoryBackedSaveHandler =
+        inventoryBackedPendingConsumptionId == null
         ? null
-        : ref.read(inventoryBackedCalorieEntrySaveFlowProvider);
+        : ref.read(calorieInventoryEntrySaveHandlerProvider);
     final calorieEntriesController = ref.read(
       calorieEntriesControllerProvider.notifier,
     );
     Future<bool> persistInventoryBackedEntry(CalorieEntry entry) {
-      return inventoryBackedSaveFlow!.saveEntry(
+      final saveHandler = inventoryBackedSaveHandler;
+      final pendingConsumptionId = inventoryBackedPendingConsumptionId;
+      if (saveHandler == null || pendingConsumptionId == null) {
+        return Future<bool>.value(false);
+      }
+      return saveHandler(
         entry: entry,
-        pendingConsumptionId: inventoryBackedPendingConsumptionId!,
+        pendingConsumptionId: pendingConsumptionId,
       );
     }
 
-    final persistEntry = inventoryBackedSaveFlow == null
+    final persistEntry = inventoryBackedSaveHandler == null
         ? null
         : persistInventoryBackedEntry;
 
     log(
       'Saving calorie entry ${entry.id} '
       '(edit=${initialEntry != null}, '
-      'inventoryBacked=${inventoryBackedSaveFlow != null}, '
+      'inventoryBacked=${inventoryBackedSaveHandler != null}, '
       'pendingConsumptionId=${inventoryBackedPendingConsumptionId ?? 'none'}, '
       'inventoryItemId=${inventoryContext?.inventoryItemId ?? 'none'}).',
       name: _editorLogName,
@@ -728,26 +716,23 @@ class _CalorieEntryEditorContentState
       return;
     }
 
-    _discardPendingConsumptionIfNeeded(
-      ref.read(inventoryItemsControllerProvider.notifier),
-    );
+    _discardPendingInventoryConsumptionIfNeeded();
   }
 
-  void _discardPendingConsumptionIfNeeded(
-    InventoryItemsController inventoryController,
-  ) {
+  void _discardPendingInventoryConsumptionIfNeeded() {
     if (_didCommitPendingConsumption || _didDiscardPendingConsumption) {
       return;
     }
-
     final pendingConsumptionId = widget.inventoryContext?.pendingConsumptionId;
     if (widget.entryId != null || pendingConsumptionId == null) {
       return;
     }
 
+    final discardPendingConsumption = _discardPendingConsumption;
+    if (discardPendingConsumption == null) {
+      return;
+    }
     _didDiscardPendingConsumption = true;
-    unawaited(
-      inventoryController.discardPendingConsumption(pendingConsumptionId),
-    );
+    unawaited(discardPendingConsumption(pendingConsumptionId));
   }
 }

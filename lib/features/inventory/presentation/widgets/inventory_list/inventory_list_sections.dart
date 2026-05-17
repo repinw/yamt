@@ -626,13 +626,13 @@ class InventorySectionExpandButton extends StatelessWidget {
 class InventoryEmptyState extends StatelessWidget {
   /// The inventory empty state.
   const InventoryEmptyState({
-    required this.actionButton,
     super.key,
+    this.actionButton,
     this.message,
   });
 
   /// The action button.
-  final Widget actionButton;
+  final Widget? actionButton;
 
   /// The message.
   final String? message;
@@ -657,8 +657,10 @@ class InventoryEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _InventoryEmptyStateHighlightedAction(child: actionButton),
-            const SizedBox(height: AppSpacing.xxl),
+            if (actionButton != null) ...[
+              _InventoryEmptyStateHighlightedAction(child: actionButton!),
+              const SizedBox(height: AppSpacing.xxl),
+            ],
             Text(
               emptyStateMessage,
               textAlign: TextAlign.center,

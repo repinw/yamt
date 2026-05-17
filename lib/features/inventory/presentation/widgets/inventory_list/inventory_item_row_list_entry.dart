@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -10,8 +12,6 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -85,8 +85,13 @@ class InventoryItemRowListEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isAlreadyInShoppingList = isInventoryItemInActiveShoppingList(
-      item: item,
+    final isAlreadyInShoppingList = isSourceItemInActiveShoppingList(
+      item: (
+        name: item.name,
+        brand: item.brand,
+        initialQuantity: item.initialQuantity,
+        unitPrice: item.unitPrice,
+      ),
       activeItemKeys: activeShoppingListItemKeys,
     );
     final canStartSelection = item.usesAmountProgress

@@ -6,9 +6,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
-    show HomeTabType;
-import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/presentation/views/'
@@ -50,7 +48,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     return CustomScrollView(
       slivers: [
         if (widget.includeHomeShellChrome)
-          const HomeShellTabTopChrome(tab: HomeTabType.statistics),
+          HomeShellTabTopChrome(title: l10n.homeStatistics),
         SliverPadding(
           padding: responsivePagePadding(
             context,

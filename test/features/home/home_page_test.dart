@@ -8,19 +8,22 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/core/widgets/home_shell_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_heart_counter_button.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
-import 'package:yamt/features/home/widgets/home_heart_counter_button.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
-import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/features/home/widgets/'
+    'inventory_action_fab.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -30,10 +33,8 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
+import 'package:yamt/features/product_search/presentation/'
     'inventory_manual_add_page.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_action_fab.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
@@ -232,13 +233,23 @@ CalorieWeekOverview _weekOverview(DateTime selectedDay) {
 Widget _defaultBranchBody(HomeTabType tab) {
   return CustomScrollView(
     slivers: [
-      HomeShellTabTopChrome(tab: tab),
+      HomeShellTabTopChrome(title: _titleForTab(tab)),
       const SliverFillRemaining(
         hasScrollBody: false,
         child: SizedBox(),
       ),
     ],
   );
+}
+
+String _titleForTab(HomeTabType tab) {
+  return switch (tab) {
+    HomeTabType.inventory => 'Inventory',
+    HomeTabType.diary => 'Today',
+    HomeTabType.cookbook => 'Cookbook',
+    HomeTabType.statistics => 'Statistics',
+    HomeTabType.settings => 'Settings',
+  };
 }
 
 double _homeChromeOpacity(WidgetTester tester, Type chromeType) {
@@ -518,7 +529,7 @@ void main() {
         branchBody: CustomScrollView(
           slivers: [
             HomeShellTabTopChrome(
-              tab: HomeTabType.cookbook,
+              title: 'Cookbook',
               actions: [
                 IconButton(
                   tooltip: 'Import recipe',
@@ -558,7 +569,7 @@ void main() {
           builder: (context) {
             return CustomScrollView(
               slivers: [
-                const HomeShellTabTopChrome(tab: HomeTabType.diary),
+                const HomeShellTabTopChrome(title: 'Today'),
                 SliverList.builder(
                   itemCount: 40,
                   itemBuilder: (context, index) {
@@ -635,7 +646,7 @@ void main() {
         settingsRepository: repository,
         branchBody: const CustomScrollView(
           slivers: [
-            HomeShellTabTopChrome(tab: HomeTabType.diary),
+            HomeShellTabTopChrome(title: 'Today'),
             SliverFillRemaining(
               hasScrollBody: false,
               child: Center(child: Text('Short content')),
@@ -680,7 +691,7 @@ void main() {
         settingsRepository: repository,
         branchBody: CustomScrollView(
           slivers: [
-            const HomeShellTabTopChrome(tab: HomeTabType.diary),
+            const HomeShellTabTopChrome(title: 'Today'),
             SliverToBoxAdapter(
               child: SizedBox(
                 height: 480,
@@ -1056,7 +1067,7 @@ void main() {
         ]),
         branchBody: CustomScrollView(
           slivers: [
-            const HomeShellTabTopChrome(tab: HomeTabType.inventory),
+            const HomeShellTabTopChrome(title: 'Inventory'),
             SliverList.builder(
               itemCount: 40,
               itemBuilder: (context, index) {

@@ -19,6 +19,7 @@ global_food_receipt_alias.dart-->global_food_item.dart;
 global_food_serving_suggestion.dart-->inventory_item.dart;
 global_food_serving_suggestion.dart-->inventory_parsing_utils.dart;
 global_food_serving_suggestion_repository_contract.dart-->global_food_serving_suggestion.dart;
+inventory_activity_event.dart-->inventory_item.dart;
 inventory_discard_event.dart-->inventory_item.dart;
 inventory_discard_event.dart-->prepared_meal.dart;
 inventory_item.dart-->global_food_nutrition.dart;
@@ -33,4 +34,6 @@ prepared_meal.dart-->inventory_item.dart;
 receipt_item_editor_updater.dart-->inventory_item.dart;
 receipt_item_editor_updater.dart-->receipt_item_input_parser.dart;
 receipt_item_editor_updater.dart-->receipt_item_quantity_normalizer.dart;
+receipt_review_item_draft.dart-->global_food_match_candidate.dart;
+receipt_review_item_draft.dart-->inventory_item.dart;
 ```

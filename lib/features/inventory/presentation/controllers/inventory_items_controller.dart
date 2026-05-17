@@ -215,25 +215,6 @@ class _PendingDeletedInventoryItem {
   final int index;
 }
 
-/// Defines pending inventory consumption.
-class PendingInventoryConsumption {
-  /// The pending inventory consumption.
-  const PendingInventoryConsumption({
-    required this.id,
-    required this.itemId,
-    required this.amount,
-  });
-
-  /// The id.
-  final String id;
-
-  /// The item id.
-  final String itemId;
-
-  /// The amount.
-  final int amount;
-}
-
 /// The result of reducing inventory item stock.
 typedef InventoryItemReductionResult = ({int removedAmount});
 
@@ -816,8 +797,13 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   /// Buy again item.
   Future<bool> buyAgainItem(InventoryItem item) {
-    return addInventoryItemToShoppingList(
-      item: item,
+    return addSourceItemToShoppingList(
+      item: (
+        name: item.name,
+        brand: item.brand,
+        initialQuantity: item.initialQuantity,
+        unitPrice: item.unitPrice,
+      ),
       addItem: ref.read(shoppingListControllerProvider.notifier).addItem,
     );
   }

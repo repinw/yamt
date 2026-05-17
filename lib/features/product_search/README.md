@@ -10,15 +10,16 @@ when an inventory flow needs a product match or manual nutrition input.
 - Manual product search controller, state, config, and save payload models.
 - Product AI search repository, parsed AI search domain models, and AI result
   builders.
-- Application services for AI draft generation and recent manual-product item
-  aggregation.
-- Product-search-specific helpers for normalizing manual text, weight input,
-  and receipt-review item drafts.
+- Application services for AI draft generation.
+- Product-search-specific helpers for normalizing manual text and weight input.
 
 ## Does Not Own
 
 - Inventory persistence, inventory item repository implementation, and barcode
   scanner UI. Those remain owned by `inventory`.
+- Receipt review item drafts, receipt candidate picker widgets, receipt
+  product-selection widgets, and manual recent-item aggregation. Those remain
+  owned by `inventory`.
 - Nutrition label OCR repository and OCR result models. Those remain owned by
   `product_nutrition`.
 - App routing setup. Product search exposes pages/widgets for route owners to
@@ -29,9 +30,9 @@ when an inventory flow needs a product match or manual nutrition input.
 - `InventoryReceiptManualProductPage` from
   `presentation/widgets/manual_product_search_page/manual_product_search_page.dart`.
 - `InventoryReceiptManualProductResult` and
-  `InventoryReceiptManualProductInitialIntent` from
+  `InventoryReceiptManualProductInitialIntent` via
   `presentation/widgets/manual_product_search_page_types.dart`.
-- `InventoryReceiptManualProductAction` from
+- `InventoryReceiptManualProductAction` via
   `presentation/controllers/manual_product_search_models.dart`.
 
 Other features should use these entry points instead of assembling internal
@@ -45,8 +46,6 @@ form widgets or controller state directly.
   `data/product_ai_search_repository.dart`.
 - `productAiSearchServiceProvider` lives in
   `application/product_ai_search_service.dart`.
-- `manualProductRecentItemsServiceProvider` lives in
-  `application/manual_product_recent_items_service.dart`.
 - AI nutrition selection and result-building helpers live in `application/`.
 
 ## Navigation

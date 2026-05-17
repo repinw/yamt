@@ -10,11 +10,22 @@ import 'package:yamt/core/config/firebase_config.dart';
 import 'package:yamt/core/debug/app_provider_observer.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_inventory_entry_save_handler.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_calorie_entry_delete_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_product_search_launcher.dart';
+import 'package:yamt/features/product_search/presentation/'
+    'manual_product_search_launcher.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 
@@ -39,6 +50,24 @@ Future<void> main() async {
         appPreferencesProvider.overrideWithValue(appPreferences),
         calorieEntryPostPersistHookProvider.overrideWith(
           (ref) => ref.read(inventoryCalorieEntryPostPersistHookProvider),
+        ),
+        calorieEntryDeleteFlowProvider.overrideWith(
+          (ref) => ref.read(inventoryCalorieEntryDeleteFlowProvider),
+        ),
+        calorieInventoryEntrySaveHandlerProvider.overrideWith((ref) {
+          final saveFlow = ref.read(
+            inventoryBackedCalorieEntrySaveFlowProvider,
+          );
+          return saveFlow.saveEntry;
+        }),
+        calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((ref) {
+          final inventoryController = ref.read(
+            inventoryItemsControllerProvider.notifier,
+          );
+          return inventoryController.discardPendingConsumption;
+        }),
+        inventoryManualProductSearchLauncherProvider.overrideWith(
+          (ref) => buildProductSearchManualProductSearchLauncher(),
         ),
       ],
       child: const YAMT(),

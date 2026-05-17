@@ -11,7 +11,7 @@ with the calorie engine. `lib/features/calories` still owns the reusable calorie
 models, calculator form controller, goal controller, log repository, and Burn
 Week state. Onboarding owns the one-time guided setup and the special logic
 needed to enter an already-running day cleanly. Shared calorie-goal UI widgets
-live in `lib/features/calorie_goal`.
+live in `lib/features/calories`.
 
 ## What It Does
 
@@ -200,7 +200,7 @@ Generated Riverpod files. They should not be edited manually.
   state.
 - `features/auth`: Supplies the current user ID for completion markers.
 - `core/preferences`: Stores the user-scoped onboarding completion marker.
-- `features/calorie_goal`: Provides shared goal picker, result, warning, and
+- `features/calories`: Provides shared goal picker, result, warning, and
   goal-start card widgets.
 - `lib/features/calories`: Provides the calculator form controller, goal
   settings, goal controller, calorie log repository, calorie entries, diary day

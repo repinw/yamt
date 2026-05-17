@@ -8,7 +8,6 @@ flowchart TD;
 global_food_item_matcher.dart-->global_food_local_candidate_matcher.dart;
 global_food_item_matcher.dart-->global_food_matcher_limits.dart;
 global_food_item_matcher.dart-->off_product_candidate_source.dart;
-inventory_calorie_bridge_flow.dart-->inventory_item_eat_policy.dart;
 off_product_candidate_source.dart-->global_food_matcher_limits.dart;
 prepared_meal_consumption_workflows.dart-->prepared_meal_calorie_log_bridge.dart;
 prepared_meal_consumption_workflows.dart-->prepared_meal_inventory_math.dart;

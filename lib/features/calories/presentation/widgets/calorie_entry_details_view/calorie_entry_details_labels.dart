@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Formats the logged day label for calorie entry detail controls.
@@ -37,7 +37,7 @@ String calorieEntryConsumedAmountLabel(
 ) {
   if (entry.isBundle) {
     return l10n.caloriesBundlePortions(
-      formatPreparedMealPortions(
+      _formatBundlePortions(
         entry.bundleConsumedPortions ?? 0,
         localeName: l10n.localeName,
       ),
@@ -47,6 +47,10 @@ String calorieEntryConsumedAmountLabel(
 
   return '${formatCalorieEntryNutritionMetricValue(entry.consumedAmount)} '
       '${entry.consumedUnit.localizedName(l10n)}';
+}
+
+String _formatBundlePortions(num portions, {String? localeName}) {
+  return NumberFormat.decimalPattern(localeName).format(portions);
 }
 
 /// Formats a nutrition metric without trailing decimals when possible.

@@ -3,6 +3,9 @@ import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_receipt_manual_product_models.dart'
+    as inventory_models;
 import 'package:yamt/features/product_search/domain/manual_product_search_value_utils.dart';
 
 @immutable
@@ -90,13 +93,8 @@ enum InventoryReceiptManualProductError {
 }
 
 /// Defines inventory receipt manual product action.
-enum InventoryReceiptManualProductAction {
-  /// Save only to inventory.
-  addToInventory,
-
-  /// Save to inventory and continue to eat flow.
-  eatNow,
-}
+typedef InventoryReceiptManualProductAction =
+    inventory_models.InventoryReceiptManualProductAction;
 
 /// Defines inventory receipt manual product nutrition scan outcome.
 enum InventoryReceiptManualProductNutritionScanOutcome {
