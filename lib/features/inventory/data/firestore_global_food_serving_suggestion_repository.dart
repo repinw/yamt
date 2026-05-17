@@ -123,25 +123,13 @@ class FirestoreGlobalFoodServingSuggestionRepository
     ];
 
     if (globalKey == null) {
-      for (final target in preferenceTargets) {
-        final label = await _resolvePreferenceLabel(
-          document: target.document,
-          amount: normalizedAmount,
-          unit: unit,
-          newLabel: normalizedLabel,
-        );
-        await target.document.set(
-          _buildPreferenceData(
-            itemKey: target.itemKey,
-            globalFoodItemId: target.globalFoodItemId,
-            foodFingerprint: target.foodFingerprint,
-            amount: normalizedAmount,
-            unit: unit,
-            label: label,
-            updatedAtText: nowText,
-          ),
-        );
-      }
+      await _writePreferenceTargetsSafely(
+        targets: preferenceTargets,
+        amount: normalizedAmount,
+        unit: unit,
+        label: normalizedLabel,
+        updatedAtText: nowText,
+      );
       return;
     }
 
@@ -157,68 +145,145 @@ class FirestoreGlobalFoodServingSuggestionRepository
       documentId: suggestionId,
     );
 
-    await _firestore.runTransaction((transaction) async {
-      final suggestionSnapshot = await transaction.get(suggestionRef);
-      final voteSnapshot = await transaction.get(voteRef);
-      final currentData =
-          suggestionSnapshot.data() ?? const <String, dynamic>{};
-      final preferenceDataByDocument =
-          <DocumentReference<Map<String, dynamic>>, Map<String, dynamic>>{};
-      for (final target in preferenceTargets) {
-        final preferenceSnapshot = normalizedLabel == null
-            ? await transaction.get(target.document)
-            : null;
-        final label = _resolvePreferenceLabelFromData(
-          data: preferenceSnapshot?.data(),
+    try {
+      await _firestore.runTransaction((transaction) async {
+        final suggestionSnapshot = await transaction.get(suggestionRef);
+        final voteSnapshot = await transaction.get(voteRef);
+        final currentData =
+            suggestionSnapshot.data() ?? const <String, dynamic>{};
+        final preferenceDataByDocument =
+            <DocumentReference<Map<String, dynamic>>, Map<String, dynamic>>{};
+        for (final target in preferenceTargets) {
+          final preferenceSnapshot = normalizedLabel == null
+              ? await transaction.get(target.document)
+              : null;
+          final label = _resolvePreferenceLabelFromData(
+            data: preferenceSnapshot?.data(),
+            amount: normalizedAmount,
+            unit: unit,
+            newLabel: normalizedLabel,
+          );
+          preferenceDataByDocument[target.document] = _buildPreferenceData(
+            itemKey: target.itemKey,
+            globalFoodItemId: target.globalFoodItemId,
+            foodFingerprint: target.foodFingerprint,
+            amount: normalizedAmount,
+            unit: unit,
+            label: label,
+            updatedAtText: nowText,
+          );
+        }
+        final selectionCount = _readPositiveInt(
+          currentData['selection_count'],
+        );
+        final uniqueUserCount = _readPositiveInt(
+          currentData['unique_user_count'],
+        );
+        final nextSelectionCount = (selectionCount ?? 0) + 1;
+        final nextUniqueUserCount =
+            (uniqueUserCount ?? 0) + (voteSnapshot.exists ? 0 : 1);
+        final globalId = globalFoodItemId?.trim();
+
+        for (final entry in preferenceDataByDocument.entries) {
+          transaction.set(entry.key, entry.value);
+        }
+
+        transaction
+          ..set(suggestionRef, <String, dynamic>{
+            'id': suggestionId,
+            'item_key': globalKey,
+            'global_food_item_id': globalId,
+            'amount': normalizedAmount,
+            'unit': unit.jsonValue,
+            'selection_count': nextSelectionCount,
+            'unique_user_count': nextUniqueUserCount,
+            'created_at': currentData['created_at'] ?? nowText,
+            'updated_at': nowText,
+          })
+          ..set(voteRef, <String, dynamic>{
+            'item_key': globalKey,
+            'suggestion_id': suggestionId,
+            'global_food_item_id': globalId,
+            'amount': normalizedAmount,
+            'unit': unit.jsonValue,
+            'created_at': voteSnapshot.data()?['created_at'] ?? nowText,
+            'updated_at': nowText,
+          });
+      });
+    } on FirebaseException catch (error, stackTrace) {
+      if (_isPermissionDenied(error)) {
+        await _writePreferenceTargetsSafely(
+          targets: preferenceTargets,
           amount: normalizedAmount,
           unit: unit,
-          newLabel: normalizedLabel,
+          label: normalizedLabel,
+          updatedAtText: nowText,
         );
-        preferenceDataByDocument[target.document] = _buildPreferenceData(
+        return;
+      }
+      log(
+        'Failed to record serving suggestion.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> _writePreferenceTargetsSafely({
+    required List<_PreferenceWriteTarget> targets,
+    required double amount,
+    required ConsumedUnit unit,
+    required String? label,
+    required String updatedAtText,
+  }) async {
+    try {
+      await _writePreferenceTargets(
+        targets: targets,
+        amount: amount,
+        unit: unit,
+        label: label,
+        updatedAtText: updatedAtText,
+      );
+    } on FirebaseException catch (error, stackTrace) {
+      if (_isPermissionDenied(error)) {
+        return;
+      }
+      log(
+        'Failed to record personal serving suggestion.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> _writePreferenceTargets({
+    required List<_PreferenceWriteTarget> targets,
+    required double amount,
+    required ConsumedUnit unit,
+    required String? label,
+    required String updatedAtText,
+  }) async {
+    for (final target in targets) {
+      final resolvedLabel = await _resolvePreferenceLabel(
+        document: target.document,
+        amount: amount,
+        unit: unit,
+        newLabel: label,
+      );
+      await target.document.set(
+        _buildPreferenceData(
           itemKey: target.itemKey,
           globalFoodItemId: target.globalFoodItemId,
           foodFingerprint: target.foodFingerprint,
-          amount: normalizedAmount,
+          amount: amount,
           unit: unit,
-          label: label,
-          updatedAtText: nowText,
-        );
-      }
-      final selectionCount = _readPositiveInt(currentData['selection_count']);
-      final uniqueUserCount = _readPositiveInt(
-        currentData['unique_user_count'],
+          label: resolvedLabel,
+          updatedAtText: updatedAtText,
+        ),
       );
-      final nextSelectionCount = (selectionCount ?? 0) + 1;
-      final nextUniqueUserCount =
-          (uniqueUserCount ?? 0) + (voteSnapshot.exists ? 0 : 1);
-      final globalId = globalFoodItemId?.trim();
-
-      for (final entry in preferenceDataByDocument.entries) {
-        transaction.set(entry.key, entry.value);
-      }
-
-      transaction
-        ..set(suggestionRef, <String, dynamic>{
-          'id': suggestionId,
-          'item_key': globalKey,
-          'global_food_item_id': globalId,
-          'amount': normalizedAmount,
-          'unit': unit.jsonValue,
-          'selection_count': nextSelectionCount,
-          'unique_user_count': nextUniqueUserCount,
-          'created_at': currentData['created_at'] ?? nowText,
-          'updated_at': nowText,
-        })
-        ..set(voteRef, <String, dynamic>{
-          'item_key': globalKey,
-          'suggestion_id': suggestionId,
-          'global_food_item_id': globalId,
-          'amount': normalizedAmount,
-          'unit': unit.jsonValue,
-          'created_at': voteSnapshot.data()?['created_at'] ?? nowText,
-          'updated_at': nowText,
-        });
-    });
+    }
   }
 
   Future<ServingSizeSuggestion?> _readPersonalSuggestion({
@@ -275,6 +340,10 @@ class FirestoreGlobalFoodServingSuggestionRepository
       unit: ConsumedUnit.fromJsonValue(newestData['unit'] as String?),
       label: _readOptionalString(newestData['label']),
     );
+  }
+
+  bool _isPermissionDenied(FirebaseException error) {
+    return error.code == 'permission-denied';
   }
 
   Future<List<GlobalFoodServingSuggestion>> _readGlobalSuggestions({

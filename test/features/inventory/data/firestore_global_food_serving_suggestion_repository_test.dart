@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -8,6 +9,21 @@ const _globalCollection = 'global_food_item_serving_sizes';
 const _usersCollection = 'users';
 const _prefsCollection = 'global_food_item_serving_prefs';
 const _votesCollection = 'global_food_item_serving_votes';
+
+class _DenyingTransactionFakeFirebaseFirestore extends FakeFirebaseFirestore {
+  @override
+  Future<T> runTransaction<T>(
+    TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
+  }) async {
+    throw FirebaseException(
+      plugin: 'cloud_firestore',
+      code: 'permission-denied',
+      message: 'Denied',
+    );
+  }
+}
 
 void main() {
   test('readSuggestions prefers the newest personal preference', () async {
@@ -257,6 +273,54 @@ void main() {
 
       expect(sharedSnapshot.docs, isEmpty);
       expect(fingerprintPrefSnapshot.data()!['amount'], 27);
+    },
+  );
+
+  test(
+    'recordSelection keeps personal preference when shared write is denied',
+    () async {
+      final firestore = _DenyingTransactionFakeFirebaseFirestore();
+      final repository = FirestoreGlobalFoodServingSuggestionRepository(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
+
+      await repository.recordSelection(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'off-cheese',
+        amount: 35,
+        unit: ConsumedUnit.grams,
+        label: 'Scheibe',
+        selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+      );
+
+      final sharedSnapshot = await firestore
+          .collection(_globalCollection)
+          .get();
+      final globalPrefSnapshot = await firestore
+          .collection(_usersCollection)
+          .doc('user-1')
+          .collection(_prefsCollection)
+          .doc('global_off-cheese')
+          .get();
+      final fingerprintPrefSnapshot = await firestore
+          .collection(_usersCollection)
+          .doc('user-1')
+          .collection(_prefsCollection)
+          .doc('fingerprint_cheese__brand')
+          .get();
+      final votesSnapshot = await firestore
+          .collection(_usersCollection)
+          .doc('user-1')
+          .collection(_votesCollection)
+          .get();
+
+      expect(sharedSnapshot.docs, isEmpty);
+      expect(votesSnapshot.docs, isEmpty);
+      expect(globalPrefSnapshot.data()!['amount'], 35);
+      expect(globalPrefSnapshot.data()!['label'], 'Scheibe');
+      expect(fingerprintPrefSnapshot.data()!['amount'], 35);
+      expect(fingerprintPrefSnapshot.data()!['label'], 'Scheibe');
     },
   );
 }

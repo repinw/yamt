@@ -733,6 +733,29 @@ class _CalorieEntryEditorContentState
       return;
     }
     _didDiscardPendingConsumption = true;
-    unawaited(discardPendingConsumption(pendingConsumptionId));
+    unawaited(
+      _discardPendingInventoryConsumption(
+        discardPendingConsumption: discardPendingConsumption,
+        pendingConsumptionId: pendingConsumptionId,
+      ),
+    );
+  }
+
+  Future<void> _discardPendingInventoryConsumption({
+    required CalorieInventoryPendingConsumptionDiscarder
+    discardPendingConsumption,
+    required String pendingConsumptionId,
+  }) async {
+    try {
+      await discardPendingConsumption(pendingConsumptionId);
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to discard pending inventory consumption '
+        '$pendingConsumptionId after editor disposal.',
+        name: _editorLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

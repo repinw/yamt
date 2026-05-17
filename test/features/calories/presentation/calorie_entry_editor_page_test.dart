@@ -287,6 +287,7 @@ Widget _buildHarness({
   Object? createExtra,
   ProviderContainer? container,
   List<Override> additionalOverrides = const <Override>[],
+  Override? pendingConsumptionDiscarderOverride,
   bool openCreateFromRoot = false,
   String? autoOpenLocationFromRoot,
   Locale locale = const Locale('en'),
@@ -374,11 +375,14 @@ Widget _buildHarness({
       calorieInventoryEntrySaveHandlerProvider.overrideWith((ref) {
         return ref.read(inventoryBackedCalorieEntrySaveFlowProvider).saveEntry;
       }),
-      calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((ref) {
-        return ref
-            .read(inventoryItemsControllerProvider.notifier)
-            .discardPendingConsumption;
-      }),
+      pendingConsumptionDiscarderOverride ??
+          calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((
+            ref,
+          ) {
+            return ref
+                .read(inventoryItemsControllerProvider.notifier)
+                .discardPendingConsumption;
+          }),
       ...additionalOverrides,
     ],
   );
@@ -1239,6 +1243,93 @@ void main() {
       inventoryController.hasPendingConsumption('pending-1'),
       isFalse,
     );
+  });
+
+  testWidgets('pending inventory discard no-ops when handler is null', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryCreate,
+        createExtra: const CalorieEntryCreateArgs(
+          prefilledProfile: null,
+          inventoryContext: CalorieInventoryCreateContext(
+            inventoryItemId: 'inventory-1',
+            foodFingerprint: 'milk',
+            globalFoodItemId: 'off-milk',
+            pendingConsumptionId: 'pending-1',
+            inventoryAmountToRestore: 2,
+            itemName: 'Milk',
+            itemBrand: null,
+            consumedAmount: 100,
+            consumedUnit: ConsumedUnit.grams,
+          ),
+        ),
+        pendingConsumptionDiscarderOverride:
+            calorieInventoryPendingConsumptionDiscarderProvider.overrideWith(
+              (ref) => null,
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('pending inventory discard catches handler errors', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryCreate,
+        createExtra: const CalorieEntryCreateArgs(
+          prefilledProfile: null,
+          inventoryContext: CalorieInventoryCreateContext(
+            inventoryItemId: 'inventory-1',
+            foodFingerprint: 'milk',
+            globalFoodItemId: 'off-milk',
+            pendingConsumptionId: 'pending-1',
+            inventoryAmountToRestore: 2,
+            itemName: 'Milk',
+            itemBrand: null,
+            consumedAmount: 100,
+            consumedUnit: ConsumedUnit.grams,
+          ),
+        ),
+        pendingConsumptionDiscarderOverride:
+            calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((
+              ref,
+            ) {
+              return (pendingConsumptionId) async {
+                throw StateError('container disposed');
+              };
+            }),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(
