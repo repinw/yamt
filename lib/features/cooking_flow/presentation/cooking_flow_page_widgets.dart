@@ -140,7 +140,7 @@ class _CookingFlowPhaseBottomSurface extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: radius,
             boxShadow: <BoxShadow>[
-              AppInventoryEditorialSurfaces.ambientBoxShadow(
+              AppEditorialSurfaces.ambientBoxShadow(
                 colors,
                 blurRadius: 28,
                 offset: const Offset(0, -10),
@@ -151,17 +151,17 @@ class _CookingFlowPhaseBottomSurface extends StatelessWidget {
             borderRadius: radius,
             child: BackdropFilter(
               filter: ImageFilter.blur(
-                sigmaX: AppInventoryEditorial.glassBlur,
-                sigmaY: AppInventoryEditorial.glassBlur,
+                sigmaX: AppEditorial.glassBlur,
+                sigmaY: AppEditorial.glassBlur,
               ),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppInventoryEditorialSurfaces.glass(colors).withValues(
+                  color: AppEditorialSurfaces.glass(colors).withValues(
                     alpha: 0.94,
                   ),
                   borderRadius: radius,
                   border: Border.all(
-                    color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+                    color: AppEditorialSurfaces.ghostBorder(colors),
                   ),
                 ),
                 child: Padding(
@@ -204,15 +204,15 @@ class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(
-          sigmaX: AppInventoryEditorial.glassBlur,
-          sigmaY: AppInventoryEditorial.glassBlur,
+          sigmaX: AppEditorial.glassBlur,
+          sigmaY: AppEditorial.glassBlur,
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: AppInventoryEditorialSurfaces.glass(colors),
+            color: AppEditorialSurfaces.glass(colors),
             border: Border(
               bottom: BorderSide(
-                color: AppInventoryEditorialSurfaces.ghostBorder(
+                color: AppEditorialSurfaces.ghostBorder(
                   colors,
                 ).withValues(alpha: 0.2),
               ),

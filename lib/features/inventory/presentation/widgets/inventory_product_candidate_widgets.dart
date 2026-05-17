@@ -49,7 +49,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final borderRadius = BorderRadius.circular(
-      AppInventoryEditorial.cardRadius,
+      AppEditorial.cardRadius,
     );
     final tile = Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -58,7 +58,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
         children: [
           InventoryReceiptSelectionThumbnail(
             imageUrl: imageUrl,
-            dimension: AppInventoryEditorial.imageTileSize,
+            dimension: AppEditorial.imageTileSize,
             backgroundColor: colors.secondaryContainer.withValues(alpha: 0.28),
             foregroundColor: colors.onSecondaryContainer,
           ),
@@ -81,7 +81,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
     );
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: borderRadius,
         color: colors.surfaceContainerLowest.withValues(alpha: 0.96),

@@ -36,7 +36,7 @@ class InventoryFilterToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final borderColor = AppInventoryEditorialSurfaces.ghostBorder(colors);
+    final borderColor = AppEditorialSurfaces.ghostBorder(colors);
     final iconBackground = value
         ? colors.primary.withValues(alpha: 0.14)
         : colors.surfaceContainerHigh;
@@ -45,7 +45,7 @@ class InventoryFilterToggle extends StatelessWidget {
     return MergeSemantics(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppInventoryEditorialSurfaces.section(colors),
+          color: AppEditorialSurfaces.section(colors),
           borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(color: borderColor),
         ),

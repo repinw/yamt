@@ -16,10 +16,10 @@ class HomeContextFab extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.soulGradient(colors),
+        gradient: AppEditorialSurfaces.soulGradient(colors),
         borderRadius: BorderRadius.circular(AppRadius.xl),
         boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
+          AppEditorialSurfaces.ambientBoxShadow(
             colors,
             blurRadius: 28,
             offset: const Offset(0, 16),
@@ -27,7 +27,7 @@ class HomeContextFab extends StatelessWidget {
         ],
       ),
       child: SizedBox.square(
-        dimension: AppInventoryEditorial.contextFabSize,
+        dimension: AppEditorial.contextFabSize,
         child: Material(
           color: Colors.transparent,
           child: AppInkWell(

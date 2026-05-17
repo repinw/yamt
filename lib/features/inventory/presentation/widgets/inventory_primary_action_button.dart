@@ -98,12 +98,12 @@ class InventoryPrimaryActionButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         gradient: usesSoulGradient
-            ? AppInventoryEditorialSurfaces.soulGradient(colors)
+            ? AppEditorialSurfaces.soulGradient(colors)
             : null,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: borderColor),
         boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
+          AppEditorialSurfaces.ambientBoxShadow(
             colors,
             blurRadius: 24,
           ),

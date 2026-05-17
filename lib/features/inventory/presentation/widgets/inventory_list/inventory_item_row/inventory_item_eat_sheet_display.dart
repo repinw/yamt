@@ -17,12 +17,12 @@ class InventoryItemEatSectionCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
         border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+          color: AppEditorialSurfaces.ghostBorder(colors),
         ),
         boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
+          AppEditorialSurfaces.ambientBoxShadow(
             colors,
             blurRadius: 24,
             offset: const Offset(0, 12),

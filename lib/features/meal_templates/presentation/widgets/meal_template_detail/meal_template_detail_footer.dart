@@ -56,7 +56,7 @@ class MealTemplateFooter extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: radius,
             boxShadow: [
-              AppInventoryEditorialSurfaces.ambientBoxShadow(
+              AppEditorialSurfaces.ambientBoxShadow(
                 colors,
                 blurRadius: 32,
                 offset: const Offset(0, -10),
@@ -67,15 +67,15 @@ class MealTemplateFooter extends StatelessWidget {
             borderRadius: radius,
             child: BackdropFilter(
               filter: ImageFilter.blur(
-                sigmaX: AppInventoryEditorial.glassBlur,
-                sigmaY: AppInventoryEditorial.glassBlur,
+                sigmaX: AppEditorial.glassBlur,
+                sigmaY: AppEditorial.glassBlur,
               ),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: colors.surfaceContainerLowest.withValues(alpha: 0.95),
                   borderRadius: radius,
                   border: Border.all(
-                    color: AppInventoryEditorialSurfaces.ghostBorder(
+                    color: AppEditorialSurfaces.ghostBorder(
                       colors,
                     ).withValues(alpha: 0.45),
                   ),
@@ -180,7 +180,7 @@ class _FooterPrimaryActionButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: isEnabled
-            ? AppInventoryEditorialSurfaces.soulGradient(colors)
+            ? AppEditorialSurfaces.soulGradient(colors)
             : LinearGradient(
                 colors: [
                   colors.surfaceContainerHighest,
@@ -190,7 +190,7 @@ class _FooterPrimaryActionButton extends StatelessWidget {
         borderRadius: radius,
         boxShadow: isEnabled
             ? [
-                AppInventoryEditorialSurfaces.ambientBoxShadow(
+                AppEditorialSurfaces.ambientBoxShadow(
                   colors,
                   blurRadius: 24,
                   offset: const Offset(0, 12),

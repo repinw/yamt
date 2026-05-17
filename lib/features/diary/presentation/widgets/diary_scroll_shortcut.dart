@@ -139,8 +139,9 @@ class _DiaryScrollShortcutState extends State<DiaryScrollShortcut>
 
   void _resetPulse() {
     _isResettingPulse = true;
-    _pulseController.stop();
-    _pulseController.value = 0;
+    _pulseController
+      ..stop()
+      ..value = 0;
     _isResettingPulse = false;
   }
 }

@@ -28,9 +28,9 @@ class CalorieGoalCalculatorResultsCard extends StatelessWidget {
 
     return DecoratedBox(
       key: CalorieGoalCalculatorSheetKeys.resultsCard,
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
       ),
       child: Padding(
         padding: AppInsets.card,

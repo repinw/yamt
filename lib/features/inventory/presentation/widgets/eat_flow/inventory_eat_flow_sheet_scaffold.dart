@@ -56,13 +56,13 @@ class InventoryEatFlowSheetScaffold extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(
-                AppInventoryEditorial.cardRadius,
+                AppEditorial.cardRadius,
               ),
               child: DecoratedBox(
-                decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+                decoration: AppEditorialSurfaces.liftedCardDecoration(
                   colors,
                   borderRadius: BorderRadius.circular(
-                    AppInventoryEditorial.cardRadius,
+                    AppEditorial.cardRadius,
                   ),
                 ),
                 child: Column(

@@ -15,7 +15,7 @@ class AppBackground extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.backdropGradient(colors),
+        gradient: AppEditorialSurfaces.backdropGradient(colors),
       ),
       child: child ?? const SizedBox.shrink(),
     );

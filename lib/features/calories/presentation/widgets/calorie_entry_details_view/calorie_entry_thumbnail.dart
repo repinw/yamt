@@ -72,7 +72,7 @@ class _EntryImage extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.backdropGradient(colors),
+        gradient: AppEditorialSurfaces.backdropGradient(colors),
       ),
       child: _EntryImageFallback(initial: initial),
     );

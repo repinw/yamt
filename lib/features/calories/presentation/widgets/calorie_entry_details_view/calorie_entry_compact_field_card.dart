@@ -22,7 +22,7 @@ class CalorieEntryCompactFieldCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: BorderRadius.circular(AppRadius.lg + AppSpacing.xs),
         color: Color.alphaBlend(

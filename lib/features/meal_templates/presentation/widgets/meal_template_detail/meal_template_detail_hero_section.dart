@@ -172,13 +172,13 @@ class _MealTemplatePortionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final radius = BorderRadius.circular(AppEditorial.cardRadius);
 
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: radius,
         boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
+          AppEditorialSurfaces.ambientBoxShadow(
             colors,
             blurRadius: 28,
             offset: const Offset(0, 14),
@@ -189,15 +189,15 @@ class _MealTemplatePortionCard extends StatelessWidget {
         borderRadius: radius,
         child: BackdropFilter(
           filter: ImageFilter.blur(
-            sigmaX: AppInventoryEditorial.glassBlur,
-            sigmaY: AppInventoryEditorial.glassBlur,
+            sigmaX: AppEditorial.glassBlur,
+            sigmaY: AppEditorial.glassBlur,
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: colors.surfaceContainerLowest.withValues(alpha: 0.9),
               borderRadius: radius,
               border: Border.all(
-                color: AppInventoryEditorialSurfaces.ghostBorder(
+                color: AppEditorialSurfaces.ghostBorder(
                   colors,
                 ).withValues(alpha: 0.3),
               ),

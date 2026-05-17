@@ -30,7 +30,7 @@ class InventoryEatFlowFooter extends StatelessWidget {
         color: colors.surfaceContainerLowest,
         border: Border(
           top: BorderSide(
-            color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+            color: AppEditorialSurfaces.ghostBorder(colors),
           ),
         ),
       ),

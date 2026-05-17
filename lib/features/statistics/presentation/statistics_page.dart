@@ -174,10 +174,10 @@ class _StatisticsHeroCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.backdropGradient(colors),
+        gradient: AppEditorialSurfaces.backdropGradient(colors),
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+          color: AppEditorialSurfaces.ghostBorder(colors),
         ),
       ),
       child: Padding(

@@ -36,7 +36,7 @@ class PreparedMealCover extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final radius =
-        borderRadius ?? BorderRadius.circular(AppInventoryEditorial.cardRadius);
+        borderRadius ?? BorderRadius.circular(AppEditorial.cardRadius);
     final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
 
     return DecoratedBox(

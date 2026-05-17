@@ -35,7 +35,7 @@ class KitchenUtensilCover extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final radius =
-        borderRadius ?? BorderRadius.circular(AppInventoryEditorial.cardRadius);
+        borderRadius ?? BorderRadius.circular(AppEditorial.cardRadius);
 
     return DecoratedBox(
       decoration: BoxDecoration(

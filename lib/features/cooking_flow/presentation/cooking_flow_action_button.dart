@@ -104,7 +104,7 @@ class _CookingFlowAccentSurface extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: isEnabled
-            ? AppInventoryEditorialSurfaces.soulGradient(colors)
+            ? AppEditorialSurfaces.soulGradient(colors)
             : LinearGradient(
                 colors: <Color>[
                   colors.surfaceContainerHighest,
@@ -114,7 +114,7 @@ class _CookingFlowAccentSurface extends StatelessWidget {
         borderRadius: radius,
         boxShadow: isEnabled
             ? <BoxShadow>[
-                AppInventoryEditorialSurfaces.ambientBoxShadow(
+                AppEditorialSurfaces.ambientBoxShadow(
                   colors,
                   blurRadius: shadowBlurRadius,
                   offset: shadowOffset,

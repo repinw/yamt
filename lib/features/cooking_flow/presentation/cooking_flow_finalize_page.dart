@@ -81,10 +81,10 @@ class CookingFlowFinalizePage extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xxxxl),
         DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+          decoration: AppEditorialSurfaces.liftedCardDecoration(
             colors,
             borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
+              AppEditorial.cardRadius,
             ),
             blurRadius: 22,
             shadowOffset: const Offset(0, 10),
@@ -205,9 +205,9 @@ class _FinalizeStorageContainersSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
         blurRadius: 22,
         shadowOffset: const Offset(0, 10),
       ),

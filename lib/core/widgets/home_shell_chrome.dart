@@ -278,7 +278,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final borderColor = AppInventoryEditorialSurfaces.ghostBorder(
+    final borderColor = AppEditorialSurfaces.ghostBorder(
       colors,
     ).withValues(alpha: 0.1);
     final resolvedHeight =
@@ -298,7 +298,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppInventoryEditorialSurfaces.glass(colors),
+        color: AppEditorialSurfaces.glass(colors),
         border: Border(bottom: BorderSide(color: borderColor)),
       ),
       child: SafeArea(
@@ -489,7 +489,7 @@ class HomeBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final compactChrome = shouldUseCompactHomeChrome(context);
-    final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final radius = BorderRadius.circular(AppEditorial.cardRadius);
     final horizontalInset = compactChrome ? AppSpacing.xxs : AppSpacing.xs;
 
     return SafeArea(
@@ -505,7 +505,7 @@ class HomeBottomNavBar extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: radius,
             boxShadow: [
-              AppInventoryEditorialSurfaces.ambientBoxShadow(
+              AppEditorialSurfaces.ambientBoxShadow(
                 colors,
                 blurRadius: 30,
                 offset: const Offset(0, -10),
@@ -519,7 +519,7 @@ class HomeBottomNavBar extends StatelessWidget {
                 color: colors.surfaceContainerLow.withValues(alpha: 0.84),
                 borderRadius: radius,
                 border: Border.all(
-                  color: AppInventoryEditorialSurfaces.ghostBorder(
+                  color: AppEditorialSurfaces.ghostBorder(
                     colors,
                   ).withValues(alpha: 0.65),
                 ),

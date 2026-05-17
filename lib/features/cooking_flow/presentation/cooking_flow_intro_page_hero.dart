@@ -22,14 +22,14 @@ class CookingFlowIntroMealHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final radius = BorderRadius.circular(AppEditorial.cardRadius);
     final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
 
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: radius,
         boxShadow: <BoxShadow>[
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
+          AppEditorialSurfaces.ambientBoxShadow(
             colors,
             blurRadius: 26,
             offset: const Offset(0, 14),

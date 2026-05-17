@@ -123,9 +123,9 @@ class _MissingIngredientCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -222,9 +222,9 @@ class _MatchedIngredientCard extends StatelessWidget {
     );
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -339,10 +339,10 @@ class _IgnoredIngredientCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         color: colors.surfaceContainerLow.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
         blurRadius: 18,
         shadowOffset: const Offset(0, 10),
       ),
@@ -401,9 +401,9 @@ class _PlainIngredientCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
       ),
       child: Padding(
         padding: AppInsets.card,

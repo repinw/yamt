@@ -72,10 +72,9 @@ class StatisticsVerticalBarChart extends StatelessWidget {
                           final barHeight = maxValue <= 0
                               ? 0.0
                               : (item.value / maxValue) * chartHeight;
-                          final barGradient =
-                              AppInventoryEditorialSurfaces.soulGradient(
-                                colors,
-                              );
+                          final barGradient = AppEditorialSurfaces.soulGradient(
+                            colors,
+                          );
                           final goalLineBottom = _goalLineBottom(
                             item: item,
                             maxValue: maxValue,

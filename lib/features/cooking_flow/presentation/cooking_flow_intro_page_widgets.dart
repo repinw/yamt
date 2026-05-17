@@ -92,14 +92,14 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
       curve: Curves.easeOutCubic,
       decoration: hasUnresolvedConflict
           ? BoxDecoration(
-              color: AppInventoryEditorialSurfaces.liftedCard(colors),
+              color: AppEditorialSurfaces.liftedCard(colors),
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
                 color: cookingFlowConflictBorderColor,
                 width: 1.4,
               ),
               boxShadow: <BoxShadow>[
-                AppInventoryEditorialSurfaces.ambientBoxShadow(
+                AppEditorialSurfaces.ambientBoxShadow(
                   colors,
                   blurRadius: 14,
                   offset: const Offset(0, 6),
@@ -115,7 +115,7 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
                 width: 1.4,
               ),
               boxShadow: <BoxShadow>[
-                AppInventoryEditorialSurfaces.ambientBoxShadow(
+                AppEditorialSurfaces.ambientBoxShadow(
                   colors,
                   blurRadius: 14,
                   offset: const Offset(0, 6),
@@ -124,21 +124,21 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
             )
           : isCompleted
           ? BoxDecoration(
-              color: AppInventoryEditorialSurfaces.liftedCard(colors),
+              color: AppEditorialSurfaces.liftedCard(colors),
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
                 color: successColors.borderColor,
                 width: 1.4,
               ),
               boxShadow: <BoxShadow>[
-                AppInventoryEditorialSurfaces.ambientBoxShadow(
+                AppEditorialSurfaces.ambientBoxShadow(
                   colors,
                   blurRadius: 14,
                   offset: const Offset(0, 6),
                 ),
               ],
             )
-          : AppInventoryEditorialSurfaces.liftedCardDecoration(
+          : AppEditorialSurfaces.liftedCardDecoration(
               colors,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               blurRadius: 14,

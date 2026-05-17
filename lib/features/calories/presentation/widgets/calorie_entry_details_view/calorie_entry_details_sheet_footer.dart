@@ -41,15 +41,15 @@ class CalorieEntryDetailsSheetFooter extends StatelessWidget {
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(
-          sigmaX: AppInventoryEditorial.glassBlur * 0.75,
-          sigmaY: AppInventoryEditorial.glassBlur * 0.75,
+          sigmaX: AppEditorial.glassBlur * 0.75,
+          sigmaY: AppEditorial.glassBlur * 0.75,
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: colors.surfaceContainerLowest.withValues(alpha: 0.94),
             border: Border(
               top: BorderSide(
-                color: AppInventoryEditorialSurfaces.ghostBorder(
+                color: AppEditorialSurfaces.ghostBorder(
                   colors,
                 ).withValues(alpha: 0.9),
               ),
@@ -99,7 +99,7 @@ class CalorieEntryDetailsSheetFooter extends StatelessWidget {
                         disabledForegroundColor: colors.onSurfaceVariant
                             .withValues(alpha: 0.45),
                         side: BorderSide(
-                          color: AppInventoryEditorialSurfaces.ghostBorder(
+                          color: AppEditorialSurfaces.ghostBorder(
                             colors,
                           ).withValues(alpha: 0.9),
                         ),

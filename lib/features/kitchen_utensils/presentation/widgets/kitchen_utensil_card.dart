@@ -35,7 +35,7 @@ class KitchenUtensilCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final borderRadius = BorderRadius.circular(
-      AppInventoryEditorial.cardRadius,
+      AppEditorial.cardRadius,
     );
     final imagePath = utensil.imageStoragePath;
     final imageUrl = imagePath == null
@@ -44,7 +44,7 @@ class KitchenUtensilCard extends ConsumerWidget {
     final displayName = utensil.name ?? l10n.kitchenUtensilUnnamedLabel;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: borderRadius,
       ),

@@ -63,7 +63,7 @@ class CalorieEntryIngredientsSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: DecoratedBox(
             key: CalorieEntryDetailKeys.ingredientsTable,
-            decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+            decoration: AppEditorialSurfaces.liftedCardDecoration(
               colors,
               borderRadius: BorderRadius.circular(AppRadius.xl),
               color: Color.alphaBlend(
@@ -84,14 +84,14 @@ class CalorieEntryIngredientsSection extends StatelessWidget {
                     Divider(
                       height: 1,
                       thickness: 1,
-                      color: AppInventoryEditorialSurfaces.ghostBorder(
+                      color: AppEditorialSurfaces.ghostBorder(
                         colors,
                       ).withValues(alpha: 0.9),
                     ),
                   CalorieEntryIngredientRow(
                     component: entry.bundleComponents[index],
                     index: index,
-                    accentColor: AppInventoryEditorialSurfaces.ingredientAccent(
+                    accentColor: AppEditorialSurfaces.ingredientAccent(
                       colors,
                       index,
                     ),

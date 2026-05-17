@@ -107,7 +107,7 @@ class NutritionProfileCard extends StatelessWidget {
     final resolvedAccent = accentColor ?? colors.primary;
 
     return Container(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         color: Color.alphaBlend(
@@ -203,7 +203,7 @@ class _NutritionDivider extends StatelessWidget {
       child: VerticalDivider(
         width: AppSpacing.xl,
         thickness: 1,
-        color: AppInventoryEditorialSurfaces.ghostBorder(
+        color: AppEditorialSurfaces.ghostBorder(
           colors,
         ).withValues(alpha: 0.9),
       ),

@@ -185,7 +185,7 @@ class InventoryFiltersSheet extends StatelessWidget {
             maxHeight: mediaQuery.size.height * (isCompact ? 0.92 : 0.84),
           ),
           child: DecoratedBox(
-            decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+            decoration: AppEditorialSurfaces.liftedCardDecoration(
               colors,
               borderRadius: borderRadius,
               blurRadius: 28,
@@ -375,7 +375,7 @@ class InventorySortOptionCard extends StatelessWidget {
     final backgroundColor = isSelected
         ? Color.alphaBlend(
             colors.primary.withValues(alpha: 0.08),
-            AppInventoryEditorialSurfaces.section(colors),
+            AppEditorialSurfaces.section(colors),
           )
         : Colors.transparent;
     final iconBackground = isSelected
@@ -398,7 +398,7 @@ class InventorySortOptionCard extends StatelessWidget {
               border: Border.all(color: borderColor),
               boxShadow: isSelected
                   ? [
-                      AppInventoryEditorialSurfaces.ambientBoxShadow(
+                      AppEditorialSurfaces.ambientBoxShadow(
                         colors,
                         blurRadius: 18,
                         offset: const Offset(0, 10),
@@ -538,10 +538,10 @@ class _InventoryFiltersPrimaryButton extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.soulGradient(colors),
+        gradient: AppEditorialSurfaces.soulGradient(colors),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
+          AppEditorialSurfaces.ambientBoxShadow(
             colors,
             blurRadius: 24,
             offset: const Offset(0, 12),
@@ -642,10 +642,10 @@ class InventoryEmptyState extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final emptyStateMessage = message ?? l10n.inventoryEmptyState;
-    final cardRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final cardRadius = BorderRadius.circular(AppEditorial.cardRadius);
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: cardRadius,
       ),
@@ -691,7 +691,7 @@ class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
 
     return SizedBox.square(
       key: const Key('inventory_empty_state_fab_highlight'),
-      dimension: AppInventoryEditorial.emptyStateActionHighlightSize,
+      dimension: AppEditorial.emptyStateActionHighlightSize,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -703,16 +703,16 @@ class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
                 BoxShadow(
                   color: haloShadowColor,
                   blurRadius: isLightTheme
-                      ? AppInventoryEditorial.emptyStateActionLightBlurRadius
-                      : AppInventoryEditorial.emptyStateActionDarkBlurRadius,
+                      ? AppEditorial.emptyStateActionLightBlurRadius
+                      : AppEditorial.emptyStateActionDarkBlurRadius,
                   spreadRadius: isLightTheme
-                      ? AppInventoryEditorial.emptyStateActionLightSpreadRadius
-                      : AppInventoryEditorial.emptyStateActionDarkSpreadRadius,
+                      ? AppEditorial.emptyStateActionLightSpreadRadius
+                      : AppEditorial.emptyStateActionDarkSpreadRadius,
                 ),
               ],
             ),
             child: const SizedBox.square(
-              dimension: AppInventoryEditorial.emptyStateActionHaloSize,
+              dimension: AppEditorial.emptyStateActionHaloSize,
             ),
           ),
           child,

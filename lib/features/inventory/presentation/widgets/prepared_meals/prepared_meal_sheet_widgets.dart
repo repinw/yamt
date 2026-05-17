@@ -32,10 +32,10 @@ class PreparedMealSheetContainer extends StatelessWidget {
           bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xxxl,
         ),
         child: DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+          decoration: AppEditorialSurfaces.liftedCardDecoration(
             colors,
             borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
+              AppEditorial.cardRadius,
             ),
           ),
           child: Padding(
