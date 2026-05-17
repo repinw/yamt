@@ -16,6 +16,8 @@ import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.d
 import 'package:yamt/features/scanner/provider/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _sharedReceiptServiceStartupDelay = Duration(seconds: 1);
+
 /// Defines shared receipt listener.
 @Dependencies([
   appRouter,
@@ -38,6 +40,8 @@ class SharedReceiptListener extends ConsumerStatefulWidget {
 
 class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
   ProviderSubscription<SharedReceiptIntent?>? _pendingSubscription;
+  ProviderSubscription<AsyncValue<void>>? _serviceSubscription;
+  Timer? _serviceStartupTimer;
   var _isHandlingShare = false;
 
   @override
@@ -47,19 +51,28 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
       pendingSharedReceiptIntentProvider,
       (previous, next) => _tryHandlePendingIntent(),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _serviceStartupTimer ??= Timer(
+        _sharedReceiptServiceStartupDelay,
+        _startSharedReceiptService,
+      );
+    });
   }
 
   @override
   void dispose() {
     _pendingSubscription?.close();
+    _serviceSubscription?.close();
+    _serviceStartupTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref
-      ..watch(sharedReceiptServiceProvider)
-      ..watch(appRouterProvider);
+    ref.watch(appRouterProvider);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -68,6 +81,17 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
     });
 
     return widget.child;
+  }
+
+  void _startSharedReceiptService() {
+    if (!mounted) {
+      return;
+    }
+    _serviceSubscription ??= ref.listenManual<AsyncValue<void>>(
+      sharedReceiptServiceProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
   }
 
   void _tryHandlePendingIntent() {

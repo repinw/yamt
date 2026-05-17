@@ -271,6 +271,52 @@ void main() {
     expect(find.byIcon(Icons.close_rounded), findsNWidgets(2));
   });
 
+  testWidgets('activity and weight section defers data load', (tester) async {
+    var loadCount = 0;
+    final deferredDataOverride =
+        diaryActivityWeightDataProvider(
+          selectedDay,
+        ).overrideWith((ref) async {
+          loadCount += 1;
+          return _activityWeightData(
+            selectedDay,
+            activityKcal: 450,
+            activeMinutes: 45,
+            selectedWeightKg: 78.4,
+            hasSelectedDayWeight: true,
+          );
+        });
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ..._commonOverrides(),
+          deferredDataOverride,
+        ],
+        child: MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DiaryActivityWeightSection(selectedDay: selectedDay),
+          ),
+        ),
+      ),
+    );
+
+    expect(loadCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 699));
+
+    expect(loadCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(loadCount, 1);
+    expect(find.text('AKTIVITÄT'), findsOneWidget);
+  });
+
   testWidgets('activity and weight cards retry after load error', (
     tester,
   ) async {
@@ -1022,4 +1068,8 @@ Future<void> _pumpDiaryWidget(
     ),
   );
   await tester.pumpAndSettle();
+  if (child is DiaryActivityWeightSection) {
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
+  }
 }

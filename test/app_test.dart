@@ -61,6 +61,14 @@ void main() {
     expect(find.text('root'), findsOneWidget);
     expect(
       (await settingsRepository.readSettings()).activityTrackingStartDate,
+      isNull,
+    );
+
+    await tester.pump(const Duration(milliseconds: 2100));
+    await tester.pumpAndSettle();
+
+    expect(
+      (await settingsRepository.readSettings()).activityTrackingStartDate,
       isNotNull,
     );
   });
