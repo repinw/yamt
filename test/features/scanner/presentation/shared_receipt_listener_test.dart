@@ -35,6 +35,17 @@ class _FakeSharedReceiptService extends SharedReceiptService {
   Future<void> build() async {}
 }
 
+class _CountingSharedReceiptService extends SharedReceiptService {
+  _CountingSharedReceiptService({required this.onBuild});
+
+  final VoidCallback onBuild;
+
+  @override
+  Future<void> build() async {
+    onBuild();
+  }
+}
+
 class _FakeReceiptCaptureFlowController extends ReceiptCaptureFlowController {
   _FakeReceiptCaptureFlowController({required this.result});
 
@@ -133,6 +144,50 @@ GoRouter _router(GlobalKey<NavigatorState> navigatorKey) {
   ReceiptBatchFlowController,
 ])
 void main() {
+  testWidgets('delays shared receipt service until after first paint', (
+    tester,
+  ) async {
+    final navigatorKey = GlobalKey<NavigatorState>();
+    final router = _router(navigatorKey);
+    addTearDown(router.dispose);
+    var serviceBuildCount = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appRouterProvider.overrideWithValue(router),
+          navigatorKeyProvider.overrideWithValue(navigatorKey),
+          sharedReceiptServiceProvider.overrideWith(
+            () => _CountingSharedReceiptService(
+              onBuild: () {
+                serviceBuildCount += 1;
+              },
+            ),
+          ),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          builder: (context, child) {
+            return SharedReceiptListener(
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
+        ),
+      ),
+    );
+
+    expect(serviceBuildCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 999));
+
+    expect(serviceBuildCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump();
+
+    expect(serviceBuildCount, 1);
+  });
+
   testWidgets('shows confirmation dialog and cancels shared scan', (
     tester,
   ) async {

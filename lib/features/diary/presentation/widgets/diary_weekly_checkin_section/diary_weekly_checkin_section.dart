@@ -18,6 +18,8 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_success_host.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _weeklyCheckInStartupDelay = Duration(milliseconds: 700);
+
 /// Hosts diary weekly check-in cards and dialog orchestration.
 class DiaryWeeklyCheckInSection extends ConsumerStatefulWidget {
   /// Creates diary weekly check-in section.
@@ -40,6 +42,7 @@ class _DiaryWeeklyCheckInSectionState
   final DiaryWeeklyCheckInDialogScheduler _dialogs =
       DiaryWeeklyCheckInDialogScheduler();
   ProviderSubscription<AsyncValue<DiaryWeeklyCheckInData>>? _subscription;
+  Timer? _subscriptionStartupTimer;
   AsyncValue<DiaryWeeklyCheckInData> _state =
       const AsyncLoading<DiaryWeeklyCheckInData>();
   String? _hiddenWindowKey;
@@ -49,15 +52,20 @@ class _DiaryWeeklyCheckInSectionState
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _startSubscription();
+      if (!mounted) {
+        return;
       }
+      _subscriptionStartupTimer ??= Timer(
+        _weeklyCheckInStartupDelay,
+        _startSubscription,
+      );
     });
   }
 
   @override
   void dispose() {
     _subscription?.close();
+    _subscriptionStartupTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _dialogs.dispose();
     super.dispose();
@@ -104,6 +112,9 @@ class _DiaryWeeklyCheckInSectionState
   }
 
   void _startSubscription() {
+    if (!mounted) {
+      return;
+    }
     _subscription ??= ref.listenManual(
       diaryWeeklyCheckInDataProvider,
       _cacheCheckInData,

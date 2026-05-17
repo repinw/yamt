@@ -12,6 +12,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
@@ -30,7 +31,12 @@ import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show DiaryWeeklyCheckInData, diaryWeeklyCheckInDataProvider;
+    show
+        DiaryWeeklyCheckInActions,
+        DiaryWeeklyCheckInData,
+        diaryCalorieGoalSettingsProvider,
+        diaryWeeklyCheckInActionsProvider,
+        diaryWeeklyCheckInDataProvider;
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -40,6 +46,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -292,6 +300,51 @@ void main() {
     expect(preparedMealsBuildCount, 0);
   });
 
+  testWidgets('delays weekly check-in section data until after first paint', (
+    tester,
+  ) async {
+    var checkInBuildCount = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          diaryCalorieGoalSettingsProvider.overrideWith(
+            (ref) async => const CalorieGoalSettings.empty(),
+          ),
+          diaryWeeklyCheckInActionsProvider.overrideWithValue(
+            _noopWeeklyCheckInActions(),
+          ),
+          diaryWeeklyCheckInDataProvider.overrideWith((ref) {
+            checkInBuildCount += 1;
+            return _weeklyCheckInCheckInData(
+              windowStartDate: DateTime(2026, 4, 20),
+              shouldAutoOpen: false,
+            );
+          }),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DiaryWeeklyCheckInSection(selectedDay: selectedDay),
+          ),
+        ),
+      ),
+    );
+
+    expect(checkInBuildCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 699));
+
+    expect(checkInBuildCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump();
+
+    expect(checkInBuildCount, 1);
+  });
+
   testWidgets('auto-opens already loaded weekly check-in dialog', (
     tester,
   ) async {
@@ -302,6 +355,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 20),
       ),
     );
+    await _pumpFrames(tester);
 
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
@@ -540,17 +594,18 @@ void main() {
       },
     );
 
-    for (var index = 0; index < 12; index += 1) {
-      if (find.text('Steps').evaluate().isNotEmpty) {
-        break;
-      }
-      await tester.drag(
-        find.byType(CustomScrollView),
-        const Offset(0, -120),
-      );
-      await tester.pump();
-    }
+    await tester.scrollUntilVisible(
+      find.byType(DiaryActivityWeightSection),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     await _pumpFrames(tester);
+    await tester.scrollUntilVisible(
+      find.text('Steps'),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump();
 
     expect(find.text('Steps'), findsOneWidget);
     expect(find.textContaining('4,321', findRichText: true), findsOneWidget);
@@ -1219,6 +1274,21 @@ DiaryWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
     freshness: CalorieLearnedTdeeFreshness.none,
     latestLearnedTdeeAt: null,
     lowConfidence: false,
+  );
+}
+
+DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
+  return DiaryWeeklyCheckInActions(
+    syncLearnedTdeeCache: (_) async {},
+    dismissPendingWeeklyCheckIn: (_) async {},
+    applyWeeklyCheckIn: (_) async => true,
+    setSkippedIntakeDay:
+        ({
+          required selectedDay,
+          required isSkipped,
+        }) async => true,
+    setHealthTrendsWindowEnd: (_) {},
+    refreshCheckInData: () {},
   );
 }
 
