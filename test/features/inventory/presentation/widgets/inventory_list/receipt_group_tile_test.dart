@@ -8,6 +8,8 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -24,8 +26,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';

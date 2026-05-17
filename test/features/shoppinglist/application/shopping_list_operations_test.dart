@@ -1,27 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
-InventoryItem _inventoryItem({
-  required String id,
+ShoppingListSourceItem _sourceItem({
   required String name,
   String? brand,
-  int quantity = 0,
   int initialQuantity = 1,
   double unitPrice = 1.0,
 }) {
-  return InventoryItem.create(
-    id: id,
+  return (
     name: name,
-    entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
-    storeName: 'Store',
-    quantity: quantity,
+    brand: brand,
     initialQuantity: initialQuantity,
     unitPrice: unitPrice,
-    brand: brand,
   );
 }
 
@@ -73,21 +66,21 @@ void main() {
     );
   });
 
-  test('isInventoryItemInActiveList matches by normalized name and brand', () {
+  test('isSourceItemInActiveList matches by normalized name and brand', () {
     final activeKeys = <ShoppingListItemMatchKey>{
       (normalizedName: 'milk', normalizedBrand: 'acme'),
     };
 
-    final same = isInventoryItemInActiveShoppingList(
-      item: _inventoryItem(id: 'i1', name: ' Milk ', brand: ' ACME '),
+    final same = isSourceItemInActiveShoppingList(
+      item: _sourceItem(name: ' Milk ', brand: ' ACME '),
       activeItemKeys: activeKeys,
     );
-    final differentBrand = isInventoryItemInActiveShoppingList(
-      item: _inventoryItem(id: 'i2', name: 'milk', brand: 'other'),
+    final differentBrand = isSourceItemInActiveShoppingList(
+      item: _sourceItem(name: 'milk', brand: 'other'),
       activeItemKeys: activeKeys,
     );
-    final emptyName = isInventoryItemInActiveShoppingList(
-      item: _inventoryItem(id: 'i3', name: '   ', brand: 'acme'),
+    final emptyName = isSourceItemInActiveShoppingList(
+      item: _sourceItem(name: '   ', brand: 'acme'),
       activeItemKeys: activeKeys,
     );
 
@@ -96,77 +89,64 @@ void main() {
     expect(emptyName, isFalse);
   });
 
+  test('isSourceItemInActiveShoppingList returns true for matching items', () {
+    final activeKeys = <ShoppingListItemMatchKey>{
+      (normalizedName: 'milk', normalizedBrand: 'acme'),
+    };
+
+    final result = isSourceItemInActiveShoppingList(
+      item: _sourceItem(
+        name: 'Milk',
+        brand: 'Acme',
+      ),
+      activeItemKeys: activeKeys,
+    );
+
+    expect(result, isTrue);
+  });
+
+  test('isSourceItemInActiveShoppingList returns false for missing match', () {
+    final activeKeys = <ShoppingListItemMatchKey>{
+      (normalizedName: 'milk', normalizedBrand: 'acme'),
+    };
+
+    final result = isSourceItemInActiveShoppingList(
+      item: _sourceItem(
+        name: 'Bread',
+        brand: 'Acme',
+      ),
+      activeItemKeys: activeKeys,
+    );
+
+    expect(result, isFalse);
+  });
+
+  test('isSourceItemInActiveShoppingList returns true for partial items', () {
+    final activeKeys = <ShoppingListItemMatchKey>{
+      (normalizedName: 'milk', normalizedBrand: 'acme'),
+    };
+
+    final result = isSourceItemInActiveShoppingList(
+      item: _sourceItem(
+        name: 'Milk',
+        brand: 'Acme',
+        initialQuantity: 2,
+      ),
+      activeItemKeys: activeKeys,
+    );
+
+    expect(result, isTrue);
+  });
+
   test(
-    'isInventoryItemInActiveShoppingList returns true for matching items',
+    'isSourceItemInActiveShoppingList returns false without a match key',
     () {
       final activeKeys = <ShoppingListItemMatchKey>{
         (normalizedName: 'milk', normalizedBrand: 'acme'),
       };
 
-      final result = isInventoryItemInActiveShoppingList(
-        item: _inventoryItem(
-          id: 'i1',
-          name: 'Milk',
-          brand: 'Acme',
-        ),
-        activeItemKeys: activeKeys,
-      );
-
-      expect(result, isTrue);
-    },
-  );
-
-  test(
-    'isInventoryItemInActiveShoppingList returns false for missing match',
-    () {
-      final activeKeys = <ShoppingListItemMatchKey>{
-        (normalizedName: 'milk', normalizedBrand: 'acme'),
-      };
-
-      final result = isInventoryItemInActiveShoppingList(
-        item: _inventoryItem(
-          id: 'i2',
-          name: 'Bread',
-          brand: 'Acme',
-        ),
-        activeItemKeys: activeKeys,
-      );
-
-      expect(result, isFalse);
-    },
-  );
-
-  test(
-    'isInventoryItemInActiveShoppingList returns true for partial items',
-    () {
-      final activeKeys = <ShoppingListItemMatchKey>{
-        (normalizedName: 'milk', normalizedBrand: 'acme'),
-      };
-
-      final result = isInventoryItemInActiveShoppingList(
-        item: _inventoryItem(
-          id: 'i3',
-          name: 'Milk',
-          brand: 'Acme',
-          quantity: 1,
-          initialQuantity: 2,
-        ),
-        activeItemKeys: activeKeys,
-      );
-
-      expect(result, isTrue);
-    },
-  );
-
-  test(
-    'isInventoryItemInActiveShoppingList returns false without a match key',
-    () {
-      final activeKeys = <ShoppingListItemMatchKey>{
-        (normalizedName: 'milk', normalizedBrand: 'acme'),
-      };
-
-      final result = isInventoryItemInActiveShoppingList(
-        item: _inventoryItem(id: 'i4', name: '   ', brand: 'Acme'),
+      final result = isSourceItemInActiveShoppingList(
+        item: _sourceItem(name: '   ', brand: 'Acme'),
         activeItemKeys: activeKeys,
       );
 
@@ -175,12 +155,12 @@ void main() {
   );
 
   test(
-    'addInventoryItem uses fallback quantity one for non-positive values',
+    'addSourceItem uses fallback quantity one for non-positive values',
     () async {
       ({String name, String? brand, int quantity, double estimatedUnitPrice})?
       captured;
 
-      final result = await addInventoryItemToShoppingList(
+      final result = await addSourceItemToShoppingList(
         addItem:
             ({
               required name,
@@ -196,8 +176,7 @@ void main() {
               );
               return true;
             },
-        item: _inventoryItem(
-          id: 'i4',
+        item: _sourceItem(
           name: 'Milk',
           brand: 'Acme',
           initialQuantity: 0,
@@ -214,8 +193,8 @@ void main() {
     },
   );
 
-  test('provider family matches inventory items against active keys', () {
-    final item = _inventoryItem(id: 'i5', name: 'Milk', brand: 'Acme');
+  test('provider family matches source items against active keys', () {
+    final item = _sourceItem(name: 'Milk', brand: 'Acme');
     final container = ProviderContainer(
       overrides: [
         activeShoppingListItemKeysProvider.overrideWith(
@@ -228,7 +207,7 @@ void main() {
     addTearDown(container.dispose);
 
     final result = container.read(
-      isInventoryItemInActiveShoppingListProvider(item),
+      isSourceItemInActiveShoppingListProvider(item),
     );
 
     expect(result, isTrue);

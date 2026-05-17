@@ -37,13 +37,11 @@ almost all of the data and widgets from this feature. In practice,
 Coordinates use-case style flows that need multiple repositories or other
 features:
 
-- `inventory_backed_calorie_entry_save_flow.dart`: Saves a calorie entry and
-  commits a pending inventory consumption. The real Firestore write happens in
-  a transaction store, then the inventory controller finalizes or refreshes its
-  local state.
+- `calorie_inventory_entry_save_handler.dart`: Defines the calorie-owned save
+  and pending-consumption discard ports used by inventory-backed entries.
 - `calorie_entry_delete_flow.dart`: Deletes entries and can restore inventory
-  items or prepared-meal portions first. If deletion fails after restore, the
-  flow tries to roll the restore back.
+  items or prepared-meal portions through injected callbacks. If deletion fails
+  after restore, the flow tries to roll the restore back.
 
 `data/`
 
@@ -239,8 +237,8 @@ Generated Riverpod and JSON files. They should not be edited manually.
 ## Integrations
 
 - `features/diary`: Main consumer of calorie providers and many calorie widgets.
-- `features/inventory`: Quick eat, pending consumption, inventory restore, and
-  prepared-meal bundles.
+- `features/inventory`: Implements calorie-owned save/delete ports for quick
+  eat, pending consumption, inventory restore, and prepared-meal bundles.
 - `features/health`: Steps, workouts, active energy, health weight, and manual
   weight entries.
 - `features/statistics`: Uses health trend and calorie data for statistics and

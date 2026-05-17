@@ -6,12 +6,12 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/product_search/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'

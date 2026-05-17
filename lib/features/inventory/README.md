@@ -47,6 +47,8 @@ already documented as a reusable presentation surface.
 - Repository providers live in `data/`.
 - Use-case/service providers live in `application/`.
 - Controller providers live in `presentation/controllers/`.
+- Controller-wired calorie save/delete/bridge adapters live in `presentation/`
+  because they coordinate presentation controllers with inventory persistence.
 - `provider/` is legacy and should stay empty; do not add new files there.
 
 ## Inventory Activity
@@ -63,11 +65,8 @@ Inventory currently has explicit dependencies on:
 - `auth` and `household` for current data owner resolution.
 - `calories` for meal type, calorie entry handoff, and prepared meal calorie
   logging.
-- `scanner` for receipt capture entry points.
-- `product_search` for manual product lookup surfaces.
 - `shoppinglist` for add-to-shopping-list actions from inventory rows.
 - `recipes` for template ingredient parsing.
-- `home` only for optional Home shell chrome around `InventoryPage`.
 
 These dependencies are migration-reviewed. New dependencies should be added only
 with a README note and should avoid new cycles.

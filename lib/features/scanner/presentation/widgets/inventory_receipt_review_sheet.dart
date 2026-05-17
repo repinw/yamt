@@ -8,6 +8,8 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -15,9 +17,7 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';

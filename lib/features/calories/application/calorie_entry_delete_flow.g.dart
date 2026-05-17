@@ -31,33 +31,9 @@ final class CalorieEntryDeleteFlowProvider
         retry: null,
         name: r'calorieEntryDeleteFlowProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryItemRepositoryProvider,
-          inventoryItemsControllerProvider,
-          preparedMealsControllerProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies0,
-          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies1,
-          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies2,
-          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies3,
-          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies4,
-          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies5,
-          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies6,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
-  static final $allTransitiveDependencies1 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies2 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies3 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies5 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies3;
-  static final $allTransitiveDependencies6 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$calorieEntryDeleteFlowHash();
@@ -83,4 +59,4 @@ final class CalorieEntryDeleteFlowProvider
 }
 
 String _$calorieEntryDeleteFlowHash() =>
-    r'a93421419e60cc975d676c80f72881a35d6c7890';
+    r'4928831a30f8d7ab1bb6f0b0128bdbed2038e15e';

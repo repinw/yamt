@@ -5,10 +5,9 @@ Dependencies that create loops (inversions) are marked with `!`.
 
 ```mermaid
 flowchart TD;
-inventory_action_fab.dart-->inventory_fab_action_sheet.dart;
-inventory_action_fab.dart-->inventory_fab_menu_action.dart;
-inventory_action_fab.dart-->inventory_main_fab_button.dart;
+inventory_activity_timeline-->inventory_home_shell_top_chrome.dart;
 inventory_barcode_candidate_picker_sheet.dart-->inventory_barcode_lookup_candidate.dart;
+inventory_barcode_candidate_picker_sheet.dart-->inventory_product_candidate_widgets.dart;
 inventory_barcode_scanner_page.dart-->inventory_barcode_candidate_picker_sheet.dart;
 inventory_barcode_scanner_page.dart-->inventory_barcode_lookup_candidate.dart;
 inventory_discard_reason_dialog.dart-->inventory_action_picker_sheet.dart;
@@ -17,12 +16,16 @@ inventory_item_remove_dialog.dart-->inventory_action_picker_sheet.dart;
 inventory_list-->eat_flow;
 inventory_list-->inventory_discard_reason_dialog.dart;
 inventory_list-->inventory_expand_indicator.dart;
+inventory_list-->inventory_home_shell_top_chrome.dart;
 inventory_list-->inventory_item_editor;
 inventory_list-->inventory_item_remove_dialog.dart;
 inventory_list-->inventory_primary_action_button.dart;
+inventory_list-->inventory_receipt_candidate_picker_sheet.dart;
 inventory_list-->inventory_tile_header_layout.dart;
 inventory_list-->prepared_meals;
 inventory_list-->shared;
+inventory_product_candidate_widgets.dart-->inventory_receipt_product_selection_widgets.dart;
+inventory_receipt_candidate_picker_sheet.dart-->inventory_receipt_product_selection_widgets.dart;
 inventory_tile_header_layout.dart-->inventory_expand_indicator.dart;
 inventory_tile_header_layout.dart-->shared;
 prepared_meals-->eat_flow;

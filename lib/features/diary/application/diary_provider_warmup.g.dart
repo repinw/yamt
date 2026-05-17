@@ -29,8 +29,6 @@ final class DiaryProviderWarmupProvider
         dependencies: <ProviderOrFamily>[
           inventoryItemsControllerProvider,
           preparedMealsControllerProvider,
-          calorieEntryDeleteFlowProvider,
-          inventoryBackedCalorieEntrySaveFlowProvider,
         ],
         $allTransitiveDependencies: <ProviderOrFamily>{
           DiaryProviderWarmupProvider.$allTransitiveDependencies0,
@@ -40,8 +38,6 @@ final class DiaryProviderWarmupProvider
           DiaryProviderWarmupProvider.$allTransitiveDependencies4,
           DiaryProviderWarmupProvider.$allTransitiveDependencies5,
           DiaryProviderWarmupProvider.$allTransitiveDependencies6,
-          DiaryProviderWarmupProvider.$allTransitiveDependencies7,
-          DiaryProviderWarmupProvider.$allTransitiveDependencies8,
         },
       );
 
@@ -57,9 +53,6 @@ final class DiaryProviderWarmupProvider
       PreparedMealsControllerProvider.$allTransitiveDependencies3;
   static final $allTransitiveDependencies6 =
       PreparedMealsControllerProvider.$allTransitiveDependencies4;
-  static final $allTransitiveDependencies7 = calorieEntryDeleteFlowProvider;
-  static final $allTransitiveDependencies8 =
-      inventoryBackedCalorieEntrySaveFlowProvider;
 
   @override
   String debugGetCreateSourceHash() => _$diaryProviderWarmupHash();
@@ -84,4 +77,4 @@ final class DiaryProviderWarmupProvider
 }
 
 String _$diaryProviderWarmupHash() =>
-    r'c27b58206b21eac4247d8b93bbaa2ce0690cbe69';
+    r'886300e68749896c1b190d54094d94b41c244ca6';

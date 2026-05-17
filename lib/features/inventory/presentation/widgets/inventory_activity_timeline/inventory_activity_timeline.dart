@@ -4,13 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
-    show HomeTabType;
-import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_home_shell_top_chrome.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Inventory activity timeline.
@@ -36,10 +35,7 @@ class InventoryActivityTimeline extends ConsumerWidget {
     return CustomScrollView(
       slivers: [
         if (includeHomeShellChrome)
-          HomeShellTabTopChrome(
-            tab: HomeTabType.inventory,
-            actions: topChromeActions,
-          ),
+          InventoryHomeShellTopChrome(actions: topChromeActions),
         switch (eventsAsync) {
           AsyncData(:final value) => _buildDataSliver(
             context: context,

@@ -13,14 +13,12 @@ import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
+import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
-    show HomeTabType;
-import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/settings/settings_page_keys.dart';
 import 'package:yamt/features/settings/widgets/settings_health_connect_tile.dart';
 import 'package:yamt/features/settings/widgets/settings_profile_card.dart';
@@ -49,7 +47,7 @@ class SettingsPage extends ConsumerWidget {
       child: CustomScrollView(
         slivers: [
           if (includeHomeShellChrome)
-            const HomeShellTabTopChrome(tab: HomeTabType.settings),
+            HomeShellTabTopChrome(title: l10n.homeSettings),
           SliverPadding(
             padding: responsivePagePadding(
               context,

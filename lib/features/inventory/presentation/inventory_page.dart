@@ -9,11 +9,8 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
-    show HomeTabType;
-import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -29,24 +26,21 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
+    'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_creation_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_action_fab.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_activity_timeline/inventory_activity_timeline.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_home_shell_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _deleteUndoSnackBarDuration = Duration(seconds: 5);
@@ -61,9 +55,6 @@ enum _InventoryPageView { stock, history }
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
-  receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
   inventoryActivityEvents,
@@ -74,6 +65,7 @@ class InventoryPage extends ConsumerStatefulWidget {
     super.key,
     this.expandedPreparedMealId,
     this.includeHomeShellChrome = false,
+    this.emptyStateActionButton,
   });
 
   /// The expanded prepared meal id.
@@ -81,6 +73,9 @@ class InventoryPage extends ConsumerStatefulWidget {
 
   /// Whether to render the shared home shell app bar as a sliver.
   final bool includeHomeShellChrome;
+
+  /// Optional action button rendered by the embedding shell.
+  final Widget? emptyStateActionButton;
 
   @override
   ConsumerState<InventoryPage> createState() => _InventoryPageState();
@@ -149,7 +144,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       includeHomeShellChrome: widget.includeHomeShellChrome,
       inventorySelectionFocusToken: _inventorySelectionFocusToken,
       topChromeActions: topChromeActions,
-      emptyStateActionButton: const InventoryActionFab.embedded(),
+      emptyStateActionButton: widget.emptyStateActionButton,
       onDeleteItem: (itemId) =>
           _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
       onEatItem: (itemId, request) => _eatItemWithCalorieBridge(
@@ -592,10 +587,7 @@ class _InventoryLoadingView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         if (includeHomeShellChrome)
-          HomeShellTabTopChrome(
-            tab: HomeTabType.inventory,
-            actions: topChromeActions,
-          ),
+          InventoryHomeShellTopChrome(actions: topChromeActions),
         const SliverFillRemaining(
           hasScrollBody: false,
           child: Center(
@@ -635,10 +627,7 @@ class _InventoryErrorView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         if (includeHomeShellChrome)
-          HomeShellTabTopChrome(
-            tab: HomeTabType.inventory,
-            actions: topChromeActions,
-          ),
+          InventoryHomeShellTopChrome(actions: topChromeActions),
         SliverFillRemaining(
           hasScrollBody: false,
           child: Center(

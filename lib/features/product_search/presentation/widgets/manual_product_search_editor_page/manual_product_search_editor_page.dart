@@ -6,14 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'

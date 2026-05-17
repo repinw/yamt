@@ -1,13 +1,11 @@
 # Home Feature
 
-Home owns the tab shell, shared top chrome, tab navigation, and shell-level
-layout surfaces that feature pages can opt into.
+Home owns the tab shell, tab navigation, and shell-level composition.
 
 ## Owns
 
 - Home shell routing and tab selection.
-- Shared shell chrome widgets used by embedded feature pages.
-- Shell-only buttons and indicators such as the heart counter.
+- Shell-only navigation state and bottom navigation chrome.
 
 ## Does Not Own
 
@@ -20,12 +18,8 @@ layout surfaces that feature pages can opt into.
 Other features may consume these public Home entry points:
 
 - `HomePage`
-- `HomeShellChrome`
-- `HomeShellTabTopChrome`
-- `HomeTabType`
-
-`HomeShellTabTopChrome` accepts caller-provided `actions` so feature-owned
-toolbar actions stay in the feature that owns them.
+Shared shell chrome primitives live in `core/widgets/` so feature pages do not
+depend on Home just to render inside the shell.
 
 ## Providers
 

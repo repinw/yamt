@@ -6,9 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart'
-    show HomeTabType;
-import 'package:yamt/features/home/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
@@ -41,10 +39,10 @@ class MealTemplatesPage extends ConsumerWidget {
     final templatesAsync = ref.watch(preparedMealTemplatesControllerProvider);
     final topChromeSlivers = includeAppBar
         ? const <Widget>[]
-        : const [
+        : [
             HomeShellTabTopChrome(
-              tab: HomeTabType.cookbook,
-              actions: [
+              title: l10n.homeCookbook,
+              actions: const [
                 KitchenUtensilsButton(),
                 MealTemplateRecipeImportButton(),
               ],

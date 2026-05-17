@@ -6,18 +6,18 @@ Dependencies that create loops (inversions) are marked with `!`.
 ```mermaid
 flowchart TD;
 controllers-->formatters;
-inventory_action_sheet_flow.dart-->controllers;
-inventory_action_sheet_flow.dart-->models;
+inventory_backed_calorie_entry_save_flow.dart-->controllers;
+inventory_calorie_bridge_flow.dart-->inventory_backed_calorie_entry_save_flow.dart;
+inventory_calorie_entry_delete_flow.dart-->controllers;
 inventory_item_eat_flow.dart-->controllers;
+inventory_item_eat_flow.dart-->inventory_backed_calorie_entry_save_flow.dart;
+inventory_item_eat_flow.dart-->inventory_calorie_bridge_flow.dart;
 inventory_manual_add_eat_flow.dart-->controllers;
+inventory_manual_add_eat_flow.dart-->inventory_backed_calorie_entry_save_flow.dart;
 inventory_manual_add_eat_flow.dart-->inventory_item_eat_flow.dart;
-inventory_manual_add_page.dart-->controllers;
-inventory_manual_add_page.dart-->inventory_manual_add_dialogs.dart;
-inventory_manual_add_page.dart-->inventory_manual_add_eat_flow.dart;
-inventory_manual_add_page.dart-->inventory_manual_add_quick_eat_config.dart;
-inventory_manual_add_page.dart-->models;
-inventory_manual_add_page.dart-->widgets;
+inventory_manual_product_search_launcher.dart-->models;
 inventory_page.dart-->controllers;
+inventory_page.dart-->inventory_backed_calorie_entry_save_flow.dart;
 inventory_page.dart-->inventory_item_eat_flow.dart;
 inventory_page.dart-->inventory_manual_add_quick_eat_config.dart;
 inventory_page.dart-->inventory_prepared_meal_creation_coordinator.dart;
@@ -28,8 +28,8 @@ inventory_quick_eat_flow.dart-->widgets;
 widgets-->constants;
 widgets-->controllers;
 widgets-->formatters;
-widgets-->inventory_action_sheet_flow.dart;
 widgets-->inventory_amount_unit_l10n.dart;
 widgets-->inventory_manual_add_quick_eat_config.dart;
+widgets-->inventory_manual_product_search_launcher.dart;
 widgets-->models;
 ```

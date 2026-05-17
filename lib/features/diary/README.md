@@ -55,7 +55,7 @@ Main application adapters:
 - `features/health` for connection status needed by intro flows.
 - `features/inventory` for quick-eat inventory and prepared-meal flows through
   Inventory's public presentation flow APIs and Diary application adapters.
-- `features/home` for optional shell chrome when the diary page is embedded.
+- `core/widgets` for optional shell chrome when the diary page is embedded.
 
 Keep these dependencies at page, application adapter, or complete-section
 boundaries. Do not make callers assemble another feature's internal widgets and

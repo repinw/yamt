@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
@@ -18,6 +17,14 @@ typedef ShoppingListAddItem =
       double estimatedUnitPrice,
     });
 
+/// Defines item data needed by shopping-list operations.
+typedef ShoppingListSourceItem = ({
+  String name,
+  String? brand,
+  int initialQuantity,
+  double unitPrice,
+});
+
 /// The active shopping list item keys provider.
 final activeShoppingListItemKeysProvider =
     Provider<Set<ShoppingListItemMatchKey>>((ref) {
@@ -28,13 +35,13 @@ final activeShoppingListItemKeysProvider =
       return computeActiveShoppingListItemKeys(items);
     });
 
-/// Whether inventory item in active shopping list provider.
-final Provider<bool> Function(InventoryItem)
-isInventoryItemInActiveShoppingListProvider =
-    Provider.family<bool, InventoryItem>((ref, item) {
+/// Whether source item in active shopping list provider.
+final Provider<bool> Function(ShoppingListSourceItem)
+isSourceItemInActiveShoppingListProvider =
+    Provider.family<bool, ShoppingListSourceItem>((ref, item) {
       return ref.watch(
         activeShoppingListItemKeysProvider.select(
-          (keys) => isInventoryItemInActiveShoppingList(
+          (keys) => isSourceItemInActiveShoppingList(
             item: item,
             activeItemKeys: keys,
           ),
@@ -42,9 +49,9 @@ isInventoryItemInActiveShoppingListProvider =
       );
     });
 
-/// Add inventory item to shopping list.
-Future<bool> addInventoryItemToShoppingList({
-  required InventoryItem item,
+/// Add source item to shopping list.
+Future<bool> addSourceItemToShoppingList({
+  required ShoppingListSourceItem item,
   required ShoppingListAddItem addItem,
 }) {
   final quantity = _normalizeInventoryQuantityForShopping(item.initialQuantity);
@@ -80,7 +87,7 @@ Set<ShoppingListItemMatchKey> computeActiveShoppingListItemKeys(
       .toSet();
 }
 
-ShoppingListItemMatchKey? _inventoryItemMatchKey(InventoryItem item) {
+ShoppingListItemMatchKey? _sourceItemMatchKey(ShoppingListSourceItem item) {
   final normalizedName = normalizeShoppingListValue(item.name);
   if (normalizedName.isEmpty) {
     return null;
@@ -89,12 +96,12 @@ ShoppingListItemMatchKey? _inventoryItemMatchKey(InventoryItem item) {
   return (normalizedName: normalizedName, normalizedBrand: normalizedBrand);
 }
 
-/// Is inventory item in active shopping list.
-bool isInventoryItemInActiveShoppingList({
-  required InventoryItem item,
+/// Is source item in active shopping list.
+bool isSourceItemInActiveShoppingList({
+  required ShoppingListSourceItem item,
   required Set<ShoppingListItemMatchKey> activeItemKeys,
 }) {
-  final key = _inventoryItemMatchKey(item);
+  final key = _sourceItemMatchKey(item);
   if (key == null) {
     return false;
   }

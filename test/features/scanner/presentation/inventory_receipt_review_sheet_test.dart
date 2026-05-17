@@ -12,6 +12,8 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -26,8 +28,6 @@ import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';

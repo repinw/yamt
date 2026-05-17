@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

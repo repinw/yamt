@@ -5,6 +5,8 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -18,8 +20,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';

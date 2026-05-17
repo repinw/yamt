@@ -50,7 +50,7 @@ Current providers:
 - `features/calories` for calorie goal settings surfaces.
 - `features/health` for Health connection status, actions, and domain result
   models.
-- `features/home` for optional shell chrome when Settings is embedded.
+- `core/widgets` for optional shell chrome when Settings is embedded.
 - `features/shared` for shared credential form widgets.
 
 Keep cross-feature work at page, tile, or application action boundaries. Do not

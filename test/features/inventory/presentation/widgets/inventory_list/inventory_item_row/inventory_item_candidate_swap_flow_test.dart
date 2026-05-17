@@ -5,10 +5,10 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/'
+    'receipt_review_item_draft.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_candidate_swap_flow.dart';
-import 'package:yamt/features/product_search/domain/'
-    'receipt_review_item_draft.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'

@@ -8,10 +8,6 @@ import 'package:yamt/features/auth/application/'
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_entry_delete_flow.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
@@ -25,14 +21,18 @@ import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/home/home_page.dart';
+import 'package:yamt/features/home/widgets/inventory_action_fab.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
@@ -48,8 +48,7 @@ import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_page.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
+import 'package:yamt/features/product_search/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/presentation/'
@@ -96,11 +95,10 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
   dependencies: [
     inventoryItemRepository,
     inventoryManualAddQuickEatConfig,
-    calorieEntryDeleteFlow,
-    inventoryBackedCalorieEntrySaveFlow,
     diaryProviderWarmup,
     diaryQuickEatInventory,
     diaryQuickEatInventoryActions,
+    inventoryBackedCalorieEntrySaveFlow,
     CookingFlowController,
     CookingFlowWizardController,
     InventoryItemsController,
@@ -268,6 +266,7 @@ Raw<GoRouter> appRouter(Ref ref) {
                   return InventoryPage(
                     expandedPreparedMealId: expandedPreparedMealId,
                     includeHomeShellChrome: true,
+                    emptyStateActionButton: const InventoryActionFab.embedded(),
                   );
                 },
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/features/calorie_goal/presentation/widgets/calorie_goal_start_picker.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-export 'package:yamt/features/calorie_goal/presentation/calorie_goal_calculator_keys.dart';
+export 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_keys.dart';
 
 /// Defines shared calorie feature keys.
 abstract final class CaloriesPageKeys {

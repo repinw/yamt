@@ -11,3 +11,22 @@ extension InventoryItemConsumptionExtension on InventoryItem {
     return current;
   }
 }
+
+/// Defines pending inventory consumption.
+class PendingInventoryConsumption {
+  /// The pending inventory consumption.
+  const PendingInventoryConsumption({
+    required this.id,
+    required this.itemId,
+    required this.amount,
+  });
+
+  /// The id.
+  final String id;
+
+  /// The item id.
+  final String itemId;
+
+  /// The amount.
+  final int amount;
+}

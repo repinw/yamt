@@ -6,8 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -20,13 +20,10 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
+    'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
-import 'package:yamt/features/product_search/application/'
-    'manual_product_recent_items_service.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -116,9 +113,6 @@ const _sam = InventoryActivityActor(userId: 'sam', displayName: 'Sam');
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
-  receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
   inventoryActivityEvents,
@@ -233,9 +227,6 @@ Future<void> _pumpUntilFound(
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
-  receiptCameraSupported,
   inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
   inventoryActivityEvents,

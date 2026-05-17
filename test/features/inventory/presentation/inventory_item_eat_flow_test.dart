@@ -10,23 +10,24 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/'
-    'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';

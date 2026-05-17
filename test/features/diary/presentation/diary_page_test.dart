@@ -13,8 +13,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
-import 'package:yamt/features/calories/application/inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -24,7 +24,6 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
@@ -54,6 +53,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
@@ -108,7 +108,6 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
   diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
-  calorieEntryDeleteFlow,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -233,7 +232,6 @@ void main() {
     expect(inventoryBuildCount, 1);
     expect(preparedMealsBuildCount, 1);
     expect(providerObserver.calorieEntryDeleteFlowAddCount, 1);
-    expect(providerObserver.inventoryEatFlowAddCount, 1);
   });
 
   testWidgets('delays quick-eat warmup until after diary first paint', (
@@ -1154,21 +1152,13 @@ Future<void> _tapDiaryCardAction(WidgetTester tester, Finder finder) async {
   await tester.tap(finder.hitTestable());
 }
 
-@Dependencies([
-  calorieEntryDeleteFlow,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 final class _RecordingProviderObserver extends ProviderObserver {
   int calorieEntryDeleteFlowAddCount = 0;
-  int inventoryEatFlowAddCount = 0;
 
   @override
   void didAddProvider(ProviderObserverContext context, Object? value) {
     if (context.provider == calorieEntryDeleteFlowProvider) {
       calorieEntryDeleteFlowAddCount += 1;
-    }
-    if (context.provider == inventoryBackedCalorieEntrySaveFlowProvider) {
-      inventoryEatFlowAddCount += 1;
     }
   }
 }
