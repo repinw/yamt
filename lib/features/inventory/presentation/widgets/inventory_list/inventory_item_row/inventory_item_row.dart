@@ -832,11 +832,12 @@ class _InventoryItemRowCard extends StatelessWidget {
               : layoutData.viewData.rowBorderColor,
         ),
         boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: isExpanded ? 48 : 30,
-            offset: Offset(0, isExpanded ? 24 : 16),
-          ),
+          if (isExpanded)
+            AppInventoryEditorialSurfaces.ambientBoxShadow(
+              colors,
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
         ],
       ),
       child: ClipRRect(

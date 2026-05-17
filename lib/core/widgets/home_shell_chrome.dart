@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
@@ -171,18 +169,19 @@ class _HomeShellTopChromeDelegate extends SliverPersistentHeaderDelegate {
       (maxExtent - shrinkOffset) / maxExtent,
     );
 
+    if (visibility <= 0) {
+      return const SizedBox.shrink();
+    }
+
     return ClipRect(
       child: OverflowBox(
         alignment: Alignment.topCenter,
         minHeight: maxExtent,
         maxHeight: maxExtent,
-        // Keep the glass surface painted behind the system status bar.
-        child: Opacity(
-          opacity: visibility,
-          child: Transform.translate(
-            offset: Offset(0, -toolbarHeight * (1 - visibility)),
-            child: child,
-          ),
+        // Keep the surface painted behind the system status bar.
+        child: Transform.translate(
+          offset: Offset(0, -toolbarHeight * (1 - visibility)),
+          child: child,
         ),
       ),
     );
@@ -297,76 +296,68 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     );
     final subtitleStyle = _homeTopBarSubtitleStyle(context);
 
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: AppInventoryEditorial.glassBlur,
-          sigmaY: AppInventoryEditorial.glassBlur,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppInventoryEditorialSurfaces.glass(colors),
-            border: Border(bottom: BorderSide(color: borderColor)),
-          ),
-          child: SafeArea(
-            bottom: false,
-            child: SizedBox(
-              height: resolvedHeight,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: compact ? AppSpacing.lg : AppSpacing.xl,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          if (titleIcon != null) ...[
-                            Icon(
-                              titleIcon,
-                              color: titleColor ?? colors.primary,
-                              size: compact ? 20 : 22,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppInventoryEditorialSurfaces.glass(colors),
+        border: Border(bottom: BorderSide(color: borderColor)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: resolvedHeight,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? AppSpacing.lg : AppSpacing.xl,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      if (titleIcon != null) ...[
+                        Icon(
+                          titleIcon,
+                          color: titleColor ?? colors.primary,
+                          size: compact ? 20 : 22,
+                        ),
+                        SizedBox(
+                          width: compact ? AppSpacing.xs : AppSpacing.sm,
+                        ),
+                      ],
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: titleStyle,
                             ),
-                            SizedBox(
-                              width: compact ? AppSpacing.xs : AppSpacing.sm,
-                            ),
+                            if (subtitle != null) ...[
+                              const SizedBox(height: AppSpacing.xxs),
+                              Text(
+                                subtitle!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: subtitleStyle,
+                              ),
+                            ],
                           ],
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: titleStyle,
-                                ),
-                                if (subtitle != null) ...[
-                                  const SizedBox(height: AppSpacing.xxs),
-                                  Text(
-                                    subtitle!,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: subtitleStyle,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                    if (middle != null) ...[
-                      SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-                      middle!,
                     ],
-                    if (actions.isNotEmpty)
-                      SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-                    ...actions,
-                  ],
+                  ),
                 ),
-              ),
+                if (middle != null) ...[
+                  SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
+                  middle!,
+                ],
+                if (actions.isNotEmpty)
+                  SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
+                ...actions,
+              ],
             ),
           ),
         ),
@@ -523,56 +514,50 @@ class HomeBottomNavBar extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: radius,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: AppInventoryEditorial.glassBlur,
-                sigmaY: AppInventoryEditorial.glassBlur,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLow.withValues(alpha: 0.84),
+                borderRadius: radius,
+                border: Border.all(
+                  color: AppInventoryEditorialSurfaces.ghostBorder(
+                    colors,
+                  ).withValues(alpha: 0.65),
+                ),
               ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLow.withValues(alpha: 0.7),
-                  borderRadius: radius,
-                  border: Border.all(
-                    color: AppInventoryEditorialSurfaces.ghostBorder(
-                      colors,
-                    ).withValues(alpha: 0.65),
-                  ),
-                ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final navHorizontalPadding = compactChrome
-                        ? AppSpacing.xs
-                        : AppSpacing.xs;
-                    final showLabels = _shouldShowBottomNavLabels(
-                      entries,
-                      maxWidth: constraints.maxWidth,
-                      navHorizontalPadding: navHorizontalPadding,
-                    );
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final navHorizontalPadding = compactChrome
+                      ? AppSpacing.xs
+                      : AppSpacing.xs;
+                  final showLabels = _shouldShowBottomNavLabels(
+                    entries,
+                    maxWidth: constraints.maxWidth,
+                    navHorizontalPadding: navHorizontalPadding,
+                  );
 
-                    return Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        navHorizontalPadding,
-                        compactChrome ? AppSpacing.xs : AppSpacing.sm,
-                        navHorizontalPadding,
-                        compactChrome ? AppSpacing.sm : AppSpacing.md,
-                      ),
-                      child: Row(
-                        children: [
-                          for (final entry in entries)
-                            Expanded(
-                              child: _HomeBottomNavItemButton(
-                                item: entry.item,
-                                isSelected: entry.isSelected,
-                                showTopIndicator: entry.showTopIndicator,
-                                onTap: entry.onTap,
-                                showLabel: showLabels,
-                              ),
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      navHorizontalPadding,
+                      compactChrome ? AppSpacing.xs : AppSpacing.sm,
+                      navHorizontalPadding,
+                      compactChrome ? AppSpacing.sm : AppSpacing.md,
+                    ),
+                    child: Row(
+                      children: [
+                        for (final entry in entries)
+                          Expanded(
+                            child: _HomeBottomNavItemButton(
+                              item: entry.item,
+                              isSelected: entry.isSelected,
+                              showTopIndicator: entry.showTopIndicator,
+                              onTap: entry.onTap,
+                              showLabel: showLabels,
                             ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ),
