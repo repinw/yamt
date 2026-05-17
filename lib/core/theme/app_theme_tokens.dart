@@ -45,8 +45,8 @@ abstract final class AppThemeBackground {
   static const double darkCardBorderAlpha = 0.18;
 }
 
-/// Editorial design tokens for inventory surfaces and accents.
-abstract final class AppInventoryEditorial {
+/// App-wide editorial design tokens for surfaces and accents.
+abstract final class AppEditorial {
   /// Warning accent.
   static const Color warning = Color(0xFFAB2D00);
 
@@ -94,7 +94,7 @@ abstract final class AppInventoryEditorial {
 }
 
 /// Derived editorial surfaces built from current color scheme.
-abstract final class AppInventoryEditorialSurfaces {
+abstract final class AppEditorialSurfaces {
   /// Lowest-elevation lifted card surface.
   static Color liftedCard(ColorScheme colors) => colors.surfaceContainerLowest;
 
@@ -104,14 +104,14 @@ abstract final class AppInventoryEditorialSurfaces {
   /// Translucent glass-like surface.
   static Color glass(ColorScheme colors) {
     return colors.surfaceContainerLow.withValues(
-      alpha: AppInventoryEditorial.glassOpacity,
+      alpha: AppEditorial.glassOpacity,
     );
   }
 
   /// Border color for ghost outlines.
   static Color ghostBorder(ColorScheme colors) {
     return colors.outlineVariant.withValues(
-      alpha: AppInventoryEditorial.ghostBorderAlpha,
+      alpha: AppEditorial.ghostBorderAlpha,
     );
   }
 
@@ -129,7 +129,7 @@ abstract final class AppInventoryEditorialSurfaces {
   /// Ambient shadow color.
   static Color ambientShadow(ColorScheme colors) {
     return colors.onSurface.withValues(
-      alpha: AppInventoryEditorial.ambientShadowAlpha,
+      alpha: AppEditorial.ambientShadowAlpha,
     );
   }
 
@@ -187,7 +187,7 @@ abstract final class AppInventoryEditorialSurfaces {
     );
   }
 
-  /// Background gradient for editorial inventory screens.
+  /// Background gradient for editorial app screens.
   static LinearGradient backdropGradient(ColorScheme colors) {
     final isDark = colors.brightness == Brightness.dark;
     final startColor = Color.alphaBlend(

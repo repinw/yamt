@@ -29,7 +29,7 @@ class DiaryHealthCardFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: BorderRadius.circular(AppRadius.xl),
       ),

@@ -32,10 +32,10 @@ class CookingFlowSuccessPage extends StatelessWidget {
       subtitle: l10n.cookflowSuccessSubtitle,
       children: <Widget>[
         DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+          decoration: AppEditorialSurfaces.liftedCardDecoration(
             colors,
             borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
+              AppEditorial.cardRadius,
             ),
             blurRadius: 22,
             shadowOffset: const Offset(0, 10),

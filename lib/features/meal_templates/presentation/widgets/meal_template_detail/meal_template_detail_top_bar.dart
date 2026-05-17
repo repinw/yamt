@@ -26,15 +26,15 @@ class MealTemplateTopBar extends StatelessWidget {
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(
-          sigmaX: AppInventoryEditorial.glassBlur,
-          sigmaY: AppInventoryEditorial.glassBlur,
+          sigmaX: AppEditorial.glassBlur,
+          sigmaY: AppEditorial.glassBlur,
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: colors.surface.withValues(alpha: 0.34),
             border: Border(
               bottom: BorderSide(
-                color: AppInventoryEditorialSurfaces.ghostBorder(
+                color: AppEditorialSurfaces.ghostBorder(
                   colors,
                 ).withValues(alpha: 0.2),
               ),

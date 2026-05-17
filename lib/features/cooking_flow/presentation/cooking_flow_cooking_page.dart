@@ -210,9 +210,9 @@ class _CookingInstructionCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
         blurRadius: 22,
         shadowOffset: const Offset(0, 10),
       ),

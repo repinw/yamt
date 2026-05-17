@@ -41,6 +41,20 @@ void main() {
 
     expect(find.text('To diary'), findsOneWidget);
     expect(find.text('To diary').hitTestable(), findsNothing);
+    expect(tester.hasRunningAnimations, isFalse);
+  });
+
+  testWidgets('settles jump pulse after short attention animation', (
+    tester,
+  ) async {
+    await _pumpShortcut(tester, showJumpToMeals: true);
+
+    expect(tester.hasRunningAnimations, isTrue);
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('To diary').hitTestable(), findsOneWidget);
+    expect(tester.hasRunningAnimations, isFalse);
   });
 
   testWidgets('updates visible action when shortcut mode changes', (

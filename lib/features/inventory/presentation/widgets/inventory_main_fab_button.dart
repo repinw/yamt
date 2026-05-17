@@ -45,7 +45,7 @@ class InventoryMainFabButton extends StatelessWidget {
       ),
       child: SizedBox.square(
         key: buttonKey,
-        dimension: AppInventoryEditorial.contextFabSize,
+        dimension: AppEditorial.contextFabSize,
         child: Material(
           color: Colors.transparent,
           child: AppInkWell(

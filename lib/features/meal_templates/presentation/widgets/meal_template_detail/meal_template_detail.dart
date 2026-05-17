@@ -93,7 +93,7 @@ class MealTemplateDetail extends ConsumerWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.backdropGradient(colors),
+        gradient: AppEditorialSurfaces.backdropGradient(colors),
       ),
       child: Stack(
         children: [

@@ -68,7 +68,7 @@ class NutritionMetricsStrip extends StatelessWidget {
           color: stripColor,
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: AppInventoryEditorialSurfaces.ghostBorder(
+            color: AppEditorialSurfaces.ghostBorder(
               resolvedColorScheme,
             ),
           ),
@@ -91,7 +91,7 @@ class NutritionMetricsStrip extends StatelessWidget {
                   child: VerticalDivider(
                     width: 1,
                     thickness: 1,
-                    color: AppInventoryEditorialSurfaces.ghostBorder(
+                    color: AppEditorialSurfaces.ghostBorder(
                       resolvedColorScheme,
                     ).withValues(alpha: 0.9),
                   ),

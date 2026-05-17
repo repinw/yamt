@@ -18,9 +18,9 @@ class MealTemplateEmptyIngredientsCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
       ),
       child: Padding(
         padding: AppInsets.card,

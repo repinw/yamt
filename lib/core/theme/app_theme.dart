@@ -78,7 +78,7 @@ abstract final class AppTheme {
           ),
           textStyle: textTheme.labelLarge,
           side: BorderSide(
-            color: AppInventoryEditorialSurfaces.ghostBorder(colorScheme),
+            color: AppEditorialSurfaces.ghostBorder(colorScheme),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppThemeRadius.xl),

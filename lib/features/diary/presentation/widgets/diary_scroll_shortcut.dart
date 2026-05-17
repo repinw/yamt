@@ -36,6 +36,7 @@ class _DiaryScrollShortcutState extends State<DiaryScrollShortcut>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulseController;
   late bool _showScrollToTopContent;
+  bool _isResettingPulse = false;
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _DiaryScrollShortcutState extends State<DiaryScrollShortcut>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    unawaited(_pulseController.repeat(reverse: true));
+    _syncPulse();
   }
 
   @override
@@ -54,6 +55,7 @@ class _DiaryScrollShortcutState extends State<DiaryScrollShortcut>
     if (widget.showJumpToMeals || widget.showScrollToTop) {
       _showScrollToTopContent = widget.showScrollToTop;
     }
+    _syncPulse();
   }
 
   @override
@@ -110,6 +112,37 @@ class _DiaryScrollShortcutState extends State<DiaryScrollShortcut>
         ),
       ),
     );
+  }
+
+  void _syncPulse() {
+    final shouldPulse = widget.showJumpToMeals && !widget.showScrollToTop;
+    if (!shouldPulse) {
+      _resetPulse();
+      return;
+    }
+    if (_pulseController.isAnimating || _isResettingPulse) {
+      return;
+    }
+    unawaited(
+      _pulseController
+          .repeat(reverse: true, count: 2)
+          .orCancel
+          .then((_) {
+            if (!mounted) {
+              return;
+            }
+            _resetPulse();
+          })
+          .catchError((Object _) {}),
+    );
+  }
+
+  void _resetPulse() {
+    _isResettingPulse = true;
+    _pulseController
+      ..stop()
+      ..value = 0;
+    _isResettingPulse = false;
   }
 }
 

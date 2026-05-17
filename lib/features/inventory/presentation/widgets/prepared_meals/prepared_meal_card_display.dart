@@ -77,9 +77,9 @@ class PreparedMealPrimaryActionButton extends StatelessWidget {
       width: InventoryItemRowConstants.primaryActionWidth,
       height: InventoryItemRowConstants.primaryActionHeight,
       enabledBackgroundColor: colors.primary,
-      disabledBackgroundColor: AppInventoryEditorialSurfaces.section(colors),
+      disabledBackgroundColor: AppEditorialSurfaces.section(colors),
       enabledBorderColor: colors.primary,
-      disabledBorderColor: AppInventoryEditorialSurfaces.ghostBorder(colors),
+      disabledBorderColor: AppEditorialSurfaces.ghostBorder(colors),
       enabledForegroundColor: colors.onPrimary,
       disabledForegroundColor: colors.onSurfaceVariant,
       useGradientWhenShowText: false,
@@ -108,7 +108,7 @@ class PreparedMealPriceCard extends StatelessWidget {
           InventoryItemRowConstants.nutritionStripRadius,
         ),
         border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+          color: AppEditorialSurfaces.ghostBorder(colors),
         ),
       ),
       child: Padding(

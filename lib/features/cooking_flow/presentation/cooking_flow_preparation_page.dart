@@ -56,10 +56,10 @@ class CookingFlowPreparationPage extends StatelessWidget {
       subtitle: l10n.cookflowPreparationBody,
       children: <Widget>[
         DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+          decoration: AppEditorialSurfaces.liftedCardDecoration(
             colors,
             borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
+              AppEditorial.cardRadius,
             ),
             blurRadius: 22,
             shadowOffset: const Offset(0, 10),

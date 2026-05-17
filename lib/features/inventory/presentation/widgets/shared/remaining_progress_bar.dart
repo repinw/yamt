@@ -139,7 +139,7 @@ class RemainingProgressBar extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       child: LinearProgressIndicator(
         value: safeRatio,
-        minHeight: AppInventoryEditorial.progressHeight,
+        minHeight: AppEditorial.progressHeight,
         borderRadius: BorderRadius.circular(999),
         backgroundColor: trackColor,
         valueColor: AlwaysStoppedAnimation<Color>(fillColor),
@@ -171,7 +171,7 @@ class RemainingProgressBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
               child: LinearProgressIndicator(
                 value: fillValue,
-                minHeight: AppInventoryEditorial.progressHeight,
+                minHeight: AppEditorial.progressHeight,
                 borderRadius: BorderRadius.circular(999),
                 backgroundColor: trackColor,
                 valueColor: AlwaysStoppedAnimation<Color>(fillColor),

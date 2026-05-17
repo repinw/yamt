@@ -66,10 +66,10 @@ class _CookingFlowIntroPortionScalerState
     final canDecrease = resolvedTargetPortions > 1;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: BorderRadius.circular(
-          AppInventoryEditorial.cardRadius,
+          AppEditorial.cardRadius,
         ),
         blurRadius: 18,
         shadowOffset: const Offset(0, 8),

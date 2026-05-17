@@ -622,7 +622,7 @@ class _InventoryErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final cardRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final cardRadius = BorderRadius.circular(AppEditorial.cardRadius);
 
     return CustomScrollView(
       slivers: [
@@ -634,7 +634,7 @@ class _InventoryErrorView extends StatelessWidget {
             child: Padding(
               padding: AppInsets.pageLarge,
               child: DecoratedBox(
-                decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+                decoration: AppEditorialSurfaces.liftedCardDecoration(
                   colors,
                   borderRadius: cardRadius,
                 ),

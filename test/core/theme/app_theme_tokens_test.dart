@@ -7,17 +7,17 @@ void main() {
     final colors = ColorScheme.fromSeed(seedColor: AppColors.seed);
 
     expect(
-      AppInventoryEditorialSurfaces.liftedCard(colors),
+      AppEditorialSurfaces.liftedCard(colors),
       colors.surfaceContainerLowest,
     );
     expect(
-      AppInventoryEditorialSurfaces.section(colors),
+      AppEditorialSurfaces.section(colors),
       colors.surfaceContainerLow,
     );
     expect(
-      AppInventoryEditorialSurfaces.glass(colors),
+      AppEditorialSurfaces.glass(colors),
       colors.surfaceContainerLow.withValues(
-        alpha: AppInventoryEditorial.glassOpacity,
+        alpha: AppEditorial.glassOpacity,
       ),
     );
   });
@@ -26,23 +26,23 @@ void main() {
     final colors = ColorScheme.fromSeed(seedColor: AppColors.seed);
 
     expect(
-      AppInventoryEditorialSurfaces.ingredientAccent(colors, 0),
+      AppEditorialSurfaces.ingredientAccent(colors, 0),
       colors.primary,
     );
     expect(
-      AppInventoryEditorialSurfaces.ingredientAccent(colors, 1),
+      AppEditorialSurfaces.ingredientAccent(colors, 1),
       colors.secondary,
     );
     expect(
-      AppInventoryEditorialSurfaces.ingredientAccent(colors, 2),
+      AppEditorialSurfaces.ingredientAccent(colors, 2),
       colors.tertiary,
     );
     expect(
-      AppInventoryEditorialSurfaces.ingredientAccent(colors, 3),
+      AppEditorialSurfaces.ingredientAccent(colors, 3),
       colors.inversePrimary,
     );
     expect(
-      AppInventoryEditorialSurfaces.ingredientAccent(colors, 4),
+      AppEditorialSurfaces.ingredientAccent(colors, 4),
       colors.primary,
     );
   });
@@ -51,7 +51,7 @@ void main() {
     final colors = ColorScheme.fromSeed(seedColor: AppColors.seed);
     final borderRadius = BorderRadius.circular(12);
 
-    final decoration = AppInventoryEditorialSurfaces.liftedCardDecoration(
+    final decoration = AppEditorialSurfaces.liftedCardDecoration(
       colors,
       borderRadius: borderRadius,
       blurRadius: 18,
@@ -71,8 +71,8 @@ void main() {
       brightness: Brightness.dark,
     );
 
-    final lightGradient = AppInventoryEditorialSurfaces.soulGradient(light);
-    final darkGradient = AppInventoryEditorialSurfaces.soulGradient(dark);
+    final lightGradient = AppEditorialSurfaces.soulGradient(light);
+    final darkGradient = AppEditorialSurfaces.soulGradient(dark);
 
     expect(lightGradient.colors, hasLength(2));
     expect(darkGradient.colors, hasLength(2));

@@ -26,7 +26,7 @@ class InventorySegmentedButtonFrame extends StatelessWidget {
         color: colors.surfaceContainerLow.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+          color: AppEditorialSurfaces.ghostBorder(colors),
         ),
       ),
       child: Padding(padding: padding, child: child),

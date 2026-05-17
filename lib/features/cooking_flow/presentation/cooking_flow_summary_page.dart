@@ -75,10 +75,10 @@ class CookingFlowSummaryPage extends StatelessWidget {
       subtitle: l10n.cookflowSummaryBody,
       children: <Widget>[
         DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+          decoration: AppEditorialSurfaces.liftedCardDecoration(
             colors,
             borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
+              AppEditorial.cardRadius,
             ),
             blurRadius: 22,
             shadowOffset: const Offset(0, 10),
@@ -319,10 +319,10 @@ class _SummaryIngredientAddMenuButton extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.soulGradient(colors),
+        gradient: AppEditorialSurfaces.soulGradient(colors),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: <BoxShadow>[
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
+          AppEditorialSurfaces.ambientBoxShadow(
             colors,
             blurRadius: 24,
             offset: const Offset(0, 12),
@@ -497,7 +497,7 @@ class _SummaryIngredientsTable extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.xl),
       child: DecoratedBox(
-        decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+        decoration: AppEditorialSurfaces.liftedCardDecoration(
           colors,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           color: Color.alphaBlend(
@@ -573,7 +573,7 @@ class _SummaryIngredientDivider extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: AppInventoryEditorialSurfaces.ghostBorder(
+      color: AppEditorialSurfaces.ghostBorder(
         colors,
       ).withValues(alpha: 0.9),
     );
@@ -602,9 +602,9 @@ class _SummaryIngredientContainerSection extends StatelessWidget {
         .toList(growable: false);
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
         blurRadius: 22,
         shadowOffset: const Offset(0, 10),
       ),

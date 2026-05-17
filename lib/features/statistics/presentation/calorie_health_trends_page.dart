@@ -35,7 +35,7 @@ class CalorieHealthTrendsPage extends ConsumerWidget {
         ),
         children: [
           DecoratedBox(
-            decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+            decoration: AppEditorialSurfaces.liftedCardDecoration(
               colors,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),

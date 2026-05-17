@@ -27,7 +27,7 @@ class InventoryEatFlowFieldCard extends StatelessWidget {
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+          color: AppEditorialSurfaces.ghostBorder(colors),
         ),
       ),
       child: ConstrainedBox(

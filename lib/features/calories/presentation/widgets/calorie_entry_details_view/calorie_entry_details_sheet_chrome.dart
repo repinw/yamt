@@ -38,7 +38,7 @@ class CalorieEntryDetailsSheetChrome extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final maxSheetHeight = MediaQuery.sizeOf(context).height * 0.9;
     final sheetRadius = BorderRadius.circular(
-      AppInventoryEditorial.cardRadius + AppSpacing.xs,
+      AppEditorial.cardRadius + AppSpacing.xs,
     );
     final sheetGradient = LinearGradient(
       begin: Alignment.topCenter,
@@ -83,7 +83,7 @@ class CalorieEntryDetailsSheetChrome extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: sheetRadius,
                   boxShadow: [
-                    AppInventoryEditorialSurfaces.ambientBoxShadow(
+                    AppEditorialSurfaces.ambientBoxShadow(
                       colors,
                       blurRadius: 40,
                     ),
@@ -93,15 +93,15 @@ class CalorieEntryDetailsSheetChrome extends StatelessWidget {
                   borderRadius: sheetRadius,
                   child: BackdropFilter(
                     filter: ImageFilter.blur(
-                      sigmaX: AppInventoryEditorial.glassBlur,
-                      sigmaY: AppInventoryEditorial.glassBlur,
+                      sigmaX: AppEditorial.glassBlur,
+                      sigmaY: AppEditorial.glassBlur,
                     ),
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: sheetGradient,
                         borderRadius: sheetRadius,
                         border: Border.all(
-                          color: AppInventoryEditorialSurfaces.ghostBorder(
+                          color: AppEditorialSurfaces.ghostBorder(
                             colors,
                           ).withValues(alpha: 0.9),
                         ),

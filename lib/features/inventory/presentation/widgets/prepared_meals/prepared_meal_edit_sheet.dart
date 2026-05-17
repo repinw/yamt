@@ -528,7 +528,7 @@ class _PreparedMealEditItemEditorCard extends StatelessWidget {
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+          color: AppEditorialSurfaces.ghostBorder(colors),
         ),
       ),
       child: Padding(

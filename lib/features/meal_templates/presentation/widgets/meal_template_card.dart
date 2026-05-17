@@ -40,7 +40,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final borderRadius = BorderRadius.circular(
-      AppInventoryEditorial.cardRadius,
+      AppEditorial.cardRadius,
     );
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
@@ -55,7 +55,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
 
     return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+      decoration: AppEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: borderRadius,
       ),

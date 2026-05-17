@@ -112,7 +112,7 @@ class InventoryEatFlowAmountCard extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 64,
-                  color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+                  color: AppEditorialSurfaces.ghostBorder(colors),
                 ),
                 Expanded(
                   child: Padding(

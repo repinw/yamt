@@ -676,7 +676,7 @@ class _InventoryItemRowLayoutData {
       colorScheme: colors,
       snapshot: InventoryItemRowSnapshot.fromItem(item),
       viewData: InventoryItemRowViewData(
-        rowBorderColor: AppInventoryEditorialSurfaces.ghostBorder(colors),
+        rowBorderColor: AppEditorialSurfaces.ghostBorder(colors),
         expandedRowBorderColor: colors.primary.withValues(alpha: 0.2),
         nameTextStyle:
             (Theme.of(context).textTheme.titleMedium ?? const TextStyle())
@@ -699,13 +699,13 @@ class _InventoryItemRowLayoutData {
         eatActionBackgroundColor: isShoppingListPrimaryAction
             ? shoppingListActionColors.backgroundColor
             : eatActionColors.backgroundColor,
-        disabledActionBackgroundColor: AppInventoryEditorialSurfaces.section(
+        disabledActionBackgroundColor: AppEditorialSurfaces.section(
           colors,
         ),
         eatActionBorderColor: isShoppingListPrimaryAction
             ? shoppingListActionColors.borderColor
             : eatActionColors.borderColor,
-        disabledActionBorderColor: AppInventoryEditorialSurfaces.ghostBorder(
+        disabledActionBorderColor: AppEditorialSurfaces.ghostBorder(
           colors,
         ),
         primaryActionTooltip: isShoppingListPrimaryAction
@@ -817,7 +817,7 @@ class _InventoryItemRowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final radius = BorderRadius.circular(AppEditorial.cardRadius);
     final colors = layoutData.colorScheme;
 
     return DecoratedBox(
@@ -832,11 +832,12 @@ class _InventoryItemRowCard extends StatelessWidget {
               : layoutData.viewData.rowBorderColor,
         ),
         boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: isExpanded ? 48 : 30,
-            offset: Offset(0, isExpanded ? 24 : 16),
-          ),
+          if (isExpanded)
+            AppEditorialSurfaces.ambientBoxShadow(
+              colors,
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
         ],
       ),
       child: ClipRRect(

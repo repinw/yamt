@@ -150,7 +150,7 @@ class _InventoryItemActionPanel extends StatelessWidget {
   }
 
   _InventoryItemActionColors _warningActionColors(ColorScheme colors) {
-    const tint = AppInventoryEditorial.warning;
+    const tint = AppEditorial.warning;
 
     return _InventoryItemActionColors(
       backgroundColor: Color.alphaBlend(
