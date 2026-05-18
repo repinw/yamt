@@ -530,8 +530,8 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    final notifier = container.read(provider.notifier);
-    notifier.updateSearchQuery('  Custom Skyr  ');
+    final notifier = container.read(provider.notifier)
+      ..updateSearchQuery('  Custom Skyr  ');
     expect(container.read(provider).canCreateManualDraft, isTrue);
 
     notifier.startManualProductDraft();
