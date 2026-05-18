@@ -407,6 +407,7 @@
   "inventoryManualAddPackageSizeLabel": "Packungsgröße",
   "inventoryManualAddResultActionInventory": "Vorrat",
   "inventoryManualAddResultActionEat": "Essen",
+  "inventoryManualAddCreateOwnAction": "Manuell erstellen",
   "inventoryManualAddEatNowOption": "Sofort essen",
   "inventoryManualAddEatNowSizeLabel": "Sofort essen Menge",
   "inventoryManualAddEatNowRequiresNutrition":
@@ -856,6 +857,8 @@
   "caloriesBarcodeNotFoundOcrAction": "Nährwertetikett scannen",
   "caloriesOcrFailed":
       "Nährwertetikett konnte nicht erkannt werden.",
+  "caloriesOcrAppCheckThrottled":
+      "Nährwertscan ist vorübergehend blockiert. Bitte versuche es später erneut.",
   "caloriesLoadFailed": "Kalorien-Einträge konnten nicht geladen werden.",
   "caloriesRetryAction": "Erneut versuchen",
   "caloriesAuthRequired": "Bitte melde dich an, um Kalorien zu verwalten.",

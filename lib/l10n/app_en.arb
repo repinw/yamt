@@ -400,6 +400,7 @@
   "inventoryManualAddPackageSizeLabel": "Package size",
   "inventoryManualAddResultActionInventory": "Inventory",
   "inventoryManualAddResultActionEat": "Eat",
+  "inventoryManualAddCreateOwnAction": "Create manually",
   "inventoryManualAddEatNowOption": "Eat now",
   "inventoryManualAddEatNowSizeLabel": "Eat now amount",
   "inventoryManualAddEatNowRequiresNutrition":
@@ -840,6 +841,8 @@
   "caloriesBarcodeNotFoundOcrAction": "Scan nutrition label",
   "caloriesOcrFailed":
       "Nutrition label scan failed. Please try again.",
+  "caloriesOcrAppCheckThrottled":
+      "Nutrition scan is temporarily blocked. Please try again later.",
   "caloriesLoadFailed": "Could not load calorie entries.",
   "caloriesRetryAction": "Retry",
   "caloriesAuthRequired": "Please sign in to manage calories.",

@@ -339,6 +339,14 @@ class _InventoryReceiptManualProductLauncherPageState
               );
               return true;
             },
+            onCreateManualProduct: (scannedBarcode) async {
+              sheetContext.pop(
+                ManualBarcodeScanResult.manual(
+                  scannedBarcode: scannedBarcode,
+                ),
+              );
+              return true;
+            },
             eatOnly: quickEatConfig.quickEatOnly,
           ),
         );
@@ -414,6 +422,14 @@ class _InventoryReceiptManualProductLauncherPageState
         await _openEditor(
           itemOverride: widget.config.item.copyWith(barcode: scannedBarcode),
           initialInfoMessage: l10n.inventoryManualAddNotFound,
+        );
+      case ManualBarcodeScanResultKind.manual:
+        final scannedBarcode = result.scannedBarcode;
+        if (scannedBarcode == null || scannedBarcode.isEmpty) {
+          return;
+        }
+        await _openEditor(
+          itemOverride: widget.config.item.copyWith(barcode: scannedBarcode),
         );
     }
   }

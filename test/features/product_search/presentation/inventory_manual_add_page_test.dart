@@ -805,6 +805,94 @@ void main() {
   });
 
   testWidgets(
+    'barcode candidate picker can open own product draft',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      const milkProduct = OffProductSearchResult(
+        code: '4006381333931',
+        name: 'Milk',
+        brand: 'Brand',
+        score: 99,
+        packageWeight: '1 l',
+      );
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[milkProduct],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await _pumpUi(tester);
+
+      _fakeScannerPlatform().emitBarcode('4006381333931');
+      await _pumpUi(tester);
+
+      expect(find.byKey(inventoryBarcodeCandidateSheetKey), findsOneWidget);
+      await tester.tap(
+        find.byKey(
+          const Key('inventory_barcode_candidate_create_manual_button'),
+        ),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        findsOneWidget,
+      );
+      expect(find.text('Milk'), findsNothing);
+
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_name_field')),
+        'Own Milk',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_weight_field')),
+        '500',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_kcal_field')),
+        '64',
+      );
+      await _pumpUi(tester);
+
+      final manualSaveButton = find.byKey(
+        const Key('receipt_review_manual_save_button'),
+      );
+      await tester.ensureVisible(manualSaveButton);
+      await tester.tap(manualSaveButton);
+      await _pumpUi(tester);
+
+      expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(inventoryRepository.appendedItems.single.name, 'Own Milk');
+      expect(inventoryRepository.appendedItems.single.barcode, '4006381333931');
+      expect(inventoryRepository.appendedItems.single.weight, '500 g');
+      expect(
+        inventoryRepository.appendedItems.single.nutrition?.per100Kcal,
+        64,
+      );
+      expect(globalFoodRepository.appendedItems, hasLength(1));
+      expect(globalFoodRepository.appendedItems.single.name, 'Own Milk');
+      expect(
+        globalFoodRepository.appendedItems.single.barcode,
+        '4006381333931',
+      );
+    },
+  );
+
+  testWidgets(
     'eat now stays disabled when the manual product has no nutrition',
     (tester) async {
       _installFakeScannerPlatform(tester);

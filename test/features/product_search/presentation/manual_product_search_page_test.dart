@@ -1291,6 +1291,69 @@ void main() {
     },
   );
 
+  testWidgets('manual search can create own food draft', (tester) async {
+    InventoryReceiptManualProductResult? savedResult;
+    final offRepository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[],
+    );
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        offRepository: offRepository,
+        onSaved: (result) async {
+          savedResult = result;
+        },
+      ),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      'Custom Skyr',
+    );
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_create_own_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      _manualFormFieldText(
+        tester,
+        const Key('receipt_review_manual_name_field'),
+      ),
+      'Custom Skyr',
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_weight_field')),
+      '250',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_kcal_field')),
+      '80',
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const Key('receipt_review_manual_save_button')),
+    );
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_save_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(savedResult, isNotNull);
+    expect(savedResult?.item.name, 'Custom Skyr');
+    expect(savedResult?.item.weight, '250 g');
+    expect(savedResult?.item.nutrition?.per100Kcal, 80);
+    expect(savedResult?.selectedProduct, isNull);
+    expect(savedResult?.requiresGlobalPersistence, isTrue);
+  });
+
   testWidgets('shows recent items and applies their data when selected', (
     tester,
   ) async {
@@ -1993,6 +2056,44 @@ void main() {
     );
     final l10n = AppLocalizations.of(context)!;
     expect(find.text(l10n.caloriesOcrFailed), findsOneWidget);
+  });
+
+  testWidgets('App Check OCR throttling shows specific snackbar', (
+    tester,
+  ) async {
+    const selectedProduct = OffProductSearchResult(
+      code: '4311596490202',
+      name: 'Booster Absolute Zero',
+      brand: 'Booster',
+      packageWeight: '330 ml',
+      score: 100,
+    );
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        selectedProduct: selectedProduct,
+        ocrRepository: _FakeNutritionOcrRepository(
+          onScanNutritionLabel: (_) async {
+            return const NutritionLabelOcrResult.failed(
+              errorCode: NutritionLabelOcrErrorCodes.appCheckThrottled,
+            );
+          },
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_nutrition_ocr_button')),
+    );
+    await tester.pump();
+
+    final context = tester.element(
+      find.byType(InventoryReceiptManualProductPage),
+    );
+    final l10n = AppLocalizations.of(context)!;
+    expect(find.text(l10n.caloriesOcrAppCheckThrottled), findsOneWidget);
   });
 
   testWidgets('save button is disabled while nutrition OCR is running', (

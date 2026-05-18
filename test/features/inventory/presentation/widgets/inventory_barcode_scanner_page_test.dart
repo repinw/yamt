@@ -225,4 +225,45 @@ void main() {
       );
     },
   );
+
+  testWidgets('barcode picker can request manual product creation', (
+    tester,
+  ) async {
+    final candidate = InventoryBarcodeLookupCandidate.fromOffProduct(
+      const OffProductSearchResult(
+        code: '4006381333931',
+        name: 'Milk',
+        brand: 'Acme',
+        packageWeight: '1 l',
+        score: 100,
+      ),
+    );
+    var createTapped = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('de'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: InventoryBarcodeCandidatePickerSheet(
+            candidates: <InventoryBarcodeLookupCandidate>[candidate],
+            onCreateManual: () => createTapped += 1,
+            onSelect: (_, _) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(
+        const Key('inventory_barcode_candidate_create_manual_button'),
+      ),
+    );
+    await tester.pump();
+
+    expect(createTapped, 1);
+    expect(find.text('Manuell erstellen'), findsOneWidget);
+  });
 }

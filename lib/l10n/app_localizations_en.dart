@@ -766,6 +766,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddResultActionEat => 'Eat';
 
   @override
+  String get inventoryManualAddCreateOwnAction => 'Create manually';
+
+  @override
   String get inventoryManualAddEatNowOption => 'Eat now';
 
   @override
@@ -1582,6 +1585,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get caloriesOcrFailed =>
       'Nutrition label scan failed. Please try again.';
+
+  @override
+  String get caloriesOcrAppCheckThrottled =>
+      'Nutrition scan is temporarily blocked. Please try again later.';
 
   @override
   String get caloriesLoadFailed => 'Could not load calorie entries.';

@@ -781,6 +781,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddResultActionEat => 'Essen';
 
   @override
+  String get inventoryManualAddCreateOwnAction => 'Manuell erstellen';
+
+  @override
   String get inventoryManualAddEatNowOption => 'Sofort essen';
 
   @override
@@ -1608,6 +1611,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get caloriesOcrFailed =>
       'Nährwertetikett konnte nicht erkannt werden.';
+
+  @override
+  String get caloriesOcrAppCheckThrottled =>
+      'Nährwertscan ist vorübergehend blockiert. Bitte versuche es später erneut.';
 
   @override
   String get caloriesLoadFailed =>

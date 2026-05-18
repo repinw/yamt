@@ -146,6 +146,10 @@ typedef InventoryBarcodeProductSelectionCallback =
 typedef InventoryBarcodeNotFoundCallback =
     Future<bool> Function(String scannedBarcode);
 
+/// Defines inventory barcode manual product callback typedef.
+typedef InventoryBarcodeManualProductCallback =
+    Future<bool> Function(String scannedBarcode);
+
 /// Merge inventory barcode candidates.
 List<InventoryBarcodeLookupCandidate> mergeInventoryBarcodeCandidates({
   required List<GlobalBarcodeCandidate> learnedCandidates,

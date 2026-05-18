@@ -9,6 +9,9 @@ enum ManualBarcodeScanResultKind {
 
   /// No product was found for the scanned barcode.
   notFound,
+
+  /// User chose to create their own product for the scanned barcode.
+  manual,
 }
 
 /// Selected or missing barcode result from the scanner sheet.
@@ -36,6 +39,13 @@ class ManualBarcodeScanResult {
   const ManualBarcodeScanResult.notFound({required String scannedBarcode})
     : this._(
         kind: ManualBarcodeScanResultKind.notFound,
+        scannedBarcode: scannedBarcode,
+      );
+
+  /// The user wants to create their own product.
+  const ManualBarcodeScanResult.manual({required String scannedBarcode})
+    : this._(
+        kind: ManualBarcodeScanResultKind.manual,
         scannedBarcode: scannedBarcode,
       );
 

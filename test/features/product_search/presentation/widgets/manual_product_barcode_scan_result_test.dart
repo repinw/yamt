@@ -40,6 +40,17 @@ void main() {
     expect(result.action, isNull);
   });
 
+  test('manual result stores barcode without candidate or action', () {
+    const result = ManualBarcodeScanResult.manual(
+      scannedBarcode: '4006381333931',
+    );
+
+    expect(result.kind, ManualBarcodeScanResultKind.manual);
+    expect(result.scannedBarcode, '4006381333931');
+    expect(result.candidate, isNull);
+    expect(result.action, isNull);
+  });
+
   test('scanner actions map to manual product actions', () {
     expect(
       manualProductActionFromBarcodeAction(

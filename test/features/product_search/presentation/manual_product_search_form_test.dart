@@ -97,10 +97,12 @@ InventoryReceiptManualProductForm _buildForm({
   List<InventoryItem> recentItems = const <InventoryItem>[],
   bool canSave = true,
   bool showDetails = true,
+  bool canCreateManualDraft = false,
   bool canAddOptionalNutrition = false,
   bool isAddingOptionalNutrition = false,
   InventoryReceiptOptionalNutritionType? optionalNutritionType,
   VoidCallback? onSave,
+  VoidCallback? onCreateManualDraft,
   VoidCallback? onCancel,
   ValueChanged<OffProductSearchResult>? onSearchResultSelected,
   ValueChanged<OffProductSearchResult>? onSearchResultStoreSelected,
@@ -163,6 +165,8 @@ InventoryReceiptManualProductForm _buildForm({
     ),
     errorText: null,
     onAiSearchTap: () {},
+    canCreateManualDraft: canCreateManualDraft,
+    onCreateManualDraft: onCreateManualDraft ?? () {},
     showActionSelector: false,
     selectedAction: InventoryReceiptManualProductAction.addToInventory,
     onSearchResultSelected: onSearchResultSelected ?? (_) {},
@@ -457,6 +461,31 @@ void main() {
     await tester.pump();
 
     expect(eatResult?.code, result.code);
+  });
+
+  testWidgets('create manually action is shown and wired', (tester) async {
+    final searchController = TextEditingController(text: 'Skyr');
+    var createTapped = 0;
+    addTearDown(searchController.dispose);
+
+    await tester.pumpWidget(
+      _wrapForm(
+        builder: (_) => _buildForm(
+          searchController: searchController,
+          showDetails: false,
+          canCreateManualDraft: true,
+          onCreateManualDraft: () => createTapped += 1,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_create_own_button')),
+    );
+    await tester.pump();
+
+    expect(createTapped, 1);
   });
 
   testWidgets(
