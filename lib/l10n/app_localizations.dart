@@ -1438,6 +1438,12 @@ abstract class AppLocalizations {
   /// **'Eat'**
   String get inventoryManualAddResultActionEat;
 
+  /// No description provided for @inventoryManualAddCreateOwnAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create manually'**
+  String get inventoryManualAddCreateOwnAction;
+
   /// No description provided for @inventoryManualAddEatNowOption.
   ///
   /// In en, this message translates to:
@@ -2840,6 +2846,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nutrition label scan failed. Please try again.'**
   String get caloriesOcrFailed;
+
+  /// No description provided for @caloriesOcrAppCheckThrottled.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition scan is temporarily blocked. Please try again later.'**
+  String get caloriesOcrAppCheckThrottled;
 
   /// No description provided for @caloriesLoadFailed.
   ///

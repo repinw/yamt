@@ -507,6 +507,46 @@ void main() {
     expect(state.kcalText, isEmpty);
     expect(state.fiberText, isEmpty);
     expect(state.showFiberField, isFalse);
+    expect(state.isManualDraft, isTrue);
+  });
+
+  test('startManualProductDraft opens details from search query', () async {
+    final repository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[],
+    );
+    final config = _config();
+    final container = ProviderContainer(
+      overrides: [
+        offProductSearchRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    final notifier = container.read(provider.notifier);
+    notifier.updateSearchQuery('  Custom Skyr  ');
+    expect(container.read(provider).canCreateManualDraft, isTrue);
+
+    notifier.startManualProductDraft();
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    await Future<void>.delayed(Duration.zero);
+
+    final state = container.read(provider);
+    expect(repository.searchCallCount, 0);
+    expect(state.searchQuery, 'Custom Skyr');
+    expect(state.nameText, 'Custom Skyr');
+    expect(state.showDetails, isTrue);
+    expect(state.canCreateManualDraft, isFalse);
+    expect(state.isManualDraft, isTrue);
+    expect(state.selectedProduct, isNull);
+    expect(state.searchResults, isEmpty);
   });
 
   test(
@@ -1153,4 +1193,45 @@ void main() {
       expect(fiberState.fiberText, '1');
     },
   );
+
+  test('scanNutritionLabel maps App Check throttling outcome', () async {
+    final config = _config(
+      selectedProduct: const OffProductSearchResult(
+        code: '4061462542046',
+        name: 'Olivenoel',
+        score: 100,
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        nutritionLabelOcrRepositoryProvider.overrideWithValue(
+          _FakeNutritionOcrRepository(
+            onScanNutritionLabel: (_) async {
+              return const NutritionLabelOcrResult.failed(
+                errorCode: NutritionLabelOcrErrorCodes.appCheckThrottled,
+              );
+            },
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    final outcome = await container
+        .read(provider.notifier)
+        .scanNutritionLabel();
+
+    expect(
+      outcome,
+      InventoryReceiptManualProductNutritionScanOutcome.appCheckThrottled,
+    );
+  });
 }

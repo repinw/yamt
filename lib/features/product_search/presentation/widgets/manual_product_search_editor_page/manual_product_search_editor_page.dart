@@ -249,6 +249,10 @@ class _InventoryReceiptManualProductEditorPageState
         onAiSearchTap: () {
           unawaited(_openAiSearchPage());
         },
+        canCreateManualDraft: state.canCreateManualDraft,
+        onCreateManualDraft: () {
+          unawaited(_startManualProductDraft());
+        },
         showActionSelector:
             widget.showEatImmediatelyOption &&
             _showActionSelector &&
@@ -533,6 +537,14 @@ class _InventoryReceiptManualProductEditorPageState
               );
               return true;
             },
+            onCreateManualProduct: (scannedBarcode) async {
+              sheetContext.pop(
+                ManualBarcodeScanResult.manual(
+                  scannedBarcode: scannedBarcode,
+                ),
+              );
+              return true;
+            },
             eatOnly: quickEatConfig.quickEatOnly,
           ),
         );
@@ -612,6 +624,12 @@ class _InventoryReceiptManualProductEditorPageState
         }
         _controller.applyScannedBarcodeOnly(scannedBarcode);
         _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddNotFound);
+      case ManualBarcodeScanResultKind.manual:
+        final scannedBarcode = result.scannedBarcode;
+        if (scannedBarcode == null || scannedBarcode.isEmpty) {
+          return;
+        }
+        _controller.applyScannedBarcodeOnly(scannedBarcode);
     }
   }
 
@@ -654,13 +672,30 @@ class _InventoryReceiptManualProductEditorPageState
     _closePage(wrappedResult);
   }
 
+  Future<void> _startManualProductDraft() async {
+    final controller = _controller;
+    await _voiceSearchController.stopVoiceSearchIfNeeded();
+    if (!mounted) {
+      return;
+    }
+    controller.startManualProductDraft();
+  }
+
   Future<void> _scanNutritionLabel() async {
     final outcome = await _controller.scanNutritionLabel();
     if (!mounted) {
       return;
     }
-    if (outcome == InventoryReceiptManualProductNutritionScanOutcome.failed) {
-      _showSnackBar(AppLocalizations.of(context)!.caloriesOcrFailed);
+    final l10n = AppLocalizations.of(context)!;
+    switch (outcome) {
+      case InventoryReceiptManualProductNutritionScanOutcome.applied:
+      case InventoryReceiptManualProductNutritionScanOutcome.canceled:
+      case InventoryReceiptManualProductNutritionScanOutcome.missingBarcode:
+        return;
+      case InventoryReceiptManualProductNutritionScanOutcome.failed:
+        _showSnackBar(l10n.caloriesOcrFailed);
+      case InventoryReceiptManualProductNutritionScanOutcome.appCheckThrottled:
+        _showSnackBar(l10n.caloriesOcrAppCheckThrottled);
     }
   }
 

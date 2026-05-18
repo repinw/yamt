@@ -36,6 +36,8 @@ Widget _wrapDetailsForm({
   String optionalNutritionValueText = '',
   InventoryAmountUnit optionalNutritionUnit = InventoryAmountUnit.gram,
   InventoryReceiptOptionalNutritionType? optionalNutritionType,
+  bool canCreateManualDraft = false,
+  VoidCallback? onCreateManualDraft,
 }) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -87,6 +89,8 @@ Widget _wrapDetailsForm({
                       InventoryReceiptOptionalNutritionType.fiber,
                     ],
                 errorText: null,
+                canCreateManualDraft: canCreateManualDraft,
+                onCreateManualDraft: onCreateManualDraft ?? () {},
                 showActionSelector: false,
                 selectedAction:
                     InventoryReceiptManualProductAction.addToInventory,

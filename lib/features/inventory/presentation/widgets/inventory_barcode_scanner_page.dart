@@ -43,6 +43,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
     required this.onProductSelected,
     super.key,
     this.onProductNotFound,
+    this.onCreateManualProduct,
     this.showActionButtons = true,
     this.eatOnly = false,
   });
@@ -55,6 +56,9 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
 
   /// The on product not found.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
+
+  /// The on create manual product.
+  final InventoryBarcodeManualProductCallback? onCreateManualProduct;
 
   /// Whether candidate rows show explicit action buttons.
   final bool showActionButtons;
@@ -69,6 +73,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
       body: InventoryBarcodeScannerView(
         onProductSelected: onProductSelected,
         onProductNotFound: onProductNotFound,
+        onCreateManualProduct: onCreateManualProduct,
         showActionButtons: showActionButtons,
         eatOnly: eatOnly,
       ),
@@ -83,6 +88,7 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
     required this.onProductSelected,
     super.key,
     this.onProductNotFound,
+    this.onCreateManualProduct,
     this.showActionButtons = true,
     this.eatOnly = false,
   });
@@ -92,6 +98,9 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
 
   /// The on product not found.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
+
+  /// The on create manual product.
+  final InventoryBarcodeManualProductCallback? onCreateManualProduct;
 
   /// Whether candidate rows show explicit action buttons.
   final bool showActionButtons;
@@ -282,12 +291,30 @@ class _InventoryBarcodeScannerViewState
     if (!mounted || selection == null) {
       return true;
     }
+    if (selection.kind == _InventoryBarcodeCandidateSelectionKind.manual) {
+      return _handleCreateManualProduct(scannedBarcode);
+    }
 
     final handled = await widget.onProductSelected(
-      selection.candidate,
+      selection.candidate!,
       scannedBarcode,
-      selection.action,
+      selection.action!,
     );
+    return !handled;
+  }
+
+  Future<bool> _handleCreateManualProduct(String scannedBarcode) async {
+    final l10n = AppLocalizations.of(context)!;
+    final handled =
+        await widget.onCreateManualProduct?.call(scannedBarcode) ??
+        await widget.onProductNotFound?.call(scannedBarcode) ??
+        false;
+    if (!mounted) {
+      return false;
+    }
+    if (!handled) {
+      _showSnackBar(l10n.inventoryManualAddNotFound);
+    }
     return !handled;
   }
 
@@ -307,11 +334,17 @@ class _InventoryBarcodeScannerViewState
           eatOnly: widget.eatOnly,
           onSelect: (candidate, action) => _popRoute(
             sheetContext,
-            _InventoryBarcodeCandidateSelection(
+            _InventoryBarcodeCandidateSelection.candidate(
               candidate: candidate,
               action: action,
             ),
           ),
+          onCreateManual: widget.onCreateManualProduct == null
+              ? null
+              : () => _popRoute(
+                  sheetContext,
+                  const _InventoryBarcodeCandidateSelection.manual(),
+                ),
         );
       },
     );
@@ -391,12 +424,23 @@ bool _isMobileBarcodeScanSupported() {
       defaultTargetPlatform == TargetPlatform.iOS;
 }
 
+enum _InventoryBarcodeCandidateSelectionKind {
+  candidate,
+  manual,
+}
+
 class _InventoryBarcodeCandidateSelection {
-  const _InventoryBarcodeCandidateSelection({
+  const _InventoryBarcodeCandidateSelection.candidate({
     required this.candidate,
     required this.action,
-  });
+  }) : kind = _InventoryBarcodeCandidateSelectionKind.candidate;
 
-  final InventoryBarcodeLookupCandidate candidate;
-  final InventoryBarcodeCandidateAction action;
+  const _InventoryBarcodeCandidateSelection.manual()
+    : kind = _InventoryBarcodeCandidateSelectionKind.manual,
+      candidate = null,
+      action = null;
+
+  final _InventoryBarcodeCandidateSelectionKind kind;
+  final InventoryBarcodeLookupCandidate? candidate;
+  final InventoryBarcodeCandidateAction? action;
 }

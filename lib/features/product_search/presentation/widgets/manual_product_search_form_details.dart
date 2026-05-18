@@ -54,6 +54,8 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.optionalNutritionType,
     required this.availableOptionalNutritionTypes,
     required this.errorText,
+    required this.canCreateManualDraft,
+    required this.onCreateManualDraft,
     required this.showActionSelector,
     required this.selectedAction,
     required this.canSave,
@@ -116,6 +118,8 @@ class ManualProductDetailsForm extends StatefulWidget {
   final List<manual_product_models.InventoryReceiptOptionalNutritionType>
   availableOptionalNutritionTypes;
   final String? errorText;
+  final bool canCreateManualDraft;
+  final VoidCallback onCreateManualDraft;
   final bool showActionSelector;
   final manual_product_models.InventoryReceiptManualProductAction
   selectedAction;
@@ -306,6 +310,18 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
               items: widget.recentItems,
               onSelect: widget.onRecentItemSelected,
             ),
+          if (widget.canCreateManualDraft) ...[
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                key: const Key('receipt_review_manual_create_own_button'),
+                onPressed: widget.onCreateManualDraft,
+                icon: const Icon(Icons.edit_note_rounded),
+                label: Text(l10n.inventoryManualAddCreateOwnAction),
+              ),
+            ),
+          ],
           if (widget.showDetails && widget.preview != null) ...[
             const SizedBox(height: AppSpacing.lg),
             ManualProductPreview(preview: widget.preview!),

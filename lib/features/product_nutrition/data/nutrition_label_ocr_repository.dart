@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
@@ -29,6 +30,9 @@ abstract final class NutritionLabelOcrErrorCodes {
 
   /// The AI request failed.
   static const aiRequestFailed = 'ocr_ai_request_failed';
+
+  /// Firebase App Check temporarily blocked the AI request.
+  static const appCheckThrottled = 'ocr_app_check_throttled';
 
   /// The parse failed.
   static const parseFailed = 'ocr_parse_failed';
@@ -162,16 +166,31 @@ class NutritionLabelOcrRepository {
       );
       return NutritionLabelOcrResult.succeeded(draft: draft);
     } on Exception catch (error, stackTrace) {
+      final errorCode = _resolveScanErrorCode(error);
       log(
         'OCR nutrition label failed for barcode $barcode.',
         name: _ocrLogName,
         error: error,
         stackTrace: stackTrace,
       );
-      return const NutritionLabelOcrResult.failed(
-        errorCode: NutritionLabelOcrErrorCodes.aiRequestFailed,
-      );
+      return NutritionLabelOcrResult.failed(errorCode: errorCode);
     }
+  }
+
+  String _resolveScanErrorCode(Exception error) {
+    if (_isAppCheckTooManyAttemptsError(error)) {
+      return NutritionLabelOcrErrorCodes.appCheckThrottled;
+    }
+    return NutritionLabelOcrErrorCodes.aiRequestFailed;
+  }
+
+  bool _isAppCheckTooManyAttemptsError(Exception error) {
+    if (error is! FirebaseException) {
+      return false;
+    }
+    final message = (error.message ?? error.toString()).toLowerCase();
+    return error.plugin == 'firebase_app_check' &&
+        message.contains('too many attempts');
   }
 
   bool _isCameraSupported() {

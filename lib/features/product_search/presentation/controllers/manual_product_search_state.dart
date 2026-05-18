@@ -35,6 +35,7 @@ class InventoryReceiptManualProductState {
         InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
     this.isSearching = false,
     this.searchResults = const <OffProductSearchResult>[],
+    this.isManualDraft = false,
     this.selectedProduct,
     this.ocrDraft,
     this.isRunningNutritionOcr = false,
@@ -110,6 +111,9 @@ class InventoryReceiptManualProductState {
   /// The search results.
   final List<OffProductSearchResult> searchResults;
 
+  /// Whether editing a user-created product draft.
+  final bool isManualDraft;
+
   /// The selected product.
   final InventoryReceiptManualProductSelection? selectedProduct;
 
@@ -156,11 +160,17 @@ class InventoryReceiptManualProductState {
 
   /// The show details.
   bool get showDetails {
-    return selectedProduct != null ||
+    return isManualDraft ||
+        selectedProduct != null ||
         ocrDraft != null ||
         hasBarcode ||
         hasNutritionInput ||
         error != null;
+  }
+
+  /// Whether own product draft can start from search text.
+  bool get canCreateManualDraft {
+    return normalizeManualProductText(searchQuery) != null && !showDetails;
   }
 
   /// Whether save.
@@ -228,6 +238,7 @@ class InventoryReceiptManualProductState {
     InventoryReceiptOptionalNutritionType? optionalNutritionType,
     bool? isSearching,
     List<OffProductSearchResult>? searchResults,
+    bool? isManualDraft,
     Object? selectedProduct = _keepValue,
     Object? ocrDraft = _keepValue,
     bool? isRunningNutritionOcr,
@@ -263,6 +274,7 @@ class InventoryReceiptManualProductState {
           optionalNutritionType ?? this.optionalNutritionType,
       isSearching: isSearching ?? this.isSearching,
       searchResults: searchResults ?? this.searchResults,
+      isManualDraft: isManualDraft ?? this.isManualDraft,
       selectedProduct: selectedProduct == _keepValue
           ? this.selectedProduct
           : selectedProduct as InventoryReceiptManualProductSelection?,

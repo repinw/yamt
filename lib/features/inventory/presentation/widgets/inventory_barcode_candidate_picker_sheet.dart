@@ -21,6 +21,7 @@ class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
     super.key,
     this.showActionButtons = true,
     this.eatOnly = false,
+    this.onCreateManual,
   });
 
   /// The candidates.
@@ -38,6 +39,9 @@ class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
 
   /// Whether only eat action should be shown.
   final bool eatOnly;
+
+  /// Called when user wants to create their own product.
+  final VoidCallback? onCreateManual;
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +86,17 @@ class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
                   },
                 ),
               ),
+              if (onCreateManual != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                OutlinedButton.icon(
+                  key: const Key(
+                    'inventory_barcode_candidate_create_manual_button',
+                  ),
+                  onPressed: onCreateManual,
+                  icon: const Icon(Icons.edit_note_rounded),
+                  label: Text(l10n.inventoryManualAddCreateOwnAction),
+                ),
+              ],
             ],
           ),
         ),

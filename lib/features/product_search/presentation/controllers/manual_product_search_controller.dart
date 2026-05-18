@@ -90,6 +90,7 @@ class InventoryReceiptManualProductController
 
     final query = normalizeManualProductText(value);
     if (query == null || query.length < 2) {
+      _activeSearchRequestId++;
       state = state.copyWith(
         isSearching: false,
         searchResults: const <OffProductSearchResult>[],
@@ -237,13 +238,37 @@ class InventoryReceiptManualProductController
   /// Apply search result.
   void applySearchResult(OffProductSearchResult product) {
     _searchDebounce?.cancel();
+    _activeSearchRequestId++;
     _applySelectedProductSelection(
       InventoryReceiptManualProductSelection.fromSearchResult(product),
     );
   }
 
+  /// Starts a user-created product draft from the current search query.
+  void startManualProductDraft() {
+    _searchDebounce?.cancel();
+    _activeSearchRequestId++;
+    final draftName =
+        normalizeManualProductText(state.searchQuery) ??
+        normalizeManualProductText(state.nameText) ??
+        normalizeManualProductText(_config.item.name) ??
+        '';
+    state = state.copyWith(
+      searchQuery: draftName,
+      nameText: draftName,
+      isSearching: false,
+      searchResults: const <OffProductSearchResult>[],
+      isManualDraft: true,
+      selectedProduct: null,
+      ocrDraft: null,
+      error: null,
+    );
+  }
+
   /// Apply scanned product.
   void applyScannedProduct(OffProductSearchResult product) {
+    _searchDebounce?.cancel();
+    _activeSearchRequestId++;
     _applySelectedProductSelection(
       InventoryReceiptManualProductSelection.fromSearchResult(product),
     );
@@ -252,6 +277,7 @@ class InventoryReceiptManualProductController
   /// Apply recent item.
   void applyRecentItem(InventoryItem item) {
     _searchDebounce?.cancel();
+    _activeSearchRequestId++;
     _applySelectedProductSelection(
       InventoryReceiptManualProductSelection.fromInventoryItem(item),
     );
@@ -259,6 +285,8 @@ class InventoryReceiptManualProductController
 
   /// Apply scanned barcode only.
   void applyScannedBarcodeOnly(String barcode) {
+    _searchDebounce?.cancel();
+    _activeSearchRequestId++;
     state = state.copyWith(
       barcode: barcode,
       nameText: _config.item.name,
@@ -278,6 +306,9 @@ class InventoryReceiptManualProductController
       showFiberField: false,
       isAddingOptionalNutrition: false,
       optionalNutritionValueText: '',
+      searchResults: const <OffProductSearchResult>[],
+      isSearching: false,
+      isManualDraft: true,
       error: null,
     );
   }
@@ -316,6 +347,11 @@ class InventoryReceiptManualProductController
         case NutritionLabelOcrStatus.canceled:
           return InventoryReceiptManualProductNutritionScanOutcome.canceled;
         case NutritionLabelOcrStatus.failed:
+          if (result.errorCode ==
+              NutritionLabelOcrErrorCodes.appCheckThrottled) {
+            return InventoryReceiptManualProductNutritionScanOutcome
+                .appCheckThrottled;
+          }
           return InventoryReceiptManualProductNutritionScanOutcome.failed;
       }
     } finally {
@@ -612,9 +648,11 @@ class InventoryReceiptManualProductController
       showFiberField: nutrition?.per100Fiber != null,
       isAddingOptionalNutrition: false,
       optionalNutritionValueText: '',
+      isManualDraft: false,
       selectedProduct: product,
       ocrDraft: null,
       searchResults: const <OffProductSearchResult>[],
+      isSearching: false,
       error: null,
     );
   }

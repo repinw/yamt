@@ -134,6 +134,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.preview,
     required this.errorText,
     required this.onAiSearchTap,
+    required this.canCreateManualDraft,
+    required this.onCreateManualDraft,
     required this.showActionSelector,
     required this.selectedAction,
     required this.onSearchResultSelected,
@@ -272,6 +274,12 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// Open AI search page.
   final VoidCallback onAiSearchTap;
+
+  /// Whether user-created draft can be started.
+  final bool canCreateManualDraft;
+
+  /// Starts user-created draft.
+  final VoidCallback onCreateManualDraft;
 
   /// Whether action selector visible.
   final bool showActionSelector;
@@ -425,6 +433,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
         optionalNutritionType: optionalNutritionType,
         availableOptionalNutritionTypes: availableOptionalNutritionTypes,
         errorText: errorText,
+        canCreateManualDraft: canCreateManualDraft,
+        onCreateManualDraft: onCreateManualDraft,
         showActionSelector: showActionSelector,
         selectedAction: selectedAction,
         canSave: canSave,

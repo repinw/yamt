@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -338,4 +339,35 @@ void main() {
     expect(result.status, NutritionLabelOcrStatus.failed);
     expect(result.errorCode, NutritionLabelOcrErrorCodes.aiRequestFailed);
   });
+
+  test(
+    'scan returns app check throttled when App Check is rate limited',
+    () async {
+      _setCameraPlatform(TargetPlatform.android);
+      final repository = _repository(
+        imagePicker: _FakeImagePicker(
+          onPickImage: (source) async {
+            return XFile.fromData(
+              Uint8List.fromList(<int>[0x00]),
+              name: 'label.bin',
+            );
+          },
+        ),
+        modelClient: _FakeModelClient(
+          error: FirebaseException(
+            plugin: 'firebase_app_check',
+            code: 'unknown',
+            message: 'Too many attempts.',
+          ),
+        ).generateContent,
+      );
+
+      final result = await repository.scanNutritionLabel(
+        barcode: '4006381333931',
+      );
+
+      expect(result.status, NutritionLabelOcrStatus.failed);
+      expect(result.errorCode, NutritionLabelOcrErrorCodes.appCheckThrottled);
+    },
+  );
 }
