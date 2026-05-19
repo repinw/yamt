@@ -3,62 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines account guest card.
-class AccountGuestCard extends StatelessWidget {
-  /// The account guest card.
-  const AccountGuestCard({
-    required this.l10n,
-    required this.isActionLoading,
-    required this.onLinkWithGoogle,
-    required this.onLinkWithEmailPassword,
-    super.key,
-  });
-
-  /// The l10n.
-  final AppLocalizations l10n;
-
-  /// Whether action loading.
-  final bool isActionLoading;
-
-  /// The on link with google.
-  final VoidCallback onLinkWithGoogle;
-
-  /// The on link with email password.
-  final VoidCallback onLinkWithEmailPassword;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: AppInsets.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.accountPageGuestTitle,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(l10n.accountPageGuestDescription),
-            const SizedBox(height: AppSpacing.md),
-            FilledButton.icon(
-              onPressed: isActionLoading ? null : onLinkWithGoogle,
-              icon: const Icon(Icons.link),
-              label: Text(l10n.accountPageLinkGoogle),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            OutlinedButton.icon(
-              onPressed: isActionLoading ? null : onLinkWithEmailPassword,
-              icon: const Icon(Icons.email_outlined),
-              label: Text(l10n.accountPageLinkEmailPassword),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// Defines account user info card.
 class AccountUserInfoCard extends StatelessWidget {
   /// The account user info card.

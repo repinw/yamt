@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
+
+part 'account_page_flow_service.g.dart';
 
 /// Defines account credential conflict choice.
 enum AccountCredentialConflictChoice {
@@ -12,7 +14,8 @@ enum AccountCredentialConflictChoice {
 }
 
 /// The account page flow service provider.
-final accountPageFlowServiceProvider = Provider<AccountPageFlowService>((ref) {
+@riverpod
+AccountPageFlowService accountPageFlowService(Ref ref) {
   final controller = ref.read(accountControllerProvider.notifier);
   return AccountPageFlowService(
     overwriteExistingGoogleAccountWithGuest:
@@ -20,7 +23,7 @@ final accountPageFlowServiceProvider = Provider<AccountPageFlowService>((ref) {
     deleteGuestAndSignInWithGoogleCredential:
         controller.deleteGuestAndSignInWithGoogleCredential,
   );
-});
+}
 
 /// Defines account page flow service.
 class AccountPageFlowService {

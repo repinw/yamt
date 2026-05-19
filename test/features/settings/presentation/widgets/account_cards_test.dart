@@ -2,7 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:yamt/features/settings/presentation/widgets/account_cards/account_cards.dart';
+import 'package:yamt/features/settings/presentation/widgets/account_guest_card/account_guest_card.dart';
+import 'package:yamt/features/settings/presentation/widgets/account_user_info_card/account_user_info_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _MockUser extends Mock implements User {}
