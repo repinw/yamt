@@ -53,14 +53,17 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
     return Stream<List<CalorieEntry>>.multi((controller) {
       Timer? initialEmissionTimer;
-      void emitInitial() {
+      Future<void> emitInitial() async {
         if (!controller.isClosed) {
-          controller.add(_entriesForDay(normalizedDay));
+          final entries = await readEntriesForDay(normalizedDay);
+          if (!controller.isClosed) {
+            controller.add(entries);
+          }
         }
       }
 
       if (initialEmissionDelay == Duration.zero) {
-        emitInitial();
+        unawaited(emitInitial());
       } else {
         initialEmissionTimer = Timer(initialEmissionDelay, emitInitial);
       }

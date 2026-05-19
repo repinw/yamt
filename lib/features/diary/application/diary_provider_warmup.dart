@@ -1,7 +1,18 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/provider/'
+    'burn_week_run_controller.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_balance_provider.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_meal_sections_provider.dart';
+import 'package:yamt/features/diary/presentation/'
+    'diary_calendar_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'prepared_meals_controller.dart';
 
 part 'diary_provider_warmup.g.dart';
 
@@ -13,8 +24,19 @@ part 'diary_provider_warmup.g.dart';
   ],
 )
 void diaryProviderWarmup(Ref ref) {
+  final today = ref.watch(diaryProviderWarmupTodayProvider);
+
   ref
     ..watch(inventoryItemsControllerProvider)
     ..watch(preparedMealsControllerProvider)
-    ..watch(calorieEntryDeleteFlowProvider);
+    ..watch(calorieEntryDeleteFlowProvider)
+    ..watch(burnWeekRunControllerProvider)
+    ..watch(diaryBalanceSourceProvider(today))
+    ..watch(diaryMealSectionsProvider(today));
+}
+
+/// Current diary day that should be warmed.
+@riverpod
+DateTime diaryProviderWarmupToday(Ref ref) {
+  return ref.watch(diaryCalendarControllerProvider).today;
 }

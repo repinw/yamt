@@ -77,4 +77,51 @@ final class DiaryProviderWarmupProvider
 }
 
 String _$diaryProviderWarmupHash() =>
-    r'886300e68749896c1b190d54094d94b41c244ca6';
+    r'41be427516bedefc0bffddd1f4dd04c287c98961';
+
+/// Current diary day that should be warmed.
+
+@ProviderFor(diaryProviderWarmupToday)
+final diaryProviderWarmupTodayProvider = DiaryProviderWarmupTodayProvider._();
+
+/// Current diary day that should be warmed.
+
+final class DiaryProviderWarmupTodayProvider
+    extends $FunctionalProvider<DateTime, DateTime, DateTime>
+    with $Provider<DateTime> {
+  /// Current diary day that should be warmed.
+  DiaryProviderWarmupTodayProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'diaryProviderWarmupTodayProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryProviderWarmupTodayHash();
+
+  @$internal
+  @override
+  $ProviderElement<DateTime> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  DateTime create(Ref ref) {
+    return diaryProviderWarmupToday(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DateTime value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DateTime>(value),
+    );
+  }
+}
+
+String _$diaryProviderWarmupTodayHash() =>
+    r'326b3abec9f0ebb45de96cf5a867ddf7203bce2a';
