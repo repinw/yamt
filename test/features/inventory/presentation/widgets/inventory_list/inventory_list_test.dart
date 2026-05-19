@@ -419,6 +419,30 @@ void main() {
     expect(find.text('Empty jar'), findsOneWidget);
   });
 
+  testWidgets('view mode toggle switches foods to tile layout', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        items: <InventoryItem>[
+          _item(id: 'apple', name: 'Apple', quantity: 1, initialQuantity: 1),
+          _item(id: 'banana', name: 'Banana', quantity: 1, initialQuantity: 1),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('inventory_items_list_view')), findsOneWidget);
+    expect(find.byKey(const Key('inventory_items_tile_view')), findsNothing);
+
+    await _openFoodFilterSheet(tester);
+    await _tapVisible(tester, find.text('Tiles'));
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('inventory_items_list_view')), findsNothing);
+    expect(find.byKey(const Key('inventory_items_tile_view')), findsOneWidget);
+  });
+
   testWidgets('inventory search filters items and prepared meals', (
     tester,
   ) async {

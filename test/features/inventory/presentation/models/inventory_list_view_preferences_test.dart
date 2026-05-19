@@ -40,6 +40,7 @@ void main() {
   test('defaults hide consumed foods and prepared meals', () {
     const preferences = InventoryListViewPreferences();
 
+    expect(preferences.viewMode, InventoryListViewMode.list);
     expect(preferences.consumptionFilter.hideFullyConsumedItems, isTrue);
     expect(
       preferences.preparedMealConsumptionFilter,
@@ -50,6 +51,7 @@ void main() {
   test('readSync falls back to current defaults when no values are stored', () {
     final stored = store.readSync(_MemoryAppPreferences());
 
+    expect(stored.viewMode, InventoryListViewMode.list);
     expect(stored.consumptionFilter.hideFullyConsumedItems, isTrue);
     expect(
       stored.preparedMealConsumptionFilter,
@@ -65,6 +67,7 @@ void main() {
   test('save and readSync round-trip changed values', () async {
     final memory = _MemoryAppPreferences();
     const preferences = InventoryListViewPreferences(
+      viewMode: InventoryListViewMode.tiles,
       inventoryItemSortMode: InventoryItemSortMode.alphabeticalDescending,
       preparedMealConsumptionFilter: PreparedMealConsumptionFilter.all,
       preparedMealSortMode: PreparedMealSortMode.quantityDescending,
@@ -75,6 +78,10 @@ void main() {
     await store.save(memory, preferences);
     final restored = store.readSync(memory);
 
+    expect(
+      restored.viewMode,
+      InventoryListViewMode.tiles,
+    );
     expect(
       restored.inventoryItemSortMode,
       InventoryItemSortMode.alphabeticalDescending,

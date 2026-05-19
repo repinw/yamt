@@ -7,6 +7,8 @@ import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_view_preferences.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -114,6 +116,7 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     required this.expandedPreparedMealId,
     required this.isExpanded,
     required this.subtitle,
+    required this.viewMode,
     required this.isSelectionMode,
     required this.actions,
     required this.onToggleExpanded,
@@ -132,6 +135,9 @@ class InventoryPreparedMealsSection extends StatelessWidget {
 
   /// The subtitle.
   final String subtitle;
+
+  /// Card layout mode.
+  final InventoryListViewMode viewMode;
 
   /// Whether selection mode.
   final bool isSelectionMode;
@@ -179,32 +185,171 @@ class InventoryPreparedMealsSection extends StatelessWidget {
             ),
             if (isExpanded && meals.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
-              ...meals.map((meal) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                  child: PreparedMealCard(
-                    key: ValueKey(meal.id),
-                    meal: meal,
-                    initiallyExpanded: meal.id == expandedPreparedMealId,
-                    enabled: !isSelectionMode,
-                    onEatPressed: actions.onEatPreparedMeal,
-                    onThrowAwayPressed: actions.onThrowAwayPreparedMeal,
-                    onFillPendingIngredientPressed:
-                        actions.onFillPendingPreparedMealIngredient,
-                    onIgnorePendingIngredientPressed:
-                        actions.onIgnorePendingPreparedMealIngredient,
-                    onUnbundlePressed: actions.onUnbundlePreparedMeal,
-                    onEditPressed: actions.onEditPreparedMeal,
-                    onSelectEditIngredientsPressed:
-                        actions.onSelectPreparedMealEditIngredients,
-                    onSaveTemplatePressed: actions.onSavePreparedMealTemplate,
-                  ),
-                );
-              }),
+              if (viewMode == InventoryListViewMode.tiles)
+                _PreparedMealTiles(
+                  meals: meals,
+                  expandedPreparedMealId: expandedPreparedMealId,
+                  enabled: !isSelectionMode,
+                  actions: actions,
+                )
+              else
+                _PreparedMealList(
+                  meals: meals,
+                  expandedPreparedMealId: expandedPreparedMealId,
+                  enabled: !isSelectionMode,
+                  actions: actions,
+                ),
             ],
           ],
         ),
       ),
+    );
+  }
+}
+
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
+class _PreparedMealList extends StatelessWidget {
+  const _PreparedMealList({
+    required this.meals,
+    required this.expandedPreparedMealId,
+    required this.enabled,
+    required this.actions,
+  });
+
+  final List<PreparedMeal> meals;
+  final String? expandedPreparedMealId;
+  final bool enabled;
+  final PreparedMealSectionActions actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const Key('prepared_meals_list_view'),
+      children: [
+        for (final meal in meals)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+            child: _PreparedMealEntry(
+              meal: meal,
+              expandedPreparedMealId: expandedPreparedMealId,
+              enabled: enabled,
+              actions: actions,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
+class _PreparedMealTiles extends StatelessWidget {
+  const _PreparedMealTiles({
+    required this.meals,
+    required this.expandedPreparedMealId,
+    required this.enabled,
+    required this.actions,
+  });
+
+  final List<PreparedMeal> meals;
+  final String? expandedPreparedMealId;
+  final bool enabled;
+  final PreparedMealSectionActions actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const Key('prepared_meals_tile_view'),
+      children: [
+        for (var index = 0; index < meals.length; index += 2)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _PreparedMealTileEntry(
+                  meal: meals[index],
+                  expandedPreparedMealId: expandedPreparedMealId,
+                  enabled: enabled,
+                  actions: actions,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: index + 1 < meals.length
+                    ? _PreparedMealTileEntry(
+                        meal: meals[index + 1],
+                        expandedPreparedMealId: expandedPreparedMealId,
+                        enabled: enabled,
+                        actions: actions,
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
+class _PreparedMealTileEntry extends StatelessWidget {
+  const _PreparedMealTileEntry({
+    required this.meal,
+    required this.expandedPreparedMealId,
+    required this.enabled,
+    required this.actions,
+  });
+
+  final PreparedMeal meal;
+  final String? expandedPreparedMealId;
+  final bool enabled;
+  final PreparedMealSectionActions actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      child: _PreparedMealEntry(
+        meal: meal,
+        expandedPreparedMealId: expandedPreparedMealId,
+        enabled: enabled,
+        actions: actions,
+      ),
+    );
+  }
+}
+
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
+class _PreparedMealEntry extends StatelessWidget {
+  const _PreparedMealEntry({
+    required this.meal,
+    required this.expandedPreparedMealId,
+    required this.enabled,
+    required this.actions,
+  });
+
+  final PreparedMeal meal;
+  final String? expandedPreparedMealId;
+  final bool enabled;
+  final PreparedMealSectionActions actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return PreparedMealCard(
+      key: ValueKey(meal.id),
+      meal: meal,
+      initiallyExpanded: meal.id == expandedPreparedMealId,
+      enabled: enabled,
+      onEatPressed: actions.onEatPreparedMeal,
+      onThrowAwayPressed: actions.onThrowAwayPreparedMeal,
+      onFillPendingIngredientPressed:
+          actions.onFillPendingPreparedMealIngredient,
+      onIgnorePendingIngredientPressed:
+          actions.onIgnorePendingPreparedMealIngredient,
+      onUnbundlePressed: actions.onUnbundlePreparedMeal,
+      onEditPressed: actions.onEditPreparedMeal,
+      onSelectEditIngredientsPressed:
+          actions.onSelectPreparedMealEditIngredients,
+      onSaveTemplatePressed: actions.onSavePreparedMealTemplate,
     );
   }
 }

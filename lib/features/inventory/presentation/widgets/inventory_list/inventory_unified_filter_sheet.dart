@@ -29,13 +29,12 @@ enum InventoryUnifiedFilterSection {
   foods,
 }
 
-enum _InventoryUnifiedViewMode { list, tiles }
-
 /// Unified inventory filter sheet for meals and foods.
 class InventoryUnifiedFilterSheet extends StatefulWidget {
   /// Creates unified inventory filter sheet.
   const InventoryUnifiedFilterSheet({
     required this.initialSection,
+    required this.initialViewMode,
     required this.initialListMode,
     required this.initialInventoryItemSortMode,
     required this.initialHideFullyConsumedItems,
@@ -43,6 +42,7 @@ class InventoryUnifiedFilterSheet extends StatefulWidget {
     required this.initialPreparedMealConsumptionFilter,
     required this.initialPreparedMealSortMode,
     required this.enabled,
+    required this.onViewModeChanged,
     required this.onListModeChanged,
     required this.onInventoryItemSortModeChanged,
     required this.onHideFullyConsumedItemsChanged,
@@ -54,6 +54,9 @@ class InventoryUnifiedFilterSheet extends StatefulWidget {
 
   /// Initially selected sheet section.
   final InventoryUnifiedFilterSection initialSection;
+
+  /// Initial card layout mode.
+  final InventoryListViewMode initialViewMode;
 
   /// Initial list grouping mode.
   final InventoryListMode initialListMode;
@@ -75,6 +78,9 @@ class InventoryUnifiedFilterSheet extends StatefulWidget {
 
   /// Whether controls are enabled.
   final bool enabled;
+
+  /// Called when card layout mode changes.
+  final ValueChanged<InventoryListViewMode> onViewModeChanged;
 
   /// Called when list grouping mode changes.
   final ValueChanged<InventoryListMode> onListModeChanged;
@@ -110,12 +116,13 @@ class _InventoryUnifiedFilterSheetState
   late PreparedMealCompletionFilter _preparedMealCompletionFilter;
   late PreparedMealConsumptionFilter _preparedMealConsumptionFilter;
   late PreparedMealSortMode _preparedMealSortMode;
-  _InventoryUnifiedViewMode _viewMode = _InventoryUnifiedViewMode.list;
+  late InventoryListViewMode _viewMode;
 
   @override
   void initState() {
     super.initState();
     _section = widget.initialSection;
+    _viewMode = widget.initialViewMode;
     _listMode = widget.initialListMode;
     _inventoryItemSortMode = widget.initialInventoryItemSortMode;
     _hideFullyConsumedItems = widget.initialHideFullyConsumedItems;
@@ -140,11 +147,7 @@ class _InventoryUnifiedFilterSheetState
           viewMode: _viewMode,
           listMode: _listMode,
           enabled: widget.enabled,
-          onViewModeChanged: (value) {
-            setState(() {
-              _viewMode = value;
-            });
-          },
+          onViewModeChanged: _onViewModeChanged,
           onListModeChanged: _onListModeChanged,
         ),
         const InventoryFilterDivider(),
@@ -178,6 +181,13 @@ class _InventoryUnifiedFilterSheetState
           ),
       ],
     );
+  }
+
+  void _onViewModeChanged(InventoryListViewMode value) {
+    setState(() {
+      _viewMode = value;
+    });
+    widget.onViewModeChanged(value);
   }
 
   void _onListModeChanged(InventoryListMode value) {
@@ -236,10 +246,10 @@ class _InventoryViewModeSection extends StatelessWidget {
     required this.onListModeChanged,
   });
 
-  final _InventoryUnifiedViewMode viewMode;
+  final InventoryListViewMode viewMode;
   final InventoryListMode listMode;
   final bool enabled;
-  final ValueChanged<_InventoryUnifiedViewMode> onViewModeChanged;
+  final ValueChanged<InventoryListViewMode> onViewModeChanged;
   final ValueChanged<InventoryListMode> onListModeChanged;
 
   @override
@@ -252,19 +262,19 @@ class _InventoryViewModeSection extends StatelessWidget {
         InventoryFiltersSectionLabel(label: l10n.inventoryViewSectionTitle),
         const SizedBox(height: AppSpacing.md),
         InventorySegmentedButtonFrame(
-          child: SegmentedButton<_InventoryUnifiedViewMode>(
+          child: SegmentedButton<InventoryListViewMode>(
             expandedInsets: AppInsets.zero,
             showSelectedIcon: false,
             style: inventorySegmentedButtonStyle(context),
             selected: {viewMode},
             segments: [
               ButtonSegment(
-                value: _InventoryUnifiedViewMode.list,
+                value: InventoryListViewMode.list,
                 icon: const Icon(Icons.list_rounded, size: 16),
                 label: Text(l10n.inventoryViewListAction),
               ),
               ButtonSegment(
-                value: _InventoryUnifiedViewMode.tiles,
+                value: InventoryListViewMode.tiles,
                 icon: const Icon(Icons.grid_view_rounded, size: 16),
                 label: Text(l10n.inventoryViewTilesAction),
               ),

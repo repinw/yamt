@@ -32,16 +32,24 @@ class _InventoryItemRowHost extends StatelessWidget {
     required this.bucket,
     this.item,
     this.theme,
+    this.inventoryItemsController,
   });
 
   final bool showRow;
   final PageStorageBucket bucket;
   final InventoryItem? item;
   final ThemeData? theme;
+  final InventoryItemsController? inventoryItemsController;
 
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: [
+        if (inventoryItemsController != null)
+          inventoryItemsControllerProvider.overrideWith(
+            () => inventoryItemsController!,
+          ),
+      ],
       child: MaterialApp(
         theme: theme,
         locale: const Locale('en'),
@@ -85,6 +93,23 @@ class _InventoryItemRowHost extends StatelessWidget {
       unitPrice: 1,
       brand: 'Acme',
     );
+  }
+}
+
+class _RecordingInventoryItemsController extends InventoryItemsController {
+  _RecordingInventoryItemsController({
+    required void Function(InventoryItem) onBuyAgainItem,
+  }) : _onBuyAgainItem = onBuyAgainItem;
+
+  final void Function(InventoryItem) _onBuyAgainItem;
+
+  @override
+  List<InventoryItem> build() => const <InventoryItem>[];
+
+  @override
+  Future<bool> buyAgainItem(InventoryItem item) async {
+    _onBuyAgainItem(item);
+    return true;
   }
 }
 
@@ -209,6 +234,39 @@ void main() {
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.byTooltip('Remove'), findsOneWidget);
+  });
+
+  testWidgets('expanded quick shopping action buys item again', (tester) async {
+    final bucket = PageStorageBucket();
+    InventoryItem? buyAgainItemInput;
+    final controller = _RecordingInventoryItemsController(
+      onBuyAgainItem: (item) {
+        buyAgainItemInput = item;
+      },
+    );
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(
+        showRow: true,
+        bucket: bucket,
+        inventoryItemsController: controller,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+
+    final expandedQuickAction = find.ancestor(
+      of: find.byIcon(Icons.shopping_cart_outlined),
+      matching: find.byType(TextButton),
+    );
+    expect(expandedQuickAction, findsOneWidget);
+
+    await tester.tap(expandedQuickAction);
+    await tester.pumpAndSettle();
+
+    expect(buyAgainItemInput?.id, 'milk');
   });
 
   testWidgets('opens the item editor from the expanded edit action', (

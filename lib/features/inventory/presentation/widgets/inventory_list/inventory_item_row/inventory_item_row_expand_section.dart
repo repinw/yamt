@@ -122,7 +122,7 @@ class _InventoryItemActionPanel extends StatelessWidget {
         ],
         Row(
           children: [
-            if (!viewData.isShoppingListPrimaryAction) ...[
+            if (viewData.showQuickShoppingListAction) ...[
               Expanded(
                 child: _InventoryItemActionButton(
                   label: viewData.quickShoppingListActionLabel,

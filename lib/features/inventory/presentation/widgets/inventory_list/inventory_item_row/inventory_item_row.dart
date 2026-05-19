@@ -721,7 +721,7 @@ class _InventoryItemRowLayoutData {
             ? shoppingListActionColors.iconColor
             : eatActionColors.iconColor,
         disabledActionIconColor: colors.onSurfaceVariant,
-        showQuickShoppingListAction: false,
+        showQuickShoppingListAction: !isShoppingListPrimaryAction,
         isQuickShoppingListActionEnabled: isQuickShoppingListActionEnabled,
         quickShoppingListActionLabel: l10n.inventoryItemAddToListAction,
         quickShoppingListActionTooltip:

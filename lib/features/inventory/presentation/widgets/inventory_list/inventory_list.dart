@@ -179,6 +179,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   static const _viewPreferencesStore = InventoryListViewPreferencesStore();
   final _voiceSearchController = TextVoiceSearchController();
   final GlobalKey _recentItemsHeaderKey = GlobalKey();
+  InventoryListViewMode _viewMode = InventoryListViewMode.list;
   InventoryListMode _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
   InventoryItemSortMode _inventoryItemSortMode =
@@ -274,6 +275,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             expandedPreparedMealId: widget.expandedPreparedMealId,
             isExpanded: _isPreparedMealsSectionExpanded,
             subtitle: _preparedMealSortModeLabel(l10n),
+            viewMode: _viewMode,
             isSelectionMode: widget.isSelectionMode,
             onToggleExpanded: _togglePreparedMealsSection,
             actions: PreparedMealSectionActions(
@@ -343,6 +345,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             items: filteredItems,
             l10n: l10n,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
+            viewMode: _viewMode,
             sortMode: _inventoryItemSortMode,
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
@@ -358,6 +361,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
 
   void _restorePersistedViewPreferences() {
     final preferences = _viewPreferencesStore.readSync(_preferences);
+    _viewMode = preferences.viewMode;
     _consumptionFilter = preferences.consumptionFilter;
     _inventoryItemSortMode = preferences.inventoryItemSortMode;
     _preparedMealCompletionFilter = preferences.preparedMealCompletionFilter;
@@ -394,6 +398,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     return _viewPreferencesStore.save(
       _preferences,
       InventoryListViewPreferences(
+        viewMode: _viewMode,
         consumptionFilter: _consumptionFilter,
         inventoryItemSortMode: _inventoryItemSortMode,
         preparedMealCompletionFilter: _preparedMealCompletionFilter,
@@ -424,6 +429,16 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     setState(() {
       _mode = mode;
     });
+  }
+
+  void _onViewModeChanged(InventoryListViewMode viewMode) {
+    if (widget.isSelectionMode || _viewMode == viewMode) {
+      return;
+    }
+    setState(() {
+      _viewMode = viewMode;
+    });
+    _persistViewPreferencesSafely();
   }
 
   void _onHideFullyConsumedItemsChanged(bool hideFullyConsumedItems) {
@@ -530,6 +545,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.38),
       builder: (context) => InventoryUnifiedFilterSheet(
         initialSection: initialSection,
+        initialViewMode: _viewMode,
         initialListMode: _mode,
         initialInventoryItemSortMode: _inventoryItemSortMode,
         initialHideFullyConsumedItems:
@@ -538,6 +554,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         initialPreparedMealConsumptionFilter: _preparedMealConsumptionFilter,
         initialPreparedMealSortMode: _preparedMealSortMode,
         enabled: !widget.isSelectionMode,
+        onViewModeChanged: _onViewModeChanged,
         onListModeChanged: _onModeChanged,
         onInventoryItemSortModeChanged: _onInventoryItemSortModeChanged,
         onHideFullyConsumedItemsChanged: _onHideFullyConsumedItemsChanged,

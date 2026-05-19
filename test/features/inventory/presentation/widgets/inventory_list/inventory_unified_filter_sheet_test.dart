@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _buildTestApp({
+  required ValueChanged<InventoryListViewMode> onViewModeChanged,
   required ValueChanged<InventoryListMode> onListModeChanged,
   required ValueChanged<InventoryItemSortMode> onInventoryItemSortModeChanged,
   required ValueChanged<bool> onHideFullyConsumedItemsChanged,
@@ -28,6 +29,7 @@ Widget _buildTestApp({
     home: Scaffold(
       body: InventoryUnifiedFilterSheet(
         initialSection: initialSection,
+        initialViewMode: InventoryListViewMode.list,
         initialListMode: InventoryListMode.allItems,
         initialInventoryItemSortMode:
             InventoryItemSortMode.recentlyAddedDescending,
@@ -37,6 +39,7 @@ Widget _buildTestApp({
             PreparedMealConsumptionFilter.hideConsumed,
         initialPreparedMealSortMode: PreparedMealSortMode.addedDescending,
         enabled: true,
+        onViewModeChanged: onViewModeChanged,
         onListModeChanged: onListModeChanged,
         onInventoryItemSortModeChanged: onInventoryItemSortModeChanged,
         onHideFullyConsumedItemsChanged: onHideFullyConsumedItemsChanged,
@@ -61,11 +64,13 @@ void main() {
     tester,
   ) async {
     var listMode = InventoryListMode.allItems;
+    var viewMode = InventoryListViewMode.list;
     var hideFullyConsumedItems = true;
 
     await tester.pumpWidget(
       _buildTestApp(
         initialSection: InventoryUnifiedFilterSection.foods,
+        onViewModeChanged: (value) => viewMode = value,
         onListModeChanged: (value) => listMode = value,
         onInventoryItemSortModeChanged: (_) {},
         onHideFullyConsumedItemsChanged: (value) {
@@ -83,6 +88,9 @@ void main() {
       find.byKey(const Key('inventory_items_hide_consumed_toggle')),
       findsOneWidget,
     );
+
+    await _tapVisible(tester, find.text('Tiles'));
+    expect(viewMode, InventoryListViewMode.tiles);
 
     await _tapVisible(tester, find.text('By receipt'));
     expect(listMode, InventoryListMode.byReceipt);
@@ -106,6 +114,7 @@ void main() {
 
     await tester.pumpWidget(
       _buildTestApp(
+        onViewModeChanged: (_) {},
         onListModeChanged: (_) {},
         onInventoryItemSortModeChanged: (_) {},
         onHideFullyConsumedItemsChanged: (_) {},
@@ -155,6 +164,7 @@ void main() {
   testWidgets('tabs switch between meal and food controls', (tester) async {
     await tester.pumpWidget(
       _buildTestApp(
+        onViewModeChanged: (_) {},
         onListModeChanged: (_) {},
         onInventoryItemSortModeChanged: (_) {},
         onHideFullyConsumedItemsChanged: (_) {},

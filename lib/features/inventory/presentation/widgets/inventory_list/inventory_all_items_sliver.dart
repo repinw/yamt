@@ -15,6 +15,8 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_view_preferences.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_sorted_items_cache.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
@@ -40,6 +42,7 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
     /// Documented member.
     required this.activeShoppingListItemKeys,
+    required this.viewMode,
 
     /// Documented member.
     required this.sortMode,
@@ -71,6 +74,9 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
+
+  /// Card layout mode.
+  final InventoryListViewMode viewMode;
 
   /// The sort mode.
   final InventoryItemSortMode sortMode;
@@ -145,26 +151,72 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
         horizontalPadding,
         _inventoryListBottomPadding,
       ),
-      sliver: SliverList.builder(
-        itemCount: _sortedItems.length,
-        itemBuilder: (context, index) {
-          final item = _sortedItems[index];
-          return InventoryItemRowListEntry(
-            item: item,
-            keyPrefix: 'inventory_item_row',
-            bottomSpacing: AppSpacing.xl,
-            l10n: widget.l10n,
-            activeShoppingListItemKeys: widget.activeShoppingListItemKeys,
-            onDeleteItem: widget.onDeleteItem,
-            onEatItem: widget.onEatItem,
-            onThrowAwayItem: widget.onThrowAwayItem,
-            isSelectionMode: widget.isSelectionMode,
-            isSelected: widget.selectedItemIds.contains(item.id),
-            onItemLongPress: () => widget.onItemLongPress(item.id),
-            onSelectionToggle: () => widget.onSelectionToggle(item.id),
-          );
-        },
+      sliver: widget.viewMode == InventoryListViewMode.tiles
+          ? _buildTileSliver()
+          : _buildListSliver(),
+    );
+  }
+
+  SliverList _buildListSliver() {
+    return SliverList.builder(
+      key: const Key('inventory_items_list_view'),
+      itemCount: _sortedItems.length,
+      itemBuilder: (context, index) => _buildItemEntry(
+        _sortedItems[index],
+        bottomSpacing: AppSpacing.xl,
       ),
+    );
+  }
+
+  SliverList _buildTileSliver() {
+    return SliverList.builder(
+      key: const Key('inventory_items_tile_view'),
+      itemCount: (_sortedItems.length / 2).ceil(),
+      itemBuilder: (context, rowIndex) {
+        final leftIndex = rowIndex * 2;
+        final rightIndex = leftIndex + 1;
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _buildItemEntry(
+                _sortedItems[leftIndex],
+                bottomSpacing: AppSpacing.lg,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: rightIndex < _sortedItems.length
+                  ? _buildItemEntry(
+                      _sortedItems[rightIndex],
+                      bottomSpacing: AppSpacing.lg,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  InventoryItemRowListEntry _buildItemEntry(
+    InventoryItem item, {
+    required double bottomSpacing,
+  }) {
+    return InventoryItemRowListEntry(
+      item: item,
+      keyPrefix: 'inventory_item_row',
+      bottomSpacing: bottomSpacing,
+      l10n: widget.l10n,
+      activeShoppingListItemKeys: widget.activeShoppingListItemKeys,
+      onDeleteItem: widget.onDeleteItem,
+      onEatItem: widget.onEatItem,
+      onThrowAwayItem: widget.onThrowAwayItem,
+      isSelectionMode: widget.isSelectionMode,
+      isSelected: widget.selectedItemIds.contains(item.id),
+      onItemLongPress: () => widget.onItemLongPress(item.id),
+      onSelectionToggle: () => widget.onSelectionToggle(item.id),
     );
   }
 }
