@@ -4,7 +4,6 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -13,11 +12,17 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensils_button.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
-    'meal_template_card.dart';
-import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_template_recipe_import_button.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_template_recipe_template_sheet.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_empty_state.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_error_state.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_grid.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_loading_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines meal templates page.
@@ -37,6 +42,7 @@ class MealTemplatesPage extends ConsumerWidget {
       preparedMealTemplatesControllerProvider.notifier,
     );
     final templatesAsync = ref.watch(preparedMealTemplatesControllerProvider);
+
     final topChromeSlivers = includeAppBar
         ? const <Widget>[]
         : [
@@ -49,7 +55,48 @@ class MealTemplatesPage extends ConsumerWidget {
             ),
           ];
 
+    final bodySliver = templatesAsync.when(
+      data: (templates) {
+        if (templates.isEmpty) {
+          return const SliverFillRemaining(
+            hasScrollBody: false,
+            child: MealTemplatesEmptyState(),
+          );
+        }
+
+        return MealTemplatesGrid(
+          templates: templates,
+          includeAppBar: includeAppBar,
+          onOpen: (template) => _openTemplateDetail(
+            context: context,
+            templateId: template.id,
+          ),
+          onEdit: (template) => _editTemplate(
+            context: context,
+            ref: ref,
+            template: template,
+          ),
+          onDelete: (templateId) => _deleteTemplate(
+            context: context,
+            ref: ref,
+            templateId: templateId,
+          ),
+        );
+      },
+      loading: () => const SliverFillRemaining(
+        hasScrollBody: false,
+        child: MealTemplatesLoadingState(),
+      ),
+      error: (error, stackTrace) => SliverFillRemaining(
+        hasScrollBody: false,
+        child: MealTemplatesErrorState(
+          onRetry: templatesController.refresh,
+        ),
+      ),
+    );
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: includeAppBar
           ? AppBar(
               title: Text(l10n.preparedMealTemplatesPageTitle),
@@ -59,126 +106,11 @@ class MealTemplatesPage extends ConsumerWidget {
               ],
             )
           : null,
-      body: templatesAsync.when(
-        data: (templates) {
-          if (templates.isEmpty) {
-            return CustomScrollView(
-              slivers: [
-                ...topChromeSlivers,
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Padding(
-                      padding: AppInsets.pageLarge,
-                      child: Text(
-                        l10n.preparedMealTemplatesEmptyState,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }
-
-          return CustomScrollView(
-            slivers: [
-              ...topChromeSlivers,
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.xl,
-                  AppSpacing.lg,
-                  AppSpacing.xl,
-                  includeAppBar
-                      ? AppSpacing.xxl
-                      : AppSizes.homeShellBottomBarClearance,
-                ),
-                sliver: SliverList.separated(
-                  itemCount: templates.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(height: AppSpacing.lg),
-                  itemBuilder: (context, index) {
-                    final template = templates[index];
-                    return PreparedMealTemplateCard(
-                      template: template,
-                      onOpenPressed: () => _openTemplateDetail(
-                        context: context,
-                        templateId: template.id,
-                      ),
-                      onEditPressed: (template) => _editTemplate(
-                        context: context,
-                        ref: ref,
-                        template: template,
-                      ),
-                      onDeletePressed: (templateId) => _deleteTemplate(
-                        context: context,
-                        ref: ref,
-                        templateId: templateId,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-        loading: () => CustomScrollView(
-          slivers: [
-            ...topChromeSlivers,
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: SizedBox.square(
-                  dimension: AppSizes.inlineProgressIndicator,
-                  child: CircularProgressIndicator(
-                    strokeWidth: AppSizes.progressStrokeWidth,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        error: (error, stackTrace) {
-          return CustomScrollView(
-            slivers: [
-              ...topChromeSlivers,
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Padding(
-                    padding: AppInsets.pageLarge,
-                    child: Card(
-                      margin: EdgeInsets.zero,
-                      child: Padding(
-                        padding: AppInsets.card,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Icon(
-                              Icons.wifi_tethering_error_rounded,
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            Text(
-                              l10n.preparedMealTemplatesLoadFailed,
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            FilledButton.icon(
-                              onPressed: templatesController.refresh,
-                              icon: const Icon(Icons.refresh),
-                              label: Text(l10n.inventoryRetryAction),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+      body: CustomScrollView(
+        slivers: [
+          ...topChromeSlivers,
+          bodySliver,
+        ],
       ),
     );
   }
@@ -290,7 +222,8 @@ class MealTemplatesPage extends ConsumerWidget {
       PreparedMealTemplateSaveFailureReason.recipeLoadFailed =>
         l10n.preparedMealTemplateRecipeImportFailedMessage,
       PreparedMealTemplateSaveFailureReason.saveFailed ||
-      null => l10n.preparedMealTemplateCreateFailedMessage,
+      null =>
+        l10n.preparedMealTemplateCreateFailedMessage,
     };
   }
 

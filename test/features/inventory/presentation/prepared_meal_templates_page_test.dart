@@ -17,10 +17,10 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_import_review_page.dart';
-import 'package:yamt/features/meal_templates/presentation/'
-    'meal_templates_page.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../support/fake_local_image_store.dart';

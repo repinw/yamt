@@ -21,7 +21,8 @@ import 'package:yamt/features/kitchen_utensils/presentation/'
     'kitchen_utensils_page.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_sheet.dart';
-import 'package:yamt/features/meal_templates/presentation/meal_templates_page.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/root_navigator_test_utils.dart';
