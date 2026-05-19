@@ -6,6 +6,8 @@ import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
@@ -65,8 +67,6 @@ typedef PreparedMealSaveTemplateCallback =
     Future<bool> Function(
       PreparedMeal meal,
     );
-
-const double _preparedMealTileMainAxisExtent = 172;
 
 /// Actions used by [InventoryPreparedMealsSection].
 class PreparedMealSectionActions {
@@ -269,7 +269,7 @@ class _PreparedMealTiles extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: AppSpacing.sm,
         mainAxisSpacing: AppSpacing.lg,
-        mainAxisExtent: _preparedMealTileMainAxisExtent,
+        mainAxisExtent: AppInventoryClosedTile.preparedMealGridMainAxisExtent,
       ),
       itemBuilder: (context, index) => _PreparedMealEntry(
         meal: meals[index],

@@ -98,7 +98,7 @@ class _InventorySearchSettingsButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return SizedBox.square(
-      dimension: 52,
+      dimension: AppSizes.compactSearchControlHeight,
       child: IconButton(
         key: const Key('inventory_list_search_settings_button'),
         onPressed: enabled ? onPressed : null,

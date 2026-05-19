@@ -9,6 +9,8 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -26,7 +28,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const double _inventoryListBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
-const double _inventoryTileMainAxisExtent = 136;
 
 /// Defines inventory all items sliver.
 @Dependencies([
@@ -176,7 +177,7 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
         crossAxisCount: 2,
         crossAxisSpacing: AppSpacing.sm,
         mainAxisSpacing: AppSpacing.lg,
-        mainAxisExtent: _inventoryTileMainAxisExtent,
+        mainAxisExtent: AppInventoryClosedTile.inventoryGridMainAxisExtent,
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) => _buildItemEntry(

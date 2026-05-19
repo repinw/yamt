@@ -7,7 +7,8 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _textVoiceSearchMaxLines = 3;
-const _textVoiceSearchCompactHeight = 52.0;
+const double _textVoiceSearchCompactHeight =
+    AppSizes.compactSearchControlHeight;
 final _textVoiceSearchInputFormatters = <TextInputFormatter>[
   FilteringTextInputFormatter.deny(
     RegExp(r'[\r\n]+'),

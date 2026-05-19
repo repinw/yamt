@@ -153,6 +153,9 @@ abstract final class AppSizes {
   /// Diameter for circular home top bar icon buttons.
   static const double homeTopBarIconButton = 36;
 
+  /// Height for compact search fields and adjacent square controls.
+  static const double compactSearchControlHeight = 52;
+
   /// Dark theme blur for compact metric card shadows.
   static const double compactMetricCardShadowBlurDark = 22;
 

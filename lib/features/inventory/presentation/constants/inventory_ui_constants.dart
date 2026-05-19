@@ -104,6 +104,12 @@ abstract final class AppInventoryClosedTile {
 
   /// The progress height.
   static const double progressHeight = 3;
+
+  /// Main-axis extent for inventory item grid tiles.
+  static const double inventoryGridMainAxisExtent = 136;
+
+  /// Main-axis extent for prepared meal grid tiles.
+  static const double preparedMealGridMainAxisExtent = 172;
 }
 
 /// Defines app inventory eat action colors.
