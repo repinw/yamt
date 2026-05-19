@@ -211,7 +211,6 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
               showCalorieGoalCalculatorSheet(
                 context,
                 initialSettings: settings,
-                useRootNavigator: true,
               ),
             ),
     );

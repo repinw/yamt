@@ -254,6 +254,7 @@ class _InventoryReceiptReviewSheetState
           context: context,
           isScrollControlled: true,
           useSafeArea: true,
+          useRootNavigator: true,
           backgroundColor: Colors.transparent,
           builder: (sheetContext) {
             return InventoryReceiptCandidatePickerSheet(draft: draft);
@@ -457,6 +458,7 @@ class _InventoryReceiptReviewSheetState
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      useRootNavigator: true,
       builder: (sheetContext) {
         return InventoryReceiptItemEditorSheet(item: item);
       },

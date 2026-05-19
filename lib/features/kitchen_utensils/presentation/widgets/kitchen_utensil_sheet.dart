@@ -47,6 +47,7 @@ Future<KitchenUtensilSheetResult?> showKitchenUtensilSheet({
   return showModalBottomSheet<KitchenUtensilSheetResult>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
       return KitchenUtensilSheet(initialUtensil: initialUtensil);

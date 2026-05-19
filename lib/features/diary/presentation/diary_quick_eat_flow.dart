@@ -211,7 +211,6 @@ class DiaryQuickEatFlow {
     final result = await InventoryQuickEatFlow.showPreparedMealSheet(
       context: context,
       meal: meal,
-      useRootNavigator: true,
       initialLoggedAt: loggedAt,
       initialMealType: mealType,
     );

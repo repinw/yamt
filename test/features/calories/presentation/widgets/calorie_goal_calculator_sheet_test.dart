@@ -11,11 +11,14 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_reset_sheet.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../helpers/root_navigator_test_utils.dart';
 import '../../support/fake_calories_repositories.dart';
 
 Widget _buildHarness({
@@ -120,6 +123,109 @@ CalorieGoalSettings _learnedTdeeSettings() {
 }
 
 void main() {
+  testWidgets('calculator sheet opens on root navigator by default', (
+    tester,
+  ) async {
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: nestedNavigatorHarness(
+          rootObserver: rootObserver,
+          nestedObserver: nestedObserver,
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          child: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return FilledButton(
+                  onPressed: () {
+                    unawaited(
+                      showCalorieGoalCalculatorSheet(
+                        context,
+                        initialSettings: const CalorieGoalSettings.empty(),
+                      ),
+                    );
+                  },
+                  child: const Text('Open'),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await _openSheet(tester);
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.stepCounter),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('reset sheet opens on root navigator by default', (
+    tester,
+  ) async {
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: nestedNavigatorHarness(
+          rootObserver: rootObserver,
+          nestedObserver: nestedObserver,
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          child: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return FilledButton(
+                  onPressed: () {
+                    unawaited(
+                      showCalorieGoalCalculatorResetSheet(
+                        context,
+                        initialSettings: const CalorieGoalSettings.empty(),
+                      ),
+                    );
+                  },
+                  child: const Text('Open'),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await _openSheet(tester);
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.stepCounter),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('routes learned TDEE settings to learned TDEE sheet', (
     tester,
   ) async {

@@ -33,6 +33,7 @@ Future<void> selectInventoryAssignments({
   final selection = await showModalBottomSheet<List<String>>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     builder: (sheetContext) {
       return _IngredientAssignmentBottomSheet(
         row: row,
@@ -233,6 +234,7 @@ Future<RecipeIngredientAmountConversion?> _selectAssignmentConversion({
   return showModalBottomSheet<RecipeIngredientAmountConversion>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     builder: (sheetContext) {
       return _IngredientAssignmentConversionSheet(
         row: row,

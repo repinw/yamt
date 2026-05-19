@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_action_dialogs.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../helpers/root_navigator_test_utils.dart';
 import '../../../../../support/prepared_meal_test_data.dart';
 
 PreparedMeal _meal() => preparedMealTestData();
@@ -78,6 +79,67 @@ class _ActionDialogsHarnessState extends State<_ActionDialogsHarness> {
 }
 
 void main() {
+  testWidgets('eat dialog opens on root navigator by default', (
+    tester,
+  ) async {
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      nestedNavigatorHarness(
+        rootObserver: rootObserver,
+        nestedObserver: nestedObserver,
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        child: _ActionDialogsHarness(meal: _meal()),
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(find.text('Open eat'));
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(
+      find.byKey(const Key('prepared_meal_portions_field')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('portion dialog opens on root navigator by default', (
+    tester,
+  ) async {
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      nestedNavigatorHarness(
+        rootObserver: rootObserver,
+        nestedObserver: nestedObserver,
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        child: _ActionDialogsHarness(meal: _meal()),
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(find.text('Open portions'));
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(find.text('Throw away portions'), findsOneWidget);
+  });
+
   testWidgets('eat sheet shows validation for invalid portions', (
     tester,
   ) async {

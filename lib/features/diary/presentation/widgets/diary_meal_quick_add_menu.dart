@@ -28,6 +28,7 @@ class DiaryMealQuickAddMenu extends StatelessWidget {
     return PopupMenuButton<DiaryQuickEatSource>(
       key: Key('diary_quick_add_button_${mealType.jsonValue}'),
       tooltip: l10n.diaryQuickEatAddTooltip(mealType.localizedName(l10n)),
+      useRootNavigator: true,
       icon: Icon(Icons.add_rounded, color: colors.primary),
       position: PopupMenuPosition.under,
       onSelected: onSelected,

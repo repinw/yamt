@@ -19,9 +19,12 @@ import 'package:yamt/features/kitchen_utensils/data/'
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/'
     'kitchen_utensils_page.dart';
+import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
+    'kitchen_utensil_sheet.dart';
 import 'package:yamt/features/meal_templates/presentation/meal_templates_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/root_navigator_test_utils.dart';
 import '../../../support/fake_prepared_meal_image_picker.dart';
 
 class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {
@@ -212,6 +215,53 @@ Widget _buildCookbookHarness({
 
 @Dependencies([preparedMealImagePicker])
 void main() {
+  testWidgets('utensil sheet opens on root navigator by default', (
+    tester,
+  ) async {
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          preparedMealImagePickerProvider.overrideWithValue(
+            FakePreparedMealImagePicker(),
+          ),
+        ],
+        child: nestedNavigatorHarness(
+          rootObserver: rootObserver,
+          nestedObserver: nestedObserver,
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          child: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return TextButton(
+                  onPressed: () {
+                    unawaited(showKitchenUtensilSheet(context: context));
+                  },
+                  child: const Text('Open'),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(find.widgetWithText(TextField, 'Name'), findsOneWidget);
+  });
+
   testWidgets('adds edits and deletes a kitchen utensil', (tester) async {
     final repository = _FakeKitchenUtensilRepository();
     addTearDown(repository.dispose);

@@ -85,6 +85,7 @@ Future<PreparedMealEditSheetResult?> showPreparedMealEditSheet({
   return showModalBottomSheet<PreparedMealEditSheetResult>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     backgroundColor: Colors.transparent,
     builder: (context) => PreparedMealEditSheet(
       meal: meal,

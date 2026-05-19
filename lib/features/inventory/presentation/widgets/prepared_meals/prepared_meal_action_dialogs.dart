@@ -55,7 +55,7 @@ class PreparedMealEatDialogResult {
 Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   BuildContext context,
   PreparedMeal meal, {
-  bool useRootNavigator = false,
+  bool useRootNavigator = true,
   PreparedMealDayPicker? pickLoggedDay,
   Uint8List? imageBytes,
   DateTime? initialLoggedAt,
@@ -83,7 +83,7 @@ Future<num?> showPreparedMealPortionDialog({
   required BuildContext context,
   required PreparedMeal meal,
   required String title,
-  bool useRootNavigator = false,
+  bool useRootNavigator = true,
 }) {
   return showDialog<num>(
     context: context,

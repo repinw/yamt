@@ -30,7 +30,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 Future<void> showCalorieLearnedTdeeGoalSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
-  bool useRootNavigator = false,
+  bool useRootNavigator = true,
 }) {
   return showModalBottomSheet<void>(
     context: context,

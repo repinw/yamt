@@ -136,6 +136,7 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
   return showModalBottomSheet<List<String>>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     builder: (sheetContext) {
       final draftSelection = <String>{};
       final maxHeight = MediaQuery.sizeOf(sheetContext).height * 0.8;

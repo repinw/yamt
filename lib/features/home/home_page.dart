@@ -199,6 +199,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       showModalBottomSheet<void>(
         context: context,
         showDragHandle: true,
+        useRootNavigator: true,
         builder: (sheetContext) {
           return SafeArea(
             child: Padding(

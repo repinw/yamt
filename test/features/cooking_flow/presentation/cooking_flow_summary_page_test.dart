@@ -10,6 +10,8 @@ import 'package:yamt/features/cooking_flow/presentation/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/root_navigator_test_utils.dart';
+
 Widget _buildHarness({
   required List<String> adjustments,
   List<CookingFlowSummaryIngredientDraft>? ingredients,
@@ -87,6 +89,62 @@ InventoryItem _inventoryItem({
 }
 
 void main() {
+  testWidgets('add ingredient menu opens on root navigator by default', (
+    tester,
+  ) async {
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      nestedNavigatorHarness(
+        rootObserver: rootObserver,
+        nestedObserver: nestedObserver,
+        locale: const Locale('de'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        child: Scaffold(
+          body: CookingFlowSummaryPage(
+            ingredients: const <CookingFlowSummaryIngredientDraft>[
+              CookingFlowSummaryIngredientDraft(
+                key: 'template:300g Linsen',
+                name: 'Linsen',
+                amount: '300',
+                unitCode: 'g',
+                inventoryItemIds: <String>[],
+                kind: CookingFlowSummaryIngredientKind.template,
+              ),
+            ],
+            inventoryItems: const <InventoryItem>[],
+            adjustments: const <String>[],
+            onAmountChanged: (_, _) {},
+            onRemoveIngredient: (_) {},
+            onAddIngredientSourceSelected: (_) {},
+            onAdjustmentSourceSelected: (_, _) {},
+            storageContainers: _storageContainers(),
+            ingredientContainerAssignments: const <String, String>{},
+            onIngredientContainerChanged: (_, _) {},
+          ),
+        ),
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(
+      find.byKey(const Key('cookflow_summary_add_ingredient_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(
+      find.byKey(const Key('cookflow_summary_add_source_inventory')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('does not render placeholder adjustment when list is empty', (
     tester,
   ) async {

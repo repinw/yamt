@@ -7,7 +7,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 Future<void> showCalorieGoalCalculatorResetSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
-  bool useRootNavigator = false,
+  bool useRootNavigator = true,
 }) {
   return showModalBottomSheet<void>(
     context: context,

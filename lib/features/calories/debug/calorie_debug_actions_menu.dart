@@ -62,6 +62,7 @@ class CalorieDebugActionsMenu extends ConsumerWidget {
     return PopupMenuButton<_CalorieDebugAction>(
       key: CalorieDebugKeys.actionsMenuButton,
       tooltip: 'Calorie debug actions',
+      useRootNavigator: true,
       icon: const Icon(Icons.bug_report_rounded),
       onSelected: (action) {
         unawaited(action.run(context, ref));

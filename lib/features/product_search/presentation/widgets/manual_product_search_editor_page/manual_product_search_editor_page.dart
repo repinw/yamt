@@ -513,6 +513,7 @@ class _InventoryReceiptManualProductEditorPageState
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      useRootNavigator: true,
       builder: (sheetContext) {
         return FractionallySizedBox(
           heightFactor: 1,
