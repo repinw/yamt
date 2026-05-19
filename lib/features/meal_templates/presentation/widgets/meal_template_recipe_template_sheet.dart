@@ -28,10 +28,12 @@ Future<PreparedMealRecipeTemplateDraft?> showPreparedMealRecipeTemplateSheet(
   PreparedMealRecipeTemplateDraft? initialDraft,
   String? title,
   String? submitLabel,
+  bool useRootNavigator = true,
 }) {
   return showModalBottomSheet<PreparedMealRecipeTemplateDraft>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: useRootNavigator,
     builder: (context) => _PreparedMealRecipeTemplateSheet(
       initialDraft: initialDraft,
       title: title,

@@ -25,6 +25,7 @@ showCookingFlowInventoryAssignmentSheet({
   return showModalBottomSheet<List<CookingFlowInventoryAssignmentSelection>>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     builder: (sheetContext) {
       return CookingFlowInventoryAssignmentBottomSheet(
         ingredient: ingredient,
@@ -43,6 +44,7 @@ Future<CookingFlowInventoryCheckRowData?> showCookingFlowIngredientEditSheet({
   return showModalBottomSheet<CookingFlowInventoryCheckRowData>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     builder: (sheetContext) {
       return _IngredientEditBottomSheet(row: row);
     },
@@ -404,6 +406,7 @@ class CookingFlowInventoryAssignmentBottomSheetState
         await showModalBottomSheet<CookingFlowInventoryAssignmentSelection>(
           context: context,
           isScrollControlled: true,
+          useRootNavigator: true,
           builder: (sheetContext) {
             return _ManualIngredientAdditionSheet(
               inventoryItems: widget.inventoryItems,

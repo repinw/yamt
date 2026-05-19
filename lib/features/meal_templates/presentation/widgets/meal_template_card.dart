@@ -137,6 +137,7 @@ class _PreparedMealTemplateMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<_PreparedMealTemplateCardAction>(
       tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+      useRootNavigator: true,
       onSelected: (action) {
         switch (action) {
           case _PreparedMealTemplateCardAction.edit:

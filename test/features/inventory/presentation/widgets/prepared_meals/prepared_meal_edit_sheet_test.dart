@@ -15,6 +15,7 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../helpers/root_navigator_test_utils.dart';
 import '../../../../../support/fake_local_image_store.dart';
 import '../../../../../support/fake_prepared_meal_image_picker.dart';
 import '../../../../../support/prepared_meal_test_data.dart';
@@ -95,6 +96,43 @@ Future<void> _pumpEditSheetHarness(
 }
 
 void main() {
+  testWidgets('edit sheet opens on root navigator by default', (tester) async {
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          preparedMealImagePickerProvider.overrideWithValue(
+            FakePreparedMealImagePicker(),
+          ),
+        ],
+        child: nestedNavigatorHarness(
+          rootObserver: rootObserver,
+          nestedObserver: nestedObserver,
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          child: _EditSheetHarness(
+            meal: _meal(),
+            inventoryItems: _inventoryItems(_meal()),
+          ),
+        ),
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(find.widgetWithText(TextFormField, 'Meal name'), findsOneWidget);
+  });
+
   testWidgets('returns updated name on happy path submit', (tester) async {
     await _pumpEditSheetHarness(tester, meal: _meal());
 

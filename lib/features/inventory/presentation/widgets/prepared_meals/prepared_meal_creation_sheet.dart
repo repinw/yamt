@@ -48,6 +48,7 @@ Future<PreparedMealCreationSheetResult?> showPreparedMealCreationSheet({
   return showModalBottomSheet<PreparedMealCreationSheetResult>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     backgroundColor: Colors.transparent,
     builder: (context) => PreparedMealCreationSheet(items: items),
   );

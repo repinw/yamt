@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -7,6 +9,8 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_intro_page_assignment.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../helpers/root_navigator_test_utils.dart';
 
 void main() {
   test('formats amount labels from tracked amount or quantity', () {
@@ -182,6 +186,113 @@ void main() {
     expect(unitPattern.hasMatch('stück'), isTrue);
     expect(unitPattern.hasMatch('stueck'), isTrue);
     expect(cookingFlowPieceUnitCode, 'pc');
+  });
+
+  testWidgets('assignment sheets open on root navigator by default', (
+    tester,
+  ) async {
+    final l10n = await _loadGermanLocalizations();
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      _nestedHarness(
+        Builder(
+          builder: (context) {
+            return ElevatedButton(
+              onPressed: () {
+                unawaited(
+                  showCookingFlowInventoryAssignmentSheet(
+                    context: context,
+                    ingredient: 'Sauce',
+                    inventoryItems: <InventoryItem>[
+                      _item(id: 'tomato', name: 'Tomaten'),
+                      _item(id: 'zucchini', name: 'Zucchini'),
+                    ],
+                    localeCode: 'de',
+                    initialSelections:
+                        const <CookingFlowInventoryAssignmentSelection>[],
+                  ),
+                );
+              },
+              child: const Text('open'),
+            );
+          },
+        ),
+        rootObserver: rootObserver,
+        nestedObserver: nestedObserver,
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(find.text(l10n.cookflowInventorySelectionTitle), findsOneWidget);
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(find.text(l10n.cookflowInventorySelectionAddIngredient));
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(
+      find.text(l10n.cookflowInventorySelectionAddConfirm),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('ingredient edit sheet opens on root navigator by default', (
+    tester,
+  ) async {
+    final l10n = await _loadGermanLocalizations();
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      _nestedHarness(
+        Builder(
+          builder: (context) {
+            return ElevatedButton(
+              onPressed: () {
+                unawaited(
+                  showCookingFlowIngredientEditSheet(
+                    context: context,
+                    row: const CookingFlowInventoryCheckRowData(
+                      rawIngredient: '2x 300 g Mehl',
+                      name: 'Mehl',
+                      amountLabel: '2x 300 g',
+                    ),
+                  ),
+                );
+              },
+              child: const Text('open'),
+            );
+          },
+        ),
+        rootObserver: rootObserver,
+        nestedObserver: nestedObserver,
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(find.text(l10n.cookflowEditIngredientTitle), findsOneWidget);
   });
 
   testWidgets('assignment sheet returns selected inventory item', (
@@ -389,6 +500,21 @@ Widget _harness(Widget child) {
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: Center(child: child)),
+  );
+}
+
+Widget _nestedHarness(
+  Widget child, {
+  required RecordingNavigatorObserver rootObserver,
+  required RecordingNavigatorObserver nestedObserver,
+}) {
+  return nestedNavigatorHarness(
+    rootObserver: rootObserver,
+    nestedObserver: nestedObserver,
+    locale: const Locale('de'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    child: Scaffold(body: Center(child: child)),
   );
 }
 

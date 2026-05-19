@@ -20,6 +20,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../helpers/root_navigator_test_utils.dart';
 import '../../support/fake_calories_repositories.dart';
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
@@ -141,6 +142,51 @@ void main() {
 
     expect(speedFieldFinder, findsOneWidget);
     expect(tester.widget<TextField>(speedFieldFinder).controller?.text, '0,7');
+  });
+
+  testWidgets('learned TDEE sheet opens on root navigator by default', (
+    tester,
+  ) async {
+    final rootObserver = RecordingNavigatorObserver();
+    final nestedObserver = RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      nestedNavigatorHarness(
+        rootObserver: rootObserver,
+        nestedObserver: nestedObserver,
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        child: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return FilledButton(
+                onPressed: () {
+                  unawaited(
+                    showCalorieLearnedTdeeGoalSheet(
+                      context,
+                      initialSettings: _learnedTdeeSettings(),
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    rootObserver.clear();
+    nestedObserver.clear();
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expectRootPopupRoutePushed(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+    );
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsOneWidget);
   });
 
   testWidgets('full reset opens the complete calculator flow', (tester) async {

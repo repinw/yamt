@@ -15,7 +15,7 @@ Future<void> showCalorieGoalCalculatorSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
   bool preferLearnedTdee = true,
-  bool useRootNavigator = false,
+  bool useRootNavigator = true,
 }) {
   final route = _resolveCalorieGoalCalculatorSheetRoute(
     initialSettings: initialSettings,

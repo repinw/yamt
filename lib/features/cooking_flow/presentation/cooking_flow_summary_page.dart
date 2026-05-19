@@ -211,6 +211,7 @@ class _SummaryIngredientAddMenu extends StatelessWidget {
 
     return PopupMenuButton<CookingFlowSummaryIngredientAddSource>(
       tooltip: l10n.cookflowInventorySelectionAddIngredient,
+      useRootNavigator: true,
       position: PopupMenuPosition.under,
       onSelected: onSelected,
       child: style == _SummaryIngredientAddMenuStyle.row

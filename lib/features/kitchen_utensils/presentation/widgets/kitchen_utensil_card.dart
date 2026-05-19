@@ -82,6 +82,7 @@ class KitchenUtensilCard extends ConsumerWidget {
             ),
             PopupMenuButton<_KitchenUtensilCardAction>(
               tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+              useRootNavigator: true,
               onSelected: (action) {
                 switch (action) {
                   case _KitchenUtensilCardAction.edit:

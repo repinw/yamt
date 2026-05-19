@@ -36,7 +36,7 @@ abstract final class InventoryQuickEatFlow {
   static Future<InventoryPreparedMealEatRequest?> showPreparedMealSheet({
     required BuildContext context,
     required PreparedMeal meal,
-    bool useRootNavigator = false,
+    bool useRootNavigator = true,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
   }) async {
