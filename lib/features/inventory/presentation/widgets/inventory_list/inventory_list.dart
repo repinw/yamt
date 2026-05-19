@@ -38,8 +38,6 @@ import 'package:yamt/features/inventory/presentation/widgets/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_filter_sheet.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
@@ -52,7 +50,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_groups_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'prepared_meal_filter_sheet.dart';
+    'inventory_unified_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
 import 'package:yamt/features/shoppinglist/application/'
@@ -188,7 +186,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   PreparedMealCompletionFilter _preparedMealCompletionFilter =
       PreparedMealCompletionFilter.all;
   PreparedMealConsumptionFilter _preparedMealConsumptionFilter =
-      PreparedMealConsumptionFilter.all;
+      PreparedMealConsumptionFilter.hideConsumed;
   PreparedMealSortMode _preparedMealSortMode =
       PreparedMealSortMode.addedDescending;
   var _isRecentItemsSectionExpanded = true;
@@ -253,23 +251,19 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         widget.items.isNotEmpty || widget.preparedMeals.isNotEmpty;
     final hasFilteredItems = filteredItems.isNotEmpty;
     final horizontalPadding = responsivePageHorizontalPadding(context);
-    final modeToggle = InventoryListModeToggle(
-      mode: _mode,
-      l10n: l10n,
-      onModeChanged: _onModeChanged,
-      enabled: !widget.isSelectionMode,
-    );
-
     return CustomScrollView(
       slivers: [
         if (widget.includeHomeShellChrome)
           InventoryHomeShellTopChrome(actions: widget.topChromeActions),
         InventoryListTopControlsSliver(
-          modeToggle: InventoryModeToolbar(modeToggle: modeToggle),
           showSearch: hasAnySourceItems,
           searchController: _searchController,
           enabled: !widget.isSelectionMode,
           onSearchChanged: _onSearchQueryChanged,
+          onShowFilters: () => _showUnifiedFiltersSheet(
+            context,
+            initialSection: InventoryUnifiedFilterSection.preparedMeals,
+          ),
           voiceSearchService: _voiceSearchService,
           voiceSearchController: _voiceSearchController,
           l10n: l10n,
@@ -281,8 +275,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             isExpanded: _isPreparedMealsSectionExpanded,
             subtitle: _preparedMealSortModeLabel(l10n),
             isSelectionMode: widget.isSelectionMode,
-            onShowFilters: () =>
-                _showPreparedMealFiltersSheet(context, l10n: l10n),
             onToggleExpanded: _togglePreparedMealsSection,
             actions: PreparedMealSectionActions(
               onEatPreparedMeal: widget.onEatPreparedMeal,
@@ -312,27 +304,15 @@ class _InventoryListState extends ConsumerState<InventoryList> {
                 key: _recentItemsHeaderKey,
                 title: l10n.inventoryRecentSectionTitle,
                 subtitle: _inventoryItemSortModeLabel(l10n),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    InventoryFilterButton(
-                      key: const Key('inventory_items_filter_button'),
-                      enabled: !widget.isSelectionMode,
-                      onPressed: () =>
-                          _showInventoryFiltersSheet(context, l10n: l10n),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    InventorySectionExpandButton(
-                      key: const Key('inventory_items_section_expand_button'),
-                      isExpanded: _isRecentItemsSectionExpanded,
-                      semanticLabel: l10n.inventoryRecentSectionTitle,
-                      enabled: !widget.isSelectionMode,
-                      rotationKey: const Key(
-                        'inventory_items_section_expand_indicator',
-                      ),
-                      onPressed: _toggleRecentItemsSection,
-                    ),
-                  ],
+                trailing: InventorySectionExpandButton(
+                  key: const Key('inventory_items_section_expand_button'),
+                  isExpanded: _isRecentItemsSectionExpanded,
+                  semanticLabel: l10n.inventoryRecentSectionTitle,
+                  enabled: !widget.isSelectionMode,
+                  rotationKey: const Key(
+                    'inventory_items_section_expand_indicator',
+                  ),
+                  onPressed: _toggleRecentItemsSection,
                 ),
               ),
             ),
@@ -538,53 +518,9 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     _persistViewPreferencesSafely();
   }
 
-  Future<void> _showInventoryFiltersSheet(
+  Future<void> _showUnifiedFiltersSheet(
     BuildContext context, {
-    required AppLocalizations l10n,
-  }) {
-    return _showFiltersSheet(
-      context,
-      title: l10n.inventoryFiltersTitle,
-      subtitle: l10n.inventoryFiltersSubtitle,
-      actionLabel: l10n.inventoryFiltersShowResultsAction,
-      child: InventoryItemFilterSheet(
-        initialSortMode: _inventoryItemSortMode,
-        initialHideFullyConsumedItems:
-            _consumptionFilter.hideFullyConsumedItems,
-        enabled: !widget.isSelectionMode,
-        onSortModeChanged: _onInventoryItemSortModeChanged,
-        onHideFullyConsumedItemsChanged: _onHideFullyConsumedItemsChanged,
-      ),
-    );
-  }
-
-  Future<void> _showPreparedMealFiltersSheet(
-    BuildContext context, {
-    required AppLocalizations l10n,
-  }) {
-    return _showFiltersSheet(
-      context,
-      title: l10n.preparedMealFiltersTitle,
-      subtitle: l10n.preparedMealFiltersSubtitle,
-      actionLabel: l10n.inventoryFiltersShowResultsAction,
-      child: PreparedMealFilterSheet(
-        initialCompletionFilter: _preparedMealCompletionFilter,
-        initialConsumptionFilter: _preparedMealConsumptionFilter,
-        initialSortMode: _preparedMealSortMode,
-        enabled: !widget.isSelectionMode,
-        onCompletionFilterChanged: _onPreparedMealCompletionFilterChanged,
-        onConsumptionFilterChanged: _onPreparedMealConsumptionFilterChanged,
-        onSortModeChanged: _onPreparedMealSortModeChanged,
-      ),
-    );
-  }
-
-  Future<void> _showFiltersSheet(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required String actionLabel,
-    required Widget child,
+    required InventoryUnifiedFilterSection initialSection,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -592,11 +528,24 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.38),
-      builder: (context) => InventoryFiltersSheet(
-        title: title,
-        subtitle: subtitle,
-        actionLabel: actionLabel,
-        children: [child],
+      builder: (context) => InventoryUnifiedFilterSheet(
+        initialSection: initialSection,
+        initialListMode: _mode,
+        initialInventoryItemSortMode: _inventoryItemSortMode,
+        initialHideFullyConsumedItems:
+            _consumptionFilter.hideFullyConsumedItems,
+        initialPreparedMealCompletionFilter: _preparedMealCompletionFilter,
+        initialPreparedMealConsumptionFilter: _preparedMealConsumptionFilter,
+        initialPreparedMealSortMode: _preparedMealSortMode,
+        enabled: !widget.isSelectionMode,
+        onListModeChanged: _onModeChanged,
+        onInventoryItemSortModeChanged: _onInventoryItemSortModeChanged,
+        onHideFullyConsumedItemsChanged: _onHideFullyConsumedItemsChanged,
+        onPreparedMealCompletionFilterChanged:
+            _onPreparedMealCompletionFilterChanged,
+        onPreparedMealConsumptionFilterChanged:
+            _onPreparedMealConsumptionFilterChanged,
+        onPreparedMealSortModeChanged: _onPreparedMealSortModeChanged,
       ),
     );
   }

@@ -684,7 +684,10 @@ class _InventoryItemRowLayoutData {
                   color: item.isFullyConsumed
                       ? colors.onSurface.withValues(alpha: 0.5)
                       : colors.onSurface,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
+                  height: 1.05,
+                  letterSpacing: 0,
                 ),
         hasBrand: hasBrand,
         brand: brand,
@@ -718,8 +721,9 @@ class _InventoryItemRowLayoutData {
             ? shoppingListActionColors.iconColor
             : eatActionColors.iconColor,
         disabledActionIconColor: colors.onSurfaceVariant,
-        showQuickShoppingListAction: !isShoppingListPrimaryAction,
+        showQuickShoppingListAction: false,
         isQuickShoppingListActionEnabled: isQuickShoppingListActionEnabled,
+        quickShoppingListActionLabel: l10n.inventoryItemAddToListAction,
         quickShoppingListActionTooltip:
             l10n.inventoryItemAddToShoppingListAction,
         quickShoppingListActionIcon: Icons.shopping_cart_outlined,
@@ -817,29 +821,11 @@ class _InventoryItemRowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(AppEditorial.cardRadius);
+    final radius = AppSurfaceCard.borderRadius();
     final colors = layoutData.colorScheme;
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest.withValues(
-          alpha: isExpanded ? 0.95 : 0.9,
-        ),
-        borderRadius: radius,
-        border: Border.all(
-          color: isExpanded
-              ? layoutData.viewData.expandedRowBorderColor
-              : layoutData.viewData.rowBorderColor,
-        ),
-        boxShadow: [
-          if (isExpanded)
-            AppEditorialSurfaces.ambientBoxShadow(
-              colors,
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-        ],
-      ),
+      decoration: AppSurfaceCard.decoration(colors),
       child: ClipRRect(
         borderRadius: radius,
         child: Material(
@@ -904,7 +890,7 @@ class _InventoryItemRowBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: AppInsets.card,
+      padding: AppSurfaceCard.padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -943,6 +929,7 @@ class _InventoryItemRowBody extends StatelessWidget {
             editLabel: editLabel,
             swapCandidateLabel: swapCandidateLabel,
             onEditPressed: onEditPressed,
+            onQuickShoppingListActionPressed: onQuickShoppingListActionPressed,
             onRemovePressed: onRemovePressed,
             onSwapCandidatePressed: onSwapCandidatePressed,
           ),

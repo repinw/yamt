@@ -94,6 +94,42 @@ abstract final class AppOpacities {
   static const double compactMetricDivider = 0.42;
 }
 
+/// Shared font-size scale for app typography.
+abstract final class AppFontSizes {
+  /// Display-small size from the current diary baseline.
+  static const double displaySmall = 36;
+
+  /// Headline-small size from the current diary baseline.
+  static const double headlineSmall = 24;
+
+  /// Large title size from the current diary baseline.
+  static const double titleLarge = 22;
+
+  /// Medium title size from the current diary baseline.
+  static const double titleMedium = 16;
+
+  /// Medium body size from the current diary baseline.
+  static const double bodyMedium = 14;
+
+  /// Small body size from the current diary baseline.
+  static const double bodySmall = 12;
+
+  /// Large label size from the current diary baseline.
+  static const double labelLarge = 14;
+
+  /// Small label size from the current diary baseline.
+  static const double labelSmall = 11;
+
+  /// Home tab title size for regular layouts.
+  static const double homeTabTitle = headlineSmall;
+
+  /// Home tab title size for compact layouts.
+  static const double homeTabTitleCompact = titleLarge;
+
+  /// Home tab subtitle size.
+  static const double homeTabSubtitle = labelLarge;
+}
+
 /// Shared fixed dimensions used by widgets.
 abstract final class AppSizes {
   /// Size of icon container in dialogs.
@@ -113,6 +149,9 @@ abstract final class AppSizes {
 
   /// Base clearance reserved for the floating home shell bottom chrome.
   static const double homeShellBottomBarClearance = 96;
+
+  /// Diameter for circular home top bar icon buttons.
+  static const double homeTopBarIconButton = 36;
 
   /// Dark theme blur for compact metric card shadows.
   static const double compactMetricCardShadowBlurDark = 22;

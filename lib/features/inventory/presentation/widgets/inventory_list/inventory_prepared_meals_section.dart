@@ -116,7 +116,6 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     required this.subtitle,
     required this.isSelectionMode,
     required this.actions,
-    required this.onShowFilters,
     required this.onToggleExpanded,
     required this.l10n,
     super.key,
@@ -139,9 +138,6 @@ class InventoryPreparedMealsSection extends StatelessWidget {
 
   /// Prepared meal section actions.
   final PreparedMealSectionActions actions;
-
-  /// The on show filters.
-  final VoidCallback onShowFilters;
 
   /// The on toggle expanded.
   final VoidCallback onToggleExpanded;
@@ -170,27 +166,15 @@ class InventoryPreparedMealsSection extends StatelessWidget {
             InventorySectionHeader(
               title: l10n.preparedMealSectionTitle,
               subtitle: subtitle,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  InventoryFilterButton(
-                    key: const Key('prepared_meals_filter_button'),
-                    enabled: !isSelectionMode,
-                    tooltip: l10n.preparedMealFilterAction,
-                    onPressed: onShowFilters,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  InventorySectionExpandButton(
-                    key: const Key('prepared_meals_section_expand_button'),
-                    isExpanded: isExpanded,
-                    semanticLabel: l10n.preparedMealSectionTitle,
-                    enabled: !isSelectionMode,
-                    rotationKey: const Key(
-                      'prepared_meals_section_expand_indicator',
-                    ),
-                    onPressed: onToggleExpanded,
-                  ),
-                ],
+              trailing: InventorySectionExpandButton(
+                key: const Key('prepared_meals_section_expand_button'),
+                isExpanded: isExpanded,
+                semanticLabel: l10n.preparedMealSectionTitle,
+                enabled: !isSelectionMode,
+                rotationKey: const Key(
+                  'prepared_meals_section_expand_indicator',
+                ),
+                onPressed: onToggleExpanded,
               ),
             ),
             if (isExpanded && meals.isNotEmpty) ...[

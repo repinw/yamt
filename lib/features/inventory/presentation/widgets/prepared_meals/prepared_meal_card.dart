@@ -247,16 +247,13 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
     );
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
-      ),
+      decoration: AppSurfaceCard.decoration(colors),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
+        borderRadius: AppSurfaceCard.borderRadius(),
         child: Material(
           color: Colors.transparent,
           child: Padding(
-            padding: AppInsets.card,
+            padding: AppSurfaceCard.padding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

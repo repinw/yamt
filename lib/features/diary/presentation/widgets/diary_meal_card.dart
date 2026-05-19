@@ -43,7 +43,6 @@ class DiaryMealCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
     );
@@ -51,20 +50,9 @@ class DiaryMealCard extends StatelessWidget {
     final accentColors = MetricAccentColors.of(context);
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppEditorialSurfaces.liftedCard(colors),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
-        boxShadow: [
-          BoxShadow(
-            color: AppEditorialSurfaces.ambientShadow(colors),
-            blurRadius: isDark ? 18 : 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: AppSurfaceCard.decoration(colors),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: AppSurfaceCard.padding,
         child: Column(
           children: [
             Material(

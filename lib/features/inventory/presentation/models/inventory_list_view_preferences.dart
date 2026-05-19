@@ -62,7 +62,8 @@ class InventoryListViewPreferences {
     this.consumptionFilter = const InventoryConsumptionFilter(),
     this.inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending,
     this.preparedMealCompletionFilter = PreparedMealCompletionFilter.all,
-    this.preparedMealConsumptionFilter = PreparedMealConsumptionFilter.all,
+    this.preparedMealConsumptionFilter =
+        PreparedMealConsumptionFilter.hideConsumed,
     this.preparedMealSortMode = PreparedMealSortMode.addedDescending,
     this.isRecentItemsSectionExpanded = true,
     this.isPreparedMealsSectionExpanded = true,

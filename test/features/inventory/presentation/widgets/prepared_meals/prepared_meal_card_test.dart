@@ -152,7 +152,7 @@ Widget _wrapCard(Widget child) {
 
 @Dependencies([InventoryItemsController, preparedMealImagePicker])
 void main() {
-  testWidgets('PreparedMealCard shows expand indicator and rotates it', (
+  testWidgets('PreparedMealCard expands on tap without visible indicator', (
     tester,
   ) async {
     const indicatorKey = Key('prepared_meal_card_expand_indicator_meal-1');
@@ -186,18 +186,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final initialRotation = tester.widget<AnimatedRotation>(
-      find.byKey(indicatorKey),
-    );
-    expect(initialRotation.turns, 0);
+    expect(find.byKey(indicatorKey), findsNothing);
+    expect(find.text('Ingredients'), findsNothing);
 
     await tester.tap(find.text('Rice bowl'));
     await tester.pumpAndSettle();
 
-    final expandedRotation = tester.widget<AnimatedRotation>(
-      find.byKey(indicatorKey),
-    );
-    expect(expandedRotation.turns, 0.5);
+    expect(find.byKey(indicatorKey), findsNothing);
+    expect(find.text('Sour cream'), findsOneWidget);
   });
 
   testWidgets('PreparedMealCard shows eat action in the header', (

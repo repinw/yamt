@@ -21,7 +21,7 @@ abstract final class InventoryItemRowConstants {
   static const actionButtonHeight = 72.0;
 
   /// The action button icon size.
-  static const actionButtonIconSize = 18.0;
+  static const actionButtonIconSize = 28.0;
 
   /// The primary action width.
   static const primaryActionWidth = 64.0;

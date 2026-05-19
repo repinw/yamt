@@ -141,7 +141,7 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
     return SliverPadding(
       padding: EdgeInsets.fromLTRB(
         horizontalPadding,
-        AppSpacing.md,
+        0,
         horizontalPadding,
         _inventoryListBottomPadding,
       ),

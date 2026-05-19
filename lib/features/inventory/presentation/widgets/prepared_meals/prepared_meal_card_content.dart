@@ -5,10 +5,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_tile_header_layout.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -63,13 +64,20 @@ class PreparedMealCardHeader extends StatelessWidget {
             label: meal.name,
             imageBytes: imageBytes,
             imageUrl: meal.imageUrl,
-            size: AppEditorial.imageTileSize,
+            size: AppInventoryClosedTile.imageSize,
+            borderRadius: BorderRadius.circular(999),
           ),
           badgeText: l10n.preparedMealIngredientsCount(ingredientCount),
           title: meal.name,
-          titleStyle: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          titleStyle:
+              Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                height: 1.05,
+                letterSpacing: 0,
+              ),
           statusText: meal.hasPendingRecipeIngredients
               ? l10n.preparedMealIncompleteLabel
               : null,
@@ -84,6 +92,7 @@ class PreparedMealCardHeader extends StatelessWidget {
             onPressed: canEat ? onEatPressed : null,
           ),
           isExpanded: isExpanded,
+          showExpandIndicator: false,
           expandIndicatorEnabled: enabled,
           expandIndicatorKey: Key(
             'prepared_meal_card_expand_indicator_${meal.id}',

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
@@ -90,8 +92,21 @@ class InventoryTileHeaderLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final stockLabelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+      color: colors.onSurfaceVariant,
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0,
+    );
+    final percentageStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+      color: colors.onSurfaceVariant,
+      fontSize: 10,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0,
+    );
+
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (showSelectionCheckbox) ...[
           IgnorePointer(
@@ -108,7 +123,6 @@ class InventoryTileHeaderLayout extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   leading,
                   const SizedBox(width: AppSpacing.md),
@@ -121,33 +135,29 @@ class InventoryTileHeaderLayout extends StatelessWidget {
                       statusColor: statusColor,
                     ),
                   ),
-                  if (showExpandIndicator) ...[
-                    const SizedBox(width: AppSpacing.sm),
-                    _buildExpandIndicator(),
-                  ],
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: RemainingProgressBar(
-                      ratio: progressRatio,
-                      stockLabel: progressLabel,
-                      segmentedByUnits: segmentedByUnits,
-                      totalUnits: totalUnits,
-                      remainingUnits: remainingUnits,
-                      labelLayout: RemainingProgressBarLabelLayout.aboveBar,
-                      trackColor: Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.12),
-                    ),
-                  ),
                   if (action != null) ...[
                     const SizedBox(width: AppSpacing.md),
                     action!,
                   ],
+                  if (showExpandIndicator) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    _buildExpandIndicator(),
+                  ],
                 ],
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              RemainingProgressBar(
+                ratio: progressRatio,
+                stockLabel: progressLabel,
+                segmentedByUnits: segmentedByUnits,
+                totalUnits: totalUnits,
+                remainingUnits: remainingUnits,
+                labelLayout: RemainingProgressBarLabelLayout.aboveBar,
+                trackColor: colors.surfaceContainerHigh,
+                fillColor: colors.primary,
+                barHeight: AppInventoryClosedTile.progressHeight,
+                stockLabelStyle: stockLabelStyle,
+                percentageStyle: percentageStyle,
               ),
             ],
           ),

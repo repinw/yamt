@@ -9,19 +9,16 @@ import 'package:yamt/l10n/app_localizations.dart';
 class InventoryListTopControlsSliver extends StatelessWidget {
   /// The inventory list top controls sliver.
   const InventoryListTopControlsSliver({
-    required this.modeToggle,
     required this.showSearch,
     required this.searchController,
     required this.enabled,
     required this.onSearchChanged,
+    required this.onShowFilters,
     required this.voiceSearchService,
     required this.voiceSearchController,
     required this.l10n,
     super.key,
   });
-
-  /// The mode toggle.
-  final Widget modeToggle;
 
   /// The show search.
   final bool showSearch;
@@ -35,6 +32,9 @@ class InventoryListTopControlsSliver extends StatelessWidget {
   /// The on search changed.
   final ValueChanged<String> onSearchChanged;
 
+  /// Opens the unified filter menu.
+  final VoidCallback onShowFilters;
+
   /// The voice search service.
   final VoiceSearchService voiceSearchService;
 
@@ -46,6 +46,10 @@ class InventoryListTopControlsSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!showSearch) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
     return SliverPadding(
       padding: responsivePagePadding(
         context,
@@ -53,25 +57,66 @@ class InventoryListTopControlsSliver extends StatelessWidget {
         bottom: AppSpacing.lg,
       ),
       sliver: SliverToBoxAdapter(
-        child: Column(
-          children: [
-            modeToggle,
-            if (showSearch) ...[
-              const SizedBox(height: AppSpacing.lg),
-              TextVoiceSearchBar(
-                controller: searchController,
-                label: l10n.inventorySearchLabel,
-                fieldKey: const Key('inventory_list_search_field'),
-                voiceButtonKey: const Key('inventory_list_voice_search_button'),
-                clearButtonKey: const Key('inventory_list_search_clear_button'),
-                enabled: enabled,
-                onChanged: onSearchChanged,
-                voiceSearchService: voiceSearchService,
-                voiceSearchController: voiceSearchController,
-              ),
-            ],
+        child: TextVoiceSearchBar(
+          controller: searchController,
+          label: l10n.inventorySearchLabel,
+          fieldKey: const Key('inventory_list_search_field'),
+          voiceButtonKey: const Key('inventory_list_voice_search_button'),
+          clearButtonKey: const Key('inventory_list_search_clear_button'),
+          enabled: enabled,
+          onChanged: onSearchChanged,
+          voiceSearchService: voiceSearchService,
+          voiceSearchController: voiceSearchController,
+          hintText: l10n.inventorySearchLabel,
+          useCompactSurface: true,
+          trailingActions: [
+            _InventorySearchSettingsButton(
+              enabled: enabled,
+              tooltip: l10n.inventoryFilterAction,
+              onPressed: onShowFilters,
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _InventorySearchSettingsButton extends StatelessWidget {
+  const _InventorySearchSettingsButton({
+    required this.enabled,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final bool enabled;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return SizedBox.square(
+      dimension: 52,
+      child: IconButton(
+        key: const Key('inventory_list_search_settings_button'),
+        onPressed: enabled ? onPressed : null,
+        tooltip: tooltip,
+        style: IconButton.styleFrom(
+          backgroundColor: colors.surfaceContainerHigh.withValues(alpha: 0.72),
+          foregroundColor: colors.onSurfaceVariant.withValues(alpha: 0.86),
+          disabledBackgroundColor: colors.surfaceContainerHigh.withValues(
+            alpha: 0.38,
+          ),
+          disabledForegroundColor: colors.onSurfaceVariant.withValues(
+            alpha: 0.38,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+        ),
+        icon: const Icon(Icons.tune_rounded, size: 21),
       ),
     );
   }

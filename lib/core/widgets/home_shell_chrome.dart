@@ -46,6 +46,9 @@ TextStyle? _homeTopBarTitleStyle(
   final textTheme = Theme.of(context).textTheme;
   return (compact ? textTheme.titleLarge : textTheme.headlineSmall)?.copyWith(
     color: color ?? Theme.of(context).colorScheme.onSurface,
+    fontSize: compact
+        ? AppFontSizes.homeTabTitleCompact
+        : AppFontSizes.homeTabTitle,
     fontWeight: FontWeight.w800,
     height: hasSubtitle ? 1 : null,
   );
@@ -55,6 +58,7 @@ TextStyle? _homeTopBarSubtitleStyle(BuildContext context) {
   final colors = Theme.of(context).colorScheme;
   return Theme.of(context).textTheme.labelLarge?.copyWith(
     color: colors.onSurfaceVariant,
+    fontSize: AppFontSizes.homeTabSubtitle,
     fontWeight: FontWeight.w700,
   );
 }
@@ -278,9 +282,6 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final borderColor = AppEditorialSurfaces.ghostBorder(
-      colors,
-    ).withValues(alpha: 0.1);
     final resolvedHeight =
         preferredHeight ??
         preferredHeightFor(
@@ -299,7 +300,6 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppEditorialSurfaces.appBackground(colors),
-        border: Border(bottom: BorderSide(color: borderColor)),
       ),
       child: SafeArea(
         bottom: false,
@@ -356,11 +356,50 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
                 ],
                 if (actions.isNotEmpty)
                   SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-                ...actions,
+                _HomeTopBarActions(actions: actions),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HomeTopBarActions extends StatelessWidget {
+  const _HomeTopBarActions({required this.actions});
+
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return IconButtonTheme(
+      data: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          backgroundColor: AppEditorialSurfaces.section(colors),
+          disabledBackgroundColor: AppEditorialSurfaces.section(
+            colors,
+          ).withValues(alpha: 0.6),
+          disabledForegroundColor: colors.onSurfaceVariant.withValues(
+            alpha: 0.48,
+          ),
+          fixedSize: const Size.square(AppSizes.homeTopBarIconButton),
+          foregroundColor: colors.onSurfaceVariant,
+          minimumSize: const Size.square(AppSizes.homeTopBarIconButton),
+          padding: EdgeInsets.zero,
+          shape: const CircleBorder(),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var index = 0; index < actions.length; index += 1) ...[
+            if (index > 0) const SizedBox(width: AppSpacing.xs),
+            actions[index],
+          ],
+        ],
       ),
     );
   }

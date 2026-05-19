@@ -7,6 +7,7 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _textVoiceSearchMaxLines = 3;
+const _textVoiceSearchCompactHeight = 52.0;
 final _textVoiceSearchInputFormatters = <TextInputFormatter>[
   FilteringTextInputFormatter.deny(
     RegExp(r'[\r\n]+'),
@@ -73,6 +74,7 @@ class TextVoiceSearchBar extends StatefulWidget {
     this.trailingActions = const <Widget>[],
     this.hintText,
     this.prefixIcon,
+    this.useCompactSurface = false,
   });
 
   /// Controller that holds current search text.
@@ -128,6 +130,9 @@ class TextVoiceSearchBar extends StatefulWidget {
 
   /// Optional custom prefix icon for field.
   final Widget? prefixIcon;
+
+  /// Whether to render the compact filled search style.
+  final bool useCompactSurface;
 
   @override
   State<TextVoiceSearchBar> createState() => _TextVoiceSearchBarState();
@@ -216,6 +221,14 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final voiceButton = _TextVoiceSearchVoiceButton(
+      key: widget.voiceButtonKey,
+      enabled: widget.enabled,
+      isListening: _usesInternalVoiceSearch && _isListeningToSpeech,
+      onPressed: _handleVoiceButtonPressed,
+      tooltip: _resolveVoiceTooltip(context),
+    );
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -231,27 +244,11 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
             enabled: widget.enabled,
             isSearching: widget.isSearching,
             prefixIcon: widget.prefixIcon,
+            useCompactSurface: widget.useCompactSurface,
+            voiceButton: voiceButton,
             onTap: widget.onTap,
             onChanged: widget.onChanged,
             onClearPressed: _handleClearPressed,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        SizedBox(
-          height: 56,
-          width: 56,
-          child: IconButton.outlined(
-            key: widget.voiceButtonKey,
-            onPressed: widget.enabled ? _handleVoiceButtonPressed : null,
-            tooltip: _resolveVoiceTooltip(context),
-            icon: Icon(
-              _usesInternalVoiceSearch && _isListeningToSpeech
-                  ? Icons.mic
-                  : Icons.mic_none,
-              color: _usesInternalVoiceSearch && _isListeningToSpeech
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
-            ),
           ),
         ),
         for (final action in widget.trailingActions) ...[
@@ -420,6 +417,8 @@ class _TextVoiceSearchField extends StatelessWidget {
     required this.enabled,
     required this.isSearching,
     required this.prefixIcon,
+    required this.useCompactSurface,
+    required this.voiceButton,
     required this.onTap,
     required this.onChanged,
     required this.onClearPressed,
@@ -435,6 +434,8 @@ class _TextVoiceSearchField extends StatelessWidget {
   final bool enabled;
   final bool isSearching;
   final Widget? prefixIcon;
+  final bool useCompactSurface;
+  final Widget voiceButton;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
   final VoidCallback onClearPressed;
@@ -445,8 +446,16 @@ class _TextVoiceSearchField extends StatelessWidget {
       valueListenable: controller,
       builder: (context, value, child) {
         final hasText = value.text.trim().isNotEmpty;
+        final colors = Theme.of(context).colorScheme;
+        final borderRadius = BorderRadius.circular(AppRadius.lg);
+        final border = useCompactSurface
+            ? OutlineInputBorder(
+                borderRadius: borderRadius,
+                borderSide: BorderSide.none,
+              )
+            : null;
 
-        return TextField(
+        final field = TextField(
           key: fieldKey,
           controller: controller,
           keyboardType: TextInputType.text,
@@ -459,23 +468,91 @@ class _TextVoiceSearchField extends StatelessWidget {
           onTap: onTap,
           onChanged: onChanged,
           textInputAction: TextInputAction.search,
+          textAlignVertical: useCompactSurface ? TextAlignVertical.top : null,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: colors.onSurface,
+            fontSize: useCompactSurface ? 15 : null,
+            fontWeight: useCompactSurface ? FontWeight.w500 : null,
+          ),
           decoration: InputDecoration(
             labelText: hintText == null ? label : null,
             hintText: hintText,
+            hintStyle: useCompactSurface
+                ? Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.82),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  )
+                : null,
+            filled: useCompactSurface ? true : null,
+            fillColor: useCompactSurface
+                ? colors.surfaceContainerHigh.withValues(alpha: 0.72)
+                : null,
+            isDense: useCompactSurface ? true : null,
+            contentPadding: useCompactSurface
+                ? const EdgeInsets.symmetric(vertical: AppSpacing.lg)
+                : null,
+            border: border,
+            enabledBorder: border,
+            focusedBorder: useCompactSurface
+                ? border?.copyWith(
+                    borderSide: BorderSide(
+                      color: colors.primary.withValues(alpha: 0.38),
+                    ),
+                  )
+                : null,
+            disabledBorder: border,
             floatingLabelBehavior: hintText == null
                 ? FloatingLabelBehavior.auto
                 : FloatingLabelBehavior.never,
-            prefixIcon: prefixIcon ?? const Icon(Icons.search),
+            prefixIcon: prefixIcon ?? const _TextVoiceSearchPrefixIcon(),
+            prefixIconConstraints: useCompactSurface
+                ? const BoxConstraints(
+                    minWidth: 42,
+                    minHeight: _textVoiceSearchCompactHeight,
+                  )
+                : null,
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 40,
+              minHeight: 40,
+            ),
             suffixIcon: _TextVoiceSearchSuffixActions(
               isSearching: isSearching,
               hasText: hasText,
               enabled: enabled,
               clearButtonKey: clearButtonKey,
+              voiceButton: voiceButton,
               onClearPressed: onClearPressed,
             ),
           ),
         );
+
+        if (!useCompactSurface) {
+          return field;
+        }
+
+        return ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: _textVoiceSearchCompactHeight,
+          ),
+          child: field,
+        );
       },
+    );
+  }
+}
+
+class _TextVoiceSearchPrefixIcon extends StatelessWidget {
+  const _TextVoiceSearchPrefixIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Icon(
+      Icons.search_rounded,
+      size: 18,
+      color: colors.onSurfaceVariant.withValues(alpha: 0.78),
     );
   }
 }
@@ -486,6 +563,7 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
     required this.hasText,
     required this.enabled,
     required this.clearButtonKey,
+    required this.voiceButton,
     required this.onClearPressed,
   });
 
@@ -493,12 +571,13 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
   final bool hasText;
   final bool enabled;
   final Key? clearButtonKey;
+  final Widget voiceButton;
   final VoidCallback onClearPressed;
 
   @override
   Widget build(BuildContext context) {
     if (!isSearching && !hasText) {
-      return const SizedBox.shrink();
+      return voiceButton;
     }
 
     return Row(
@@ -519,7 +598,46 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
             tooltip: AppLocalizations.of(context)!.inventorySearchClearAction,
             icon: const Icon(Icons.cleaning_services_outlined),
           ),
+        if (!hasText) voiceButton,
       ],
+    );
+  }
+}
+
+class _TextVoiceSearchVoiceButton extends StatelessWidget {
+  const _TextVoiceSearchVoiceButton({
+    required super.key,
+    required this.enabled,
+    required this.isListening,
+    required this.onPressed,
+    required this.tooltip,
+  });
+
+  final bool enabled;
+  final bool isListening;
+  final VoidCallback onPressed;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final foregroundColor = isListening
+        ? colors.primary
+        : colors.onSurfaceVariant.withValues(alpha: 0.72);
+
+    return IconButton(
+      onPressed: enabled ? onPressed : null,
+      tooltip: tooltip,
+      visualDensity: VisualDensity.compact,
+      padding: const EdgeInsets.all(AppSpacing.xs),
+      constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+      icon: Icon(
+        isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+        size: 18,
+        color: enabled
+            ? foregroundColor
+            : colors.onSurfaceVariant.withValues(alpha: 0.38),
+      ),
     );
   }
 }

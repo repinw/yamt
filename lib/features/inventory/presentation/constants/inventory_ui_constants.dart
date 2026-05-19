@@ -88,6 +88,24 @@ abstract final class AppInventoryItemVisuals {
   static const String fallbackEmoji = '🍽️';
 }
 
+/// Defines compact inventory closed-tile sizing.
+abstract final class AppInventoryClosedTile {
+  /// The tile radius.
+  static const double radius = 20;
+
+  /// The leading image size.
+  static const double imageSize = 44;
+
+  /// The primary action width.
+  static const double actionWidth = 68;
+
+  /// The primary action height.
+  static const double actionHeight = 34;
+
+  /// The progress height.
+  static const double progressHeight = 3;
+}
+
 /// Defines app inventory eat action colors.
 class AppInventoryEatActionColors {
   /// The app inventory eat action colors.

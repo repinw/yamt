@@ -58,7 +58,7 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
     return SliverPadding(
       padding: EdgeInsets.fromLTRB(
         horizontalPadding,
-        AppSpacing.md,
+        0,
         horizontalPadding,
         _inventoryReceiptGroupsBottomPadding,
       ),

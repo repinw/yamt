@@ -95,7 +95,7 @@ class _InventoryItemRowHost extends StatelessWidget {
   manualProductRecentItemsService,
 ])
 void main() {
-  testWidgets('positions expand indicator in the top-right header area', (
+  testWidgets('renders compact closed header without row expand indicator', (
     tester,
   ) async {
     final bucket = PageStorageBucket();
@@ -106,12 +106,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final iconCenter = tester.getCenter(find.byType(InventoryItemImageTile));
-    final indicatorCenter = tester.getCenter(find.byKey(indicatorKey));
+    final iconRect = tester.getRect(find.byType(InventoryItemImageTile));
     final progressRect = tester.getRect(find.byType(RemainingProgressBar));
 
-    expect(indicatorCenter.dx, greaterThan(iconCenter.dx));
-    expect(indicatorCenter.dy, lessThan(progressRect.top));
+    expect(find.byKey(indicatorKey), findsNothing);
+    expect(iconRect.width, 44);
+    expect(iconRect.height, 44);
+    expect(progressRect.top, greaterThan(iconRect.bottom));
   });
 
   testWidgets(
@@ -158,7 +159,9 @@ void main() {
     expect(button.useGradientWhenShowText, isFalse);
   });
 
-  testWidgets('shows expand indicator and rotates it on tap', (tester) async {
+  testWidgets('expands on row tap without visible row indicator', (
+    tester,
+  ) async {
     final bucket = PageStorageBucket();
     const indicatorKey = Key('inventory_item_row_expand_indicator_milk');
 
@@ -167,18 +170,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final initialRotation = tester.widget<AnimatedRotation>(
-      find.byKey(indicatorKey),
-    );
-    expect(initialRotation.turns, 0);
+    expect(find.byKey(indicatorKey), findsNothing);
+    expect(find.text('Edit'), findsNothing);
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
 
-    final expandedRotation = tester.widget<AnimatedRotation>(
-      find.byKey(indicatorKey),
-    );
-    expect(expandedRotation.turns, 0.5);
+    expect(find.byKey(indicatorKey), findsNothing);
+    expect(find.text('Edit'), findsOneWidget);
   });
 
   testWidgets('restores expanded state from page storage after rebuild', (

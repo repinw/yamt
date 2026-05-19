@@ -15,6 +15,7 @@ class InventoryExpandIndicator extends StatelessWidget {
     this.width = _expandIndicatorSize,
     this.height = _expandIndicatorSize,
     this.iconSize = _expandIndicatorIconSize,
+    this.useSubtleChromeColors = false,
   });
 
   /// Whether expanded.
@@ -34,6 +35,9 @@ class InventoryExpandIndicator extends StatelessWidget {
 
   /// The icon size.
   final double iconSize;
+
+  /// Whether to use the subtle chrome colors from search/settings controls.
+  final bool useSubtleChromeColors;
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +75,9 @@ class InventoryExpandIndicator extends StatelessWidget {
   }
 
   Color _borderColor(ColorScheme colors) {
+    if (useSubtleChromeColors) {
+      return Colors.transparent;
+    }
     if (!enabled) {
       return colors.outlineVariant.withValues(alpha: 0.32);
     }
@@ -81,6 +88,11 @@ class InventoryExpandIndicator extends StatelessWidget {
   }
 
   Color _backgroundColor(ColorScheme colors) {
+    if (useSubtleChromeColors) {
+      return colors.surfaceContainerHigh.withValues(
+        alpha: enabled ? 0.72 : 0.38,
+      );
+    }
     if (!enabled) {
       return colors.surfaceContainerHighest.withValues(alpha: 0.5);
     }
@@ -91,6 +103,9 @@ class InventoryExpandIndicator extends StatelessWidget {
   }
 
   Color _iconColor(ColorScheme colors) {
+    if (useSubtleChromeColors) {
+      return colors.onSurfaceVariant.withValues(alpha: enabled ? 0.86 : 0.38);
+    }
     if (!enabled) {
       return colors.onSurfaceVariant.withValues(alpha: 0.55);
     }

@@ -25,6 +25,7 @@ class InventoryItemRowViewData {
     required this.disabledActionIconColor,
     required this.showQuickShoppingListAction,
     required this.isQuickShoppingListActionEnabled,
+    required this.quickShoppingListActionLabel,
     required this.quickShoppingListActionTooltip,
     required this.quickShoppingListActionIcon,
     required this.quickShoppingListActionBackgroundColor,
@@ -95,6 +96,9 @@ class InventoryItemRowViewData {
 
   /// Whether the shopping list quick action is enabled.
   final bool isQuickShoppingListActionEnabled;
+
+  /// The shopping list quick action label.
+  final String quickShoppingListActionLabel;
 
   /// The shopping list quick action tooltip.
   final String quickShoppingListActionTooltip;

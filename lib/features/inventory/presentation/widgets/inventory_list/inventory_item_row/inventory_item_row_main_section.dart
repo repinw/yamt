@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_image_tile.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -74,7 +76,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
             ),
       showSelectionCheckbox: showSelectionCheckbox,
       isSelected: isSelected,
-      showExpandIndicator: !showSelectionCheckbox,
+      showExpandIndicator: false,
       isExpanded: isExpanded,
       expandIndicatorKey: expandIndicatorKey,
     );
@@ -127,7 +129,7 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final buttonWidth = viewData.isShoppingListPrimaryAction
         ? InventoryItemRowConstants.primaryActionWideWidth
-        : InventoryItemRowConstants.primaryActionWidth;
+        : AppInventoryClosedTile.actionWidth;
 
     return InventoryPrimaryActionButton(
       tooltip: viewData.primaryActionTooltip,
@@ -135,7 +137,7 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
       showText: true,
       label: viewData.primaryActionLabel,
       width: buttonWidth,
-      height: InventoryItemRowConstants.primaryActionHeight,
+      height: AppInventoryClosedTile.actionHeight,
       enabledBackgroundColor: viewData.isShoppingListPrimaryAction
           ? viewData.eatActionBackgroundColor
           : colors.primary,
@@ -151,6 +153,7 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
       useGradientWhenShowText: false,
       icon: viewData.primaryActionIcon,
       showIconWithText: viewData.showPrimaryActionIconWithText,
+      borderRadius: AppRadius.lg,
     );
   }
 }

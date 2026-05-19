@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_layout_tokens.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 
@@ -122,36 +123,44 @@ abstract final class AppTheme {
 
     return baseTextTheme.copyWith(
       displaySmall: baseTextTheme.displaySmall?.copyWith(
+        fontSize: AppFontSizes.displaySmall,
         fontWeight: FontWeight.w800,
         letterSpacing: -1.8,
         height: 0.92,
       ),
       headlineSmall: baseTextTheme.headlineSmall?.copyWith(
+        fontSize: AppFontSizes.headlineSmall,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.8,
         height: 1.02,
       ),
       titleLarge: baseTextTheme.titleLarge?.copyWith(
+        fontSize: AppFontSizes.titleLarge,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.3,
       ),
       titleMedium: baseTextTheme.titleMedium?.copyWith(
+        fontSize: AppFontSizes.titleMedium,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.2,
       ),
       bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+        fontSize: AppFontSizes.bodyMedium,
         color: colorScheme.onSurfaceVariant,
         height: 1.35,
       ),
       bodySmall: baseTextTheme.bodySmall?.copyWith(
+        fontSize: AppFontSizes.bodySmall,
         color: colorScheme.onSurfaceVariant,
         height: 1.3,
       ),
       labelLarge: baseTextTheme.labelLarge?.copyWith(
+        fontSize: AppFontSizes.labelLarge,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.4,
       ),
       labelSmall: baseTextTheme.labelSmall?.copyWith(
+        fontSize: AppFontSizes.labelSmall,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.1,
       ),

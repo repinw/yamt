@@ -264,6 +264,9 @@
   "inventoryFiltersTitle": "Ansicht anpassen",
   "inventoryFiltersSubtitle": "Sortiere und filtere deine Lebensmittel",
   "inventoryFiltersShowResultsAction": "Ergebnisse anzeigen",
+  "inventoryViewSectionTitle": "Ansicht",
+  "inventoryViewListAction": "Liste",
+  "inventoryViewTilesAction": "Kacheln",
   "inventorySortSectionTitle": "Sortierung",
   "inventoryFilterSectionTitle": "Filter",
   "inventorySortAdded": "Hinzugefügt",
@@ -349,7 +352,7 @@
   "inventoryItemEatSheetNutritionLabel": "Nährwerte",
   "inventoryItemEatSheetConfirmAction": "Loggen",
   "inventoryItemEatSheetClearAmountAction": "Menge leeren",
-  "inventoryItemAddToListAction": "Auf die Liste",
+  "inventoryItemAddToListAction": "Auf Liste",
   "inventoryItemAddToShoppingListAction": "Zur Einkaufsliste hinzufügen",
   "inventoryItemBuyAgainAction": "Erneut kaufen",
   "inventoryItemBuyAgainSucceeded":

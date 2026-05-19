@@ -23,6 +23,7 @@ class InventoryPrimaryActionButton extends StatelessWidget {
     this.icon,
     this.iconSize = AppSpacing.xxl,
     this.showIconWithText = false,
+    this.borderRadius = AppRadius.xl,
   });
 
   /// The tooltip.
@@ -73,6 +74,9 @@ class InventoryPrimaryActionButton extends StatelessWidget {
   /// Whether to keep the icon visible next to the label.
   final bool showIconWithText;
 
+  /// The button border radius.
+  final double borderRadius;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -100,7 +104,7 @@ class InventoryPrimaryActionButton extends StatelessWidget {
         gradient: usesSoulGradient
             ? AppEditorialSurfaces.soulGradient(colors)
             : null,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: borderColor),
         boxShadow: [
           AppEditorialSurfaces.ambientBoxShadow(
