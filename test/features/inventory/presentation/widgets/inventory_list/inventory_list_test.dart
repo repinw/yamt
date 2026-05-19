@@ -441,6 +441,35 @@ void main() {
 
     expect(find.byKey(const Key('inventory_items_list_view')), findsNothing);
     expect(find.byKey(const Key('inventory_items_tile_view')), findsOneWidget);
+    expect(find.byType(SliverGrid), findsOneWidget);
+  });
+
+  testWidgets('view mode toggle switches prepared meals to tile layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(id: 'pasta', name: 'Pasta Bowl'),
+          _preparedMeal(id: 'soup', name: 'Soup Bowl'),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('prepared_meals_list_view')), findsOneWidget);
+    expect(find.byKey(const Key('prepared_meals_tile_view')), findsNothing);
+
+    await _openPreparedMealFilterSheet(tester);
+    await _tapVisible(tester, find.text('Tiles'));
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('prepared_meals_list_view')), findsNothing);
+    expect(find.byKey(const Key('prepared_meals_tile_view')), findsOneWidget);
+    expect(find.byType(GridView), findsOneWidget);
   });
 
   testWidgets('inventory search filters items and prepared meals', (

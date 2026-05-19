@@ -66,6 +66,8 @@ typedef PreparedMealSaveTemplateCallback =
       PreparedMeal meal,
     );
 
+const double _preparedMealTileMainAxisExtent = 172;
+
 /// Actions used by [InventoryPreparedMealsSection].
 class PreparedMealSectionActions {
   /// Creates prepared meal section actions.
@@ -257,59 +259,20 @@ class _PreparedMealTiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return GridView.builder(
       key: const Key('prepared_meals_tile_view'),
-      children: [
-        for (var index = 0; index < meals.length; index += 2)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _PreparedMealTileEntry(
-                  meal: meals[index],
-                  expandedPreparedMealId: expandedPreparedMealId,
-                  enabled: enabled,
-                  actions: actions,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: index + 1 < meals.length
-                    ? _PreparedMealTileEntry(
-                        meal: meals[index + 1],
-                        expandedPreparedMealId: expandedPreparedMealId,
-                        enabled: enabled,
-                        actions: actions,
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
-          ),
-      ],
-    );
-  }
-}
-
-@Dependencies([InventoryItemsController, preparedMealImagePicker])
-class _PreparedMealTileEntry extends StatelessWidget {
-  const _PreparedMealTileEntry({
-    required this.meal,
-    required this.expandedPreparedMealId,
-    required this.enabled,
-    required this.actions,
-  });
-
-  final PreparedMeal meal;
-  final String? expandedPreparedMealId;
-  final bool enabled;
-  final PreparedMealSectionActions actions;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-      child: _PreparedMealEntry(
-        meal: meal,
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: meals.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: AppSpacing.sm,
+        mainAxisSpacing: AppSpacing.lg,
+        mainAxisExtent: _preparedMealTileMainAxisExtent,
+      ),
+      itemBuilder: (context, index) => _PreparedMealEntry(
+        meal: meals[index],
         expandedPreparedMealId: expandedPreparedMealId,
         enabled: enabled,
         actions: actions,

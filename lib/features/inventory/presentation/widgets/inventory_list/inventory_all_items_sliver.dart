@@ -26,6 +26,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const double _inventoryListBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
+const double _inventoryTileMainAxisExtent = 136;
 
 /// Defines inventory all items sliver.
 @Dependencies([
@@ -168,35 +169,22 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
     );
   }
 
-  SliverList _buildTileSliver() {
-    return SliverList.builder(
+  SliverGrid _buildTileSliver() {
+    return SliverGrid(
       key: const Key('inventory_items_tile_view'),
-      itemCount: (_sortedItems.length / 2).ceil(),
-      itemBuilder: (context, rowIndex) {
-        final leftIndex = rowIndex * 2;
-        final rightIndex = leftIndex + 1;
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _buildItemEntry(
-                _sortedItems[leftIndex],
-                bottomSpacing: AppSpacing.lg,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: rightIndex < _sortedItems.length
-                  ? _buildItemEntry(
-                      _sortedItems[rightIndex],
-                      bottomSpacing: AppSpacing.lg,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        );
-      },
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: AppSpacing.sm,
+        mainAxisSpacing: AppSpacing.lg,
+        mainAxisExtent: _inventoryTileMainAxisExtent,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => _buildItemEntry(
+          _sortedItems[index],
+          bottomSpacing: 0,
+        ),
+        childCount: _sortedItems.length,
+      ),
     );
   }
 
