@@ -82,6 +82,18 @@ abstract final class AppRadius {
   static const double xl = 24;
 }
 
+/// Shared animation durations.
+abstract final class AppDurations {
+  /// Expansion duration for compact metric controls.
+  static const Duration compactMetricExpansion = Duration(milliseconds: 220);
+}
+
+/// Shared opacity values.
+abstract final class AppOpacities {
+  /// Divider opacity for compact metric cards.
+  static const double compactMetricDivider = 0.42;
+}
+
 /// Shared fixed dimensions used by widgets.
 abstract final class AppSizes {
   /// Size of icon container in dialogs.
@@ -101,4 +113,46 @@ abstract final class AppSizes {
 
   /// Base clearance reserved for the floating home shell bottom chrome.
   static const double homeShellBottomBarClearance = 96;
+
+  /// Dark theme blur for compact metric card shadows.
+  static const double compactMetricCardShadowBlurDark = 22;
+
+  /// Light theme blur for compact metric card shadows.
+  static const double compactMetricCardShadowBlurLight = 16;
+
+  /// Vertical offset for compact metric card shadows.
+  static const double compactMetricCardShadowYOffset = 6;
+
+  /// Icon size for compact metric labels.
+  static const double compactMetricIcon = 16;
+
+  /// Gap between compact metric icons and labels.
+  static const double compactMetricIconLabelGap = 4;
+
+  /// Top gap above compact metric values.
+  static const double compactMetricValueTopGap = 6;
+
+  /// Font size for compact metric labels.
+  static const double compactMetricLabelFont = 12;
+
+  /// Font size for compact metric values.
+  static const double compactMetricValueFont = 16;
+
+  /// Divider width for compact metric cards.
+  static const double compactMetricDividerWidth = 1;
+
+  /// Vertical divider height for compact metric cards.
+  static const double compactMetricDividerHeight = 38;
+
+  /// Skeleton label width for compact metric cards.
+  static const double compactMetricSkeletonLabelWidth = 74;
+
+  /// Skeleton label height for compact metric cards.
+  static const double compactMetricSkeletonLabelHeight = 12;
+
+  /// Skeleton value width for compact metric cards.
+  static const double compactMetricSkeletonValueWidth = 58;
+
+  /// Skeleton value height for compact metric cards.
+  static const double compactMetricSkeletonValueHeight = 18;
 }

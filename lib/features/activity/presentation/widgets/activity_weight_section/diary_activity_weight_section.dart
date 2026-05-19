@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/activity/application/diary_steps_summary_provider.dart';
@@ -17,9 +18,6 @@ import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_we
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_prompt_dismissal_controller.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/domain/diary_activity_summary.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _activityWeightStartupDelay = Duration(milliseconds: 700);
@@ -73,13 +71,15 @@ class _DiaryActivityWeightSectionState
 
   @override
   Widget build(BuildContext context) {
-    final normalizedDay = normalizeDiaryDay(widget.selectedDay);
+    final normalizedDay = normalizeLocalDay(widget.selectedDay);
     final dataState = _canLoadData
         ? ref.watch(diaryActivityWeightDataProvider(normalizedDay))
         : const AsyncLoading<DiaryActivityWeightData>();
     final stepsState = _canLoadData
-        ? ref.watch(diaryStepsSummaryProvider(normalizedDay))
-        : const AsyncLoading<DiaryActivitySummary>();
+        ? ref
+              .watch(diaryStepsSummaryProvider(normalizedDay))
+              .whenData((summary) => summary.totalSteps)
+        : const AsyncLoading<int?>();
     final loadedData = dataState.value;
     if (loadedData != null) {
       _lastData = loadedData;
@@ -105,9 +105,8 @@ class _DiaryActivityWeightSectionState
     final showWeightWarning =
         data != null &&
         !data.hasSelectedDayWeight &&
-        dismissedDayKey != diaryDayKey(normalizedDay);
-    final hasReadyHealth =
-        data?.healthAccessState == HealthDataAccessState.ready;
+        dismissedDayKey != localDayKey(normalizedDay);
+    final hasReadyHealth = data?.hasReadyHealthAccess ?? false;
     final showActivityTrainings = _isActivityExpanded && hasReadyHealth;
     final showWeightDetails =
         _isWeightExpanded && data != null && !showWeightWarning;
@@ -146,8 +145,7 @@ class _DiaryActivityWeightSectionState
               });
             },
           ),
-        if (data != null &&
-            data.healthAccessState != HealthDataAccessState.ready) ...[
+        if (data != null && data.needsHealthConnection) ...[
           const SizedBox(height: AppSpacing.md),
           DiaryHealthConnectMetricCard(accessState: data.healthAccessState),
         ],

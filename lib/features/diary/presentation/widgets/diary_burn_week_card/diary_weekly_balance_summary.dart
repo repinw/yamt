@@ -6,6 +6,7 @@ import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_weekly_balance_card.dart';
 
@@ -44,7 +45,9 @@ class _DiaryWeeklyBalanceSummaryState
       return const _WeeklyBalanceSummarySkeleton();
     }
 
-    final data = effectiveSource.resolve(now: DateTime.now());
+    final data = effectiveSource.resolve(
+      now: ref.watch(calorieBalanceNowProvider)(),
+    );
     final loadedMetrics = data.loadedMetrics;
     if (loadedMetrics == null) {
       return const SizedBox.shrink();

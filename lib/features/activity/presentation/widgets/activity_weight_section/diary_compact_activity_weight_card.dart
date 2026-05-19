@@ -7,7 +7,6 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
-import 'package:yamt/features/health/domain/diary_activity_summary.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Compact fused activity and weight card for diary page.
@@ -33,7 +32,7 @@ class DiaryCompactActivityWeightCard extends StatelessWidget {
   final Widget? header;
 
   /// Step summary state for compact step value.
-  final AsyncValue<DiaryActivitySummary> stepsState;
+  final AsyncValue<int?> stepsState;
 
   /// Whether step details are expanded.
   final bool isStepsExpanded;
@@ -61,8 +60,7 @@ class DiaryCompactActivityWeightCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final accents = MetricAccentColors.of(context);
-    final summary = stepsState.value;
-    final totalSteps = summary?.totalSteps;
+    final totalSteps = stepsState.value;
     final stepsValue = totalSteps == null
         ? '-'
         : numberFormat.format(totalSteps);
@@ -157,14 +155,14 @@ class DiaryCompactActivityWeightSkeleton extends StatelessWidget {
                   child: Column(
                     children: [
                       MetricSkeletonBlock(
-                        width: 74,
-                        height: 12,
+                        width: AppSizes.compactMetricSkeletonLabelWidth,
+                        height: AppSizes.compactMetricSkeletonLabelHeight,
                         color: colors.surfaceContainerHighest,
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       MetricSkeletonBlock(
-                        width: 58,
-                        height: 18,
+                        width: AppSizes.compactMetricSkeletonValueWidth,
+                        height: AppSizes.compactMetricSkeletonValueHeight,
                         color: colors.surfaceContainerHighest,
                       ),
                     ],
@@ -197,8 +195,13 @@ class _CompactMetricsFrame extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: AppEditorialSurfaces.ambientShadow(colors),
-            blurRadius: isDark ? 22 : 16,
-            offset: const Offset(0, 6),
+            blurRadius: isDark
+                ? AppSizes.compactMetricCardShadowBlurDark
+                : AppSizes.compactMetricCardShadowBlurLight,
+            offset: const Offset(
+              0,
+              AppSizes.compactMetricCardShadowYOffset,
+            ),
           ),
         ],
       ),
@@ -249,8 +252,14 @@ class _CompactMetricItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, color: color, size: 16),
-                  const SizedBox(width: 4),
+                  Icon(
+                    icon,
+                    color: color,
+                    size: AppSizes.compactMetricIcon,
+                  ),
+                  const SizedBox(
+                    width: AppSizes.compactMetricIconLabelGap,
+                  ),
                   Flexible(
                     child: Text(
                       label.toUpperCase(),
@@ -258,7 +267,7 @@ class _CompactMetricItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colors.onSurfaceVariant,
-                        fontSize: 12,
+                        fontSize: AppSizes.compactMetricLabelFont,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0,
                       ),
@@ -266,17 +275,17 @@ class _CompactMetricItem extends StatelessWidget {
                   ),
                   AnimatedRotation(
                     turns: isExpanded ? 0.25 : 0,
-                    duration: const Duration(milliseconds: 220),
+                    duration: AppDurations.compactMetricExpansion,
                     curve: Curves.easeOutCubic,
                     child: Icon(
                       Icons.chevron_right_rounded,
                       color: color,
-                      size: 14,
+                      size: AppSizes.actionChevron,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: AppSizes.compactMetricValueTopGap),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
@@ -284,7 +293,7 @@ class _CompactMetricItem extends StatelessWidget {
                   maxLines: 1,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: colors.onSurface,
-                    fontSize: 16,
+                    fontSize: AppSizes.compactMetricValueFont,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -303,10 +312,10 @@ class _CompactMetricDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 1,
-      height: 38,
+      width: AppSizes.compactMetricDividerWidth,
+      height: AppSizes.compactMetricDividerHeight,
       color: Theme.of(context).colorScheme.outlineVariant.withValues(
-        alpha: 0.42,
+        alpha: AppOpacities.compactMetricDivider,
       ),
     );
   }
@@ -318,9 +327,9 @@ class _CompactMetricsHorizontalDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 1,
+      height: AppSizes.compactMetricDividerWidth,
       color: Theme.of(context).colorScheme.outlineVariant.withValues(
-        alpha: 0.42,
+        alpha: AppOpacities.compactMetricDivider,
       ),
     );
   }
