@@ -13,37 +13,31 @@ void main() {
       dark = AppTheme.dark(seedColor: AppColors.seed);
     });
 
-    test('light and dark themes keep scaffold transparent and tint canvas', () {
+    test('light and dark themes use editorial canvas surfaces', () {
       expect(light.scaffoldBackgroundColor, Colors.transparent);
       expect(dark.scaffoldBackgroundColor, Colors.transparent);
       expect(
         light.canvasColor,
-        equals(
-          Color.alphaBlend(
-            light.colorScheme.primary.withValues(
-              alpha: AppThemeBackground.lightTintAlpha,
-            ),
-            light.colorScheme.surface,
-          ),
-        ),
+        AppEditorialSurfaces.appBackground(light.colorScheme),
       );
       expect(
         dark.canvasColor,
-        equals(
-          Color.alphaBlend(
-            dark.colorScheme.primary.withValues(
-              alpha: AppThemeBackground.darkTintAlpha,
-            ),
-            dark.colorScheme.surface,
-          ),
-        ),
+        AppEditorialSurfaces.appBackground(dark.colorScheme),
       );
       expect(
         AppThemeBackground.darkTintAlpha,
         greaterThan(AppThemeBackground.lightTintAlpha),
       );
-      expect(light.appBarTheme.backgroundColor, Colors.transparent);
-      expect(dark.appBarTheme.backgroundColor, Colors.transparent);
+      expect(light.appBarTheme.backgroundColor, light.canvasColor);
+      expect(dark.appBarTheme.backgroundColor, dark.canvasColor);
+      expect(
+        light.bottomNavigationBarTheme.backgroundColor,
+        AppEditorialSurfaces.section(light.colorScheme),
+      );
+      expect(
+        dark.bottomNavigationBarTheme.backgroundColor,
+        AppEditorialSurfaces.section(dark.colorScheme),
+      );
     });
 
     test('theme card style is unified for light and dark', () {
@@ -56,19 +50,11 @@ void main() {
       final darkShape = dark.cardTheme.shape! as RoundedRectangleBorder;
       expect(
         lightShape.side.color,
-        equals(
-          light.colorScheme.outlineVariant.withValues(
-            alpha: AppThemeBackground.lightCardBorderAlpha,
-          ),
-        ),
+        AppEditorialSurfaces.solidCardBorder(light.colorScheme),
       );
       expect(
         darkShape.side.color,
-        equals(
-          dark.colorScheme.outlineVariant.withValues(
-            alpha: AppThemeBackground.darkCardBorderAlpha,
-          ),
-        ),
+        AppEditorialSurfaces.solidCardBorder(dark.colorScheme),
       );
     });
 

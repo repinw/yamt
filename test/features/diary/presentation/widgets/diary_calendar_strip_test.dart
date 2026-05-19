@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_calendar_day_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -78,6 +79,45 @@ void main() {
     ).heartFor(colors.brightness);
 
     expect(heartDayText.style?.color, expectedHeartColor);
+  });
+
+  testWidgets('active day button does not paint clipped glow', (
+    tester,
+  ) async {
+    final day = DateTime(2026, 4, 27);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('de'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 54,
+              child: DiaryCalendarDayButton(
+                day: day,
+                isActive: true,
+                isToday: true,
+                isHeartDay: false,
+                activeColor: Colors.tealAccent,
+                heartColor: Colors.redAccent,
+                inactiveTextColor: Colors.grey,
+                onTap: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final button = tester.widget<AnimatedContainer>(
+      find.byType(AnimatedContainer),
+    );
+    final decoration = button.decoration! as BoxDecoration;
+
+    expect(decoration.boxShadow, isNull);
+    expect(decoration.color, Colors.tealAccent);
   });
 }
 

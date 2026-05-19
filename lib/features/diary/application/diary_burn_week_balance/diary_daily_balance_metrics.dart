@@ -53,16 +53,13 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
   final realEatenKcal = totalKcal;
   final eatenKcal = math.max<double>(0, realEatenKcal + bufferAdjustmentKcal);
   final heartAdjustmentKcal = -heartCreditKcal;
-  final alreadyCountedActivityKcal = math.max<double>(
-    0,
-    goalKcal - baseGoalKcal,
+  final targetKcal = resolveDiaryDailyTargetKcal(
+    flexibleGoalKcal: flexibleGoalKcal,
+    goalKcal: goalKcal,
+    baseGoalKcal: baseGoalKcal,
+    activitySegmentKcal: activitySegmentKcal,
   );
   final positiveActivitySegmentKcal = math.max<double>(0, activitySegmentKcal);
-  final missingActivityKcal = math.max<double>(
-    0,
-    positiveActivitySegmentKcal - alreadyCountedActivityKcal,
-  );
-  final targetKcal = flexibleGoalKcal + missingActivityKcal;
   final realDayLeftKcal = targetKcal - realEatenKcal;
   final dayLeftKcal = isHeartDay ? 0.0 : realDayLeftKcal + heartAdjustmentKcal;
 
@@ -76,4 +73,23 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     targetKcal: targetKcal,
     activitySegmentKcal: positiveActivitySegmentKcal,
   );
+}
+
+/// Resolves the daily target used by the diary daily balance card.
+double resolveDiaryDailyTargetKcal({
+  required double flexibleGoalKcal,
+  required double goalKcal,
+  required double baseGoalKcal,
+  required double activitySegmentKcal,
+}) {
+  final alreadyCountedActivityKcal = math.max<double>(
+    0,
+    goalKcal - baseGoalKcal,
+  );
+  final positiveActivitySegmentKcal = math.max<double>(0, activitySegmentKcal);
+  final missingActivityKcal = math.max<double>(
+    0,
+    positiveActivitySegmentKcal - alreadyCountedActivityKcal,
+  );
+  return flexibleGoalKcal + missingActivityKcal;
 }

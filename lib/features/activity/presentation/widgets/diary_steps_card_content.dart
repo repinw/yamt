@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -66,7 +67,7 @@ class StepsCardContent extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Color.alphaBlend(
                         accentColor.withValues(alpha: isDark ? 0.16 : 0.1),
-                        colors.surfaceContainerLow,
+                        AppEditorialSurfaces.liftedCard(colors),
                       ),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
@@ -140,7 +141,7 @@ class StepsCardContent extends StatelessWidget {
           key: progressTrackKey,
           height: 12,
           decoration: BoxDecoration(
-            color: colors.surfaceContainerHighest,
+            color: AppEditorialSurfaces.appBackground(colors),
             borderRadius: BorderRadius.circular(999),
             boxShadow: [
               BoxShadow(

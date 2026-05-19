@@ -35,7 +35,7 @@ abstract final class AppTheme {
       canvasColor: canvasColor,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
+        backgroundColor: canvasColor,
         foregroundColor: colorScheme.onSurface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -44,7 +44,7 @@ abstract final class AppTheme {
         ),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: colorScheme.surfaceContainerLow,
+        backgroundColor: AppEditorialSurfaces.section(colorScheme),
         selectedItemColor: colorScheme.primary,
         unselectedItemColor: colorScheme.onSurfaceVariant,
         elevation: 0,
@@ -100,28 +100,15 @@ abstract final class AppTheme {
   }
 
   static Color _canvasColor(ColorScheme colorScheme) {
-    final tintAlpha = colorScheme.brightness == Brightness.dark
-        ? AppThemeBackground.darkTintAlpha
-        : AppThemeBackground.lightTintAlpha;
-
-    return Color.alphaBlend(
-      colorScheme.primary.withValues(alpha: tintAlpha),
-      colorScheme.surface,
-    );
+    return AppEditorialSurfaces.appBackground(colorScheme);
   }
 
   static Color _cardColor(ColorScheme colorScheme) {
-    if (colorScheme.brightness == Brightness.light) {
-      return colorScheme.surfaceContainerHigh;
-    }
-    return colorScheme.surfaceContainerLow;
+    return AppEditorialSurfaces.liftedCard(colorScheme);
   }
 
   static Color _cardBorderColor(ColorScheme colorScheme) {
-    final alpha = colorScheme.brightness == Brightness.light
-        ? AppThemeBackground.lightCardBorderAlpha
-        : AppThemeBackground.darkCardBorderAlpha;
-    return colorScheme.outlineVariant.withValues(alpha: alpha);
+    return AppEditorialSurfaces.solidCardBorder(colorScheme);
   }
 
   static TextTheme _buildTextTheme({

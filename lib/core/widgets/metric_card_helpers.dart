@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Shared rounded detail card shell for secondary metric cards.
 class MetricDetailCardShell extends StatelessWidget {
@@ -16,14 +17,12 @@ class MetricDetailCardShell extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
+        color: AppEditorialSurfaces.liftedCard(colors),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: isDark ? 0.32 : 0.5),
-        ),
+        border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
         boxShadow: [
           BoxShadow(
-            color: colors.shadow.withValues(alpha: isDark ? 0.28 : 0.09),
+            color: AppEditorialSurfaces.ambientShadow(colors),
             blurRadius: isDark ? 30 : 22,
             offset: const Offset(0, 10),
           ),
@@ -71,15 +70,13 @@ class MetricCardFrame extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
+        color: AppEditorialSurfaces.liftedCard(colors),
         borderRadius: radius,
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: isDark ? 0.32 : 0.5),
-        ),
+        border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
         boxShadow: withShadow
             ? [
                 BoxShadow(
-                  color: colors.shadow.withValues(alpha: isDark ? 0.26 : 0.09),
+                  color: AppEditorialSurfaces.ambientShadow(colors),
                   blurRadius: isDark ? 26 : 20,
                   offset: const Offset(0, 8),
                 ),

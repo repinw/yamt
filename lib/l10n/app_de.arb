@@ -1354,8 +1354,6 @@
   "diaryBalanceHeartDayValue": "Herztag",
   "diaryBalanceHeartDaySubtitle": "Für Lernen ignoriert",
   "diaryBalanceRevertHeartDayAction": "Herztag zurücknehmen",
-  "diaryScrollToTopAction": "Nach oben",
-  "diaryJumpToMealsAction": "Zum Tagebuch",
   "diaryIntroBackAction": "Zurück",
   "diaryIntroNextAction": "Weiter",
   "diaryIntroDoneAction": "Loslegen",

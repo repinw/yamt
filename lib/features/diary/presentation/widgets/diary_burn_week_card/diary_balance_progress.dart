@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
@@ -17,6 +18,7 @@ class DiaryBalanceProgressBar extends StatelessWidget {
     required this.targetKcal,
     required this.weeklyGoalKcal,
     required this.totalDays,
+    this.compact = false,
     super.key,
   });
 
@@ -32,6 +34,9 @@ class DiaryBalanceProgressBar extends StatelessWidget {
   /// Total days represented by the bar.
   final int totalDays;
 
+  /// Whether to render the slim, marker-free diary summary version.
+  final bool compact;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -40,12 +45,83 @@ class DiaryBalanceProgressBar extends StatelessWidget {
     final activity = accents.activityFor(colors.brightness);
     final l10n = AppLocalizations.of(context)!;
     final targetLabel = l10n.diaryBalanceTargetMarkerLabel;
-    final trackColor = isDark
-        ? colors.surfaceContainerHighest.withValues(alpha: 0.45)
-        : const Color(0xFFE8EDF2);
+    final trackColor = AppEditorialSurfaces.appBackground(colors);
+    final compactTrackColor = Color.alphaBlend(
+      (isDark ? Colors.black : colors.outlineVariant).withValues(
+        alpha: isDark ? 0.28 : 0.34,
+      ),
+      AppEditorialSurfaces.liftedCard(colors),
+    );
     final dividerColor = isDark
         ? colors.surface.withValues(alpha: 0.6)
         : Colors.white.withValues(alpha: 0.9);
+
+    if (compact) {
+      return SizedBox(
+        height: 6,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width =
+                constraints.hasBoundedWidth && constraints.maxWidth.isFinite
+                ? math.max<double>(0, constraints.maxWidth)
+                : diaryBalanceProgressFallbackWidth;
+            final actualConsumedRatio = _ratioForKcal(
+              actualConsumedKcal,
+              weeklyGoalKcal,
+            );
+
+            return ClipRRect(
+              key: DiaryBalanceCardKeys.progressTrack,
+              borderRadius: BorderRadius.circular(999),
+              child: SizedBox.expand(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: ColoredBox(color: compactTrackColor),
+                    ),
+                    TweenAnimationBuilder<double>(
+                      duration: _progressAnimationDuration,
+                      curve: _progressAnimationCurve,
+                      tween: Tween<double>(
+                        begin: 0,
+                        end: actualConsumedRatio,
+                      ),
+                      builder: (context, value, child) {
+                        return Positioned(
+                          left: 0,
+                          top: 0,
+                          width: width * value,
+                          bottom: 0,
+                          child: child!,
+                        );
+                      },
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              activity,
+                              accents.fat,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    for (var day = 1; day < totalDays; day += 1)
+                      Positioned(
+                        left: (width * day / totalDays) - 0.5,
+                        top: 0,
+                        width: 1,
+                        bottom: 0,
+                        child: ColoredBox(color: dividerColor),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
 
     return SizedBox(
       height: diaryBalanceProgressAreaHeight,
@@ -148,7 +224,7 @@ class DiaryBalanceProgressBar extends StatelessWidget {
                   child: Center(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: colors.surfaceContainerLowest,
+                        color: AppEditorialSurfaces.liftedCard(colors),
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
                           color: colors.outlineVariant.withValues(

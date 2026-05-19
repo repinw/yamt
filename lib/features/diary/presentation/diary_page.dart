@@ -17,15 +17,15 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
-import 'package:yamt/features/diary/presentation/diary_scroll_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_weekly_balance_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_scroll_shortcut.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -63,7 +63,6 @@ class DiaryPage extends ConsumerStatefulWidget {
 
 class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
-  final DiaryScrollController _diaryScrollController = DiaryScrollController();
   ProviderSubscription<DiaryIntroTrigger?>? _diaryIntroSubscription;
   ProviderSubscription<void>? _providerWarmupSubscription;
   Timer? _providerWarmupTimer;
@@ -87,7 +86,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     _providerWarmupSubscription?.close();
     _providerWarmupTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    _diaryScrollController.dispose();
     super.dispose();
   }
 
@@ -119,125 +117,83 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         ? ref.watch(healthConnectionControllerProvider).value
         : null;
 
-    return Stack(
-      children: [
-        NotificationListener<ScrollNotification>(
-          onNotification: _diaryScrollController.handleScrollNotification,
-          child: CustomScrollView(
-            key: DiaryPage.pageKey,
-            controller: _diaryScrollController.scrollController,
-            cacheExtent: 0,
-            slivers: [
-              if (widget.includeHomeShellChrome)
-                const DiaryHomeShellTopChrome(),
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  horizontalPagePadding,
-                  AppSpacing.lg,
-                  horizontalPagePadding,
-                  0,
+    return CustomScrollView(
+      key: DiaryPage.pageKey,
+      cacheExtent: 0,
+      slivers: [
+        if (widget.includeHomeShellChrome) const DiaryHomeShellTopChrome(),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPagePadding,
+            AppSpacing.md,
+            horizontalPagePadding,
+            0,
+          ),
+          sliver: SliverList.list(
+            children: [
+              DiaryCalendarStrip(
+                today: calendarState.today,
+                selectedDay: calendarState.selectedDay,
+                todayRequest: calendarState.todayRequest,
+                heartDayKeys:
+                    runState?.heartDayKeys.toSet() ?? const <String>{},
+                onSelectDay: calendarController.selectDay,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              DiaryBalanceCard(
+                selectedDay: calendarState.selectedDay,
+              ),
+              if (showIntroReplayButton) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    key: DiaryIntroDialogKeys.replayButton,
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    onPressed: () => _openDiaryIntroReplay(
+                      goalSettings: goalSettings,
+                      healthStatus: healthStatus,
+                    ),
+                    icon: const Icon(
+                      Icons.help_outline_rounded,
+                      size: 18,
+                    ),
+                    label: Text(
+                      AppLocalizations.of(context)!.diaryIntroReplayAction,
+                    ),
+                  ),
                 ),
-                sliver: SliverList.list(
-                  children: [
-                    DiaryCalendarStrip(
-                      today: calendarState.today,
-                      selectedDay: calendarState.selectedDay,
-                      todayRequest: calendarState.todayRequest,
-                      heartDayKeys:
-                          runState?.heartDayKeys.toSet() ?? const <String>{},
-                      onSelectDay: calendarController.selectDay,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    DiaryBalanceCard(
-                      selectedDay: calendarState.selectedDay,
-                    ),
-                    if (showIntroReplayButton) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton.icon(
-                          key: DiaryIntroDialogKeys.replayButton,
-                          style: TextButton.styleFrom(
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          onPressed: () => _openDiaryIntroReplay(
-                            goalSettings: goalSettings,
-                            healthStatus: healthStatus,
-                          ),
-                          icon: const Icon(
-                            Icons.help_outline_rounded,
-                            size: 18,
-                          ),
-                          label: Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.diaryIntroReplayAction,
-                          ),
-                        ),
-                      ),
-                    ],
-                    DiaryWeeklyCheckInSection(
-                      selectedDay: calendarState.selectedDay,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    DiaryActivityWeightSection(
-                      selectedDay: calendarState.selectedDay,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                  ],
+              ],
+              DiaryWeeklyCheckInSection(
+                selectedDay: calendarState.selectedDay,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              DiaryActivityWeightSection(
+                selectedDay: calendarState.selectedDay,
+                header: DiaryWeeklyBalanceSummary(
+                  selectedDay: calendarState.selectedDay,
                 ),
               ),
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  key: _diaryScrollController.mealsSectionKey,
-                  height: 0,
-                ),
-              ),
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  horizontalPagePadding,
-                  0,
-                  horizontalPagePadding,
-                  bottomPagePadding,
-                ),
-                sliver: SliverList.builder(
-                  itemCount: 1,
-                  itemBuilder: (context, index) {
-                    return DiaryMealsSection(
-                      selectedDay: calendarState.selectedDay,
-                    );
-                  },
-                ),
-              ),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom:
-              MediaQuery.paddingOf(context).bottom +
-              AppSpacing.xxxxl +
-              AppSpacing.xs +
-              (widget.includeHomeShellChrome
-                  ? AppSizes.homeShellBottomBarClearance
-                  : 0),
-          child: Center(
-            child: ListenableBuilder(
-              listenable: _diaryScrollController,
-              builder: (context, _) {
-                return DiaryScrollShortcut(
-                  showJumpToMeals:
-                      !_diaryScrollController.isManualScrolling &&
-                      _diaryScrollController.showJumpToMeals,
-                  showScrollToTop:
-                      !_diaryScrollController.isManualScrolling &&
-                      _diaryScrollController.showScrollToTop,
-                  onJumpToMeals: _diaryScrollController.scrollToMeals,
-                  onScrollToTop: _diaryScrollController.scrollToTop,
-                );
-              },
-            ),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPagePadding,
+            0,
+            horizontalPagePadding,
+            bottomPagePadding,
+          ),
+          sliver: SliverList.builder(
+            itemCount: 1,
+            itemBuilder: (context, index) {
+              return DiaryMealsSection(
+                selectedDay: calendarState.selectedDay,
+              );
+            },
           ),
         ),
       ],

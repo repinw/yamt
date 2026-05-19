@@ -41,13 +41,14 @@ class DiaryDailyBalanceCard extends StatelessWidget {
             leftSubtitle: data.leftSubtitle,
             isHeartDay: data.isHeartDay,
           ),
-          const SizedBox(height: AppSpacing.xxl),
+          const SizedBox(height: AppSpacing.md),
           DiaryDailyGoalProgressBar(
             eatenKcal: data.metrics.eatenKcal,
             targetKcal: data.metrics.targetKcal,
             activitySegmentKcal: data.metrics.activitySegmentKcal,
             numberFormat: data.numberFormat,
             unit: l10n.caloriesUnitKcal,
+            compact: true,
           ),
           if (data.bufferAdjustmentLabel != null) ...[
             const SizedBox(height: AppSpacing.sm),
@@ -55,15 +56,7 @@ class DiaryDailyBalanceCard extends StatelessWidget {
               label: data.bufferAdjustmentLabel!,
             ),
           ],
-          const SizedBox(height: AppSpacing.xxl),
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: Theme.of(
-              context,
-            ).colorScheme.outlineVariant.withValues(alpha: 0.36),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
+          const SizedBox(height: AppSpacing.xl),
           DiaryNutritionBars.embedded(selectedDay: data.selectedDay),
           if (data.canRevertHeartDay) ...[
             const SizedBox(height: AppSpacing.md),
@@ -127,7 +120,6 @@ class _DailyBalanceSummary extends StatelessWidget {
             label: leftLabel,
             value: leftValue,
             subtitle: leftSubtitle,
-            icon: Icons.show_chart_rounded,
             labelColor: isHeartDay
                 ? accents.heartFor(colors.brightness)
                 : primary,

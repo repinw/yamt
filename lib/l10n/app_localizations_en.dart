@@ -2518,12 +2518,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBalanceRevertHeartDayAction => 'Revert heart day';
 
   @override
-  String get diaryScrollToTopAction => 'To top';
-
-  @override
-  String get diaryJumpToMealsAction => 'To diary';
-
-  @override
   String get diaryIntroBackAction => 'Back';
 
   @override

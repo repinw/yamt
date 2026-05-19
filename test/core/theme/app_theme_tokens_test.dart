@@ -3,22 +3,41 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 void main() {
-  test('editorial surfaces derive colors from scheme tokens', () {
-    final colors = ColorScheme.fromSeed(seedColor: AppColors.seed);
+  test('editorial surfaces keep mock-like contrast in dark mode', () {
+    final colors = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: Brightness.dark,
+    );
+    final background = AppEditorialSurfaces.appBackground(colors);
+    final card = AppEditorialSurfaces.liftedCard(colors);
+    final section = AppEditorialSurfaces.section(colors);
+
+    expect(ThemeData.estimateBrightnessForColor(background), Brightness.dark);
+    expect(ThemeData.estimateBrightnessForColor(card), Brightness.dark);
+    expect(ThemeData.estimateBrightnessForColor(section), Brightness.dark);
+    expect(card.computeLuminance(), greaterThan(background.computeLuminance()));
+    expect(section.computeLuminance(), greaterThan(card.computeLuminance()));
+    expect(AppEditorialSurfaces.glass(colors), section);
+  });
+
+  test('solid card borders are mode-specific and subtle', () {
+    final light = ColorScheme.fromSeed(seedColor: AppColors.seed);
+    final dark = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: Brightness.dark,
+    );
 
     expect(
-      AppEditorialSurfaces.liftedCard(colors),
-      colors.surfaceContainerLowest,
+      AppEditorialSurfaces.solidCardBorder(light).a,
+      closeTo(AppThemeBackground.lightCardBorderAlpha, 0.001),
     );
     expect(
-      AppEditorialSurfaces.section(colors),
-      colors.surfaceContainerLow,
+      AppEditorialSurfaces.solidCardBorder(dark).a,
+      closeTo(AppThemeBackground.darkCardBorderAlpha, 0.001),
     );
     expect(
-      AppEditorialSurfaces.glass(colors),
-      colors.surfaceContainerLow.withValues(
-        alpha: AppEditorial.glassOpacity,
-      ),
+      AppThemeBackground.darkCardBorderAlpha,
+      lessThan(AppThemeBackground.lightCardBorderAlpha),
     );
   });
 
@@ -58,8 +77,12 @@ void main() {
       shadowOffset: const Offset(0, 8),
     );
 
-    expect(decoration.color, colors.surfaceContainerLowest);
+    expect(decoration.color, AppEditorialSurfaces.liftedCard(colors));
     expect(decoration.borderRadius, borderRadius);
+    expect(
+      (decoration.border as Border?)?.top.color,
+      AppEditorialSurfaces.solidCardBorder(colors),
+    );
     expect(decoration.boxShadow?.single.blurRadius, 18);
     expect(decoration.boxShadow?.single.offset, const Offset(0, 8));
   });

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
 
 /// Loading state for the diary Burn Week card.
@@ -20,25 +19,12 @@ class DiaryBalanceLoading extends StatelessWidget {
         ? const Color(0xFF374151)
         : const Color(0xFFF8FAFC);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        DiaryBalanceShell(
-          child: _ShimmerSkeleton(
-            baseColor: baseColor,
-            highlightColor: highlightColor,
-            child: const _DiaryDailyBalanceSkeleton(),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        DiaryBalanceShell(
-          child: _ShimmerSkeleton(
-            baseColor: baseColor,
-            highlightColor: highlightColor,
-            child: const _DiaryWeeklyBalanceSkeleton(),
-          ),
-        ),
-      ],
+    return DiaryBalanceShell(
+      child: _ShimmerSkeleton(
+        baseColor: baseColor,
+        highlightColor: highlightColor,
+        child: const _DiaryDailyBalanceSkeleton(),
+      ),
     );
   }
 }
@@ -146,11 +132,9 @@ class _DiaryDailyBalanceSkeleton extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: AppSpacing.xxl),
+        SizedBox(height: AppSpacing.md),
         _DailyProgressSkeleton(),
-        SizedBox(height: AppSpacing.xxl),
-        Divider(height: 1, thickness: 1),
-        SizedBox(height: AppSpacing.xxl),
+        SizedBox(height: AppSpacing.xl),
         _MacroBarsSkeleton(),
       ],
     );
@@ -193,15 +177,7 @@ class _DailyProgressSkeleton extends StatelessWidget {
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _SkeletonBlock(width: 20, height: 12),
-            _SkeletonBlock(width: 78, height: 12),
-          ],
-        ),
-        SizedBox(height: AppSpacing.xs),
-        _SkeletonBlock(height: 12),
+        _SkeletonBlock(height: 10),
       ],
     );
   }
@@ -237,45 +213,6 @@ class _MacroBarSkeleton extends StatelessWidget {
         _SkeletonBlock(height: 8),
         SizedBox(height: AppSpacing.xs),
         _SkeletonBlock(width: 64, height: 12),
-      ],
-    );
-  }
-}
-
-class _DiaryWeeklyBalanceSkeleton extends StatelessWidget {
-  const _DiaryWeeklyBalanceSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          height: diaryBalanceProgressAreaHeight,
-          child: Align(
-            child: _SkeletonBlock(height: diaryBalanceProgressHeight),
-          ),
-        ),
-        SizedBox(height: AppSpacing.md),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _SkeletonBlock(width: 52, height: 14),
-            _SkeletonBlock(width: 86, height: 14),
-          ],
-        ),
-        SizedBox(height: AppSpacing.xxl),
-        Row(
-          children: [
-            Expanded(
-              child: _SkeletonBlock(height: diaryBalanceStatTileHeight),
-            ),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _SkeletonBlock(height: diaryBalanceStatTileHeight),
-            ),
-          ],
-        ),
       ],
     );
   }

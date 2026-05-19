@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 
 void main() {
@@ -56,6 +57,27 @@ void main() {
 
       expect(find.text('Today'), findsOneWidget);
       expect(find.text('Mon, Apr 27'), findsOneWidget);
+    });
+
+    testWidgets('uses app background color for its chrome surface', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _homeTopBarHarness(
+          const HomeTopBar(
+            title: 'Today',
+            subtitle: 'Mon, Apr 27',
+            actions: <Widget>[],
+          ),
+        ),
+      );
+
+      final context = tester.element(find.byType(HomeTopBar));
+      final colors = Theme.of(context).colorScheme;
+      final chrome = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+      final decoration = chrome.decoration as BoxDecoration;
+
+      expect(decoration.color, AppEditorialSurfaces.appBackground(colors));
     });
 
     testWidgets('keeps long title and subtitle constrained to one line', (

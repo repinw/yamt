@@ -6,6 +6,8 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/diary/application/diary_burn_week_balance/'
+    'diary_daily_balance_metrics.dart';
 
 /// Derived values for the weekly Burn Week pacing card.
 class DiaryWeeklyBalanceMetrics {
@@ -56,15 +58,43 @@ DiaryWeeklyBalanceMetrics resolveDiaryWeeklyBalanceMetrics({
     selectedDayOverview: selectedDayOverview,
     currentWeekStartDate: currentWeekStartDate,
   );
+  final displayWeeklyGoalKcal = _resolveDisplayWeeklyGoalKcal(
+    baseWeeklyGoalKcal: weeklyGoalKcal,
+    actualConsumedKcal: pacing.actualConsumedKcal,
+    selectedDayTargetKcal: resolveDiaryDailyTargetKcal(
+      flexibleGoalKcal: weekOverview.todayFlexibleGoalKcal,
+      goalKcal: selectedDayOverview.goalKcal,
+      baseGoalKcal: selectedDayOverview.baseGoalKcal,
+      activitySegmentKcal: selectedDayOverview.activityBonusKcal,
+    ),
+    selectedDayTotalKcal: selectedDayOverview.totalKcal,
+  );
 
   return DiaryWeeklyBalanceMetrics(
     pacing: pacing,
-    targetKcal: weeklyGoalKcal * pacing.paceRatio,
-    goalKcal: weeklyGoalKcal,
+    targetKcal: displayWeeklyGoalKcal * pacing.paceRatio,
+    goalKcal: displayWeeklyGoalKcal,
     progressDay: resolveDiaryWeeklyProgressDay(
       selectedDay: selectedDayOverview.date,
       currentWeekStartDate: currentWeekStartDate,
     ),
+  );
+}
+
+double _resolveDisplayWeeklyGoalKcal({
+  required double baseWeeklyGoalKcal,
+  required double actualConsumedKcal,
+  required double selectedDayTargetKcal,
+  required double selectedDayTotalKcal,
+}) {
+  final selectedDayLeftKcal = selectedDayTargetKcal - selectedDayTotalKcal;
+  if (selectedDayLeftKcal <= 0) {
+    return baseWeeklyGoalKcal;
+  }
+
+  return math.max<double>(
+    baseWeeklyGoalKcal,
+    actualConsumedKcal + selectedDayLeftKcal,
   );
 }
 

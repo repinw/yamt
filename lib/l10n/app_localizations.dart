@@ -4509,18 +4509,6 @@ abstract class AppLocalizations {
   /// **'Revert heart day'**
   String get diaryBalanceRevertHeartDayAction;
 
-  /// No description provided for @diaryScrollToTopAction.
-  ///
-  /// In en, this message translates to:
-  /// **'To top'**
-  String get diaryScrollToTopAction;
-
-  /// No description provided for @diaryJumpToMealsAction.
-  ///
-  /// In en, this message translates to:
-  /// **'To diary'**
-  String get diaryJumpToMealsAction;
-
   /// No description provided for @diaryIntroBackAction.
   ///
   /// In en, this message translates to:

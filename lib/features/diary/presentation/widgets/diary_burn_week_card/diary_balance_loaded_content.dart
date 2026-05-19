@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_balance_card.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_weekly_balance_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Loaded Burn Week balance UI after metrics have been resolved.
@@ -37,20 +35,9 @@ class DiaryBalanceLoadedContent extends StatelessWidget {
       l10n: l10n,
     );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        DiaryDailyBalanceCard(
-          data: dailyData,
-          onUnmarkHeartDay: onUnmarkHeartDay,
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        DiaryWeeklyBalanceCard(
-          weeklyMetrics: resolvedMetrics.weekly,
-          runWeekNumber: resolvedMetrics.state.runWeekNumber,
-          numberFormat: numberFormat,
-        ),
-      ],
+    return DiaryDailyBalanceCard(
+      data: dailyData,
+      onUnmarkHeartDay: onUnmarkHeartDay,
     );
   }
 }

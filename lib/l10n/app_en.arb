@@ -1315,8 +1315,6 @@
   "diaryBalanceHeartDayValue": "Heart day",
   "diaryBalanceHeartDaySubtitle": "Ignored for learning",
   "diaryBalanceRevertHeartDayAction": "Revert heart day",
-  "diaryScrollToTopAction": "To top",
-  "diaryJumpToMealsAction": "To diary",
   "diaryIntroBackAction": "Back",
   "diaryIntroNextAction": "Next",
   "diaryIntroDoneAction": "Start tracking",

@@ -271,6 +271,56 @@ void main() {
     expect(find.byIcon(Icons.close_rounded), findsNWidgets(2));
   });
 
+  testWidgets('compact activity section renders header and expands steps', (
+    tester,
+  ) async {
+    await _pumpDiaryWidget(
+      tester,
+      DiaryActivityWeightSection(
+        selectedDay: selectedDay,
+        header: const Text('WOCHE 6 SUMMARY'),
+      ),
+      overrides: [
+        ..._commonOverrides(),
+        _stepsSummaryOverride(
+          selectedDay,
+          _activitySummary(
+            selectedDay,
+            totalSteps: 6500,
+            stepsDuringWorkouts: 1500,
+            stepsOutsideWorkouts: 5000,
+          ),
+        ),
+        _activityWeightOverride(
+          selectedDay,
+          _activityWeightData(
+            selectedDay,
+            activityKcal: 450,
+            activeMinutes: 45,
+            selectedWeightKg: 78.4,
+            hasSelectedDayWeight: true,
+          ),
+        ),
+      ],
+    );
+
+    expect(find.text('WOCHE 6 SUMMARY'), findsOneWidget);
+    expect(find.text('SCHRITTE'), findsOneWidget);
+    expect(find.text('AKTIVITÄT'), findsOneWidget);
+    expect(find.text('GEWICHT'), findsOneWidget);
+    expect(find.text('6.500'), findsOneWidget);
+    expect(find.textContaining('450 kcal', findRichText: true), findsOneWidget);
+    expect(find.textContaining('78,4 kg', findRichText: true), findsOneWidget);
+
+    await tester.tap(find.text('SCHRITTE'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('SCHRITTE DETAILS'), findsOneWidget);
+    expect(find.text('Schritte im Training'), findsOneWidget);
+    expect(find.text('Schritte außerhalb'), findsOneWidget);
+    expect(find.text('5.000'), findsOneWidget);
+  });
+
   testWidgets('activity and weight section defers data load', (tester) async {
     var loadCount = 0;
     final deferredDataOverride =
