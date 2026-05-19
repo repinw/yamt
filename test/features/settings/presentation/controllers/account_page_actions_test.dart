@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/settings/account_page.dart';
-import 'package:yamt/features/settings/provider/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
+import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _MockUser extends Mock implements User {}

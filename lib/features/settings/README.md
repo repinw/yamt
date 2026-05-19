@@ -6,10 +6,10 @@ settings.
 
 ## Owns
 
-- Settings and account pages at the feature root.
+- Settings and account pages under `presentation/pages/`.
 - Settings tiles, account cards, account dialogs, and snackbar helpers under
-  `widgets/`.
-- Account page flow and account controller state under `provider/`.
+  `presentation/widgets/<widget_name>/`.
+- Account page flow and account controller state under `presentation/controllers/`.
 
 ## Does Not Own
 
@@ -20,27 +20,23 @@ settings.
 
 ## Public Edge
 
-- `settings_page.dart` is the main settings page.
-- `account_page.dart` is the account management page.
-- `widgets/settings_health_connect_tile.dart` is the settings-owned tile that
+- `presentation/pages/settings_page.dart` is the main settings page.
+- `presentation/pages/account_page.dart` is the account management page.
+- `presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart` is the settings-owned tile that
   delegates Health connection actions to the Health feature.
-- Reusable settings tile components under `widgets/`.
+- Reusable settings tile components under `presentation/widgets/settings_tiles/`.
 
 Other features should compose the page or complete settings widgets instead of
 wiring Settings provider internals directly.
 
 ## Providers
 
-- `provider/` is legacy structure for the account controller and account page
-  flow service.
-- New Settings-owned providers should be placed next to their owner layer when
-  possible instead of extending the legacy folder.
-- Providers use Riverpod code generation.
+- Providers use Riverpod code generation and live under `presentation/controllers/`.
 
 Current providers:
 
-- `provider/account_controller.dart`
-- `provider/account_page_flow_service.dart`
+- `presentation/controllers/account_controller.dart`
+- `presentation/controllers/account_page_flow_service.dart`
 
 ## Accepted Dependencies
 

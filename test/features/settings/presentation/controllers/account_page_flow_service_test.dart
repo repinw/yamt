@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/settings/provider/account_controller.dart';
-import 'package:yamt/features/settings/provider/account_page_flow_service.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_page_flow_service.dart';
 
 class _MockAuthCredential extends Fake implements AuthCredential {}
 

@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
-import 'package:yamt/features/settings/provider/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 

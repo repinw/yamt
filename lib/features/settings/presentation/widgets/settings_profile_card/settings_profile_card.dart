@@ -6,8 +6,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/auth/data/auth_service.dart'
     show userProfileProvider;
-import 'package:yamt/features/settings/settings_page_keys.dart';
-import 'package:yamt/features/settings/widgets/settings_tiles.dart';
+import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Profile summary card shown at the top of settings.

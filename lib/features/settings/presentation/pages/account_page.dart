@@ -9,12 +9,12 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/data/auth_service.dart'
     show authStateChangesProvider;
 import 'package:yamt/features/auth/presentation/auth_error_message_mapper.dart';
-import 'package:yamt/features/settings/provider/account_controller.dart';
-import 'package:yamt/features/settings/provider/account_page_flow_service.dart';
-import 'package:yamt/features/settings/widgets/account_cards.dart';
-import 'package:yamt/features/settings/widgets/account_status_snackbar.dart';
-import 'package:yamt/features/settings/widgets/credential_conflict_dialog.dart';
-import 'package:yamt/features/settings/widgets/link_email_password_dialog.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_page_flow_service.dart';
+import 'package:yamt/features/settings/presentation/widgets/account_cards/account_cards.dart';
+import 'package:yamt/features/settings/presentation/widgets/account_status_snackbar/account_status_snackbar.dart';
+import 'package:yamt/features/settings/presentation/widgets/credential_conflict_dialog/credential_conflict_dialog.dart';
+import 'package:yamt/features/settings/presentation/widgets/link_email_password_dialog/link_email_password_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines account page.
