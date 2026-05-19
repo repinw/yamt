@@ -263,7 +263,9 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           onSearchChanged: _onSearchQueryChanged,
           onShowFilters: () => _showUnifiedFiltersSheet(
             context,
-            initialSection: InventoryUnifiedFilterSection.preparedMeals,
+            initialSection: showPreparedMealsSection
+                ? InventoryUnifiedFilterSection.preparedMeals
+                : InventoryUnifiedFilterSection.foods,
           ),
           voiceSearchService: _voiceSearchService,
           voiceSearchController: _voiceSearchController,

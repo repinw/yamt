@@ -368,7 +368,7 @@ void main() {
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Remove'));
+    await tester.tap(find.byTooltip('Remove').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete completely'));
     await tester.pumpAndSettle();
@@ -448,7 +448,7 @@ void main() {
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Remove').first);
+    await tester.tap(find.byTooltip('Remove').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Thrown away'));
     await tester.pumpAndSettle();

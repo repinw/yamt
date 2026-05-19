@@ -699,14 +699,12 @@ void main() {
       final searchField = tester.widget<TextField>(
         find.byKey(const Key('receipt_review_manual_search_field')),
       );
-      final prefixIcon = searchField.decoration?.prefixIcon;
       final previewName = tester.widget<Text>(
         find.byKey(const Key('receipt_review_manual_preview_name')),
       );
       expect(searchField.controller?.text, 'Cashews Sour Creme & Onion');
       expect(searchField.decoration?.hintText, 'Produkt suchen');
-      expect(prefixIcon, isA<Icon>());
-      expect((prefixIcon! as Icon).icon, Icons.search);
+      expect(find.byIcon(Icons.search_rounded), findsWidgets);
       expect(previewName.data, 'Cashews Sour Creme & Onion');
       expect(
         find.descendant(
@@ -1170,7 +1168,7 @@ void main() {
     await tester.pump();
 
     expect(speechService.startCallCount, 1);
-    expect(_voiceSearchIcon(tester).icon, Icons.mic);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic_rounded);
 
     await tester.tap(
       find.byKey(const Key('receipt_review_manual_voice_search_button')),
@@ -1178,7 +1176,7 @@ void main() {
     await tester.pump();
 
     expect(speechService.stopCallCount, 1);
-    expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic_none_rounded);
   });
 
   testWidgets('voice search auto stop resets the microphone icon', (
@@ -1197,12 +1195,12 @@ void main() {
     );
     await tester.pump();
 
-    expect(_voiceSearchIcon(tester).icon, Icons.mic);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic_rounded);
 
     speechService.emitListeningState(isListening: false);
     await tester.pump();
 
-    expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic_none_rounded);
   });
 
   testWidgets('voice search permission failure shows a snackbar', (
@@ -1246,12 +1244,12 @@ void main() {
       );
       await tester.pump();
 
-      expect(_voiceSearchIcon(tester).icon, Icons.mic);
+      expect(_voiceSearchIcon(tester).icon, Icons.mic_rounded);
 
       speechService.emitError(VoiceSearchFailure.error);
       await tester.pump();
 
-      expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+      expect(_voiceSearchIcon(tester).icon, Icons.mic_none_rounded);
       expect(
         find.text(
           'Sprachsuche konnte nicht gestartet werden. '

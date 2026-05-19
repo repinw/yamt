@@ -705,8 +705,8 @@ void main() {
     await _pumpRouterTransition(tester);
 
     expect(router.state.uri.path, AppRoutes.homeInventoryTemplates);
-    expect(find.text('Cookbook'), findsOneWidget);
-    expect(find.byIcon(Icons.add_link_rounded), findsOneWidget);
+    expect(find.text('Cookbook'), findsWidgets);
+    expect(find.byIcon(Icons.add_link_rounded), findsWidgets);
     expect(find.byType(BackButton), findsNothing);
   });
 

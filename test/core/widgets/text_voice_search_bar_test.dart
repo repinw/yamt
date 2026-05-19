@@ -240,7 +240,7 @@ void main() {
     expect(changedValue, 'milk oats bananas');
   });
 
-  testWidgets('compact surface shows voice button until text is entered', (
+  testWidgets('compact surface keeps voice button with clear action', (
     tester,
   ) async {
     final textController = TextEditingController();
@@ -270,7 +270,7 @@ void main() {
       find.byKey(const Key('shared_search_field')),
     );
     expect(field.controller?.text, 'oat');
-    expect(find.byKey(const Key('shared_voice_button')), findsNothing);
+    expect(find.byKey(const Key('shared_voice_button')), findsOneWidget);
     expect(find.byKey(const Key('shared_clear_button')), findsOneWidget);
   });
 

@@ -457,6 +457,42 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _tapInventoryRowAction(
+  WidgetTester tester,
+  String tooltip,
+) async {
+  await _tapVisible(tester, find.byTooltip(tooltip));
+}
+
+Future<void> _openInventoryFilters(WidgetTester tester) async {
+  await _tapVisible(tester, find.byTooltip('Filter items'));
+}
+
+Future<void> _showInventoryFilterResults(WidgetTester tester) async {
+  await _tapVisible(tester, find.text('Show results'));
+}
+
+Future<void> _selectInventoryListMode(
+  WidgetTester tester,
+  String label,
+) async {
+  await _openInventoryFilters(tester);
+  await _tapVisible(tester, find.text(label));
+  await _showInventoryFilterResults(tester);
+}
+
+Future<void> _toggleFullyConsumedFilter(WidgetTester tester) async {
+  await _openInventoryFilters(tester);
+  await _tapVisible(
+    tester,
+    find.descendant(
+      of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+      matching: find.byType(Switch),
+    ),
+  );
+  await _showInventoryFilterResults(tester);
+}
+
 Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   final confirmButton = find.byKey(
     const Key('inventory_item_amount_dialog_confirm_button'),
@@ -600,7 +636,7 @@ void main() {
     final fab = find.byKey(const Key('test_inventory_fab'));
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.text('Remove'));
+    await _tapInventoryRowAction(tester, 'Remove');
 
     final removeSheetSurface = find.ancestor(
       of: find.text('Remove item'),
@@ -636,8 +672,6 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('By receipt'), findsOneWidget);
-    expect(find.text('All foods'), findsOneWidget);
     expect(find.text('Milk'), findsOneWidget);
 
     await _scrollUntilVisible(tester, find.text('Milk'));
@@ -660,7 +694,7 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.text('By receipt'));
+    await _selectInventoryListMode(tester, 'By receipt');
 
     expect(find.text('Receipt #abc123'), findsOneWidget);
 
@@ -701,34 +735,19 @@ void main() {
 
     await _scrollUntilVisible(tester, find.text('Banana'));
 
-    expect(find.text('Apple'), findsOneWidget);
-    expect(find.text('Banana'), findsOneWidget);
-
-    await _tapVisible(tester, find.byTooltip('Filter items'));
-    await _tapVisible(
-      tester,
-      find.descendant(
-        of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
-        matching: find.byType(Switch),
-      ),
-    );
-    await _tapVisible(tester, find.byTooltip('Close'));
-    await _scrollUntilVisible(tester, find.text('Banana'));
-
     expect(find.text('Apple'), findsNothing);
     expect(find.text('Banana'), findsOneWidget);
 
-    await _tapVisible(tester, find.byTooltip('Filter items'));
-    await _tapVisible(
-      tester,
-      find.descendant(
-        of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
-        matching: find.byType(Switch),
-      ),
-    );
+    await _toggleFullyConsumedFilter(tester);
     await _scrollUntilVisible(tester, find.text('Banana'));
 
     expect(find.text('Apple'), findsOneWidget);
+    expect(find.text('Banana'), findsOneWidget);
+
+    await _toggleFullyConsumedFilter(tester);
+    await _scrollUntilVisible(tester, find.text('Banana'));
+
+    expect(find.text('Apple'), findsNothing);
     expect(find.text('Banana'), findsOneWidget);
   });
 
@@ -798,7 +817,7 @@ void main() {
     await tester.pumpAndSettle();
     await _tapVisible(tester, find.text('Milk'));
 
-    await _tapVisible(tester, find.text('Swap candidate'));
+    await _tapInventoryRowAction(tester, 'Swap candidate');
 
     expect(find.text('Select product'), findsOneWidget);
     expect(find.text('Oat Drink'), findsAtLeastNWidgets(1));
@@ -830,7 +849,7 @@ void main() {
       await tester.pumpWidget(_buildTestApp(repository));
       await tester.pumpAndSettle();
       await _tapVisible(tester, find.text('Milk'));
-      await _tapVisible(tester, find.text('Swap candidate'));
+      await _tapInventoryRowAction(tester, 'Swap candidate');
 
       expect(
         find.text(
@@ -854,10 +873,11 @@ void main() {
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
+    await _toggleFullyConsumedFilter(tester);
 
     await _tapVisible(tester, find.text('Milk'));
     await tester.pumpAndSettle();
-    await _tapVisible(tester, find.text('Edit'));
+    await _tapInventoryRowAction(tester, 'Edit');
 
     expect(find.text('Edit inventory item'), findsOneWidget);
     expect(find.text('Discounts'), findsNothing);
@@ -879,9 +899,10 @@ void main() {
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
+    await _toggleFullyConsumedFilter(tester);
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.text('Remove'));
+    await _tapInventoryRowAction(tester, 'Remove');
     await _tapVisible(tester, find.text('Delete completely'));
 
     expect(find.text('Item deleted.'), findsOneWidget);
@@ -910,7 +931,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.text('Remove'));
+    await _tapInventoryRowAction(tester, 'Remove');
     await _tapVisible(tester, find.text('Delete completely'));
 
     expect(find.text('Item deleted.'), findsOneWidget);
@@ -1202,6 +1223,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await _toggleFullyConsumedFilter(tester);
 
       expect(find.byTooltip('Add to shopping list'), findsOneWidget);
       expect(find.byTooltip('Eat'), findsNothing);
@@ -1242,6 +1264,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await _toggleFullyConsumedFilter(tester);
 
       await tester.tap(find.byTooltip('Add to shopping list'));
       await tester.pumpAndSettle();
@@ -1277,6 +1300,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await _toggleFullyConsumedFilter(tester);
 
       await tester.tap(find.byTooltip('Add to shopping list'));
       await tester.pumpAndSettle();
@@ -1316,6 +1340,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _toggleFullyConsumedFilter(tester);
 
     final buyAgainButton = find.ancestor(
       of: find.byIcon(Icons.shopping_cart_outlined),
@@ -1348,6 +1373,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _toggleFullyConsumedFilter(tester);
 
     await tester.tap(find.byTooltip('Add to shopping list'));
     await tester.pump();
@@ -1401,7 +1427,7 @@ void main() {
 
     await _tapVisible(tester, find.text('Milk'));
 
-    await _tapVisible(tester, find.text('Remove'));
+    await _tapInventoryRowAction(tester, 'Remove');
     await _tapVisible(tester, find.text('Thrown away'));
     await _tapVisible(tester, find.text('Expired'));
 
@@ -1447,7 +1473,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.text('Remove'));
+    await _tapInventoryRowAction(tester, 'Remove');
     await _tapVisible(tester, find.text('Thrown away'));
     await _tapVisible(tester, find.text('Expired'));
 
@@ -1481,7 +1507,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.text('Remove'));
+    await _tapInventoryRowAction(tester, 'Remove');
     await _tapVisible(tester, find.text('Thrown away'));
     await _tapVisible(tester, find.text('Expired'));
 
@@ -1501,7 +1527,8 @@ void main() {
     await _tapAmountDialogConfirm(tester);
     await tester.pumpAndSettle();
 
-    expect(_stockLabel('0 /3'), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
+    expect((await repository.readAll()).single.quantity, 0);
   });
 
   testWidgets('consume-elsewhere amount dialog can fill all remaining stock', (
@@ -1518,7 +1545,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.text('Remove'));
+    await _tapInventoryRowAction(tester, 'Remove');
     await _tapVisible(tester, find.text('Consumed elsewhere'));
 
     final amountField = find.byKey(
@@ -1538,7 +1565,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Undo'), findsOneWidget);
-    expect(_stockLabel('0 /3'), findsOneWidget);
+    expect((await repository.readAll()).single.quantity, 0);
   });
 
   testWidgets(
@@ -1553,9 +1580,10 @@ void main() {
 
       await tester.pumpWidget(_buildTestApp(repository));
       await tester.pumpAndSettle();
+      await _toggleFullyConsumedFilter(tester);
 
       await _tapVisible(tester, find.text('Milk'));
-      await _tapVisible(tester, find.text('Remove'));
+      await _tapInventoryRowAction(tester, 'Remove');
       await _tapVisible(tester, find.text('Consumed elsewhere'));
 
       await repository.saveAll(<InventoryItem>[
