@@ -41,6 +41,27 @@ void main() {
     );
   });
 
+  test('compact progress track is derived from lifted card surface', () {
+    final light = ColorScheme.fromSeed(seedColor: AppColors.seed);
+    final dark = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: Brightness.dark,
+    );
+
+    expect(
+      AppEditorialSurfaces.compactProgressTrack(light),
+      isNot(AppEditorialSurfaces.liftedCard(light)),
+    );
+    expect(
+      AppEditorialSurfaces.compactProgressTrack(dark),
+      isNot(AppEditorialSurfaces.liftedCard(dark)),
+    );
+    expect(
+      AppEditorialSurfaces.compactProgressTrack(dark).computeLuminance(),
+      lessThan(AppEditorialSurfaces.liftedCard(dark).computeLuminance()),
+    );
+  });
+
   test('ingredient accents use color scheme roles and cycle', () {
     final colors = ColorScheme.fromSeed(seedColor: AppColors.seed);
 

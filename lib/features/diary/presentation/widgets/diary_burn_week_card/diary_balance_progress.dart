@@ -46,11 +46,8 @@ class DiaryBalanceProgressBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final targetLabel = l10n.diaryBalanceTargetMarkerLabel;
     final trackColor = AppEditorialSurfaces.appBackground(colors);
-    final compactTrackColor = Color.alphaBlend(
-      (isDark ? Colors.black : colors.outlineVariant).withValues(
-        alpha: isDark ? 0.28 : 0.34,
-      ),
-      AppEditorialSurfaces.liftedCard(colors),
+    final compactTrackColor = AppEditorialSurfaces.compactProgressTrack(
+      colors,
     );
     final dividerColor = isDark
         ? colors.surface.withValues(alpha: 0.6)

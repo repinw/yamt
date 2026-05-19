@@ -137,6 +137,16 @@ abstract final class AppEditorialSurfaces {
   /// Solid chrome surface.
   static Color glass(ColorScheme colors) => section(colors);
 
+  /// Track color for compact progress bars on lifted cards.
+  static Color compactProgressTrack(ColorScheme colors) {
+    final isDark = colors.brightness == Brightness.dark;
+    final overlay = (isDark ? Colors.black : colors.outlineVariant).withValues(
+      alpha: isDark ? 0.28 : 0.34,
+    );
+
+    return Color.alphaBlend(overlay, liftedCard(colors));
+  }
+
   /// Border color for solid cards.
   static Color cardBorder(ColorScheme colors) {
     return _accentSurface(

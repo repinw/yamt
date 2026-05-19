@@ -159,9 +159,8 @@ class _CollapsedMealBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (section.entries.isEmpty) {
-      return SizedBox(
+      return SizedBox.shrink(
         key: DiaryMealsSectionKeys.collapsedEmpty(section.mealType),
-        height: 0,
       );
     }
 
