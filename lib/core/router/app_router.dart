@@ -58,8 +58,8 @@ import 'package:yamt/features/scanner/presentation/'
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
-import 'package:yamt/features/settings/account_page.dart';
-import 'package:yamt/features/settings/settings_page.dart';
+import 'package:yamt/features/settings/presentation/pages/account_page.dart';
+import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/statistics/presentation/'
     'calorie_health_trends_page.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/settings/widgets/account_status_snackbar.dart';
+import 'package:yamt/features/settings/presentation/widgets/account_status_snackbar/account_status_snackbar.dart';
 
 void main() {
   testWidgets('shows success styled snackbar', (tester) async {

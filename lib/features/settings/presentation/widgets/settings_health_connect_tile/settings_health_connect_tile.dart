@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
-import 'package:yamt/features/settings/settings_page_keys.dart';
-import 'package:yamt/features/settings/widgets/settings_tiles.dart';
+import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Health Connect/Apple Health settings row.

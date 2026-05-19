@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/settings/provider/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 
 /// Defines account credential conflict choice.
 enum AccountCredentialConflictChoice {

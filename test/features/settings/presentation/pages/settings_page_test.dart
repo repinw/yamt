@@ -22,9 +22,9 @@ import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
-import 'package:yamt/features/settings/account_page.dart';
-import 'package:yamt/features/settings/settings_page.dart';
-import 'package:yamt/features/settings/settings_page_keys.dart';
+import 'package:yamt/features/settings/presentation/pages/account_page.dart';
+import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
+import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';

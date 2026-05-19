@@ -19,10 +19,10 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/settings/settings_page_keys.dart';
-import 'package:yamt/features/settings/widgets/settings_health_connect_tile.dart';
-import 'package:yamt/features/settings/widgets/settings_profile_card.dart';
-import 'package:yamt/features/settings/widgets/settings_tiles.dart';
+import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_profile_card/settings_profile_card.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines settings page.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/settings/widgets/credential_conflict_dialog.dart';
+import 'package:yamt/features/settings/presentation/widgets/credential_conflict_dialog/credential_conflict_dialog.dart';
 
 Widget _dialogUnderTest({
   required VoidCallback onCancel,
