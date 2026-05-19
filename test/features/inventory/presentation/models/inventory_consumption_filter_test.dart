@@ -20,7 +20,7 @@ InventoryItem _item({
 }
 
 void main() {
-  test('apply shows fully consumed items by default', () {
+  test('apply hides fully consumed items by default', () {
     final items = <InventoryItem>[
       _item(id: 'fresh', quantity: 2, initialQuantity: 2),
       _item(id: 'partial', quantity: 1, initialQuantity: 2),
@@ -28,6 +28,19 @@ void main() {
     ];
 
     const filter = InventoryConsumptionFilter();
+    final result = filter.apply(items);
+
+    expect(result.map((item) => item.id), <String>['fresh', 'partial']);
+  });
+
+  test('apply includes fully consumed items when disabled', () {
+    final items = <InventoryItem>[
+      _item(id: 'fresh', quantity: 2, initialQuantity: 2),
+      _item(id: 'partial', quantity: 1, initialQuantity: 2),
+      _item(id: 'empty', quantity: 0, initialQuantity: 2),
+    ];
+
+    const filter = InventoryConsumptionFilter(hideFullyConsumedItems: false);
     final result = filter.apply(items);
 
     expect(result.map((item) => item.id), <String>[
@@ -37,29 +50,14 @@ void main() {
     ]);
   });
 
-  test('apply hides fully consumed items when enabled', () {
-    final items = <InventoryItem>[
-      _item(id: 'fresh', quantity: 2, initialQuantity: 2),
-      _item(id: 'partial', quantity: 1, initialQuantity: 2),
-      _item(id: 'empty', quantity: 0, initialQuantity: 2),
-    ];
-
-    const filter = InventoryConsumptionFilter(hideFullyConsumedItems: true);
-    final result = filter.apply(items);
-
-    expect(result.map((item) => item.id), <String>['fresh', 'partial']);
-  });
-
   test('copyWith updates fully consumed visibility', () {
     const filter = InventoryConsumptionFilter();
 
-    final next = filter.copyWith(hideFullyConsumedItems: true);
+    final next = filter.copyWith(hideFullyConsumedItems: false);
 
-    expect(next.hideFullyConsumedItems, isTrue);
+    expect(next.hideFullyConsumedItems, isFalse);
     expect(
-      const InventoryConsumptionFilter(
-        hideFullyConsumedItems: true,
-      ).hideFullyConsumedItems,
+      const InventoryConsumptionFilter().hideFullyConsumedItems,
       isTrue,
     );
   });

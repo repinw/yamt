@@ -6,6 +6,8 @@ import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dar
 import 'package:yamt/features/calories/debug/calorie_debug_actions.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
 
+const _appBarDebugIconSplashRadius = 18.0;
+
 enum _CalorieDebugAction {
   debugDump,
   settingsDump,
@@ -64,6 +66,9 @@ class CalorieDebugActionsMenu extends ConsumerWidget {
       tooltip: 'Calorie debug actions',
       useRootNavigator: true,
       icon: const Icon(Icons.bug_report_rounded),
+      iconSize: 20,
+      padding: EdgeInsets.zero,
+      splashRadius: _appBarDebugIconSplashRadius,
       onSelected: (action) {
         unawaited(action.run(context, ref));
       },

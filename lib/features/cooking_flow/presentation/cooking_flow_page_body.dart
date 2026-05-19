@@ -31,7 +31,7 @@ import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Builds the active cookflow step body.
-@Dependencies([InventoryItemsController])
+@Dependencies([InventoryItemsController, cookingInstructionSteps])
 class CookingFlowPageBody extends StatelessWidget {
   /// Creates cookflow body.
   const CookingFlowPageBody({

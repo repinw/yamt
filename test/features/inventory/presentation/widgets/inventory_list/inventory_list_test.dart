@@ -18,6 +18,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_unified_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
 import 'package:yamt/features/shoppinglist/application/'
@@ -196,6 +198,25 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _openPreparedMealFilterSheet(WidgetTester tester) async {
+  await _tapVisible(
+    tester,
+    find.byKey(const Key('inventory_list_search_settings_button')),
+  );
+  expect(find.byType(InventoryUnifiedFilterSheet), findsOneWidget);
+}
+
+Future<void> _openFoodFilterSheet(WidgetTester tester) async {
+  await _openPreparedMealFilterSheet(tester);
+  await _tapVisible(
+    tester,
+    find.descendant(
+      of: find.byType(InventoryUnifiedFilterSheet),
+      matching: find.text('Foods'),
+    ),
+  );
+}
+
 class _FakeManualProductSpeechService implements VoiceSearchService {
   bool _isListening = false;
   ValueChanged<VoiceSearchRecognition>? _onResult;
@@ -339,7 +360,7 @@ class _InventoryListPersistenceHarnessState
   manualProductRecentItemsService,
 ])
 void main() {
-  testWidgets('filter switch updates in sheet and hides fully consumed items', (
+  testWidgets('filter switch defaults on and can show fully consumed items', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -363,10 +384,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Open milk'), findsOneWidget);
-    expect(find.text('Empty jar'), findsOneWidget);
+    expect(find.text('Empty jar'), findsNothing);
 
-    await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
-    await tester.pumpAndSettle();
+    await _openFoodFilterSheet(tester);
 
     final before = tester.widget<Switch>(
       find.descendant(
@@ -374,7 +394,7 @@ void main() {
         matching: find.byType(Switch),
       ),
     );
-    expect(before.value, isFalse);
+    expect(before.value, isTrue);
 
     await _tapVisible(
       tester,
@@ -390,13 +410,79 @@ void main() {
         matching: find.byType(Switch),
       ),
     );
-    expect(after.value, isTrue);
+    expect(after.value, isFalse);
 
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
 
     expect(find.text('Open milk'), findsOneWidget);
-    expect(find.text('Empty jar'), findsNothing);
+    expect(find.text('Empty jar'), findsOneWidget);
+  });
+
+  testWidgets('view mode toggle switches foods to tile layout', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        items: <InventoryItem>[
+          _item(id: 'apple', name: 'Apple', quantity: 1, initialQuantity: 1),
+          _item(id: 'banana', name: 'Banana', quantity: 1, initialQuantity: 1),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('inventory_items_list_view')), findsOneWidget);
+    expect(find.byKey(const Key('inventory_items_tile_view')), findsNothing);
+
+    await _openFoodFilterSheet(tester);
+    await _tapVisible(tester, find.text('Tiles'));
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('inventory_items_list_view')), findsNothing);
+    expect(find.byKey(const Key('inventory_items_tile_view')), findsOneWidget);
+    final grid = tester.widget<SliverGrid>(
+      find.byKey(const Key('inventory_items_tile_view')),
+    );
+    expect(
+      grid.gridDelegate,
+      isA<SliverGridDelegateWithMaxCrossAxisExtent>(),
+    );
+  });
+
+  testWidgets('view mode toggle switches prepared meals to tile layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(id: 'pasta', name: 'Pasta Bowl'),
+          _preparedMeal(id: 'soup', name: 'Soup Bowl'),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('prepared_meals_list_view')), findsOneWidget);
+    expect(find.byKey(const Key('prepared_meals_tile_view')), findsNothing);
+
+    await _openPreparedMealFilterSheet(tester);
+    await _tapVisible(tester, find.text('Tiles'));
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('prepared_meals_list_view')), findsNothing);
+    expect(find.byKey(const Key('prepared_meals_tile_view')), findsOneWidget);
+    expect(find.byType(GridView), findsNothing);
+    final grid = tester.widget<SliverGrid>(
+      find.byKey(const Key('prepared_meals_tile_view')),
+    );
+    expect(
+      grid.gridDelegate,
+      isA<SliverGridDelegateWithMaxCrossAxisExtent>(),
+    );
   });
 
   testWidgets('inventory search filters items and prepared meals', (
@@ -463,8 +549,7 @@ void main() {
       expect(find.text('Added - Descending'), findsOneWidget);
       expect(_visibleInventoryItemNames(tester), <String>['Zucchini', 'Apple']);
 
-      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
-      await tester.pumpAndSettle();
+      await _openFoodFilterSheet(tester);
       await _tapVisible(
         tester,
         find.byKey(const Key('inventory_items_sort_added_direction_button')),
@@ -503,8 +588,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
-      await tester.pumpAndSettle();
+      await _openFoodFilterSheet(tester);
       await _tapVisible(
         tester,
         find.byKey(const Key('inventory_items_sort_eaten_option')),
@@ -520,8 +604,7 @@ void main() {
         'Never',
       ]);
 
-      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
-      await tester.pumpAndSettle();
+      await _openFoodFilterSheet(tester);
       await _tapVisible(
         tester,
         find.byKey(const Key('inventory_items_sort_eaten_direction_button')),
@@ -553,8 +636,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
-      await tester.pumpAndSettle();
+      await _openFoodFilterSheet(tester);
+      await _tapVisible(
+        tester,
+        find.descendant(
+          of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+          matching: find.byType(Switch),
+        ),
+      );
       await _tapVisible(
         tester,
         find.byKey(const Key('inventory_items_sort_quantity_option')),
@@ -570,8 +659,7 @@ void main() {
       ]);
       expect(find.text('Amount - Ascending'), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
-      await tester.pumpAndSettle();
+      await _openFoodFilterSheet(tester);
       await _tapVisible(
         tester,
         find.byKey(const Key('inventory_items_sort_quantity_direction_button')),
@@ -589,7 +677,7 @@ void main() {
     },
   );
 
-  testWidgets('prepared meals filter hides fully consumed meals', (
+  testWidgets('prepared meals filter defaults on and can show consumed meals', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -607,17 +695,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Fresh Pasta'), findsOneWidget);
-    expect(find.text('Gone Soup'), findsOneWidget);
+    expect(find.text('Gone Soup'), findsNothing);
 
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('prepared_meals_filter_button')),
-      -300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await _tapVisible(
-      tester,
-      find.byKey(const Key('prepared_meals_filter_button')),
-    );
+    await _openPreparedMealFilterSheet(tester);
 
     final before = tester.widget<Switch>(
       find.descendant(
@@ -625,7 +705,7 @@ void main() {
         matching: find.byType(Switch),
       ),
     );
-    expect(before.value, isFalse);
+    expect(before.value, isTrue);
 
     await _tapVisible(
       tester,
@@ -639,7 +719,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Fresh Pasta'), findsOneWidget);
-    expect(find.text('Gone Soup'), findsNothing);
+    expect(find.text('Gone Soup'), findsOneWidget);
   });
 
   testWidgets(
@@ -668,10 +748,9 @@ void main() {
         'New Meal',
         'Old Meal',
       ]);
-      expect(find.text('Added - Descending'), findsOneWidget);
+      expect(find.text('Added - Descending'), findsWidgets);
 
-      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-      await tester.pumpAndSettle();
+      await _openPreparedMealFilterSheet(tester);
 
       await _tapVisible(
         tester,
@@ -685,7 +764,7 @@ void main() {
         'Old Meal',
         'New Meal',
       ]);
-      expect(find.text('Added - Ascending'), findsOneWidget);
+      expect(find.text('Added - Ascending'), findsWidgets);
     },
   );
 
@@ -716,8 +795,7 @@ void main() {
         <String>['Old Eaten', 'New Eaten'],
       );
 
-      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-      await tester.pumpAndSettle();
+      await _openPreparedMealFilterSheet(tester);
 
       await _tapVisible(
         tester,
@@ -732,8 +810,7 @@ void main() {
         <String>['New Eaten', 'Old Eaten'],
       );
 
-      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-      await tester.pumpAndSettle();
+      await _openPreparedMealFilterSheet(tester);
 
       await _tapVisible(
         tester,
@@ -783,8 +860,7 @@ void main() {
         'Carrot Soup',
       ]);
 
-      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-      await tester.pumpAndSettle();
+      await _openPreparedMealFilterSheet(tester);
 
       await _tapVisible(
         tester,
@@ -800,8 +876,7 @@ void main() {
         'Carrot Soup',
       ]);
 
-      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-      await tester.pumpAndSettle();
+      await _openPreparedMealFilterSheet(tester);
 
       await _tapVisible(
         tester,
@@ -850,15 +925,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('prepared_meals_filter_button')),
-      -300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await _tapVisible(
-      tester,
-      find.byKey(const Key('prepared_meals_filter_button')),
-    );
+    await _openPreparedMealFilterSheet(tester);
 
     await _tapVisible(
       tester,
@@ -873,15 +940,7 @@ void main() {
       <String>['Low Meal', 'Mid Meal', 'High Meal'],
     );
 
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('prepared_meals_filter_button')),
-      -300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await _tapVisible(
-      tester,
-      find.byKey(const Key('prepared_meals_filter_button')),
-    );
+    await _openPreparedMealFilterSheet(tester);
 
     await _tapVisible(
       tester,
@@ -912,13 +971,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('inventory_items_filter_button')),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
-    await tester.pumpAndSettle();
+    await _openFoodFilterSheet(tester);
 
     await _tapVisible(
       tester,
@@ -946,8 +999,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(_visibleInventoryItemNames(tester), <String>['Banana', 'Apple']);
-    expect(find.text('Gone Milk'), findsNothing);
+    expect(_visibleInventoryItemNames(tester), <String>[
+      'Gone Milk',
+      'Banana',
+      'Apple',
+    ]);
+    expect(find.text('Gone Milk'), findsOneWidget);
   });
 
   testWidgets('prepared meal view preferences persist across remount', (
@@ -995,8 +1052,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-    await tester.pumpAndSettle();
+    await _openPreparedMealFilterSheet(tester);
 
     await _tapVisible(
       tester,
@@ -1057,8 +1113,7 @@ void main() {
     expect(find.text('Ready Meal'), findsOneWidget);
     expect(find.text('Incomplete Meal'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-    await tester.pumpAndSettle();
+    await _openPreparedMealFilterSheet(tester);
 
     await _tapVisible(
       tester,
@@ -1092,8 +1147,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-    await tester.pumpAndSettle();
+    await _openPreparedMealFilterSheet(tester);
 
     Finder readySwitch() {
       return find.descendant(
@@ -1137,8 +1191,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-    await tester.pumpAndSettle();
+    await _openPreparedMealFilterSheet(tester);
 
     await _tapVisible(
       tester,
@@ -1172,8 +1225,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-    await tester.pumpAndSettle();
+    await _openPreparedMealFilterSheet(tester);
 
     await _tapVisible(
       tester,

@@ -70,6 +70,7 @@ Widget _buildTestApp({
   List<Widget> trailingActions = const <Widget>[],
   double? searchBarWidth,
   ValueChanged<String>? onChanged,
+  bool useCompactSurface = false,
 }) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -88,6 +89,7 @@ Widget _buildTestApp({
             voiceSearchService: voiceSearchService,
             voiceSearchController: voiceSearchController,
             trailingActions: trailingActions,
+            useCompactSurface: useCompactSurface,
             onChanged: onChanged,
           ),
         ),
@@ -236,6 +238,40 @@ void main() {
 
     expect(textController.text, 'milk oats bananas');
     expect(changedValue, 'milk oats bananas');
+  });
+
+  testWidgets('compact surface shows voice button until text is entered', (
+    tester,
+  ) async {
+    final textController = TextEditingController();
+    final voiceSearchService = _FakeVoiceSearchService();
+
+    addTearDown(textController.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        textController: textController,
+        voiceSearchService: voiceSearchService,
+        useCompactSurface: true,
+      ),
+    );
+
+    var field = tester.widget<TextField>(
+      find.byKey(const Key('shared_search_field')),
+    );
+    expect(field.decoration?.filled, isTrue);
+    expect(find.byKey(const Key('shared_voice_button')), findsOneWidget);
+    expect(find.byKey(const Key('shared_clear_button')), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('shared_search_field')), 'oat');
+    await tester.pump();
+
+    field = tester.widget<TextField>(
+      find.byKey(const Key('shared_search_field')),
+    );
+    expect(field.controller?.text, 'oat');
+    expect(find.byKey(const Key('shared_voice_button')), findsNothing);
+    expect(find.byKey(const Key('shared_clear_button')), findsOneWidget);
   });
 
   testWidgets('unmount during pending startListening does not throw', (

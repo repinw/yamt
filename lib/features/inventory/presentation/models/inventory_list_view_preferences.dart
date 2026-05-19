@@ -4,6 +4,15 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 
+/// Defines inventory card layout mode.
+enum InventoryListViewMode {
+  /// Single-column list.
+  list,
+
+  /// Two-column tile layout.
+  tiles,
+}
+
 /// Defines prepared meal sort mode.
 enum PreparedMealSortMode {
   /// Documented member.
@@ -59,14 +68,19 @@ enum PreparedMealConsumptionFilter {
 class InventoryListViewPreferences {
   /// The inventory list view preferences.
   const InventoryListViewPreferences({
+    this.viewMode = InventoryListViewMode.list,
     this.consumptionFilter = const InventoryConsumptionFilter(),
     this.inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending,
     this.preparedMealCompletionFilter = PreparedMealCompletionFilter.all,
-    this.preparedMealConsumptionFilter = PreparedMealConsumptionFilter.all,
+    this.preparedMealConsumptionFilter =
+        PreparedMealConsumptionFilter.hideConsumed,
     this.preparedMealSortMode = PreparedMealSortMode.addedDescending,
     this.isRecentItemsSectionExpanded = true,
     this.isPreparedMealsSectionExpanded = true,
   });
+
+  /// The inventory card layout mode.
+  final InventoryListViewMode viewMode;
 
   /// The consumption filter.
   final InventoryConsumptionFilter consumptionFilter;
@@ -91,6 +105,7 @@ class InventoryListViewPreferences {
 
   /// Copy with.
   InventoryListViewPreferences copyWith({
+    InventoryListViewMode? viewMode,
     InventoryConsumptionFilter? consumptionFilter,
     InventoryItemSortMode? inventoryItemSortMode,
     PreparedMealCompletionFilter? preparedMealCompletionFilter,
@@ -100,6 +115,7 @@ class InventoryListViewPreferences {
     bool? isPreparedMealsSectionExpanded,
   }) {
     return InventoryListViewPreferences(
+      viewMode: viewMode ?? this.viewMode,
       consumptionFilter: consumptionFilter ?? this.consumptionFilter,
       inventoryItemSortMode:
           inventoryItemSortMode ?? this.inventoryItemSortMode,
@@ -123,6 +139,7 @@ class InventoryListViewPreferencesStore {
 
   static const _inventoryHideConsumedItemsKey =
       'inventory_list_hide_consumed_items';
+  static const _viewModeKey = 'inventory_list_view_mode';
   static const _inventoryItemSortModeKey = 'inventory_list_item_sort_mode';
   static const _preparedMealCompletionFilterKey =
       'inventory_list_prepared_meal_completion_filter';
@@ -139,6 +156,11 @@ class InventoryListViewPreferencesStore {
     const defaultPreferences = InventoryListViewPreferences();
 
     return InventoryListViewPreferences(
+      viewMode: _enumFromName(
+        InventoryListViewMode.values,
+        preferences.getStringSync(_viewModeKey),
+        defaultPreferences.viewMode,
+      ),
       consumptionFilter: InventoryConsumptionFilter(
         hideFullyConsumedItems: _readBool(
           preferences,
@@ -184,6 +206,10 @@ class InventoryListViewPreferencesStore {
     AppPreferences preferences,
     InventoryListViewPreferences value,
   ) async {
+    await preferences.setString(
+      _viewModeKey,
+      value.viewMode.name,
+    );
     await preferences.setInt(
       _inventoryHideConsumedItemsKey,
       value.consumptionFilter.hideFullyConsumedItems ? 1 : 0,

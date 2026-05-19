@@ -19,6 +19,7 @@ class InventoryItemRowExpandSection extends StatelessWidget {
     required this.swapCandidateLabel,
     required this.removeLabel,
     required this.onEditPressed,
+    required this.onQuickShoppingListActionPressed,
     required this.onRemovePressed,
     required this.onSwapCandidatePressed,
     super.key,
@@ -45,6 +46,9 @@ class InventoryItemRowExpandSection extends StatelessWidget {
   /// The on edit pressed.
   final VoidCallback? onEditPressed;
 
+  /// The on quick shopping list action pressed.
+  final VoidCallback? onQuickShoppingListActionPressed;
+
   /// The on remove pressed.
   final VoidCallback? onRemovePressed;
 
@@ -69,6 +73,8 @@ class InventoryItemRowExpandSection extends StatelessWidget {
                 swapCandidateLabel: swapCandidateLabel,
                 removeLabel: removeLabel,
                 onEditPressed: onEditPressed,
+                onQuickShoppingListActionPressed:
+                    onQuickShoppingListActionPressed,
                 onRemovePressed: onRemovePressed,
                 onSwapCandidatePressed: onSwapCandidatePressed,
               ),
@@ -86,6 +92,7 @@ class _InventoryItemActionPanel extends StatelessWidget {
     required this.swapCandidateLabel,
     required this.removeLabel,
     required this.onEditPressed,
+    required this.onQuickShoppingListActionPressed,
     required this.onRemovePressed,
     required this.onSwapCandidatePressed,
   });
@@ -96,6 +103,7 @@ class _InventoryItemActionPanel extends StatelessWidget {
   final String swapCandidateLabel;
   final String removeLabel;
   final VoidCallback? onEditPressed;
+  final VoidCallback? onQuickShoppingListActionPressed;
   final VoidCallback? onRemovePressed;
   final VoidCallback onSwapCandidatePressed;
 
@@ -114,6 +122,21 @@ class _InventoryItemActionPanel extends StatelessWidget {
         ],
         Row(
           children: [
+            if (viewData.showQuickShoppingListAction) ...[
+              Expanded(
+                child: _InventoryItemActionButton(
+                  label: viewData.quickShoppingListActionLabel,
+                  icon: viewData.quickShoppingListActionIcon,
+                  foregroundColor: viewData.quickShoppingListActionIconColor,
+                  backgroundColor:
+                      viewData.quickShoppingListActionBackgroundColor,
+                  onPressed: viewData.isQuickShoppingListActionEnabled
+                      ? onQuickShoppingListActionPressed
+                      : null,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+            ],
             Expanded(
               child: _InventoryItemActionButton(
                 label: editLabel,
@@ -200,16 +223,16 @@ class _InventoryItemActionButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: InventoryItemRowConstants.actionButtonIconSize),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
+            Tooltip(
+              message: label,
+              child: Semantics(
+                label: label,
+                button: true,
+                child: Icon(
+                  icon,
+                  size: InventoryItemRowConstants.actionButtonIconSize,
+                ),
+              ),
             ),
           ],
         ),

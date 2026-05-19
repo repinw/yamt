@@ -309,3 +309,33 @@ abstract final class AppEditorialSurfaces {
     return accent.withSaturation(saturation).withLightness(lightness).toColor();
   }
 }
+
+/// App-wide raised card design used by primary content cards.
+abstract final class AppSurfaceCard {
+  /// Shared radius for primary content cards.
+  static const double radius = 20;
+
+  /// Shared padding for primary content cards.
+  static const EdgeInsets padding = EdgeInsets.all(AppThemeSpacing.md);
+
+  /// Shared card border radius.
+  static BorderRadius borderRadius() => BorderRadius.circular(radius);
+
+  /// Decoration for raised content cards.
+  static BoxDecoration decoration(ColorScheme colors) {
+    final isDark = colors.brightness == Brightness.dark;
+
+    return BoxDecoration(
+      color: AppEditorialSurfaces.liftedCard(colors),
+      borderRadius: borderRadius(),
+      border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
+      boxShadow: [
+        BoxShadow(
+          color: AppEditorialSurfaces.ambientShadow(colors),
+          blurRadius: isDark ? 18 : 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
+}

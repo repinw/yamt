@@ -80,6 +80,9 @@ abstract final class AppRadius {
 
   /// Extra-large radius.
   static const double xl = 24;
+
+  /// Fully rounded pill radius.
+  static const double pill = 999;
 }
 
 /// Shared animation durations.
@@ -92,6 +95,84 @@ abstract final class AppDurations {
 abstract final class AppOpacities {
   /// Divider opacity for compact metric cards.
   static const double compactMetricDivider = 0.42;
+
+  /// Compact search surface opacity.
+  static const double compactSearchSurface = 0.72;
+
+  /// Compact search hint opacity.
+  static const double compactSearchHint = 0.82;
+
+  /// Compact search focus border opacity.
+  static const double compactSearchFocusBorder = 0.38;
+
+  /// Compact search leading icon opacity.
+  static const double compactSearchPrefixIcon = 0.78;
+
+  /// Compact search enabled trailing icon opacity.
+  static const double compactSearchTrailingIcon = 0.72;
+
+  /// Compact search settings foreground opacity.
+  static const double compactSearchSettingsForeground = 0.86;
+
+  /// Compact search disabled control opacity.
+  static const double compactSearchDisabled = 0.38;
+
+  /// Disabled home top bar icon background opacity.
+  static const double homeTopBarDisabledBackground = 0.6;
+
+  /// Disabled home top bar icon foreground opacity.
+  static const double homeTopBarDisabledForeground = 0.48;
+
+  /// Inventory filter divider opacity.
+  static const double inventoryFilterDivider = 0.45;
+
+  /// Modal barrier opacity for lightweight bottom sheets.
+  static const double modalBarrier = 0.38;
+}
+
+/// Shared font-size scale for app typography.
+abstract final class AppFontSizes {
+  /// Display-small size from the current diary baseline.
+  static const double displaySmall = 36;
+
+  /// Headline-small size from the current diary baseline.
+  static const double headlineSmall = 24;
+
+  /// Large title size from the current diary baseline.
+  static const double titleLarge = 22;
+
+  /// Medium title size from the current diary baseline.
+  static const double titleMedium = 16;
+
+  /// Medium body size from the current diary baseline.
+  static const double bodyMedium = 14;
+
+  /// Small body size from the current diary baseline.
+  static const double bodySmall = 12;
+
+  /// Extra-small label size for dense chrome labels.
+  static const double labelXSmall = 10;
+
+  /// Large label size from the current diary baseline.
+  static const double labelLarge = 14;
+
+  /// Small label size from the current diary baseline.
+  static const double labelSmall = 11;
+
+  /// Home tab title size for regular layouts.
+  static const double homeTabTitle = headlineSmall;
+
+  /// Home tab title size for compact layouts.
+  static const double homeTabTitleCompact = titleLarge;
+
+  /// Home tab subtitle size.
+  static const double homeTabSubtitle = labelLarge;
+
+  /// Home bottom navigation label size.
+  static const double homeBottomNavLabel = labelXSmall;
+
+  /// Compact search field input size.
+  static const double compactSearchInput = 15;
 }
 
 /// Shared fixed dimensions used by widgets.
@@ -111,8 +192,35 @@ abstract final class AppSizes {
   /// Stroke width for progress indicators.
   static const double progressStrokeWidth = 2;
 
+  /// Standard one-physical-line divider height.
+  static const double dividerThickness = 1;
+
   /// Base clearance reserved for the floating home shell bottom chrome.
   static const double homeShellBottomBarClearance = 96;
+
+  /// Diameter for circular home top bar icon buttons.
+  static const double homeTopBarIconButton = 36;
+
+  /// Height for compact search fields and adjacent square controls.
+  static const double compactSearchControlHeight = 52;
+
+  /// Width reserved for compact search leading icon.
+  static const double compactSearchPrefixWidth = 42;
+
+  /// Size for compact search inline icon buttons.
+  static const double compactSearchInlineAction = 40;
+
+  /// Icon size for compact search controls.
+  static const double compactSearchIcon = 18;
+
+  /// Icon size for compact search settings button.
+  static const double compactSearchSettingsIcon = 21;
+
+  /// Progress spinner size inside compact search.
+  static const double compactSearchProgress = 16;
+
+  /// Icon size for segmented controls.
+  static const double segmentedControlIcon = 16;
 
   /// Dark theme blur for compact metric card shadows.
   static const double compactMetricCardShadowBlurDark = 22;

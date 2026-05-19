@@ -442,6 +442,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryFiltersShowResultsAction => 'Show results';
 
   @override
+  String get inventoryViewSectionTitle => 'View';
+
+  @override
+  String get inventoryViewListAction => 'List';
+
+  @override
+  String get inventoryViewTilesAction => 'Tiles';
+
+  @override
   String get inventorySortSectionTitle => 'Sort';
 
   @override

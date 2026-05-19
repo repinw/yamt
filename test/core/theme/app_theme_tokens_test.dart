@@ -108,6 +108,27 @@ void main() {
     expect(decoration.boxShadow?.single.offset, const Offset(0, 8));
   });
 
+  test('surface card decoration shares raised card styling', () {
+    final colors = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: Brightness.dark,
+    );
+
+    final decoration = AppSurfaceCard.decoration(colors);
+
+    expect(decoration.color, AppEditorialSurfaces.liftedCard(colors));
+    expect(decoration.borderRadius, AppSurfaceCard.borderRadius());
+    expect(
+      (decoration.border as Border?)?.top.color,
+      AppEditorialSurfaces.solidCardBorder(colors),
+    );
+    expect(
+      decoration.boxShadow?.single.color,
+      AppEditorialSurfaces.ambientShadow(colors),
+    );
+    expect(decoration.boxShadow?.single.blurRadius, 18);
+  });
+
   test('soul gradient builds light and dark primary gradients', () {
     final light = ColorScheme.fromSeed(seedColor: AppColors.seed);
     final dark = ColorScheme.fromSeed(

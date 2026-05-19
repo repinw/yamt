@@ -7,6 +7,8 @@ import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, formatInventoryAmountValue;
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
@@ -74,8 +76,8 @@ class PreparedMealPrimaryActionButton extends StatelessWidget {
       onPressed: onPressed,
       showText: true,
       label: label,
-      width: InventoryItemRowConstants.primaryActionWidth,
-      height: InventoryItemRowConstants.primaryActionHeight,
+      width: AppInventoryClosedTile.actionWidth,
+      height: AppInventoryClosedTile.actionHeight,
       enabledBackgroundColor: colors.primary,
       disabledBackgroundColor: AppEditorialSurfaces.section(colors),
       enabledBorderColor: colors.primary,
@@ -83,6 +85,7 @@ class PreparedMealPrimaryActionButton extends StatelessWidget {
       enabledForegroundColor: colors.onPrimary,
       disabledForegroundColor: colors.onSurfaceVariant,
       useGradientWhenShowText: false,
+      borderRadius: AppRadius.lg,
     );
   }
 }

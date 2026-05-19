@@ -96,39 +96,6 @@ class InventorySectionHeader extends StatelessWidget {
   }
 }
 
-/// Defines inventory filter button.
-class InventoryFilterButton extends StatelessWidget {
-  /// The inventory filter button.
-  const InventoryFilterButton({
-    required this.onPressed,
-    super.key,
-    this.enabled = true,
-    this.tooltip,
-  });
-
-  /// The on pressed.
-  final VoidCallback onPressed;
-
-  /// The enabled.
-  final bool enabled;
-
-  /// The tooltip.
-  final String? tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return IconButton(
-      onPressed: enabled ? onPressed : null,
-      tooltip: tooltip ?? l10n.inventoryFilterAction,
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      icon: const Icon(Icons.filter_list_rounded, size: 18),
-    );
-  }
-}
-
 /// Defines inventory filters sheet.
 class InventoryFiltersSheet extends StatelessWidget {
   /// The inventory filters sheet.
@@ -615,6 +582,7 @@ class InventorySectionExpandButton extends StatelessWidget {
             isExpanded: isExpanded,
             enabled: enabled,
             rotationKey: rotationKey,
+            useSubtleChromeColors: true,
           ),
         ),
       ),

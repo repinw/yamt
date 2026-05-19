@@ -6,7 +6,11 @@ import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_view_preferences.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -114,9 +118,9 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     required this.expandedPreparedMealId,
     required this.isExpanded,
     required this.subtitle,
+    required this.viewMode,
     required this.isSelectionMode,
     required this.actions,
-    required this.onShowFilters,
     required this.onToggleExpanded,
     required this.l10n,
     super.key,
@@ -134,14 +138,14 @@ class InventoryPreparedMealsSection extends StatelessWidget {
   /// The subtitle.
   final String subtitle;
 
+  /// Card layout mode.
+  final InventoryListViewMode viewMode;
+
   /// Whether selection mode.
   final bool isSelectionMode;
 
   /// Prepared meal section actions.
   final PreparedMealSectionActions actions;
-
-  /// The on show filters.
-  final VoidCallback onShowFilters;
 
   /// The on toggle expanded.
   final VoidCallback onToggleExpanded;
@@ -151,76 +155,163 @@ class InventoryPreparedMealsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = isExpanded && meals.isNotEmpty
-        ? AppSpacing.lg
-        : AppSpacing.sm;
     final horizontalPadding = responsivePageHorizontalPadding(context);
+    final hasContent = isExpanded && meals.isNotEmpty;
 
-    return SliverPadding(
-      padding: EdgeInsets.fromLTRB(
-        horizontalPadding,
-        AppSpacing.lg,
-        horizontalPadding,
-        bottomPadding,
-      ),
-      sliver: SliverToBoxAdapter(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InventorySectionHeader(
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSpacing.lg,
+            horizontalPadding,
+            hasContent ? 0 : AppSpacing.sm,
+          ),
+          sliver: SliverToBoxAdapter(
+            child: InventorySectionHeader(
               title: l10n.preparedMealSectionTitle,
               subtitle: subtitle,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  InventoryFilterButton(
-                    key: const Key('prepared_meals_filter_button'),
-                    enabled: !isSelectionMode,
-                    tooltip: l10n.preparedMealFilterAction,
-                    onPressed: onShowFilters,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  InventorySectionExpandButton(
-                    key: const Key('prepared_meals_section_expand_button'),
-                    isExpanded: isExpanded,
-                    semanticLabel: l10n.preparedMealSectionTitle,
-                    enabled: !isSelectionMode,
-                    rotationKey: const Key(
-                      'prepared_meals_section_expand_indicator',
-                    ),
-                    onPressed: onToggleExpanded,
-                  ),
-                ],
+              trailing: InventorySectionExpandButton(
+                key: const Key('prepared_meals_section_expand_button'),
+                isExpanded: isExpanded,
+                semanticLabel: l10n.preparedMealSectionTitle,
+                enabled: !isSelectionMode,
+                rotationKey: const Key(
+                  'prepared_meals_section_expand_indicator',
+                ),
+                onPressed: onToggleExpanded,
               ),
             ),
-            if (isExpanded && meals.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.sm),
-              ...meals.map((meal) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                  child: PreparedMealCard(
-                    key: ValueKey(meal.id),
-                    meal: meal,
-                    initiallyExpanded: meal.id == expandedPreparedMealId,
+          ),
+        ),
+        if (hasContent)
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              AppSpacing.sm,
+              horizontalPadding,
+              AppSpacing.lg,
+            ),
+            sliver: viewMode == InventoryListViewMode.tiles
+                ? _PreparedMealTiles(
+                    meals: meals,
+                    expandedPreparedMealId: expandedPreparedMealId,
                     enabled: !isSelectionMode,
-                    onEatPressed: actions.onEatPreparedMeal,
-                    onThrowAwayPressed: actions.onThrowAwayPreparedMeal,
-                    onFillPendingIngredientPressed:
-                        actions.onFillPendingPreparedMealIngredient,
-                    onIgnorePendingIngredientPressed:
-                        actions.onIgnorePendingPreparedMealIngredient,
-                    onUnbundlePressed: actions.onUnbundlePreparedMeal,
-                    onEditPressed: actions.onEditPreparedMeal,
-                    onSelectEditIngredientsPressed:
-                        actions.onSelectPreparedMealEditIngredients,
-                    onSaveTemplatePressed: actions.onSavePreparedMealTemplate,
+                    actions: actions,
+                  )
+                : _PreparedMealList(
+                    meals: meals,
+                    expandedPreparedMealId: expandedPreparedMealId,
+                    enabled: !isSelectionMode,
+                    actions: actions,
                   ),
-                );
-              }),
-            ],
-          ],
+          ),
+      ],
+    );
+  }
+}
+
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
+class _PreparedMealList extends StatelessWidget {
+  const _PreparedMealList({
+    required this.meals,
+    required this.expandedPreparedMealId,
+    required this.enabled,
+    required this.actions,
+  });
+
+  final List<PreparedMeal> meals;
+  final String? expandedPreparedMealId;
+  final bool enabled;
+  final PreparedMealSectionActions actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverList.builder(
+      key: const Key('prepared_meals_list_view'),
+      itemCount: meals.length,
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+        child: _PreparedMealEntry(
+          meal: meals[index],
+          expandedPreparedMealId: expandedPreparedMealId,
+          enabled: enabled,
+          actions: actions,
         ),
       ),
+    );
+  }
+}
+
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
+class _PreparedMealTiles extends StatelessWidget {
+  const _PreparedMealTiles({
+    required this.meals,
+    required this.expandedPreparedMealId,
+    required this.enabled,
+    required this.actions,
+  });
+
+  final List<PreparedMeal> meals;
+  final String? expandedPreparedMealId;
+  final bool enabled;
+  final PreparedMealSectionActions actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverGrid(
+      key: const Key('prepared_meals_tile_view'),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: AppInventoryClosedTile.gridMaxCrossAxisExtent,
+        crossAxisSpacing: AppSpacing.sm,
+        mainAxisSpacing: AppSpacing.lg,
+        mainAxisExtent: AppInventoryClosedTile.preparedMealGridMainAxisExtent,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => _PreparedMealEntry(
+          meal: meals[index],
+          expandedPreparedMealId: expandedPreparedMealId,
+          enabled: enabled,
+          actions: actions,
+        ),
+        childCount: meals.length,
+      ),
+    );
+  }
+}
+
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
+class _PreparedMealEntry extends StatelessWidget {
+  const _PreparedMealEntry({
+    required this.meal,
+    required this.expandedPreparedMealId,
+    required this.enabled,
+    required this.actions,
+  });
+
+  final PreparedMeal meal;
+  final String? expandedPreparedMealId;
+  final bool enabled;
+  final PreparedMealSectionActions actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return PreparedMealCard(
+      key: ValueKey(meal.id),
+      meal: meal,
+      initiallyExpanded: meal.id == expandedPreparedMealId,
+      enabled: enabled,
+      onEatPressed: actions.onEatPreparedMeal,
+      onThrowAwayPressed: actions.onThrowAwayPreparedMeal,
+      onFillPendingIngredientPressed:
+          actions.onFillPendingPreparedMealIngredient,
+      onIgnorePendingIngredientPressed:
+          actions.onIgnorePendingPreparedMealIngredient,
+      onUnbundlePressed: actions.onUnbundlePreparedMeal,
+      onEditPressed: actions.onEditPreparedMeal,
+      onSelectEditIngredientsPressed:
+          actions.onSelectPreparedMealEditIngredients,
+      onSaveTemplatePressed: actions.onSavePreparedMealTemplate,
     );
   }
 }

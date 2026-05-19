@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'remaining_progress_bar.dart';
 
@@ -11,6 +12,7 @@ void main() {
     String stockLabel = '1/2',
     RemainingProgressBarLabelLayout labelLayout =
         RemainingProgressBarLabelLayout.belowBar,
+    double barHeight = 4,
   }) {
     return MaterialApp(
       home: Scaffold(
@@ -21,6 +23,7 @@ void main() {
           totalUnits: totalUnits,
           remainingUnits: remainingUnits,
           labelLayout: labelLayout,
+          barHeight: barHeight,
         ),
       ),
     );
@@ -107,6 +110,23 @@ void main() {
       find.byType(LinearProgressIndicator),
     );
 
-    expect(progress.borderRadius, BorderRadius.circular(999));
+    expect(progress.borderRadius, BorderRadius.circular(AppRadius.pill));
+  });
+
+  testWidgets('passes custom bar height to progress indicator', (tester) async {
+    await tester.pumpWidget(
+      buildWidget(
+        segmentedByUnits: false,
+        totalUnits: 2,
+        remainingUnits: 1,
+        barHeight: 3,
+      ),
+    );
+
+    final progress = tester.widget<LinearProgressIndicator>(
+      find.byType(LinearProgressIndicator),
+    );
+
+    expect(progress.minHeight, 3);
   });
 }

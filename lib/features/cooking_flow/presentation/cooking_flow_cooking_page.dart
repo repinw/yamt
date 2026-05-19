@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
@@ -79,6 +80,7 @@ bool shouldBuildCookingInstructionStepsOffMain({
 }
 
 /// Cooking step for cookflow.
+@Dependencies([cookingInstructionSteps])
 class CookingFlowCookingPage extends ConsumerWidget {
   /// Creates cooking step.
   const CookingFlowCookingPage({

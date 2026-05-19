@@ -32,16 +32,24 @@ class _InventoryItemRowHost extends StatelessWidget {
     required this.bucket,
     this.item,
     this.theme,
+    this.inventoryItemsController,
   });
 
   final bool showRow;
   final PageStorageBucket bucket;
   final InventoryItem? item;
   final ThemeData? theme;
+  final InventoryItemsController? inventoryItemsController;
 
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: [
+        if (inventoryItemsController != null)
+          inventoryItemsControllerProvider.overrideWith(
+            () => inventoryItemsController!,
+          ),
+      ],
       child: MaterialApp(
         theme: theme,
         locale: const Locale('en'),
@@ -88,6 +96,23 @@ class _InventoryItemRowHost extends StatelessWidget {
   }
 }
 
+class _RecordingInventoryItemsController extends InventoryItemsController {
+  _RecordingInventoryItemsController({
+    required void Function(InventoryItem) onBuyAgainItem,
+  }) : _onBuyAgainItem = onBuyAgainItem;
+
+  final void Function(InventoryItem) _onBuyAgainItem;
+
+  @override
+  List<InventoryItem> build() => const <InventoryItem>[];
+
+  @override
+  Future<bool> buyAgainItem(InventoryItem item) async {
+    _onBuyAgainItem(item);
+    return true;
+  }
+}
+
 @Dependencies([
   inventoryManualAddQuickEatConfig,
   inventoryItemRepository,
@@ -95,7 +120,7 @@ class _InventoryItemRowHost extends StatelessWidget {
   manualProductRecentItemsService,
 ])
 void main() {
-  testWidgets('positions expand indicator in the top-right header area', (
+  testWidgets('renders compact closed header without row expand indicator', (
     tester,
   ) async {
     final bucket = PageStorageBucket();
@@ -106,12 +131,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final iconCenter = tester.getCenter(find.byType(InventoryItemImageTile));
-    final indicatorCenter = tester.getCenter(find.byKey(indicatorKey));
+    final iconRect = tester.getRect(find.byType(InventoryItemImageTile));
     final progressRect = tester.getRect(find.byType(RemainingProgressBar));
 
-    expect(indicatorCenter.dx, greaterThan(iconCenter.dx));
-    expect(indicatorCenter.dy, lessThan(progressRect.top));
+    expect(find.byKey(indicatorKey), findsNothing);
+    expect(iconRect.width, 44);
+    expect(iconRect.height, 44);
+    expect(progressRect.top, greaterThan(iconRect.bottom));
   });
 
   testWidgets(
@@ -158,7 +184,9 @@ void main() {
     expect(button.useGradientWhenShowText, isFalse);
   });
 
-  testWidgets('shows expand indicator and rotates it on tap', (tester) async {
+  testWidgets('expands on row tap without visible row indicator', (
+    tester,
+  ) async {
     final bucket = PageStorageBucket();
     const indicatorKey = Key('inventory_item_row_expand_indicator_milk');
 
@@ -167,18 +195,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final initialRotation = tester.widget<AnimatedRotation>(
-      find.byKey(indicatorKey),
-    );
-    expect(initialRotation.turns, 0);
+    expect(find.byKey(indicatorKey), findsNothing);
+    expect(find.text('Edit'), findsNothing);
+    expect(find.byTooltip('Edit'), findsNothing);
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
 
-    final expandedRotation = tester.widget<AnimatedRotation>(
-      find.byKey(indicatorKey),
-    );
-    expect(expandedRotation.turns, 0.5);
+    expect(find.byKey(indicatorKey), findsNothing);
+    expect(find.text('Edit'), findsNothing);
+    expect(find.byTooltip('Edit'), findsOneWidget);
   });
 
   testWidgets('restores expanded state from page storage after rebuild', (
@@ -194,7 +220,7 @@ void main() {
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Remove'), findsOneWidget);
+    expect(find.byTooltip('Remove'), findsOneWidget);
 
     await tester.pumpWidget(
       _InventoryItemRowHost(showRow: false, bucket: bucket),
@@ -207,7 +233,40 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Milk'), findsOneWidget);
-    expect(find.text('Remove'), findsOneWidget);
+    expect(find.byTooltip('Remove'), findsOneWidget);
+  });
+
+  testWidgets('expanded quick shopping action buys item again', (tester) async {
+    final bucket = PageStorageBucket();
+    InventoryItem? buyAgainItemInput;
+    final controller = _RecordingInventoryItemsController(
+      onBuyAgainItem: (item) {
+        buyAgainItemInput = item;
+      },
+    );
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(
+        showRow: true,
+        bucket: bucket,
+        inventoryItemsController: controller,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+
+    final expandedQuickAction = find.ancestor(
+      of: find.byIcon(Icons.shopping_cart_outlined),
+      matching: find.byType(TextButton),
+    );
+    expect(expandedQuickAction, findsOneWidget);
+
+    await tester.tap(expandedQuickAction);
+    await tester.pumpAndSettle();
+
+    expect(buyAgainItemInput?.id, 'milk');
   });
 
   testWidgets('opens the item editor from the expanded edit action', (
@@ -222,7 +281,7 @@ void main() {
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Edit'));
+    await tester.tap(find.byTooltip('Edit'));
     await tester.pumpAndSettle();
 
     expect(find.text('Edit inventory item'), findsOneWidget);
@@ -244,7 +303,7 @@ void main() {
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Edit'));
+    await tester.tap(find.byTooltip('Edit'));
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('Apply changes'));
@@ -288,14 +347,14 @@ void main() {
     await tester.pumpAndSettle();
 
     final editButtonFinder = find.ancestor(
-      of: find.text('Edit'),
+      of: find.byTooltip('Edit'),
       matching: find.byType(TextButton),
     );
     final editButton = tester.widget<TextButton>(editButtonFinder);
 
     expect(editButton.onPressed, isNotNull);
 
-    await tester.tap(find.text('Edit'));
+    await tester.tap(find.byTooltip('Edit'));
     await tester.pump();
 
     expect(
@@ -305,7 +364,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Edit inventory item'), findsNothing);
-    expect(find.text('Remove'), findsOneWidget);
+    expect(find.byTooltip('Remove'), findsOneWidget);
   });
 
   testWidgets('shows nutrition metrics inside one segmented strip', (

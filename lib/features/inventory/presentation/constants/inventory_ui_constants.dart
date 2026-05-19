@@ -88,6 +88,48 @@ abstract final class AppInventoryItemVisuals {
   static const String fallbackEmoji = '🍽️';
 }
 
+/// Defines compact inventory closed-tile sizing.
+abstract final class AppInventoryClosedTile {
+  /// The tile radius.
+  static const double radius = 20;
+
+  /// The leading image size.
+  static const double imageSize = 44;
+
+  /// Background opacity for closed-tile image wells.
+  static const double imageBackgroundAlpha = 0.8;
+
+  /// The primary action width.
+  static const double actionWidth = 68;
+
+  /// The primary action height.
+  static const double actionHeight = 34;
+
+  /// The progress height.
+  static const double progressHeight = 3;
+
+  /// Title font size for compact closed tiles.
+  static const double titleFontSize = 14;
+
+  /// Tight title line height for compact closed tiles.
+  static const double titleLineHeight = 1.05;
+
+  /// Stock label font size for compact closed tiles.
+  static const double stockLabelFontSize = 11;
+
+  /// Percent label font size for compact closed tiles.
+  static const double percentLabelFontSize = 10;
+
+  /// Max width before responsive tile grids add another column.
+  static const double gridMaxCrossAxisExtent = 280;
+
+  /// Main-axis extent for inventory item grid tiles.
+  static const double inventoryGridMainAxisExtent = 136;
+
+  /// Main-axis extent for prepared meal grid tiles.
+  static const double preparedMealGridMainAxisExtent = 172;
+}
+
 /// Defines app inventory eat action colors.
 class AppInventoryEatActionColors {
   /// The app inventory eat action colors.

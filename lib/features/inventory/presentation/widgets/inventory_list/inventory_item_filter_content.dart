@@ -3,6 +3,8 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_filter_divider.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_filter_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
@@ -10,10 +12,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
-/// Defines inventory item filter sheet.
-class InventoryItemFilterSheet extends StatefulWidget {
-  /// The inventory item filter sheet.
-  const InventoryItemFilterSheet({
+/// Food-specific content for the unified inventory filter sheet.
+class InventoryItemFilterContent extends StatefulWidget {
+  /// Creates food filter content.
+  const InventoryItemFilterContent({
     required this.initialSortMode,
     required this.initialHideFullyConsumedItems,
     required this.enabled,
@@ -22,27 +24,28 @@ class InventoryItemFilterSheet extends StatefulWidget {
     super.key,
   });
 
-  /// The initial sort mode.
+  /// Initial food sort mode.
   final InventoryItemSortMode initialSortMode;
 
-  /// The initial hide fully consumed items.
+  /// Initial consumed-item visibility.
   final bool initialHideFullyConsumedItems;
 
-  /// The enabled.
+  /// Whether controls are enabled.
   final bool enabled;
 
-  /// The on sort mode changed.
+  /// Called when food sort mode changes.
   final ValueChanged<InventoryItemSortMode> onSortModeChanged;
 
-  /// The on hide fully consumed items changed.
+  /// Called when consumed-item visibility changes.
   final ValueChanged<bool> onHideFullyConsumedItemsChanged;
 
   @override
-  State<InventoryItemFilterSheet> createState() =>
-      _InventoryItemFilterSheetState();
+  State<InventoryItemFilterContent> createState() =>
+      _InventoryItemFilterContentState();
 }
 
-class _InventoryItemFilterSheetState extends State<InventoryItemFilterSheet> {
+class _InventoryItemFilterContentState
+    extends State<InventoryItemFilterContent> {
   late InventoryItemSortMode _sortMode;
   late bool _hideFullyConsumedItems;
 
@@ -58,68 +61,23 @@ class _InventoryItemFilterSheetState extends State<InventoryItemFilterSheet> {
     final l10n = AppLocalizations.of(context)!;
     final selectedCriterion = _sortCriterionFor(_sortMode);
     final sortAscending = _isSortAscending(_sortMode);
-    final sortOptions = <_InventoryItemSortOptionConfig>[
-      _InventoryItemSortOptionConfig(
-        criterion: _InventoryItemSortCriterion.added,
-        optionKey: const Key('inventory_items_sort_added_option'),
-        directionButtonKey: const Key(
-          'inventory_items_sort_added_direction_button',
-        ),
-        title: l10n.inventorySortAdded,
-        icon: Icons.access_time_rounded,
-      ),
-      _InventoryItemSortOptionConfig(
-        criterion: _InventoryItemSortCriterion.eaten,
-        optionKey: const Key('inventory_items_sort_eaten_option'),
-        directionButtonKey: const Key(
-          'inventory_items_sort_eaten_direction_button',
-        ),
-        title: l10n.inventorySortEaten,
-        icon: Icons.restaurant_rounded,
-      ),
-      _InventoryItemSortOptionConfig(
-        criterion: _InventoryItemSortCriterion.alphabetical,
-        optionKey: const Key('inventory_items_sort_alphabetical_option'),
-        directionButtonKey: const Key(
-          'inventory_items_sort_alphabetical_direction_button',
-        ),
-        title: l10n.inventorySortAlphabetical,
-        icon: Icons.sort_by_alpha_rounded,
-      ),
-      _InventoryItemSortOptionConfig(
-        criterion: _InventoryItemSortCriterion.quantity,
-        optionKey: const Key('inventory_items_sort_quantity_option'),
-        directionButtonKey: const Key(
-          'inventory_items_sort_quantity_direction_button',
-        ),
-        title: l10n.inventorySortQuantity,
-        icon: Icons.inventory_2_rounded,
-      ),
-    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InventoryFiltersSectionLabel(label: l10n.inventorySortSectionTitle),
         const SizedBox(height: AppSpacing.md),
-        for (var index = 0; index < sortOptions.length; index++) ...[
-          if (index > 0) const SizedBox(height: AppSpacing.xs),
+        for (final config in _inventorySortOptions(l10n)) ...[
           _buildSortOptionCard(
             l10n: l10n,
-            config: sortOptions[index],
+            config: config,
             selectedCriterion: selectedCriterion,
             sortAscending: sortAscending,
           ),
+          if (config.criterion != _InventoryItemSortCriterion.quantity)
+            const SizedBox(height: AppSpacing.xs),
         ],
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-          child: Divider(
-            height: 1,
-            color: Theme.of(
-              context,
-            ).colorScheme.outlineVariant.withValues(alpha: 0.45),
-          ),
-        ),
+        const InventoryFilterDivider(),
         InventoryFiltersSectionLabel(label: l10n.inventoryFilterSectionTitle),
         const SizedBox(height: AppSpacing.md),
         InventoryFilterToggle(
@@ -178,11 +136,54 @@ class _InventoryItemFilterSheetState extends State<InventoryItemFilterSheet> {
     );
   }
 
-  void _updateSortMode(InventoryItemSortMode nextSortMode) {
+  List<_InventoryItemSortOptionConfig> _inventorySortOptions(
+    AppLocalizations l10n,
+  ) {
+    return [
+      _InventoryItemSortOptionConfig(
+        criterion: _InventoryItemSortCriterion.added,
+        optionKey: const Key('inventory_items_sort_added_option'),
+        directionButtonKey: const Key(
+          'inventory_items_sort_added_direction_button',
+        ),
+        title: l10n.inventorySortAdded,
+        icon: Icons.access_time_rounded,
+      ),
+      _InventoryItemSortOptionConfig(
+        criterion: _InventoryItemSortCriterion.eaten,
+        optionKey: const Key('inventory_items_sort_eaten_option'),
+        directionButtonKey: const Key(
+          'inventory_items_sort_eaten_direction_button',
+        ),
+        title: l10n.inventorySortEaten,
+        icon: Icons.restaurant_rounded,
+      ),
+      _InventoryItemSortOptionConfig(
+        criterion: _InventoryItemSortCriterion.alphabetical,
+        optionKey: const Key('inventory_items_sort_alphabetical_option'),
+        directionButtonKey: const Key(
+          'inventory_items_sort_alphabetical_direction_button',
+        ),
+        title: l10n.inventorySortAlphabetical,
+        icon: Icons.sort_by_alpha_rounded,
+      ),
+      _InventoryItemSortOptionConfig(
+        criterion: _InventoryItemSortCriterion.quantity,
+        optionKey: const Key('inventory_items_sort_quantity_option'),
+        directionButtonKey: const Key(
+          'inventory_items_sort_quantity_direction_button',
+        ),
+        title: l10n.inventorySortQuantity,
+        icon: Icons.inventory_2_rounded,
+      ),
+    ];
+  }
+
+  void _updateSortMode(InventoryItemSortMode value) {
     setState(() {
-      _sortMode = nextSortMode;
+      _sortMode = value;
     });
-    widget.onSortModeChanged(nextSortMode);
+    widget.onSortModeChanged(value);
   }
 
   void _updateHideFullyConsumedItems(bool value) {

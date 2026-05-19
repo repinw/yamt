@@ -26,6 +26,7 @@ class RemainingProgressBar extends StatelessWidget {
     this.labelLayout = RemainingProgressBarLabelLayout.belowBar,
     this.trackColor,
     this.fillColor,
+    this.barHeight = AppEditorial.progressHeight,
     this.stockLabelStyle,
     this.percentageStyle,
   });
@@ -53,6 +54,9 @@ class RemainingProgressBar extends StatelessWidget {
 
   /// The fill color.
   final Color? fillColor;
+
+  /// The bar height.
+  final double barHeight;
 
   /// The stock label style.
   final TextStyle? stockLabelStyle;
@@ -104,11 +108,13 @@ class RemainingProgressBar extends StatelessWidget {
                   trackColor: resolvedTrackColor,
                   fillColor: resolvedFillColor,
                   safeRatio: safeRatio,
+                  barHeight: barHeight,
                 )
               : _buildSingleBar(
                   trackColor: resolvedTrackColor,
                   fillColor: resolvedFillColor,
                   safeRatio: safeRatio,
+                  barHeight: barHeight,
                 ),
         ),
       ],
@@ -134,13 +140,14 @@ class RemainingProgressBar extends StatelessWidget {
     required Color trackColor,
     required Color fillColor,
     required double safeRatio,
+    required double barHeight,
   }) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(AppRadius.pill),
       child: LinearProgressIndicator(
         value: safeRatio,
-        minHeight: AppEditorial.progressHeight,
-        borderRadius: BorderRadius.circular(999),
+        minHeight: barHeight,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         backgroundColor: trackColor,
         valueColor: AlwaysStoppedAnimation<Color>(fillColor),
       ),
@@ -151,6 +158,7 @@ class RemainingProgressBar extends StatelessWidget {
     required Color trackColor,
     required Color fillColor,
     required double safeRatio,
+    required double barHeight,
   }) {
     final safeTotal = totalUnits < 1 ? 1 : totalUnits;
     final exactFilledByRatio = safeRatio * safeTotal;
@@ -168,11 +176,11 @@ class RemainingProgressBar extends StatelessWidget {
               right: index == safeTotal - 1 ? 0 : AppSpacing.xxs,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
               child: LinearProgressIndicator(
                 value: fillValue,
-                minHeight: AppEditorial.progressHeight,
-                borderRadius: BorderRadius.circular(999),
+                minHeight: barHeight,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
                 backgroundColor: trackColor,
                 valueColor: AlwaysStoppedAnimation<Color>(fillColor),
               ),

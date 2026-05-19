@@ -448,6 +448,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryFiltersShowResultsAction => 'Ergebnisse anzeigen';
 
   @override
+  String get inventoryViewSectionTitle => 'Ansicht';
+
+  @override
+  String get inventoryViewListAction => 'Liste';
+
+  @override
+  String get inventoryViewTilesAction => 'Kacheln';
+
+  @override
   String get inventorySortSectionTitle => 'Sortierung';
 
   @override
@@ -647,7 +656,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatSheetClearAmountAction => 'Menge leeren';
 
   @override
-  String get inventoryItemAddToListAction => 'Auf die Liste';
+  String get inventoryItemAddToListAction => 'Auf Liste';
 
   @override
   String get inventoryItemAddToShoppingListAction =>

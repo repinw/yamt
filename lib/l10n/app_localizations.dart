@@ -838,6 +838,24 @@ abstract class AppLocalizations {
   /// **'Show results'**
   String get inventoryFiltersShowResultsAction;
 
+  /// No description provided for @inventoryViewSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get inventoryViewSectionTitle;
+
+  /// No description provided for @inventoryViewListAction.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get inventoryViewListAction;
+
+  /// No description provided for @inventoryViewTilesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiles'**
+  String get inventoryViewTilesAction;
+
   /// No description provided for @inventorySortSectionTitle.
   ///
   /// In en, this message translates to:

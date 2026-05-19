@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 
@@ -78,6 +79,45 @@ void main() {
       final decoration = chrome.decoration as BoxDecoration;
 
       expect(decoration.color, AppEditorialSurfaces.appBackground(colors));
+      expect(decoration.border, isNull);
+    });
+
+    testWidgets('wraps icon actions in circular app bar surfaces', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _homeTopBarHarness(
+          const HomeTopBar(
+            title: 'Today',
+            actions: <Widget>[
+              IconButton(
+                onPressed: null,
+                icon: Icon(Icons.more_horiz),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      final context = tester.element(find.byType(HomeTopBar));
+      final colors = Theme.of(context).colorScheme;
+      final actionTheme = tester.widget<IconButtonTheme>(
+        find.ancestor(
+          of: find.byIcon(Icons.more_horiz),
+          matching: find.byType(IconButtonTheme),
+        ),
+      );
+      final style = actionTheme.data.style!;
+
+      expect(
+        style.fixedSize?.resolve(<WidgetState>{}),
+        const Size.square(AppSizes.homeTopBarIconButton),
+      );
+      expect(style.shape?.resolve(<WidgetState>{}), isA<CircleBorder>());
+      expect(
+        style.backgroundColor?.resolve(<WidgetState>{}),
+        AppEditorialSurfaces.section(colors),
+      );
     });
 
     testWidgets('keeps long title and subtitle constrained to one line', (
