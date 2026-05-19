@@ -155,23 +155,20 @@ class InventoryPreparedMealsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = isExpanded && meals.isNotEmpty
-        ? AppSpacing.lg
-        : AppSpacing.sm;
     final horizontalPadding = responsivePageHorizontalPadding(context);
+    final hasContent = isExpanded && meals.isNotEmpty;
 
-    return SliverPadding(
-      padding: EdgeInsets.fromLTRB(
-        horizontalPadding,
-        AppSpacing.lg,
-        horizontalPadding,
-        bottomPadding,
-      ),
-      sliver: SliverToBoxAdapter(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InventorySectionHeader(
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSpacing.lg,
+            horizontalPadding,
+            hasContent ? 0 : AppSpacing.sm,
+          ),
+          sliver: SliverToBoxAdapter(
+            child: InventorySectionHeader(
               title: l10n.preparedMealSectionTitle,
               subtitle: subtitle,
               trailing: InventorySectionExpandButton(
@@ -185,26 +182,31 @@ class InventoryPreparedMealsSection extends StatelessWidget {
                 onPressed: onToggleExpanded,
               ),
             ),
-            if (isExpanded && meals.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.sm),
-              if (viewMode == InventoryListViewMode.tiles)
-                _PreparedMealTiles(
-                  meals: meals,
-                  expandedPreparedMealId: expandedPreparedMealId,
-                  enabled: !isSelectionMode,
-                  actions: actions,
-                )
-              else
-                _PreparedMealList(
-                  meals: meals,
-                  expandedPreparedMealId: expandedPreparedMealId,
-                  enabled: !isSelectionMode,
-                  actions: actions,
-                ),
-            ],
-          ],
+          ),
         ),
-      ),
+        if (hasContent)
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              AppSpacing.sm,
+              horizontalPadding,
+              AppSpacing.lg,
+            ),
+            sliver: viewMode == InventoryListViewMode.tiles
+                ? _PreparedMealTiles(
+                    meals: meals,
+                    expandedPreparedMealId: expandedPreparedMealId,
+                    enabled: !isSelectionMode,
+                    actions: actions,
+                  )
+                : _PreparedMealList(
+                    meals: meals,
+                    expandedPreparedMealId: expandedPreparedMealId,
+                    enabled: !isSelectionMode,
+                    actions: actions,
+                  ),
+          ),
+      ],
     );
   }
 }
@@ -225,20 +227,18 @@ class _PreparedMealList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return SliverList.builder(
       key: const Key('prepared_meals_list_view'),
-      children: [
-        for (final meal in meals)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-            child: _PreparedMealEntry(
-              meal: meal,
-              expandedPreparedMealId: expandedPreparedMealId,
-              enabled: enabled,
-              actions: actions,
-            ),
-          ),
-      ],
+      itemCount: meals.length,
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+        child: _PreparedMealEntry(
+          meal: meals[index],
+          expandedPreparedMealId: expandedPreparedMealId,
+          enabled: enabled,
+          actions: actions,
+        ),
+      ),
     );
   }
 }
@@ -259,23 +259,22 @@ class _PreparedMealTiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
+    return SliverGrid(
       key: const Key('prepared_meals_tile_view'),
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: meals.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: AppInventoryClosedTile.gridMaxCrossAxisExtent,
         crossAxisSpacing: AppSpacing.sm,
         mainAxisSpacing: AppSpacing.lg,
         mainAxisExtent: AppInventoryClosedTile.preparedMealGridMainAxisExtent,
       ),
-      itemBuilder: (context, index) => _PreparedMealEntry(
-        meal: meals[index],
-        expandedPreparedMealId: expandedPreparedMealId,
-        enabled: enabled,
-        actions: actions,
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => _PreparedMealEntry(
+          meal: meals[index],
+          expandedPreparedMealId: expandedPreparedMealId,
+          enabled: enabled,
+          actions: actions,
+        ),
+        childCount: meals.length,
       ),
     );
   }

@@ -22,6 +22,17 @@ Widget _buildTestApp({
   required ValueChanged<PreparedMealSortMode> onPreparedMealSortModeChanged,
   InventoryUnifiedFilterSection initialSection =
       InventoryUnifiedFilterSection.preparedMeals,
+  InventoryListViewMode initialViewMode = InventoryListViewMode.list,
+  InventoryListMode initialListMode = InventoryListMode.allItems,
+  InventoryItemSortMode initialInventoryItemSortMode =
+      InventoryItemSortMode.recentlyAddedDescending,
+  bool initialHideFullyConsumedItems = true,
+  PreparedMealCompletionFilter initialPreparedMealCompletionFilter =
+      PreparedMealCompletionFilter.all,
+  PreparedMealConsumptionFilter initialPreparedMealConsumptionFilter =
+      PreparedMealConsumptionFilter.hideConsumed,
+  PreparedMealSortMode initialPreparedMealSortMode =
+      PreparedMealSortMode.addedDescending,
 }) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -29,15 +40,15 @@ Widget _buildTestApp({
     home: Scaffold(
       body: InventoryUnifiedFilterSheet(
         initialSection: initialSection,
-        initialViewMode: InventoryListViewMode.list,
-        initialListMode: InventoryListMode.allItems,
-        initialInventoryItemSortMode:
-            InventoryItemSortMode.recentlyAddedDescending,
-        initialHideFullyConsumedItems: true,
-        initialPreparedMealCompletionFilter: PreparedMealCompletionFilter.all,
+        initialViewMode: initialViewMode,
+        initialListMode: initialListMode,
+        initialInventoryItemSortMode: initialInventoryItemSortMode,
+        initialHideFullyConsumedItems: initialHideFullyConsumedItems,
+        initialPreparedMealCompletionFilter:
+            initialPreparedMealCompletionFilter,
         initialPreparedMealConsumptionFilter:
-            PreparedMealConsumptionFilter.hideConsumed,
-        initialPreparedMealSortMode: PreparedMealSortMode.addedDescending,
+            initialPreparedMealConsumptionFilter,
+        initialPreparedMealSortMode: initialPreparedMealSortMode,
         enabled: true,
         onViewModeChanged: onViewModeChanged,
         onListModeChanged: onListModeChanged,
@@ -60,6 +71,12 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  Finder findViewModeControl() {
+    return find.byWidgetPredicate(
+      (widget) => widget is SegmentedButton<InventoryListViewMode>,
+    );
+  }
+
   testWidgets('food section changes grouping and consumed filter', (
     tester,
   ) async {
@@ -193,6 +210,65 @@ void main() {
     expect(
       find.byKey(const Key('inventory_items_hide_consumed_toggle')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('syncs changed initial values when parent rebuilds', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        initialSection: InventoryUnifiedFilterSection.foods,
+        onViewModeChanged: (_) {},
+        onListModeChanged: (_) {},
+        onInventoryItemSortModeChanged: (_) {},
+        onHideFullyConsumedItemsChanged: (_) {},
+        onPreparedMealCompletionFilterChanged: (_) {},
+        onPreparedMealConsumptionFilterChanged: (_) {},
+        onPreparedMealSortModeChanged: (_) {},
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<SegmentedButton<InventoryListViewMode>>(
+            findViewModeControl(),
+          )
+          .selected,
+      {InventoryListViewMode.list},
+    );
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        initialViewMode: InventoryListViewMode.tiles,
+        initialListMode: InventoryListMode.byReceipt,
+        onViewModeChanged: (_) {},
+        onListModeChanged: (_) {},
+        onInventoryItemSortModeChanged: (_) {},
+        onHideFullyConsumedItemsChanged: (_) {},
+        onPreparedMealCompletionFilterChanged: (_) {},
+        onPreparedMealConsumptionFilterChanged: (_) {},
+        onPreparedMealSortModeChanged: (_) {},
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('prepared_meals_ready_only_toggle')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<SegmentedButton<InventoryListViewMode>>(
+            findViewModeControl(),
+          )
+          .selected,
+      {InventoryListViewMode.tiles},
     );
   });
 }

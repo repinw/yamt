@@ -441,7 +441,13 @@ void main() {
 
     expect(find.byKey(const Key('inventory_items_list_view')), findsNothing);
     expect(find.byKey(const Key('inventory_items_tile_view')), findsOneWidget);
-    expect(find.byType(SliverGrid), findsOneWidget);
+    final grid = tester.widget<SliverGrid>(
+      find.byKey(const Key('inventory_items_tile_view')),
+    );
+    expect(
+      grid.gridDelegate,
+      isA<SliverGridDelegateWithMaxCrossAxisExtent>(),
+    );
   });
 
   testWidgets('view mode toggle switches prepared meals to tile layout', (
@@ -469,7 +475,14 @@ void main() {
 
     expect(find.byKey(const Key('prepared_meals_list_view')), findsNothing);
     expect(find.byKey(const Key('prepared_meals_tile_view')), findsOneWidget);
-    expect(find.byType(GridView), findsOneWidget);
+    expect(find.byType(GridView), findsNothing);
+    final grid = tester.widget<SliverGrid>(
+      find.byKey(const Key('prepared_meals_tile_view')),
+    );
+    expect(
+      grid.gridDelegate,
+      isA<SliverGridDelegateWithMaxCrossAxisExtent>(),
+    );
   });
 
   testWidgets('inventory search filters items and prepared meals', (

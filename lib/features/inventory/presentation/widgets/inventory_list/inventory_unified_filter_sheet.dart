@@ -121,6 +121,46 @@ class _InventoryUnifiedFilterSheetState
   @override
   void initState() {
     super.initState();
+    _syncInitialValues();
+  }
+
+  @override
+  void didUpdateWidget(covariant InventoryUnifiedFilterSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialSection != widget.initialSection) {
+      _section = widget.initialSection;
+    }
+    if (oldWidget.initialViewMode != widget.initialViewMode) {
+      _viewMode = widget.initialViewMode;
+    }
+    if (oldWidget.initialListMode != widget.initialListMode) {
+      _listMode = widget.initialListMode;
+    }
+    if (oldWidget.initialInventoryItemSortMode !=
+        widget.initialInventoryItemSortMode) {
+      _inventoryItemSortMode = widget.initialInventoryItemSortMode;
+    }
+    if (oldWidget.initialHideFullyConsumedItems !=
+        widget.initialHideFullyConsumedItems) {
+      _hideFullyConsumedItems = widget.initialHideFullyConsumedItems;
+    }
+    if (oldWidget.initialPreparedMealCompletionFilter !=
+        widget.initialPreparedMealCompletionFilter) {
+      _preparedMealCompletionFilter =
+          widget.initialPreparedMealCompletionFilter;
+    }
+    if (oldWidget.initialPreparedMealConsumptionFilter !=
+        widget.initialPreparedMealConsumptionFilter) {
+      _preparedMealConsumptionFilter =
+          widget.initialPreparedMealConsumptionFilter;
+    }
+    if (oldWidget.initialPreparedMealSortMode !=
+        widget.initialPreparedMealSortMode) {
+      _preparedMealSortMode = widget.initialPreparedMealSortMode;
+    }
+  }
+
+  void _syncInitialValues() {
     _section = widget.initialSection;
     _viewMode = widget.initialViewMode;
     _listMode = widget.initialListMode;

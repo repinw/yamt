@@ -120,6 +120,9 @@ abstract final class AppInventoryClosedTile {
   /// Percent label font size for compact closed tiles.
   static const double percentLabelFontSize = 10;
 
+  /// Max width before responsive tile grids add another column.
+  static const double gridMaxCrossAxisExtent = 280;
+
   /// Main-axis extent for inventory item grid tiles.
   static const double inventoryGridMainAxisExtent = 136;
 

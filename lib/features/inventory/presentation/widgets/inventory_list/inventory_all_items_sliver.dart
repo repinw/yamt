@@ -173,8 +173,8 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
   SliverGrid _buildTileSliver() {
     return SliverGrid(
       key: const Key('inventory_items_tile_view'),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: AppInventoryClosedTile.gridMaxCrossAxisExtent,
         crossAxisSpacing: AppSpacing.sm,
         mainAxisSpacing: AppSpacing.lg,
         mainAxisExtent: AppInventoryClosedTile.inventoryGridMainAxisExtent,
