@@ -38,6 +38,9 @@ Other features may consume these public Inventory entry points:
   `InventoryItemEatRequest`
 - Repository providers from `data/` when tests or app composition need explicit
   overrides
+- `PreparedMealCover` for features that display prepared-meal thumbnails.
+- `AppInventoryEatActionColors` and `AppInventoryBuyAgainActionColors` for
+  inventory action semantics shared with cookflow.
 
 Callers should not assemble Inventory internal row/card widgets unless they are
 already documented as a reusable presentation surface.

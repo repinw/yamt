@@ -143,6 +143,7 @@ final class AppRouterProvider
           inventoryBackedCalorieEntrySaveFlowProvider,
           cookingFlowControllerProvider,
           cookingFlowWizardControllerProvider,
+          cookingInstructionStepsProvider,
           inventoryItemsControllerProvider,
           preparedMealsControllerProvider,
           manualProductRecentItemsServiceProvider,
@@ -174,6 +175,7 @@ final class AppRouterProvider
           AppRouterProvider.$allTransitiveDependencies18,
           AppRouterProvider.$allTransitiveDependencies19,
           AppRouterProvider.$allTransitiveDependencies20,
+          AppRouterProvider.$allTransitiveDependencies21,
         },
       );
 
@@ -201,17 +203,18 @@ final class AppRouterProvider
   static final $allTransitiveDependencies12 = cookingFlowControllerProvider;
   static final $allTransitiveDependencies13 =
       cookingFlowWizardControllerProvider;
-  static final $allTransitiveDependencies14 =
+  static final $allTransitiveDependencies14 = cookingInstructionStepsProvider;
+  static final $allTransitiveDependencies15 =
       manualProductRecentItemsServiceProvider;
-  static final $allTransitiveDependencies15 = preparedMealImagePickerProvider;
-  static final $allTransitiveDependencies16 = inventoryActivityEventsProvider;
-  static final $allTransitiveDependencies17 =
-      receiptCaptureFlowControllerProvider;
+  static final $allTransitiveDependencies16 = preparedMealImagePickerProvider;
+  static final $allTransitiveDependencies17 = inventoryActivityEventsProvider;
   static final $allTransitiveDependencies18 =
-      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
+      receiptCaptureFlowControllerProvider;
   static final $allTransitiveDependencies19 =
-      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies20 =
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies21 =
       receiptBatchFlowControllerProvider;
 
   @override
@@ -236,4 +239,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'0caed9134a5c95540ac831d6a47b49c031c5c778';
+String _$appRouterHash() => r'0e8556072144b7ea027fa0cdb7694b52c6806f1b';

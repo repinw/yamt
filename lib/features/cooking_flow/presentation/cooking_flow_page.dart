@@ -6,18 +6,20 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_controller.dart';
-import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_logic.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_wizard_controller.dart';
-import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_wizard_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/'
+    'cooking_flow_cooking_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_finalize_messages.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -52,6 +54,7 @@ import 'package:yamt/l10n/app_localizations.dart';
   CookingFlowController,
   CookingFlowWizardController,
   InventoryItemsController,
+  cookingInstructionSteps,
 ])
 class CookingFlowPage extends ConsumerStatefulWidget {
   /// Creates Cookflow page.

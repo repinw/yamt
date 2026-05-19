@@ -2,20 +2,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_controller.dart';
-import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
-import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_wizard_controller.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_wizard_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+
+import '../../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 @Dependencies([CookingFlowController, CookingFlowWizardController])
 void main() {
@@ -98,6 +101,191 @@ void main() {
     expect(afterBaseChange.summaryIngredients, isEmpty);
     expect(afterBaseChange.summarySourceSignature, isEmpty);
     expect(afterBaseChange.ingredientContainerAssignments, isEmpty);
+  });
+
+  test('intro selection update clears stale summary ingredients', () async {
+    final store = _FakeCookingFlowSessionLocalStore(
+      session: const CookingFlowSession(
+        templateId: 'template-1',
+        step: CookingFlowSessionStep.summary,
+        taraText: '',
+        adjustmentInputText: '',
+        adjustments: <String>[],
+        summaryIngredients: <CookingFlowSummaryIngredientSessionDraft>[
+          CookingFlowSummaryIngredientSessionDraft(
+            key: 'row-rice',
+            name: 'Rice',
+            amount: '200',
+            unitCode: 'g',
+            inventoryItemIds: <String>['rice'],
+            kind: CookingFlowSummaryIngredientKind.template,
+            sourceIngredient: '200g Rice',
+          ),
+        ],
+        grossWeightText: '',
+        splitIntoPortions: false,
+        portionCount: 4,
+        introDraft: CookingFlowIntroDraft(
+          rowStates: <CookingFlowIntroRowDraft>[
+            CookingFlowIntroRowDraft(rawIngredient: '200g Rice'),
+          ],
+        ),
+        introShoppingHandled: true,
+        introShoppingBaselineInventoryItemIds: <String>['rice'],
+        ingredientContainerAssignments: <String, String>{
+          'row-rice': 'container-1',
+        },
+      ),
+    );
+    final container = _container(store: store);
+    final controller = container.read(
+      cookingFlowWizardControllerProvider.notifier,
+    );
+
+    await controller.restoreSession('template-1');
+    expect(
+      container.read(cookingFlowWizardControllerProvider).summaryIngredients,
+      isNotEmpty,
+    );
+
+    controller.updateIntroSelectionState(
+      const CookingFlowIntroSelectionState(
+        allItemsSelected: false,
+        hasShoppingSelections: false,
+        hasUnresolvedConflicts: true,
+        shoppingListLabels: <String>[],
+        draft: CookingFlowIntroDraft(
+          rowStates: <CookingFlowIntroRowDraft>[
+            CookingFlowIntroRowDraft(rawIngredient: '100g Beans'),
+          ],
+        ),
+      ),
+    );
+
+    final state = container.read(cookingFlowWizardControllerProvider);
+    expect(state.summaryIngredients, isEmpty);
+    expect(state.introHasUnresolvedConflicts, isTrue);
+    expect(state.introShoppingBaselineInventoryItemIds, isEmpty);
+  });
+
+  test('adds intro shopping items and stores inventory baseline', () async {
+    final shoppingRepository = FakeShoppingListRepository();
+    final container = _container(shoppingRepository: shoppingRepository);
+    addTearDown(shoppingRepository.dispose);
+    final controller = container.read(
+      cookingFlowWizardControllerProvider.notifier,
+    );
+
+    final result =
+        await (controller..updateIntroSelectionState(
+              const CookingFlowIntroSelectionState(
+                allItemsSelected: false,
+                hasShoppingSelections: true,
+                hasUnresolvedConflicts: false,
+                shoppingListLabels: <String>['Mehl'],
+                draft: CookingFlowIntroDraft(),
+              ),
+            ))
+            .addIntroShoppingItems(
+              inventoryItems: <InventoryItem>[
+                _inventoryItem(id: 'flour', name: 'Mehl'),
+              ],
+            );
+
+    final state = container.read(cookingFlowWizardControllerProvider);
+    expect(result, CookingFlowShoppingListActionResult.success);
+    expect(shoppingRepository.savedItems.single.name, 'Mehl');
+    expect(state.introShoppingHandled, isTrue);
+    expect(state.introShoppingRedirectInProgress, isFalse);
+    expect(state.introShoppingBaselineInventoryItemIds, <String>['flour']);
+  });
+
+  test('goBackOneStep walks backward through wizard states', () {
+    final container = _container();
+    final controller = container.read(
+      cookingFlowWizardControllerProvider.notifier,
+    );
+    final goBackOneStep = controller.goBackOneStep;
+
+    controller
+      ..openPreparationStep()
+      ..openCookingStep()
+      ..openSummaryStep(
+        template: null,
+        inventoryItems: const <InventoryItem>[],
+        containerIds: const <String>['container-1'],
+      )
+      ..openFinalizeStep(const <String>['container-1'])
+      ..goBackOneStep();
+    expect(
+      container.read(cookingFlowWizardControllerProvider).step,
+      CookingFlowStep.summary,
+    );
+
+    goBackOneStep();
+    goBackOneStep();
+    goBackOneStep();
+    goBackOneStep();
+
+    expect(
+      container.read(cookingFlowWizardControllerProvider).step,
+      CookingFlowStep.start,
+    );
+  });
+
+  test('summary ingredient mutations keep assignments normalized', () {
+    final container = _container();
+    final controller = container.read(
+      cookingFlowWizardControllerProvider.notifier,
+    );
+    final addAdjustment = controller.addAdjustment;
+    final addSummaryIngredient = controller.addSummaryIngredient;
+    final updateSummaryIngredientAmount =
+        controller.updateSummaryIngredientAmount;
+    final updateIngredientContainerAssignment =
+        controller.updateIngredientContainerAssignment;
+    final normalizeIngredientContainerAssignments =
+        controller.normalizeIngredientContainerAssignments;
+
+    addAdjustment('  more rice  ');
+    addSummaryIngredient(
+      ingredient: _summaryIngredient,
+      adjustmentIndex: 0,
+      containerIds: const <String>['container-1', 'container-2'],
+    );
+    updateSummaryIngredientAmount(
+      index: 0,
+      value: '250',
+      containerIds: const <String>['container-1', 'container-2'],
+    );
+    updateIngredientContainerAssignment(
+      rowKey: 'row-rice',
+      containerId: 'container-2',
+      containerIds: const <String>['container-1', 'container-2'],
+    );
+    normalizeIngredientContainerAssignments(const <String>['container-3']);
+
+    final updated = container.read(cookingFlowWizardControllerProvider);
+    expect(updated.adjustments, isEmpty);
+    expect(updated.summaryIngredients.single.amount, '250');
+    expect(updated.ingredientContainerAssignments, <String, String>{
+      'row-rice': 'container-3',
+    });
+
+    controller.removeSummaryIngredient(
+      index: 0,
+      containerIds: const <String>['container-3'],
+    );
+    expect(
+      container.read(cookingFlowWizardControllerProvider).summaryIngredients,
+      isEmpty,
+    );
+    expect(
+      container
+          .read(cookingFlowWizardControllerProvider)
+          .ingredientContainerAssignments,
+      isEmpty,
+    );
   });
 
   test('restores stored session through wizard controller', () async {
@@ -186,12 +374,17 @@ void main() {
   });
 }
 
-ProviderContainer _container({_FakeCookingFlowSessionLocalStore? store}) {
+ProviderContainer _container({
+  _FakeCookingFlowSessionLocalStore? store,
+  FakeShoppingListRepository? shoppingRepository,
+}) {
   final container = ProviderContainer(
     overrides: [
       cookingFlowSessionLocalStoreProvider.overrideWithValue(
         store ?? _FakeCookingFlowSessionLocalStore(),
       ),
+      if (shoppingRepository != null)
+        shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
       cookingFlowControllerProvider.overrideWith(
         _SuccessCookingFlowController.new,
       ),
@@ -199,6 +392,19 @@ ProviderContainer _container({_FakeCookingFlowSessionLocalStore? store}) {
   );
   addTearDown(container.dispose);
   return container;
+}
+
+InventoryItem _inventoryItem({required String id, required String name}) {
+  return InventoryItem.create(
+    id: id,
+    name: name,
+    entryDate: DateTime.parse('2026-03-27T12:00:00Z'),
+    storeName: 'Test',
+    quantity: 1,
+    initialAmount: 500,
+    currentAmount: 500,
+    amountUnit: InventoryAmountUnit.gram,
+  );
 }
 
 const _summaryIngredient = CookingFlowSummaryIngredientDraft(

@@ -1,22 +1,22 @@
 import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_controller.dart';
-import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_logic.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
-import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_shopping_controller.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_builder.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_wizard_session_controller.dart';
+    'cooking_flow_wizard_session_service.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_shopping_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
@@ -25,7 +25,11 @@ part 'cooking_flow_wizard_controller.g.dart';
 const _textListEquality = ListEquality<String>();
 
 /// Controls cookflow wizard state and session persistence.
-@Riverpod(dependencies: [CookingFlowController])
+@Riverpod(
+  dependencies: [
+    CookingFlowController,
+  ],
+)
 class CookingFlowWizardController extends _$CookingFlowWizardController {
   @override
   CookingFlowWizardState build() {
@@ -35,7 +39,7 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
   /// Restores saved session for [templateId].
   Future<CookingFlowSession?> restoreSession(String templateId) async {
     final sessionController = ref.read(
-      cookingFlowWizardSessionControllerProvider,
+      cookingFlowWizardSessionServiceProvider,
     );
     final storedSession = await sessionController.restoreSession(templateId);
     if (!ref.mounted) {
@@ -389,7 +393,7 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
 
   /// Clears session and resets wizard state.
   Future<void> restartSession() async {
-    await ref.read(cookingFlowWizardSessionControllerProvider).clearSession();
+    await ref.read(cookingFlowWizardSessionServiceProvider).clearSession();
     if (!ref.mounted) {
       return;
     }
@@ -402,14 +406,14 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
   /// Saves current session.
   Future<bool> saveSession(CookingFlowWizardSessionInput input) async {
     return ref
-        .read(cookingFlowWizardSessionControllerProvider)
+        .read(cookingFlowWizardSessionServiceProvider)
         .saveSession(state: state, input: input);
   }
 
   /// Persists session without surfacing errors.
   void persistSessionSilently(CookingFlowWizardSessionInput input) {
     ref
-        .read(cookingFlowWizardSessionControllerProvider)
+        .read(cookingFlowWizardSessionServiceProvider)
         .persistSessionSilently(
           state: state,
           input: input,
