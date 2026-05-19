@@ -1,13 +1,17 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
 
+part 'calorie_page_action_controller.g.dart';
+
 /// Handles calorie page actions that need providers.
-class CaloriePageActionController extends AsyncNotifier<void> {
+@riverpod
+class CaloriePageActionController extends _$CaloriePageActionController {
   @override
   FutureOr<void> build() {
+    ref.keepAlive();
     return null;
   }
 
@@ -25,9 +29,3 @@ class CaloriePageActionController extends AsyncNotifier<void> {
     );
   }
 }
-
-/// Controller for calorie page actions.
-final caloriePageActionControllerProvider =
-    AsyncNotifierProvider<CaloriePageActionController, void>(
-      CaloriePageActionController.new,
-    );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_prefill.dart';
 import 'package:yamt/l10n/app_localizations.dart';

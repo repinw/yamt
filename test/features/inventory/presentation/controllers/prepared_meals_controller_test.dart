@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/application/'
@@ -35,6 +35,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   final StreamController<List<InventoryItem>> _controller =
       StreamController<List<InventoryItem>>.broadcast();
   List<InventoryItem> _items;
+  bool readShouldThrow = false;
   bool saveShouldFail = false;
   int readAllCount = 0;
   List<InventoryItem> savedItems = const <InventoryItem>[];
@@ -54,6 +55,9 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<List<InventoryItem>> readAll() async {
     readAllCount += 1;
+    if (readShouldThrow) {
+      throw StateError('inventory-read-failed');
+    }
     return List<InventoryItem>.from(_items);
   }
 
@@ -90,6 +94,7 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
       StreamController<List<PreparedMeal>>.broadcast();
   List<PreparedMeal> _meals;
   List<PreparedMeal> savedMeals = const <PreparedMeal>[];
+  bool saveShouldFail = false;
   bool throwOnSave;
   final Duration saveDelay;
 
@@ -116,6 +121,9 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   Future<bool> saveAll(List<PreparedMeal> meals) async {
     if (saveDelay > Duration.zero) {
       await Future<void>.delayed(saveDelay);
+    }
+    if (saveShouldFail) {
+      return false;
     }
     if (throwOnSave) {
       throw Exception('prepared-meal-save-failed');
@@ -167,9 +175,13 @@ class _FakeInventoryDiscardEventRepository
 class _FakeInventoryActivityEventRepository
     implements InventoryActivityEventRepository {
   final List<InventoryActivityEvent> events = <InventoryActivityEvent>[];
+  bool appendShouldFail = false;
 
   @override
   Future<bool> appendAll(List<InventoryActivityEvent> events) async {
+    if (appendShouldFail) {
+      return false;
+    }
     this.events.addAll(events);
     return true;
   }
@@ -495,6 +507,58 @@ void main() {
         container.read(preparedMealsControllerProvider).asData?.value,
         isEmpty,
       );
+    },
+  );
+
+  test(
+    'createPreparedMeal still succeeds when activity save fails',
+    () async {
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [_item(id: 'rice', name: 'Rice')],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: const <PreparedMeal>[],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      final activityRepository = _FakeInventoryActivityEventRepository()
+        ..appendShouldFail = true;
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryActivityActorProvider.overrideWithValue(_testActor),
+          inventoryActivityEventRepositoryProvider.overrideWithValue(
+            activityRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final result = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .createPreparedMeal(
+            name: 'Rice bowl',
+            totalPortions: 2,
+            items: const [
+              PreparedMealItemInput(itemId: 'rice', usedAmount: 100),
+            ],
+          );
+
+      expect(result.isSuccess, isTrue);
+      expect(preparedMealRepository.savedMeals, hasLength(1));
+      expect(activityRepository.events, isEmpty);
     },
   );
 
@@ -1479,6 +1543,103 @@ void main() {
     );
   });
 
+  test(
+    'updatePreparedMealDetails rolls back when meal save returns false',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+      final existingMeal = _meal(id: 'meal-1', name: 'Lunch box', item: item);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [existingMeal],
+      )..saveShouldFail = true;
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final saved = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .updatePreparedMealDetails(
+            mealId: existingMeal.id,
+            name: 'Updated lunch box',
+          );
+
+      expect(saved, isFalse);
+      expect(
+        container
+            .read(preparedMealsControllerProvider)
+            .asData
+            ?.value
+            .single
+            .name,
+        'Lunch box',
+      );
+    },
+  );
+
+  test(
+    'updatePreparedMealDetails returns false when inventory read fails',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+      final existingMeal = _meal(id: 'meal-1', name: 'Lunch box', item: item);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      )..readShouldThrow = true;
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [existingMeal],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final saved = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .updatePreparedMealDetails(
+            mealId: existingMeal.id,
+            name: 'Updated lunch box',
+          );
+
+      expect(saved, isFalse);
+      expect(inventoryRepository.readAllCount, 1);
+      expect(preparedMealRepository.savedMeals, isEmpty);
+    },
+  );
+
   test('unbundlePreparedMeal restores remaining ingredient amounts', () async {
     final item = _item(id: 'rice', name: 'Rice', currentAmount: 50);
     final meal = _meal(
@@ -1594,4 +1755,204 @@ void main() {
       expect(activityRepository.events.single.afterCurrentAmount, 100);
     },
   );
+
+  test('refresh reloads the current repository stream', () async {
+    final item = _item(id: 'rice', name: 'Rice');
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [item],
+    );
+    final preparedMealRepository = _FakePreparedMealRepository(
+      initialMeals: const <PreparedMeal>[],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    addTearDown(inventoryRepository.dispose);
+    addTearDown(preparedMealRepository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        preparedMealRepositoryProvider.overrideWithValue(
+          preparedMealRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealsControllerProvider.future);
+    preparedMealRepository.emitWatchMeals([
+      _meal(id: 'meal-1', name: 'Lunch box', item: item),
+    ]);
+    await _waitForMeals(container, (meals) => meals.length == 1);
+
+    await container.read(preparedMealsControllerProvider.notifier).refresh();
+
+    final meals = container.read(preparedMealsControllerProvider).asData?.value;
+    expect(meals?.single.id, 'meal-1');
+  });
+
+  test(
+    'ignorePreparedMealPendingIngredient removes the pending ingredient',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice');
+      final existingMeal = _meal(
+        id: 'meal-1',
+        name: 'Lunch box',
+        item: item,
+      ).copyWith(pendingRecipeIngredients: const <String>['Sour cream']);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [existingMeal],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final ignored = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .ignorePreparedMealPendingIngredient(
+            mealId: 'meal-1',
+            ingredient: 'Sour cream',
+          );
+
+      expect(ignored, isTrue);
+      expect(
+        preparedMealRepository.savedMeals.single.pendingRecipeIngredients,
+        isEmpty,
+      );
+    },
+  );
+
+  test('createPreparedMealsFromTemplateContainers saves split meals', () async {
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [
+        _item(
+          id: 'pasta',
+          name: 'Pasta',
+          currentAmount: 200,
+          initialAmount: 200,
+        ),
+        _item(
+          id: 'sauce',
+          name: 'Sauce',
+          currentAmount: 100,
+          initialAmount: 100,
+        ),
+      ],
+    );
+    final preparedMealRepository = _FakePreparedMealRepository(
+      initialMeals: const <PreparedMeal>[],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final activityRepository = _FakeInventoryActivityEventRepository();
+    addTearDown(inventoryRepository.dispose);
+    addTearDown(preparedMealRepository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    final template = PreparedMeal(
+      id: 'template-1',
+      name: 'Spaghetti',
+      recipeIngredients: const <String>['100 g pasta', '50 g sauce'],
+      totalPortions: 4,
+      remainingPortions: 4,
+      totalKcal: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: const <PreparedMealComponent>[],
+    );
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        preparedMealRepositoryProvider.overrideWithValue(
+          preparedMealRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        inventoryActivityActorProvider.overrideWithValue(_testActor),
+        inventoryActivityEventRepositoryProvider.overrideWithValue(
+          activityRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealsControllerProvider.future);
+    final result = await container
+        .read(preparedMealsControllerProvider.notifier)
+        .createPreparedMealsFromTemplateContainers(
+          template: template,
+          totalPortions: 4,
+          recipeIngredientAssignments: const <String, List<String>>{
+            '100 g pasta': <String>['pasta'],
+            '50 g sauce': <String>['sauce'],
+          },
+          recipeIngredientAmountConversions:
+              const <String, RecipeIngredientAmountConversion>{},
+          sourceKeysByIngredient: const <String, String>{
+            '100 g pasta': 'row-pasta',
+            '50 g sauce': 'row-sauce',
+          },
+          containers: const <PreparedMealContainerInput>[
+            PreparedMealContainerInput(
+              id: 'container-1',
+              label: 'Pasta',
+              totalPortions: 4,
+              finalNetWeight: 700,
+              sourceKeys: <String>['row-pasta'],
+            ),
+            PreparedMealContainerInput(
+              id: 'container-2',
+              label: 'Sauce',
+              totalPortions: 4,
+              finalNetWeight: 300,
+              sourceKeys: <String>['row-sauce'],
+            ),
+          ],
+        );
+
+    expect(result.isSuccess, isTrue);
+    expect(result.preparedMealIds, hasLength(2));
+    expect(inventoryRepository.savedItems[0].currentAmount, 100);
+    expect(inventoryRepository.savedItems[1].currentAmount, 50);
+    expect(preparedMealRepository.savedMeals, hasLength(2));
+    expect(preparedMealRepository.savedMeals[0].name, 'Spaghetti - Pasta');
+    expect(preparedMealRepository.savedMeals[0].finalNetWeight, 700);
+    expect(preparedMealRepository.savedMeals[1].name, 'Spaghetti - Sauce');
+    expect(preparedMealRepository.savedMeals[1].finalNetWeight, 300);
+    expect(
+      activityRepository.events.map(
+        (event) => (event.type, event.itemId, event.amount),
+      ),
+      <(InventoryActivityEventType, String, int)>[
+        (InventoryActivityEventType.itemUsedInPreparedMeal, 'pasta', 100),
+        (InventoryActivityEventType.itemUsedInPreparedMeal, 'sauce', 50),
+      ],
+    );
+  });
 }

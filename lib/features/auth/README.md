@@ -66,6 +66,7 @@ test imports them directly.
 
 - `core` for Firebase infrastructure, preferences, app theme controllers, and
   reusable UI primitives.
+- `features/shared` for shared credential-form widgets and layout constants.
 - `settings` may use auth providers/controllers for account-linking actions.
 - `household` may use `UserProfile`, profile decoding helpers, and auth state to
   scope household membership.

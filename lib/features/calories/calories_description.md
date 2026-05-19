@@ -105,7 +105,7 @@ Connects domain, data, and UI through Riverpod:
   minimum goal floor.
 - `calorieWeekOverviewProvider`: Builds the visible 7-day overview with daily
   goals, intake, carryover, heart days, and future goal starts.
-- `calorieWeeklyCheckInViewModelProvider` and builder: Decide whether a weekly
+- `calorieWeeklyCheckInDataProvider` and builder: Decide whether a weekly
   check-in is due, blocked, stale, or ready, and load intake, weight, and
   activity data.
 - `CalorieWeeklyCheckInController`: Syncs pending check-ins, stores learned

@@ -1,4 +1,4 @@
-import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'

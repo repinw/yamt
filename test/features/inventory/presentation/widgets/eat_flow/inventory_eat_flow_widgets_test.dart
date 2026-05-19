@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_amount_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'

@@ -13,6 +13,8 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_keys.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_learned_tdee_goal_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
@@ -100,6 +102,47 @@ CalorieGoalSettings _learnedTdeeSettings({
 }
 
 void main() {
+  testWidgets('switching goal modes preserves the previous pace', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        initialSettings: _learnedTdeeSettings(
+          goalMode: CalorieGoalMode.lose,
+          goalSpeedKgPerWeek: 0.5,
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    final speedFieldFinder = find.byKey(
+      CalorieGoalCalculatorSheetKeys.goalSpeedField,
+    );
+    expect(speedFieldFinder, findsOneWidget);
+    expect(tester.widget<TextField>(speedFieldFinder).controller?.text, '0.5');
+
+    await tester.enterText(speedFieldFinder, '0,7');
+    await tester.pumpAndSettle();
+
+    final saveButton = tester.widget<FilledButton>(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+    expect(saveButton.onPressed, isNotNull);
+
+    await tester.tap(find.text('Maintain'));
+    await tester.pumpAndSettle();
+
+    expect(speedFieldFinder, findsNothing);
+    expect(find.textContaining('2,450'), findsWidgets);
+
+    await tester.tap(find.text('Lose'));
+    await tester.pumpAndSettle();
+
+    expect(speedFieldFinder, findsOneWidget);
+    expect(tester.widget<TextField>(speedFieldFinder).controller?.text, '0,7');
+  });
+
   testWidgets('full reset opens the complete calculator flow', (tester) async {
     await tester.pumpWidget(
       _buildHarness(initialSettings: _learnedTdeeSettings()),
@@ -233,11 +276,55 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
     await tester.pumpAndSettle();
 
     expect(runStateRepository.saveCallCount, 0);
     expect(runStateRepository.state, initialRunState);
     expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
+  });
+
+  testWidgets('shows failure snackbar when learned TDEE save fails', (
+    tester,
+  ) async {
+    final initialSettings = _learnedTdeeSettings(
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    )..saveShouldFail = true;
+    final logRepository = FakeCalorieLogRepository();
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        initialSettings: initialSettings,
+        overrides: <Override>[
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Maintain'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsOneWidget);
+    expect(
+      find.text('Could not save the learned TDEE target.'),
+      findsOneWidget,
+    );
   });
 }

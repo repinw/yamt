@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 
 part 'calorie_entry.g.dart';
 

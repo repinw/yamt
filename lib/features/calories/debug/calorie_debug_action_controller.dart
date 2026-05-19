@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -18,6 +18,8 @@ import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
+
+part 'calorie_debug_action_controller.g.dart';
 
 /// Result from printing calorie debug dump.
 sealed class CalorieDebugDumpPrintResult {
@@ -81,9 +83,11 @@ class CalorieWeeklyCheckInDebugDumpPrintFailure
 }
 
 /// Handles calorie debug actions that need providers.
-class CalorieDebugActionController extends AsyncNotifier<void> {
+@riverpod
+class CalorieDebugActionController extends _$CalorieDebugActionController {
   @override
   FutureOr<void> build() {
+    ref.keepAlive();
     return null;
   }
 
@@ -284,9 +288,3 @@ void _logDebugDump({required String name, required String dump}) {
     );
   }
 }
-
-/// Controller for calorie debug actions.
-final calorieDebugActionControllerProvider =
-    AsyncNotifierProvider<CalorieDebugActionController, void>(
-      CalorieDebugActionController.new,
-    );

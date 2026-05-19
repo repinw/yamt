@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 
 void main() {

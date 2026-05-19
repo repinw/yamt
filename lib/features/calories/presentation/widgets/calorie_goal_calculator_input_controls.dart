@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_page_keys.dart';
+    'calorie_goal_calculator_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Numeric text field used inside the calorie-goal calculator onboarding.
