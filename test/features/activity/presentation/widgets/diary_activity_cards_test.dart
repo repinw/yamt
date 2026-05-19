@@ -64,14 +64,15 @@ void main() {
       ],
     );
 
-    expect(find.text('Schritte'), findsOneWidget);
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.diaryStepsTitle), findsOneWidget);
     expect(
       find.textContaining('6.500 / 10.000', findRichText: true),
       findsOneWidget,
     );
     expect(find.text('expanded step details'), findsNothing);
 
-    await tester.tap(find.text('Schritte'));
+    await tester.tap(find.text(l10n.diaryStepsTitle));
     await tester.pumpAndSettle();
 
     expect(find.text('expanded step details'), findsOneWidget);
@@ -96,9 +97,10 @@ void main() {
       ],
     );
 
-    expect(find.text('SCHRITTE DETAILS'), findsOneWidget);
-    expect(find.text('Schritte im Training'), findsOneWidget);
-    expect(find.text('Schritte außerhalb'), findsOneWidget);
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.diaryStepDetailsTitle.toUpperCase()), findsOneWidget);
+    expect(find.text(l10n.diaryStepsDuringWorkoutsLabel), findsOneWidget);
+    expect(find.text(l10n.diaryStepsOutsideWorkoutsLabel), findsOneWidget);
     expect(find.text('1.500'), findsOneWidget);
     expect(find.text('5.000'), findsOneWidget);
   });
@@ -123,7 +125,11 @@ void main() {
       ],
     );
 
-    expect(find.text('Sonstige aktive Schritte'), findsOneWidget);
+    final l10n = _l10n(tester);
+    expect(
+      find.text(l10n.diaryStepsDuringOtherActivityLabel),
+      findsOneWidget,
+    );
     expect(find.text('800'), findsOneWidget);
     expect(find.text('4.200'), findsOneWidget);
   });
@@ -147,7 +153,11 @@ void main() {
       ],
     );
 
-    expect(find.text('Sonstige aktive Schritte'), findsNothing);
+    final l10n = _l10n(tester);
+    expect(
+      find.text(l10n.diaryStepsDuringOtherActivityLabel),
+      findsNothing,
+    );
   });
 
   testWidgets('step details card retries after load error', (tester) async {
@@ -170,22 +180,23 @@ void main() {
       ],
     );
 
-    expect(find.text('Schritte konnten nicht geladen werden'), findsOneWidget);
-    expect(find.text('Erneut versuchen'), findsOneWidget);
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.diaryStepsLoadFailed), findsOneWidget);
+    expect(find.text(l10n.caloriesRetryAction), findsOneWidget);
 
     shouldFail = false;
-    await tester.tap(find.text('Erneut versuchen'));
+    await tester.tap(find.text(l10n.caloriesRetryAction));
     await tester.pumpAndSettle();
 
-    expect(find.text('Schritte konnten nicht geladen werden'), findsNothing);
-    expect(find.text('SCHRITTE DETAILS'), findsOneWidget);
+    expect(find.text(l10n.diaryStepsLoadFailed), findsNothing);
+    expect(find.text(l10n.diaryStepDetailsTitle.toUpperCase()), findsOneWidget);
     expect(find.text('1.500'), findsOneWidget);
   });
 
   testWidgets('workouts card renders tracked workout rows', (tester) async {
     final workout = _workout(
       selectedDay,
-      activityLabel: 'Radfahren',
+      activityLabel: 'Cycling',
       durationMinutes: 42,
       totalCalories: 320,
       sourceName: 'Health Connect',
@@ -208,8 +219,9 @@ void main() {
       ],
     );
 
-    expect(find.text('TRAININGS'), findsOneWidget);
-    expect(find.text('Radfahren'), findsOneWidget);
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.diaryWorkoutsTitle.toUpperCase()), findsOneWidget);
+    expect(find.text('Cycling'), findsOneWidget);
     expect(find.textContaining('Health Connect'), findsOneWidget);
     expect(find.text('42 Min.'), findsOneWidget);
     expect(find.text('320 kcal'), findsOneWidget);
@@ -220,7 +232,7 @@ void main() {
   ) async {
     final workout = _workout(
       selectedDay,
-      activityLabel: 'Morgenspaziergang',
+      activityLabel: 'Morning walk',
       durationMinutes: 30,
       totalCalories: 150,
       sourceName: 'YAMT',
@@ -252,21 +264,25 @@ void main() {
       ],
     );
 
-    expect(find.text('AKTIVITÄT'), findsOneWidget);
-    expect(find.text('GEWICHT'), findsOneWidget);
+    final l10n = _l10n(tester);
+    final activityLabel = l10n.diaryActivityTitle.toUpperCase();
+    final weightLabel = l10n.diaryWeightTitle.toUpperCase();
+
+    expect(find.text(activityLabel), findsOneWidget);
+    expect(find.text(weightLabel), findsOneWidget);
     expect(find.textContaining('450 kcal', findRichText: true), findsOneWidget);
     expect(find.textContaining('78,4 kg', findRichText: true), findsOneWidget);
 
-    await tester.tap(find.text('AKTIVITÄT'));
+    await tester.tap(find.text(activityLabel));
     await tester.pumpAndSettle();
 
-    expect(find.text('TRAININGS'), findsOneWidget);
-    expect(find.text('Morgenspaziergang'), findsOneWidget);
+    expect(find.text(l10n.diaryWorkoutsTitle.toUpperCase()), findsOneWidget);
+    expect(find.text('Morning walk'), findsOneWidget);
 
-    await tester.tap(find.text('GEWICHT').first);
+    await tester.tap(find.text(weightLabel).first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Gewicht eintragen'), findsOneWidget);
+    expect(find.text(l10n.diaryWeightAddAction), findsOneWidget);
     expect(find.textContaining('78,4 kg'), findsWidgets);
     expect(find.byIcon(Icons.close_rounded), findsNWidgets(2));
   });
@@ -278,7 +294,7 @@ void main() {
       tester,
       DiaryActivityWeightSection(
         selectedDay: selectedDay,
-        header: const Text('WOCHE 6 SUMMARY'),
+        header: const Text('Week 6 summary'),
       ),
       overrides: [
         ..._commonOverrides(),
@@ -304,21 +320,100 @@ void main() {
       ],
     );
 
-    expect(find.text('WOCHE 6 SUMMARY'), findsOneWidget);
-    expect(find.text('SCHRITTE'), findsOneWidget);
-    expect(find.text('AKTIVITÄT'), findsOneWidget);
-    expect(find.text('GEWICHT'), findsOneWidget);
+    final l10n = _l10n(tester);
+    final stepsLabel = l10n.diaryStepsTitle.toUpperCase();
+
+    expect(find.text('Week 6 summary'), findsOneWidget);
+    expect(find.text(stepsLabel), findsOneWidget);
+    expect(find.text(l10n.diaryActivityTitle.toUpperCase()), findsOneWidget);
+    expect(find.text(l10n.diaryWeightTitle.toUpperCase()), findsOneWidget);
     expect(find.text('6.500'), findsOneWidget);
     expect(find.textContaining('450 kcal', findRichText: true), findsOneWidget);
     expect(find.textContaining('78,4 kg', findRichText: true), findsOneWidget);
 
-    await tester.tap(find.text('SCHRITTE'));
+    await tester.tap(find.text(stepsLabel));
     await tester.pumpAndSettle();
 
-    expect(find.text('SCHRITTE DETAILS'), findsOneWidget);
-    expect(find.text('Schritte im Training'), findsOneWidget);
-    expect(find.text('Schritte außerhalb'), findsOneWidget);
+    expect(find.text(l10n.diaryStepDetailsTitle.toUpperCase()), findsOneWidget);
+    expect(find.text(l10n.diaryStepsDuringWorkoutsLabel), findsOneWidget);
+    expect(find.text(l10n.diaryStepsOutsideWorkoutsLabel), findsOneWidget);
     expect(find.text('5.000'), findsOneWidget);
+  });
+
+  testWidgets('compact activity section expands weight details', (
+    tester,
+  ) async {
+    await _pumpDiaryWidget(
+      tester,
+      DiaryActivityWeightSection(selectedDay: selectedDay),
+      overrides: [
+        ..._commonOverrides(),
+        _weightActionsOverride(),
+        _stepsSummaryOverride(
+          selectedDay,
+          _activitySummary(
+            selectedDay,
+            totalSteps: 6500,
+            stepsDuringWorkouts: 0,
+            stepsOutsideWorkouts: 6500,
+          ),
+        ),
+        _activityWeightOverride(
+          selectedDay,
+          _activityWeightData(
+            selectedDay,
+            activityKcal: 450,
+            selectedWeightKg: 78.4,
+            hasSelectedDayWeight: true,
+          ),
+        ),
+      ],
+    );
+
+    final l10n = _l10n(tester);
+    await tester.tap(find.text(l10n.diaryWeightTitle.toUpperCase()).first);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryWeightDetailsCard), findsOneWidget);
+    expect(find.byType(DiaryWeightDetailsContent), findsOneWidget);
+    expect(find.text(l10n.diaryWeightAddAction), findsOneWidget);
+  });
+
+  testWidgets('compact activity section opens weight dialog on warning', (
+    tester,
+  ) async {
+    await _pumpDiaryWidget(
+      tester,
+      DiaryActivityWeightSection(selectedDay: selectedDay),
+      overrides: [
+        ..._commonOverrides(),
+        _weightActionsOverride(),
+        _stepsSummaryOverride(
+          selectedDay,
+          _activitySummary(
+            selectedDay,
+            totalSteps: 6500,
+            stepsDuringWorkouts: 0,
+            stepsOutsideWorkouts: 6500,
+          ),
+        ),
+        _activityWeightOverride(
+          selectedDay,
+          _activityWeightData(
+            selectedDay,
+            selectedWeightKg: 80,
+            hasSelectedDayWeight: false,
+          ),
+        ),
+      ],
+    );
+
+    final l10n = _l10n(tester);
+    await tester.tap(find.text(l10n.diaryWeightTitle.toUpperCase()).first);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsOneWidget);
+    expect(find.byType(DiaryWeightDetailsCard), findsNothing);
   });
 
   testWidgets('activity and weight section defers data load', (tester) async {
@@ -364,7 +459,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(loadCount, 1);
-    expect(find.text('AKTIVITÄT'), findsOneWidget);
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.diaryActivityTitle.toUpperCase()), findsOneWidget);
   });
 
   testWidgets('activity and weight cards retry after load error', (
@@ -391,10 +487,8 @@ void main() {
       ],
     );
 
-    expect(
-      find.text('Aktivität und Gewicht konnten nicht geladen werden'),
-      findsOneWidget,
-    );
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.diaryActivityWeightLoadFailed), findsOneWidget);
     expect(
       find.byKey(DiaryActivityWeightSectionKeys.retryButton),
       findsOneWidget,
@@ -404,12 +498,9 @@ void main() {
     await tester.tap(find.byKey(DiaryActivityWeightSectionKeys.retryButton));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Aktivität und Gewicht konnten nicht geladen werden'),
-      findsNothing,
-    );
-    expect(find.text('AKTIVITÄT'), findsOneWidget);
-    expect(find.text('GEWICHT'), findsOneWidget);
+    expect(find.text(l10n.diaryActivityWeightLoadFailed), findsNothing);
+    expect(find.text(l10n.diaryActivityTitle.toUpperCase()), findsOneWidget);
+    expect(find.text(l10n.diaryWeightTitle.toUpperCase()), findsOneWidget);
     expect(find.textContaining('450 kcal', findRichText: true), findsOneWidget);
   });
 
@@ -432,20 +523,15 @@ void main() {
       ],
     );
 
-    expect(
-      find.text('Trage dein Gewicht ein für bessere Berechnung.'),
-      findsOneWidget,
-    );
-    expect(find.text('JETZT TRACKEN'), findsOneWidget);
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.diaryWeightMissingPrompt), findsOneWidget);
+    expect(find.text(l10n.diaryWeightTrackNowAction), findsOneWidget);
 
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Trage dein Gewicht ein für bessere Berechnung.'),
-      findsNothing,
-    );
-    expect(find.text('GEWICHT'), findsOneWidget);
+    expect(find.text(l10n.diaryWeightMissingPrompt), findsNothing);
+    expect(find.text(l10n.diaryWeightTitle.toUpperCase()), findsOneWidget);
   });
 
   testWidgets('weight card track prompt saves manual weight', (tester) async {
@@ -476,7 +562,8 @@ void main() {
       ],
     );
 
-    await tester.tap(find.text('JETZT TRACKEN'));
+    final l10n = _l10n(tester);
+    await tester.tap(find.text(l10n.diaryWeightTrackNowAction));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(DiaryWeightDialogKeys.weightDialogField),
@@ -550,7 +637,8 @@ void main() {
         ],
       );
 
-      await tester.tap(find.text('GEWICHT').first);
+      final l10n = _l10n(tester);
+      await tester.tap(find.text(l10n.diaryWeightTitle.toUpperCase()).first);
       await tester.pumpAndSettle();
       await tester.tap(find.textContaining('76,8 kg').last);
       await tester.pumpAndSettle();
@@ -593,7 +681,8 @@ void main() {
       ],
     );
 
-    await tester.tap(find.text('Gewicht eintragen'));
+    final l10n = _l10n(tester);
+    await tester.tap(find.text(l10n.diaryWeightAddAction));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(DiaryWeightDialogKeys.weightDialogField),
@@ -706,7 +795,8 @@ void main() {
       overrides: _commonOverrides(),
     );
 
-    expect(find.text('Keine Gewichte'), findsOneWidget);
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.diaryWeightEmpty), findsOneWidget);
   });
 
   testWidgets('health metric card requests history access', (tester) async {
@@ -862,7 +952,7 @@ void main() {
       final olderTrendDay = selectedDay.subtract(const Duration(days: 2));
       final workout = _workout(
         selectedDay,
-        activityLabel: 'Spaziergang',
+        activityLabel: 'Walk',
         durationMinutes: 30,
         totalCalories: 150,
         sourceName: 'Health Connect',
@@ -974,6 +1064,17 @@ List<Override> _commonOverrides() {
     appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
     authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
   ];
+}
+
+Override _weightActionsOverride() {
+  return diaryWeightActionsProvider.overrideWith(
+    (ref) => DiaryWeightActions(
+      saveManualWeight: ({required day, required weightKg}) async => true,
+      deleteManualWeight: (day) async => true,
+      deleteHealthWeightSample: (sample) async => true,
+      refreshDependents: ({required selectedDay, day}) async {},
+    ),
+  );
 }
 
 Override _stepsSummaryOverride(
@@ -1122,4 +1223,8 @@ Future<void> _pumpDiaryWidget(
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
   }
+}
+
+AppLocalizations _l10n(WidgetTester tester) {
+  return AppLocalizations.of(tester.element(find.byType(Scaffold).first))!;
 }
