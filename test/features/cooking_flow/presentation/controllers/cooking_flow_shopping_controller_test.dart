@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_shopping_controller.dart';
-import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_shopping_controller.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
-import '../../shoppinglist/support/fake_shopping_list_repository.dart';
+import '../../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 void main() {
   test('adds labels through shopping list controller', () async {

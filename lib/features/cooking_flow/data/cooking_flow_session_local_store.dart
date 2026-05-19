@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:developer' show log;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+
+part 'cooking_flow_session_local_store.g.dart';
 
 /// Shared-preferences key for persisted cookflow session snapshot.
 const cookingFlowSessionPreferenceKey = 'cooking_flow_session_v1';
@@ -22,10 +24,10 @@ abstract interface class CookingFlowSessionLocalStore {
 }
 
 /// Watches the current persisted cookflow session snapshot.
-final FutureProvider<CookingFlowSession?> cookingFlowSessionSnapshotProvider =
-    FutureProvider<CookingFlowSession?>((ref) async {
-      return ref.watch(cookingFlowSessionLocalStoreProvider).load();
-    });
+@Riverpod(keepAlive: true)
+Future<CookingFlowSession?> cookingFlowSessionSnapshot(Ref ref) {
+  return ref.watch(cookingFlowSessionLocalStoreProvider).load();
+}
 
 /// Reactive session access used by cookflow UI.
 class CookingFlowSessionCoordinator {
@@ -64,17 +66,18 @@ class CookingFlowSessionCoordinator {
   }
 
   void _refreshSnapshot() {
+    if (!_ref.mounted) {
+      return;
+    }
     _ref.invalidate(cookingFlowSessionSnapshotProvider);
   }
 }
 
 /// Provides reactive cookflow session coordinator.
-final Provider<CookingFlowSessionCoordinator>
-cookingFlowSessionCoordinatorProvider = Provider<CookingFlowSessionCoordinator>(
-  (ref) {
-    return CookingFlowSessionCoordinator(ref);
-  },
-);
+@Riverpod(keepAlive: true)
+CookingFlowSessionCoordinator cookingFlowSessionCoordinator(Ref ref) {
+  return CookingFlowSessionCoordinator(ref);
+}
 
 /// Shared-preferences-backed cookflow session store.
 class AppPreferencesCookingFlowSessionLocalStore
@@ -127,9 +130,9 @@ class AppPreferencesCookingFlowSessionLocalStore
 }
 
 /// Provides local cookflow session store.
-final cookingFlowSessionLocalStoreProvider =
-    Provider<CookingFlowSessionLocalStore>((ref) {
-      return AppPreferencesCookingFlowSessionLocalStore(
-        preferences: ref.watch(appPreferencesProvider),
-      );
-    });
+@Riverpod(keepAlive: true)
+CookingFlowSessionLocalStore cookingFlowSessionLocalStore(Ref ref) {
+  return AppPreferencesCookingFlowSessionLocalStore(
+    preferences: ref.watch(appPreferencesProvider),
+  );
+}

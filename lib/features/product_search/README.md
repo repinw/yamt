@@ -34,6 +34,10 @@ when an inventory flow needs a product match or manual nutrition input.
   `presentation/widgets/manual_product_search_page_types.dart`.
 - `InventoryReceiptManualProductAction` via
   `presentation/controllers/manual_product_search_models.dart`.
+- `InventoryManualAddPage`, `InventoryManualAddRouteArgs`, and
+  `InventoryManualAddInitialAction` via
+  `presentation/inventory_manual_add_page.dart` for inventory-owned add flows
+  that are routed by app composition.
 
 Other features should use these entry points instead of assembling internal
 form widgets or controller state directly.

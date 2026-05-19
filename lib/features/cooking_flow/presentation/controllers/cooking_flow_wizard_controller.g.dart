@@ -69,7 +69,7 @@ final class CookingFlowWizardControllerProvider
 }
 
 String _$cookingFlowWizardControllerHash() =>
-    r'cb7edfe605c338c46b9cd4629efeeb77e171473a';
+    r'0fa1e280f14ec44ae9073765677a4c23e2217cbd';
 
 /// Controls cookflow wizard state and session persistence.
 

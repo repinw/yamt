@@ -7,13 +7,15 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_controller.dart';
-import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_wizard_controller.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_wizard_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/'
+    'cooking_flow_cooking_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_progress_indicator.dart';
@@ -288,6 +290,7 @@ KitchenUtensil _kitchenUtensil({
   CookingFlowController,
   CookingFlowWizardController,
   InventoryItemsController,
+  cookingInstructionSteps,
 ])
 Widget _buildHarness({
   required _FakeCookingFlowSessionLocalStore sessionStore,
@@ -343,6 +346,7 @@ Widget _buildHarness({
   CookingFlowController,
   CookingFlowWizardController,
   InventoryItemsController,
+  cookingInstructionSteps,
 ])
 Widget _buildRouterHarness({
   required _FakeCookingFlowSessionLocalStore sessionStore,
@@ -419,6 +423,7 @@ Widget _buildRouterHarness({
   CookingFlowController,
   CookingFlowWizardController,
   InventoryItemsController,
+  cookingInstructionSteps,
 ])
 void main() {
   testWidgets('start back leaves cookflow when session save fails', (

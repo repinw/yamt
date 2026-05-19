@@ -8,13 +8,15 @@ import 'package:integration_test/integration_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
-import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_controller.dart';
-import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_wizard_controller.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_wizard_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/'
+    'cooking_flow_cooking_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -140,6 +142,7 @@ class _StaticKitchenUtensilsController extends KitchenUtensilsController {
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
   receiptCameraSupported,
+  cookingInstructionSteps,
 ])
 _CookingFlowStartHarness _buildHarness() {
   final sessionStore = _FakeCookingFlowSessionLocalStore();
@@ -443,6 +446,7 @@ Future<void> _assignInventoryIngredient({
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
   receiptCameraSupported,
+  cookingInstructionSteps,
 ])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

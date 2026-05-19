@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_wizard_session_controller.dart';
+    'cooking_flow_wizard_session_service.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/data/'
@@ -21,7 +21,7 @@ void main() {
     final store = _FakeCookingFlowSessionLocalStore();
     final container = _container(store);
     final controller = container.read(
-      cookingFlowWizardSessionControllerProvider,
+      cookingFlowWizardSessionServiceProvider,
     );
 
     final saved = await controller.saveSession(
@@ -64,7 +64,7 @@ void main() {
     final container = _container(store);
 
     final saved = await container
-        .read(cookingFlowWizardSessionControllerProvider)
+        .read(cookingFlowWizardSessionServiceProvider)
         .saveSession(
           state: _state(isRestoringSession: true),
           input: const CookingFlowWizardSessionInput(
@@ -116,7 +116,7 @@ void main() {
     );
     final container = _container(store);
     final controller = container.read(
-      cookingFlowWizardSessionControllerProvider,
+      cookingFlowWizardSessionServiceProvider,
     );
 
     final restored = await controller.restoreSession('template-1');

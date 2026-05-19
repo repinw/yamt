@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -16,43 +16,44 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+part 'cooking_flow_cooking_page.g.dart';
+
 const int _maxMainThreadInstructionChars = 1000;
 const int _maxMainThreadIngredientCount = 20;
 const int _maxMainThreadInventoryItemCount = 60;
 const int _maxMainThreadInstructionMatchWork = 80;
 
-final FutureProviderFamily<
-  List<CookingFlowInstructionStep>,
-  _CookingInstructionStepsRequest
->
-_cookingInstructionStepsProvider = FutureProvider.autoDispose
-    .family<List<CookingFlowInstructionStep>, _CookingInstructionStepsRequest>((
-      ref,
-      request,
-    ) async {
-      final inventoryItems =
-          ref.watch(inventoryItemsControllerProvider).asData?.value ??
-          const <InventoryItem>[];
-      if (!shouldBuildCookingInstructionStepsOffMain(
-        template: request.template,
-        inventoryItems: inventoryItems,
-      )) {
-        return buildCookingFlowInstructionSteps(
-          template: request.template,
-          introDraft: request.introDraft,
-          inventoryItems: inventoryItems,
-          text: request.text,
-          localeCode: request.localeCode,
-        );
-      }
-      return buildCookingFlowInstructionStepsOffMain(
+/// Builds cooking instruction steps for the current recipe and inventory.
+@Riverpod(dependencies: [InventoryItemsController])
+Future<List<CookingFlowInstructionStep>> cookingInstructionSteps(
+  Ref ref,
+  CookingInstructionStepsRequest request,
+) {
+  final inventoryItems =
+      ref.watch(inventoryItemsControllerProvider).asData?.value ??
+      const <InventoryItem>[];
+  if (!shouldBuildCookingInstructionStepsOffMain(
+    template: request.template,
+    inventoryItems: inventoryItems,
+  )) {
+    return Future<List<CookingFlowInstructionStep>>.value(
+      buildCookingFlowInstructionSteps(
         template: request.template,
         introDraft: request.introDraft,
         inventoryItems: inventoryItems,
         text: request.text,
         localeCode: request.localeCode,
-      );
-    }, dependencies: [inventoryItemsControllerProvider]);
+      ),
+    );
+  }
+  return buildCookingFlowInstructionStepsOffMain(
+    template: request.template,
+    introDraft: request.introDraft,
+    inventoryItems: inventoryItems,
+    text: request.text,
+    localeCode: request.localeCode,
+  );
+}
 
 /// Whether instruction matching should run on a worker isolate.
 bool shouldBuildCookingInstructionStepsOffMain({
@@ -114,8 +115,8 @@ class CookingFlowCookingPage extends ConsumerWidget {
     final localeCode = Localizations.localeOf(context).languageCode;
     final instructionSteps = ref
         .watch(
-          _cookingInstructionStepsProvider(
-            _CookingInstructionStepsRequest(
+          cookingInstructionStepsProvider(
+            CookingInstructionStepsRequest(
               template: template,
               introDraft: introDraft,
               text: CookingFlowInstructionText(
@@ -168,24 +169,33 @@ class CookingFlowCookingPage extends ConsumerWidget {
   }
 }
 
+/// Request data for cooking instruction generation.
 @immutable
-class _CookingInstructionStepsRequest {
-  const _CookingInstructionStepsRequest({
+class CookingInstructionStepsRequest {
+  /// Creates instruction generation request data.
+  const CookingInstructionStepsRequest({
     required this.template,
     required this.introDraft,
     required this.text,
     required this.localeCode,
   });
 
+  /// Recipe template.
   final PreparedMeal template;
+
+  /// Current intro inventory draft.
   final CookingFlowIntroDraft? introDraft;
+
+  /// Localized instruction labels.
   final CookingFlowInstructionText text;
+
+  /// Active language code.
   final String localeCode;
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        other is _CookingInstructionStepsRequest &&
+        other is CookingInstructionStepsRequest &&
             other.template == template &&
             other.introDraft == introDraft &&
             other.text == text &&

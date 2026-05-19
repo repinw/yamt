@@ -7,14 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_intro_inventory_controller.dart';
-import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_inventory_conflict_resolver.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+import 'package:yamt/features/cooking_flow/presentation/controllers/'
+    'cooking_flow_intro_inventory_controller.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_intro_page_assignment.dart';
 import 'package:yamt/features/cooking_flow/presentation/'

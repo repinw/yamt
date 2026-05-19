@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_builder.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -11,18 +11,20 @@ import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 
+part 'cooking_flow_wizard_session_service.g.dart';
+
 /// Provides wizard session persistence operations.
-final cookingFlowWizardSessionControllerProvider =
-    Provider<CookingFlowWizardSessionController>((ref) {
-      return CookingFlowWizardSessionController(
-        ref.read(cookingFlowSessionCoordinatorProvider),
-      );
-    });
+@Riverpod(keepAlive: true)
+CookingFlowWizardSessionService cookingFlowWizardSessionService(Ref ref) {
+  return CookingFlowWizardSessionService(
+    ref.read(cookingFlowSessionCoordinatorProvider),
+  );
+}
 
 /// Handles cookflow wizard session persistence and mapping.
-class CookingFlowWizardSessionController {
+class CookingFlowWizardSessionService {
   /// Creates wizard session controller.
-  const CookingFlowWizardSessionController(this._sessionCoordinator);
+  const CookingFlowWizardSessionService(this._sessionCoordinator);
 
   final CookingFlowSessionCoordinator _sessionCoordinator;
 
