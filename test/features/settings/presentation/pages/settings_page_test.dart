@@ -27,7 +27,7 @@ import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../calories/support/fake_calories_repositories.dart';
+import '../../../calories/support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User {}
 
