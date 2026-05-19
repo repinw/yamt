@@ -15,7 +15,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           diaryEntriesForDayProvider(normalizedDay).overrideWith(
-            (ref) async => <CalorieEntry>[
+            (ref) => Stream.value(<CalorieEntry>[
               _entry(
                 id: 'breakfast',
                 day: normalizedDay,
@@ -41,11 +41,17 @@ void main() {
                 name: 'Chicken',
                 totalKcal: 260,
               ),
-            ],
+            ]),
           ),
         ],
       );
       addTearDown(container.dispose);
+
+      final subscription = container.listen(
+        diaryMealSectionsProvider(selectedDay),
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
 
       final sections = await container.read(
         diaryMealSectionsProvider(selectedDay).future,

@@ -104,13 +104,19 @@ void main() {
           ).overrideWith((ref) => _weekOverview(selectedDay: selectedDay)),
           diaryEntriesForDayProvider(
             normalizedSelectedDay,
-          ).overrideWith((ref) async => const <CalorieEntry>[]),
+          ).overrideWith((ref) => Stream.value(const <CalorieEntry>[])),
           burnWeekRunControllerProvider.overrideWith(
             () => _DelayedBurnWeekRunController(runStateCompleter),
           ),
         ],
       );
       addTearDown(container.dispose);
+
+      final subscription = container.listen(
+        diaryBalanceSourceProvider(normalizedSelectedDay),
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
 
       final sourceFuture = container.read(
         diaryBalanceSourceProvider(normalizedSelectedDay).future,
@@ -154,13 +160,19 @@ Future<DiaryBalanceCardData> _resolveBalanceData({
       ).overrideWith((ref) => weekOverview),
       diaryEntriesForDayProvider(
         normalizedSelectedDay,
-      ).overrideWith((ref) async => entries),
+      ).overrideWith((ref) => Stream.value(entries)),
       burnWeekRunControllerProvider.overrideWith(
         () => _FakeBurnWeekRunController(runState),
       ),
     ],
   );
   addTearDown(container.dispose);
+
+  final subscription = container.listen(
+    diaryBalanceSourceProvider(normalizedSelectedDay),
+    (_, _) {},
+  );
+  addTearDown(subscription.close);
 
   await container.read(burnWeekRunControllerProvider.future);
   final source = await container.read(

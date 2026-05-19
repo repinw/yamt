@@ -27,6 +27,7 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -183,6 +184,7 @@ const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
   InventoryItemsController,
   ReceiptBatchFlowController,
   ReceiptCaptureFlowController,
+  diaryProviderWarmup,
 ])
 void main() {
   testWidgets('shows splash while auth state is loading', (tester) async {

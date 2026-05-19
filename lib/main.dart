@@ -15,6 +15,7 @@ import 'package:yamt/features/calories/application/'
     'calorie_inventory_entry_save_handler.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
+import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -34,6 +35,7 @@ import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.d
   InventoryItemsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  diaryProviderWarmup,
 ])
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -20,11 +20,11 @@ final class DiaryEntriesForDayProvider
         $FunctionalProvider<
           AsyncValue<List<CalorieEntry>>,
           List<CalorieEntry>,
-          FutureOr<List<CalorieEntry>>
+          Stream<List<CalorieEntry>>
         >
     with
         $FutureModifier<List<CalorieEntry>>,
-        $FutureProvider<List<CalorieEntry>> {
+        $StreamProvider<List<CalorieEntry>> {
   /// Provides calorie entries for one normalized diary day.
   DiaryEntriesForDayProvider._({
     required DiaryEntriesForDayFamily super.from,
@@ -49,12 +49,12 @@ final class DiaryEntriesForDayProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<CalorieEntry>> $createElement(
+  $StreamProviderElement<List<CalorieEntry>> $createElement(
     $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  ) => $StreamProviderElement(pointer);
 
   @override
-  FutureOr<List<CalorieEntry>> create(Ref ref) {
+  Stream<List<CalorieEntry>> create(Ref ref) {
     final argument = this.argument as DateTime;
     return diaryEntriesForDay(ref, argument);
   }
@@ -71,12 +71,12 @@ final class DiaryEntriesForDayProvider
 }
 
 String _$diaryEntriesForDayHash() =>
-    r'9f4377250478b885fffe7701ce4827b6294a85b2';
+    r'6033a82c44bb1f6e20e92f3797d1b7fd98175aee';
 
 /// Provides calorie entries for one normalized diary day.
 
 final class DiaryEntriesForDayFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<CalorieEntry>>, DateTime> {
+    with $FunctionalFamilyOverride<Stream<List<CalorieEntry>>, DateTime> {
   DiaryEntriesForDayFamily._()
     : super(
         retry: null,

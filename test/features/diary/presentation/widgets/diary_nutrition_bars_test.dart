@@ -49,6 +49,12 @@ void main() {
     addTearDown(repository.dispose);
     addTearDown(container.dispose);
 
+    final subscription = container.listen(
+      diaryNutritionBarsDataProvider(selectedDay),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+
     final data = await container.read(
       diaryNutritionBarsDataProvider(selectedDay).future,
     );
@@ -129,6 +135,12 @@ void main() {
       );
       addTearDown(repository.dispose);
       addTearDown(container.dispose);
+
+      final subscription = container.listen(
+        diaryNutritionBarsDataProvider(selectedDay),
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
 
       final data = await container.read(
         diaryNutritionBarsDataProvider(selectedDay).future,

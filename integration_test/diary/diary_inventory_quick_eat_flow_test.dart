@@ -73,9 +73,9 @@ class _DiaryInventoryQuickEatHarness {
 }
 
 @Dependencies([
-  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
+  diaryProviderWarmup,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -289,9 +289,9 @@ bool _isFinderCenterOnScreen(WidgetTester tester, Finder finder) {
 }
 
 @Dependencies([
-  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
+  diaryProviderWarmup,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,

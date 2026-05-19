@@ -77,4 +77,4 @@ final class DiaryProviderWarmupProvider
 }
 
 String _$diaryProviderWarmupHash() =>
-    r'886300e68749896c1b190d54094d94b41c244ca6';
+    r'412782cac8df015376d8080dcd15d1d1d538485f';

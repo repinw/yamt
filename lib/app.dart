@@ -11,6 +11,7 @@ import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/widgets/app_background.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_health_connection_sync.dart';
+import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/presentation/shared_receipt_listener.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
@@ -25,6 +26,7 @@ const _calorieHealthSyncStartupDelay = Duration(seconds: 2);
   InventoryItemsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
+  diaryProviderWarmup,
 ])
 class YAMT extends ConsumerStatefulWidget {
   /// Creates app root.
@@ -61,6 +63,7 @@ class _YAMTState extends ConsumerState<YAMT> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(diaryProviderWarmupProvider);
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeControllerProvider);
     final seedColor = ref.watch(seedColorControllerProvider);

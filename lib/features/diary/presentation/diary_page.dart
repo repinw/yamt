@@ -36,7 +36,6 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-const _diaryProviderWarmupDelay = Duration(milliseconds: 600);
 
 /// Diary content.
 @Dependencies([
@@ -65,7 +64,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
   ProviderSubscription<DiaryIntroTrigger?>? _diaryIntroSubscription;
   ProviderSubscription<void>? _providerWarmupSubscription;
-  Timer? _providerWarmupTimer;
   bool _didQueueDiaryIntro = false;
 
   @override
@@ -84,7 +82,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   void dispose() {
     _diaryIntroSubscription?.close();
     _providerWarmupSubscription?.close();
-    _providerWarmupTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -206,12 +203,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       _handleDiaryIntroTrigger,
       fireImmediately: true,
     );
-    _providerWarmupTimer ??= Timer(_diaryProviderWarmupDelay, () {
-      if (!mounted) {
-        return;
-      }
-      _startProviderWarmup();
-    });
+    _startProviderWarmup();
   }
 
   void _startProviderWarmup() {

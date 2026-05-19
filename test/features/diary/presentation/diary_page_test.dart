@@ -114,9 +114,9 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
 }
 
 @Dependencies([
-  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
+  diaryProviderWarmup,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -161,65 +161,7 @@ void main() {
     expect(providerObserver.calorieEntryDeleteFlowAddCount, 1);
   });
 
-  testWidgets('delays quick-eat warmup until after diary first paint', (
-    tester,
-  ) async {
-    var inventoryBuildCount = 0;
-    var preparedMealsBuildCount = 0;
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      initialFrameCount: 0,
-      onInventoryBuild: () {
-        inventoryBuildCount += 1;
-      },
-      onPreparedMealsBuild: () {
-        preparedMealsBuildCount += 1;
-      },
-    );
-
-    expect(inventoryBuildCount, 0);
-    expect(preparedMealsBuildCount, 0);
-
-    await tester.pump(const Duration(milliseconds: 599));
-
-    expect(inventoryBuildCount, 0);
-    expect(preparedMealsBuildCount, 0);
-
-    await tester.pump(const Duration(milliseconds: 1));
-    await tester.pump();
-
-    expect(inventoryBuildCount, 1);
-    expect(preparedMealsBuildCount, 1);
-  });
-
-  testWidgets('cancels delayed quick-eat warmup when diary closes', (
-    tester,
-  ) async {
-    var inventoryBuildCount = 0;
-    var preparedMealsBuildCount = 0;
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      initialFrameCount: 0,
-      onInventoryBuild: () {
-        inventoryBuildCount += 1;
-      },
-      onPreparedMealsBuild: () {
-        preparedMealsBuildCount += 1;
-      },
-    );
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump(const Duration(milliseconds: 700));
-
-    expect(inventoryBuildCount, 0);
-    expect(preparedMealsBuildCount, 0);
-  });
-
-  testWidgets('delays weekly check-in section data until after first paint', (
+  testWidgets('loads weekly check-in section data immediately on first paint', (
     tester,
   ) async {
     var checkInBuildCount = 0;
@@ -252,13 +194,7 @@ void main() {
       ),
     );
 
-    expect(checkInBuildCount, 0);
-
-    await tester.pump(const Duration(milliseconds: 699));
-
-    expect(checkInBuildCount, 0);
-
-    await tester.pump(const Duration(milliseconds: 1));
+    // After the initial paint, the post-frame callback fires immediately.
     await tester.pump();
 
     expect(checkInBuildCount, 1);
@@ -960,9 +896,9 @@ void main() {
 }
 
 @Dependencies([
-  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
+  diaryProviderWarmup,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
