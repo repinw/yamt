@@ -1258,4 +1258,52 @@ void main() {
     expect(ignoredMealId, 'meal-1');
     expect(ignoredIngredient, 'Sour cream');
   });
+
+  testWidgets('PreparedMealCard shows snackbar when saving template fails', (
+    tester,
+  ) async {
+    PreparedMeal? requestedTemplate;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, result) async => true,
+                onSaveTemplatePressed: (meal) async {
+                  requestedTemplate = meal;
+                  return false;
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save as template'));
+    await tester.pumpAndSettle();
+
+    expect(requestedTemplate?.id, 'meal-1');
+    expect(
+      find.text('Prepared meal action failed. Please try again.'),
+      findsOneWidget,
+    );
+  });
 }

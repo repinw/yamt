@@ -3,7 +3,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_page_keys.dart';
+    'calorie_goal_calculator_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Selectable activity-level list for the calorie-goal calculator.

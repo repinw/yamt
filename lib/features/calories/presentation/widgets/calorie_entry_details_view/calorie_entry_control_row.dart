@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_compact_field_card.dart';
 import 'package:yamt/features/calories/presentation/widgets/'

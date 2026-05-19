@@ -1,16 +1,19 @@
 import 'dart:math' as math;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
+part 'burn_week_run_controller.g.dart';
+
 const int _maxWeekSyncAdvances = 1000;
 
 /// Real Burn Week run controller.
-class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
+@riverpod
+class BurnWeekRunController extends _$BurnWeekRunController {
   int _saveGeneration = 0;
 
   BurnWeekRunStateRepository get _repository {
@@ -19,6 +22,7 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
 
   @override
   Future<BurnWeekRunState> build() {
+    ref.keepAlive();
     final repository = ref.watch(burnWeekRunStateRepositoryProvider);
     return repository.readState();
   }
@@ -417,12 +421,6 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         !current.starBrokeThisWeek;
   }
 }
-
-/// Burn Week run controller provider.
-final burnWeekRunControllerProvider =
-    AsyncNotifierProvider<BurnWeekRunController, BurnWeekRunState>(
-      BurnWeekRunController.new,
-    );
 
 String? _normalizeBurnWeekDayKey(String? dayKey) {
   final parsedDayKey = _parseBurnWeekDayKey(dayKey);

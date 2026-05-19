@@ -1,6 +1,6 @@
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 
 /// Defines calorie entry create args.
 class CalorieEntryCreateArgs {

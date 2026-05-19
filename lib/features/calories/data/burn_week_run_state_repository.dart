@@ -1,11 +1,13 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+
+part 'burn_week_run_state_repository.g.dart';
 
 const _logName = 'BurnWeekRunStateRepository';
 const _usersCollection = 'users';
@@ -118,19 +120,19 @@ class FirestoreBurnWeekRunStateRepository
 }
 
 /// Burn Week run state repository provider.
-final burnWeekRunStateRepositoryProvider = Provider<BurnWeekRunStateRepository>(
-  (ref) {
-    final authState = ref.watch(authStateChangesProvider);
-    final currentUserId =
-        authState.asData?.value?.uid ??
-        ref.watch(firebaseAuthProvider).currentUser?.uid;
-    final firestore = ref.watch(firebaseFirestoreProvider);
-    if (firestore == null) {
-      return const _UnavailableBurnWeekRunStateRepository();
-    }
-    return FirestoreBurnWeekRunStateRepository(
-      firestore: firestore,
-      currentUserId: currentUserId,
-    );
-  },
-);
+@riverpod
+BurnWeekRunStateRepository burnWeekRunStateRepository(Ref ref) {
+  ref.keepAlive();
+  final authState = ref.watch(authStateChangesProvider);
+  final currentUserId =
+      authState.asData?.value?.uid ??
+      ref.watch(firebaseAuthProvider).currentUser?.uid;
+  final firestore = ref.watch(firebaseFirestoreProvider);
+  if (firestore == null) {
+    return const _UnavailableBurnWeekRunStateRepository();
+  }
+  return FirestoreBurnWeekRunStateRepository(
+    firestore: firestore,
+    currentUserId: currentUserId,
+  );
+}

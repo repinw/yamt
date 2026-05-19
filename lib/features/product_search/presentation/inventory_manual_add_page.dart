@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_manual_add_product_factory.dart';
 import 'package:yamt/features/inventory/application/'
