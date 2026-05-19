@@ -102,7 +102,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                     children: [
                       Text(
                         template.name,
-                        maxLines: 2,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context)
                             .textTheme
