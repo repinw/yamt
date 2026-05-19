@@ -270,12 +270,18 @@ class _InventoryViewModeSection extends StatelessWidget {
             segments: [
               ButtonSegment(
                 value: InventoryListViewMode.list,
-                icon: const Icon(Icons.list_rounded, size: 16),
+                icon: const Icon(
+                  Icons.list_rounded,
+                  size: AppSizes.segmentedControlIcon,
+                ),
                 label: Text(l10n.inventoryViewListAction),
               ),
               ButtonSegment(
                 value: InventoryListViewMode.tiles,
-                icon: const Icon(Icons.grid_view_rounded, size: 16),
+                icon: const Icon(
+                  Icons.grid_view_rounded,
+                  size: AppSizes.segmentedControlIcon,
+                ),
                 label: Text(l10n.inventoryViewTilesAction),
               ),
             ],

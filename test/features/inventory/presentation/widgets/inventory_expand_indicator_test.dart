@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -156,9 +157,16 @@ void main() {
 
     expect(
       decoration.color,
-      colors.surfaceContainerHigh.withValues(alpha: 0.72),
+      colors.surfaceContainerHigh.withValues(
+        alpha: AppOpacities.compactSearchSurface,
+      ),
     );
     expect(border.top.color, Colors.transparent);
-    expect(icon.color, colors.onSurfaceVariant.withValues(alpha: 0.86));
+    expect(
+      icon.color,
+      colors.onSurfaceVariant.withValues(
+        alpha: AppOpacities.compactSearchSettingsForeground,
+      ),
+    );
   });
 }

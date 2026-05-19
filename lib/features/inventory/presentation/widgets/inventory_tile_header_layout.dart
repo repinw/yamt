@@ -95,13 +95,13 @@ class InventoryTileHeaderLayout extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final stockLabelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
       color: colors.onSurfaceVariant,
-      fontSize: 11,
+      fontSize: AppInventoryClosedTile.stockLabelFontSize,
       fontWeight: FontWeight.w700,
       letterSpacing: 0,
     );
     final percentageStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
       color: colors.onSurfaceVariant,
-      fontSize: 10,
+      fontSize: AppInventoryClosedTile.percentLabelFontSize,
       fontWeight: FontWeight.w700,
       letterSpacing: 0,
     );

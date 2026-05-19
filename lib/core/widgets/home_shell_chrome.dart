@@ -380,9 +380,9 @@ class _HomeTopBarActions extends StatelessWidget {
           backgroundColor: AppEditorialSurfaces.section(colors),
           disabledBackgroundColor: AppEditorialSurfaces.section(
             colors,
-          ).withValues(alpha: 0.6),
+          ).withValues(alpha: AppOpacities.homeTopBarDisabledBackground),
           disabledForegroundColor: colors.onSurfaceVariant.withValues(
-            alpha: 0.48,
+            alpha: AppOpacities.homeTopBarDisabledForeground,
           ),
           fixedSize: const Size.square(AppSizes.homeTopBarIconButton),
           foregroundColor: colors.onSurfaceVariant,
@@ -676,7 +676,7 @@ class _HomeBottomNavItemButton extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: foregroundColor,
-                        fontSize: 10,
+                        fontSize: AppFontSizes.homeBottomNavLabel,
                         letterSpacing: 1,
                       ),
                     ),

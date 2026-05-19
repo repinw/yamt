@@ -11,10 +11,13 @@ class InventoryFilterDivider extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
       child: Divider(
-        height: 1,
-        color: Theme.of(
-          context,
-        ).colorScheme.outlineVariant.withValues(alpha: 0.45),
+        height: AppSizes.dividerThickness,
+        color:
+            Theme.of(
+              context,
+            ).colorScheme.outlineVariant.withValues(
+              alpha: AppOpacities.inventoryFilterDivider,
+            ),
       ),
     );
   }

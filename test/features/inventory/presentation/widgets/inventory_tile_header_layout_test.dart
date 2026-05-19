@@ -20,7 +20,9 @@ void main() {
               child: SizedBox(
                 width: 260,
                 child: InventoryTileHeaderLayout(
-                  leading: SizedBox.square(dimension: 44),
+                  leading: SizedBox.square(
+                    dimension: AppInventoryClosedTile.imageSize,
+                  ),
                   title: title,
                   progressRatio: 0.5,
                   progressLabel: '250g / 500g',
@@ -29,7 +31,10 @@ void main() {
                   remainingUnits: 0.5,
                   isExpanded: false,
                   showExpandIndicator: false,
-                  action: SizedBox(width: 64, height: 40),
+                  action: SizedBox(
+                    width: AppInventoryClosedTile.actionWidth,
+                    height: AppInventoryClosedTile.actionHeight,
+                  ),
                 ),
               ),
             ),

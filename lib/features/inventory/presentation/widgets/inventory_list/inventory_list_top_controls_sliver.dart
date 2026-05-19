@@ -104,19 +104,26 @@ class _InventorySearchSettingsButton extends StatelessWidget {
         onPressed: enabled ? onPressed : null,
         tooltip: tooltip,
         style: IconButton.styleFrom(
-          backgroundColor: colors.surfaceContainerHigh.withValues(alpha: 0.72),
-          foregroundColor: colors.onSurfaceVariant.withValues(alpha: 0.86),
+          backgroundColor: colors.surfaceContainerHigh.withValues(
+            alpha: AppOpacities.compactSearchSurface,
+          ),
+          foregroundColor: colors.onSurfaceVariant.withValues(
+            alpha: AppOpacities.compactSearchSettingsForeground,
+          ),
           disabledBackgroundColor: colors.surfaceContainerHigh.withValues(
-            alpha: 0.38,
+            alpha: AppOpacities.compactSearchDisabled,
           ),
           disabledForegroundColor: colors.onSurfaceVariant.withValues(
-            alpha: 0.38,
+            alpha: AppOpacities.compactSearchDisabled,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
         ),
-        icon: const Icon(Icons.tune_rounded, size: 21),
+        icon: const Icon(
+          Icons.tune_rounded,
+          size: AppSizes.compactSearchSettingsIcon,
+        ),
       ),
     );
   }

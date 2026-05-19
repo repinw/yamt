@@ -542,7 +542,9 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.38),
+      barrierColor: Theme.of(
+        context,
+      ).colorScheme.scrim.withValues(alpha: AppOpacities.modalBarrier),
       builder: (context) => InventoryUnifiedFilterSheet(
         initialSection: initialSection,
         initialViewMode: _viewMode,

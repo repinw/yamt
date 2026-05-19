@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 
 const _expandIndicatorAnimationDuration = Duration(milliseconds: 220);
 const _expandIndicatorSize = 32.0;
@@ -90,7 +91,9 @@ class InventoryExpandIndicator extends StatelessWidget {
   Color _backgroundColor(ColorScheme colors) {
     if (useSubtleChromeColors) {
       return colors.surfaceContainerHigh.withValues(
-        alpha: enabled ? 0.72 : 0.38,
+        alpha: enabled
+            ? AppOpacities.compactSearchSurface
+            : AppOpacities.compactSearchDisabled,
       );
     }
     if (!enabled) {
@@ -104,7 +107,11 @@ class InventoryExpandIndicator extends StatelessWidget {
 
   Color _iconColor(ColorScheme colors) {
     if (useSubtleChromeColors) {
-      return colors.onSurfaceVariant.withValues(alpha: enabled ? 0.86 : 0.38);
+      return colors.onSurfaceVariant.withValues(
+        alpha: enabled
+            ? AppOpacities.compactSearchSettingsForeground
+            : AppOpacities.compactSearchDisabled,
+      );
     }
     if (!enabled) {
       return colors.onSurfaceVariant.withValues(alpha: 0.55);

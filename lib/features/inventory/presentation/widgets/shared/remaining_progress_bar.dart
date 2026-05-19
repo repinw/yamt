@@ -143,11 +143,11 @@ class RemainingProgressBar extends StatelessWidget {
     required double barHeight,
   }) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(AppRadius.pill),
       child: LinearProgressIndicator(
         value: safeRatio,
         minHeight: barHeight,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         backgroundColor: trackColor,
         valueColor: AlwaysStoppedAnimation<Color>(fillColor),
       ),
@@ -176,11 +176,11 @@ class RemainingProgressBar extends StatelessWidget {
               right: index == safeTotal - 1 ? 0 : AppSpacing.xxs,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
               child: LinearProgressIndicator(
                 value: fillValue,
                 minHeight: barHeight,
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
                 backgroundColor: trackColor,
                 valueColor: AlwaysStoppedAnimation<Color>(fillColor),
               ),

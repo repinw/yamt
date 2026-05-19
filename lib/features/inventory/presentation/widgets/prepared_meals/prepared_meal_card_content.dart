@@ -65,7 +65,7 @@ class PreparedMealCardHeader extends StatelessWidget {
             imageBytes: imageBytes,
             imageUrl: meal.imageUrl,
             size: AppInventoryClosedTile.imageSize,
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           badgeText: l10n.preparedMealIngredientsCount(ingredientCount),
           title: meal.name,
@@ -73,9 +73,9 @@ class PreparedMealCardHeader extends StatelessWidget {
               Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(
-                fontSize: 14,
+                fontSize: AppInventoryClosedTile.titleFontSize,
                 fontWeight: FontWeight.w700,
-                height: 1.05,
+                height: AppInventoryClosedTile.titleLineHeight,
                 letterSpacing: 0,
               ),
           statusText: meal.hasPendingRecipeIngredients

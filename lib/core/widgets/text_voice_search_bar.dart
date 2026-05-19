@@ -7,8 +7,6 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _textVoiceSearchMaxLines = 3;
-const double _textVoiceSearchCompactHeight =
-    AppSizes.compactSearchControlHeight;
 final _textVoiceSearchInputFormatters = <TextInputFormatter>[
   FilteringTextInputFormatter.deny(
     RegExp(r'[\r\n]+'),
@@ -472,7 +470,9 @@ class _TextVoiceSearchField extends StatelessWidget {
           textAlignVertical: useCompactSurface ? TextAlignVertical.top : null,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: colors.onSurface,
-            fontSize: useCompactSurface ? 15 : null,
+            fontSize: useCompactSurface
+                ? AppFontSizes.compactSearchInput
+                : null,
             fontWeight: useCompactSurface ? FontWeight.w500 : null,
           ),
           decoration: InputDecoration(
@@ -480,14 +480,18 @@ class _TextVoiceSearchField extends StatelessWidget {
             hintText: hintText,
             hintStyle: useCompactSurface
                 ? Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant.withValues(alpha: 0.82),
-                    fontSize: 15,
+                    color: colors.onSurfaceVariant.withValues(
+                      alpha: AppOpacities.compactSearchHint,
+                    ),
+                    fontSize: AppFontSizes.compactSearchInput,
                     fontWeight: FontWeight.w500,
                   )
                 : null,
             filled: useCompactSurface ? true : null,
             fillColor: useCompactSurface
-                ? colors.surfaceContainerHigh.withValues(alpha: 0.72)
+                ? colors.surfaceContainerHigh.withValues(
+                    alpha: AppOpacities.compactSearchSurface,
+                  )
                 : null,
             isDense: useCompactSurface ? true : null,
             contentPadding: useCompactSurface
@@ -498,7 +502,9 @@ class _TextVoiceSearchField extends StatelessWidget {
             focusedBorder: useCompactSurface
                 ? border?.copyWith(
                     borderSide: BorderSide(
-                      color: colors.primary.withValues(alpha: 0.38),
+                      color: colors.primary.withValues(
+                        alpha: AppOpacities.compactSearchFocusBorder,
+                      ),
                     ),
                   )
                 : null,
@@ -509,13 +515,13 @@ class _TextVoiceSearchField extends StatelessWidget {
             prefixIcon: prefixIcon ?? const _TextVoiceSearchPrefixIcon(),
             prefixIconConstraints: useCompactSurface
                 ? const BoxConstraints(
-                    minWidth: 42,
-                    minHeight: _textVoiceSearchCompactHeight,
+                    minWidth: AppSizes.compactSearchPrefixWidth,
+                    minHeight: AppSizes.compactSearchControlHeight,
                   )
                 : null,
             suffixIconConstraints: const BoxConstraints(
-              minWidth: 40,
-              minHeight: 40,
+              minWidth: AppSizes.compactSearchInlineAction,
+              minHeight: AppSizes.compactSearchInlineAction,
             ),
             suffixIcon: _TextVoiceSearchSuffixActions(
               isSearching: isSearching,
@@ -534,7 +540,7 @@ class _TextVoiceSearchField extends StatelessWidget {
 
         return ConstrainedBox(
           constraints: const BoxConstraints(
-            minHeight: _textVoiceSearchCompactHeight,
+            minHeight: AppSizes.compactSearchControlHeight,
           ),
           child: field,
         );
@@ -552,8 +558,10 @@ class _TextVoiceSearchPrefixIcon extends StatelessWidget {
 
     return Icon(
       Icons.search_rounded,
-      size: 18,
-      color: colors.onSurfaceVariant.withValues(alpha: 0.78),
+      size: AppSizes.compactSearchIcon,
+      color: colors.onSurfaceVariant.withValues(
+        alpha: AppOpacities.compactSearchPrefixIcon,
+      ),
     );
   }
 }
@@ -586,10 +594,12 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
       children: [
         if (isSearching)
           const Padding(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(AppSpacing.md),
             child: SizedBox.square(
-              dimension: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              dimension: AppSizes.compactSearchProgress,
+              child: CircularProgressIndicator(
+                strokeWidth: AppSizes.progressStrokeWidth,
+              ),
             ),
           ),
         if (hasText)
@@ -624,20 +634,27 @@ class _TextVoiceSearchVoiceButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final foregroundColor = isListening
         ? colors.primary
-        : colors.onSurfaceVariant.withValues(alpha: 0.72);
+        : colors.onSurfaceVariant.withValues(
+            alpha: AppOpacities.compactSearchTrailingIcon,
+          );
 
     return IconButton(
       onPressed: enabled ? onPressed : null,
       tooltip: tooltip,
       visualDensity: VisualDensity.compact,
       padding: const EdgeInsets.all(AppSpacing.xs),
-      constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+      constraints: const BoxConstraints.tightFor(
+        width: AppSizes.compactSearchInlineAction,
+        height: AppSizes.compactSearchInlineAction,
+      ),
       icon: Icon(
         isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
-        size: 18,
+        size: AppSizes.compactSearchIcon,
         color: enabled
             ? foregroundColor
-            : colors.onSurfaceVariant.withValues(alpha: 0.38),
+            : colors.onSurfaceVariant.withValues(
+                alpha: AppOpacities.compactSearchDisabled,
+              ),
       ),
     );
   }

@@ -684,9 +684,9 @@ class _InventoryItemRowLayoutData {
                   color: item.isFullyConsumed
                       ? colors.onSurface.withValues(alpha: 0.5)
                       : colors.onSurface,
-                  fontSize: 14,
+                  fontSize: AppInventoryClosedTile.titleFontSize,
                   fontWeight: FontWeight.w700,
-                  height: 1.05,
+                  height: AppInventoryClosedTile.titleLineHeight,
                   letterSpacing: 0,
                 ),
         hasBrand: hasBrand,

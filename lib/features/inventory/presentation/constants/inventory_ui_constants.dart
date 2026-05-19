@@ -96,6 +96,9 @@ abstract final class AppInventoryClosedTile {
   /// The leading image size.
   static const double imageSize = 44;
 
+  /// Background opacity for closed-tile image wells.
+  static const double imageBackgroundAlpha = 0.8;
+
   /// The primary action width.
   static const double actionWidth = 68;
 
@@ -104,6 +107,18 @@ abstract final class AppInventoryClosedTile {
 
   /// The progress height.
   static const double progressHeight = 3;
+
+  /// Title font size for compact closed tiles.
+  static const double titleFontSize = 14;
+
+  /// Tight title line height for compact closed tiles.
+  static const double titleLineHeight = 1.05;
+
+  /// Stock label font size for compact closed tiles.
+  static const double stockLabelFontSize = 11;
+
+  /// Percent label font size for compact closed tiles.
+  static const double percentLabelFontSize = 10;
 
   /// Main-axis extent for inventory item grid tiles.
   static const double inventoryGridMainAxisExtent = 136;
