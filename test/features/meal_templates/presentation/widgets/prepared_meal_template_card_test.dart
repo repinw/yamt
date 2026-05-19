@@ -90,6 +90,7 @@ void main() {
 
     expect(find.text('Tacos'), findsOneWidget);
     expect(find.text('4 Portions'), findsOneWidget);
+    expect(find.text('0 ingredients'), findsOneWidget);
     expect(find.text('Resume'), findsNothing);
   });
 

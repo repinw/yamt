@@ -125,16 +125,47 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                               color: colors.primary.withValues(alpha: 0.72),
                             ),
                             const SizedBox(width: AppSpacing.xs),
-                            Text(
-                              '${template.totalPortions} '
-                              '${l10n.preparedMealTemplatePortionsLabel}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                            Expanded(
+                              child: Text(
+                                '${template.totalPortions} '
+                                '${l10n.preparedMealTemplatePortionsLabel}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.shopping_bag_rounded,
+                              size: 13,
+                              color: colors.primary.withValues(alpha: 0.72),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: Text(
+                                l10n.preparedMealIngredientsCount(
+                                  template.recipeIngredients.length,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
                             ),
                           ],
                         ),
