@@ -18,15 +18,15 @@ class AccountUserInfoCard extends StatelessWidget {
   /// The l10n.
   final AppLocalizations l10n;
 
+  String _valueOrFallback(String? value) {
+    if (value == null || value.isEmpty) {
+      return l10n.accountPageNotSet;
+    }
+    return value;
+  }
+
   @override
   Widget build(BuildContext context) {
-    String valueOrFallback(String? value) {
-      if (value == null || value.isEmpty) {
-        return l10n.accountPageNotSet;
-      }
-      return value;
-    }
-
     return Card(
       child: Padding(
         padding: AppInsets.card,
@@ -37,13 +37,13 @@ class AccountUserInfoCard extends StatelessWidget {
               contentPadding: AppInsets.zero,
               leading: const Icon(Icons.person_outline),
               title: Text(l10n.accountPageDisplayName),
-              subtitle: Text(valueOrFallback(user.displayName)),
+              subtitle: Text(_valueOrFallback(user.displayName)),
             ),
             ListTile(
               contentPadding: AppInsets.zero,
               leading: const Icon(Icons.email_outlined),
               title: Text(l10n.accountPageEmail),
-              subtitle: Text(valueOrFallback(user.email)),
+              subtitle: Text(_valueOrFallback(user.email)),
             ),
             ListTile(
               contentPadding: AppInsets.zero,
