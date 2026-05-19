@@ -31,8 +31,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/provider/'
     'kitchen_utensils_controller.dart';
-import 'package:yamt/features/meal_templates/presentation/'
-    'meal_templates_page.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/'
     'receipt_capture_flow_controller.dart';

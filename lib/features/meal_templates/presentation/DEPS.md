@@ -7,6 +7,5 @@ Dependencies that create loops (inversions) are marked with `!`.
 flowchart TD;
 meal_template_detail_page.dart-->widgets;
 meal_template_import_review_page.dart-->models;
-meal_templates_page.dart-->widgets;
 widgets-->models;
 ```

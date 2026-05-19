@@ -19,10 +19,10 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_import_review_page.dart';
-import 'package:yamt/features/meal_templates/presentation/'
-    'meal_templates_page.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/'
     'receipt_capture_flow_controller.dart';
@@ -349,7 +349,7 @@ void main() {
     await tester.pumpWidget(harness.app);
     await tester.pumpAndSettle();
 
-    expect(find.text('Cookbook'), findsOneWidget);
+    expect(find.text('Cookbook').first, findsOneWidget);
     expect(find.text('No templates saved yet.'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Add recipe template'));
