@@ -137,6 +137,7 @@ final class AppRouterProvider
         dependencies: <ProviderOrFamily>[
           inventoryItemRepositoryProvider,
           inventoryManualAddQuickEatConfigProvider,
+          diaryProviderWarmupProvider,
           diaryQuickEatInventoryProvider,
           diaryQuickEatInventoryActionsProvider,
           inventoryBackedCalorieEntrySaveFlowProvider,
@@ -174,44 +175,46 @@ final class AppRouterProvider
           AppRouterProvider.$allTransitiveDependencies18,
           AppRouterProvider.$allTransitiveDependencies19,
           AppRouterProvider.$allTransitiveDependencies20,
+          AppRouterProvider.$allTransitiveDependencies21,
         },
       );
 
   static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
   static final $allTransitiveDependencies1 =
       inventoryManualAddQuickEatConfigProvider;
-  static final $allTransitiveDependencies2 = diaryQuickEatInventoryProvider;
+  static final $allTransitiveDependencies2 = diaryProviderWarmupProvider;
   static final $allTransitiveDependencies3 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies0;
+      DiaryProviderWarmupProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies4 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies1;
+      DiaryProviderWarmupProvider.$allTransitiveDependencies1;
   static final $allTransitiveDependencies5 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies2;
+      DiaryProviderWarmupProvider.$allTransitiveDependencies2;
   static final $allTransitiveDependencies6 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies4;
+      DiaryProviderWarmupProvider.$allTransitiveDependencies4;
   static final $allTransitiveDependencies7 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies5;
+      DiaryProviderWarmupProvider.$allTransitiveDependencies5;
   static final $allTransitiveDependencies8 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies6;
-  static final $allTransitiveDependencies9 =
-      diaryQuickEatInventoryActionsProvider;
+      DiaryProviderWarmupProvider.$allTransitiveDependencies6;
+  static final $allTransitiveDependencies9 = diaryQuickEatInventoryProvider;
   static final $allTransitiveDependencies10 =
+      diaryQuickEatInventoryActionsProvider;
+  static final $allTransitiveDependencies11 =
       inventoryBackedCalorieEntrySaveFlowProvider;
-  static final $allTransitiveDependencies11 = cookingFlowControllerProvider;
-  static final $allTransitiveDependencies12 =
+  static final $allTransitiveDependencies12 = cookingFlowControllerProvider;
+  static final $allTransitiveDependencies13 =
       cookingFlowWizardControllerProvider;
-  static final $allTransitiveDependencies13 = cookingInstructionStepsProvider;
-  static final $allTransitiveDependencies14 =
+  static final $allTransitiveDependencies14 = cookingInstructionStepsProvider;
+  static final $allTransitiveDependencies15 =
       manualProductRecentItemsServiceProvider;
-  static final $allTransitiveDependencies15 = preparedMealImagePickerProvider;
-  static final $allTransitiveDependencies16 = inventoryActivityEventsProvider;
-  static final $allTransitiveDependencies17 =
-      receiptCaptureFlowControllerProvider;
+  static final $allTransitiveDependencies16 = preparedMealImagePickerProvider;
+  static final $allTransitiveDependencies17 = inventoryActivityEventsProvider;
   static final $allTransitiveDependencies18 =
-      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
+      receiptCaptureFlowControllerProvider;
   static final $allTransitiveDependencies19 =
-      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
   static final $allTransitiveDependencies20 =
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies21 =
       receiptBatchFlowControllerProvider;
 
   @override
@@ -236,4 +239,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'46d8795a54502a0b8e5ca991ac64e6f608d847ab';
+String _$appRouterHash() => r'0e8556072144b7ea027fa0cdb7694b52c6806f1b';

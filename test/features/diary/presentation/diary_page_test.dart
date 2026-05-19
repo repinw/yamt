@@ -26,6 +26,8 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/diary/application/diary_balance_provider.dart';
+import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
@@ -159,6 +161,101 @@ void main() {
     expect(inventoryBuildCount, 1);
     expect(preparedMealsBuildCount, 1);
     expect(providerObserver.calorieEntryDeleteFlowAddCount, 1);
+  });
+
+  test('diary warmup follows today without warming selected day', () async {
+    final firstDay = DateTime(2026, 4, 27);
+    final secondDay = DateTime(2026, 4, 28);
+    final selectedDay = DateTime(2026, 4, 24);
+    var now = firstDay;
+    var firstBalanceBuilds = 0;
+    var secondBalanceBuilds = 0;
+    var selectedBalanceBuilds = 0;
+    var firstMealsBuilds = 0;
+    var secondMealsBuilds = 0;
+    var selectedMealsBuilds = 0;
+
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: firstDay,
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        diaryCalendarNowProvider.overrideWithValue(() => now),
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
+        burnWeekRunStateRepositoryProvider.overrideWithValue(
+          _FakeBurnWeekRunStateRepository(),
+        ),
+        inventoryItemsControllerProvider.overrideWith(
+          _StaticInventoryItemsController.new,
+        ),
+        preparedMealsControllerProvider.overrideWith(
+          _StaticPreparedMealsController.new,
+        ),
+        diaryBalanceSourceProvider(firstDay).overrideWith((ref) {
+          firstBalanceBuilds += 1;
+          return Completer<DiaryBalanceSource>().future;
+        }),
+        diaryBalanceSourceProvider(secondDay).overrideWith((ref) {
+          secondBalanceBuilds += 1;
+          return Completer<DiaryBalanceSource>().future;
+        }),
+        diaryBalanceSourceProvider(selectedDay).overrideWith((ref) {
+          selectedBalanceBuilds += 1;
+          return Completer<DiaryBalanceSource>().future;
+        }),
+        diaryMealSectionsProvider(firstDay).overrideWith((ref) {
+          firstMealsBuilds += 1;
+          return const [];
+        }),
+        diaryMealSectionsProvider(secondDay).overrideWith((ref) {
+          secondMealsBuilds += 1;
+          return const [];
+        }),
+        diaryMealSectionsProvider(selectedDay).overrideWith((ref) {
+          selectedMealsBuilds += 1;
+          return const [];
+        }),
+      ],
+    );
+    addTearDown(() async {
+      await logRepository.dispose();
+      await settingsRepository.dispose();
+      container.dispose();
+    });
+
+    final subscription = container.listen<void>(
+      diaryProviderWarmupProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    expect(firstBalanceBuilds, 1);
+    expect(firstMealsBuilds, 1);
+    expect(selectedBalanceBuilds, 0);
+    expect(selectedMealsBuilds, 0);
+
+    container
+        .read(diaryCalendarControllerProvider.notifier)
+        .selectDay(selectedDay);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(selectedBalanceBuilds, 0);
+    expect(selectedMealsBuilds, 0);
+
+    now = secondDay;
+    container.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(secondBalanceBuilds, 1);
+    expect(secondMealsBuilds, 1);
   });
 
   testWidgets('loads weekly check-in section data immediately on first paint', (

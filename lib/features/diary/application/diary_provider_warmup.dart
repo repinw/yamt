@@ -24,8 +24,7 @@ part 'diary_provider_warmup.g.dart';
   ],
 )
 void diaryProviderWarmup(Ref ref) {
-  final calendarState = ref.watch(diaryCalendarControllerProvider);
-  final today = calendarState.today;
+  final today = ref.watch(diaryProviderWarmupTodayProvider);
 
   ref
     ..watch(inventoryItemsControllerProvider)
@@ -34,4 +33,10 @@ void diaryProviderWarmup(Ref ref) {
     ..watch(burnWeekRunControllerProvider)
     ..watch(diaryBalanceSourceProvider(today))
     ..watch(diaryMealSectionsProvider(today));
+}
+
+/// Current diary day that should be warmed.
+@riverpod
+DateTime diaryProviderWarmupToday(Ref ref) {
+  return ref.watch(diaryCalendarControllerProvider).today;
 }
