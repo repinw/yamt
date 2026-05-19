@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -42,6 +41,8 @@ import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart'
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_weekly_balance_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -122,88 +123,6 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
 ])
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
-
-  testWidgets(
-    'scroll shortcut jumps to lazily rendered meals section',
-    (tester) async {
-      _setSmallSurface(tester);
-      await _pumpDiaryPage(tester, selectedDay: selectedDay);
-
-      expect(find.text('Diary'), findsNothing);
-      expect(find.text('To diary').hitTestable(), findsOneWidget);
-
-      await tester.tap(find.text('To diary').hitTestable());
-      await _pumpFrames(tester, count: 16);
-
-      expect(find.text('Diary'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'scroll shortcut settles on meals without a second correction jump',
-    (tester) async {
-      _setSmallSurface(tester);
-      await _pumpDiaryPage(tester, selectedDay: selectedDay);
-
-      final scrollView = tester.widget<CustomScrollView>(
-        find.byType(CustomScrollView).first,
-      );
-      final position = scrollView.controller!.position;
-
-      await tester.tap(find.text('To diary').hitTestable());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 520));
-      final offsetAfterPrimaryAnimation = position.pixels;
-
-      await tester.pump(const Duration(milliseconds: 300));
-      final settledOffset = position.pixels;
-
-      expect(offsetAfterPrimaryAnimation, closeTo(settledOffset, 16));
-      expect(find.text('Diary'), findsOneWidget);
-    },
-  );
-
-  testWidgets('scroll shortcut hides while the user is manually scrolling', (
-    tester,
-  ) async {
-    _setSmallSurface(tester);
-    await _pumpDiaryPage(tester, selectedDay: selectedDay);
-
-    expect(find.text('To diary').hitTestable(), findsOneWidget);
-
-    final gesture = await tester.startGesture(
-      tester.getCenter(find.byType(CustomScrollView).first),
-    );
-    await gesture.moveBy(const Offset(0, -80));
-    await tester.pump();
-    await tester.pump();
-
-    expect(find.text('To diary').hitTestable(), findsNothing);
-
-    await gesture.up();
-    await _pumpFrames(tester);
-  });
-
-  testWidgets('scroll shortcut clears home shell bottom chrome', (
-    tester,
-  ) async {
-    _setSmallSurface(tester);
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      includeHomeShellChrome: true,
-    );
-
-    final shortcut = find.text('To diary').hitTestable();
-    expect(shortcut, findsOneWidget);
-
-    final shortcutBottom = tester.getBottomLeft(shortcut).dy;
-    final reservedChromeTop =
-        tester.view.physicalSize.height / tester.view.devicePixelRatio -
-        AppSizes.homeShellBottomBarClearance;
-
-    expect(shortcutBottom, lessThan(reservedChromeTop));
-  });
 
   testWidgets('auto-opens weekly check-in dialog', (tester) async {
     await _pumpDiaryPage(
@@ -600,14 +519,9 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await _pumpFrames(tester);
-    await tester.scrollUntilVisible(
-      find.text('Steps'),
-      120,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pump();
 
-    expect(find.text('Steps'), findsOneWidget);
+    expect(find.byType(DiaryWeeklyBalanceSummary), findsOneWidget);
+    expect(find.text('STEPS'), findsOneWidget);
     expect(find.textContaining('4,321', findRichText: true), findsOneWidget);
   });
 
@@ -1253,13 +1167,6 @@ Future<void> _advanceIntroToActivityPage(WidgetTester tester) async {
     await tester.tap(find.byKey(DiaryIntroDialogKeys.nextButton));
     await _pumpFrames(tester);
   }
-}
-
-void _setSmallSurface(WidgetTester tester) {
-  tester.view.physicalSize = const Size(390, 640);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.resetPhysicalSize);
-  addTearDown(tester.view.resetDevicePixelRatio);
 }
 
 DiaryWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {

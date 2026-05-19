@@ -19,6 +19,14 @@ class DiaryActivityWeightData {
   /// Health access state for activity tracking.
   final HealthDataAccessState healthAccessState;
 
+  /// Whether Health data is ready for Activity detail panels.
+  bool get hasReadyHealthAccess =>
+      healthAccessState == HealthDataAccessState.ready;
+
+  /// Whether the user still needs Health setup.
+  bool get needsHealthConnection =>
+      healthAccessState != HealthDataAccessState.ready;
+
   /// Burned kcal for the selected day.
   final int? activityKcal;
 

@@ -298,7 +298,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppEditorialSurfaces.glass(colors),
+        color: AppEditorialSurfaces.appBackground(colors),
         border: Border(bottom: BorderSide(color: borderColor)),
       ),
       child: SafeArea(
@@ -477,7 +477,7 @@ class HomeShellFloatingActionButtonChrome extends StatelessWidget {
   }
 }
 
-/// Bottom glass navigation bar used by the home shell pages.
+/// Bottom navigation bar used by the home shell pages.
 class HomeBottomNavBar extends StatelessWidget {
   /// The home bottom nav bar.
   const HomeBottomNavBar({required this.entries, super.key});
@@ -516,12 +516,10 @@ class HomeBottomNavBar extends StatelessWidget {
             borderRadius: radius,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: colors.surfaceContainerLow.withValues(alpha: 0.84),
+                color: AppEditorialSurfaces.section(colors),
                 borderRadius: radius,
                 border: Border.all(
-                  color: AppEditorialSurfaces.ghostBorder(
-                    colors,
-                  ).withValues(alpha: 0.65),
+                  color: AppEditorialSurfaces.solidCardBorder(colors),
                 ),
               ),
               child: LayoutBuilder(

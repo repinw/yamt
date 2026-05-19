@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -140,7 +141,7 @@ class _NutritionBarsContent extends StatelessWidget {
                 unit: l10n.caloriesUnitGram,
               ),
             ),
-            const SizedBox(width: AppSpacing.xl),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: _NutritionMacroColumn(
                 label: l10n.caloriesProteinLabel,
@@ -151,7 +152,7 @@ class _NutritionBarsContent extends StatelessWidget {
                 unit: l10n.caloriesUnitGram,
               ),
             ),
-            const SizedBox(width: AppSpacing.xl),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: _NutritionMacroColumn(
                 label: l10n.caloriesFatLabel,
@@ -191,10 +192,7 @@ class _NutritionMacroColumn extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final progress = target <= 0 ? 0.0 : (current / target).clamp(0.0, 1.0);
     final isDark = colors.brightness == Brightness.dark;
-    final trackColor = Color.alphaBlend(
-      color.withValues(alpha: isDark ? 0.18 : 0.12),
-      colors.surfaceContainerHighest,
-    );
+    final trackColor = AppEditorialSurfaces.appBackground(colors);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,15 +201,15 @@ class _NutritionMacroColumn extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: colors.onSurface,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w900,
             letterSpacing: 0,
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: 6),
         Container(
-          height: 8,
+          height: 6,
           decoration: BoxDecoration(
             color: trackColor,
             borderRadius: BorderRadius.circular(999),
@@ -245,7 +243,7 @@ class _NutritionMacroColumn extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: 6),
         RichText(
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -253,14 +251,14 @@ class _NutritionMacroColumn extends StatelessWidget {
             children: [
               TextSpan(
                 text: numberFormat.format(current.round()),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: colors.onSurface,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               TextSpan(
                 text: ' / ${numberFormat.format(target.round())}$unit',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: colors.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
                 ),
@@ -295,7 +293,7 @@ class _NutritionBarsSkeleton extends StatelessWidget {
         Row(
           children: [
             for (var index = 0; index < 3; index += 1) ...[
-              if (index > 0) const SizedBox(width: AppSpacing.xl),
+              if (index > 0) const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -57,33 +57,25 @@ class DiaryCalendarDayButton extends StatelessWidget {
     final localeName = Localizations.localeOf(context).toLanguageTag();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Material(
         color: Colors.transparent,
+        borderRadius: BorderRadius.circular(17),
         child: AppInkWell(
-          borderRadius: BorderRadius.circular(19),
+          borderRadius: BorderRadius.circular(17),
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            height: 64,
+            height: 54,
             decoration: BoxDecoration(
               color: isActive
                   ? resolvedActiveColor
                   : isHeartDay
                   ? heartColor.withValues(alpha: 0.14)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(19),
+              borderRadius: BorderRadius.circular(17),
               border: isHeartDay && !isActive
                   ? Border.all(color: heartColor.withValues(alpha: 0.38))
-                  : null,
-              boxShadow: isActive
-                  ? [
-                      BoxShadow(
-                        color: resolvedActiveColor.withValues(alpha: 0.28),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
                   : null,
             ),
             child: Stack(
@@ -102,7 +94,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
                             : inactiveTextColor,
                         fontSize: 10,
                         fontWeight: isActive
-                            ? FontWeight.w700
+                            ? FontWeight.w800
                             : FontWeight.w600,
                         letterSpacing: 0,
                       ),
@@ -112,7 +104,7 @@ class DiaryCalendarDayButton extends StatelessWidget {
                       '${day.day}',
                       style: TextStyle(
                         color: textColor,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: isActive
                             ? FontWeight.w900
                             : FontWeight.w700,

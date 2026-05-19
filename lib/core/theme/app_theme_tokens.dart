@@ -36,13 +36,13 @@ abstract final class AppThemeBackground {
 
   /// Surface tint alpha for dark mode.
   static const double darkTintAlpha = 0.18;
-  // Borders stay subtle in dark mode and clearer in light mode.
+  // Borders stay almost invisible in dark mode, like the diary mock.
 
   /// Card border alpha for light mode.
-  static const double lightCardBorderAlpha = 0.28;
+  static const double lightCardBorderAlpha = 0.18;
 
   /// Card border alpha for dark mode.
-  static const double darkCardBorderAlpha = 0.18;
+  static const double darkCardBorderAlpha = 0.07;
 }
 
 /// App-wide editorial design tokens for surfaces and accents.
@@ -54,7 +54,7 @@ abstract final class AppEditorial {
   static const double ambientShadowAlpha = 0.06;
 
   /// Border alpha for ghost outlines.
-  static const double ghostBorderAlpha = 0.15;
+  static const double ghostBorderAlpha = 0.08;
 
   /// Surface opacity for glass panels.
   static const double glassOpacity = 0.8;
@@ -95,24 +95,83 @@ abstract final class AppEditorial {
 
 /// Derived editorial surfaces built from current color scheme.
 abstract final class AppEditorialSurfaces {
+  /// App background tied to brightness and chosen accent hue.
+  static Color appBackground(ColorScheme colors) {
+    return _accentSurface(
+      colors,
+      darkLightness: 0.065,
+      lightLightness: 0.96,
+      darkSaturationFactor: 0.34,
+      lightSaturationFactor: 0.22,
+      minSaturation: 0.08,
+      maxSaturation: 0.22,
+    );
+  }
+
   /// Lowest-elevation lifted card surface.
-  static Color liftedCard(ColorScheme colors) => colors.surfaceContainerLowest;
+  static Color liftedCard(ColorScheme colors) {
+    return _accentSurface(
+      colors,
+      darkLightness: 0.12,
+      lightLightness: 0.99,
+      darkSaturationFactor: 0.28,
+      lightSaturationFactor: 0.13,
+      minSaturation: 0.06,
+      maxSaturation: 0.18,
+    );
+  }
 
   /// Section background surface.
-  static Color section(ColorScheme colors) => colors.surfaceContainerLow;
-
-  /// Translucent glass-like surface.
-  static Color glass(ColorScheme colors) {
-    return colors.surfaceContainerLow.withValues(
-      alpha: AppEditorial.glassOpacity,
+  static Color section(ColorScheme colors) {
+    return _accentSurface(
+      colors,
+      darkLightness: 0.16,
+      lightLightness: 0.935,
+      darkSaturationFactor: 0.24,
+      lightSaturationFactor: 0.16,
+      minSaturation: 0.06,
+      maxSaturation: 0.18,
     );
+  }
+
+  /// Solid chrome surface.
+  static Color glass(ColorScheme colors) => section(colors);
+
+  /// Track color for compact progress bars on lifted cards.
+  static Color compactProgressTrack(ColorScheme colors) {
+    final isDark = colors.brightness == Brightness.dark;
+    final overlay = (isDark ? Colors.black : colors.outlineVariant).withValues(
+      alpha: isDark ? 0.28 : 0.34,
+    );
+
+    return Color.alphaBlend(overlay, liftedCard(colors));
+  }
+
+  /// Border color for solid cards.
+  static Color cardBorder(ColorScheme colors) {
+    return _accentSurface(
+      colors,
+      darkLightness: 0.18,
+      lightLightness: 0.78,
+      darkSaturationFactor: 0.24,
+      lightSaturationFactor: 0.16,
+      minSaturation: 0.06,
+      maxSaturation: 0.2,
+    );
+  }
+
+  /// Border color for solid cards after mode-specific opacity.
+  static Color solidCardBorder(ColorScheme colors) {
+    final alpha = colors.brightness == Brightness.dark
+        ? AppThemeBackground.darkCardBorderAlpha
+        : AppThemeBackground.lightCardBorderAlpha;
+
+    return cardBorder(colors).withValues(alpha: alpha);
   }
 
   /// Border color for ghost outlines.
   static Color ghostBorder(ColorScheme colors) {
-    return colors.outlineVariant.withValues(
-      alpha: AppEditorial.ghostBorderAlpha,
-    );
+    return cardBorder(colors).withValues(alpha: AppEditorial.ghostBorderAlpha);
   }
 
   /// Accent color for repeated ingredient markers.
@@ -128,8 +187,8 @@ abstract final class AppEditorialSurfaces {
 
   /// Ambient shadow color.
   static Color ambientShadow(ColorScheme colors) {
-    return colors.onSurface.withValues(
-      alpha: AppEditorial.ambientShadowAlpha,
+    return Colors.black.withValues(
+      alpha: colors.brightness == Brightness.dark ? 0.34 : 0.1,
     );
   }
 
@@ -221,10 +280,32 @@ abstract final class AppEditorialSurfaces {
     return BoxDecoration(
       color: color,
       borderRadius: borderRadius,
-      border: Border.all(color: ghostBorder(colors)),
+      border: Border.all(color: solidCardBorder(colors)),
       boxShadow: [
         ambientBoxShadow(colors, blurRadius: blurRadius, offset: shadowOffset),
       ],
     );
+  }
+
+  static Color _accentSurface(
+    ColorScheme colors, {
+    required double darkLightness,
+    required double lightLightness,
+    required double darkSaturationFactor,
+    required double lightSaturationFactor,
+    required double minSaturation,
+    required double maxSaturation,
+  }) {
+    final isDark = colors.brightness == Brightness.dark;
+    final accent = HSLColor.fromColor(colors.primary);
+    final saturationFactor = isDark
+        ? darkSaturationFactor
+        : lightSaturationFactor;
+    final saturation = (accent.saturation * saturationFactor).clamp(
+      minSaturation,
+      maxSaturation,
+    );
+    final lightness = isDark ? darkLightness : lightLightness;
+    return accent.withSaturation(saturation).withLightness(lightness).toColor();
   }
 }

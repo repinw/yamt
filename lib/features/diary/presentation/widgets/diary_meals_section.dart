@@ -63,12 +63,13 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
       children: [
         Text(
           l10n.diaryMealsTitle,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 18,
             fontWeight: FontWeight.w900,
           ),
         ),
-        const SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: AppSpacing.md),
         if (showError)
           MetricDetailCardShell(
             child: MetricErrorRetryContent(
@@ -84,7 +85,7 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
           ...sections.map((section) {
             final isExpanded = _expandedMealType == section.mealType;
             return Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: DiaryMealCard(
                 key: DiaryMealsSectionKeys.mealCard(section.mealType),
                 section: section,

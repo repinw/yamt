@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
@@ -19,6 +20,7 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
     required this.activitySegmentKcal,
     required this.numberFormat,
     required this.unit,
+    this.compact = false,
     super.key,
   });
 
@@ -37,10 +39,12 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
   /// Localized kcal unit.
   final String unit;
 
+  /// Whether to render only the bar, without axis labels.
+  final bool compact;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
     final accents = MetricAccentColors.of(context);
     final target = math.max<double>(0, targetKcal);
     final activitySegment = math.min<double>(
@@ -57,49 +61,50 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
       numberFormat,
       unit,
     );
-    final trackColor = isDark
-        ? colors.surfaceContainerHighest.withValues(alpha: 0.52)
-        : const Color(0xFFE8EDF2);
+    final trackColor = AppEditorialSurfaces.appBackground(colors);
     final activityColor = accents.activityFor(colors.brightness);
     final activityTextColor = accents.activityTextFor(colors.brightness);
     final primary = accents.today;
+    final barHeight = compact ? 10.0 : 12.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Text(
-              '0',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0,
+        if (!compact) ...[
+          Row(
+            children: [
+              Text(
+                '0',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0,
+                ),
               ),
-            ),
-            const Spacer(),
-            if (activitySegment > 0) ...[
-              _ActivitySegmentPill(
-                label: activitySegmentLabel,
-                color: activityColor,
-                textColor: activityTextColor,
+              const Spacer(),
+              if (activitySegment > 0) ...[
+                _ActivitySegmentPill(
+                  label: activitySegmentLabel,
+                  color: activityColor,
+                  textColor: activityTextColor,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+              ],
+              Text(
+                targetLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0,
+                ),
               ),
-              const SizedBox(width: AppSpacing.xs),
             ],
-            Text(
-              targetLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.end,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xs),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+        ],
         LayoutBuilder(
           builder: (context, constraints) {
             final width = constraints.maxWidth;
@@ -107,7 +112,7 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
               key: DiaryBalanceCardKeys.dailyProgressTrack,
               borderRadius: BorderRadius.circular(999),
               child: SizedBox(
-                height: 12,
+                height: barHeight,
                 child: Stack(
                   children: [
                     Positioned.fill(child: ColoredBox(color: trackColor)),
@@ -172,9 +177,7 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
                         );
                       },
                       child: ColoredBox(
-                        color: colors.surfaceContainerLowest.withValues(
-                          alpha: 0.92,
-                        ),
+                        color: AppEditorialSurfaces.liftedCard(colors),
                       ),
                     ),
                   ],
@@ -208,7 +211,7 @@ class _ActivitySegmentPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: Color.alphaBlend(
           color.withValues(alpha: isDark ? 0.18 : 0.12),
-          colors.surfaceContainerLowest,
+          AppEditorialSurfaces.liftedCard(colors),
         ),
         borderRadius: BorderRadius.circular(7),
       ),

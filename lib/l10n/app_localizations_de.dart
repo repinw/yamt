@@ -2568,12 +2568,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBalanceRevertHeartDayAction => 'Herztag zurücknehmen';
 
   @override
-  String get diaryScrollToTopAction => 'Nach oben';
-
-  @override
-  String get diaryJumpToMealsAction => 'Zum Tagebuch';
-
-  @override
   String get diaryIntroBackAction => 'Zurück';
 
   @override

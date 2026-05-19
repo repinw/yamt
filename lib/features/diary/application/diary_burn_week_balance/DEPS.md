@@ -7,4 +7,5 @@ Dependencies that create loops (inversions) are marked with `!`.
 flowchart TD;
 diary_balance_loaded_metrics.dart-->diary_daily_balance_metrics.dart;
 diary_balance_loaded_metrics.dart-->diary_weekly_balance_metrics.dart;
+diary_weekly_balance_metrics.dart-->diary_daily_balance_metrics.dart;
 ```

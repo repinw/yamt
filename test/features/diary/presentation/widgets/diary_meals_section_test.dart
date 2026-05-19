@@ -87,7 +87,14 @@ void main() {
     expect(find.text('Pasta'), findsOneWidget);
     expect(find.text('250 kcal'), findsOneWidget);
     expect(find.text('520 kcal'), findsOneWidget);
-    expect(find.text('Nothing logged yet'), findsNWidgets(2));
+    expect(
+      find.byKey(DiaryMealsSectionKeys.collapsedEmpty(MealType.lunch)),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(DiaryMealsSectionKeys.collapsedEmpty(MealType.snack)),
+      findsOneWidget,
+    );
   });
 
   testWidgets('switches empty meal from collapsed to expanded state', (

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 
-/// Global app background with central editorial gradient.
+/// Global app background.
 class AppBackground extends StatelessWidget {
   /// Creates app background wrapper.
   const AppBackground({super.key, this.child});
@@ -15,7 +15,7 @@ class AppBackground extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppEditorialSurfaces.backdropGradient(colors),
+        color: AppEditorialSurfaces.appBackground(colors),
       ),
       child: child ?? const SizedBox.shrink(),
     );

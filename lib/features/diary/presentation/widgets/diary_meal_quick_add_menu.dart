@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -25,37 +26,48 @@ class DiaryMealQuickAddMenu extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
 
-    return PopupMenuButton<DiaryQuickEatSource>(
-      key: Key('diary_quick_add_button_${mealType.jsonValue}'),
-      tooltip: l10n.diaryQuickEatAddTooltip(mealType.localizedName(l10n)),
-      useRootNavigator: true,
-      icon: Icon(Icons.add_rounded, color: colors.primary),
-      position: PopupMenuPosition.under,
-      onSelected: onSelected,
-      itemBuilder: (context) {
-        return [
-          _item(
-            value: DiaryQuickEatSource.inventory,
-            icon: Icons.kitchen_outlined,
-            label: l10n.diaryQuickEatSourceInventory,
-          ),
-          _item(
-            value: DiaryQuickEatSource.barcode,
-            icon: Icons.qr_code_scanner_rounded,
-            label: l10n.diaryQuickEatSourceBarcode,
-          ),
-          _item(
-            value: DiaryQuickEatSource.manualSearch,
-            icon: Icons.search_rounded,
-            label: l10n.diaryQuickEatSourceManualSearch,
-          ),
-          _item(
-            value: DiaryQuickEatSource.ai,
-            icon: Icons.auto_awesome_rounded,
-            label: l10n.diaryQuickEatSourceAi,
-          ),
-        ];
-      },
+    return SizedBox.square(
+      dimension: 32,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppEditorialSurfaces.section(colors),
+          shape: BoxShape.circle,
+        ),
+        child: PopupMenuButton<DiaryQuickEatSource>(
+          key: Key('diary_quick_add_button_${mealType.jsonValue}'),
+          tooltip: l10n.diaryQuickEatAddTooltip(mealType.localizedName(l10n)),
+          useRootNavigator: true,
+          icon: Icon(Icons.add_rounded, color: colors.primary),
+          iconSize: 18,
+          padding: EdgeInsets.zero,
+          position: PopupMenuPosition.under,
+          onSelected: onSelected,
+          itemBuilder: (context) {
+            return [
+              _item(
+                value: DiaryQuickEatSource.inventory,
+                icon: Icons.kitchen_outlined,
+                label: l10n.diaryQuickEatSourceInventory,
+              ),
+              _item(
+                value: DiaryQuickEatSource.barcode,
+                icon: Icons.qr_code_scanner_rounded,
+                label: l10n.diaryQuickEatSourceBarcode,
+              ),
+              _item(
+                value: DiaryQuickEatSource.manualSearch,
+                icon: Icons.search_rounded,
+                label: l10n.diaryQuickEatSourceManualSearch,
+              ),
+              _item(
+                value: DiaryQuickEatSource.ai,
+                icon: Icons.auto_awesome_rounded,
+                label: l10n.diaryQuickEatSourceAi,
+              ),
+            ];
+          },
+        ),
+      ),
     );
   }
 

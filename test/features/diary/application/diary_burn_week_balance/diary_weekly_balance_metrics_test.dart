@@ -89,6 +89,32 @@ void main() {
     },
   );
 
+  test('expands display goal when selected day still has kcal left', () {
+    final selectedDay = DateTime(2026, 5, 3);
+    final currentWeekStartDate = DateTime(2026, 4, 27);
+    final weekOverview = _weekOverview(
+      selectedDay: selectedDay,
+      currentWeekStartDate: currentWeekStartDate,
+      baseGoals: const <double>[2500, 2500, 2500, 2500, 2500, 2500, 2500],
+      dayTotals: const <double>[2600, 2600, 2600, 2600, 2600, 2600, 2000],
+      todayFlexibleGoalKcal: 2300,
+    );
+
+    final metrics = resolveDiaryWeeklyBalanceMetrics(
+      weekOverview: weekOverview,
+      selectedDayOverview: weekOverview.days.last,
+      selectedDayEntries: const <CalorieEntry>[],
+      currentWeekStartDate: currentWeekStartDate,
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-4-27',
+      ),
+      now: selectedDay.add(const Duration(hours: 12)),
+    );
+
+    expect(metrics.pacing.actualConsumedKcal, 17600);
+    expect(metrics.goalKcal, 17900);
+  });
+
   test('progress day clamps to the visible Burn Week range', () {
     final weekStartDate = DateTime(2026, 4, 27);
 
@@ -114,6 +140,7 @@ CalorieWeekOverview _weekOverview({
   required DateTime currentWeekStartDate,
   required List<double> baseGoals,
   required List<double> dayTotals,
+  double? todayFlexibleGoalKcal,
 }) {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final days = [
@@ -140,7 +167,7 @@ CalorieWeekOverview _weekOverview({
     remainingKcal: totalGoalKcal - totalConsumedKcal,
     balanceStartDate: currentWeekStartDate,
     carryoverBeforeTodayKcal: 0,
-    todayFlexibleGoalKcal: days.last.goalKcal,
+    todayFlexibleGoalKcal: todayFlexibleGoalKcal ?? days.last.goalKcal,
     goalStartsInFuture: false,
     nextGoalStartDate: null,
     futureGoalKcal: null,

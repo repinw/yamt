@@ -85,65 +85,47 @@ class _DiaryCalendarStripState extends State<DiaryCalendarStrip> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
     final accentColors = MetricAccentColors.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: isDark ? 0.4 : 0.55),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final itemWidth = constraints.maxWidth / _calendarVisibleDayCount;
-          _syncInitialScrollPosition(itemWidth);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemWidth = constraints.maxWidth / _calendarVisibleDayCount;
+        _syncInitialScrollPosition(itemWidth);
 
-          return SizedBox(
-            height: 64,
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                return _handleScrollNotification(notification, itemWidth);
+        return SizedBox(
+          height: 58,
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              return _handleScrollNotification(notification, itemWidth);
+            },
+            child: ListView.builder(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              physics: DiaryDaySnapScrollPhysics(itemExtent: itemWidth),
+              itemCount: _itemCount,
+              itemExtent: itemWidth,
+              itemBuilder: (context, index) {
+                final day = _dayForIndex(index);
+                return DiaryCalendarDayButton(
+                  day: day,
+                  isActive: isSameCalendarDay(
+                    day,
+                    widget.selectedDay,
+                  ),
+                  isToday: isSameCalendarDay(day, widget.today),
+                  isHeartDay: widget.heartDayKeys.contains(
+                    diaryDayKey(day),
+                  ),
+                  activeColor: accentColors.today,
+                  heartColor: accentColors.heartFor(colors.brightness),
+                  inactiveTextColor: colors.onSurfaceVariant,
+                  onTap: () => widget.onSelectDay(day),
+                );
               },
-              child: ListView.builder(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                physics: DiaryDaySnapScrollPhysics(itemExtent: itemWidth),
-                itemCount: _itemCount,
-                itemExtent: itemWidth,
-                itemBuilder: (context, index) {
-                  final day = _dayForIndex(index);
-                  return DiaryCalendarDayButton(
-                    day: day,
-                    isActive: isSameCalendarDay(
-                      day,
-                      widget.selectedDay,
-                    ),
-                    isToday: isSameCalendarDay(day, widget.today),
-                    isHeartDay: widget.heartDayKeys.contains(
-                      diaryDayKey(day),
-                    ),
-                    activeColor: accentColors.today,
-                    heartColor: accentColors.heartFor(colors.brightness),
-                    inactiveTextColor: colors.onSurfaceVariant,
-                    onTap: () => widget.onSelectDay(day),
-                  );
-                },
-              ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

@@ -4,10 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/diary/application/diary_burn_week_balance/'
+    'diary_weekly_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -24,12 +27,14 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_shell.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_daily_goal_progress_bar.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_weekly_balance_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
 
 void main() {
-  testWidgets('loading skeleton reserves daily and weekly balance cards', (
+  testWidgets('loading skeleton reserves daily balance card', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -44,11 +49,11 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(DiaryBalanceShell), findsNWidgets(2));
+    expect(find.byType(DiaryBalanceShell), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders weekly pacing without removed safe-zone or flame', (
+  testWidgets('renders daily balance without weekly pacing', (
     tester,
   ) async {
     final selectedDay = DateTime(2026, 4, 27);
@@ -63,17 +68,10 @@ void main() {
       ),
     );
 
-    final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.progressTrack),
-    );
-    final targetRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.targetMarker),
-    );
-
     expect(find.text('EATEN'), findsOneWidget);
     expect(find.text('LEFT TODAY'), findsOneWidget);
-    expect(find.text('Week 1'), findsOneWidget);
-    expect(find.text('Day 1 of 7'), findsOneWidget);
+    expect(find.text('Week 1'), findsNothing);
+    expect(find.text('Day 1 of 7'), findsNothing);
     expect(
       find.byKey(const ValueKey<String>('diary-balance-safe-zone')),
       findsNothing,
@@ -82,9 +80,8 @@ void main() {
       find.byKey(const ValueKey<String>('diary-balance-consumed-marker')),
       findsNothing,
     );
-    expect(targetRect.center.dxRatioWithin(trackRect), closeTo(1 / 7, 0.035));
     expect(_findTextContaining('1,000 kcal'), findsWidgets);
-    expect(_findTextContaining('14,000 kcal'), findsOneWidget);
+    expect(_findTextContaining('14,000 kcal'), findsNothing);
   });
 
   testWidgets('weekly progress handles unbounded horizontal constraints', (
@@ -169,6 +166,37 @@ void main() {
     );
   });
 
+  testWidgets('weekly compact card aligns kcal label to bar right edge', (
+    tester,
+  ) async {
+    await _pumpWeeklyBalanceCard(tester);
+    await tester.pumpAndSettle();
+
+    final trackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.progressTrack),
+    );
+    final valueLabel = find.text('15,726 / 17,755 kcal');
+
+    expect(valueLabel, findsOneWidget);
+    expect(tester.getRect(valueLabel).right, closeTo(trackRect.right, 1));
+  });
+
+  testWidgets('weekly compact progress keeps day divider lines', (
+    tester,
+  ) async {
+    await _pumpWeeklyBalanceCard(tester);
+    await tester.pumpAndSettle();
+
+    final track = find.byKey(DiaryBalanceCardKeys.progressTrack);
+    final dividerPositions = tester
+        .widgetList<Positioned>(
+          find.descendant(of: track, matching: find.byType(Positioned)),
+        )
+        .where((widget) => widget.width == 1);
+
+    expect(dividerPositions, hasLength(6));
+  });
+
   testWidgets('daily progress shows activity as an end extension', (
     tester,
   ) async {
@@ -194,14 +222,10 @@ void main() {
     final activityRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
     );
-    final targetLabelRect = tester.getRect(find.text('2,200 kcal'));
 
     expect(eatenRect.width / trackRect.width, closeTo(1000 / 2200, 0.02));
     expect(activityRect.width / trackRect.width, closeTo(200 / 2200, 0.02));
     expect(activityRect.right, closeTo(trackRect.right, 0.5));
-    expect(targetLabelRect.right, closeTo(trackRect.right, 0.5));
-    expect(find.text('+200 kcal'), findsOneWidget);
-    expect(find.text('2,200 kcal'), findsOneWidget);
   });
 
   testWidgets('daily progress animates eaten and activity segments', (
@@ -283,7 +307,6 @@ void main() {
       );
       expect(find.text('3,000 kcal', findRichText: true), findsOneWidget);
       expect(find.text('-1,000 kcal', findRichText: true), findsOneWidget);
-      expect(find.text('1,000 kcal', findRichText: true), findsOneWidget);
       expect(
         find.text(
           'Real 1,000 kcal · Heart -2,000 kcal',
@@ -579,7 +602,7 @@ void main() {
     expect(syncWatchCount, greaterThan(0));
   });
 
-  testWidgets('shows Burn Week label on non-live days without counters', (
+  testWidgets('hides weekly label on non-live days without counters', (
     tester,
   ) async {
     final selectedDay = normalizeDiaryDay(
@@ -596,7 +619,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Day 1 of 7'), findsOneWidget);
+    expect(find.text('Day 1 of 7'), findsNothing);
     expect(find.byIcon(Icons.stars_rounded), findsNothing);
     expect(find.byIcon(Icons.favorite_rounded), findsNothing);
   });
@@ -638,7 +661,9 @@ void main() {
       ),
     );
 
-    expect(find.text('Day 7 of 7'), findsOneWidget);
+    expect(find.text('EATEN'), findsOneWidget);
+    expect(find.text('LEFT TODAY'), findsOneWidget);
+    expect(find.text('Day 7 of 7'), findsNothing);
     expect(find.byIcon(Icons.stars_rounded), findsNothing);
     expect(find.byIcon(Icons.favorite_rounded), findsNothing);
   });
@@ -901,6 +926,29 @@ Future<void> _pumpWeeklyProgressBar(
   );
 }
 
+Future<void> _pumpWeeklyBalanceCard(WidgetTester tester) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 340,
+            child: DiaryWeeklyBalanceCard(
+              weeklyMetrics: _weeklyBalanceMetrics(),
+              runWeekNumber: 6,
+              numberFormat: NumberFormat.decimalPattern('en'),
+              framed: false,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 Future<void> _pumpDailyProgressBar(
   WidgetTester tester, {
   required double eatenKcal,
@@ -924,6 +972,27 @@ Future<void> _pumpDailyProgressBar(
         ),
       ),
     ),
+  );
+}
+
+DiaryWeeklyBalanceMetrics _weeklyBalanceMetrics() {
+  return const DiaryWeeklyBalanceMetrics(
+    pacing: BurnWeekMockMetrics(
+      dailyGoalKcal: 2536.4,
+      weeklyGoalKcal: 17755,
+      usesFallbackGoal: false,
+      paceRatio: 6 / 7,
+      targetKcal: 15218,
+      consumedKcal: 15726,
+      actualConsumedKcal: 15726,
+      safeZoneMinKcal: 14000,
+      safeZoneMaxKcal: 16500,
+      barMinKcal: 0,
+      barMaxKcal: 17755,
+    ),
+    targetKcal: 15218,
+    goalKcal: 17755,
+    progressDay: 6,
   );
 }
 

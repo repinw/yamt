@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
@@ -51,21 +52,19 @@ class DiaryMealCard extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: isDark ? 0.4 : 0.55),
-        ),
+        color: AppEditorialSurfaces.liftedCard(colors),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
         boxShadow: [
           BoxShadow(
-            color: colors.shadow.withValues(alpha: isDark ? 0.18 : 0.06),
-            blurRadius: isDark ? 24 : 14,
-            offset: const Offset(0, 5),
+            color: AppEditorialSurfaces.ambientShadow(colors),
+            blurRadius: isDark ? 18 : 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: [
             Material(
@@ -74,7 +73,7 @@ class DiaryMealCard extends StatelessWidget {
                 onTap: onToggle,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+                  padding: EdgeInsets.zero,
                   child: Row(
                     children: [
                       _MealIcon(mealType: section.mealType),
@@ -87,7 +86,8 @@ class DiaryMealCard extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 color: colors.onSurface,
-                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
                               ),
                         ),
                       ),
@@ -118,6 +118,7 @@ class DiaryMealCard extends StatelessWidget {
                           color: isExpanded
                               ? accentColors.today
                               : colors.onSurfaceVariant,
+                          size: 20,
                         ),
                       ),
                     ],
@@ -158,25 +159,8 @@ class _CollapsedMealBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (section.entries.isEmpty) {
-      final l10n = AppLocalizations.of(context)!;
-      final colors = Theme.of(context).colorScheme;
-      return Padding(
-        padding: const EdgeInsets.only(
-          top: AppSpacing.md,
-        ),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            l10n.diaryMealsEmpty,
-            key: DiaryMealsSectionKeys.collapsedEmpty(section.mealType),
-            style: TextStyle(
-              color: colors.onSurfaceVariant,
-              fontSize: 13,
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
+      return SizedBox.shrink(
+        key: DiaryMealsSectionKeys.collapsedEmpty(section.mealType),
       );
     }
 
@@ -188,7 +172,7 @@ class _CollapsedMealBody extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(
-        top: AppSpacing.md,
+        top: AppSpacing.sm,
         right: AppSpacing.xs,
       ),
       child: Column(
@@ -258,7 +242,7 @@ class _ExpandedMealBody extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.xxl),
+      padding: const EdgeInsets.only(top: AppSpacing.md),
       child: DecoratedBox(
         decoration: BoxDecoration(
           border: Border(
@@ -268,7 +252,7 @@ class _ExpandedMealBody extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.only(top: AppSpacing.xl),
+          padding: const EdgeInsets.only(top: AppSpacing.md),
           child: Column(
             children: [
               if (section.entries.isEmpty)
@@ -335,12 +319,10 @@ class _ExpandedMealEntry extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: Ink(
           decoration: BoxDecoration(
-            color: colors.surfaceContainerLow.withValues(
-              alpha: isDark ? 0.74 : 0.58,
-            ),
+            color: AppEditorialSurfaces.section(colors),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: colors.outlineVariant.withValues(alpha: 0.5),
+              color: AppEditorialSurfaces.solidCardBorder(colors),
             ),
             boxShadow: [
               BoxShadow(
@@ -351,11 +333,11 @@ class _ExpandedMealEntry extends StatelessWidget {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.sm),
             child: Row(
               children: [
                 MealThumb(entry: entry),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -478,16 +460,16 @@ class _MealIcon extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final accentColors = MetricAccentColors.of(context);
     return Container(
-      width: 42,
-      height: 42,
+      width: 34,
+      height: 34,
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        color: AppEditorialSurfaces.section(colors),
+        shape: BoxShape.circle,
       ),
       child: Icon(
         _mealIcon(mealType),
         color: accentColors.meal,
-        size: 22,
+        size: 18,
       ),
     );
   }
@@ -505,12 +487,12 @@ class DiaryMealCardsSkeleton extends StatelessWidget {
       children: [
         for (var index = 0; index < 4; index += 1)
           Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
             child: Container(
-              height: 88,
+              height: 58,
               decoration: BoxDecoration(
                 color: colors.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
           ),
