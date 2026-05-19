@@ -16,7 +16,7 @@ enum AccountCredentialConflictChoice {
 /// The account page flow service provider.
 @riverpod
 AccountPageFlowService accountPageFlowService(Ref ref) {
-  final controller = ref.read(accountControllerProvider.notifier);
+  final controller = ref.watch(accountControllerProvider.notifier);
   return AccountPageFlowService(
     overwriteExistingGoogleAccountWithGuest:
         controller.overwriteExistingGoogleAccountWithGuest,
