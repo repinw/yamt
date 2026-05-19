@@ -312,10 +312,10 @@ abstract final class AppEditorialSurfaces {
 
 /// App-wide raised card design used by primary content cards.
 abstract final class AppSurfaceCard {
-  /// Shared card radius matching diary meal cards.
+  /// Shared radius for primary content cards.
   static const double radius = 20;
 
-  /// Shared card padding matching diary meal cards.
+  /// Shared padding for primary content cards.
   static const EdgeInsets padding = EdgeInsets.all(AppThemeSpacing.md);
 
   /// Shared card border radius.

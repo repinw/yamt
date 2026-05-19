@@ -172,12 +172,14 @@ void main() {
 
     expect(find.byKey(indicatorKey), findsNothing);
     expect(find.text('Edit'), findsNothing);
+    expect(find.byTooltip('Edit'), findsNothing);
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
 
     expect(find.byKey(indicatorKey), findsNothing);
-    expect(find.text('Edit'), findsOneWidget);
+    expect(find.text('Edit'), findsNothing);
+    expect(find.byTooltip('Edit'), findsOneWidget);
   });
 
   testWidgets('restores expanded state from page storage after rebuild', (
@@ -193,7 +195,7 @@ void main() {
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Remove'), findsOneWidget);
+    expect(find.byTooltip('Remove'), findsOneWidget);
 
     await tester.pumpWidget(
       _InventoryItemRowHost(showRow: false, bucket: bucket),
@@ -206,7 +208,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Milk'), findsOneWidget);
-    expect(find.text('Remove'), findsOneWidget);
+    expect(find.byTooltip('Remove'), findsOneWidget);
   });
 
   testWidgets('opens the item editor from the expanded edit action', (
@@ -221,7 +223,7 @@ void main() {
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Edit'));
+    await tester.tap(find.byTooltip('Edit'));
     await tester.pumpAndSettle();
 
     expect(find.text('Edit inventory item'), findsOneWidget);
@@ -243,7 +245,7 @@ void main() {
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Edit'));
+    await tester.tap(find.byTooltip('Edit'));
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('Apply changes'));
@@ -287,14 +289,14 @@ void main() {
     await tester.pumpAndSettle();
 
     final editButtonFinder = find.ancestor(
-      of: find.text('Edit'),
+      of: find.byTooltip('Edit'),
       matching: find.byType(TextButton),
     );
     final editButton = tester.widget<TextButton>(editButtonFinder);
 
     expect(editButton.onPressed, isNotNull);
 
-    await tester.tap(find.text('Edit'));
+    await tester.tap(find.byTooltip('Edit'));
     await tester.pump();
 
     expect(
@@ -304,7 +306,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Edit inventory item'), findsNothing);
-    expect(find.text('Remove'), findsOneWidget);
+    expect(find.byTooltip('Remove'), findsOneWidget);
   });
 
   testWidgets('shows nutrition metrics inside one segmented strip', (

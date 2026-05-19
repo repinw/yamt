@@ -11,6 +11,7 @@ void main() {
     String stockLabel = '1/2',
     RemainingProgressBarLabelLayout labelLayout =
         RemainingProgressBarLabelLayout.belowBar,
+    double barHeight = 4,
   }) {
     return MaterialApp(
       home: Scaffold(
@@ -21,6 +22,7 @@ void main() {
           totalUnits: totalUnits,
           remainingUnits: remainingUnits,
           labelLayout: labelLayout,
+          barHeight: barHeight,
         ),
       ),
     );
@@ -108,5 +110,22 @@ void main() {
     );
 
     expect(progress.borderRadius, BorderRadius.circular(999));
+  });
+
+  testWidgets('passes custom bar height to progress indicator', (tester) async {
+    await tester.pumpWidget(
+      buildWidget(
+        segmentedByUnits: false,
+        totalUnits: 2,
+        remainingUnits: 1,
+        barHeight: 3,
+      ),
+    );
+
+    final progress = tester.widget<LinearProgressIndicator>(
+      find.byType(LinearProgressIndicator),
+    );
+
+    expect(progress.minHeight, 3);
   });
 }

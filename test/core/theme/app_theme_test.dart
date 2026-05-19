@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 
@@ -70,6 +71,19 @@ void main() {
       expect(light.popupMenuTheme.enableFeedback, isNull);
       expect(light.segmentedButtonTheme.style?.enableFeedback, isNull);
       expect(light.tooltipTheme.enableFeedback, isNull);
+    });
+
+    test('text theme uses shared font-size tokens', () {
+      expect(
+        light.textTheme.headlineSmall?.fontSize,
+        AppFontSizes.headlineSmall,
+      );
+      expect(light.textTheme.titleLarge?.fontSize, AppFontSizes.titleLarge);
+      expect(light.textTheme.titleMedium?.fontSize, AppFontSizes.titleMedium);
+      expect(light.textTheme.bodyMedium?.fontSize, AppFontSizes.bodyMedium);
+      expect(light.textTheme.bodySmall?.fontSize, AppFontSizes.bodySmall);
+      expect(light.textTheme.labelLarge?.fontSize, AppFontSizes.labelLarge);
+      expect(light.textTheme.labelSmall?.fontSize, AppFontSizes.labelSmall);
     });
   });
 }

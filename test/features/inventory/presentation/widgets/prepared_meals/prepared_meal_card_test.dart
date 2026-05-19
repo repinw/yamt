@@ -193,7 +193,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(indicatorKey), findsNothing);
-    expect(find.text('Sour cream'), findsOneWidget);
+    expect(find.text('Rice'), findsOneWidget);
   });
 
   testWidgets('PreparedMealCard shows eat action in the header', (

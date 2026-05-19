@@ -10,6 +10,7 @@ Future<void> _pumpIndicator(
   required ThemeData theme,
   required bool isExpanded,
   required bool enabled,
+  bool useSubtleChromeColors = false,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -20,6 +21,7 @@ Future<void> _pumpIndicator(
             isExpanded: isExpanded,
             enabled: enabled,
             rotationKey: const Key('inventory_expand_indicator_rotation'),
+            useSubtleChromeColors: useSubtleChromeColors,
           ),
         ),
       ),
@@ -133,5 +135,30 @@ void main() {
     expect(border.top.color, colors.outlineVariant.withValues(alpha: 0.32));
     expect(icon.color, colors.onSurfaceVariant.withValues(alpha: 0.55));
     expect(rotation.turns, 0);
+  });
+
+  testWidgets('uses subtle chrome colors when requested', (tester) async {
+    await _pumpIndicator(
+      tester,
+      theme: theme,
+      isExpanded: false,
+      enabled: true,
+      useSubtleChromeColors: true,
+    );
+
+    final colors = theme.colorScheme;
+    final container = tester.widget<AnimatedContainer>(
+      find.byType(AnimatedContainer),
+    );
+    final decoration = container.decoration! as BoxDecoration;
+    final border = decoration.border! as Border;
+    final icon = tester.widget<Icon>(find.byIcon(Icons.expand_more_rounded));
+
+    expect(
+      decoration.color,
+      colors.surfaceContainerHigh.withValues(alpha: 0.72),
+    );
+    expect(border.top.color, Colors.transparent);
+    expect(icon.color, colors.onSurfaceVariant.withValues(alpha: 0.86));
   });
 }

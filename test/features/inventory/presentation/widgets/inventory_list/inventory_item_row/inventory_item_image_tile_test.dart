@@ -8,6 +8,8 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_image_tile.dart';
 
@@ -86,9 +88,11 @@ void main() {
       expect(imageFinder, findsOneWidget);
 
       final imageWidget = tester.widget<AppCachedNetworkImage>(imageFinder);
+      final expectedCacheDimension = (AppInventoryClosedTile.imageSize * 2.5)
+          .round();
       expect(imageWidget.imageUrl, _imageUrl);
-      expect(imageWidget.cacheWidth, 140);
-      expect(imageWidget.cacheHeight, 140);
+      expect(imageWidget.cacheWidth, expectedCacheDimension);
+      expect(imageWidget.cacheHeight, expectedCacheDimension);
     },
   );
 
