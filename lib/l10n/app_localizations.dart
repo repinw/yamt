@@ -2189,11 +2189,29 @@ abstract class AppLocalizations {
   /// **'3. ✨ Create'**
   String get preparedMealTemplateStepCreate;
 
-  /// No description provided for @preparedMealTemplateClipboardPasteHelper.
+  /// Title shown when prompting the user to paste from clipboard
   ///
   /// In en, this message translates to:
-  /// **'Paste from clipboard: {url}'**
-  String preparedMealTemplateClipboardPasteHelper(String url);
+  /// **'Paste from clipboard ✨'**
+  String get preparedMealTemplateClipboardTitle;
+
+  /// Helper description explaining that tapping will access the clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Tap here to check your clipboard for a recipe link.'**
+  String get preparedMealTemplateClipboardPasteHelper;
+
+  /// Success message when recipe is pasted
+  ///
+  /// In en, this message translates to:
+  /// **'Pasted recipe from {url}!'**
+  String preparedMealTemplateClipboardPasteSuccess(String url);
+
+  /// Message shown when clipboard paste was clicked but no valid URL was found
+  ///
+  /// In en, this message translates to:
+  /// **'No valid recipe link found in clipboard.'**
+  String get preparedMealTemplateClipboardNoLinkFound;
 
   /// No description provided for @preparedMealTemplateAdvancedOptionsTitle.
   ///

@@ -1108,9 +1108,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealTemplateStepCreate => '3. ✨ Create';
 
   @override
-  String preparedMealTemplateClipboardPasteHelper(String url) {
-    return 'Paste from clipboard: $url';
+  String get preparedMealTemplateClipboardTitle => 'Paste from clipboard ✨';
+
+  @override
+  String get preparedMealTemplateClipboardPasteHelper => 'Tap here to check your clipboard for a recipe link.';
+
+  @override
+  String preparedMealTemplateClipboardPasteSuccess(String url) {
+    return 'Pasted recipe from $url!';
   }
+
+  @override
+  String get preparedMealTemplateClipboardNoLinkFound => 'No valid recipe link found in clipboard.';
 
   @override
   String get preparedMealTemplateAdvancedOptionsTitle => 'More Options (Optional)';

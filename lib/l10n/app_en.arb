@@ -608,13 +608,26 @@
   "preparedMealTemplateStepCopy": "1. 🔗 Copy",
   "preparedMealTemplateStepPaste": "2. 📝 Paste",
   "preparedMealTemplateStepCreate": "3. ✨ Create",
-  "preparedMealTemplateClipboardPasteHelper": "Paste from clipboard: {url}",
+  "preparedMealTemplateClipboardTitle": "Paste from clipboard ✨",
+  "@preparedMealTemplateClipboardTitle": {
+    "description": "Title shown when prompting the user to paste from clipboard"
+  },
+  "preparedMealTemplateClipboardPasteHelper": "Tap here to check your clipboard for a recipe link.",
   "@preparedMealTemplateClipboardPasteHelper": {
+    "description": "Helper description explaining that tapping will access the clipboard"
+  },
+  "preparedMealTemplateClipboardPasteSuccess": "Pasted recipe from {url}!",
+  "@preparedMealTemplateClipboardPasteSuccess": {
+    "description": "Success message when recipe is pasted",
     "placeholders": {
       "url": {
         "type": "String"
       }
     }
+  },
+  "preparedMealTemplateClipboardNoLinkFound": "No valid recipe link found in clipboard.",
+  "@preparedMealTemplateClipboardNoLinkFound": {
+    "description": "Message shown when clipboard paste was clicked but no valid URL was found"
   },
   "preparedMealTemplateAdvancedOptionsTitle": "More Options (Optional)",
   "preparedMealTemplateRecipeUrlLabel": "Recipe link",

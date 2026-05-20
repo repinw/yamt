@@ -78,7 +78,6 @@ class _PreparedMealRecipeTemplateSheetState
 
   String? _recipeUrlErrorText;
   String? _portionsErrorText;
-  String? _clipboardUrl;
   bool _advancedExpanded = false;
 
   @override
@@ -87,7 +86,6 @@ class _PreparedMealRecipeTemplateSheetState
     _advancedExpanded = widget.initialDraft != null ||
         _nameController.text.isNotEmpty ||
         _portionsController.text.isNotEmpty;
-    unawaited(_checkClipboard());
   }
 
   @override
@@ -98,20 +96,55 @@ class _PreparedMealRecipeTemplateSheetState
     super.dispose();
   }
 
-  Future<void> _checkClipboard() async {
+  Future<void> _handleClipboardPaste() async {
+    unawaited(HapticFeedback.lightImpact());
     try {
       final data = await Clipboard.getData(Clipboard.kTextPlain);
       final text = data?.text;
-      if (text != null && text.isNotEmpty) {
-        final normalized = normalizePreparedMealRecipeUrl(text);
-        if (normalized != null && mounted) {
-          setState(() {
-            _clipboardUrl = normalized;
-          });
+      if (text != null && text.trim().isNotEmpty) {
+        final normalized = normalizePreparedMealRecipeUrl(text.trim());
+        if (normalized != null) {
+          _recipeUrlController.text = normalized;
+          _onRecipeUrlChanged(normalized);
+          if (mounted) {
+            final l10n = AppLocalizations.of(context)!;
+            var host = normalized;
+            try {
+              final uri = Uri.parse(normalized);
+              host = uri.host.replaceFirst('www.', '');
+            } on Object catch (_) {}
+
+            setState(() {
+              _recipeUrlErrorText = null;
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  l10n.preparedMealTemplateClipboardPasteSuccess(host),
+                ),
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+          return;
         }
       }
+
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() {
+          _recipeUrlErrorText = l10n.preparedMealTemplateClipboardNoLinkFound;
+        });
+      }
     } on Object catch (_) {
-      // Silently ignore clipboard exceptions
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() {
+          _recipeUrlErrorText = l10n.preparedMealTemplateClipboardNoLinkFound;
+        });
+      }
     }
   }
 
@@ -190,15 +223,15 @@ class _PreparedMealRecipeTemplateSheetState
                       ),
                     ),
                   ),
-                  _ClipboardPasteCard(
-                    clipboardUrl: _clipboardUrl,
-                    onTap: () {
-                      _recipeUrlController.text = _clipboardUrl!;
-                      _onRecipeUrlChanged(_clipboardUrl!);
-                      setState(() {
-                        _clipboardUrl = null;
-                      });
-                      unawaited(HapticFeedback.lightImpact());
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _recipeUrlController,
+                    builder: (context, value, _) {
+                      if (value.text.isNotEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return _ClipboardPasteCard(
+                        onTap: _handleClipboardPaste,
+                      );
                     },
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -414,26 +447,16 @@ class _WelcomeHeaderCard extends StatelessWidget {
 /// A beautiful magic card prompting the user to paste their clipboard.
 class _ClipboardPasteCard extends StatelessWidget {
   const _ClipboardPasteCard({
-    required this.clipboardUrl,
     required this.onTap,
   });
 
-  final String? clipboardUrl;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final url = clipboardUrl;
-    if (url == null) return const SizedBox.shrink();
-
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-
-    var host = url;
-    try {
-      final uri = Uri.parse(url);
-      host = uri.host.replaceFirst('www.', '');
-    } on Object catch (_) {}
+    final l10n = AppLocalizations.of(context)!;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -486,7 +509,7 @@ class _ClipboardPasteCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Link in der Zwischenablage! ✨',
+                        l10n.preparedMealTemplateClipboardTitle,
                         style: theme.textTheme.labelLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: colors.onSurface,
@@ -494,7 +517,7 @@ class _ClipboardPasteCard extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       Text(
-                        'Hier tippen, um Rezept von $host einzufügen.',
+                        l10n.preparedMealTemplateClipboardPasteHelper,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.onSurfaceVariant,
                         ),

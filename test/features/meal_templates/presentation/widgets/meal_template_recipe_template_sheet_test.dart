@@ -156,19 +156,22 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    // Verify Clipboard paste card is shown
-    expect(find.text('Link in der Zwischenablage! ✨'), findsOneWidget);
+    // Verify Clipboard paste card is shown with new localized strings
+    expect(find.text('Aus Zwischenablage einfügen ✨'), findsOneWidget);
     expect(
-      find.text('Hier tippen, um Rezept von chefkoch.de einzufügen.'),
+      find.text(
+        'Hier tippen, um die Zwischenablage nach einem Rezept-Link '
+        'zu durchsuchen.',
+      ),
       findsOneWidget,
     );
 
     // Tap on clipboard paste card
-    await tester.tap(find.text('Link in der Zwischenablage! ✨'));
+    await tester.tap(find.text('Aus Zwischenablage einfügen ✨'));
     await tester.pumpAndSettle();
 
-    // The clipboard paste card should disappear
-    expect(find.text('Link in der Zwischenablage! ✨'), findsNothing);
+    // The clipboard paste card should disappear (since URL is now filled)
+    expect(find.text('Aus Zwischenablage einfügen ✨'), findsNothing);
 
     // The textfield should have the recipe URL
     final urlFinder = find.byType(TextField).first;

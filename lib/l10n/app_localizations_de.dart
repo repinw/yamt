@@ -1108,9 +1108,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateStepCreate => '3. ✨ Starten';
 
   @override
-  String preparedMealTemplateClipboardPasteHelper(String url) {
-    return 'Zwischenablage einfügen: $url';
+  String get preparedMealTemplateClipboardTitle => 'Aus Zwischenablage einfügen ✨';
+
+  @override
+  String get preparedMealTemplateClipboardPasteHelper => 'Hier tippen, um die Zwischenablage nach einem Rezept-Link zu durchsuchen.';
+
+  @override
+  String preparedMealTemplateClipboardPasteSuccess(String url) {
+    return 'Rezept von $url eingefügt!';
   }
+
+  @override
+  String get preparedMealTemplateClipboardNoLinkFound => 'Kein gültiger Rezept-Link in der Zwischenablage gefunden.';
 
   @override
   String get preparedMealTemplateAdvancedOptionsTitle => 'Weitere Optionen (Optional)';
