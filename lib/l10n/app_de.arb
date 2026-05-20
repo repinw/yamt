@@ -613,6 +613,33 @@
   "preparedMealTemplateRecipeSheetTitle": "Rezept anlegen",
   "preparedMealTemplateRecipeEditSheetTitle": "Rezept bearbeiten",
   "preparedMealTemplateRecipeSheetSubtitle": "Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.",
+  "preparedMealTemplateRecipeGreetingTitle": "Lass uns ein Rezept zaubern! 🍳",
+  "preparedMealTemplateRecipeGreetingSubtitle": "Kopiere die Web-Adresse deines Lieblingsrezepts und wir lesen alle Zutaten automatisch für dich aus.",
+  "preparedMealTemplateStepCopy": "1. 🔗 Kopieren",
+  "preparedMealTemplateStepPaste": "2. 📝 Einfügen",
+  "preparedMealTemplateStepCreate": "3. ✨ Starten",
+  "preparedMealTemplateClipboardTitle": "Aus Zwischenablage einfügen ✨",
+  "@preparedMealTemplateClipboardTitle": {
+    "description": "Title shown when prompting the user to paste from clipboard"
+  },
+  "preparedMealTemplateClipboardPasteHelper": "Hier tippen, um die Zwischenablage nach einem Rezept-Link zu durchsuchen.",
+  "@preparedMealTemplateClipboardPasteHelper": {
+    "description": "Helper description explaining that tapping will access the clipboard"
+  },
+  "preparedMealTemplateClipboardPasteSuccess": "Rezept von {url} eingefügt!",
+  "@preparedMealTemplateClipboardPasteSuccess": {
+    "description": "Success message when recipe is pasted",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateClipboardNoLinkFound": "Kein gültiger Rezept-Link in der Zwischenablage gefunden.",
+  "@preparedMealTemplateClipboardNoLinkFound": {
+    "description": "Message shown when clipboard paste was clicked but no valid URL was found"
+  },
+  "preparedMealTemplateAdvancedOptionsTitle": "Weitere Optionen (Optional)",
   "preparedMealTemplateRecipeUrlLabel": "Rezept-Link",
   "preparedMealTemplateRecipeUrlHint": "https://www.chefkoch.de/...",
   "preparedMealTemplateRecipeUrlInvalid": "Bitte gib einen gültigen Rezept-Link ein.",

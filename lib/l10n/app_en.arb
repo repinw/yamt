@@ -603,6 +603,33 @@
   "preparedMealTemplateRecipeSheetTitle": "Create template from recipe",
   "preparedMealTemplateRecipeEditSheetTitle": "Edit recipe template",
   "preparedMealTemplateRecipeSheetSubtitle": "Paste a recipe link, for example from Chefkoch.",
+  "preparedMealTemplateRecipeGreetingTitle": "Let's cook up a new recipe! 🍳",
+  "preparedMealTemplateRecipeGreetingSubtitle": "Simply copy the web address of your favorite recipe and we will read all ingredients automatically.",
+  "preparedMealTemplateStepCopy": "1. 🔗 Copy",
+  "preparedMealTemplateStepPaste": "2. 📝 Paste",
+  "preparedMealTemplateStepCreate": "3. ✨ Create",
+  "preparedMealTemplateClipboardTitle": "Paste from clipboard ✨",
+  "@preparedMealTemplateClipboardTitle": {
+    "description": "Title shown when prompting the user to paste from clipboard"
+  },
+  "preparedMealTemplateClipboardPasteHelper": "Tap here to check your clipboard for a recipe link.",
+  "@preparedMealTemplateClipboardPasteHelper": {
+    "description": "Helper description explaining that tapping will access the clipboard"
+  },
+  "preparedMealTemplateClipboardPasteSuccess": "Pasted recipe from {url}!",
+  "@preparedMealTemplateClipboardPasteSuccess": {
+    "description": "Success message when recipe is pasted",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateClipboardNoLinkFound": "No valid recipe link found in clipboard.",
+  "@preparedMealTemplateClipboardNoLinkFound": {
+    "description": "Message shown when clipboard paste was clicked but no valid URL was found"
+  },
+  "preparedMealTemplateAdvancedOptionsTitle": "More Options (Optional)",
   "preparedMealTemplateRecipeUrlLabel": "Recipe link",
   "preparedMealTemplateRecipeUrlHint": "https://www.chefkoch.de/...",
   "preparedMealTemplateRecipeUrlInvalid": "Please enter a valid recipe link.",

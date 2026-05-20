@@ -178,6 +178,59 @@ void main() {
     expect(persisted.containsKey('eating_window_start_minute_of_day'), isFalse);
   });
 
+  test(
+    'readSettings preserves legacy top-level goal without history',
+    () async {
+      final now = DateTime(2026, 4, 24, 10, 30);
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 82,
+        heightCm: 181,
+        ageYears: 35,
+        activityLevel: 1.4,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      );
+      final firestore = FakeFirebaseFirestore();
+      await firestore
+          .collection('users')
+          .doc('user-1')
+          .collection('calorie_settings')
+          .doc('default')
+          .set({
+            'daily_kcal_goal': 2300,
+            'calculator_profile': profile.toJson(),
+            'expected_activity_kcal': 420,
+            'updated_at': DateTime(2026, 4, 2, 8),
+          });
+      final repository = FirestoreCalorieSettingsRepository(
+        session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
+        firestore: firestore,
+        now: () => now,
+      );
+
+      final settings = await repository.readSettings();
+
+      expect(settings.calorieMathVersion, currentCalorieMathVersion);
+      expect(settings.dailyKcalGoal, 2300);
+      expect(settings.hasGoal, isTrue);
+      expect(settings.goalHistory, hasLength(1));
+      expect(settings.goalHistory.single.dailyKcalGoal, 2300);
+      expect(settings.expectedActivityKcal, 420);
+
+      final persistedSnapshot = await firestore
+          .collection('users')
+          .doc('user-1')
+          .collection('calorie_settings')
+          .doc('default')
+          .get();
+      final persisted = persistedSnapshot.data()!;
+      expect(persisted['daily_kcal_goal'], 2300);
+      expect(persisted['calorie_math_version'], currentCalorieMathVersion);
+      expect(persisted['goal_history'], hasLength(1));
+    },
+  );
+
   test('repository returns empty defaults when no user is signed in', () async {
     final repository = FirestoreCalorieSettingsRepository(
       session: _FakeCalorieSettingsUserSession(),

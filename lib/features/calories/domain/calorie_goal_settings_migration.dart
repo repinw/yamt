@@ -60,7 +60,19 @@ DateTime _resolveMigrationCountingStart({
     );
   }
 
-  return settings.nextGoalStartAfterDay(today) ?? today;
+  final nextGoalStartDate = settings.nextGoalStartAfterDay(today);
+  if (nextGoalStartDate != null) {
+    return nextGoalStartDate;
+  }
+
+  if (settings.hasGoal) {
+    return _resolveActiveRunStartDate(
+      today: today,
+      countingStartDate: settings.updatedAt ?? today,
+    );
+  }
+
+  return today;
 }
 
 DateTime _resolveActiveRunStartDate({
@@ -90,7 +102,29 @@ CalorieGoalHistoryEntry? _resolveMigrationGoalEntry({
   required CalorieGoalSettings settings,
   required DateTime migrationDay,
 }) {
-  return settings.goalEntryForDay(migrationDay) ?? settings.latestGoalEntry;
+  final historyEntry =
+      settings.goalEntryForDay(migrationDay) ?? settings.latestGoalEntry;
+  if (historyEntry != null) {
+    return historyEntry;
+  }
+
+  final dailyKcalGoal = settings.dailyKcalGoal;
+  if (dailyKcalGoal == null) {
+    return null;
+  }
+
+  final changedAt = settings.updatedAt ?? migrationDay;
+  return CalorieGoalHistoryEntry(
+    dailyKcalGoal: dailyKcalGoal,
+    calculatorProfile: settings.calculatorProfile,
+    expectedActivityKcal: settings.expectedActivityKcal,
+    effectiveDate: normalizeDiaryDay(changedAt),
+    changedAt: changedAt,
+    countingStartDate: migrationDay,
+    source: settings.calculatorProfile == null
+        ? CalorieGoalSource.manual
+        : CalorieGoalSource.calculator,
+  );
 }
 
 double? _resolveExpectedActivityKcal({
