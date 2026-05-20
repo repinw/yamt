@@ -96,6 +96,15 @@ void main() {
       expect(urlFinder, findsOneWidget);
       await tester.enterText(urlFinder, 'https://example.com/123');
 
+      final context = tester.element(find.byType(MealTemplatesEmptyState));
+      final l10n = AppLocalizations.of(context)!;
+
+      // Expand advanced options to reveal name and portions text fields
+      await tester.tap(
+        find.text(l10n.preparedMealTemplateAdvancedOptionsTitle),
+      );
+      await tester.pumpAndSettle();
+
       final nameFinder = find.ancestor(
         of: find.text('Template name'),
         matching: find.byType(TextField),

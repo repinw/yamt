@@ -603,6 +603,20 @@
   "preparedMealTemplateRecipeSheetTitle": "Create template from recipe",
   "preparedMealTemplateRecipeEditSheetTitle": "Edit recipe template",
   "preparedMealTemplateRecipeSheetSubtitle": "Paste a recipe link, for example from Chefkoch.",
+  "preparedMealTemplateRecipeGreetingTitle": "Let's cook up a new recipe! 🍳",
+  "preparedMealTemplateRecipeGreetingSubtitle": "Simply copy the web address of your favorite recipe and we will read all ingredients automatically.",
+  "preparedMealTemplateStepCopy": "1. 🔗 Copy",
+  "preparedMealTemplateStepPaste": "2. 📝 Paste",
+  "preparedMealTemplateStepCreate": "3. ✨ Create",
+  "preparedMealTemplateClipboardPasteHelper": "Paste from clipboard: {url}",
+  "@preparedMealTemplateClipboardPasteHelper": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateAdvancedOptionsTitle": "More Options (Optional)",
   "preparedMealTemplateRecipeUrlLabel": "Recipe link",
   "preparedMealTemplateRecipeUrlHint": "https://www.chefkoch.de/...",
   "preparedMealTemplateRecipeUrlInvalid": "Please enter a valid recipe link.",

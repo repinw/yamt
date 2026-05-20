@@ -613,6 +613,20 @@
   "preparedMealTemplateRecipeSheetTitle": "Rezept anlegen",
   "preparedMealTemplateRecipeEditSheetTitle": "Rezept bearbeiten",
   "preparedMealTemplateRecipeSheetSubtitle": "Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.",
+  "preparedMealTemplateRecipeGreetingTitle": "Lass uns ein Rezept zaubern! 🍳",
+  "preparedMealTemplateRecipeGreetingSubtitle": "Kopiere die Web-Adresse deines Lieblingsrezepts und wir lesen alle Zutaten automatisch für dich aus.",
+  "preparedMealTemplateStepCopy": "1. 🔗 Kopieren",
+  "preparedMealTemplateStepPaste": "2. 📝 Einfügen",
+  "preparedMealTemplateStepCreate": "3. ✨ Starten",
+  "preparedMealTemplateClipboardPasteHelper": "Zwischenablage einfügen: {url}",
+  "@preparedMealTemplateClipboardPasteHelper": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateAdvancedOptionsTitle": "Weitere Optionen (Optional)",
   "preparedMealTemplateRecipeUrlLabel": "Rezept-Link",
   "preparedMealTemplateRecipeUrlHint": "https://www.chefkoch.de/...",
   "preparedMealTemplateRecipeUrlInvalid": "Bitte gib einen gültigen Rezept-Link ein.",
