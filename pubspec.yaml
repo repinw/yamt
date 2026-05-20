@@ -72,5 +72,7 @@ dev_dependencies:
   very_good_analysis: ^10.1.0
 
 flutter:
+  config:
+    enable-swift-package-manager: false
   generate: true
   uses-material-design: true
