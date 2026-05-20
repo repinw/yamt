@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,9 @@ import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _preparedMealRecipeTemplateSheetLogName =
+    'PreparedMealRecipeTemplateSheet';
 
 /// Defines prepared meal recipe template draft.
 class PreparedMealRecipeTemplateDraft {
@@ -83,7 +87,8 @@ class _PreparedMealRecipeTemplateSheetState
   @override
   void initState() {
     super.initState();
-    _advancedExpanded = widget.initialDraft != null ||
+    _advancedExpanded =
+        widget.initialDraft != null ||
         _nameController.text.isNotEmpty ||
         _portionsController.text.isNotEmpty;
   }
@@ -112,7 +117,14 @@ class _PreparedMealRecipeTemplateSheetState
             try {
               final uri = Uri.parse(normalized);
               host = uri.host.replaceFirst('www.', '');
-            } on Object catch (_) {}
+            } on Object catch (error, stackTrace) {
+              log(
+                'Failed to extract host from normalized recipe URL.',
+                name: _preparedMealRecipeTemplateSheetLogName,
+                error: error,
+                stackTrace: stackTrace,
+              );
+            }
 
             setState(() {
               _recipeUrlErrorText = null;
@@ -138,7 +150,13 @@ class _PreparedMealRecipeTemplateSheetState
           _recipeUrlErrorText = l10n.preparedMealTemplateClipboardNoLinkFound;
         });
       }
-    } on Object catch (_) {
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to read recipe URL from clipboard.',
+        name: _preparedMealRecipeTemplateSheetLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         setState(() {
@@ -178,7 +196,8 @@ class _PreparedMealRecipeTemplateSheetState
                 children: [
                   _SheetHandleIndicator(colors: colors),
                   _SheetHeader(
-                    title: widget.title ??
+                    title:
+                        widget.title ??
                         l10n.preparedMealTemplateRecipeSheetTitle,
                     subtitle: l10n.preparedMealTemplateRecipeSheetSubtitle,
                     onClose: () => Navigator.of(context).pop(),
@@ -199,8 +218,9 @@ class _PreparedMealRecipeTemplateSheetState
                       errorText: _recipeUrlErrorText,
                       prefixIcon: ShaderMask(
                         shaderCallback: (bounds) =>
-                            AppEditorialSurfaces.soulGradient(colors)
-                                .createShader(bounds),
+                            AppEditorialSurfaces.soulGradient(
+                              colors,
+                            ).createShader(bounds),
                         child: const Icon(
                           Icons.link_rounded,
                           color: Colors.white,
@@ -282,8 +302,8 @@ class _PreparedMealRecipeTemplateSheetState
           : null;
       _portionsErrorText =
           rawPortions.isNotEmpty && (portions == null || portions < 1)
-              ? l10n.preparedMealInvalidPortionsRange
-              : null;
+          ? l10n.preparedMealInvalidPortionsRange
+          : null;
     });
     if (_recipeUrlErrorText != null || _portionsErrorText != null) {
       return;
@@ -584,8 +604,9 @@ class _AdvancedOptionsPanel extends StatelessWidget {
                     l10n.preparedMealTemplateAdvancedOptionsTitle,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color:
-                          isExpanded ? colors.primary : colors.onSurfaceVariant,
+                      color: isExpanded
+                          ? colors.primary
+                          : colors.onSurfaceVariant,
                     ),
                   ),
                 ),

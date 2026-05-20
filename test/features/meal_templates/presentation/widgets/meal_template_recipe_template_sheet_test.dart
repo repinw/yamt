@@ -10,6 +10,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../../../helpers/root_navigator_test_utils.dart';
 
 void main() {
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, null);
+  });
+
   testWidgets('recipe template sheet opens on root navigator by default', (
     tester,
   ) async {
@@ -100,7 +105,7 @@ void main() {
       find.text(l10n.preparedMealTemplateAdvancedOptionsTitle),
       findsOneWidget,
     );
-    
+
     // Recipe name input field should not be visible when collapsed
     expect(find.text(l10n.preparedMealTemplateNameLabel), findsNothing);
 
@@ -118,18 +123,7 @@ void main() {
     final rootObserver = RecordingNavigatorObserver();
     final nestedObserver = RecordingNavigatorObserver();
 
-    // Mock the clipboard to return a valid URL
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      SystemChannels.platform,
-      (methodCall) async {
-        if (methodCall.method == 'Clipboard.getData') {
-          return <String, dynamic>{
-            'text': 'https://chefkoch.de/recipe123',
-          };
-        }
-        return null;
-      },
-    );
+    _mockClipboardText('https://chefkoch.de/recipe123');
 
     await tester.pumpWidget(
       nestedNavigatorHarness(
@@ -177,12 +171,43 @@ void main() {
     final urlFinder = find.byType(TextField).first;
     final textField = tester.widget<TextField>(urlFinder);
     expect(textField.controller?.text, 'https://chefkoch.de/recipe123');
+  });
 
-    // Clean mock handler
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      SystemChannels.platform,
-      null,
+  testWidgets(
+    'recipe template sheet shows error for clipboard text without URL',
+    (tester) async {
+      _mockClipboardText('Hallo Welt');
+      final l10n = await _openRecipeTemplateSheet(tester);
+
+      await tester.tap(find.text(l10n.preparedMealTemplateClipboardTitle));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l10n.preparedMealTemplateClipboardNoLinkFound),
+        findsOneWidget,
+      );
+
+      final textField = tester.widget<TextField>(find.byType(TextField).first);
+      expect(textField.controller?.text, isEmpty);
+    },
+  );
+
+  testWidgets('recipe template sheet shows error when clipboard read fails', (
+    tester,
+  ) async {
+    _mockClipboardFailure();
+    final l10n = await _openRecipeTemplateSheet(tester);
+
+    await tester.tap(find.text(l10n.preparedMealTemplateClipboardTitle));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(l10n.preparedMealTemplateClipboardNoLinkFound),
+      findsOneWidget,
     );
+
+    final textField = tester.widget<TextField>(find.byType(TextField).first);
+    expect(textField.controller?.text, isEmpty);
   });
 
   testWidgets('recipe template sheet validation and submit works', (
@@ -204,8 +229,9 @@ void main() {
             builder: (context) {
               return TextButton(
                 onPressed: () async {
-                  submittedDraft =
-                      await showPreparedMealRecipeTemplateSheet(context);
+                  submittedDraft = await showPreparedMealRecipeTemplateSheet(
+                    context,
+                  );
                 },
                 child: const Text('Open'),
               );
@@ -332,8 +358,9 @@ void main() {
             builder: (context) {
               return TextButton(
                 onPressed: () async {
-                  final res =
-                      await showPreparedMealRecipeTemplateSheet(context);
+                  final res = await showPreparedMealRecipeTemplateSheet(
+                    context,
+                  );
                   if (res == null) {
                     dismissed = true;
                   }
@@ -358,4 +385,60 @@ void main() {
 
     expect(dismissed, isTrue);
   });
+}
+
+void _mockClipboardText(String text) {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(SystemChannels.platform, (methodCall) async {
+        if (methodCall.method == 'Clipboard.getData') {
+          return <String, dynamic>{'text': text};
+        }
+        return null;
+      });
+}
+
+void _mockClipboardFailure() {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(SystemChannels.platform, (methodCall) async {
+        if (methodCall.method == 'Clipboard.getData') {
+          throw PlatformException(
+            code: 'clipboard-unavailable',
+            message: 'Clipboard unavailable.',
+          );
+        }
+        return null;
+      });
+}
+
+Future<AppLocalizations> _openRecipeTemplateSheet(WidgetTester tester) async {
+  final rootObserver = RecordingNavigatorObserver();
+  final nestedObserver = RecordingNavigatorObserver();
+  late AppLocalizations l10n;
+
+  await tester.pumpWidget(
+    nestedNavigatorHarness(
+      rootObserver: rootObserver,
+      nestedObserver: nestedObserver,
+      locale: const Locale('de'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      child: Scaffold(
+        body: Builder(
+          builder: (context) {
+            l10n = AppLocalizations.of(context)!;
+            return TextButton(
+              onPressed: () {
+                unawaited(showPreparedMealRecipeTemplateSheet(context));
+              },
+              child: const Text('Open'),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+
+  await tester.tap(find.text('Open'));
+  await tester.pumpAndSettle();
+  return l10n;
 }
