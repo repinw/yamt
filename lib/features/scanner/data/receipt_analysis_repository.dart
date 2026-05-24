@@ -61,11 +61,27 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
     required String templateId,
     required ReceiptInputSelection selection,
   }) async {
+    final totalStopwatch = Stopwatch()..start();
     try {
+      final inputStopwatch = Stopwatch()..start();
       final resolvedInputs = await buildReceiptTemplateInputs(selection);
+      inputStopwatch.stop();
+      _logReceiptAnalysisTiming(
+        'input',
+        inputStopwatch.elapsed,
+        selection: selection,
+      );
+
+      final requestStopwatch = Stopwatch()..start();
       final responseText = await _templateModelClient.generateContent(
         templateId: templateId,
         inputs: resolvedInputs,
+      );
+      requestStopwatch.stop();
+      _logReceiptAnalysisTiming(
+        'model',
+        requestStopwatch.elapsed,
+        selection: selection,
       );
 
       final normalizedResponse = _normalizeReceiptAnalysisResponse(
@@ -76,7 +92,21 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
       }
 
       _logReceiptAnalysisRawResponse(normalizedResponse);
+      final parseStopwatch = Stopwatch()..start();
       final extraction = _parse(normalizedResponse);
+      parseStopwatch.stop();
+      _logReceiptAnalysisTiming(
+        'parse',
+        parseStopwatch.elapsed,
+        selection: selection,
+      );
+      totalStopwatch.stop();
+      _logReceiptAnalysisTiming(
+        'total',
+        totalStopwatch.elapsed,
+        selection: selection,
+        itemCount: extraction.items.length,
+      );
       return ReceiptAnalysisResult.succeeded(
         rawResponse: normalizedResponse,
         extraction: extraction,
@@ -123,6 +153,23 @@ void _logReceiptAnalysisRawResponse(String rawResponse) {
   }
 
   log('Receipt AI raw response:\n$rawResponse', name: _repositoryLogName);
+}
+
+void _logReceiptAnalysisTiming(
+  String stage,
+  Duration elapsed, {
+  required ReceiptInputSelection selection,
+  int? itemCount,
+}) {
+  assert(() {
+    final itemSuffix = itemCount == null ? '' : ', items: $itemCount';
+    log(
+      'Receipt analysis $stage took ${elapsed.inMilliseconds}ms '
+      'for ${selection.name}$itemSuffix.',
+      name: _repositoryLogName,
+    );
+    return true;
+  }(), 'Receipt analysis timing log should run only in debug mode.');
 }
 
 void _logReceiptAnalysisRepositoryError({

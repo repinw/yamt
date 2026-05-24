@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:yamt/features/scanner/data/receipt_analysis_parser.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
@@ -120,6 +121,46 @@ void main() {
       expect(capturedInputs?['imageData'], base64Encode(fileBytes));
     },
   );
+
+  test('analyzeSelection downsizes image input before model request', () async {
+    final sourceImage = img.Image(width: 2400, height: 1200)
+      ..clear(img.ColorRgb8(255, 255, 255));
+    final sourceBytes = Uint8List.fromList(img.encodePng(sourceImage));
+    Map<String, Object?>? capturedInputs;
+    final selection = ReceiptInputSelection(
+      source: ReceiptInputSource.file,
+      name: 'receipt.png',
+      mimeType: 'image/png',
+      bytes: sourceBytes,
+    );
+
+    final repository = DeviceReceiptAnalysisRepository(
+      templateModelClient: _FakeTemplateModelClient(
+        onGenerateContent: ({required templateId, required inputs}) async {
+          capturedInputs = inputs;
+          return '{"items": []}';
+        },
+      ),
+      parser: _FakeReceiptAnalysisParser(
+        onParse: (_) => const ReceiptAnalysisExtraction(
+          root: <String, dynamic>{},
+          items: <ReceiptAnalysisItem>[],
+        ),
+      ),
+    );
+
+    final result = await repository.analyzeSelection(selection);
+
+    expect(result.status, ReceiptAnalysisStatus.succeeded);
+    expect(capturedInputs?['mimeType'], 'image/jpeg');
+    final imageData = capturedInputs?['imageData'];
+    expect(imageData, isA<String>());
+    final uploadedBytes = base64Decode(imageData! as String);
+    final uploadedImage = img.decodeImage(uploadedBytes);
+    expect(uploadedImage, isNotNull);
+    expect(uploadedImage!.width, 1800);
+    expect(uploadedImage.height, 900);
+  });
 
   test('analyzeSelection maps empty text to empty_response failure', () async {
     final repository = DeviceReceiptAnalysisRepository(

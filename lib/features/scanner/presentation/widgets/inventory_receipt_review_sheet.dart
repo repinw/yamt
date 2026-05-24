@@ -7,11 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
-    'global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -23,6 +20,8 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
+import 'package:yamt/features/scanner/application/'
+    'receipt_review_candidate_resolution_service.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 import 'package:yamt/features/scanner/domain/'
@@ -47,6 +46,7 @@ import 'package:yamt/l10n/app_localizations.dart';
   inventoryItemRepository,
   inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
+  receiptReviewCandidateResolutionService,
 ])
 class InventoryReceiptReviewSheet extends ConsumerStatefulWidget {
   /// The inventory receipt review sheet.
@@ -83,6 +83,9 @@ class _InventoryReceiptReviewSheetState
   late final List<ReceiptReviewItemDraft> _items;
   late final ReceiptReviewMetadata _receiptMetadata;
   final Map<String, GlobalKey> _itemKeys = <String, GlobalKey>{};
+  final _candidateResolutionFutures =
+      <String, Future<ReceiptReviewItemDraft?>>{};
+  final Set<String> _candidateResolvedItemIds = <String>{};
   var _isSaving = false;
   String? _candidateLoadingItemId;
 
@@ -95,6 +98,12 @@ class _InventoryReceiptReviewSheetState
         draft.syncToSelectedCandidate().prepareForReceiptReview(),
     ];
     _receiptMetadata = result.metadata;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(_resolveCandidatesLazily());
+    });
   }
 
   bool get _canSave {
@@ -295,95 +304,163 @@ class _InventoryReceiptReviewSheetState
             includeWeightInSearch: false,
           ),
         );
-    if (!mounted || result == null) {
+    if (!context.mounted || result == null) {
       return;
     }
 
-    final matcher = ref.read(globalFoodItemMatcherProvider);
+    final resolver = ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(receiptReviewCandidateResolutionServiceProvider);
     _replaceDraftByItemId(itemId, (draft) {
-      final selectedProduct = result.selectedProduct;
-      final selectedGlobalFoodItemId = result.selectedGlobalFoodItemId;
-      if (selectedProduct == null && selectedGlobalFoodItemId == null) {
-        return draft
-            .copyWith(item: result.item)
-            .selectNewItem()
-            .prepareForReceiptReview();
-      }
-
-      final scannedCandidate = selectedProduct != null
-          ? matcher.candidateFromExternalResult(selectedProduct)
-          : result.item.toRecentReceiptReviewCandidate(
-              globalFoodItemId: selectedGlobalFoodItemId!,
-            );
-      final mergedCandidates = <GlobalFoodMatchCandidate>[
-        scannedCandidate,
-        ...draft.candidates.where(
-          (candidate) => candidate.item.id != scannedCandidate.item.id,
-        ),
-      ];
-      final updatedDraft = draft
-          .copyWith(
-            item: result.item,
-            candidates: mergedCandidates,
-            selectionNeedsReview: false,
-          )
-          .selectCandidate(scannedCandidate.item.id);
-      return updatedDraft.prepareForReceiptReview();
+      return resolver.applyManualProductResult(
+        draft: draft,
+        item: result.item,
+        selectedProduct: result.selectedProduct,
+        selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
+      );
     });
   }
 
   Future<ReceiptReviewItemDraft?> _prepareDraftForCandidateSelection(
     String itemId,
   ) async {
-    final index = _indexForItemId(itemId);
-    if (index < 0) {
+    final draft = _draftForItemId(itemId);
+    if (draft == null) {
       return null;
     }
-    final draft = _items[index];
     if (!draft.canBeSavedToInventory) {
       return null;
     }
-    if (draft.hasCandidates) {
+    if (draft.hasCandidates || _candidateResolvedItemIds.contains(itemId)) {
       return draft;
     }
 
+    final resolver = ref.read(receiptReviewCandidateResolutionServiceProvider);
+    return _resolveCandidatesForItem(
+      itemId,
+      resolver: resolver,
+      showLoading: true,
+    );
+  }
+
+  Future<void> _resolveCandidatesLazily() async {
+    final resolver = ref.read(receiptReviewCandidateResolutionServiceProvider);
+    for (final itemId in _pendingCandidateItemIds()) {
+      if (!mounted) {
+        return;
+      }
+      await _resolveCandidatesForItem(itemId, resolver: resolver);
+    }
+  }
+
+  List<String> _pendingCandidateItemIds() {
+    return <String>[
+      for (final draft in _items)
+        if (_needsCandidateResolution(draft)) draft.item.id,
+    ];
+  }
+
+  bool _needsCandidateResolution(ReceiptReviewItemDraft draft) {
+    final itemId = draft.item.id;
+    return draft.canBeSavedToInventory &&
+        !draft.hasCandidates &&
+        !_candidateResolvedItemIds.contains(itemId) &&
+        !_candidateResolutionFutures.containsKey(itemId);
+  }
+
+  Future<ReceiptReviewItemDraft?> _resolveCandidatesForItem(
+    String itemId, {
+    required ReceiptReviewCandidateResolutionService resolver,
+    bool showLoading = false,
+  }) {
+    final pendingFuture = _candidateResolutionFutures[itemId];
+    if (pendingFuture != null) {
+      if (showLoading) {
+        _setCandidateLoadingItemId(itemId);
+      }
+      return pendingFuture.whenComplete(() {
+        if (showLoading) {
+          _clearCandidateLoadingItemId(itemId);
+        }
+      });
+    }
+
+    final future = _runCandidateResolution(itemId, resolver: resolver);
+    _candidateResolutionFutures[itemId] = future;
+    if (showLoading) {
+      _setCandidateLoadingItemId(itemId);
+    }
+
+    return future.whenComplete(() {
+      _candidateResolutionFutures.remove(itemId);
+      if (showLoading) {
+        _clearCandidateLoadingItemId(itemId);
+      }
+    });
+  }
+
+  Future<ReceiptReviewItemDraft?> _runCandidateResolution(
+    String itemId, {
+    required ReceiptReviewCandidateResolutionService resolver,
+  }) async {
+    final draft = _draftForItemId(itemId);
+    if (draft == null || !draft.canBeSavedToInventory) {
+      return null;
+    }
+    if (draft.hasCandidates || _candidateResolvedItemIds.contains(itemId)) {
+      return draft;
+    }
+
+    final lookupItem = draft.item;
+    final resolvedDraft = await resolver.resolveDraftCandidates(draft);
+    if (!mounted) {
+      return null;
+    }
+    final currentIndex = _indexForItemId(itemId);
+    if (currentIndex < 0) {
+      return null;
+    }
+
+    final currentDraft = _items[currentIndex];
+    if (!_isSameCandidateLookupInput(lookupItem, currentDraft.item)) {
+      return currentDraft;
+    }
+    setState(() {
+      _candidateResolvedItemIds.add(itemId);
+      _items[currentIndex] = resolvedDraft;
+    });
+    return resolvedDraft;
+  }
+
+  bool _isSameCandidateLookupInput(
+    InventoryItem lookupItem,
+    InventoryItem currentItem,
+  ) {
+    return lookupItem.id == currentItem.id &&
+        lookupItem.name == currentItem.name &&
+        lookupItem.brand == currentItem.brand &&
+        lookupItem.barcode == currentItem.barcode &&
+        lookupItem.weight == currentItem.weight &&
+        lookupItem.storeName == currentItem.storeName;
+  }
+
+  void _setCandidateLoadingItemId(String itemId) {
+    if (!mounted || _candidateLoadingItemId == itemId) {
+      return;
+    }
     setState(() {
       _candidateLoadingItemId = itemId;
     });
+  }
 
-    try {
-      final matcher = ref.read(globalFoodItemMatcherProvider);
-      final candidates = await matcher.findCandidates(draft.item);
-      if (!mounted) {
-        return null;
-      }
-      final currentIndex = _indexForItemId(itemId);
-      if (currentIndex < 0) {
-        return null;
-      }
-
-      final updatedDraft = draft
-          .copyWith(candidates: candidates)
-          .applyAutomaticSelection(
-            matcher.defaultSelectionFor(candidates),
-            selectionNeedsReview: matcher.defaultSelectionNeedsReviewFor(
-              candidates,
-            ),
-          );
-      final syncedDraft = updatedDraft
-          .syncToSelectedCandidate()
-          .prepareForReceiptReview();
-      setState(() {
-        _items[currentIndex] = syncedDraft;
-      });
-      return syncedDraft;
-    } finally {
-      if (mounted) {
-        setState(() {
-          _candidateLoadingItemId = null;
-        });
-      }
+  void _clearCandidateLoadingItemId(String itemId) {
+    if (!mounted || _candidateLoadingItemId != itemId) {
+      return;
     }
+    setState(() {
+      _candidateLoadingItemId = null;
+    });
   }
 
   int _indexForItemId(String itemId) {

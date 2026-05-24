@@ -7,7 +7,6 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
@@ -57,7 +56,6 @@ class ReceiptReviewPersistResult {
 ReceiptReviewResolutionService receiptReviewResolutionService(Ref ref) {
   return ReceiptReviewResolutionService(
     mapper: ref.watch(receiptToReviewItemDraftMapperProvider),
-    matcher: ref.watch(globalFoodItemMatcherProvider),
     globalFoodItemRepository: ref.watch(globalFoodItemRepositoryProvider),
     globalBarcodeCandidateRepository: ref.watch(
       globalBarcodeCandidateRepositoryProvider,
@@ -77,7 +75,6 @@ class ReceiptReviewResolutionService {
   /// Creates an instance.
   ReceiptReviewResolutionService({
     required ReceiptToReviewItemDraftMapper mapper,
-    required GlobalFoodItemMatcher matcher,
     required GlobalFoodItemRepository globalFoodItemRepository,
     required InventoryItemRepository inventoryItemRepository,
     GlobalBarcodeCandidateRepository? globalBarcodeCandidateRepository,
@@ -85,7 +82,6 @@ class ReceiptReviewResolutionService {
     CalorieProductCacheRepositoryContract? calorieProductCacheRepository,
     String Function()? globalFoodItemIdGenerator,
   }) : _mapper = mapper,
-       _matcher = matcher,
        _globalFoodItemRepository = globalFoodItemRepository,
        _globalBarcodeCandidateRepository = globalBarcodeCandidateRepository,
        _inventoryItemRepository = inventoryItemRepository,
@@ -95,7 +91,6 @@ class ReceiptReviewResolutionService {
            globalFoodItemIdGenerator ?? _defaultGlobalFoodItemId;
 
   final ReceiptToReviewItemDraftMapper _mapper;
-  final GlobalFoodItemMatcher _matcher;
   final GlobalFoodItemRepository _globalFoodItemRepository;
   final GlobalBarcodeCandidateRepository? _globalBarcodeCandidateRepository;
   final InventoryItemRepository _inventoryItemRepository;
@@ -107,14 +102,14 @@ class ReceiptReviewResolutionService {
   Future<List<ReceiptReviewItemDraft>> prepareDrafts(
     ReceiptAnalysisExtraction extraction,
   ) async {
+    final stopwatch = Stopwatch()..start();
     final baseDrafts = _mapper.map(extraction);
-    final resolvedDrafts = <ReceiptReviewItemDraft>[];
-
-    for (final draft in baseDrafts) {
-      resolvedDrafts.add(await _prepareDraft(draft));
-    }
-
-    return resolvedDrafts;
+    stopwatch.stop();
+    _debugLogResolutionTiming(
+      'mapped ${baseDrafts.length} draft(s) without candidate prefetch',
+      stopwatch.elapsed,
+    );
+    return baseDrafts;
   }
 
   /// Persist reviewed items.
@@ -316,24 +311,6 @@ class ReceiptReviewResolutionService {
       servingQuantityUnit: resolvedProduct.servingQuantityUnit,
       nutrition: resolvedProduct.nutrition,
     );
-  }
-
-  Future<ReceiptReviewItemDraft> _prepareDraft(
-    ReceiptReviewItemDraft draft,
-  ) async {
-    if (!draft.canBeSavedToInventory) {
-      return draft;
-    }
-
-    final candidates = await _matcher.findCandidates(draft.item);
-    return draft
-        .copyWith(candidates: candidates)
-        .applyAutomaticSelection(
-          _matcher.defaultSelectionFor(candidates),
-          selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(
-            candidates,
-          ),
-        );
   }
 
   GlobalFoodItemEditKind _selectedCandidateEditKind(
@@ -575,6 +552,16 @@ class ReceiptReviewResolutionService {
 
 String _defaultGlobalFoodItemId() {
   return 'global-food-${_globalFoodItemUuid.v4()}';
+}
+
+void _debugLogResolutionTiming(String stage, Duration elapsed) {
+  assert(() {
+    log(
+      'Receipt review resolution $stage in ${elapsed.inMilliseconds}ms.',
+      name: _resolutionLogName,
+    );
+    return true;
+  }(), 'Receipt resolution timing log should run only in debug mode.');
 }
 
 class _ResolvedReviewItem {

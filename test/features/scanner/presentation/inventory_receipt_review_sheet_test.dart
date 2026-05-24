@@ -139,12 +139,26 @@ Widget _wrap({
   );
   addTearDown(router.dispose);
 
+  final resolvedOverrides = <Override>[
+    if (!_hasOverride(overrides, 'globalFoodItemMatcherProvider'))
+      globalFoodItemMatcherProvider.overrideWithValue(GlobalFoodItemMatcher()),
+    ...overrides,
+  ];
+
   return ProviderScope(
-    overrides: overrides,
+    overrides: resolvedOverrides,
     child: MaterialApp.router(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
+    ),
+  );
+}
+
+bool _hasOverride(List<Override> overrides, String providerName) {
+  return overrides.any(
+    (override) => override.toString().startsWith(
+      providerName,
     ),
   );
 }
@@ -219,6 +233,7 @@ class _CompletingOffProductSearchRepository
 
   final Completer<List<OffProductSearchResult>> completer =
       Completer<List<OffProductSearchResult>>();
+  String? lastQuery;
 
   @override
   Future<List<OffProductSearchResult>> search({
@@ -228,6 +243,7 @@ class _CompletingOffProductSearchRepository
     String? weight,
     int limit = 15,
   }) {
+    lastQuery = query;
     return completer.future;
   }
 
@@ -866,28 +882,10 @@ void main() {
     );
   });
 
-  testWidgets('determine action fetches candidates and opens candidate sheet', (
+  testWidgets('lazy candidate resolution renders product without tap', (
     tester,
   ) async {
-    final externalRepository = _RecordingOffProductSearchRepository(
-      <OffProductSearchResult>[
-        const OffProductSearchResult(
-          code: '4061458029995',
-          name: 'Waffelhörnchen Haselnuss-Vanille',
-          brand: 'Aldi, Froneri, Mucci',
-          packageWeight: '110 ml',
-          nutrition: GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 215,
-            per100Protein: 4.2,
-            per100Carbs: 24.8,
-            per100Fat: 9.6,
-            per100Salt: 0.4,
-          ),
-          score: 34,
-        ),
-      ],
-    );
+    final externalRepository = _CompletingOffProductSearchRepository();
     final matcher = GlobalFoodItemMatcher(
       offProductSearchRepository: externalRepository,
     );
@@ -911,9 +909,95 @@ void main() {
         onSaveTap: (_) async {},
       ),
     );
+    await tester.pump();
+
+    expect(externalRepository.lastQuery, 'Waffelh Edb/Nuss');
+    expect(
+      find.text('Waffelhörnchen Haselnuss-Vanille'),
+      findsNothing,
+    );
+
+    externalRepository.completer.complete(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4061458029995',
+          name: 'Waffelhörnchen Haselnuss-Vanille',
+          brand: 'Aldi, Froneri, Mucci',
+          packageWeight: '110 ml',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 215,
+            per100Protein: 4.2,
+            per100Carbs: 24.8,
+            per100Fat: 9.6,
+            per100Salt: 0.4,
+          ),
+          score: 34,
+        ),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Waffelhörnchen Haselnuss-Vanille'),
+      findsOneWidget,
+    );
+    expect(find.text('110 ml'), findsOneWidget);
+    expect(find.textContaining('215 kcal'), findsOneWidget);
+  });
+
+  testWidgets('determine action reuses lazy lookup and opens sheet', (
+    tester,
+  ) async {
+    final externalRepository = _CompletingOffProductSearchRepository();
+    final matcher = GlobalFoodItemMatcher(
+      offProductSearchRepository: externalRepository,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'Waffelh Edb/Nuss',
+            ),
+          ),
+        ],
+        overrides: <Override>[
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+    await tester.pump();
 
     await tester.tap(
       find.byKey(const Key('receipt_review_determine_button_0')),
+    );
+    await tester.pump();
+
+    externalRepository.completer.complete(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4061458029995',
+          name: 'Waffelhörnchen Haselnuss-Vanille',
+          brand: 'Aldi, Froneri, Mucci',
+          packageWeight: '110 ml',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 215,
+            per100Protein: 4.2,
+            per100Carbs: 24.8,
+            per100Fat: 9.6,
+            per100Salt: 0.4,
+          ),
+          score: 34,
+        ),
+      ],
     );
     await tester.pumpAndSettle();
 
