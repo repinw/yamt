@@ -11,7 +11,7 @@ class DiaryWeeklyCheckInHintCard extends StatelessWidget {
     required this.selectedDay,
     required this.selectedDayHasEntries,
     required this.onContinue,
-    required this.onOpenHealthTrends,
+    required this.onTrackMissingWeight,
     required this.onToggleSelectedDaySkipped,
     super.key,
   });
@@ -28,8 +28,8 @@ class DiaryWeeklyCheckInHintCard extends StatelessWidget {
   /// Continue action.
   final VoidCallback onContinue;
 
-  /// Open health trends action.
-  final VoidCallback onOpenHealthTrends;
+  /// Track missing weight action.
+  final VoidCallback onTrackMissingWeight;
 
   /// Toggle selected day skip state.
   final Future<void> Function({required bool isSkipped})
@@ -46,7 +46,7 @@ class DiaryWeeklyCheckInHintCard extends StatelessWidget {
       selectedDay: selectedDay,
       selectedDayHasEntries: selectedDayHasEntries,
       onContinue: onContinue,
-      onOpenHealthTrends: onOpenHealthTrends,
+      onTrackMissingWeight: onTrackMissingWeight,
       onToggleSelectedDaySkipped: onToggleSelectedDaySkipped,
     );
   }

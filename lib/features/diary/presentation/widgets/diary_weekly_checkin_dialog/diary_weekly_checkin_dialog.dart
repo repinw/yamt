@@ -15,8 +15,8 @@ enum DiaryWeeklyCheckInDialogAction {
   /// Apply.
   apply,
 
-  /// Open health trends.
-  openHealthTrends,
+  /// Track missing weight.
+  trackMissingWeight,
 }
 
 /// Show diary weekly check-in dialog.
@@ -46,12 +46,12 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
       title: Text(l10n.caloriesWeeklyCheckInDialogTitle),
       content: DiaryWeeklyCheckInDialogContent(checkInData: checkInData),
       actions: <Widget>[
-        if (_shouldShowOpenTrends(checkInData))
-          DiaryWeeklyCheckInOpenTrendsAction(
+        if (_shouldShowTrackMissingWeight(checkInData))
+          DiaryWeeklyCheckInTrackMissingWeightAction(
             onPressed: () {
               Navigator.of(
                 context,
-              ).pop(DiaryWeeklyCheckInDialogAction.openHealthTrends);
+              ).pop(DiaryWeeklyCheckInDialogAction.trackMissingWeight);
             },
           ),
         DiaryWeeklyCheckInLaterAction(
@@ -69,11 +69,14 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
     );
   }
 
-  bool _shouldShowOpenTrends(DiaryWeeklyCheckInData checkInData) {
+  bool _shouldShowTrackMissingWeight(DiaryWeeklyCheckInData checkInData) {
+    if (checkInData.missingWeightDays.isEmpty) {
+      return false;
+    }
+
     return switch (checkInData.blockedReason) {
       CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight ||
-      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight ||
-      CalorieWeeklyCheckInBlockedReason.unstableWeightData => true,
+      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight => true,
       _ => false,
     };
   }

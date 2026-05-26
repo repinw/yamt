@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Open-trends action for the diary weekly check-in dialog.
-class DiaryWeeklyCheckInOpenTrendsAction extends StatelessWidget {
-  /// Creates an open-trends dialog action.
-  const DiaryWeeklyCheckInOpenTrendsAction({
+/// Track missing weight action for the diary weekly check-in dialog.
+class DiaryWeeklyCheckInTrackMissingWeightAction extends StatelessWidget {
+  /// Creates a track missing weight dialog action.
+  const DiaryWeeklyCheckInTrackMissingWeightAction({
     required this.onPressed,
     super.key,
   });
@@ -18,9 +18,9 @@ class DiaryWeeklyCheckInOpenTrendsAction extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return TextButton(
-      key: DiaryWeeklyCheckInDialogKeys.openTrendsButton,
+      key: DiaryWeeklyCheckInDialogKeys.trackMissingWeightButton,
       onPressed: onPressed,
-      child: Text(l10n.caloriesWeeklyCheckInOpenHealthTrendsAction),
+      child: Text(l10n.caloriesWeeklyCheckInTrackMissingWeightAction),
     );
   }
 }

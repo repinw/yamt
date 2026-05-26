@@ -640,16 +640,7 @@ void main() {
     final router = container.read(appRouterProvider);
     expect(router.state.uri.path, AppRoutes.homeCalories);
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text('MORE'), findsOneWidget);
     expect(find.text('STATISTICS'), findsNothing);
-
-    await tester.tap(find.byIcon(Icons.more_horiz_rounded).hitTestable());
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 250));
-    await tester.tap(find.text('Statistics').hitTestable());
-    await _pumpRouterTransition(tester);
-    expect(router.state.uri.path, AppRoutes.homeStatistics);
-    expect(find.text('MVP note'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.inventory_2_rounded).hitTestable());
     await tester.pump();
@@ -671,10 +662,7 @@ void main() {
     expect(router.state.uri.path, AppRoutes.homeCalories);
     expect(find.text('Today'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.more_horiz_rounded).hitTestable());
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 250));
-    await tester.tap(find.text('Settings').hitTestable());
+    await tester.tap(find.byIcon(Icons.settings_rounded).hitTestable());
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettings);
     expect(find.text('Settings'), findsWidgets);
@@ -800,33 +788,6 @@ void main() {
       expect(find.byType(ModalBarrier), findsOneWidget);
     },
   );
-
-  testWidgets('statistics weight route is registered on app router', (
-    tester,
-  ) async {
-    final container = _createContainerWithAuth(
-      Stream<User?>.value(_authenticatedUser()),
-      completedProfileSetupUserIds: {'uid-123'},
-      completedCalorieGoalOnboardingUserIds: {'uid-123'},
-    );
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await _pumpRouterTransition(tester);
-
-    final routes = container
-        .read(appRouterProvider)
-        .configuration
-        .routes
-        .whereType<GoRoute>()
-        .toList();
-    final trendsRoute = routes.firstWhere(
-      (route) => route.path == AppRoutes.homeStatisticsWeight,
-    );
-
-    expect(trendsRoute.path, AppRoutes.homeStatisticsWeight);
-  });
 
   testWidgets('inventory manual add route is registered on app router', (
     tester,

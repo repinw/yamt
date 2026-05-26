@@ -59,4 +59,4 @@ final class CalorieWeightStateRefreshProvider
 }
 
 String _$calorieWeightStateRefreshHash() =>
-    r'cb0e248206bcead9f28eadbce46aeebee465043c';
+    r'2f5e5122ecd6735f900c170c4dbe67697f4dd293';

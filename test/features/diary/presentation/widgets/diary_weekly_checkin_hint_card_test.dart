@@ -21,7 +21,7 @@ void main() {
           selectedDay: DateTime(2026, 4, 3),
           selectedDayHasEntries: false,
           onContinue: () {},
-          onOpenHealthTrends: () {},
+          onTrackMissingWeight: () {},
           onToggleSelectedDaySkipped: ({required isSkipped}) async {},
         ),
       ),
@@ -49,7 +49,7 @@ void main() {
           selectedDay: selectedDay,
           selectedDayHasEntries: false,
           onContinue: () => continued = true,
-          onOpenHealthTrends: () {},
+          onTrackMissingWeight: () {},
           onToggleSelectedDaySkipped: ({required isSkipped}) async {
             skipped = isSkipped;
           },
@@ -66,10 +66,10 @@ void main() {
     expect(skipped, isTrue);
   });
 
-  testWidgets('blocked weight hint opens trends and can unskip day', (
+  testWidgets('blocked weight hint tracks missing weight and can unskip day', (
     tester,
   ) async {
-    var openedTrends = false;
+    var trackedMissingWeight = false;
     bool? skipped;
     final selectedDay = DateTime(2026, 4, 3);
 
@@ -91,7 +91,7 @@ void main() {
           selectedDay: selectedDay,
           selectedDayHasEntries: true,
           onContinue: () {},
-          onOpenHealthTrends: () => openedTrends = true,
+          onTrackMissingWeight: () => trackedMissingWeight = true,
           onToggleSelectedDaySkipped: ({required isSkipped}) async {
             skipped = isSkipped;
           },
@@ -100,11 +100,11 @@ void main() {
     );
 
     await tester.tap(
-      find.byKey(DiaryWeeklyCheckInCardKeys.openTrendsButton),
+      find.byKey(DiaryWeeklyCheckInCardKeys.trackMissingWeightButton),
     );
     await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.skipDayButton));
 
-    expect(openedTrends, isTrue);
+    expect(trackedMissingWeight, isTrue);
     expect(skipped, isFalse);
   });
 
@@ -122,7 +122,7 @@ void main() {
             selectedDay: DateTime(2026, 4, 3),
             selectedDayHasEntries: false,
             onContinue: () {},
-            onOpenHealthTrends: () {},
+            onTrackMissingWeight: () {},
             onToggleSelectedDaySkipped: ({required isSkipped}) async {},
           ),
         ),

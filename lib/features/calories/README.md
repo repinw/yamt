@@ -1,14 +1,13 @@
 # Calories Feature
 
 Calories owns calorie logging, goal settings, Burn Week state, weekly check-in
-state, calorie health trends, and calorie-owned side effects from health or
-weight changes.
+state, and calorie-owned side effects from health or weight changes.
 
 ## Owns
 
 - Calorie repositories and commit stores under `data/`.
-- Calorie entries, goals, calculator inputs, weekly check-in, Burn Week, and
-  trend domain models under `domain/`.
+- Calorie entries, goals, calculator inputs, weekly check-in, and Burn Week
+  domain models under `domain/`.
 - Calorie use-case providers and reactive cross-feature sync under
   `application/`.
 - Calorie pages, dialogs, sheets, and section widgets under `presentation/`.
@@ -28,11 +27,11 @@ weight changes.
 - `application/calorie_weight_state_refresh.dart` refreshes calorie state after
   health weight changes.
 - Legacy controllers and derived providers under `provider/` are current public
-  edge for existing Diary, Activity, Settings, Home, Onboarding, Statistics,
-  and Inventory integrations.
+  edge for existing Diary, Activity, Settings, Home, Onboarding, and Inventory
+  integrations.
 - Domain models under `domain/` used by Diary, Activity, and Settings.
 - Complete presentation surfaces such as calorie entry editors, goal dialogs,
-  calculator sheets, health trend widgets, and diary health card parts.
+  calculator sheets, and diary health card parts.
 
 Other features should depend on domain types or complete widgets instead of
 reassembling Calories internals. New calorie-owned side effects should live in
@@ -61,7 +60,7 @@ Main application providers:
 - `core` for routing, theme tokens, shared widgets, and local day helpers.
 - `features/auth` for user-scoped calorie repositories and cache storage.
 - `features/health` for public health controllers, services, and domain data
-  used by calorie goals, trends, and connection sync.
+  used by calorie goals and connection sync.
 
 Inventory-backed save/delete behavior is supplied through calorie-owned ports.
 The concrete inventory adapters live in `features/inventory` so Calories does

@@ -20,7 +20,7 @@ almost all of the data and widgets from this feature. In practice,
 - Sets daily calorie goals manually or through the calorie calculator.
 - Calculates goals from BMR, TDEE, activity level, goal mode, and goal speed.
 - Reads health activity and weight data, combines it with manual weight entries,
-  and builds trend snapshots.
+  and refreshes calorie-owned state after weight changes.
 - Grants part of above-baseline activity as extra eatable calories.
 - Creates, blocks, dismisses, or applies weekly check-ins that learn TDEE from
   intake, weight trend, and activity.
@@ -112,14 +112,12 @@ Connects domain, data, and UI through Riverpod:
   TDEE snapshots, dismisses check-ins, and refills Burn Week hearts.
 - `dailyLearnedTdeeGoalForDayProvider`: Derives a learned target for a day from
   completed weekly windows.
-- `calorieHealthTrendSnapshotProvider`: Combines intake, burned kcal from
-  health data, health weight, and manual weight for charts.
 - `BurnWeekRunController` and `burnWeekLiveSyncProvider`: Keep Burn Week synced
   across days and weeks, reset or restart runs, spend hearts, and invalidate
   dependent calculations.
 - Small controllers like `calorieDayController`,
-  `calorieVisibleWindowController`, `calorieOverviewRevisionProvider`, and
-  `calorieHealthTrendsWindowController` hold UI state and invalidation points.
+  `calorieVisibleWindowController`, and `calorieOverviewRevisionProvider` hold
+  UI state and invalidation points.
 
 `presentation/`
 
@@ -139,7 +137,6 @@ Contains pages, dialogs, models, and reusable widgets:
   `calorie_learned_tdee_goal_sheet.dart` implement goal setting and the
   calculator UI.
 - Weekly check-in widgets show hints, dialogs, and status messages.
-- Health trend widgets show weight, intake, and burned calories.
 - Burn Week widgets show the live overview and diary pacing state.
 - `*_l10n.dart` files localize enums such as meals and units.
 - `calories_page_keys.dart` collects stable keys for widget tests.
@@ -214,15 +211,6 @@ Generated Riverpod and JSON files. They should not be edited manually.
 6. Later diary edits invalidate snapshots through `inputHash` / `invalidatedAt`
    so stale learning is not silently reused.
 
-### Health Trends
-
-1. `calorieHealthTrendSnapshotProvider` starts from the visible diary days.
-2. Intake comes from `CalorieWeekConsumptionSnapshot`.
-3. Burned kcal comes from `DiaryHealthService` and `DiaryActivitySummary`.
-4. Weight comes from health samples plus manual entries. Manual values override
-   health values for the same day.
-5. The result is `CalorieHealthTrendSnapshot` for charts and lists.
-
 ### Burn Week
 
 1. `BurnWeekRunState` stores current week, run number, stars, hearts, heart
@@ -241,8 +229,6 @@ Generated Riverpod and JSON files. They should not be edited manually.
   eat, pending consumption, inventory restore, and prepared-meal bundles.
 - `features/health`: Steps, workouts, active energy, health weight, and manual
   weight entries.
-- `features/statistics`: Uses health trend and calorie data for statistics and
-  owns the health trends page shell.
 - `features/auth` and `features/household`: Provide the current user ID and
   inventory owner.
 - `features/scanner` / product flows: Provide barcode/OCR profiles and
@@ -278,10 +264,9 @@ timestamps and older JSON shapes decode reliably into domain objects.
 - Data tests cover Firestore repositories, product cache, settings migration,
   and inventory commit.
 - Provider tests cover entries, goal controller, resolved goals, week overview,
-  balance summary, health trends, weekly check-ins, daily learned TDEE, and Burn
-  Week sync.
+  balance summary, weekly check-ins, daily learned TDEE, and Burn Week sync.
 - Presentation tests cover the editor, details sheets, goal and weekly check-in
-  widgets, health trend chart, Burn Week widgets, and stable widget keys.
+  widgets, Burn Week widgets, and stable widget keys.
 
 When changing feature logic, start with domain or provider tests. UI tests
 mainly cover rendering, keys, and dialog behavior.

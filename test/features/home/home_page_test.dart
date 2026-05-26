@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/utils/date_utils.dart';
@@ -48,6 +49,8 @@ import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
   _FakeInventoryItemRepository(this.items);
@@ -275,7 +278,6 @@ String _titleForTab(HomeTabType tab) {
     HomeTabType.inventory => 'Inventory',
     HomeTabType.diary => 'Today',
     HomeTabType.cookbook => 'Cookbook',
-    HomeTabType.statistics => 'Statistics',
     HomeTabType.settings => 'Settings',
   };
 }
@@ -317,6 +319,11 @@ Widget _buildHarness({
   ValueChanged<Object?>? onManualAddRouteExtra,
 }) {
   final today = normalizeDiaryDay(DateTime.now());
+  final dashboardDay = selectedDiaryDay == null
+      ? today
+      : normalizeDiaryDay(selectedDiaryDay);
+  final firebaseAuth = _MockFirebaseAuth();
+  when(() => firebaseAuth.currentUser).thenReturn(null);
   final router = GoRouter(
     initialLocation: initialLocation,
     routes: <RouteBase>[
@@ -355,15 +362,6 @@ Widget _buildHarness({
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: AppRoutes.homeStatistics,
-                builder: (context, state) =>
-                    branchBody ?? _defaultBranchBody(HomeTabType.statistics),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: <RouteBase>[
-              GoRoute(
                 path: AppRoutes.homeSettings,
                 builder: (context, state) =>
                     branchBody ?? _defaultBranchBody(HomeTabType.settings),
@@ -392,6 +390,7 @@ Widget _buildHarness({
       authStateChangesProvider.overrideWith(
         (ref) => const Stream<User?>.empty(),
       ),
+      firebaseAuthProvider.overrideWithValue(firebaseAuth),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       burnWeekRunStateRepositoryProvider.overrideWithValue(
         burnWeekRunStateRepository ??
@@ -402,6 +401,10 @@ Widget _buildHarness({
       calorieWeekOverviewForWindowProvider(today).overrideWith(
         (ref) => _weekOverview(today),
       ),
+      if (!isSameDiaryDay(dashboardDay, today))
+        calorieWeekOverviewForWindowProvider(dashboardDay).overrideWith(
+          (ref) => _weekOverview(dashboardDay),
+        ),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
       householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
@@ -531,7 +534,6 @@ void main() {
   ) async {
     final scenarios = <String, String>{
       AppRoutes.homeInventoryTemplates: 'Cookbook',
-      AppRoutes.homeStatistics: 'Statistics',
       AppRoutes.homeSettings: 'Settings',
     };
 
@@ -1509,40 +1511,12 @@ void main() {
       );
       expect(
         tester.getCenter(find.text('COOKBOOK')).dx,
-        lessThan(tester.getCenter(find.text('MORE')).dx),
+        lessThan(tester.getCenter(find.text('SETTINGS')).dx),
       );
       expect(find.text('BURN'), findsNothing);
-      expect(find.text('MORE'), findsOneWidget);
+      expect(find.text('SETTINGS'), findsOneWidget);
       expect(find.text('STATISTICS'), findsNothing);
-      expect(find.text('SETTINGS'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
-
-  testWidgets('more menu can be dismissed with a drag', (tester) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        initialLocation: AppRoutes.homeInventory,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('MORE'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Statistics'), findsOneWidget);
-    expect(find.text('Settings'), findsOneWidget);
-
-    await tester.drag(find.byType(BottomSheet), const Offset(0, 500));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Statistics'), findsNothing);
-    expect(find.text('Settings'), findsNothing);
-    expect(find.text('INVENTORY'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
 }

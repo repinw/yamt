@@ -10,7 +10,7 @@ Home owns the tab shell, tab navigation, and shell-level composition.
 ## Does Not Own
 
 - Feature-specific toolbar actions.
-- Inventory, diary, cookbook, statistics, or settings domain behavior.
+- Inventory, diary, cookbook, or settings domain behavior.
 - Feature-specific data providers or mutation workflows.
 
 ## Public Edge

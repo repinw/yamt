@@ -15,8 +15,8 @@ abstract final class DiaryWeeklyCheckInDialogKeys {
     'diary-weekly-checkin-apply',
   );
 
-  /// The open trends button.
-  static const openTrendsButton = ValueKey<String>(
-    'diary-weekly-checkin-dialog-open-trends',
+  /// The track missing weight button.
+  static const trackMissingWeightButton = ValueKey<String>(
+    'diary-weekly-checkin-dialog-track-missing-weight',
   );
 }

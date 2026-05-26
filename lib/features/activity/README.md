@@ -21,6 +21,8 @@ Activity providers themselves.
 
 - `presentation/widgets/activity_weight_section/diary_activity_weight_section.dart`
   is the main diary section for activity, weight, and steps.
+- `presentation/diary_weight_tracking_flow.dart` opens the Activity-owned
+  diary weight entry flow for callers that already know which day needs weight.
 - Dedicated cards under `presentation/widgets/` may be used by Activity tests
   and Activity-owned composition.
 

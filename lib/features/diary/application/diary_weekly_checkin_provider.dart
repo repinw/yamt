@@ -5,8 +5,6 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart'
     as checkin_domain;
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart'
     as goal_controller;
-import 'package:yamt/features/calories/provider/calorie_health_trends_window_controller.dart'
-    as trends_controller;
 import 'package:yamt/features/calories/provider/calorie_page_action_controller.dart'
     as page_actions;
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart'
@@ -82,16 +80,11 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
   final pageActionController = ref.watch(
     page_actions.caloriePageActionControllerProvider.notifier,
   );
-  final trendsWindowController = ref.watch(
-    trends_controller.calorieHealthTrendsWindowControllerProvider.notifier,
-  );
 
   return DiaryWeeklyCheckInActions(
     syncLearnedTdeeCache: checkInController.syncLearnedTdeeCache,
-    dismissPendingWeeklyCheckIn: checkInController.dismissPendingWeeklyCheckIn,
     applyWeeklyCheckIn: checkInController.applyWeeklyCheckIn,
     setSkippedIntakeDay: pageActionController.setSkippedIntakeDay,
-    setHealthTrendsWindowEnd: trendsWindowController.setWindowEnd,
     refreshCheckInData: () {
       if (!ref.mounted) {
         return;
@@ -108,8 +101,6 @@ class DiaryWeeklyCheckInActions {
   const DiaryWeeklyCheckInActions({
     required Future<void> Function(DiaryWeeklyCheckInData data)
     syncLearnedTdeeCache,
-    required Future<void> Function(PendingCalorieGoalWeeklyCheckIn pending)
-    dismissPendingWeeklyCheckIn,
     required Future<bool> Function(DiaryWeeklyCheckInData data)
     applyWeeklyCheckIn,
     required Future<bool> Function({
@@ -117,38 +108,25 @@ class DiaryWeeklyCheckInActions {
       required bool isSkipped,
     })
     setSkippedIntakeDay,
-    required void Function(DateTime windowEnd) setHealthTrendsWindowEnd,
     required void Function() refreshCheckInData,
   }) : _syncLearnedTdeeCache = syncLearnedTdeeCache,
-       _dismissPendingWeeklyCheckIn = dismissPendingWeeklyCheckIn,
        _applyWeeklyCheckIn = applyWeeklyCheckIn,
        _setSkippedIntakeDay = setSkippedIntakeDay,
-       _setHealthTrendsWindowEnd = setHealthTrendsWindowEnd,
        _refreshCheckInData = refreshCheckInData;
 
   final Future<void> Function(DiaryWeeklyCheckInData data)
   _syncLearnedTdeeCache;
-  final Future<void> Function(PendingCalorieGoalWeeklyCheckIn pending)
-  _dismissPendingWeeklyCheckIn;
   final Future<bool> Function(DiaryWeeklyCheckInData data) _applyWeeklyCheckIn;
   final Future<bool> Function({
     required DateTime selectedDay,
     required bool isSkipped,
   })
   _setSkippedIntakeDay;
-  final void Function(DateTime windowEnd) _setHealthTrendsWindowEnd;
   final void Function() _refreshCheckInData;
 
   /// Synchronizes learned TDEE cache after showing or deferring the check-in.
   Future<void> syncLearnedTdeeCache(DiaryWeeklyCheckInData data) {
     return _syncLearnedTdeeCache(data);
-  }
-
-  /// Dismisses a pending weekly check-in.
-  Future<void> dismissPendingWeeklyCheckIn(
-    PendingCalorieGoalWeeklyCheckIn pending,
-  ) {
-    return _dismissPendingWeeklyCheckIn(pending);
   }
 
   /// Applies a weekly check-in.
@@ -165,11 +143,6 @@ class DiaryWeeklyCheckInActions {
       selectedDay: selectedDay,
       isSkipped: isSkipped,
     );
-  }
-
-  /// Sets the visible health trends window end.
-  void setHealthTrendsWindowEnd(DateTime windowEnd) {
-    _setHealthTrendsWindowEnd(windowEnd);
   }
 
   /// Refreshes weekly check-in data.

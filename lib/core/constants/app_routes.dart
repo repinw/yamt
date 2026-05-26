@@ -60,12 +60,6 @@ abstract final class AppRoutes {
   static const homeCaloriesEntryDetails =
       '/home/calories/entry/:entryId/details';
 
-  /// Statistics home route.
-  static const homeStatistics = '/home/statistics';
-
-  /// Weight trends route from statistics.
-  static const homeStatisticsWeight = '/home/statistics/weight';
-
   /// Settings home route.
   static const homeSettings = '/home/settings';
 

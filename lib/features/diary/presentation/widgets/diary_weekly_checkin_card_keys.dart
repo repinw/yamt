@@ -15,9 +15,9 @@ abstract final class DiaryWeeklyCheckInCardKeys {
     'diary-weekly-checkin-continue',
   );
 
-  /// The weekly check-in open trends button.
-  static const openTrendsButton = ValueKey<String>(
-    'diary-weekly-checkin-open-trends',
+  /// The weekly check-in track missing weight button.
+  static const trackMissingWeightButton = ValueKey<String>(
+    'diary-weekly-checkin-track-missing-weight',
   );
 
   /// The weekly check-in skip day button.

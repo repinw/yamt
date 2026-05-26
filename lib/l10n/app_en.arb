@@ -2,10 +2,8 @@
   "@@locale": "en",
   "homeInventory": "Inventory",
   "homeShopping": "Shopping",
-  "homeStatistics": "Statistics",
   "homeCalories": "Diary",
   "homeCookbook": "Cookbook",
-  "homeMore": "More",
   "homeSettings": "Settings",
   "homeQuickActionTooltip": "Quick action",
   "homeHeartCounterUseTooltip": "Use heart for {day}",
@@ -1049,8 +1047,8 @@
   "caloriesWeeklyCheckInUnskipDayAction": "Undo skipped day",
   "caloriesWeeklyCheckInAutoAdjustedHint":
       "Target updated from weekly check-in:",
-  "caloriesWeeklyCheckInOpenHealthTrendsAction":
-      "Open health trends",
+  "caloriesWeeklyCheckInTrackMissingWeightAction":
+      "Add missing weight",
   "caloriesWeeklyCheckInBlockedMissingIntake":
       "One or more days in this window have no intake yet. Log them or mark 1 or 2 empty days as skipped.",
   "caloriesWeeklyCheckInBlockedTooManyMissingIntake":
@@ -1146,38 +1144,19 @@
   "caloriesProteinLabel": "Protein",
   "caloriesCarbsLabel": "Carbs",
   "caloriesFatLabel": "Fat",
-  "caloriesHealthTrendsPageTitle": "Health trends",
-  "caloriesHealthTrendsChartTitle": "7-day health chart",
-  "caloriesHealthTrendsChartSubtitle":
-      "Shows weight, burned calories, and calorie intake for the visible 7 diary days.",
-  "caloriesHealthTrendsLegendWeight": "Weight",
-  "caloriesHealthTrendsLegendBurned": "Burned",
-  "caloriesHealthTrendsLegendIntake": "Intake",
-  "caloriesHealthTrendsEmpty": "No trend data yet for this 7-day window.",
-  "caloriesHealthTrendsHealthHint":
-      "Connect health access to show burned calories and weight on this chart.",
-  "caloriesHealthTrendsWeightsTitle": "Daily weights",
-  "caloriesHealthTrendsWeightsSubtitle":
-      "Tap a visible day to add or edit a manual weight. Manual values override imported values for the same day.",
-  "caloriesHealthTrendsWeightAddAction": "Add",
-  "caloriesHealthTrendsWeightEditAction": "Edit",
-  "caloriesHealthTrendsWeightDialogTitle": "Set weight for {date}",
-  "@caloriesHealthTrendsWeightDialogTitle": {
+  "diaryWeightDialogTitle": "Set weight for {date}",
+  "@diaryWeightDialogTitle": {
     "placeholders": {
       "date": {
         "type": "String"
       }
     }
   },
-  "caloriesHealthTrendsWeightSaveAction": "Save",
-  "caloriesHealthTrendsWeightClearAction": "Clear override",
-  "caloriesHealthTrendsWeightSaveFailed": "Could not save weight.",
-  "caloriesHealthTrendsWeightClearFailed":
+  "diaryWeightSaveAction": "Save",
+  "diaryWeightClearAction": "Clear override",
+  "diaryWeightSaveFailed": "Could not save weight.",
+  "diaryWeightClearFailed":
       "Could not clear manual weight.",
-  "caloriesHealthTrendsWeightSourceManual": "Manual",
-  "caloriesHealthTrendsWeightSourceHealthConnect": "Health Connect",
-  "caloriesHealthTrendsWeightSourceAppleHealth": "Apple Health",
-  "caloriesHealthTrendsWeightMissing": "No weight yet",
   "caloriesDeleteEntryDialogTitle": "Delete entry?",
   "caloriesDeleteEntryDialogMessage": "Delete \"{name}\" from this day?",
   "@caloriesDeleteEntryDialogMessage": {
@@ -1662,100 +1641,6 @@
   "authErrorProviderAlreadyLinked": "This sign-in provider is already linked to your account.",
   "authErrorGoogleSignInCanceled": "Google sign-in failed. Please try again.",
   "authErrorGoogleIdTokenMissing": "Google sign-in did not return a valid token.",
-  "statisticsPageSubtitle": "Patterns from inventory, food waste, and nutrition at a glance.",
-  "statisticsContextHousehold": "Household",
-  "statisticsContextPersonal": "Personal",
-  "statisticsTimeframeWeek": "7 days",
-  "statisticsTimeframeMonth": "Month",
-  "statisticsTimeframeYear": "Year",
-  "statisticsTimeframeTotal": "All",
-  "statisticsTabSpending": "Spending",
-  "statisticsTabWaste": "Food Waste",
-  "statisticsTabCalories": "Calories",
-  "statisticsHouseholdHintTitle": "MVP note",
-  "statisticsHouseholdHintBody": "Household figures currently use tracked inventory items and available receipt data. A full timeline view will come later.",
-  "statisticsSpendingTotalTitle": "Tracked spending",
-  "statisticsSpendingTotalSubtitle": "sum of captured purchases in the selected period",
-  "statisticsSpendingTrendTitle": "Price trend",
-  "statisticsSpendingTrendEmpty": "No recurring products with usable price history in the selected period yet.",
-  "statisticsSpendingStoresTitle": "Top stores",
-  "statisticsTopStoresEmpty": "No stores with useful values in this period yet.",
-  "statisticsSpendingChartTitle": "Spending by receipt date",
-  "statisticsSpendingChartSubtitle": "The chart uses the real receiptDate and shows the latest shopping days for the selected filter.",
-  "statisticsSpendingChartEmpty": "As soon as dated receipt data exists, your spending timeline will show up here.",
-  "statisticsSpendingItemsTitle": "Most expensive items",
-  "statisticsExpensiveItemsEmpty": "No cost-relevant items in this period yet.",
-  "statisticsWasteOverviewTitle": "Food waste overview",
-  "statisticsWasteTrackingMissingValue": "No history yet",
-  "statisticsWasteTrackingMissingMessage": "Discard events and reasons are not persisted yet.",
-  "statisticsWasteOverviewSummary": "{eventCount, plural, =1{1 discard event · {lossValue} tracked loss} other{{eventCount} discard events · {lossValue} tracked loss}}",
-  "@statisticsWasteOverviewSummary": {
-    "placeholders": {
-      "eventCount": {
-        "type": "int"
-      },
-      "lossValue": {}
-    }
-  },
-  "statisticsWasteRatioTitle": "Ratio & money loss",
-  "statisticsWasteMoneyLossMissing": "Once discarded values are tracked, the ratio and exact money loss will appear here.",
-  "statisticsWasteMoneyLossTracked": "Tracked value of thrown-away food in this period.",
-  "statisticsWasteReasonsTitle": "Waste reasons",
-  "statisticsWasteReasonsMissing": "Add reasons such as expired or cooked too much when throwing items away so we can surface patterns.",
-  "statisticsWasteReasonsTopSummary": "Most common reason across {count} discard events.",
-  "@statisticsWasteReasonsTopSummary": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "statisticsWasteItemsTitle": "Often discarded",
-  "statisticsWasteItemsMissing": "Once enough discard events exist, your most frequent problem items will show up here.",
-  "statisticsWasteItemsTopSummary": "{count, plural, =1{discarded once} other{discarded {count} times}}",
-  "@statisticsWasteItemsTopSummary": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "statisticsCaloriesOverviewTitle": "Calories overview",
-  "statisticsCaloriesOverviewSummary": "{trackedDays} tracked days · {entries} entries",
-  "@statisticsCaloriesOverviewSummary": {
-    "placeholders": {
-      "trackedDays": {
-        "type": "int"
-      },
-      "entries": {
-        "type": "int"
-      }
-    }
-  },
-  "statisticsCaloriesStreakTitle": "Goal streak",
-  "statisticsCaloriesStreakSummary": "{goalDays} of {trackedDays} days within goal",
-  "@statisticsCaloriesStreakSummary": {
-    "placeholders": {
-      "goalDays": {
-        "type": "int"
-      },
-      "trackedDays": {
-        "type": "int"
-      }
-    }
-  },
-  "statisticsCaloriesBufferTitle": "Weekly balance",
-  "statisticsCaloriesBufferSubtitle": "current balance against your goal",
-  "statisticsCaloriesChartTitle": "Daily view",
-  "statisticsCaloriesChartSubtitle": "Recent days with eaten calories and goal marker.",
-  "statisticsCaloriesChartEmpty": "As soon as calorie entries exist, your daily view will show up here.",
-  "statisticsCaloriesMacrosTitle": "Macro split",
-  "statisticsCaloriesMacroChartSubtitle": "Share of calories coming from carbs, protein, and fat.",
-  "statisticsCaloriesNoEntries": "No calorie entries in this period yet.",
-  "statisticsChartGoalLegend": "Goal marker",
-  "statisticsMetricNoTrend": "No trend yet",
-  "statisticsMetricNoData": "No data yet",
-  "statisticsLoadFailed": "Could not load statistics.",
   "commonUndoAction": "Undo",
   "commonNotImplementedYet": "Not implemented yet",
   "onboardingWelcomeTitle": "Glad you are here!",

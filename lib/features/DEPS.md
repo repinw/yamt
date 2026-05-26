@@ -52,7 +52,4 @@ settings-->health;
 settings-->shared;
 shoppinglist-->auth;
 shoppinglist-->household;
-statistics-->calories;
-statistics-->health;
-statistics-->inventory;
 ```

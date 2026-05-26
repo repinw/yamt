@@ -30,7 +30,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(DiaryWeeklyCheckInDialogKeys.openTrendsButton),
+      find.byKey(DiaryWeeklyCheckInDialogKeys.trackMissingWeightButton),
       findsNothing,
     );
 
@@ -49,7 +49,7 @@ void main() {
     ]);
   });
 
-  testWidgets('blocked weight dialog returns open health trends action', (
+  testWidgets('blocked weight dialog returns track missing weight action', (
     tester,
   ) async {
     final results = <DiaryWeeklyCheckInDialogAction?>[];
@@ -68,17 +68,17 @@ void main() {
     await _openDialog(tester);
 
     expect(
-      find.byKey(DiaryWeeklyCheckInDialogKeys.openTrendsButton),
+      find.byKey(DiaryWeeklyCheckInDialogKeys.trackMissingWeightButton),
       findsOneWidget,
     );
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.applyButton), findsNothing);
 
     await tester.tap(
-      find.byKey(DiaryWeeklyCheckInDialogKeys.openTrendsButton),
+      find.byKey(DiaryWeeklyCheckInDialogKeys.trackMissingWeightButton),
     );
     await tester.pumpAndSettle();
 
-    expect(results, [DiaryWeeklyCheckInDialogAction.openHealthTrends]);
+    expect(results, [DiaryWeeklyCheckInDialogAction.trackMissingWeight]);
   });
 }
 

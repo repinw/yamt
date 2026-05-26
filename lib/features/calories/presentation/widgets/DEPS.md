@@ -26,7 +26,6 @@ calorie_goal_calculator_sheet.dart-->calorie_learned_tdee_goal_sheet.dart;
 calorie_goal_start_dialog.dart-->calorie_goal_start_picker.dart;
 calorie_goal_start_dialog.dart-->calories_page_keys.dart;
 calorie_goal_start_food_tracking_dialog.dart-->calories_page_keys.dart;
-calorie_health_weight_list.dart-->calorie_health_weight_dialog.dart;
 calorie_learned_tdee_goal_sheet.dart-->calorie_goal_calculator_input_controls.dart;
 calorie_learned_tdee_goal_sheet.dart-->calorie_goal_calculator_reset_sheet.dart;
 calorie_learned_tdee_goal_sheet.dart-->calorie_goal_calculator_results.dart;

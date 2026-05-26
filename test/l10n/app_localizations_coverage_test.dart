@@ -8,10 +8,8 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
   final values = <String>[
     l10n.homeInventory,
     l10n.homeShopping,
-    l10n.homeStatistics,
     l10n.homeCalories,
     l10n.homeCookbook,
-    l10n.homeMore,
     l10n.homeSettings,
     l10n.homeHeartUseConfirmAction,
     l10n.homeQuickActionTooltip,

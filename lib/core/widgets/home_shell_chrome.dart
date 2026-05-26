@@ -108,9 +108,6 @@ enum HomeTabType {
   /// Cookbook.
   cookbook,
 
-  /// Statistics.
-  statistics,
-
   /// Settings.
   settings,
 }

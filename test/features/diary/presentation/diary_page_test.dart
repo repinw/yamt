@@ -12,6 +12,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
+import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
@@ -340,35 +341,46 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
   });
 
-  testWidgets('weekly check-in hint opens Health trends', (tester) async {
-    await _pumpDiaryPage(
+  testWidgets('weekly check-in hint opens missing weight day', (tester) async {
+    final missingWeightDay = DateTime(2026, 4, 21);
+
+    final container = await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
       useGoRouter: true,
       initialWeeklyCheckIn: _weeklyCheckInCheckInData(
-        windowStartDate: DateTime(2026, 4, 21),
+        windowStartDate: missingWeightDay,
         shouldAutoOpen: false,
         blockedReason:
             CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
+        missingWeightDays: [missingWeightDay],
       ),
     );
 
     expect(
-      find.byKey(DiaryWeeklyCheckInCardKeys.openTrendsButton),
+      find.byKey(DiaryWeeklyCheckInCardKeys.trackMissingWeightButton),
       findsOneWidget,
     );
 
     await _tapDiaryCardAction(
       tester,
-      find.byKey(DiaryWeeklyCheckInCardKeys.openTrendsButton),
+      find.byKey(DiaryWeeklyCheckInCardKeys.trackMissingWeightButton),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Trends'), findsOneWidget);
+    expect(
+      container.read(diaryCalendarControllerProvider).selectedDay,
+      missingWeightDay,
+    );
+    expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsOneWidget);
   });
 
-  testWidgets('weekly check-in dialog opens Health trends', (tester) async {
-    await _pumpDiaryPage(
+  testWidgets('weekly check-in dialog opens missing weight day', (
+    tester,
+  ) async {
+    final missingWeightDay = DateTime(2026, 4, 27);
+
+    final container = await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
       useGoRouter: true,
@@ -376,6 +388,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 21),
         shouldAutoOpen: false,
         blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
+        missingWeightDays: [missingWeightDay],
       ),
     );
 
@@ -388,11 +401,15 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
 
     await tester.tap(
-      find.byKey(DiaryWeeklyCheckInDialogKeys.openTrendsButton),
+      find.byKey(DiaryWeeklyCheckInDialogKeys.trackMissingWeightButton),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Trends'), findsOneWidget);
+    expect(
+      container.read(diaryCalendarControllerProvider).selectedDay,
+      missingWeightDay,
+    );
+    expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsOneWidget);
   });
 
   testWidgets('weekly check-in skip day failure shows snackbar', (
@@ -1134,11 +1151,6 @@ Future<ProviderContainer> _pumpDiaryPage(
                 path: AppRoutes.homeCalories,
                 builder: (context, state) => diaryPage,
               ),
-              GoRoute(
-                path: AppRoutes.homeStatisticsWeight,
-                builder: (context, state) =>
-                    const Scaffold(body: Text('Trends')),
-              ),
             ],
           ),
         )
@@ -1147,10 +1159,6 @@ Future<ProviderContainer> _pumpDiaryPage(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: diaryPage,
-          routes: {
-            AppRoutes.homeStatisticsWeight: (context) =>
-                const Scaffold(body: Text('Trends')),
-          },
         );
 
   await tester.pumpWidget(
@@ -1289,14 +1297,12 @@ DiaryWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
 DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
   return DiaryWeeklyCheckInActions(
     syncLearnedTdeeCache: (_) async {},
-    dismissPendingWeeklyCheckIn: (_) async {},
     applyWeeklyCheckIn: (_) async => true,
     setSkippedIntakeDay:
         ({
           required selectedDay,
           required isSkipped,
         }) async => true,
-    setHealthTrendsWindowEnd: (_) {},
     refreshCheckInData: () {},
   );
 }
@@ -1305,6 +1311,7 @@ DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
   required DateTime windowStartDate,
   bool shouldAutoOpen = true,
   CalorieWeeklyCheckInBlockedReason? blockedReason,
+  List<DateTime> missingWeightDays = const <DateTime>[],
   List<CalorieWeeklyCheckInWindowDay> days =
       const <CalorieWeeklyCheckInWindowDay>[],
 }) {
@@ -1330,7 +1337,7 @@ DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
     ),
     blockedReason: blockedReason,
     missingIntakeDays: const <DateTime>[],
-    missingWeightDays: const <DateTime>[],
+    missingWeightDays: missingWeightDays,
     freshness: CalorieLearnedTdeeFreshness.none,
     latestLearnedTdeeAt: null,
     lowConfidence: false,

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,8 +15,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _inventoryBranchIndex = 0;
 const _diaryBranchIndex = 1;
 const _cookbookBranchIndex = 2;
-const _statisticsBranchIndex = 3;
-const _settingsBranchIndex = 4;
+const _settingsBranchIndex = 3;
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 @Dependencies([
@@ -67,7 +64,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       _inventoryBranchIndex => HomeTabType.inventory,
       _diaryBranchIndex => HomeTabType.diary,
       _cookbookBranchIndex => HomeTabType.cookbook,
-      _statisticsBranchIndex => HomeTabType.statistics,
       _settingsBranchIndex => HomeTabType.settings,
       _ => HomeTabType.inventory, // coverage:ignore-line
     };
@@ -75,10 +71,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
     final currentTab = _currentTab();
-    final isMoreSelected =
-        currentTab == HomeTabType.statistics ||
-        currentTab == HomeTabType.settings;
-
     return [
       HomeNavEntry(
         item: HomeNavItem(
@@ -106,12 +98,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.more_horiz_rounded,
-          label: l10n.homeMore,
+          icon: Icons.settings_rounded,
+          label: l10n.homeSettings,
         ),
-        isSelected: isMoreSelected,
-        showTopIndicator: isMoreSelected,
-        onTap: () => _showMoreMenu(context, l10n),
+        isSelected: currentTab == HomeTabType.settings,
+        onTap: () => _onTabTapped(_settingsBranchIndex),
       ),
     ];
   }
@@ -122,10 +113,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final currentTab = _currentTab();
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
-      HomeTabType.diary ||
-      HomeTabType.cookbook ||
-      HomeTabType.statistics ||
-      HomeTabType.settings => null,
+      HomeTabType.diary || HomeTabType.cookbook || HomeTabType.settings => null,
     };
 
     final theme = Theme.of(context);
@@ -193,44 +181,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
     return const InventoryActionFab();
   }
-
-  void _showMoreMenu(BuildContext context, AppLocalizations l10n) {
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        useRootNavigator: true,
-        builder: (sheetContext) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _HomeMoreMenuTile(
-                    icon: Icons.insights_rounded,
-                    label: l10n.homeStatistics,
-                    onTap: () {
-                      sheetContext.pop();
-                      _onTabTapped(_statisticsBranchIndex);
-                    },
-                  ),
-                  _HomeMoreMenuTile(
-                    icon: Icons.settings_rounded,
-                    label: l10n.homeSettings,
-                    onTap: () {
-                      sheetContext.pop();
-                      _onTabTapped(_settingsBranchIndex);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 }
 
 class _HomeShellChromeVisibilityController extends ValueNotifier<double> {
@@ -287,26 +237,5 @@ class _HomeShellChromeVisibilityController extends ValueNotifier<double> {
     }
 
     this.value = targetVisibility;
-  }
-}
-
-class _HomeMoreMenuTile extends StatelessWidget {
-  const _HomeMoreMenuTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(label),
-      onTap: onTap,
-    );
   }
 }

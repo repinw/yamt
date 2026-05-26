@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_dialog_scheduler.dart';
 import 'package:yamt/features/diary/presentation/'
@@ -75,6 +75,7 @@ class _DiaryWeeklyCheckInSectionState
   @override
   Widget build(BuildContext context) {
     final checkInData = _visibleCheckInData;
+    final weightTrackingFlow = ref.watch(diaryWeightTrackingFlowProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -85,11 +86,8 @@ class _DiaryWeeklyCheckInSectionState
             checkInData: checkInData,
             selectedDay: widget.selectedDay,
             onContinue: () => _openDialog(checkInData),
-            onOpenHealthTrends: () {
-              _openHealthTrendsPage(
-                visibleWindowEnd:
-                    checkInData.pendingWeeklyCheckIn?.windowEndDate,
-              );
+            onTrackMissingWeight: () {
+              _trackMissingWeight(checkInData, weightTrackingFlow);
             },
             onToggleSelectedDaySkipped: _toggleSkippedCalorieIntakeDay,
           ),
@@ -177,10 +175,12 @@ class _DiaryWeeklyCheckInSectionState
     switch (action) {
       case DiaryWeeklyCheckInDialogAction.apply:
         await _applyWeeklyCheckIn(actions, checkInData, pending);
-      case DiaryWeeklyCheckInDialogAction.openHealthTrends:
-        await actions.dismissPendingWeeklyCheckIn(pending);
+      case DiaryWeeklyCheckInDialogAction.trackMissingWeight:
         if (mounted) {
-          _openHealthTrendsPage(visibleWindowEnd: pending.windowEndDate);
+          _trackMissingWeight(
+            checkInData,
+            ref.read(diaryWeightTrackingFlowProvider),
+          );
         }
       case DiaryWeeklyCheckInDialogAction.later:
       case null:
@@ -238,12 +238,44 @@ class _DiaryWeeklyCheckInSectionState
     showSkippedCalorieIntakeSaveFailedSnackBar(context);
   }
 
-  void _openHealthTrendsPage({DateTime? visibleWindowEnd}) {
-    final resolvedWindowEnd = visibleWindowEnd ?? DateTime.now();
-    ref
-        .read(diaryWeeklyCheckInActionsProvider)
-        .setHealthTrendsWindowEnd(resolvedWindowEnd);
-    unawaited(context.push(AppRoutes.homeStatisticsWeight));
+  void _trackMissingWeight(
+    DiaryWeeklyCheckInData checkInData,
+    DiaryWeightTrackingFlow weightTrackingFlow,
+  ) {
+    final day = _firstMissingWeightDay(checkInData);
+    if (day == null) {
+      return;
+    }
+
+    ref.read(diaryCalendarControllerProvider.notifier).selectDay(day);
+    final windowDay = _windowDayFor(checkInData, day);
+    unawaited(
+      weightTrackingFlow.showDialogForDay(
+        context: context,
+        selectedDay: day,
+        day: day,
+        initialWeightKg: windowDay?.weightKg,
+      ),
+    );
+  }
+
+  DateTime? _firstMissingWeightDay(DiaryWeeklyCheckInData checkInData) {
+    return checkInData.missingWeightDays.isEmpty
+        ? null
+        : checkInData.missingWeightDays.first;
+  }
+
+  CalorieWeeklyCheckInWindowDay? _windowDayFor(
+    DiaryWeeklyCheckInData checkInData,
+    DateTime day,
+  ) {
+    for (final windowDay in checkInData.days) {
+      if (DateUtils.isSameDay(windowDay.day, day)) {
+        return windowDay;
+      }
+    }
+
+    return null;
   }
 
   void _clearStaleHiddenWindow(DiaryWeeklyCheckInData? checkInData) {

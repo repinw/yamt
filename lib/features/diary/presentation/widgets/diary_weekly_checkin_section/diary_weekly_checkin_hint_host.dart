@@ -11,7 +11,7 @@ class DiaryWeeklyCheckInHintHost extends ConsumerWidget {
     required this.checkInData,
     required this.selectedDay,
     required this.onContinue,
-    required this.onOpenHealthTrends,
+    required this.onTrackMissingWeight,
     required this.onToggleSelectedDaySkipped,
     super.key,
   });
@@ -25,8 +25,8 @@ class DiaryWeeklyCheckInHintHost extends ConsumerWidget {
   /// Continue action.
   final VoidCallback onContinue;
 
-  /// Open health trends action.
-  final VoidCallback onOpenHealthTrends;
+  /// Track missing weight action.
+  final VoidCallback onTrackMissingWeight;
 
   /// Toggle selected day skip state.
   final Future<void> Function({
@@ -50,7 +50,7 @@ class DiaryWeeklyCheckInHintHost extends ConsumerWidget {
       selectedDay: selectedDay,
       selectedDayHasEntries: selectedDayHasEntries,
       onContinue: onContinue,
-      onOpenHealthTrends: onOpenHealthTrends,
+      onTrackMissingWeight: onTrackMissingWeight,
       onToggleSelectedDaySkipped: ({required isSkipped}) {
         return onToggleSelectedDaySkipped(
           selectedDay: selectedDay,

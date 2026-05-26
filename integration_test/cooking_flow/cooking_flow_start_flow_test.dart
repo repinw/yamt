@@ -193,16 +193,6 @@ _CookingFlowStartHarness _buildHarness() {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: AppRoutes.homeStatistics,
-                builder: (context, state) => const Scaffold(
-                  body: Center(child: Text('Statistics')),
-                ),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: <RouteBase>[
-              GoRoute(
                 path: AppRoutes.homeSettings,
                 builder: (context, state) => const Scaffold(
                   body: Center(child: Text('Settings')),

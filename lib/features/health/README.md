@@ -13,7 +13,7 @@ activity data, health weight samples, and manual fallback weight entries.
 
 ## Does Not Own
 
-- Calorie goal settings, weekly check-in state, or calorie trend refresh.
+- Calorie goal settings, weekly check-in state, or calorie refresh behavior.
 - Diary page composition or activity card layout.
 - App authentication flows.
 
@@ -23,8 +23,7 @@ activity data, health weight samples, and manual fallback weight entries.
 - `presentation/controllers/manual_health_weight_entries_controller.dart`
 - Service providers in `data/` for health connection, diary health data, health
   weight samples, and manual weight fallback storage.
-- Domain models in `domain/` used by Activity, Calories, Diary, Settings, and
-  Statistics.
+- Domain models in `domain/` used by Activity, Calories, Diary, and Settings.
 
 Other features may consume these public controllers, providers, services, and
 domain types directly. Calorie-owned side effects from health changes belong in

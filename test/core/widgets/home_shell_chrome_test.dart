@@ -120,6 +120,25 @@ void main() {
       );
     });
 
+    testWidgets('renders title icon with provided title color', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _homeTopBarHarness(
+          const HomeTopBar(
+            title: 'Today',
+            titleIcon: Icons.menu_book_rounded,
+            titleColor: Colors.red,
+            actions: <Widget>[],
+          ),
+        ),
+      );
+
+      final icon = tester.widget<Icon>(find.byIcon(Icons.menu_book_rounded));
+      expect(icon.color, Colors.red);
+      expect(icon.size, 22);
+    });
+
     testWidgets('keeps long title and subtitle constrained to one line', (
       tester,
     ) async {

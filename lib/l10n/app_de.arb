@@ -2,10 +2,8 @@
   "@@locale": "de",
   "homeInventory": "Vorrat",
   "homeShopping": "Einkauf",
-  "homeStatistics": "Statistik",
   "homeCalories": "Tagebuch",
   "homeCookbook": "Kochbuch",
-  "homeMore": "Mehr",
   "homeSettings": "Einstellungen",
   "homeQuickActionTooltip": "Schnellaktion",
   "homeHeartCounterUseTooltip": "Herz für {day} nutzen",
@@ -1080,8 +1078,8 @@
       "Ausgelassen-Markierung entfernen",
   "caloriesWeeklyCheckInAutoAdjustedHint":
       "Ziel durch Wochen-Check-in aktualisiert:",
-  "caloriesWeeklyCheckInOpenHealthTrendsAction":
-      "Gesundheitstrends öffnen",
+  "caloriesWeeklyCheckInTrackMissingWeightAction":
+      "Fehlendes Gewicht eintragen",
   "caloriesWeeklyCheckInBlockedMissingIntake":
       "Mindestens ein Tag in diesem Zeitraum hat noch keine Aufnahme. Trage ihn ein oder markiere 1 oder 2 leere Tage als ausgelassen.",
   "caloriesWeeklyCheckInBlockedTooManyMissingIntake":
@@ -1179,40 +1177,20 @@
   "caloriesProteinLabel": "Eiweiß",
   "caloriesCarbsLabel": "Kohlenhydrate",
   "caloriesFatLabel": "Fett",
-  "caloriesHealthTrendsPageTitle": "Gesundheitstrends",
-  "caloriesHealthTrendsChartTitle": "7-Tage-Gesundheitschart",
-  "caloriesHealthTrendsChartSubtitle":
-      "Zeigt Gewicht, verbrannte Kalorien und Kalorienaufnahme für die sichtbaren 7 Tage im Tagebuch.",
-  "caloriesHealthTrendsLegendWeight": "Gewicht",
-  "caloriesHealthTrendsLegendBurned": "Verbrannt",
-  "caloriesHealthTrendsLegendIntake": "Aufnahme",
-  "caloriesHealthTrendsEmpty":
-      "Für dieses sichtbare 7-Tage-Fenster sind noch keine Trenddaten vorhanden.",
-  "caloriesHealthTrendsHealthHint":
-      "Verbinde den Gesundheitszugriff, um verbrannte Kalorien und Gewicht in diesem Chart zu sehen.",
-  "caloriesHealthTrendsWeightsTitle": "Tagesgewichte",
-  "caloriesHealthTrendsWeightsSubtitle":
-      "Tippe auf einen sichtbaren Tag, um ein manuelles Gewicht hinzuzufügen oder zu bearbeiten. Manuelle Werte überschreiben importierte Werte für denselben Tag.",
-  "caloriesHealthTrendsWeightAddAction": "Hinzufügen",
-  "caloriesHealthTrendsWeightEditAction": "Bearbeiten",
-  "caloriesHealthTrendsWeightDialogTitle": "Gewicht für {date} setzen",
-  "@caloriesHealthTrendsWeightDialogTitle": {
+  "diaryWeightDialogTitle": "Gewicht für {date} setzen",
+  "@diaryWeightDialogTitle": {
     "placeholders": {
       "date": {
         "type": "String"
       }
     }
   },
-  "caloriesHealthTrendsWeightSaveAction": "Speichern",
-  "caloriesHealthTrendsWeightClearAction": "Überschreibung löschen",
-  "caloriesHealthTrendsWeightSaveFailed":
+  "diaryWeightSaveAction": "Speichern",
+  "diaryWeightClearAction": "Überschreibung löschen",
+  "diaryWeightSaveFailed":
       "Gewicht konnte nicht gespeichert werden.",
-  "caloriesHealthTrendsWeightClearFailed":
+  "diaryWeightClearFailed":
       "Manuelles Gewicht konnte nicht gelöscht werden.",
-  "caloriesHealthTrendsWeightSourceManual": "Manuell",
-  "caloriesHealthTrendsWeightSourceHealthConnect": "Health Connect",
-  "caloriesHealthTrendsWeightSourceAppleHealth": "Apple Health",
-  "caloriesHealthTrendsWeightMissing": "Noch kein Gewicht",
   "caloriesDeleteEntryDialogTitle": "Eintrag löschen?",
   "caloriesDeleteEntryDialogMessage":
       "\"{name}\" für diesen Tag löschen?",
@@ -1702,100 +1680,6 @@
   "authErrorProviderAlreadyLinked": "Dieser Anmeldeanbieter ist bereits mit deinem Konto verknüpft.",
   "authErrorGoogleSignInCanceled": "Google-Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
   "authErrorGoogleIdTokenMissing": "Google-Anmeldung hat kein gültiges Token geliefert.",
-  "statisticsPageSubtitle": "Muster aus Vorrat, Food Waste und Ernährung auf einen Blick.",
-  "statisticsContextHousehold": "Haushalt",
-  "statisticsContextPersonal": "Persönlich",
-  "statisticsTimeframeWeek": "7 Tage",
-  "statisticsTimeframeMonth": "Monat",
-  "statisticsTimeframeYear": "Jahr",
-  "statisticsTimeframeTotal": "Gesamt",
-  "statisticsTabSpending": "Ausgaben",
-  "statisticsTabWaste": "Food Waste",
-  "statisticsTabCalories": "Kalorien",
-  "statisticsHouseholdHintTitle": "MVP-Hinweis",
-  "statisticsHouseholdHintBody": "Haushaltszahlen basieren aktuell auf erfassten Vorratsartikeln und verfügbaren Belegdaten. Eine vollständige Verlaufs-Historie folgt später.",
-  "statisticsSpendingTotalTitle": "Erfasste Ausgaben",
-  "statisticsSpendingTotalSubtitle": "Summe der erfassten Einkäufe im gewählten Zeitraum",
-  "statisticsSpendingTrendTitle": "Preisentwicklung",
-  "statisticsSpendingTrendEmpty": "Noch keine wiederkehrenden Produkte mit Preisverlauf im gewählten Zeitraum.",
-  "statisticsSpendingStoresTitle": "Top Supermärkte",
-  "statisticsTopStoresEmpty": "Noch keine Märkte mit verwertbaren Werten im Zeitraum.",
-  "statisticsSpendingChartTitle": "Ausgaben nach Belegdatum",
-  "statisticsSpendingChartSubtitle": "Der Graph nutzt das echte receiptDate des Belegs und zeigt die letzten Einkaufstage im Filter.",
-  "statisticsSpendingChartEmpty": "Sobald Belegdaten mit Datum vorliegen, erscheint hier dein Ausgabenverlauf.",
-  "statisticsSpendingItemsTitle": "Teuerste Einkäufe",
-  "statisticsExpensiveItemsEmpty": "Noch keine kostenrelevanten Positionen im Zeitraum.",
-  "statisticsWasteOverviewTitle": "Food Waste Überblick",
-  "statisticsWasteTrackingMissingValue": "Noch keine Historie",
-  "statisticsWasteTrackingMissingMessage": "Wegwerf-Events und Gründe werden aktuell noch nicht dauerhaft gespeichert.",
-  "statisticsWasteOverviewSummary": "{eventCount, plural, =1{1 Wegwerf-Event · {lossValue} erfasster Verlust} other{{eventCount} Wegwerf-Events · {lossValue} erfasster Verlust}}",
-  "@statisticsWasteOverviewSummary": {
-    "placeholders": {
-      "eventCount": {
-        "type": "int"
-      },
-      "lossValue": {}
-    }
-  },
-  "statisticsWasteRatioTitle": "Verhältnis & Geldverlust",
-  "statisticsWasteMoneyLossMissing": "Sobald Wegwerfwerte erfasst werden, erscheint hier das Verhältnis und der Euro-Verlust.",
-  "statisticsWasteMoneyLossTracked": "Erfasster Wert der weggeworfenen Lebensmittel im Zeitraum.",
-  "statisticsWasteReasonsTitle": "Waste-Gründe",
-  "statisticsWasteReasonsMissing": "Füge beim Wegwerfen Gründe wie abgelaufen oder zu viel gekocht hinzu, damit wir Muster erkennen.",
-  "statisticsWasteReasonsTopSummary": "Häufigster Grund über {count} Wegwerf-Events.",
-  "@statisticsWasteReasonsTopSummary": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "statisticsWasteItemsTitle": "Oft weggeworfen",
-  "statisticsWasteItemsMissing": "Sobald genug Wegwerf-Events vorliegen, zeigen wir hier deine häufigsten Problemartikel.",
-  "statisticsWasteItemsTopSummary": "{count, plural, =1{1x weggeworfen} other{{count}x weggeworfen}}",
-  "@statisticsWasteItemsTopSummary": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "statisticsCaloriesOverviewTitle": "Kalorien Überblick",
-  "statisticsCaloriesOverviewSummary": "{trackedDays} Tage mit Einträgen · {entries} Einträge",
-  "@statisticsCaloriesOverviewSummary": {
-    "placeholders": {
-      "trackedDays": {
-        "type": "int"
-      },
-      "entries": {
-        "type": "int"
-      }
-    }
-  },
-  "statisticsCaloriesStreakTitle": "Ziel-Streak",
-  "statisticsCaloriesStreakSummary": "{goalDays} von {trackedDays} Tagen im Ziel",
-  "@statisticsCaloriesStreakSummary": {
-    "placeholders": {
-      "goalDays": {
-        "type": "int"
-      },
-      "trackedDays": {
-        "type": "int"
-      }
-    }
-  },
-  "statisticsCaloriesBufferTitle": "Wochenbilanz",
-  "statisticsCaloriesBufferSubtitle": "aktuelle Balance gegen dein Ziel",
-  "statisticsCaloriesChartTitle": "Tagesverlauf",
-  "statisticsCaloriesChartSubtitle": "Letzte Tage mit gegessenen Kalorien und Zielmarke.",
-  "statisticsCaloriesChartEmpty": "Sobald Kalorien-Einträge vorliegen, erscheint hier dein Tagesverlauf.",
-  "statisticsCaloriesMacrosTitle": "Makro-Verteilung",
-  "statisticsCaloriesMacroChartSubtitle": "Anteil der Kalorien aus Kohlenhydraten, Protein und Fett.",
-  "statisticsCaloriesNoEntries": "Noch keine Kalorien-Einträge im Zeitraum.",
-  "statisticsChartGoalLegend": "Zielmarke",
-  "statisticsMetricNoTrend": "Noch kein Trend",
-  "statisticsMetricNoData": "Noch keine Daten",
-  "statisticsLoadFailed": "Statistik konnte nicht geladen werden.",
   "commonUndoAction": "Rückgängig machen",
   "commonNotImplementedYet": "Noch nicht implementiert",
   "onboardingWelcomeTitle": "Schön, dass du hier bist!",

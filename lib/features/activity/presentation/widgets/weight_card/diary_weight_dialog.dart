@@ -57,13 +57,13 @@ Future<void> _showDiaryWeightEntryDialog({
   final result = await showWeightEntryDialog(
     context: context,
     labels: WeightEntryDialogLabels(
-      title: l10n.caloriesHealthTrendsWeightDialogTitle(dayLabel),
+      title: l10n.diaryWeightDialogTitle(dayLabel),
       fieldLabel: l10n.caloriesCalculatorWeightLabel,
       emptyErrorText: l10n.caloriesCalculatorWeightEmpty,
       invalidErrorText: l10n.caloriesCalculatorWeightInvalid,
-      clearActionLabel: l10n.caloriesHealthTrendsWeightClearAction,
+      clearActionLabel: l10n.diaryWeightClearAction,
       cancelActionLabel: l10n.inventoryReceiptReviewCancelAction,
-      saveActionLabel: l10n.caloriesHealthTrendsWeightSaveAction,
+      saveActionLabel: l10n.diaryWeightSaveAction,
     ),
     keys: const WeightEntryDialogKeys(
       fieldKey: DiaryWeightDialogKeys.weightDialogField,
@@ -87,14 +87,14 @@ Future<void> _showDiaryWeightEntryDialog({
       final saved = await onSaveWeight(weightKg);
       if (context.mounted && !saved) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.caloriesHealthTrendsWeightSaveFailed)),
+          SnackBar(content: Text(l10n.diaryWeightSaveFailed)),
         );
       }
     case WeightEntryDialogAction.clear:
       final cleared = await onClearWeight();
       if (context.mounted && !cleared) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.caloriesHealthTrendsWeightClearFailed)),
+          SnackBar(content: Text(l10n.diaryWeightClearFailed)),
         );
       }
   }

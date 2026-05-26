@@ -60,9 +60,6 @@ import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
-import 'package:yamt/features/statistics/presentation/'
-    'calorie_health_trends_page.dart';
-import 'package:yamt/features/statistics/presentation/statistics_page.dart';
 
 part 'app_router.g.dart';
 
@@ -163,10 +160,6 @@ Raw<GoRouter> appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.homeSettingsHousehold,
         builder: (context, state) => const HouseholdPage(),
-      ),
-      GoRoute(
-        path: AppRoutes.homeStatisticsWeight,
-        builder: (context, state) => const CalorieHealthTrendsPage(),
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryCreate,
@@ -289,15 +282,6 @@ Raw<GoRouter> appRouter(Ref ref) {
                 builder: (context, state) {
                   return const MealTemplatesPage(includeAppBar: false);
                 },
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.homeStatistics,
-                builder: (context, state) =>
-                    const StatisticsPage(includeHomeShellChrome: true),
               ),
             ],
           ),

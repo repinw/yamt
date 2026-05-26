@@ -15,16 +15,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeShopping => 'Einkauf';
 
   @override
-  String get homeStatistics => 'Statistik';
-
-  @override
   String get homeCalories => 'Tagebuch';
 
   @override
   String get homeCookbook => 'Kochbuch';
-
-  @override
-  String get homeMore => 'Mehr';
 
   @override
   String get homeSettings => 'Einstellungen';
@@ -1853,7 +1847,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInAutoAdjustedHint => 'Ziel durch Wochen-Check-in aktualisiert:';
 
   @override
-  String get caloriesWeeklyCheckInOpenHealthTrendsAction => 'Gesundheitstrends öffnen';
+  String get caloriesWeeklyCheckInTrackMissingWeightAction => 'Fehlendes Gewicht eintragen';
 
   @override
   String get caloriesWeeklyCheckInBlockedMissingIntake => 'Mindestens ein Tag in diesem Zeitraum hat noch keine Aufnahme. Trage ihn ein oder markiere 1 oder 2 leere Tage als ausgelassen.';
@@ -2002,69 +1996,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesFatLabel => 'Fett';
 
   @override
-  String get caloriesHealthTrendsPageTitle => 'Gesundheitstrends';
-
-  @override
-  String get caloriesHealthTrendsChartTitle => '7-Tage-Gesundheitschart';
-
-  @override
-  String get caloriesHealthTrendsChartSubtitle => 'Zeigt Gewicht, verbrannte Kalorien und Kalorienaufnahme für die sichtbaren 7 Tage im Tagebuch.';
-
-  @override
-  String get caloriesHealthTrendsLegendWeight => 'Gewicht';
-
-  @override
-  String get caloriesHealthTrendsLegendBurned => 'Verbrannt';
-
-  @override
-  String get caloriesHealthTrendsLegendIntake => 'Aufnahme';
-
-  @override
-  String get caloriesHealthTrendsEmpty => 'Für dieses sichtbare 7-Tage-Fenster sind noch keine Trenddaten vorhanden.';
-
-  @override
-  String get caloriesHealthTrendsHealthHint => 'Verbinde den Gesundheitszugriff, um verbrannte Kalorien und Gewicht in diesem Chart zu sehen.';
-
-  @override
-  String get caloriesHealthTrendsWeightsTitle => 'Tagesgewichte';
-
-  @override
-  String get caloriesHealthTrendsWeightsSubtitle => 'Tippe auf einen sichtbaren Tag, um ein manuelles Gewicht hinzuzufügen oder zu bearbeiten. Manuelle Werte überschreiben importierte Werte für denselben Tag.';
-
-  @override
-  String get caloriesHealthTrendsWeightAddAction => 'Hinzufügen';
-
-  @override
-  String get caloriesHealthTrendsWeightEditAction => 'Bearbeiten';
-
-  @override
-  String caloriesHealthTrendsWeightDialogTitle(String date) {
+  String diaryWeightDialogTitle(String date) {
     return 'Gewicht für $date setzen';
   }
 
   @override
-  String get caloriesHealthTrendsWeightSaveAction => 'Speichern';
+  String get diaryWeightSaveAction => 'Speichern';
 
   @override
-  String get caloriesHealthTrendsWeightClearAction => 'Überschreibung löschen';
+  String get diaryWeightClearAction => 'Überschreibung löschen';
 
   @override
-  String get caloriesHealthTrendsWeightSaveFailed => 'Gewicht konnte nicht gespeichert werden.';
+  String get diaryWeightSaveFailed => 'Gewicht konnte nicht gespeichert werden.';
 
   @override
-  String get caloriesHealthTrendsWeightClearFailed => 'Manuelles Gewicht konnte nicht gelöscht werden.';
-
-  @override
-  String get caloriesHealthTrendsWeightSourceManual => 'Manuell';
-
-  @override
-  String get caloriesHealthTrendsWeightSourceHealthConnect => 'Health Connect';
-
-  @override
-  String get caloriesHealthTrendsWeightSourceAppleHealth => 'Apple Health';
-
-  @override
-  String get caloriesHealthTrendsWeightMissing => 'Noch kein Gewicht';
+  String get diaryWeightClearFailed => 'Manuelles Gewicht konnte nicht gelöscht werden.';
 
   @override
   String get caloriesDeleteEntryDialogTitle => 'Eintrag löschen?';
@@ -3027,184 +2973,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get authErrorGoogleIdTokenMissing => 'Google-Anmeldung hat kein gültiges Token geliefert.';
-
-  @override
-  String get statisticsPageSubtitle => 'Muster aus Vorrat, Food Waste und Ernährung auf einen Blick.';
-
-  @override
-  String get statisticsContextHousehold => 'Haushalt';
-
-  @override
-  String get statisticsContextPersonal => 'Persönlich';
-
-  @override
-  String get statisticsTimeframeWeek => '7 Tage';
-
-  @override
-  String get statisticsTimeframeMonth => 'Monat';
-
-  @override
-  String get statisticsTimeframeYear => 'Jahr';
-
-  @override
-  String get statisticsTimeframeTotal => 'Gesamt';
-
-  @override
-  String get statisticsTabSpending => 'Ausgaben';
-
-  @override
-  String get statisticsTabWaste => 'Food Waste';
-
-  @override
-  String get statisticsTabCalories => 'Kalorien';
-
-  @override
-  String get statisticsHouseholdHintTitle => 'MVP-Hinweis';
-
-  @override
-  String get statisticsHouseholdHintBody => 'Haushaltszahlen basieren aktuell auf erfassten Vorratsartikeln und verfügbaren Belegdaten. Eine vollständige Verlaufs-Historie folgt später.';
-
-  @override
-  String get statisticsSpendingTotalTitle => 'Erfasste Ausgaben';
-
-  @override
-  String get statisticsSpendingTotalSubtitle => 'Summe der erfassten Einkäufe im gewählten Zeitraum';
-
-  @override
-  String get statisticsSpendingTrendTitle => 'Preisentwicklung';
-
-  @override
-  String get statisticsSpendingTrendEmpty => 'Noch keine wiederkehrenden Produkte mit Preisverlauf im gewählten Zeitraum.';
-
-  @override
-  String get statisticsSpendingStoresTitle => 'Top Supermärkte';
-
-  @override
-  String get statisticsTopStoresEmpty => 'Noch keine Märkte mit verwertbaren Werten im Zeitraum.';
-
-  @override
-  String get statisticsSpendingChartTitle => 'Ausgaben nach Belegdatum';
-
-  @override
-  String get statisticsSpendingChartSubtitle => 'Der Graph nutzt das echte receiptDate des Belegs und zeigt die letzten Einkaufstage im Filter.';
-
-  @override
-  String get statisticsSpendingChartEmpty => 'Sobald Belegdaten mit Datum vorliegen, erscheint hier dein Ausgabenverlauf.';
-
-  @override
-  String get statisticsSpendingItemsTitle => 'Teuerste Einkäufe';
-
-  @override
-  String get statisticsExpensiveItemsEmpty => 'Noch keine kostenrelevanten Positionen im Zeitraum.';
-
-  @override
-  String get statisticsWasteOverviewTitle => 'Food Waste Überblick';
-
-  @override
-  String get statisticsWasteTrackingMissingValue => 'Noch keine Historie';
-
-  @override
-  String get statisticsWasteTrackingMissingMessage => 'Wegwerf-Events und Gründe werden aktuell noch nicht dauerhaft gespeichert.';
-
-  @override
-  String statisticsWasteOverviewSummary(int eventCount, Object lossValue) {
-    String _temp0 = intl.Intl.pluralLogic(
-      eventCount,
-      locale: localeName,
-      other: '$eventCount Wegwerf-Events · $lossValue erfasster Verlust',
-      one: '1 Wegwerf-Event · $lossValue erfasster Verlust',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get statisticsWasteRatioTitle => 'Verhältnis & Geldverlust';
-
-  @override
-  String get statisticsWasteMoneyLossMissing => 'Sobald Wegwerfwerte erfasst werden, erscheint hier das Verhältnis und der Euro-Verlust.';
-
-  @override
-  String get statisticsWasteMoneyLossTracked => 'Erfasster Wert der weggeworfenen Lebensmittel im Zeitraum.';
-
-  @override
-  String get statisticsWasteReasonsTitle => 'Waste-Gründe';
-
-  @override
-  String get statisticsWasteReasonsMissing => 'Füge beim Wegwerfen Gründe wie abgelaufen oder zu viel gekocht hinzu, damit wir Muster erkennen.';
-
-  @override
-  String statisticsWasteReasonsTopSummary(int count) {
-    return 'Häufigster Grund über $count Wegwerf-Events.';
-  }
-
-  @override
-  String get statisticsWasteItemsTitle => 'Oft weggeworfen';
-
-  @override
-  String get statisticsWasteItemsMissing => 'Sobald genug Wegwerf-Events vorliegen, zeigen wir hier deine häufigsten Problemartikel.';
-
-  @override
-  String statisticsWasteItemsTopSummary(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '${count}x weggeworfen',
-      one: '1x weggeworfen',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get statisticsCaloriesOverviewTitle => 'Kalorien Überblick';
-
-  @override
-  String statisticsCaloriesOverviewSummary(int trackedDays, int entries) {
-    return '$trackedDays Tage mit Einträgen · $entries Einträge';
-  }
-
-  @override
-  String get statisticsCaloriesStreakTitle => 'Ziel-Streak';
-
-  @override
-  String statisticsCaloriesStreakSummary(int goalDays, int trackedDays) {
-    return '$goalDays von $trackedDays Tagen im Ziel';
-  }
-
-  @override
-  String get statisticsCaloriesBufferTitle => 'Wochenbilanz';
-
-  @override
-  String get statisticsCaloriesBufferSubtitle => 'aktuelle Balance gegen dein Ziel';
-
-  @override
-  String get statisticsCaloriesChartTitle => 'Tagesverlauf';
-
-  @override
-  String get statisticsCaloriesChartSubtitle => 'Letzte Tage mit gegessenen Kalorien und Zielmarke.';
-
-  @override
-  String get statisticsCaloriesChartEmpty => 'Sobald Kalorien-Einträge vorliegen, erscheint hier dein Tagesverlauf.';
-
-  @override
-  String get statisticsCaloriesMacrosTitle => 'Makro-Verteilung';
-
-  @override
-  String get statisticsCaloriesMacroChartSubtitle => 'Anteil der Kalorien aus Kohlenhydraten, Protein und Fett.';
-
-  @override
-  String get statisticsCaloriesNoEntries => 'Noch keine Kalorien-Einträge im Zeitraum.';
-
-  @override
-  String get statisticsChartGoalLegend => 'Zielmarke';
-
-  @override
-  String get statisticsMetricNoTrend => 'Noch kein Trend';
-
-  @override
-  String get statisticsMetricNoData => 'Noch keine Daten';
-
-  @override
-  String get statisticsLoadFailed => 'Statistik konnte nicht geladen werden.';
 
   @override
   String get commonUndoAction => 'Rückgängig machen';

@@ -14,7 +14,7 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
     required this.selectedDay,
     required this.selectedDayHasEntries,
     required this.onContinue,
-    required this.onOpenHealthTrends,
+    required this.onTrackMissingWeight,
     required this.onToggleSelectedDaySkipped,
     super.key,
   });
@@ -31,8 +31,8 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
   /// Continue action.
   final VoidCallback onContinue;
 
-  /// Open health trends action.
-  final VoidCallback onOpenHealthTrends;
+  /// Track missing weight action.
+  final VoidCallback onTrackMissingWeight;
 
   /// Toggle selected day skip state.
   final Future<void> Function({required bool isSkipped})
@@ -48,8 +48,8 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
       runSpacing: AppSpacing.sm,
       children: <Widget>[
         if (pending != null) _ContinueButton(onPressed: onContinue),
-        if (_canOpenTrends(checkInData))
-          _OpenTrendsButton(onPressed: onOpenHealthTrends),
+        if (_canTrackMissingWeight(checkInData))
+          _TrackMissingWeightButton(onPressed: onTrackMissingWeight),
         if (skipDayData != null)
           _SkipDayButton(
             selectedDayData: skipDayData,
@@ -77,11 +77,14 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
     return selectedDayData;
   }
 
-  bool _canOpenTrends(DiaryWeeklyCheckInData checkInData) {
+  bool _canTrackMissingWeight(DiaryWeeklyCheckInData checkInData) {
+    if (checkInData.missingWeightDays.isEmpty) {
+      return false;
+    }
+
     return switch (checkInData.blockedReason) {
       CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight ||
-      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight ||
-      CalorieWeeklyCheckInBlockedReason.unstableWeightData => true,
+      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight => true,
       _ => false,
     };
   }
@@ -104,8 +107,8 @@ class _ContinueButton extends StatelessWidget {
   }
 }
 
-class _OpenTrendsButton extends StatelessWidget {
-  const _OpenTrendsButton({required this.onPressed});
+class _TrackMissingWeightButton extends StatelessWidget {
+  const _TrackMissingWeightButton({required this.onPressed});
 
   final VoidCallback onPressed;
 
@@ -114,9 +117,9 @@ class _OpenTrendsButton extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return OutlinedButton(
-      key: DiaryWeeklyCheckInCardKeys.openTrendsButton,
+      key: DiaryWeeklyCheckInCardKeys.trackMissingWeightButton,
       onPressed: onPressed,
-      child: Text(l10n.caloriesWeeklyCheckInOpenHealthTrendsAction),
+      child: Text(l10n.caloriesWeeklyCheckInTrackMissingWeightAction),
     );
   }
 }

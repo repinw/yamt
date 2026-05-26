@@ -2,7 +2,6 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_health_trend_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 
 part 'calorie_weight_state_refresh.g.dart';
@@ -30,9 +29,7 @@ CalorieWeightStateRefresh calorieWeightStateRefresh(
     if (!ref.mounted) {
       return;
     }
-    ref
-      ..invalidate(calorieHealthTrendSnapshotProvider)
-      ..invalidate(calorieWeeklyCheckInDataProvider);
+    ref.invalidate(calorieWeeklyCheckInDataProvider);
   };
 }
 

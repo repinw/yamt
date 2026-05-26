@@ -107,12 +107,6 @@ abstract class AppLocalizations {
   /// **'Shopping'**
   String get homeShopping;
 
-  /// No description provided for @homeStatistics.
-  ///
-  /// In en, this message translates to:
-  /// **'Statistics'**
-  String get homeStatistics;
-
   /// No description provided for @homeCalories.
   ///
   /// In en, this message translates to:
@@ -124,12 +118,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cookbook'**
   String get homeCookbook;
-
-  /// No description provided for @homeMore.
-  ///
-  /// In en, this message translates to:
-  /// **'More'**
-  String get homeMore;
 
   /// No description provided for @homeSettings.
   ///
@@ -3611,11 +3599,11 @@ abstract class AppLocalizations {
   /// **'Target updated from weekly check-in:'**
   String get caloriesWeeklyCheckInAutoAdjustedHint;
 
-  /// No description provided for @caloriesWeeklyCheckInOpenHealthTrendsAction.
+  /// No description provided for @caloriesWeeklyCheckInTrackMissingWeightAction.
   ///
   /// In en, this message translates to:
-  /// **'Open health trends'**
-  String get caloriesWeeklyCheckInOpenHealthTrendsAction;
+  /// **'Add missing weight'**
+  String get caloriesWeeklyCheckInTrackMissingWeightAction;
 
   /// No description provided for @caloriesWeeklyCheckInBlockedMissingIntake.
   ///
@@ -3881,131 +3869,35 @@ abstract class AppLocalizations {
   /// **'Fat'**
   String get caloriesFatLabel;
 
-  /// No description provided for @caloriesHealthTrendsPageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Health trends'**
-  String get caloriesHealthTrendsPageTitle;
-
-  /// No description provided for @caloriesHealthTrendsChartTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'7-day health chart'**
-  String get caloriesHealthTrendsChartTitle;
-
-  /// No description provided for @caloriesHealthTrendsChartSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Shows weight, burned calories, and calorie intake for the visible 7 diary days.'**
-  String get caloriesHealthTrendsChartSubtitle;
-
-  /// No description provided for @caloriesHealthTrendsLegendWeight.
-  ///
-  /// In en, this message translates to:
-  /// **'Weight'**
-  String get caloriesHealthTrendsLegendWeight;
-
-  /// No description provided for @caloriesHealthTrendsLegendBurned.
-  ///
-  /// In en, this message translates to:
-  /// **'Burned'**
-  String get caloriesHealthTrendsLegendBurned;
-
-  /// No description provided for @caloriesHealthTrendsLegendIntake.
-  ///
-  /// In en, this message translates to:
-  /// **'Intake'**
-  String get caloriesHealthTrendsLegendIntake;
-
-  /// No description provided for @caloriesHealthTrendsEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No trend data yet for this 7-day window.'**
-  String get caloriesHealthTrendsEmpty;
-
-  /// No description provided for @caloriesHealthTrendsHealthHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect health access to show burned calories and weight on this chart.'**
-  String get caloriesHealthTrendsHealthHint;
-
-  /// No description provided for @caloriesHealthTrendsWeightsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily weights'**
-  String get caloriesHealthTrendsWeightsTitle;
-
-  /// No description provided for @caloriesHealthTrendsWeightsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap a visible day to add or edit a manual weight. Manual values override imported values for the same day.'**
-  String get caloriesHealthTrendsWeightsSubtitle;
-
-  /// No description provided for @caloriesHealthTrendsWeightAddAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add'**
-  String get caloriesHealthTrendsWeightAddAction;
-
-  /// No description provided for @caloriesHealthTrendsWeightEditAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit'**
-  String get caloriesHealthTrendsWeightEditAction;
-
-  /// No description provided for @caloriesHealthTrendsWeightDialogTitle.
+  /// No description provided for @diaryWeightDialogTitle.
   ///
   /// In en, this message translates to:
   /// **'Set weight for {date}'**
-  String caloriesHealthTrendsWeightDialogTitle(String date);
+  String diaryWeightDialogTitle(String date);
 
-  /// No description provided for @caloriesHealthTrendsWeightSaveAction.
+  /// No description provided for @diaryWeightSaveAction.
   ///
   /// In en, this message translates to:
   /// **'Save'**
-  String get caloriesHealthTrendsWeightSaveAction;
+  String get diaryWeightSaveAction;
 
-  /// No description provided for @caloriesHealthTrendsWeightClearAction.
+  /// No description provided for @diaryWeightClearAction.
   ///
   /// In en, this message translates to:
   /// **'Clear override'**
-  String get caloriesHealthTrendsWeightClearAction;
+  String get diaryWeightClearAction;
 
-  /// No description provided for @caloriesHealthTrendsWeightSaveFailed.
+  /// No description provided for @diaryWeightSaveFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not save weight.'**
-  String get caloriesHealthTrendsWeightSaveFailed;
+  String get diaryWeightSaveFailed;
 
-  /// No description provided for @caloriesHealthTrendsWeightClearFailed.
+  /// No description provided for @diaryWeightClearFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not clear manual weight.'**
-  String get caloriesHealthTrendsWeightClearFailed;
-
-  /// No description provided for @caloriesHealthTrendsWeightSourceManual.
-  ///
-  /// In en, this message translates to:
-  /// **'Manual'**
-  String get caloriesHealthTrendsWeightSourceManual;
-
-  /// No description provided for @caloriesHealthTrendsWeightSourceHealthConnect.
-  ///
-  /// In en, this message translates to:
-  /// **'Health Connect'**
-  String get caloriesHealthTrendsWeightSourceHealthConnect;
-
-  /// No description provided for @caloriesHealthTrendsWeightSourceAppleHealth.
-  ///
-  /// In en, this message translates to:
-  /// **'Apple Health'**
-  String get caloriesHealthTrendsWeightSourceAppleHealth;
-
-  /// No description provided for @caloriesHealthTrendsWeightMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'No weight yet'**
-  String get caloriesHealthTrendsWeightMissing;
+  String get diaryWeightClearFailed;
 
   /// No description provided for @caloriesDeleteEntryDialogTitle.
   ///
@@ -5842,318 +5734,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google sign-in did not return a valid token.'**
   String get authErrorGoogleIdTokenMissing;
-
-  /// No description provided for @statisticsPageSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Patterns from inventory, food waste, and nutrition at a glance.'**
-  String get statisticsPageSubtitle;
-
-  /// No description provided for @statisticsContextHousehold.
-  ///
-  /// In en, this message translates to:
-  /// **'Household'**
-  String get statisticsContextHousehold;
-
-  /// No description provided for @statisticsContextPersonal.
-  ///
-  /// In en, this message translates to:
-  /// **'Personal'**
-  String get statisticsContextPersonal;
-
-  /// No description provided for @statisticsTimeframeWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'7 days'**
-  String get statisticsTimeframeWeek;
-
-  /// No description provided for @statisticsTimeframeMonth.
-  ///
-  /// In en, this message translates to:
-  /// **'Month'**
-  String get statisticsTimeframeMonth;
-
-  /// No description provided for @statisticsTimeframeYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Year'**
-  String get statisticsTimeframeYear;
-
-  /// No description provided for @statisticsTimeframeTotal.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get statisticsTimeframeTotal;
-
-  /// No description provided for @statisticsTabSpending.
-  ///
-  /// In en, this message translates to:
-  /// **'Spending'**
-  String get statisticsTabSpending;
-
-  /// No description provided for @statisticsTabWaste.
-  ///
-  /// In en, this message translates to:
-  /// **'Food Waste'**
-  String get statisticsTabWaste;
-
-  /// No description provided for @statisticsTabCalories.
-  ///
-  /// In en, this message translates to:
-  /// **'Calories'**
-  String get statisticsTabCalories;
-
-  /// No description provided for @statisticsHouseholdHintTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'MVP note'**
-  String get statisticsHouseholdHintTitle;
-
-  /// No description provided for @statisticsHouseholdHintBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Household figures currently use tracked inventory items and available receipt data. A full timeline view will come later.'**
-  String get statisticsHouseholdHintBody;
-
-  /// No description provided for @statisticsSpendingTotalTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Tracked spending'**
-  String get statisticsSpendingTotalTitle;
-
-  /// No description provided for @statisticsSpendingTotalSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'sum of captured purchases in the selected period'**
-  String get statisticsSpendingTotalSubtitle;
-
-  /// No description provided for @statisticsSpendingTrendTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Price trend'**
-  String get statisticsSpendingTrendTitle;
-
-  /// No description provided for @statisticsSpendingTrendEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No recurring products with usable price history in the selected period yet.'**
-  String get statisticsSpendingTrendEmpty;
-
-  /// No description provided for @statisticsSpendingStoresTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Top stores'**
-  String get statisticsSpendingStoresTitle;
-
-  /// No description provided for @statisticsTopStoresEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No stores with useful values in this period yet.'**
-  String get statisticsTopStoresEmpty;
-
-  /// No description provided for @statisticsSpendingChartTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Spending by receipt date'**
-  String get statisticsSpendingChartTitle;
-
-  /// No description provided for @statisticsSpendingChartSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'The chart uses the real receiptDate and shows the latest shopping days for the selected filter.'**
-  String get statisticsSpendingChartSubtitle;
-
-  /// No description provided for @statisticsSpendingChartEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'As soon as dated receipt data exists, your spending timeline will show up here.'**
-  String get statisticsSpendingChartEmpty;
-
-  /// No description provided for @statisticsSpendingItemsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Most expensive items'**
-  String get statisticsSpendingItemsTitle;
-
-  /// No description provided for @statisticsExpensiveItemsEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No cost-relevant items in this period yet.'**
-  String get statisticsExpensiveItemsEmpty;
-
-  /// No description provided for @statisticsWasteOverviewTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Food waste overview'**
-  String get statisticsWasteOverviewTitle;
-
-  /// No description provided for @statisticsWasteTrackingMissingValue.
-  ///
-  /// In en, this message translates to:
-  /// **'No history yet'**
-  String get statisticsWasteTrackingMissingValue;
-
-  /// No description provided for @statisticsWasteTrackingMissingMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Discard events and reasons are not persisted yet.'**
-  String get statisticsWasteTrackingMissingMessage;
-
-  /// No description provided for @statisticsWasteOverviewSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'{eventCount, plural, =1{1 discard event · {lossValue} tracked loss} other{{eventCount} discard events · {lossValue} tracked loss}}'**
-  String statisticsWasteOverviewSummary(int eventCount, Object lossValue);
-
-  /// No description provided for @statisticsWasteRatioTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Ratio & money loss'**
-  String get statisticsWasteRatioTitle;
-
-  /// No description provided for @statisticsWasteMoneyLossMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Once discarded values are tracked, the ratio and exact money loss will appear here.'**
-  String get statisticsWasteMoneyLossMissing;
-
-  /// No description provided for @statisticsWasteMoneyLossTracked.
-  ///
-  /// In en, this message translates to:
-  /// **'Tracked value of thrown-away food in this period.'**
-  String get statisticsWasteMoneyLossTracked;
-
-  /// No description provided for @statisticsWasteReasonsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Waste reasons'**
-  String get statisticsWasteReasonsTitle;
-
-  /// No description provided for @statisticsWasteReasonsMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Add reasons such as expired or cooked too much when throwing items away so we can surface patterns.'**
-  String get statisticsWasteReasonsMissing;
-
-  /// No description provided for @statisticsWasteReasonsTopSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Most common reason across {count} discard events.'**
-  String statisticsWasteReasonsTopSummary(int count);
-
-  /// No description provided for @statisticsWasteItemsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Often discarded'**
-  String get statisticsWasteItemsTitle;
-
-  /// No description provided for @statisticsWasteItemsMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Once enough discard events exist, your most frequent problem items will show up here.'**
-  String get statisticsWasteItemsMissing;
-
-  /// No description provided for @statisticsWasteItemsTopSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{discarded once} other{discarded {count} times}}'**
-  String statisticsWasteItemsTopSummary(int count);
-
-  /// No description provided for @statisticsCaloriesOverviewTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Calories overview'**
-  String get statisticsCaloriesOverviewTitle;
-
-  /// No description provided for @statisticsCaloriesOverviewSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'{trackedDays} tracked days · {entries} entries'**
-  String statisticsCaloriesOverviewSummary(int trackedDays, int entries);
-
-  /// No description provided for @statisticsCaloriesStreakTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Goal streak'**
-  String get statisticsCaloriesStreakTitle;
-
-  /// No description provided for @statisticsCaloriesStreakSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'{goalDays} of {trackedDays} days within goal'**
-  String statisticsCaloriesStreakSummary(int goalDays, int trackedDays);
-
-  /// No description provided for @statisticsCaloriesBufferTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Weekly balance'**
-  String get statisticsCaloriesBufferTitle;
-
-  /// No description provided for @statisticsCaloriesBufferSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'current balance against your goal'**
-  String get statisticsCaloriesBufferSubtitle;
-
-  /// No description provided for @statisticsCaloriesChartTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily view'**
-  String get statisticsCaloriesChartTitle;
-
-  /// No description provided for @statisticsCaloriesChartSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Recent days with eaten calories and goal marker.'**
-  String get statisticsCaloriesChartSubtitle;
-
-  /// No description provided for @statisticsCaloriesChartEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'As soon as calorie entries exist, your daily view will show up here.'**
-  String get statisticsCaloriesChartEmpty;
-
-  /// No description provided for @statisticsCaloriesMacrosTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Macro split'**
-  String get statisticsCaloriesMacrosTitle;
-
-  /// No description provided for @statisticsCaloriesMacroChartSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Share of calories coming from carbs, protein, and fat.'**
-  String get statisticsCaloriesMacroChartSubtitle;
-
-  /// No description provided for @statisticsCaloriesNoEntries.
-  ///
-  /// In en, this message translates to:
-  /// **'No calorie entries in this period yet.'**
-  String get statisticsCaloriesNoEntries;
-
-  /// No description provided for @statisticsChartGoalLegend.
-  ///
-  /// In en, this message translates to:
-  /// **'Goal marker'**
-  String get statisticsChartGoalLegend;
-
-  /// No description provided for @statisticsMetricNoTrend.
-  ///
-  /// In en, this message translates to:
-  /// **'No trend yet'**
-  String get statisticsMetricNoTrend;
-
-  /// No description provided for @statisticsMetricNoData.
-  ///
-  /// In en, this message translates to:
-  /// **'No data yet'**
-  String get statisticsMetricNoData;
-
-  /// No description provided for @statisticsLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load statistics.'**
-  String get statisticsLoadFailed;
 
   /// No description provided for @commonUndoAction.
   ///

@@ -51,8 +51,6 @@ void main() {
       AppRoutes.homeInventoryTemplateDetailPath('template-1'),
       '/home/inventory/templates/template-1',
     );
-    expect(AppRoutes.homeStatistics, '/home/statistics');
-    expect(AppRoutes.homeStatisticsWeight, '/home/statistics/weight');
     expect(AppRoutes.homeSettings, '/home/settings');
     expect(AppRoutes.homeSettingsAccount, '/home/settings/account');
     expect(AppRoutes.homeSettingsHousehold, '/home/settings/household');
