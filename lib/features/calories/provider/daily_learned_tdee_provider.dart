@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -27,6 +28,9 @@ import 'package:yamt/features/health/presentation/controllers/'
     'manual_health_weight_entries_controller.dart';
 
 part 'daily_learned_tdee_provider.g.dart';
+
+const _dayKeyListEquality = ListEquality<String>();
+const _storedGoalListEquality = ListEquality<double>();
 
 /// Weekly learned TDEE target that is stable until the next boundary.
 class DailyLearnedTdeeGoalData {
@@ -65,6 +69,19 @@ class DailyLearnedTdeeGoalDayRequest {
 
   /// Stored kcal goal for [day].
   final double storedGoalKcal;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is DailyLearnedTdeeGoalDayRequest &&
+        isSameDiaryDay(other.day, day) &&
+        other.storedGoalKcal == storedGoalKcal;
+  }
+
+  @override
+  int get hashCode => Object.hash(diaryDayKey(day), storedGoalKcal);
 }
 
 /// Stable request key for learned TDEE batch resolution.
@@ -118,41 +135,17 @@ class DailyLearnedTdeeGoalDaysRequest {
     }
     return other is DailyLearnedTdeeGoalDaysRequest &&
         isSameDiaryDay(other.today, today) &&
-        _sameKeys(other._dayKeys) &&
-        _sameStoredGoals(other._storedGoals);
+        _dayKeyListEquality.equals(_dayKeys, other._dayKeys) &&
+        _storedGoalListEquality.equals(_storedGoals, other._storedGoals);
   }
 
   @override
   int get hashCode {
     return Object.hash(
       diaryDayKey(today),
-      Object.hashAll(_dayKeys),
-      Object.hashAll(_storedGoals),
+      _dayKeyListEquality.hash(_dayKeys),
+      _storedGoalListEquality.hash(_storedGoals),
     );
-  }
-
-  bool _sameKeys(List<String> otherKeys) {
-    if (_dayKeys.length != otherKeys.length) {
-      return false;
-    }
-    for (var index = 0; index < _dayKeys.length; index += 1) {
-      if (_dayKeys[index] != otherKeys[index]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  bool _sameStoredGoals(List<double> otherGoals) {
-    if (_storedGoals.length != otherGoals.length) {
-      return false;
-    }
-    for (var index = 0; index < _storedGoals.length; index += 1) {
-      if (_storedGoals[index] != otherGoals[index]) {
-        return false;
-      }
-    }
-    return true;
   }
 }
 

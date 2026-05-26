@@ -1,5 +1,6 @@
 import 'dart:developer' show log;
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
@@ -18,6 +19,7 @@ import 'package:yamt/features/health/presentation/controllers/health_connection_
 part 'calorie_resolved_goal_provider.g.dart';
 
 const _resolvedGoalLogName = 'ResolvedCalorieGoalProvider';
+const _dayKeyListEquality = ListEquality<String>();
 
 /// Defines resolved calorie goal data.
 class ResolvedCalorieGoalData {
@@ -105,23 +107,11 @@ class ResolvedCalorieGoalDaysRequest {
       return true;
     }
     return other is ResolvedCalorieGoalDaysRequest &&
-        _hasSameDayKeys(other._dayKeys);
+        _dayKeyListEquality.equals(_dayKeys, other._dayKeys);
   }
 
   @override
-  int get hashCode => Object.hashAll(_dayKeys);
-
-  bool _hasSameDayKeys(List<String> otherKeys) {
-    if (_dayKeys.length != otherKeys.length) {
-      return false;
-    }
-    for (var index = 0; index < _dayKeys.length; index += 1) {
-      if (_dayKeys[index] != otherKeys[index]) {
-        return false;
-      }
-    }
-    return true;
-  }
+  int get hashCode => _dayKeyListEquality.hash(_dayKeys);
 }
 
 /// Resolved calorie goals keyed by diary day key.

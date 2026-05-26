@@ -176,6 +176,133 @@ Future<DailyLearnedTdeeGoalData?> _readDailyLearned(
 }
 
 void main() {
+  test('batch request equality normalizes days and stored goals', () {
+    final today = DateTime(2026, 4, 28, 18);
+    final firstDay = DateTime(2026, 4, 14, 7);
+    final sameFirstDay = DateTime(2026, 4, 14, 23);
+    final secondDay = DateTime(2026, 4, 15);
+    final firstRequest = DailyLearnedTdeeGoalDayRequest(
+      day: firstDay,
+      storedGoalKcal: 2400,
+    );
+    final sameFirstRequest = DailyLearnedTdeeGoalDayRequest(
+      day: sameFirstDay,
+      storedGoalKcal: 2400,
+    );
+    final secondRequest = DailyLearnedTdeeGoalDayRequest(
+      day: secondDay,
+      storedGoalKcal: 2500,
+    );
+
+    expect(firstRequest, sameFirstRequest);
+    expect(firstRequest.hashCode, sameFirstRequest.hashCode);
+    expect(
+      firstRequest ==
+          DailyLearnedTdeeGoalDayRequest(
+            day: sameFirstDay,
+            storedGoalKcal: 2401,
+          ),
+      isFalse,
+    );
+
+    final request = DailyLearnedTdeeGoalDaysRequest(
+      today: today,
+      days: <DailyLearnedTdeeGoalDayRequest>[
+        firstRequest,
+        secondRequest,
+      ],
+    );
+    final sameRequest = DailyLearnedTdeeGoalDaysRequest(
+      today: DateTime(2026, 4, 28),
+      days: <DailyLearnedTdeeGoalDayRequest>[
+        sameFirstRequest,
+        secondRequest,
+      ],
+    );
+    final duplicateRequest = DailyLearnedTdeeGoalDaysRequest(
+      today: today,
+      days: <DailyLearnedTdeeGoalDayRequest>[
+        firstRequest,
+        sameFirstRequest,
+        secondRequest,
+      ],
+    );
+    final reversedRequest = DailyLearnedTdeeGoalDaysRequest(
+      today: today,
+      days: <DailyLearnedTdeeGoalDayRequest>[
+        secondRequest,
+        firstRequest,
+      ],
+    );
+    final changedGoalRequest = DailyLearnedTdeeGoalDaysRequest(
+      today: today,
+      days: <DailyLearnedTdeeGoalDayRequest>[
+        DailyLearnedTdeeGoalDayRequest(
+          day: firstDay,
+          storedGoalKcal: 2401,
+        ),
+        secondRequest,
+      ],
+    );
+
+    expect(request, sameRequest);
+    expect(request.hashCode, sameRequest.hashCode);
+    expect(request, duplicateRequest);
+    expect(request == reversedRequest, isFalse);
+    expect(request == changedGoalRequest, isFalse);
+  });
+
+  test(
+    'batch learned TDEE keeps missing days null without swapping data',
+    () async {
+      final startDay = DateTime(2026, 4);
+      final availableDay = startDay.add(
+        const Duration(days: dailyLearnedTdeeMaximumLookbackDays),
+      );
+      final missingDay = startDay.add(const Duration(days: 1));
+      final harness = _DailyLearnedHarness(
+        settings: _learnedSettings(
+          startDay: startDay,
+          windowEndDate: startDay.add(const Duration(days: 6)),
+        ),
+        entries: _dailyEntries(
+          startDay: startDay,
+          count: dailyLearnedTdeeMaximumLookbackDays,
+          kcalForIndex: (_) => 2500,
+        ),
+        healthWeights: _stableBoundaryWeights(
+          startDay: startDay,
+          boundaryCount: 4,
+        ),
+      );
+      addTearDown(harness.dispose);
+
+      final result = await harness.container.read(
+        dailyLearnedTdeeGoalsForDaysProvider(
+          DailyLearnedTdeeGoalDaysRequest(
+            today: availableDay,
+            days: <DailyLearnedTdeeGoalDayRequest>[
+              DailyLearnedTdeeGoalDayRequest(
+                day: availableDay,
+                storedGoalKcal: 2400,
+              ),
+              DailyLearnedTdeeGoalDayRequest(
+                day: missingDay,
+                storedGoalKcal: 2400,
+              ),
+            ],
+          ),
+        ).future,
+      );
+
+      final availableResult = result[diaryDayKey(availableDay)];
+      expect(result.length, 2);
+      expect(availableResult, isNotNull);
+      expect(availableResult!.newGoalKcal, closeTo(2475.99, 0.01));
+      expect(result[diaryDayKey(missingDay)], isNull);
+    },
+  );
+
   test('calculates learned TDEE from 28 complete intake days', () async {
     final startDay = DateTime(2026, 4);
     final today = startDay.add(
