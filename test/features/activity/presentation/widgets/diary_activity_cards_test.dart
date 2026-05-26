@@ -20,16 +20,10 @@ import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_we
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_details_content.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/diary_activity_summary.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
@@ -461,6 +455,117 @@ void main() {
     expect(loadCount, 1);
     final l10n = _l10n(tester);
     expect(find.text(l10n.diaryActivityTitle.toUpperCase()), findsOneWidget);
+  });
+
+  testWidgets('activity and weight section debounces day changes', (
+    tester,
+  ) async {
+    final nextDay = selectedDay.add(const Duration(days: 1));
+    final finalDay = selectedDay.add(const Duration(days: 2));
+    var visibleDay = selectedDay;
+    var selectedDayLoadCount = 0;
+    var nextDayLoadCount = 0;
+    var finalDayLoadCount = 0;
+    late StateSetter setHostState;
+
+    Override dataOverride(DateTime day, void Function() onLoad) {
+      return diaryActivityWeightDataProvider(day).overrideWith((ref) async {
+        onLoad();
+        return _activityWeightData(
+          day,
+          activityKcal: 450,
+          selectedWeightKg: 78.4,
+          hasSelectedDayWeight: true,
+        );
+      });
+    }
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ..._commonOverrides(),
+          _stepsSummaryOverride(
+            selectedDay,
+            _activitySummary(
+              selectedDay,
+              totalSteps: 6500,
+              stepsDuringWorkouts: 0,
+              stepsOutsideWorkouts: 6500,
+            ),
+          ),
+          _stepsSummaryOverride(
+            nextDay,
+            _activitySummary(
+              nextDay,
+              totalSteps: 7100,
+              stepsDuringWorkouts: 0,
+              stepsOutsideWorkouts: 7100,
+            ),
+          ),
+          _stepsSummaryOverride(
+            finalDay,
+            _activitySummary(
+              finalDay,
+              totalSteps: 8200,
+              stepsDuringWorkouts: 0,
+              stepsOutsideWorkouts: 8200,
+            ),
+          ),
+          dataOverride(selectedDay, () {
+            selectedDayLoadCount += 1;
+          }),
+          dataOverride(nextDay, () {
+            nextDayLoadCount += 1;
+          }),
+          dataOverride(finalDay, () {
+            finalDayLoadCount += 1;
+          }),
+        ],
+        child: MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                setHostState = setState;
+                return DiaryActivityWeightSection(selectedDay: visibleDay);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pump();
+
+    expect(selectedDayLoadCount, 1);
+    expect(nextDayLoadCount, 0);
+    expect(finalDayLoadCount, 0);
+
+    setHostState(() {
+      visibleDay = nextDay;
+    });
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 399));
+
+    expect(nextDayLoadCount, 0);
+
+    setHostState(() {
+      visibleDay = finalDay;
+    });
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 399));
+
+    expect(nextDayLoadCount, 0);
+    expect(finalDayLoadCount, 0);
+
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump();
+
+    expect(nextDayLoadCount, 0);
+    expect(finalDayLoadCount, 1);
   });
 
   testWidgets('activity and weight cards retry after load error', (
@@ -943,114 +1048,7 @@ void main() {
     await expectLater(saveFuture, completion(isTrue));
     expect(refreshCompleted, isTrue);
   });
-
-  test(
-    'activity weight data provider combines health and manual weights',
-    () async {
-      final selectedDay = DateTime(2026, 4, 27);
-      final previousDay = selectedDay.subtract(const Duration(days: 1));
-      final olderTrendDay = selectedDay.subtract(const Duration(days: 2));
-      final workout = _workout(
-        selectedDay,
-        activityLabel: 'Walk',
-        durationMinutes: 30,
-        totalCalories: 150,
-        sourceName: 'Health Connect',
-      );
-      final healthWeightSample = HealthWeightSample(
-        recordedAt: selectedDay.add(const Duration(hours: 7)),
-        weightKg: 77.1,
-        uuid: 'selected-health-weight',
-        sourcePackageName: 'de.yamt.app',
-        isFromThisApp: true,
-      );
-      final olderTrendSample = HealthWeightSample(
-        recordedAt: olderTrendDay.add(const Duration(hours: 7)),
-        weightKg: 79.4,
-        uuid: 'older-trend-weight',
-        sourcePackageName: 'external.app',
-      );
-      final newerTrendSample = HealthWeightSample(
-        recordedAt: olderTrendDay.add(const Duration(hours: 18)),
-        weightKg: 78.9,
-        uuid: 'newer-trend-weight',
-        sourcePackageName: 'external.app',
-      );
-      final container = ProviderContainer(
-        overrides: [
-          ..._commonOverrides(),
-          calorieGoalControllerProvider.overrideWith(
-            () => _FakeCalorieGoalController(
-              CalorieGoalSettings.single(
-                dailyKcalGoal: 2200,
-                calculatorProfile: const CalorieCalculatorProfile.defaults(),
-                effectiveDate: selectedDay,
-              ),
-            ),
-          ),
-          healthConnectionServiceProvider.overrideWith(
-            (ref) => FakeHealthConnectionService(_readyHealthStatus),
-          ),
-          diaryHealthServiceProvider.overrideWith(
-            (ref) => FakeDiaryHealthService({
-              diaryDayKey(selectedDay): DiaryHealthDayData(
-                totalSteps: 4000,
-                workouts: [workout],
-              ),
-            }),
-          ),
-          healthWeightServiceProvider.overrideWith(
-            (ref) => FakeHealthWeightService([
-              healthWeightSample,
-              olderTrendSample,
-              newerTrendSample,
-            ]),
-          ),
-          manualHealthWeightRepositoryProvider.overrideWith(
-            (ref) => FakeManualHealthWeightRepository([
-              ManualHealthWeightEntry(day: selectedDay, weightKg: 76.8),
-              ManualHealthWeightEntry(day: previousDay, weightKg: 77.4),
-            ]),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final data = await container.read(
-        diaryActivityWeightDataProvider(selectedDay).future,
-      );
-
-      expect(data.healthAccessState, HealthDataAccessState.ready);
-      expect(data.activityKcal, 250);
-      expect(data.activeMinutes, 30);
-      expect(data.profileWeightKg, 80);
-      expect(data.selectedWeightKg, 76.8);
-      expect(data.hasSelectedDayWeight, isTrue);
-      expect(data.activityTrend.last, 250);
-      expect(data.weightTrend[4], 78.9);
-      expect(data.weightTrend[5], 77.4);
-      expect(data.weightTrend.last, 76.8);
-      expect(data.weightDays.last.canDeleteWeight, isTrue);
-      expect(data.weightDays[4].canDeleteWeight, isFalse);
-    },
-  );
 }
-
-class _FakeCalorieGoalController extends CalorieGoalController {
-  _FakeCalorieGoalController(this.settings);
-
-  final CalorieGoalSettings settings;
-
-  @override
-  CalorieGoalSettings build() => settings;
-}
-
-const _readyHealthStatus = HealthConnectionStatus(
-  platform: HealthPlatform.android,
-  healthConnectAvailability: HealthConnectAvailability.available,
-  permissionState: HealthPermissionState.granted,
-  historyAccess: HealthHistoryAccess.granted,
-);
 
 const _historyRequiredHealthStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,

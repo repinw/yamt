@@ -5,6 +5,8 @@ import 'package:health/health.dart';
 import 'package:yamt/features/health/data/diary_health_service_mobile.dart';
 import 'package:yamt/features/health/domain/diary_activity_summary.dart';
 
+import '../../../helpers/memory_app_preferences.dart';
+
 void main() {
   test('loadDayData caches repeated same-day reads', () async {
     final day = DateTime(2026, 4, 17);
@@ -51,6 +53,7 @@ void main() {
 
     final firstRead = service.loadDayData(day: day);
     final secondRead = service.loadDayData(day: day);
+    await Future<void>.delayed(Duration.zero);
 
     expect(fakeHealth.configureCalls, 1);
     configureCompleter.complete();
@@ -65,6 +68,383 @@ void main() {
     ]);
     expect(fakeHealth.requestedHealthDataTypes, hasLength(2));
   });
+
+  test('loadDayData queues concurrent different-day reads', () async {
+    final firstDay = DateTime(2026, 4, 17);
+    final secondDay = DateTime(2026, 4, 18);
+    final firstDayEnd = firstDay.add(const Duration(days: 1));
+    final secondDayEnd = secondDay.add(const Duration(days: 1));
+    final firstStepReadCompleter = Completer<void>();
+    final fakeHealth = _FakeHealth(
+      stepReadCompleters: <String, Completer<void>>{
+        _intervalKey(firstDay, firstDayEnd): firstStepReadCompleter,
+      },
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: <String, int?>{
+        _intervalKey(firstDay, firstDayEnd): 6772,
+        _intervalKey(secondDay, secondDayEnd): 8123,
+      },
+    );
+    final service = MobileDiaryHealthService(health: fakeHealth);
+
+    final firstRead = service.loadDayData(day: firstDay);
+    final secondRead = service.loadDayData(day: secondDay);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(fakeHealth.requestedStepIntervals, <String>[
+      _intervalKey(firstDay, firstDayEnd),
+    ]);
+    expect(fakeHealth.requestedHealthDataTypes, isEmpty);
+
+    firstStepReadCompleter.complete();
+    final reads = await Future.wait([firstRead, secondRead]);
+
+    expect(reads.map((data) => data.totalSteps), <int>[6772, 8123]);
+    expect(fakeHealth.requestedStepIntervals, <String>[
+      _intervalKey(firstDay, firstDayEnd),
+      _intervalKey(secondDay, secondDayEnd),
+    ]);
+    expect(fakeHealth.requestedHealthDataTypes, <List<HealthDataType>>[
+      <HealthDataType>[HealthDataType.WORKOUT],
+      <HealthDataType>[HealthDataType.ACTIVE_ENERGY_BURNED],
+      <HealthDataType>[HealthDataType.WORKOUT],
+      <HealthDataType>[HealthDataType.ACTIVE_ENERGY_BURNED],
+    ]);
+  });
+
+  test('loadActivityTrendDays reads daily aggregate buckets', () async {
+    final firstDay = DateTime(2026, 4, 17);
+    final secondDay = DateTime(2026, 4, 18);
+    final endDay = DateTime(2026, 4, 19);
+    final fakeHealth = _FakeHealth(
+      intervalDataPoints: [
+        _buildNumericPoint(
+          type: HealthDataType.STEPS,
+          unit: HealthDataUnit.COUNT,
+          start: firstDay,
+          end: secondDay,
+          value: 4000,
+        ),
+        _buildNumericPoint(
+          type: HealthDataType.ACTIVE_ENERGY_BURNED,
+          unit: HealthDataUnit.KILOCALORIE,
+          start: firstDay,
+          end: secondDay,
+          value: 220,
+        ),
+        _buildNumericPoint(
+          type: HealthDataType.STEPS,
+          unit: HealthDataUnit.COUNT,
+          start: secondDay,
+          end: endDay,
+          value: 3000,
+        ),
+      ],
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: const <String, int?>{},
+    );
+    final service = MobileDiaryHealthService(health: fakeHealth);
+
+    final trendDays = await service.loadActivityTrendDays(
+      startInclusive: firstDay,
+      endExclusive: endDay,
+    );
+
+    expect(fakeHealth.requestedIntervalTypes, <List<HealthDataType>>[
+      <HealthDataType>[
+        HealthDataType.STEPS,
+        HealthDataType.ACTIVE_ENERGY_BURNED,
+      ],
+    ]);
+    expect(trendDays.map((day) => day.day), <DateTime>[firstDay, secondDay]);
+    expect(trendDays.map((day) => day.totalSteps), <int>[4000, 3000]);
+    expect(trendDays.map((day) => day.activeEnergyKcal), <int>[220, 0]);
+  });
+
+  test(
+    'loadActivityTrendDays reads persisted trend before health connect',
+    () async {
+      final firstDay = DateTime(2026, 4, 17);
+      final secondDay = DateTime(2026, 4, 18);
+      final endDay = DateTime(2026, 4, 19);
+      final preferences = MemoryAppPreferences();
+      final fakeHealth = _FakeHealth(
+        intervalDataPoints: [
+          _buildNumericPoint(
+            type: HealthDataType.STEPS,
+            unit: HealthDataUnit.COUNT,
+            start: firstDay,
+            end: secondDay,
+            value: 4000,
+          ),
+          _buildNumericPoint(
+            type: HealthDataType.ACTIVE_ENERGY_BURNED,
+            unit: HealthDataUnit.KILOCALORIE,
+            start: firstDay,
+            end: secondDay,
+            value: 220,
+          ),
+        ],
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final service = MobileDiaryHealthService(
+        health: fakeHealth,
+        preferences: preferences,
+        now: () => DateTime(2026, 4, 27, 12),
+      );
+
+      final firstRead = await service.loadActivityTrendDays(
+        startInclusive: firstDay,
+        endExclusive: endDay,
+      );
+      final cachedHealth = _FakeHealth(
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final cachedService = MobileDiaryHealthService(
+        health: cachedHealth,
+        preferences: preferences,
+        now: () => DateTime(2026, 4, 27, 12, 1),
+      );
+      final cachedRead = await cachedService.loadActivityTrendDays(
+        startInclusive: firstDay,
+        endExclusive: endDay,
+      );
+
+      expect(firstRead.map((day) => day.totalSteps), <int>[4000, 0]);
+      expect(cachedRead.map((day) => day.totalSteps), <int>[4000, 0]);
+      expect(cachedRead.map((day) => day.activeEnergyKcal), <int>[220, 0]);
+      expect(cachedHealth.configureCalls, 0);
+      expect(cachedHealth.requestedIntervalTypes, isEmpty);
+    },
+  );
+
+  test(
+    'loadActivityTrendDays resets malformed persisted trend index',
+    () async {
+      final firstDay = DateTime(2026, 4, 17);
+      final endDay = DateTime(2026, 4, 18);
+      final preferences = MemoryAppPreferences(
+        initialStrings: const <String, String>{
+          'diary_health_activity_trend_cache_v1:index': '{bad',
+        },
+      );
+      final fakeHealth = _FakeHealth(
+        intervalDataPoints: [
+          _buildNumericPoint(
+            type: HealthDataType.STEPS,
+            unit: HealthDataUnit.COUNT,
+            start: firstDay,
+            end: endDay,
+            value: 4000,
+          ),
+        ],
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final service = MobileDiaryHealthService(
+        health: fakeHealth,
+        preferences: preferences,
+        now: () => DateTime(2026, 4, 27, 12),
+      );
+
+      final trendDays = await service.loadActivityTrendDays(
+        startInclusive: firstDay,
+        endExclusive: endDay,
+      );
+      final indexValue = await preferences.getString(
+        'diary_health_activity_trend_cache_v1:index',
+      );
+
+      expect(trendDays.single.totalSteps, 4000);
+      expect(indexValue, isNot('{bad'));
+      expect(indexValue, contains('${firstDay.millisecondsSinceEpoch}:'));
+    },
+  );
+
+  test(
+    'loadActivityTrendDays uses expired persisted cache after failure',
+    () async {
+      final firstDay = DateTime(2026, 4, 17);
+      final secondDay = DateTime(2026, 4, 18);
+      final endDay = DateTime(2026, 4, 19);
+      final preferences = MemoryAppPreferences();
+      var now = DateTime(2026, 4, 27, 12);
+      final fakeHealth = _FakeHealth(
+        intervalDataPoints: [
+          _buildNumericPoint(
+            type: HealthDataType.STEPS,
+            unit: HealthDataUnit.COUNT,
+            start: firstDay,
+            end: secondDay,
+            value: 4000,
+          ),
+        ],
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final service = MobileDiaryHealthService(
+        health: fakeHealth,
+        preferences: preferences,
+        now: () => now,
+      );
+
+      final firstRead = await service.loadActivityTrendDays(
+        startInclusive: firstDay,
+        endExclusive: endDay,
+      );
+      now = now.add(const Duration(hours: 13));
+      final failingHealth = _FakeHealth(
+        intervalDataFailuresRemaining: 1,
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final staleService = MobileDiaryHealthService(
+        health: failingHealth,
+        preferences: preferences,
+        now: () => now,
+      );
+      final staleRead = await staleService.loadActivityTrendDays(
+        startInclusive: firstDay,
+        endExclusive: endDay,
+      );
+
+      expect(firstRead.map((day) => day.totalSteps), <int>[4000, 0]);
+      expect(staleRead.map((day) => day.totalSteps), <int>[4000, 0]);
+      expect(failingHealth.requestedIntervalTypes, <List<HealthDataType>>[
+        <HealthDataType>[
+          HealthDataType.STEPS,
+          HealthDataType.ACTIVE_ENERGY_BURNED,
+        ],
+      ]);
+    },
+  );
+
+  test(
+    'loadActivityTrendDays drops persisted cache after hard stale age',
+    () async {
+      final firstDay = DateTime(2026, 4, 17);
+      final secondDay = DateTime(2026, 4, 18);
+      final endDay = DateTime(2026, 4, 19);
+      final preferences = MemoryAppPreferences();
+      var now = DateTime(2026, 4, 27, 12);
+      final fakeHealth = _FakeHealth(
+        intervalDataPoints: [
+          _buildNumericPoint(
+            type: HealthDataType.STEPS,
+            unit: HealthDataUnit.COUNT,
+            start: firstDay,
+            end: secondDay,
+            value: 4000,
+          ),
+        ],
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final service = MobileDiaryHealthService(
+        health: fakeHealth,
+        preferences: preferences,
+        now: () => now,
+      );
+
+      final firstRead = await service.loadActivityTrendDays(
+        startInclusive: firstDay,
+        endExclusive: endDay,
+      );
+      now = now.add(const Duration(days: 8));
+      final failingHealth = _FakeHealth(
+        intervalDataFailuresRemaining: 1,
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final staleService = MobileDiaryHealthService(
+        health: failingHealth,
+        preferences: preferences,
+        now: () => now,
+      );
+
+      await expectLater(
+        staleService.loadActivityTrendDays(
+          startInclusive: firstDay,
+          endExclusive: endDay,
+        ),
+        throwsA(isA<StateError>()),
+      );
+
+      expect(firstRead.map((day) => day.totalSteps), <int>[4000, 0]);
+      expect(failingHealth.requestedIntervalTypes, <List<HealthDataType>>[
+        <HealthDataType>[
+          HealthDataType.STEPS,
+          HealthDataType.ACTIVE_ENERGY_BURNED,
+        ],
+      ]);
+    },
+  );
+
+  test(
+    'loadActivityTrendDays evicts old persisted entries through index',
+    () async {
+      final preferences = MemoryAppPreferences();
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final service = MobileDiaryHealthService(
+        health: fakeHealth,
+        preferences: preferences,
+        now: () => DateTime(2026, 4, 27, 12),
+      );
+
+      for (var offset = 0; offset < 31; offset += 1) {
+        final day = DateTime(2026, 4, 1 + offset);
+        await service.loadActivityTrendDays(
+          startInclusive: day,
+          endExclusive: day.add(const Duration(days: 1)),
+        );
+      }
+
+      final firstDay = DateTime(2026, 4);
+      final lastDay = DateTime(2026, 5);
+      final reloadHealth = _FakeHealth(
+        intervalDataPoints: [
+          _buildNumericPoint(
+            type: HealthDataType.STEPS,
+            unit: HealthDataUnit.COUNT,
+            start: firstDay,
+            end: firstDay.add(const Duration(days: 1)),
+            value: 9000,
+          ),
+        ],
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+        totalStepsResponses: const <String, int?>{},
+      );
+      final reloadService = MobileDiaryHealthService(
+        health: reloadHealth,
+        preferences: preferences,
+        now: () => DateTime(2026, 4, 27, 12, 1),
+      );
+
+      final firstRead = await reloadService.loadActivityTrendDays(
+        startInclusive: firstDay,
+        endExclusive: firstDay.add(const Duration(days: 1)),
+      );
+      final lastRead = await reloadService.loadActivityTrendDays(
+        startInclusive: lastDay,
+        endExclusive: lastDay.add(const Duration(days: 1)),
+      );
+
+      expect(firstRead.single.totalSteps, 9000);
+      expect(lastRead.single.totalSteps, 0);
+      expect(reloadHealth.requestedIntervalTypes, hasLength(1));
+    },
+  );
 
   test('loadDayData retries after in-flight health read fails', () async {
     final day = DateTime(2026, 4, 17);
@@ -100,7 +480,7 @@ void main() {
   });
 
   test('loadDayData refreshes cache after ttl expires', () async {
-    final day = DateTime(2026, 4, 17);
+    final day = DateTime(2026, 4, 27);
     final dayEnd = day.add(const Duration(days: 1));
     var now = DateTime(2026, 4, 27, 12);
     final totalStepsResponses = <String, int?>{
@@ -128,6 +508,203 @@ void main() {
     expect(fakeHealth.requestedStepIntervals, <String>[
       _intervalKey(day, dayEnd),
       _intervalKey(day, dayEnd),
+    ]);
+  });
+
+  test('loadDayData keeps historical cache beyond today ttl', () async {
+    final day = DateTime(2026, 4, 17);
+    final dayEnd = day.add(const Duration(days: 1));
+    var now = DateTime(2026, 4, 27, 12);
+    final totalStepsResponses = <String, int?>{
+      _intervalKey(day, dayEnd): 6772,
+    };
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: totalStepsResponses,
+    );
+    final service = MobileDiaryHealthService(
+      health: fakeHealth,
+      now: () => now,
+    );
+
+    final firstRead = await service.loadDayData(day: day);
+    totalStepsResponses[_intervalKey(day, dayEnd)] = 7000;
+    now = now.add(const Duration(minutes: 6));
+    final secondRead = await service.loadDayData(day: day);
+
+    expect(firstRead.totalSteps, 6772);
+    expect(secondRead.totalSteps, 6772);
+    expect(fakeHealth.requestedStepIntervals, <String>[
+      _intervalKey(day, dayEnd),
+    ]);
+  });
+
+  test('loadDayData does not persist raw day cache', () async {
+    final day = DateTime(2026, 4, 17);
+    final dayEnd = day.add(const Duration(days: 1));
+    final workoutStart = day.add(const Duration(hours: 18));
+    final workoutEnd = day.add(const Duration(hours: 19));
+    final preferences = MemoryAppPreferences();
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[
+          _buildWorkoutPoint(
+            start: workoutStart,
+            end: workoutEnd,
+            totalCalories: 240,
+            totalSteps: 2800,
+          ),
+        ],
+        HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+      },
+      totalStepsResponses: <String, int?>{
+        _intervalKey(day, dayEnd): 6772,
+      },
+    );
+    final service = MobileDiaryHealthService(
+      health: fakeHealth,
+      preferences: preferences,
+      now: () => DateTime(2026, 4, 27, 12),
+    );
+
+    final firstRead = await service.loadDayData(day: day);
+    final cachedHealth = _FakeHealth(
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: <String, int?>{
+        _intervalKey(day, dayEnd): 8123,
+      },
+    );
+    final cachedService = MobileDiaryHealthService(
+      health: cachedHealth,
+      preferences: preferences,
+      now: () => DateTime(2026, 4, 27, 12, 1),
+    );
+    final cachedRead = await cachedService.loadDayData(day: day);
+
+    expect(firstRead.totalSteps, 6772);
+    expect(cachedRead.totalSteps, 8123);
+    expect(cachedRead.workouts, isEmpty);
+    expect(cachedHealth.configureCalls, 1);
+    expect(cachedHealth.requestedStepIntervals, <String>[
+      _intervalKey(day, dayEnd),
+    ]);
+  });
+
+  test(
+    'loadDayData drops stale cache after hard stale age',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      var now = DateTime(2026, 4, 27, 12);
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 6772,
+        },
+      );
+      final service = MobileDiaryHealthService(
+        health: fakeHealth,
+        now: () => now,
+      );
+
+      final firstRead = await service.loadDayData(day: day);
+      fakeHealth.healthDataFailuresRemaining = 1;
+      now = now.add(const Duration(days: 8));
+
+      await expectLater(
+        service.loadDayData(day: day),
+        throwsA(isA<StateError>()),
+      );
+
+      expect(firstRead.totalSteps, 6772);
+      expect(fakeHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+        _intervalKey(day, dayEnd),
+      ]);
+      expect(fakeHealth.requestedHealthDataTypes, <List<HealthDataType>>[
+        <HealthDataType>[HealthDataType.WORKOUT],
+        <HealthDataType>[HealthDataType.ACTIVE_ENERGY_BURNED],
+        <HealthDataType>[HealthDataType.WORKOUT],
+      ]);
+    },
+  );
+
+  test('loadDayData keeps stale cache after empty refresh', () async {
+    final day = DateTime(2026, 4, 17);
+    final dayEnd = day.add(const Duration(days: 1));
+    var now = DateTime(2026, 4, 27, 12);
+    final totalStepsResponses = <String, int?>{
+      _intervalKey(day, dayEnd): 6772,
+    };
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: totalStepsResponses,
+    );
+    final service = MobileDiaryHealthService(
+      health: fakeHealth,
+      now: () => now,
+    );
+
+    final firstRead = await service.loadDayData(day: day);
+    totalStepsResponses[_intervalKey(day, dayEnd)] = null;
+    now = now.add(const Duration(hours: 13));
+    final staleRead = await service.loadDayData(day: day);
+    final cachedStaleRead = await service.loadDayData(day: day);
+
+    expect(firstRead.totalSteps, 6772);
+    expect(staleRead.totalSteps, 6772);
+    expect(cachedStaleRead.totalSteps, 6772);
+    expect(fakeHealth.requestedStepIntervals, <String>[
+      _intervalKey(day, dayEnd),
+      _intervalKey(day, dayEnd),
+    ]);
+  });
+
+  test('loadDayData keeps stale cache after refresh failure', () async {
+    final day = DateTime(2026, 4, 17);
+    final dayEnd = day.add(const Duration(days: 1));
+    var now = DateTime(2026, 4, 27, 12);
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: <String, int?>{
+        _intervalKey(day, dayEnd): 6772,
+      },
+    );
+    final service = MobileDiaryHealthService(
+      health: fakeHealth,
+      now: () => now,
+    );
+
+    final firstRead = await service.loadDayData(day: day);
+    fakeHealth.healthDataFailuresRemaining = 1;
+    now = now.add(const Duration(hours: 13));
+    final staleRead = await service.loadDayData(day: day);
+
+    expect(firstRead.totalSteps, 6772);
+    expect(staleRead.totalSteps, 6772);
+    expect(fakeHealth.requestedStepIntervals, <String>[
+      _intervalKey(day, dayEnd),
+      _intervalKey(day, dayEnd),
+    ]);
+    expect(fakeHealth.requestedHealthDataTypes, <List<HealthDataType>>[
+      <HealthDataType>[HealthDataType.WORKOUT],
+      <HealthDataType>[HealthDataType.ACTIVE_ENERGY_BURNED],
+      <HealthDataType>[HealthDataType.WORKOUT],
     ]);
   });
 
@@ -865,15 +1442,23 @@ class _FakeHealth extends Health {
   _FakeHealth({
     required this.healthDataPoints,
     required this.totalStepsResponses,
+    this.intervalDataPoints = const <HealthDataPoint>[],
     this.configureCompleter,
+    this.stepReadCompleters = const <String, Completer<void>>{},
     this.healthDataFailuresRemaining = 0,
+    this.intervalDataFailuresRemaining = 0,
   });
 
   final Map<HealthDataType, List<HealthDataPoint>> healthDataPoints;
   final Map<String, int?> totalStepsResponses;
+  final List<HealthDataPoint> intervalDataPoints;
   final Completer<void>? configureCompleter;
+  final Map<String, Completer<void>> stepReadCompleters;
   int healthDataFailuresRemaining;
+  int intervalDataFailuresRemaining;
   final List<String> requestedStepIntervals = <String>[];
+  final List<List<HealthDataType>> requestedIntervalTypes =
+      <List<HealthDataType>>[];
   final List<List<HealthDataType>> requestedHealthDataTypes =
       <List<HealthDataType>>[];
   int configureCalls = 0;
@@ -903,6 +1488,29 @@ class _FakeHealth extends Health {
   }
 
   @override
+  Future<List<HealthDataPoint>> getHealthIntervalDataFromTypes({
+    required DateTime startDate,
+    required DateTime endDate,
+    required List<HealthDataType> types,
+    required int interval,
+    List<RecordingMethod> recordingMethodsToFilter = const [],
+  }) async {
+    requestedIntervalTypes.add(types);
+    if (intervalDataFailuresRemaining > 0) {
+      intervalDataFailuresRemaining -= 1;
+      throw StateError('interval data read failed');
+    }
+    return intervalDataPoints
+        .where(
+          (point) =>
+              types.contains(point.type) &&
+              !point.dateFrom.isBefore(startDate) &&
+              point.dateFrom.isBefore(endDate),
+        )
+        .toList(growable: false);
+  }
+
+  @override
   Future<int?> getTotalStepsInInterval(
     DateTime startTime,
     DateTime endTime, {
@@ -910,8 +1518,30 @@ class _FakeHealth extends Health {
   }) async {
     final key = _intervalKey(startTime, endTime);
     requestedStepIntervals.add(key);
+    await stepReadCompleters[key]?.future;
     return totalStepsResponses[key];
   }
+}
+
+HealthDataPoint _buildNumericPoint({
+  required HealthDataType type,
+  required HealthDataUnit unit,
+  required DateTime start,
+  required DateTime end,
+  required num value,
+}) {
+  return HealthDataPoint(
+    uuid: '${type.name}-${start.millisecondsSinceEpoch}',
+    value: NumericHealthValue(numericValue: value),
+    type: type,
+    unit: unit,
+    dateFrom: start,
+    dateTo: end,
+    sourcePlatform: HealthPlatformType.appleHealth,
+    sourceDeviceId: 'device-id',
+    sourceId: 'apple.health',
+    sourceName: 'Apple Health',
+  );
 }
 
 HealthDataPoint _buildWorkoutPoint({

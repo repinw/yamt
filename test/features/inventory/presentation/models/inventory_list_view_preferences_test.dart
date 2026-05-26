@@ -1,38 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
 
-class _MemoryAppPreferences implements AppPreferences {
-  final Map<String, String> _strings = <String, String>{};
-  final Map<String, int> _ints = <String, int>{};
-
-  @override
-  String? getStringSync(String key) => _strings[key];
-
-  @override
-  int? getIntSync(String key) => _ints[key];
-
-  @override
-  Future<String?> getString(String key) async => _strings[key];
-
-  @override
-  Future<int?> getInt(String key) async => _ints[key];
-
-  @override
-  Future<bool> setString(String key, String value) async {
-    _strings[key] = value;
-    return true;
-  }
-
-  @override
-  Future<bool> setInt(String key, int value) async {
-    _ints[key] = value;
-    return true;
-  }
-}
+import '../../../../helpers/memory_app_preferences.dart';
 
 void main() {
   const store = InventoryListViewPreferencesStore();
@@ -49,7 +21,7 @@ void main() {
   });
 
   test('readSync falls back to current defaults when no values are stored', () {
-    final stored = store.readSync(_MemoryAppPreferences());
+    final stored = store.readSync(MemoryAppPreferences());
 
     expect(stored.viewMode, InventoryListViewMode.list);
     expect(stored.consumptionFilter.hideFullyConsumedItems, isTrue);
@@ -65,7 +37,7 @@ void main() {
   });
 
   test('save and readSync round-trip changed values', () async {
-    final memory = _MemoryAppPreferences();
+    final memory = MemoryAppPreferences();
     const preferences = InventoryListViewPreferences(
       viewMode: InventoryListViewMode.tiles,
       inventoryItemSortMode: InventoryItemSortMode.alphabeticalDescending,

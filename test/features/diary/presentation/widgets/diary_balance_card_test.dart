@@ -1,7 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
@@ -31,6 +35,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_weekly_balance_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
 void main() {
@@ -822,11 +827,18 @@ Future<void> _pumpBalanceCard(
   );
   final selectedDayOverview = weekOverview.days.last;
   final repository = FakeCalorieLogRepository();
+  final auth = _MockFirebaseAuth();
   addTearDown(repository.dispose);
+  when(() => auth.currentUser).thenReturn(null);
 
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(null),
+        ),
+        firebaseAuthProvider.overrideWithValue(auth),
         calorieLogRepositoryProvider.overrideWithValue(repository),
         burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
         burnWeekLiveSyncProvider.overrideWith((ref) {
@@ -1092,6 +1104,8 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
     onContinueRunAfterLimitWarning?.call();
   }
 }
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 extension on Offset {
   double dxRatioWithin(Rect rect) {

@@ -59,4 +59,4 @@ final class DiaryHealthServiceProvider
 }
 
 String _$diaryHealthServiceHash() =>
-    r'c22506f45136d837552afedce894252702f25df9';
+    r'a1c574aee84f835614a151f4c5f09ba1688c922d';

@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/diary_activity_summary.dart';
+import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -15,6 +16,10 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 part 'diary_activity_weight_service.g.dart';
 
 const _logName = 'DiaryActivityWeightService';
+const _aggregateTrendKcalPolicy = _AggregateTrendKcalPolicy(
+  highActiveEnergyKcal: 1200,
+  maxActiveToStepKcalRatio: 4,
+);
 const _emptyDiaryHealthDayData = DiaryHealthDayData(
   totalSteps: 0,
   workouts: <HealthWorkoutSession>[],
@@ -33,6 +38,7 @@ class DiaryActivityWeightService {
     required List<ManualHealthWeightEntry> manualEntries,
     required DiaryHealthService diaryHealthService,
     required HealthWeightService healthWeightService,
+    bool Function()? isCancelled,
   }) async {
     final selectedDay = normalizeDiaryDay(day);
     final days = List<DateTime>.generate(
@@ -48,38 +54,55 @@ class DiaryActivityWeightService {
     int? selectedActiveMinutes;
 
     if (healthAccessState == HealthDataAccessState.ready) {
-      final dayDataList = await Future.wait(
-        days.map(
-          (trendDay) => _loadDayDataSafely(
-            diaryHealthService: diaryHealthService,
-            day: trendDay,
-            userHeightCm: userHeightCm,
-          ),
-        ),
+      final selectedDayData = await _loadDayDataSafely(
+        diaryHealthService: diaryHealthService,
+        day: selectedDay,
+        userHeightCm: userHeightCm,
       );
+      _throwIfCancelled(isCancelled);
+      final selectedSummary = buildDiaryActivitySummary(
+        day: selectedDay,
+        dayData: selectedDayData,
+      );
+      selectedActivityKcal = _resolveBurnedKcal(selectedSummary);
+      selectedActiveMinutes = _resolveActiveMinutes(selectedDayData);
 
-      for (var index = 0; index < days.length; index += 1) {
-        final summary = buildDiaryActivitySummary(
-          day: days[index],
-          dayData: dayDataList[index],
+      final trendDays = await _loadActivityTrendDaysSafely(
+        diaryHealthService: diaryHealthService,
+        startInclusive: days.first,
+        endExclusive: nextDiaryDay(days.last),
+      );
+      _throwIfCancelled(isCancelled);
+      if (trendDays == null) {
+        await _fillActivityTrendFromDayData(
+          activityTrend: activityTrend,
+          days: days,
+          selectedDay: selectedDay,
+          selectedActivityKcal: selectedActivityKcal,
+          diaryHealthService: diaryHealthService,
+          userHeightCm: userHeightCm,
+          isCancelled: isCancelled,
         );
-        final burnedKcal = _resolveBurnedKcal(summary);
-        activityTrend[index] = burnedKcal?.toDouble();
-
-        if (isSameDiaryDay(days[index], selectedDay)) {
-          selectedActivityKcal = burnedKcal;
-          selectedActiveMinutes = _resolveActiveMinutes(dayDataList[index]);
-        }
+      } else {
+        _fillActivityTrendFromAggregate(
+          activityTrend: activityTrend,
+          days: days,
+          selectedDay: selectedDay,
+          selectedActivityKcal: selectedActivityKcal,
+          trendDays: trendDays,
+        );
       }
     }
 
     final healthWeightByDay = <String, HealthWeightSample>{};
     if (healthAccessState == HealthDataAccessState.ready && days.isNotEmpty) {
+      _throwIfCancelled(isCancelled);
       final healthSamples = await _loadWeightSamplesSafely(
         healthWeightService: healthWeightService,
         startInclusive: days.first,
         endExclusive: nextDiaryDay(days.last),
       );
+      _throwIfCancelled(isCancelled);
       healthWeightByDay.addAll(_latestWeightByDay(healthSamples));
     }
 
@@ -133,6 +156,91 @@ class DiaryActivityWeightService {
       ),
       unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
     );
+  }
+
+  Future<List<DiaryHealthActivityTrendDay>?> _loadActivityTrendDaysSafely({
+    required DiaryHealthService diaryHealthService,
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    final trendService = diaryHealthService is DiaryHealthActivityTrendService
+        ? diaryHealthService as DiaryHealthActivityTrendService
+        : null;
+    if (trendService == null) {
+      return null;
+    }
+    try {
+      return await trendService.loadActivityTrendDays(
+        startInclusive: startInclusive,
+        endExclusive: endExclusive,
+      );
+    } on Exception catch (error, stackTrace) {
+      log(
+        'Failed to load diary health activity trend.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  Future<void> _fillActivityTrendFromDayData({
+    required List<double?> activityTrend,
+    required List<DateTime> days,
+    required DateTime selectedDay,
+    required int? selectedActivityKcal,
+    required DiaryHealthService diaryHealthService,
+    required double? userHeightCm,
+    required bool Function()? isCancelled,
+  }) async {
+    for (var index = 0; index < days.length; index += 1) {
+      final trendDay = days[index];
+      if (isSameDiaryDay(trendDay, selectedDay)) {
+        activityTrend[index] = selectedActivityKcal?.toDouble();
+        continue;
+      }
+      final trendDayData = await _loadDayDataSafely(
+        diaryHealthService: diaryHealthService,
+        day: trendDay,
+        userHeightCm: userHeightCm,
+      );
+      _throwIfCancelled(isCancelled);
+      final summary = buildDiaryActivitySummary(
+        day: trendDay,
+        dayData: trendDayData,
+      );
+      activityTrend[index] = _resolveBurnedKcal(summary)?.toDouble();
+    }
+  }
+
+  void _fillActivityTrendFromAggregate({
+    required List<double?> activityTrend,
+    required List<DateTime> days,
+    required DateTime selectedDay,
+    required int? selectedActivityKcal,
+    required List<DiaryHealthActivityTrendDay> trendDays,
+  }) {
+    final trendByDay = {
+      for (final trendDay in trendDays) diaryDayKey(trendDay.day): trendDay,
+    };
+    for (var index = 0; index < days.length; index += 1) {
+      final day = days[index];
+      if (isSameDiaryDay(day, selectedDay)) {
+        activityTrend[index] = selectedActivityKcal?.toDouble();
+        continue;
+      }
+      final trendDay = trendByDay[diaryDayKey(day)];
+      activityTrend[index] = trendDay == null
+          ? null
+          : _aggregateTrendKcalPolicy.resolveBurnedKcal(trendDay).toDouble();
+    }
+  }
+
+  void _throwIfCancelled(bool Function()? isCancelled) {
+    if (isCancelled?.call() ?? false) {
+      throw StateError('Diary activity weight load cancelled.');
+    }
   }
 
   Future<DiaryHealthDayData> _loadDayDataSafely({
@@ -201,6 +309,46 @@ class DiaryActivityWeightService {
       }
     }
     return Map<String, HealthWeightSample>.unmodifiable(latestSampleByDay);
+  }
+}
+
+class _AggregateTrendKcalPolicy {
+  const _AggregateTrendKcalPolicy({
+    required this.highActiveEnergyKcal,
+    required this.maxActiveToStepKcalRatio,
+  });
+
+  final int highActiveEnergyKcal;
+  final int maxActiveToStepKcalRatio;
+
+  int resolveBurnedKcal(DiaryHealthActivityTrendDay trendDay) {
+    final stepCalories = estimateOutsideActivityStepCalories(
+      trendDay.totalSteps,
+    );
+    final activeEnergyKcal = trendDay.activeEnergyKcal;
+    if (!_isTrusted(
+      activeEnergyKcal: activeEnergyKcal,
+      stepCalories: stepCalories,
+    )) {
+      return stepCalories;
+    }
+    return activeEnergyKcal > stepCalories ? activeEnergyKcal : stepCalories;
+  }
+
+  bool _isTrusted({
+    required int activeEnergyKcal,
+    required int stepCalories,
+  }) {
+    if (activeEnergyKcal <= 0) {
+      return false;
+    }
+    if (activeEnergyKcal < highActiveEnergyKcal) {
+      return true;
+    }
+    if (stepCalories <= 0) {
+      return false;
+    }
+    return activeEnergyKcal <= stepCalories * maxActiveToStepKcalRatio;
   }
 }
 

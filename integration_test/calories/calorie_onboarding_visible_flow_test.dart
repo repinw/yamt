@@ -11,7 +11,6 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -26,6 +25,8 @@ import 'package:yamt/features/onboarding/domain/'
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../test/helpers/memory_app_preferences.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
@@ -43,48 +44,10 @@ class _CalorieOnboardingIntegrationHarness {
   });
 
   final ProviderContainer container;
-  final _MemoryAppPreferences preferences;
+  final MemoryAppPreferences preferences;
   final _FakeCalorieSettingsRepository settingsRepository;
   final _FakeCalorieLogRepository logRepository;
   final _FakeBurnWeekRunStateRepository runStateRepository;
-}
-
-class _MemoryAppPreferences implements AppPreferences {
-  _MemoryAppPreferences({
-    Set<String> completedProfileSetupUserIds = const <String>{},
-  }) {
-    for (final userId in completedProfileSetupUserIds) {
-      _strings[AuthProfileSetupPreferences.keyForUser(userId)] =
-          AuthProfileSetupPreferences.completedValue;
-    }
-  }
-
-  final Map<String, String> _strings = <String, String>{};
-  final Map<String, int> _ints = <String, int>{};
-
-  @override
-  String? getStringSync(String key) => _strings[key];
-
-  @override
-  int? getIntSync(String key) => _ints[key];
-
-  @override
-  Future<String?> getString(String key) async => _strings[key];
-
-  @override
-  Future<int?> getInt(String key) async => _ints[key];
-
-  @override
-  Future<bool> setString(String key, String value) async {
-    _strings[key] = value;
-    return true;
-  }
-
-  @override
-  Future<bool> setInt(String key, int value) async {
-    _ints[key] = value;
-    return true;
-  }
 }
 
 class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
@@ -406,7 +369,7 @@ _CalorieOnboardingIntegrationHarness _buildHarness({
   final user = _authenticatedUser(uid: userId);
   final authStream = Stream<User?>.value(user).asBroadcastStream();
   final firebaseAuth = _MockFirebaseAuth();
-  final preferences = _MemoryAppPreferences(
+  final preferences = MemoryAppPreferences(
     completedProfileSetupUserIds: {userId},
   );
   final settingsRepository = _FakeCalorieSettingsRepository();

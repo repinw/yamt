@@ -4,6 +4,7 @@ import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart'
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
+import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_energy_segment.dart';
@@ -57,6 +58,91 @@ void main() {
     expect(data.weightTrend[5], 77.4);
     expect(data.weightTrend.last, 76.8);
     expect(data.weightDays.last.canDeleteWeight, isTrue);
+  });
+
+  test('uses aggregate activity trend when available', () async {
+    var rawDayLoadCount = 0;
+    final workout = _workout(selectedDay, totalCalories: 150);
+    final data = await service.load(
+      day: selectedDay,
+      profile: _profile,
+      healthStatus: _readyStatus,
+      manualEntries: const <ManualHealthWeightEntry>[],
+      diaryHealthService: _FakeTrendDiaryHealthService(
+        {
+          diaryDayKey(selectedDay): DiaryHealthDayData(
+            totalSteps: 4000,
+            workouts: [workout],
+          ),
+        },
+        trendDays: [
+          DiaryHealthActivityTrendDay(
+            day: selectedDay.subtract(const Duration(days: 1)),
+            totalSteps: 3000,
+            activeEnergyKcal: 80,
+          ),
+          DiaryHealthActivityTrendDay(
+            day: selectedDay.subtract(const Duration(days: 2)),
+            totalSteps: 1000,
+            activeEnergyKcal: 120,
+          ),
+        ],
+        onLoad: () {
+          rawDayLoadCount += 1;
+        },
+      ),
+      healthWeightService: _FakeHealthWeightService(
+        const <HealthWeightSample>[],
+      ),
+    );
+
+    expect(rawDayLoadCount, 1);
+    expect(data.activityKcal, 270);
+    expect(data.activityTrend[4], 120);
+    expect(data.activityTrend[5], 120);
+    expect(data.activityTrend.last, 270);
+  });
+
+  test('ignores suspicious total calorie aggregate trend values', () async {
+    final data = await service.load(
+      day: selectedDay,
+      profile: _profile,
+      healthStatus: _readyStatus,
+      manualEntries: const <ManualHealthWeightEntry>[],
+      diaryHealthService: _FakeTrendDiaryHealthService(
+        {
+          diaryDayKey(selectedDay): const DiaryHealthDayData(
+            totalSteps: 4000,
+            workouts: [],
+          ),
+        },
+        trendDays: [
+          DiaryHealthActivityTrendDay(
+            day: selectedDay.subtract(const Duration(days: 3)),
+            totalSteps: 0,
+            activeEnergyKcal: 1600,
+          ),
+          DiaryHealthActivityTrendDay(
+            day: selectedDay.subtract(const Duration(days: 2)),
+            totalSteps: 5000,
+            activeEnergyKcal: 2000,
+          ),
+          DiaryHealthActivityTrendDay(
+            day: selectedDay.subtract(const Duration(days: 1)),
+            totalSteps: 20000,
+            activeEnergyKcal: 1600,
+          ),
+        ],
+      ),
+      healthWeightService: _FakeHealthWeightService(
+        const <HealthWeightSample>[],
+      ),
+    );
+
+    expect(data.activityTrend[3], 0);
+    expect(data.activityTrend[4], 200);
+    expect(data.activityTrend[5], 1600);
+    expect(data.activityTrend.last, 160);
   });
 
   test('caps unassigned active energy in activity totals', () async {
@@ -217,6 +303,38 @@ void main() {
       throwsA(isA<StateError>()),
     );
   });
+
+  test('stops loading trend days after cancellation', () async {
+    var loadCount = 0;
+    final healthService = _FakeDiaryHealthService(
+      {
+        diaryDayKey(selectedDay): const DiaryHealthDayData(
+          totalSteps: 4000,
+          workouts: [],
+        ),
+      },
+      onLoad: () {
+        loadCount += 1;
+      },
+    );
+
+    await expectLater(
+      service.load(
+        day: selectedDay,
+        profile: _profile,
+        healthStatus: _readyStatus,
+        manualEntries: const <ManualHealthWeightEntry>[],
+        diaryHealthService: healthService,
+        healthWeightService: _FakeHealthWeightService(
+          const <HealthWeightSample>[],
+        ),
+        isCancelled: () => loadCount >= 1,
+      ),
+      throwsA(isA<StateError>()),
+    );
+
+    expect(loadCount, 1);
+  });
 }
 
 const _readyStatus = HealthConnectionStatus(
@@ -244,22 +362,50 @@ HealthWorkoutSession _workout(
   );
 }
 
+class _FakeTrendDiaryHealthService extends _FakeDiaryHealthService
+    implements DiaryHealthActivityTrendService {
+  _FakeTrendDiaryHealthService(
+    super.dataByDay, {
+    required this.trendDays,
+    super.onLoad,
+  });
+
+  final List<DiaryHealthActivityTrendDay> trendDays;
+
+  @override
+  Future<List<DiaryHealthActivityTrendDay>> loadActivityTrendDays({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    return trendDays
+        .where(
+          (day) =>
+              !day.day.isBefore(startInclusive) &&
+              day.day.isBefore(endExclusive),
+        )
+        .toList(growable: false);
+  }
+}
+
 class _FakeDiaryHealthService implements DiaryHealthService {
   _FakeDiaryHealthService(
     this.dataByDay, {
     this.failingDays = const <String>{},
     this.error,
+    this.onLoad,
   });
 
   final Map<String, DiaryHealthDayData> dataByDay;
   final Set<String> failingDays;
   final Error? error;
+  final void Function()? onLoad;
 
   @override
   Future<DiaryHealthDayData> loadDayData({
     required DateTime day,
     double? userHeightCm,
   }) async {
+    onLoad?.call();
     final key = diaryDayKey(day);
     if (failingDays.contains(key)) {
       final error = this.error;
