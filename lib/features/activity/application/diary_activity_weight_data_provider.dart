@@ -27,7 +27,13 @@ Future<DiaryActivityWeightData> diaryActivityWeightData(
   final diaryHealthService = ref.watch(diaryHealthServiceProvider);
   final healthWeightService = ref.watch(healthWeightServiceProvider);
   final status = await statusFuture;
+  if (!ref.mounted) {
+    throw StateError('Diary activity weight provider disposed.');
+  }
   final manualEntries = await manualEntriesFuture;
+  if (!ref.mounted) {
+    throw StateError('Diary activity weight provider disposed.');
+  }
   final calculatorProfile = goalState.value?.calculatorProfile;
 
   return service.load(
@@ -42,5 +48,6 @@ Future<DiaryActivityWeightData> diaryActivityWeightData(
     manualEntries: manualEntries,
     diaryHealthService: diaryHealthService,
     healthWeightService: healthWeightService,
+    isCancelled: () => !ref.mounted,
   );
 }

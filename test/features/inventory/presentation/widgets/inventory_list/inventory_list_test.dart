@@ -26,6 +26,8 @@ import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../helpers/memory_app_preferences.dart';
+
 InventoryItem _item({
   required String id,
   required String name,
@@ -260,35 +262,6 @@ class _FakeManualProductSpeechService implements VoiceSearchService {
 
   void emitError(VoiceSearchFailure failure) {
     _onError?.call(failure);
-  }
-}
-
-class _MemoryAppPreferences implements AppPreferences {
-  final Map<String, String> _strings = <String, String>{};
-  final Map<String, int> _ints = <String, int>{};
-
-  @override
-  String? getStringSync(String key) => _strings[key];
-
-  @override
-  int? getIntSync(String key) => _ints[key];
-
-  @override
-  Future<String?> getString(String key) async => _strings[key];
-
-  @override
-  Future<int?> getInt(String key) async => _ints[key];
-
-  @override
-  Future<bool> setString(String key, String value) async {
-    _strings[key] = value;
-    return true;
-  }
-
-  @override
-  Future<bool> setInt(String key, int value) async {
-    _ints[key] = value;
-    return true;
   }
 }
 
@@ -959,7 +932,7 @@ void main() {
   testWidgets('inventory view preferences persist across remount', (
     tester,
   ) async {
-    final preferences = _MemoryAppPreferences();
+    final preferences = MemoryAppPreferences();
     final items = <InventoryItem>[
       _item(id: 'apple', name: 'Apple', quantity: 1, initialQuantity: 2),
       _item(id: 'banana', name: 'Banana', quantity: 1, initialQuantity: 2),
@@ -1010,7 +983,7 @@ void main() {
   testWidgets('prepared meal view preferences persist across remount', (
     tester,
   ) async {
-    final preferences = _MemoryAppPreferences();
+    final preferences = MemoryAppPreferences();
     final preparedMeals = <PreparedMeal>[
       _preparedMeal(
         id: 'meal-low',
@@ -1273,7 +1246,7 @@ void main() {
   testWidgets(
     'inventory items section restores collapse state from preferences',
     (tester) async {
-      final preferences = _MemoryAppPreferences();
+      final preferences = MemoryAppPreferences();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -1368,7 +1341,7 @@ void main() {
   testWidgets(
     'prepared meals section restores collapse state from preferences',
     (tester) async {
-      final preferences = _MemoryAppPreferences();
+      final preferences = MemoryAppPreferences();
 
       await tester.pumpWidget(
         ProviderScope(

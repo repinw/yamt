@@ -27,48 +27,10 @@ import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User {}
-
-class _FakeAppPreferences implements AppPreferences {
-  _FakeAppPreferences({Map<String, Object>? initialValues})
-    : _values = initialValues ?? <String, Object>{};
-
-  final Map<String, Object> _values;
-
-  @override
-  String? getStringSync(String key) {
-    return _values[key] as String?;
-  }
-
-  @override
-  int? getIntSync(String key) {
-    return _values[key] as int?;
-  }
-
-  @override
-  Future<String?> getString(String key) async {
-    return _values[key] as String?;
-  }
-
-  @override
-  Future<int?> getInt(String key) async {
-    return _values[key] as int?;
-  }
-
-  @override
-  Future<bool> setString(String key, String value) async {
-    _values[key] = value;
-    return true;
-  }
-
-  @override
-  Future<bool> setInt(String key, int value) async {
-    _values[key] = value;
-    return true;
-  }
-}
 
 class _FakeHealthConnectionService implements HealthConnectionService {
   _FakeHealthConnectionService({
@@ -187,7 +149,7 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(null),
         ),
@@ -220,7 +182,7 @@ ProviderContainer _createSettingsContainer({
     overrides: [
       appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(null)),
-      appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+      appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       healthConnectionServiceProvider.overrideWith(
         (ref) => _FakeHealthConnectionService(
@@ -949,7 +911,7 @@ void main() {
           authStateChangesProvider.overrideWith(
             (ref) => Stream<User?>.value(user),
           ),
-          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
           calorieSettingsRepositoryProvider.overrideWithValue(
             settingsRepository,
           ),
@@ -1180,7 +1142,7 @@ void main() {
           authStateChangesProvider.overrideWith(
             (ref) => Stream<User?>.value(user),
           ),
-          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
           calorieSettingsRepositoryProvider.overrideWithValue(
             settingsRepository,
           ),

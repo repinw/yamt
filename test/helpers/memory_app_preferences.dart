@@ -53,4 +53,11 @@ class MemoryAppPreferences implements AppPreferences {
     _ints[key] = value;
     return true;
   }
+
+  @override
+  Future<bool> remove(String key) async {
+    _strings.remove(key);
+    _ints.remove(key);
+    return true;
+  }
 }

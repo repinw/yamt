@@ -21,6 +21,7 @@ import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_we
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _activityWeightStartupDelay = Duration(milliseconds: 700);
+const _activityWeightDayChangeDebounce = Duration(milliseconds: 400);
 
 /// Activity and weight section for the diary page.
 class DiaryActivityWeightSection extends ConsumerStatefulWidget {
@@ -46,11 +47,12 @@ class DiaryActivityWeightSection extends ConsumerStatefulWidget {
 class _DiaryActivityWeightSectionState
     extends ConsumerState<DiaryActivityWeightSection> {
   DiaryActivityWeightData? _lastData;
-  Timer? _startupTimer;
+  DateTime? _lastDataDay;
+  DateTime? _dataDay;
+  Timer? _dataLoadTimer;
   var _isStepsExpanded = false;
   var _isActivityExpanded = false;
   var _isWeightExpanded = false;
-  var _canLoadData = false;
 
   @override
   void initState() {
@@ -59,42 +61,66 @@ class _DiaryActivityWeightSectionState
       if (!mounted) {
         return;
       }
-      _startupTimer ??= Timer(_activityWeightStartupDelay, _allowDataLoad);
+      _scheduleDataLoad(
+        normalizeLocalDay(widget.selectedDay),
+        _activityWeightStartupDelay,
+      );
     });
   }
 
   @override
+  void didUpdateWidget(covariant DiaryActivityWeightSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldDay = normalizeLocalDay(oldWidget.selectedDay);
+    final selectedDay = normalizeLocalDay(widget.selectedDay);
+    if (isSameLocalDay(oldDay, selectedDay)) {
+      return;
+    }
+
+    _scheduleDataLoad(selectedDay, _activityWeightDayChangeDebounce);
+  }
+
+  @override
   void dispose() {
-    _startupTimer?.cancel();
+    _dataLoadTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final normalizedDay = normalizeLocalDay(widget.selectedDay);
-    final dataState = _canLoadData
-        ? ref.watch(diaryActivityWeightDataProvider(normalizedDay))
-        : const AsyncLoading<DiaryActivityWeightData>();
-    final stepsState = _canLoadData
-        ? ref
-              .watch(diaryStepsSummaryProvider(normalizedDay))
-              .whenData((summary) => summary.totalSteps)
-        : const AsyncLoading<int?>();
-    final loadedData = dataState.value;
+    final dataDay = _dataDay;
+    final hasCurrentDataDay =
+        dataDay != null && isSameLocalDay(dataDay, normalizedDay);
+    final dataState = dataDay == null
+        ? const AsyncLoading<DiaryActivityWeightData>()
+        : ref.watch(diaryActivityWeightDataProvider(dataDay));
+    final stepsState = dataDay == null
+        ? const AsyncLoading<int?>()
+        : ref
+              .watch(diaryStepsSummaryProvider(dataDay))
+              .whenData((summary) => summary.totalSteps);
+    final loadedData = hasCurrentDataDay ? dataState.value : null;
     if (loadedData != null) {
       _lastData = loadedData;
+      _lastDataDay = dataDay;
     }
-    final data = loadedData ?? _lastData;
-    if (data == null && dataState.hasError) {
+    final canUseLastData =
+        hasCurrentDataDay && _isSameNullableLocalDay(_lastDataDay, dataDay);
+    final data = canUseLastData ? loadedData ?? _lastData : null;
+    final currentStepsState = hasCurrentDataDay
+        ? stepsState
+        : const AsyncLoading<int?>();
+    if (data == null && hasCurrentDataDay && dataState.hasError) {
       final l10n = AppLocalizations.of(context)!;
       return MetricDetailCardShell(
         child: MetricErrorRetryContent(
           message: l10n.diaryActivityWeightLoadFailed,
           retryLabel: l10n.caloriesRetryAction,
           retryButtonKey: DiaryActivityWeightSectionKeys.retryButton,
-          onRetry: () => ref.invalidate(
-            diaryActivityWeightDataProvider(normalizedDay),
-          ),
+          onRetry: () {
+            ref.invalidate(diaryActivityWeightDataProvider(dataDay));
+          },
         ),
       );
     }
@@ -121,7 +147,7 @@ class _DiaryActivityWeightSectionState
           DiaryCompactActivityWeightCard(
             data: data,
             header: widget.header,
-            stepsState: stepsState,
+            stepsState: currentStepsState,
             isStepsExpanded: _isStepsExpanded,
             isActivityExpanded: _isActivityExpanded,
             isWeightExpanded: _isWeightExpanded,
@@ -216,12 +242,25 @@ class _DiaryActivityWeightSectionState
     );
   }
 
-  void _allowDataLoad() {
-    if (!mounted || _canLoadData) {
+  void _scheduleDataLoad(DateTime day, Duration delay) {
+    _dataLoadTimer?.cancel();
+    _dataLoadTimer = Timer(delay, () => _useDataDay(day));
+  }
+
+  void _useDataDay(DateTime day) {
+    if (!mounted) {
+      return;
+    }
+    final normalizedDay = normalizeLocalDay(day);
+    if (_dataDay != null && isSameLocalDay(_dataDay!, normalizedDay)) {
       return;
     }
     setState(() {
-      _canLoadData = true;
+      _dataDay = normalizedDay;
     });
+  }
+
+  bool _isSameNullableLocalDay(DateTime? left, DateTime? right) {
+    return left != null && right != null && isSameLocalDay(left, right);
   }
 }

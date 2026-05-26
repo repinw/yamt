@@ -23,6 +23,9 @@ abstract interface class AppPreferences {
 
   /// Persists int value for given key.
   Future<bool> setInt(String key, int value);
+
+  /// Removes value for given key.
+  Future<bool> remove(String key);
 }
 
 /// Shared-preferences-backed implementation of [AppPreferences].
@@ -114,6 +117,15 @@ class SharedPreferencesStore implements AppPreferences {
     final preferences = await _instance();
     if (preferences != null) {
       return preferences.setInt(key, value);
+    }
+    return false;
+  }
+
+  @override
+  Future<bool> remove(String key) async {
+    final preferences = await _instance();
+    if (preferences != null) {
+      return preferences.remove(key);
     }
     return false;
   }
