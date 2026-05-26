@@ -21,19 +21,23 @@ For each feature, check:
 - [ ] `diary`
 - [ ] `health`
 - [ ] `home`
-- [ ] `household`
+- [x] `household`
 - [ ] `inventory`
-- [ ] `kitchen_utensils`
+- [x] `kitchen_utensils`
 - [ ] `meal_templates`
 - [ ] `onboarding`
 - [ ] `product_nutrition`
 - [ ] `product_search`
 - [ ] `recipes`
-- [ ] `scanner`
+- [x] `scanner`
 - [ ] `settings`
 - [ ] `shared`
-- [ ] `shoppinglist`
-- [ ] `statistics`
+- [x] `shoppinglist`
+
+## Removed Features
+
+- `statistics` is no longer listed because the tracked feature files were
+  removed on `master`.
 
 ## Check Notes
 
@@ -96,3 +100,47 @@ For each feature, check:
 - `calories_page_keys.dart` no longer re-exports calculator keys; consumers
   import `calorie_goal_calculator_keys.dart` directly.
 - `flutter analyze` and full `test/features/calories` suite pass.
+
+### `household`
+
+- Result: pass after provider-folder migration.
+- Feature README documents ownership, public edge, providers, dependencies,
+  tests, and migration notes.
+- Former `provider/` files now live with their owners:
+  - scope/member/recovery providers in `application/`
+  - invite and membership controllers in `presentation/controllers/`
+- Generated Riverpod files moved with their annotated provider files.
+- Tests live under `test/features/household/` beside the owning layers.
+
+### `kitchen_utensils`
+
+- Result: pass after provider-folder migration.
+- Feature README documents the controller, mutation service, remaining image
+  helper, dependencies, and migration notes.
+- `KitchenUtensilsController` now lives in `presentation/controllers/`.
+- `KitchenUtensilMutationService` now lives in `application/`.
+- Remaining `provider/` content is limited to image URL helpers and documented
+  as legacy transition structure.
+- Tests were moved beside the owning application/controller layers.
+
+### `scanner`
+
+- Result: pass after provider-folder migration.
+- Feature README documents ownership, public edge, providers, dependencies,
+  tests, and migration notes.
+- Receipt capture and batch controllers now live in
+  `presentation/controllers/`.
+- Shared receipt service now lives in `application/`.
+- Remaining `provider/` content is limited to input capability and pending
+  shared-intent state providers and documented as legacy transition structure.
+- Tests were moved beside the owning application/controller layers.
+
+### `shoppinglist`
+
+- Result: pass after provider-folder migration.
+- Feature README documents ownership, public edge, providers, dependencies,
+  tests, and migration notes.
+- `ShoppingListController` now lives in `presentation/controllers/`.
+- The feature-level `provider/` folder is no longer part of the tracked
+  structure.
+- Tests were moved beside the owning controller layer.
