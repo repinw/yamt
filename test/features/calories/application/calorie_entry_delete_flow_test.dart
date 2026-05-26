@@ -268,6 +268,8 @@ _DeleteFlowHarness _buildDeleteFlowHarness({
   required List<CalorieEntry> entries,
   List<InventoryItem>? inventoryItems,
   List<PreparedMeal>? preparedMeals,
+  bool keepInventoryAlive = true,
+  bool keepPreparedMealsAlive = true,
 }) {
   final calorieRepository = FakeCalorieLogRepository(initialEntries: entries);
   final settingsRepository = FakeCalorieSettingsRepository();
@@ -298,11 +300,13 @@ _DeleteFlowHarness _buildDeleteFlowHarness({
   );
   addTearDown(container.dispose);
 
-  final inventorySub = _keepInventoryAlive(container);
   final caloriesSub = _keepCaloriesAlive(container);
-  addTearDown(inventorySub.close);
   addTearDown(caloriesSub.close);
-  if (preparedMealRepository != null) {
+  if (keepInventoryAlive) {
+    final inventorySub = _keepInventoryAlive(container);
+    addTearDown(inventorySub.close);
+  }
+  if (preparedMealRepository != null && keepPreparedMealsAlive) {
     final mealsSub = _keepPreparedMealsAlive(container);
     addTearDown(mealsSub.close);
   }
@@ -379,6 +383,31 @@ void main() {
           ?.value;
       expect(restoredItems, hasLength(1));
       expect(restoredItems?.single.currentAmount, 1000);
+    },
+  );
+
+  test(
+    'delete flow restores inventory without pre-warmed inventory provider',
+    () async {
+      final harness = _buildDeleteFlowHarness(
+        entries: <CalorieEntry>[
+          _entry(
+            id: 'entry-1',
+            sourceInventoryItemId: 'inventory-1',
+            sourceInventoryAmountToRestore: 250,
+          ),
+        ],
+        keepInventoryAlive: false,
+      );
+
+      final result = await harness.deleteSingleEntry(restoreToInventory: true);
+      final restoredItems = await harness.container.read(
+        inventoryItemsControllerProvider.future,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.restoredToInventory, isTrue);
+      expect(restoredItems.single.currentAmount, 1000);
     },
   );
 
@@ -492,6 +521,35 @@ void main() {
     expect(harness.calorieRepository.entries, isEmpty);
     expect(harness.preparedMealRemainingPortions, 2);
   });
+
+  test(
+    'delete flow restores prepared meal without pre-warmed meal provider',
+    () async {
+      final harness = _buildDeleteFlowHarness(
+        entries: <CalorieEntry>[
+          _bundleEntry(
+            id: 'entry-1',
+            sourceMealId: 'meal-1',
+            consumedPortions: 1,
+          ),
+        ],
+        preparedMeals: <PreparedMeal>[
+          _meal(id: 'meal-1', remainingPortions: 1),
+        ],
+        keepInventoryAlive: false,
+        keepPreparedMealsAlive: false,
+      );
+
+      final result = await harness.deleteSingleEntry(restoreToInventory: true);
+      final restoredMeals = await harness.container.read(
+        preparedMealsControllerProvider.future,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.restoredToInventory, isTrue);
+      expect(restoredMeals.single.remainingPortions, 2);
+    },
+  );
 
   test(
     'delete flow returns fractional prepared meal bundle to inventory',

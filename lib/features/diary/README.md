@@ -9,6 +9,7 @@ and diary-facing Burn Week and weekly check-in composition.
 - Diary date selection and other UI controllers under `presentation/`.
 - Meal-section, nutrition, balance, and weekly-check-in adapters under
   `application/`.
+- Diary dashboard cache persistence under `data/`.
 - Diary-owned value objects under `domain/`.
 
 ## Does Not Own
@@ -31,6 +32,7 @@ Diary application providers directly.
 ## Providers
 
 - Application providers live in `application/`.
+- Cache/data providers live in `data/`.
 - Controllers live in `presentation/` next to the UI state they own.
 - Diary does not use a feature-level `provider/` folder.
 - Providers are generated with `@riverpod`; there are no new manual providers.
@@ -45,6 +47,8 @@ Main application adapters:
 - `application/diary_intro_trigger_provider.dart`
 - `application/diary_provider_warmup.dart`
 - `application/diary_quick_eat_inventory_provider.dart`
+- `data/diary_day_dashboard_cache_store.dart`
+- `presentation/controllers/diary_day_dashboard_controller.dart`
 
 ## Accepted Dependencies
 

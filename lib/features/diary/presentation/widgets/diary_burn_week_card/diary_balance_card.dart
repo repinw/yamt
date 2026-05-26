@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_loaded_card.dart';
@@ -79,10 +80,13 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     super.build(context);
 
     final normalizedSelectedDay = normalizeDiaryDay(widget.selectedDay);
-    final sourceState = ref.watch(
-      diaryBalanceSourceProvider(normalizedSelectedDay),
+    final dashboardState = ref.watch(
+      diaryDayDashboardControllerProvider(normalizedSelectedDay),
     );
-    final source = sourceState.value;
+    final dashboardData = dashboardState.data;
+    final source = dashboardData == null
+        ? null
+        : DiaryBalanceSource.fromDashboardData(dashboardData);
 
     if (source != null) {
       _lastSource = source;
@@ -90,11 +94,11 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     }
 
     final lastSource = _lastSource;
-    if (!sourceState.hasError && lastSource != null) {
+    if (!dashboardState.showError && lastSource != null) {
       return _buildLoaded(lastSource);
     }
 
-    if (sourceState.hasError) {
+    if (dashboardState.showError) {
       final l10n = AppLocalizations.of(context)!;
       return DiaryBalanceShell(
         child: MetricErrorRetryContent(
@@ -110,7 +114,13 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   }
 
   void _retryBalance(DateTime normalizedSelectedDay) {
-    ref.read(diaryBalanceActionsProvider).refreshBalance(normalizedSelectedDay);
+    unawaited(
+      ref
+          .read(
+            diaryDayDashboardControllerProvider(normalizedSelectedDay).notifier,
+          )
+          .retry(),
+    );
   }
 
   Widget _buildLoaded(DiaryBalanceSource source) {

@@ -25,6 +25,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
@@ -39,6 +40,7 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
         diaryWeeklyCheckInActionsProvider,
         diaryWeeklyCheckInDataProvider;
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -69,6 +71,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';
+import '../support/diary_dashboard_test_support.dart';
 
 DiaryWeeklyCheckInData _weeklyCheckInData = _emptyWeeklyCheckInCheckInData();
 
@@ -81,6 +84,8 @@ void _setWeeklyCheckInData(
 }
 
 class _MockUser extends Mock implements User {}
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   _FakeBurnWeekRunStateRepository({
@@ -118,7 +123,6 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  diaryProviderWarmup,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -139,7 +143,7 @@ void main() {
     expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
   });
 
-  testWidgets('warms inventory quick-eat providers when diary opens', (
+  testWidgets('does not warm quick-eat inventory providers on diary open', (
     tester,
   ) async {
     var inventoryBuildCount = 0;
@@ -158,12 +162,12 @@ void main() {
       },
     );
 
-    expect(inventoryBuildCount, 1);
-    expect(preparedMealsBuildCount, 1);
-    expect(providerObserver.calorieEntryDeleteFlowAddCount, 1);
+    expect(inventoryBuildCount, 0);
+    expect(preparedMealsBuildCount, 0);
+    expect(providerObserver.calorieEntryDeleteFlowAddCount, 0);
   });
 
-  test('diary warmup follows today without warming selected day', () async {
+  test('diary warmup follows today without warming heavy providers', () async {
     final firstDay = DateTime(2026, 4, 27);
     final secondDay = DateTime(2026, 4, 28);
     final selectedDay = DateTime(2026, 4, 24);
@@ -237,8 +241,8 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    expect(firstBalanceBuilds, 1);
-    expect(firstMealsBuilds, 1);
+    expect(firstBalanceBuilds, 0);
+    expect(firstMealsBuilds, 0);
     expect(selectedBalanceBuilds, 0);
     expect(selectedMealsBuilds, 0);
 
@@ -254,8 +258,8 @@ void main() {
     container.read(diaryCalendarControllerProvider.notifier).refreshToday();
     await Future<void>.delayed(Duration.zero);
 
-    expect(secondBalanceBuilds, 1);
-    expect(secondMealsBuilds, 1);
+    expect(secondBalanceBuilds, 0);
+    expect(secondMealsBuilds, 0);
   });
 
   testWidgets('loads weekly check-in section data immediately on first paint', (
@@ -995,7 +999,6 @@ void main() {
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  diaryProviderWarmup,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -1034,9 +1037,20 @@ Future<ProviderContainer> _pumpDiaryPage(
       );
   final user = _MockUser();
   when(() => user.uid).thenReturn('user-1');
+  final auth = _MockFirebaseAuth();
 
   _weeklyCheckInData =
       preloadedWeeklyCheckIn ?? _emptyWeeklyCheckInCheckInData();
+  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
+  final settings = await resolvedSettingsRepository.readSettings();
+  final selectedDayEntries = await resolvedLogRepository.readEntriesForDay(
+    normalizedSelectedDay,
+  );
+  final weekOverview = _dashboardWeekOverviewForPageTest(
+    selectedDay: normalizedSelectedDay,
+    settings: settings,
+    selectedDayEntries: selectedDayEntries,
+  );
 
   final container = ProviderContainer(
     observers: providerObservers,
@@ -1045,9 +1059,20 @@ Future<ProviderContainer> _pumpDiaryPage(
         appPreferences ?? MemoryAppPreferences(),
       ),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
+      firebaseAuthProvider.overrideWithValue(auth),
       calorieLogRepositoryProvider.overrideWithValue(resolvedLogRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(
         resolvedSettingsRepository,
+      ),
+      diaryDayDashboardControllerProvider(
+        normalizedSelectedDay,
+      ).overrideWithValue(
+        diaryDashboardLoadedStateForTest(
+          selectedDay: normalizedSelectedDay,
+          weekOverview: weekOverview,
+          selectedDayEntries: selectedDayEntries,
+          runState: burnWeekRunState ?? const BurnWeekRunState.initial(),
+        ),
       ),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       burnWeekRunStateRepositoryProvider.overrideWithValue(
@@ -1142,6 +1167,50 @@ Future<ProviderContainer> _pumpDiaryPage(
     await _pumpFrames(tester);
   }
   return container;
+}
+
+CalorieWeekOverview _dashboardWeekOverviewForPageTest({
+  required DateTime selectedDay,
+  required CalorieGoalSettings settings,
+  required List<CalorieEntry> selectedDayEntries,
+}) {
+  final dayTotal = selectedDayEntries.fold<double>(
+    0,
+    (sum, entry) => sum + entry.totalKcal,
+  );
+  final nextGoalStartDate = settings.nextGoalStartAfterDay(selectedDay);
+  final futureGoalKcal = nextGoalStartDate == null
+      ? null
+      : settings.goalKcalForDay(nextGoalStartDate);
+  final goalStartsInFuture = nextGoalStartDate != null;
+  final days = [
+    for (var offset = 6; offset >= 0; offset -= 1)
+      CalorieWeekDayOverview(
+        date: selectedDay.subtract(Duration(days: offset)),
+        totalKcal: offset == 0 ? dayTotal : 0,
+        goalKcal: settings.goalKcalForDay(
+          selectedDay.subtract(Duration(days: offset)),
+        ),
+        entryCount: offset == 0 ? selectedDayEntries.length : 0,
+      ),
+  ];
+  final totalGoalKcal = days.fold<double>(
+    0,
+    (sum, day) => sum + day.goalKcal,
+  );
+
+  return CalorieWeekOverview(
+    days: days,
+    totalConsumedKcal: dayTotal,
+    totalGoalKcal: totalGoalKcal,
+    remainingKcal: totalGoalKcal - dayTotal,
+    balanceStartDate: selectedDay.subtract(const Duration(days: 6)),
+    carryoverBeforeTodayKcal: 0,
+    todayFlexibleGoalKcal: settings.goalKcalForDay(selectedDay),
+    goalStartsInFuture: goalStartsInFuture,
+    nextGoalStartDate: nextGoalStartDate,
+    futureGoalKcal: futureGoalKcal,
+  );
 }
 
 Future<void> _tapDiaryCardAction(WidgetTester tester, Finder finder) async {

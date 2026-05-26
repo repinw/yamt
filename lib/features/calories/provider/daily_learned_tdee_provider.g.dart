@@ -8,6 +8,100 @@ part of 'daily_learned_tdee_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Resolve optional learned TDEE overrides for multiple days.
+
+@ProviderFor(dailyLearnedTdeeGoalsForDays)
+final dailyLearnedTdeeGoalsForDaysProvider =
+    DailyLearnedTdeeGoalsForDaysFamily._();
+
+/// Resolve optional learned TDEE overrides for multiple days.
+
+final class DailyLearnedTdeeGoalsForDaysProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Map<String, DailyLearnedTdeeGoalData?>>,
+          Map<String, DailyLearnedTdeeGoalData?>,
+          FutureOr<Map<String, DailyLearnedTdeeGoalData?>>
+        >
+    with
+        $FutureModifier<Map<String, DailyLearnedTdeeGoalData?>>,
+        $FutureProvider<Map<String, DailyLearnedTdeeGoalData?>> {
+  /// Resolve optional learned TDEE overrides for multiple days.
+  DailyLearnedTdeeGoalsForDaysProvider._({
+    required DailyLearnedTdeeGoalsForDaysFamily super.from,
+    required DailyLearnedTdeeGoalDaysRequest super.argument,
+  }) : super(
+         retry: null,
+         name: r'dailyLearnedTdeeGoalsForDaysProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$dailyLearnedTdeeGoalsForDaysHash();
+
+  @override
+  String toString() {
+    return r'dailyLearnedTdeeGoalsForDaysProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Map<String, DailyLearnedTdeeGoalData?>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Map<String, DailyLearnedTdeeGoalData?>> create(Ref ref) {
+    final argument = this.argument as DailyLearnedTdeeGoalDaysRequest;
+    return dailyLearnedTdeeGoalsForDays(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DailyLearnedTdeeGoalsForDaysProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$dailyLearnedTdeeGoalsForDaysHash() =>
+    r'ad6f54ce26b307001201ca3223f9b1233a5fe0b2';
+
+/// Resolve optional learned TDEE overrides for multiple days.
+
+final class DailyLearnedTdeeGoalsForDaysFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<Map<String, DailyLearnedTdeeGoalData?>>,
+          DailyLearnedTdeeGoalDaysRequest
+        > {
+  DailyLearnedTdeeGoalsForDaysFamily._()
+    : super(
+        retry: null,
+        name: r'dailyLearnedTdeeGoalsForDaysProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Resolve optional learned TDEE overrides for multiple days.
+
+  DailyLearnedTdeeGoalsForDaysProvider call(
+    DailyLearnedTdeeGoalDaysRequest request,
+  ) => DailyLearnedTdeeGoalsForDaysProvider._(argument: request, from: this);
+
+  @override
+  String toString() => r'dailyLearnedTdeeGoalsForDaysProvider';
+}
+
 /// Resolve optional learned TDEE override for [day].
 
 @ProviderFor(dailyLearnedTdeeGoalForDay)

@@ -5,7 +5,7 @@ import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions_menu.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_heart_counter_button.dart';
@@ -21,7 +21,12 @@ class DiaryHomeShellTopChrome extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final localeName = Localizations.localeOf(context).toLanguageTag();
     final diaryCalendarState = ref.watch(diaryCalendarControllerProvider);
-    final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
+    final runState = ref
+        .watch(
+          diaryDayDashboardControllerProvider(diaryCalendarState.selectedDay),
+        )
+        .data
+        ?.runState;
     return HomeShellTabTopChrome(
       title: diaryCalendarState.isSelectedToday
           ? l10n.diaryTodayTitle

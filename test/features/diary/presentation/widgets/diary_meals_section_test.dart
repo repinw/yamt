@@ -4,19 +4,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../support/diary_dashboard_test_support.dart';
+
 @Dependencies([
   InventoryItemsController,
+  PreparedMealsController,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -206,28 +211,36 @@ void main() {
       tester,
       DiaryMealsSection(selectedDay: selectedDay),
       overrides: [
-        diaryMealSectionsProvider(selectedDay).overrideWith((ref) async {
-          if (shouldFail) {
-            throw StateError('load failed');
-          }
-          return [
-            _mealSection(MealType.breakfast, [
-              _entry(
-                id: 'oats',
-                day: selectedDay,
-                mealType: MealType.breakfast,
-                name: 'Oats',
-                kcal: 100,
-                protein: 8,
-                carbs: 40,
-                fat: 6,
-              ),
-            ]),
-            _mealSection(MealType.lunch, const []),
-            _mealSection(MealType.dinner, const []),
-            _mealSection(MealType.snack, const []),
-          ];
-        }),
+        diaryDayDashboardControllerProvider(selectedDay).overrideWith(
+          () => FakeDiaryDayDashboardController(
+            diaryDashboardErrorStateForTest(StateError('load failed')),
+            onRetry: (_) {
+              if (shouldFail) {
+                return null;
+              }
+              return diaryDashboardLoadedStateForTest(
+                selectedDay: selectedDay,
+                mealSections: [
+                  _mealSection(MealType.breakfast, [
+                    _entry(
+                      id: 'oats',
+                      day: selectedDay,
+                      mealType: MealType.breakfast,
+                      name: 'Oats',
+                      kcal: 100,
+                      protein: 8,
+                      carbs: 40,
+                      fat: 6,
+                    ),
+                  ]),
+                  _mealSection(MealType.lunch, const []),
+                  _mealSection(MealType.dinner, const []),
+                  _mealSection(MealType.snack, const []),
+                ],
+              );
+            },
+          ),
+        ),
       ],
     );
 
@@ -242,10 +255,68 @@ void main() {
     expect(find.text('Breakfast'), findsOneWidget);
     expect(find.text('Oats'), findsOneWidget);
   });
+
+  testWidgets('keeps previous meal cards visible while meals reload', (
+    tester,
+  ) async {
+    final controller = FakeDiaryDayDashboardController(
+      diaryDashboardLoadedStateForTest(
+        selectedDay: selectedDay,
+        mealSections: [
+          _mealSection(MealType.breakfast, [
+            _entry(
+              id: 'oats',
+              day: selectedDay,
+              mealType: MealType.breakfast,
+              name: 'Oats',
+              kcal: 100,
+              protein: 8,
+              carbs: 40,
+              fat: 6,
+            ),
+          ]),
+          _mealSection(MealType.lunch, const []),
+          _mealSection(MealType.dinner, const []),
+          _mealSection(MealType.snack, const []),
+        ],
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        diaryDayDashboardControllerProvider(
+          selectedDay,
+        ).overrideWith(() => controller),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await _pumpMealsSectionWithContainer(
+      tester,
+      container: container,
+      selectedDay: selectedDay,
+    );
+
+    expect(find.text('Oats'), findsOneWidget);
+
+    replaceFakeDiaryDashboardState(
+      controller,
+      const DiaryDayDashboardState(
+        data: null,
+        isFromCache: false,
+        isRefreshing: true,
+        error: null,
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Oats'), findsOneWidget);
+    expect(find.byType(DiaryMealCardsSkeleton), findsNothing);
+  });
 }
 
 @Dependencies([
   InventoryItemsController,
+  PreparedMealsController,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -259,11 +330,49 @@ Future<void> _pumpMealsSection(
     tester,
     DiaryMealsSection(selectedDay: selectedDay),
     overrides: [
-      diaryMealSectionsProvider(
+      diaryDayDashboardControllerProvider(
         selectedDay,
-      ).overrideWith((ref) async => sections),
+      ).overrideWithValue(
+        diaryDashboardLoadedStateForTest(
+          selectedDay: selectedDay,
+          mealSections: sections,
+        ),
+      ),
     ],
   );
+}
+
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  diaryQuickEatInventory,
+  diaryQuickEatInventoryActions,
+  inventoryBackedCalorieEntrySaveFlow,
+])
+Future<void> _pumpMealsSectionWithContainer(
+  WidgetTester tester, {
+  required ProviderContainer container,
+  required DateTime selectedDay,
+}) async {
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: DiaryMealsSection(selectedDay: selectedDay),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
 }
 
 DiaryMealSection _mealSection(

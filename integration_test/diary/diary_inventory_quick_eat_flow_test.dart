@@ -22,7 +22,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
-import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
@@ -72,10 +71,11 @@ class _DiaryInventoryQuickEatHarness {
   }
 }
 
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  diaryProviderWarmup,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -89,6 +89,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   final profileController = StreamController<UserProfile?>();
   final user = _MockUser();
   when(() => user.uid).thenReturn('user-1');
+  final auth = _MockFirebaseAuth();
   final logRepository = FakeCalorieLogRepository();
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: CalorieGoalSettings.single(
@@ -129,6 +130,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
         ),
       ),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
+      firebaseAuthProvider.overrideWithValue(auth),
       userProfileProvider.overrideWith((ref) => profileController.stream),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
@@ -291,7 +293,6 @@ bool _isFinderCenterOnScreen(WidgetTester tester, Finder finder) {
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  diaryProviderWarmup,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,

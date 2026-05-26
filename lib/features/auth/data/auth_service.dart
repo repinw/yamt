@@ -24,7 +24,7 @@ Stream<User?> authStateChanges(Ref ref) {
 }
 
 /// User profile.
-@riverpod
+@Riverpod(keepAlive: true)
 Stream<UserProfile?> userProfile(Ref ref) {
   final user = ref.watch(authStateChangesProvider).asData?.value;
   final firestore = ref.watch(firebaseFirestoreProvider);

@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +9,7 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Stable keys for diary nutrition bar tests.
@@ -58,16 +61,16 @@ class _DiaryNutritionBarsState extends ConsumerState<DiaryNutritionBars>
     super.build(context);
 
     final normalizedDay = normalizeDiaryDay(widget.selectedDay);
-    final dataState = ref.watch(
-      diaryNutritionBarsDataProvider(normalizedDay),
+    final dashboardState = ref.watch(
+      diaryDayDashboardControllerProvider(normalizedDay),
     );
-    final loadedData = dataState.value;
+    final loadedData = dashboardState.data?.nutritionBars;
     if (loadedData != null) {
       _lastData = loadedData;
     }
     final data = loadedData ?? _lastData;
     final l10n = AppLocalizations.of(context)!;
-    final showError = data == null && dataState.hasError;
+    final showError = data == null && dashboardState.showError;
 
     final content = IconTheme.merge(
       data: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
@@ -91,9 +94,11 @@ class _DiaryNutritionBarsState extends ConsumerState<DiaryNutritionBars>
   }
 
   void _retryNutritionBars(DateTime normalizedDay) {
-    ref
-        .read(diaryNutritionBarsActionsProvider)
-        .refreshNutritionBars(normalizedDay);
+    unawaited(
+      ref
+          .read(diaryDayDashboardControllerProvider(normalizedDay).notifier)
+          .retry(),
+    );
   }
 }
 

@@ -8,7 +8,6 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/diary/application/diary_intro_trigger_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
@@ -16,6 +15,7 @@ import 'package:yamt/features/diary/application/'
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
@@ -36,10 +36,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-
 /// Diary content.
 @Dependencies([
-  diaryProviderWarmup,
   InventoryItemsController,
   PreparedMealsController,
   diaryQuickEatInventory,
@@ -65,16 +63,11 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   ProviderSubscription<DiaryIntroTrigger?>? _diaryIntroSubscription;
   ProviderSubscription<void>? _providerWarmupSubscription;
   bool _didQueueDiaryIntro = false;
+  bool _didStartDeferredSubscriptions = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      _startDeferredDiarySubscriptions();
-    });
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -100,11 +93,19 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     final horizontalPagePadding = responsivePageHorizontalPadding(context);
     final bottomPagePadding = homeShellPageBottomPadding(context);
     final calendarState = ref.watch(diaryCalendarControllerProvider);
+    final dashboardState = ref.watch(
+      diaryDayDashboardControllerProvider(calendarState.selectedDay),
+    );
+    if (dashboardState.data != null) {
+      _queueDeferredDiarySubscriptions();
+    }
     final calendarController = ref.read(
       diaryCalendarControllerProvider.notifier,
     );
-    final goalSettings = ref.watch(diaryCalorieGoalSettingsProvider).value;
-    final runState = ref.watch(burnWeekRunControllerProvider).value;
+    final goalSettings = dashboardState.data == null
+        ? null
+        : ref.watch(diaryCalorieGoalSettingsProvider).value;
+    final runState = dashboardState.data?.runState;
     final showIntroReplayButton =
         runState?.runWeekNumber == burnWeekLearningRunWeekNumber &&
         goalSettings != null &&
@@ -163,16 +164,19 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                   ),
                 ),
               ],
-              DiaryWeeklyCheckInSection(
-                selectedDay: calendarState.selectedDay,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              DiaryActivityWeightSection(
-                selectedDay: calendarState.selectedDay,
-                header: DiaryWeeklyBalanceSummary(
+              if (dashboardState.data != null)
+                DiaryWeeklyCheckInSection(
                   selectedDay: calendarState.selectedDay,
                 ),
-              ),
+              if (dashboardState.data != null) ...[
+                const SizedBox(height: AppSpacing.xl),
+                DiaryActivityWeightSection(
+                  selectedDay: calendarState.selectedDay,
+                  header: DiaryWeeklyBalanceSummary(
+                    selectedDay: calendarState.selectedDay,
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.xxl),
             ],
           ),
@@ -195,6 +199,19 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         ),
       ],
     );
+  }
+
+  void _queueDeferredDiarySubscriptions() {
+    if (_didStartDeferredSubscriptions) {
+      return;
+    }
+    _didStartDeferredSubscriptions = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _startDeferredDiarySubscriptions();
+    });
   }
 
   void _startDeferredDiarySubscriptions() {

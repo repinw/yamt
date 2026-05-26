@@ -1,3 +1,6 @@
+import 'dart:async' show unawaited;
+import 'dart:developer' show log;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,15 +8,14 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/diary_entries_provider.dart';
-import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
@@ -39,8 +41,8 @@ enum DiaryQuickEatSource {
 /// Runs diary quick-eat flows.
 @Dependencies([
   InventoryItemsController,
+  PreparedMealsController,
   diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class DiaryQuickEatFlow {
@@ -59,7 +61,6 @@ class DiaryQuickEatFlow {
       case DiaryQuickEatSource.inventory:
         await _openInventoryPicker(
           context: context,
-          ref: ref,
           mealType: mealType,
           loggedAt: loggedAt,
         );
@@ -109,29 +110,16 @@ class DiaryQuickEatFlow {
 
   static Future<void> _openInventoryPicker({
     required BuildContext context,
-    required WidgetRef ref,
     required MealType mealType,
     required DateTime loggedAt,
   }) async {
-    final container = ProviderScope.containerOf(context, listen: false);
-    final inventoryData = await container.read(
-      diaryQuickEatInventoryProvider.future,
-    );
-    if (!context.mounted) {
-      return;
-    }
     final selection = await showModalBottomSheet<DiaryInventoryFoodSelection>(
       context: context,
       useRootNavigator: true,
       useSafeArea: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return DiaryInventoryFoodPicker(
-          items: inventoryData.items,
-          meals: inventoryData.meals,
-        );
-      },
+      builder: (context) => const DiaryInventoryFoodPickerSheet(),
     );
     if (!context.mounted || selection == null) {
       return;
@@ -147,7 +135,6 @@ class DiaryQuickEatFlow {
       case DiaryPreparedMealFoodSelection(:final meal):
         await _eatPreparedMeal(
           context: context,
-          ref: ref,
           meal: meal,
           mealType: mealType,
           loggedAt: loggedAt,
@@ -179,31 +166,60 @@ class DiaryQuickEatFlow {
     }
     final messenger = ScaffoldMessenger.of(context);
     final container = ProviderScope.containerOf(context, listen: false);
-    final actions = container.read(diaryQuickEatInventoryActionsProvider);
-    final pendingConsumptionId = await actions.stageInventoryItemConsumption(
-      itemId: item.id,
-      amount: request.inventoryAmount,
+    final inventorySubscription = container.listen(
+      inventoryItemsControllerProvider,
+      (_, _) {},
+      fireImmediately: true,
     );
-    if (pendingConsumptionId == null) {
+    try {
+      final inventoryController = container.read(
+        inventoryItemsControllerProvider.notifier,
+      );
+      await container.read(inventoryItemsControllerProvider.future);
+      if (!context.mounted) {
+        return;
+      }
+
+      final pendingConsumption = await inventoryController
+          .stagePendingConsumption(
+            item.id,
+            request.inventoryAmount,
+          );
+      if (pendingConsumption == null) {
+        _showSnackBarWithMessenger(messenger, l10n.inventoryItemActionFailed);
+        return;
+      }
+      if (!context.mounted) {
+        await inventoryController.discardPendingConsumption(
+          pendingConsumption.id,
+        );
+        return;
+      }
+      await InventoryItemEatFlow.complete(
+        context: context,
+        container: container,
+        itemBeforeMutation: item,
+        request: request,
+        pendingConsumptionId: pendingConsumption.id,
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Diary inventory item eat flow failed.',
+        name: 'DiaryQuickEatFlow',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!context.mounted) {
+        return;
+      }
       _showSnackBarWithMessenger(messenger, l10n.inventoryItemActionFailed);
-      return;
+    } finally {
+      inventorySubscription.close();
     }
-    if (!context.mounted) {
-      await actions.discardInventoryItemConsumption(pendingConsumptionId);
-      return;
-    }
-    await InventoryItemEatFlow.complete(
-      context: context,
-      container: container,
-      itemBeforeMutation: item,
-      request: request,
-      pendingConsumptionId: pendingConsumptionId,
-    );
   }
 
   static Future<void> _eatPreparedMeal({
     required BuildContext context,
-    required WidgetRef ref,
     required PreparedMeal meal,
     required MealType mealType,
     required DateTime loggedAt,
@@ -217,21 +233,49 @@ class DiaryQuickEatFlow {
     if (!context.mounted || result == null) {
       return;
     }
-    final saved = await ref
-        .read(diaryQuickEatInventoryActionsProvider)
-        .consumePreparedMeal(
-          mealId: meal.id,
-          consumedPortions: result.portions,
-          mealType: result.mealType,
-          loggedDay: result.loggedDay,
-        );
-    if (!context.mounted || saved) {
-      return;
-    }
-    _showSnackBar(
-      context,
-      AppLocalizations.of(context)!.preparedMealActionFailed,
+    final container = ProviderScope.containerOf(context, listen: false);
+    final mealsSubscription = container.listen(
+      preparedMealsControllerProvider,
+      (_, _) {},
+      fireImmediately: true,
     );
+    try {
+      await container.read(preparedMealsControllerProvider.future);
+      if (!context.mounted) {
+        return;
+      }
+      final saved = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .consumePreparedMeal(
+            mealId: meal.id,
+            consumedPortions: result.portions,
+            mealType: result.mealType,
+            loggedDay: result.loggedDay,
+          );
+      if (!context.mounted || saved) {
+        return;
+      }
+      _showSnackBar(
+        context,
+        AppLocalizations.of(context)!.preparedMealActionFailed,
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Diary prepared meal eat flow failed.',
+        name: 'DiaryQuickEatFlow',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      _showSnackBar(
+        context,
+        AppLocalizations.of(context)!.preparedMealActionFailed,
+      );
+    } finally {
+      mealsSubscription.close();
+    }
   }
 
   static DateTime _resolveLoggedAt(DateTime selectedDay) {
@@ -248,10 +292,9 @@ class DiaryQuickEatFlow {
 
   static void _refreshDiary(WidgetRef ref, DateTime loggedAt) {
     final day = normalizeDiaryDay(loggedAt);
-    ref
-      ..invalidate(diaryEntriesForDayProvider(day))
-      ..invalidate(diaryMealSectionsProvider(day))
-      ..invalidate(diaryNutritionBarsDataProvider(day));
+    unawaited(
+      ref.read(diaryDayDashboardControllerProvider(day).notifier).retry(),
+    );
   }
 
   static void _showSnackBar(BuildContext context, String message) {

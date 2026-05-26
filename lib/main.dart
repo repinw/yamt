@@ -52,7 +52,7 @@ Future<void> main() async {
           (ref) => ref.read(inventoryCalorieEntryPostPersistHookProvider),
         ),
         calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) => ref.read(inventoryCalorieEntryDeleteFlowProvider),
+          (ref) => ref.watch(inventoryCalorieEntryDeleteFlowProvider),
         ),
         calorieInventoryEntrySaveHandlerProvider.overrideWith((ref) {
           final saveFlow = ref.read(
