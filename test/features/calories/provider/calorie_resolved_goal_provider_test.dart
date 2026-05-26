@@ -152,6 +152,95 @@ DiaryHealthDayData _healthDayWithWorkout({
 }
 
 void main() {
+  test('batch request normalizes diary days for stable cache keys', () {
+    final day = DateTime(2026, 4, 14, 13);
+    final sameDay = DateTime(2026, 4, 14, 23);
+    final otherDay = DateTime(2026, 4, 15);
+    final request = ResolvedCalorieGoalDaysRequest.fromDays(<DateTime>[
+      day,
+      otherDay,
+    ]);
+    final sameRequest = ResolvedCalorieGoalDaysRequest.fromDays(<DateTime>[
+      sameDay,
+      otherDay,
+    ]);
+    final duplicateRequest = ResolvedCalorieGoalDaysRequest.fromDays(
+      <DateTime>[day, sameDay, otherDay],
+    );
+    final reversedRequest = ResolvedCalorieGoalDaysRequest.fromDays(
+      <DateTime>[otherDay, day],
+    );
+
+    expect(request, sameRequest);
+    expect(request.hashCode, sameRequest.hashCode);
+    expect(request, duplicateRequest);
+    expect(request == reversedRequest, isFalse);
+  });
+
+  test('resolves batch goals by day key without swapping day data', () async {
+    final firstDay = DateTime(2026, 4, 14);
+    final secondDay = DateTime(2026, 4, 15);
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          dailyKcalGoal: 2100,
+          changedAt: firstDay,
+          calculatorProfile: null,
+          expectedActivityKcal: 500,
+        )
+        .copyWith(activityTrackingStartDate: firstDay);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: const <CalorieEntry>[],
+    );
+    addTearDown(logRepository.dispose);
+    final container = _createContainer(
+      today: secondDay,
+      settings: settings,
+      diaryHealthService: FakeDiaryHealthService(
+        <String, DiaryHealthDayData>{
+          diaryDayKey(firstDay): _healthDayWithWorkout(
+            day: firstDay,
+            totalCalories: 400,
+          ),
+          diaryDayKey(secondDay): _healthDayWithWorkout(
+            day: secondDay,
+            totalCalories: 800,
+          ),
+        },
+      ),
+      logRepository: logRepository,
+    );
+    addTearDown(container.dispose);
+
+    final goals = await container.read(
+      resolvedCalorieGoalsForDaysProvider(
+        ResolvedCalorieGoalDaysRequest.fromDays(<DateTime>[
+          firstDay,
+          secondDay,
+        ]),
+      ).future,
+    );
+
+    final firstGoal = goals[diaryDayKey(firstDay)];
+    final secondGoal = goals[diaryDayKey(secondDay)];
+    expect(
+      goals.keys,
+      orderedEquals(<String>[
+        diaryDayKey(firstDay),
+        diaryDayKey(secondDay),
+      ]),
+    );
+    expect(firstGoal, isNotNull);
+    expect(firstGoal!.day, normalizeDiaryDay(firstDay));
+    expect(firstGoal.todayActiveKcal, 400);
+    expect(firstGoal.activityComparisonKcal, -100);
+    expect(firstGoal.goalKcal, 2100);
+    expect(secondGoal, isNotNull);
+    expect(secondGoal!.day, normalizeDiaryDay(secondDay));
+    expect(secondGoal.todayActiveKcal, 800);
+    expect(secondGoal.activityComparisonKcal, 300);
+    expect(secondGoal.goalKcal, 2250);
+  });
+
   test(
     'recalculates expected activity delta for a selected historical day',
     () async {

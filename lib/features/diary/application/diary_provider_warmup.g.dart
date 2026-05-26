@@ -8,17 +8,17 @@ part of 'diary_provider_warmup.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Keeps expensive providers warm while the diary page is open.
+/// Keeps lightweight diary clock dependencies warm while the page is open.
 
 @ProviderFor(diaryProviderWarmup)
 final diaryProviderWarmupProvider = DiaryProviderWarmupProvider._();
 
-/// Keeps expensive providers warm while the diary page is open.
+/// Keeps lightweight diary clock dependencies warm while the page is open.
 
 final class DiaryProviderWarmupProvider
     extends $FunctionalProvider<void, void, void>
     with $Provider<void> {
-  /// Keeps expensive providers warm while the diary page is open.
+  /// Keeps lightweight diary clock dependencies warm while the page is open.
   DiaryProviderWarmupProvider._()
     : super(
         from: null,
@@ -26,33 +26,9 @@ final class DiaryProviderWarmupProvider
         retry: null,
         name: r'diaryProviderWarmupProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryItemsControllerProvider,
-          preparedMealsControllerProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          DiaryProviderWarmupProvider.$allTransitiveDependencies0,
-          DiaryProviderWarmupProvider.$allTransitiveDependencies1,
-          DiaryProviderWarmupProvider.$allTransitiveDependencies2,
-          DiaryProviderWarmupProvider.$allTransitiveDependencies3,
-          DiaryProviderWarmupProvider.$allTransitiveDependencies4,
-          DiaryProviderWarmupProvider.$allTransitiveDependencies5,
-          DiaryProviderWarmupProvider.$allTransitiveDependencies6,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies2;
-  static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies5 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies3;
-  static final $allTransitiveDependencies6 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$diaryProviderWarmupHash();
@@ -77,7 +53,7 @@ final class DiaryProviderWarmupProvider
 }
 
 String _$diaryProviderWarmupHash() =>
-    r'41be427516bedefc0bffddd1f4dd04c287c98961';
+    r'94456750b8e9181630f238a20736dba037f9faf8';
 
 /// Current diary day that should be warmed.
 

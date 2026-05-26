@@ -9,15 +9,15 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/diary_entries_provider.dart';
-import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -25,6 +25,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Collapsible meal cards for the diary page.
 @Dependencies([
   InventoryItemsController,
+  PreparedMealsController,
   diaryQuickEatInventory,
   diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
@@ -47,16 +48,16 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
   @override
   Widget build(BuildContext context) {
     final normalizedDay = normalizeDiaryDay(widget.selectedDay);
-    final sectionsState = ref.watch(
-      diaryMealSectionsProvider(normalizedDay),
+    final dashboardState = ref.watch(
+      diaryDayDashboardControllerProvider(normalizedDay),
     );
-    final loadedSections = sectionsState.value;
+    final loadedSections = dashboardState.data?.mealSections;
     if (loadedSections != null) {
       _lastSections = loadedSections;
     }
     final sections = loadedSections ?? _lastSections;
     final l10n = AppLocalizations.of(context)!;
-    final showError = sections == null && sectionsState.hasError;
+    final showError = sections == null && dashboardState.showError;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,8 +118,10 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
   }
 
   void _retryMeals(DateTime normalizedDay) {
-    ref
-      ..invalidate(diaryEntriesForDayProvider(normalizedDay))
-      ..invalidate(diaryMealSectionsProvider(normalizedDay));
+    unawaited(
+      ref
+          .read(diaryDayDashboardControllerProvider(normalizedDay).notifier)
+          .retry(),
+    );
   }
 }

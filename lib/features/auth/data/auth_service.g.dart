@@ -114,7 +114,7 @@ final class UserProfileProvider
         argument: null,
         retry: null,
         name: r'userProfileProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -134,4 +134,4 @@ final class UserProfileProvider
   }
 }
 
-String _$userProfileHash() => r'5a8688411afee5ed3c7d43dd6fd81d4023ad9cff';
+String _$userProfileHash() => r'bde601069f8c7332c26a4a2b1920b735752df764';

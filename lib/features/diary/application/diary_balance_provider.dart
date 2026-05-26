@@ -1,11 +1,11 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
+import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
 
 part 'diary_balance_provider.g.dart';
@@ -70,10 +70,32 @@ class DiaryBalanceSource {
        _selectedDayEntries = selectedDayEntries,
        _runState = runState;
 
+  /// Creates a balance source from cached dashboard data.
+  factory DiaryBalanceSource.fromDashboardData(DiaryDayDashboardData data) {
+    return DiaryBalanceSource._(
+      weekOverview: data.weekOverview,
+      selectedDayOverview: data.weekOverview.days.last,
+      selectedDayEntries: data.selectedDayEntries,
+      runState: data.runState,
+    );
+  }
+
   final CalorieWeekOverview _weekOverview;
   final CalorieWeekDayOverview _selectedDayOverview;
   final List<CalorieEntry> _selectedDayEntries;
   final BurnWeekRunState _runState;
+
+  /// Week overview backing this source.
+  CalorieWeekOverview get weekOverview => _weekOverview;
+
+  /// Selected-day overview backing this source.
+  CalorieWeekDayOverview get selectedDayOverview => _selectedDayOverview;
+
+  /// Selected-day entries backing this source.
+  List<CalorieEntry> get selectedDayEntries => _selectedDayEntries;
+
+  /// Burn Week run state backing this source.
+  BurnWeekRunState get runState => _runState;
 
   /// Resolves render-ready balance card data for [now].
   DiaryBalanceCardData resolve({required DateTime now}) {
@@ -123,8 +145,6 @@ Future<DiaryBalanceSource> diaryBalanceSource(
   Ref ref,
   DateTime selectedDay,
 ) async {
-  ref.watch(burnWeekLiveSyncProvider);
-
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final weekOverviewFuture = ref.watch(
     calorieWeekOverviewForWindowProvider(normalizedSelectedDay).future,

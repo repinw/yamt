@@ -33,9 +33,9 @@ final class InventoryCalorieEntryDeleteFlowProvider
         name: r'inventoryCalorieEntryDeleteFlowProvider',
         isAutoDispose: true,
         dependencies: <ProviderOrFamily>[
-          inventoryItemRepositoryProvider,
           inventoryItemsControllerProvider,
           preparedMealsControllerProvider,
+          inventoryItemRepositoryProvider,
         ],
         $allTransitiveDependencies: <ProviderOrFamily>{
           InventoryCalorieEntryDeleteFlowProvider.$allTransitiveDependencies0,
@@ -48,12 +48,13 @@ final class InventoryCalorieEntryDeleteFlowProvider
         },
       );
 
-  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
-  static final $allTransitiveDependencies1 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies2 =
+  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
+  static final $allTransitiveDependencies1 =
       InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies3 =
+  static final $allTransitiveDependencies2 =
       InventoryItemsControllerProvider.$allTransitiveDependencies1;
+  static final $allTransitiveDependencies3 =
+      InventoryItemsControllerProvider.$allTransitiveDependencies2;
   static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
   static final $allTransitiveDependencies5 =
       PreparedMealsControllerProvider.$allTransitiveDependencies3;
@@ -84,4 +85,4 @@ final class InventoryCalorieEntryDeleteFlowProvider
 }
 
 String _$inventoryCalorieEntryDeleteFlowHash() =>
-    r'00e73e7eb764fe91eaa87d4b1aaf34e81f5d21c2';
+    r'3a1f48aa90d5825f8301c30b6ea28b080bbdea36';

@@ -18,7 +18,6 @@ import 'package:yamt/features/cooking_flow/presentation/controllers/'
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_cooking_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
-import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -97,7 +96,6 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
   dependencies: [
     inventoryItemRepository,
     inventoryManualAddQuickEatConfig,
-    diaryProviderWarmup,
     diaryQuickEatInventory,
     diaryQuickEatInventoryActions,
     inventoryBackedCalorieEntrySaveFlow,

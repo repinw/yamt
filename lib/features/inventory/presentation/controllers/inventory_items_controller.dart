@@ -1035,12 +1035,18 @@ class InventoryItemsController extends _$InventoryItemsController {
     required List<InventoryItem> previousItems,
     required List<InventoryItem> nextItems,
   }) async {
+    if (!ref.mounted) {
+      return false;
+    }
     _persistedItems = nextItems;
     _publishVisibleItems();
 
     final repository = ref.read(inventoryItemRepositoryProvider);
     try {
       final saved = await repository.saveAll(nextItems);
+      if (!ref.mounted) {
+        return saved;
+      }
       if (!saved) {
         _persistedItems = previousItems;
         _publishVisibleItems();
@@ -1153,7 +1159,14 @@ class InventoryItemsController extends _$InventoryItemsController {
       return persistedItems;
     }
 
-    final items = await ref.read(inventoryItemRepositoryProvider).readAll();
+    if (!ref.mounted) {
+      return const <InventoryItem>[];
+    }
+    final repository = ref.read(inventoryItemRepositoryProvider);
+    final items = await repository.readAll();
+    if (!ref.mounted) {
+      return items;
+    }
     _persistedItems = items;
     return items;
   }
@@ -1277,9 +1290,14 @@ class InventoryItemsController extends _$InventoryItemsController {
       return;
     }
 
-    final saved = await ref
-        .read(inventoryActivityEventRepositoryProvider)
-        .appendAll(<InventoryActivityEvent>[event]);
+    if (!ref.mounted) {
+      return;
+    }
+    final repository = ref.read(inventoryActivityEventRepositoryProvider);
+    final saved = await repository.appendAll(<InventoryActivityEvent>[event]);
+    if (!ref.mounted) {
+      return;
+    }
     if (!saved) {
       log(
         'Failed to record inventory activity event ${event.id}.',

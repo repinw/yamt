@@ -536,40 +536,49 @@ class _CalorieEntryEditorContentState
     BuildContext context, {
     required CalorieEntry entry,
   }) async {
-    final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
-    final sourceCanBeRestored = await deleteFlow.canRestoreSource(entry);
-    if (!context.mounted) {
-      return;
-    }
-    if (!mounted) {
-      return;
-    }
-
-    final bool? confirmed;
-    if (sourceCanBeRestored) {
-      confirmed = await showCalorieEntryReturnToInventoryDialog(
-        context,
-        entry: entry,
-      );
-    } else {
-      confirmed = await showCalorieEntryMissingInventorySourceDialog(
-        context,
-        entry: entry,
-      );
-    }
-    if (confirmed != true || !mounted) {
-      return;
-    }
-    if (!context.mounted) {
-      return;
-    }
-
-    await _deleteEntryFromDetails(
-      context,
-      entry: entry,
-      deleteFlow: deleteFlow,
-      restoreToInventory: sourceCanBeRestored,
+    final deleteFlowSubscription = ref.listenManual<CalorieEntryDeleteFlow>(
+      calorieEntryDeleteFlowProvider,
+      (_, _) {},
+      fireImmediately: true,
     );
+    try {
+      final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
+      final sourceCanBeRestored = await deleteFlow.canRestoreSource(entry);
+      if (!context.mounted) {
+        return;
+      }
+      if (!mounted) {
+        return;
+      }
+
+      final bool? confirmed;
+      if (sourceCanBeRestored) {
+        confirmed = await showCalorieEntryReturnToInventoryDialog(
+          context,
+          entry: entry,
+        );
+      } else {
+        confirmed = await showCalorieEntryMissingInventorySourceDialog(
+          context,
+          entry: entry,
+        );
+      }
+      if (confirmed != true || !mounted) {
+        return;
+      }
+      if (!context.mounted) {
+        return;
+      }
+
+      await _deleteEntryFromDetails(
+        context,
+        entry: entry,
+        deleteFlow: deleteFlow,
+        restoreToInventory: sourceCanBeRestored,
+      );
+    } finally {
+      deleteFlowSubscription.close();
+    }
   }
 
   Future<void> _deleteEntryFromDetails(

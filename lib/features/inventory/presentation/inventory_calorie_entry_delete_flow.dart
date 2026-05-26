@@ -1,5 +1,6 @@
 import 'dart:developer' show log;
 
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -18,23 +19,17 @@ const _inventoryDeleteFlowLogName = 'InventoryCalorieEntryDeleteFlow';
 /// Inventory-enabled calorie entry delete flow.
 @Riverpod(
   dependencies: [
-    inventoryItemRepository,
     InventoryItemsController,
     PreparedMealsController,
+    inventoryItemRepository,
   ],
 )
 CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
   final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
   final calorieSettingsRepository = ref.read(calorieSettingsRepositoryProvider);
   final inventoryItemRepository = ref.read(inventoryItemRepositoryProvider);
-  final inventoryController = ref.read(
-    inventoryItemsControllerProvider.notifier,
-  );
   final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);
   final preparedMealRepository = ref.read(preparedMealRepositoryProvider);
-  final preparedMealsController = ref.read(
-    preparedMealsControllerProvider.notifier,
-  );
 
   return CalorieEntryDeleteFlow(
     deleteEntryById: (entryId) async {
@@ -44,22 +39,62 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
       }
       return deleted;
     },
-    restoreConsumedItem: inventoryController.restoreConsumedItem,
-    rollbackRestoredItem: inventoryController.eatItem,
+    restoreConsumedItem: (itemId, amount) {
+      return _withInventoryController(
+        ref: ref,
+        operationName: 'restore consumed inventory item',
+        fallbackValue: false,
+        operation: (controller) {
+          return controller.restoreConsumedItem(itemId, amount);
+        },
+      );
+    },
+    rollbackRestoredItem: (itemId, amount, {consumedAt}) {
+      return _withInventoryController(
+        ref: ref,
+        operationName: 'rollback restored inventory item',
+        fallbackValue: false,
+        operation: (controller) {
+          return controller.eatItem(
+            itemId,
+            amount,
+            consumedAt: consumedAt,
+          );
+        },
+      );
+    },
     sourceInventoryItemExists: (itemId) {
       return _sourceInventoryItemExists(
         itemId: itemId,
         repository: inventoryItemRepository,
       );
     },
-    restorePreparedMealPortions:
-        preparedMealsController.restorePreparedMealPortions,
+    restorePreparedMealPortions: ({required mealId, required portions}) {
+      return _withPreparedMealsController(
+        ref: ref,
+        operationName: 'restore prepared meal portions',
+        fallbackValue: false,
+        operation: (controller) {
+          return controller.restorePreparedMealPortions(
+            mealId: mealId,
+            portions: portions,
+          );
+        },
+      );
+    },
     rollbackRestoredPreparedMeal:
         ({required mealId, required discardedPortions}) {
-          return preparedMealsController.throwAwayPreparedMeal(
-            mealId: mealId,
-            discardedPortions: discardedPortions,
-            reason: InventoryDiscardReason.other,
+          return _withPreparedMealsController(
+            ref: ref,
+            operationName: 'rollback restored prepared meal',
+            fallbackValue: false,
+            operation: (controller) {
+              return controller.throwAwayPreparedMeal(
+                mealId: mealId,
+                discardedPortions: discardedPortions,
+                reason: InventoryDiscardReason.other,
+              );
+            },
           );
         },
     invalidateSnapshotsFromDay: (day) {
@@ -75,6 +110,68 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
       );
     },
   );
+}
+
+@Dependencies([InventoryItemsController])
+Future<T> _withInventoryController<T>({
+  required Ref ref,
+  required String operationName,
+  required T fallbackValue,
+  required Future<T> Function(InventoryItemsController controller) operation,
+}) async {
+  final subscription = ref.listen(
+    inventoryItemsControllerProvider,
+    (_, _) {},
+    fireImmediately: true,
+  );
+  try {
+    await ref.read(inventoryItemsControllerProvider.future);
+    if (!ref.mounted) {
+      return fallbackValue;
+    }
+    return await operation(ref.read(inventoryItemsControllerProvider.notifier));
+  } on Object catch (error, stackTrace) {
+    log(
+      'Failed to $operationName.',
+      name: _inventoryDeleteFlowLogName,
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return fallbackValue;
+  } finally {
+    subscription.close();
+  }
+}
+
+@Dependencies([PreparedMealsController])
+Future<T> _withPreparedMealsController<T>({
+  required Ref ref,
+  required String operationName,
+  required T fallbackValue,
+  required Future<T> Function(PreparedMealsController controller) operation,
+}) async {
+  final subscription = ref.listen(
+    preparedMealsControllerProvider,
+    (_, _) {},
+    fireImmediately: true,
+  );
+  try {
+    await ref.read(preparedMealsControllerProvider.future);
+    if (!ref.mounted) {
+      return fallbackValue;
+    }
+    return await operation(ref.read(preparedMealsControllerProvider.notifier));
+  } on Object catch (error, stackTrace) {
+    log(
+      'Failed to $operationName.',
+      name: _inventoryDeleteFlowLogName,
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return fallbackValue;
+  } finally {
+    subscription.close();
+  }
 }
 
 Future<bool> _sourceInventoryItemExists({

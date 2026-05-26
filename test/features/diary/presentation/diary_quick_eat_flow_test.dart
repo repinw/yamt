@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -22,10 +25,12 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/product_search/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../support/diary_dashboard_test_support.dart';
+
 @Dependencies([
   InventoryItemsController,
+  PreparedMealsController,
   diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
@@ -340,13 +345,14 @@ void main() {
 const _openFlowButtonKey = Key('open_quick_eat_flow');
 const _openPickerButtonKey = Key('open_inventory_picker');
 const _openInventoryFlowButtonKey = Key('open_inventory_quick_eat_flow');
+final _inventoryFlowDay = DateTime(2026, 4, 27);
 int _stageCallCount = 0;
 final _discardedPendingIds = <String>[];
 
 @Dependencies([
   InventoryItemsController,
+  PreparedMealsController,
   diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class _RouteHarness extends StatelessWidget {
@@ -396,6 +402,7 @@ class _RouteHarness extends StatelessWidget {
     );
 
     return ProviderScope(
+      overrides: [_dashboardOverrideFor(selectedDay)],
       child: MaterialApp.router(
         routerConfig: router,
         locale: const Locale('en'),
@@ -408,8 +415,8 @@ class _RouteHarness extends StatelessWidget {
 
 @Dependencies([
   InventoryItemsController,
+  PreparedMealsController,
   diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class _QuickEatRouteLauncher extends ConsumerWidget {
@@ -472,6 +479,7 @@ Future<void> _pumpInventoryFlowHarness(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        _dashboardOverrideFor(_inventoryFlowDay),
         inventoryItemsControllerProvider.overrideWith(
           () => _TestInventoryItemsController(
             inventoryItems,
@@ -506,6 +514,7 @@ Future<void> _pumpDelayedInventoryFlowHarness(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        _dashboardOverrideFor(_inventoryFlowDay),
         inventoryItemsControllerProvider.overrideWith(
           () => _DelayedInventoryItemsController(
             inventoryItems,
@@ -533,7 +542,7 @@ Future<void> _pumpDelayedInventoryFlowHarness(
 @Dependencies([
   InventoryItemsController,
   diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
+  PreparedMealsController,
   inventoryBackedCalorieEntrySaveFlow,
 ])
 class _InventoryFlowHarness extends ConsumerWidget {
@@ -551,7 +560,7 @@ class _InventoryFlowHarness extends ConsumerWidget {
               ref: ref,
               source: DiaryQuickEatSource.inventory,
               mealType: MealType.lunch,
-              selectedDay: DateTime(2026, 4, 27),
+              selectedDay: _inventoryFlowDay,
             ),
           );
         },
@@ -559,6 +568,15 @@ class _InventoryFlowHarness extends ConsumerWidget {
       ),
     );
   }
+}
+
+Override _dashboardOverrideFor(DateTime day) {
+  final normalizedDay = normalizeDiaryDay(day);
+  return diaryDayDashboardControllerProvider(normalizedDay).overrideWith(
+    () => FakeDiaryDayDashboardController(
+      diaryDashboardLoadedStateForTest(selectedDay: normalizedDay),
+    ),
+  );
 }
 
 class _TestInventoryItemsController extends InventoryItemsController {

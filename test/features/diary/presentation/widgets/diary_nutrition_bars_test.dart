@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,10 +7,12 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
+import '../../support/diary_dashboard_test_support.dart';
 
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
@@ -159,21 +159,29 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          diaryNutritionBarsDataProvider(selectedDay).overrideWith((ref) async {
-            if (shouldFail) {
-              throw StateError('load failed');
-            }
-            return const DiaryNutritionBarsData(
-              carbs: 24,
-              protein: 18,
-              fat: 9,
-              goals: DiaryMacroTargets(
-                carbs: 120,
-                protein: 90,
-                fat: 45,
-              ),
-            );
-          }),
+          diaryDayDashboardControllerProvider(selectedDay).overrideWith(
+            () => FakeDiaryDayDashboardController(
+              diaryDashboardErrorStateForTest(StateError('load failed')),
+              onRetry: (_) {
+                if (shouldFail) {
+                  return null;
+                }
+                return diaryDashboardLoadedStateForTest(
+                  selectedDay: selectedDay,
+                  nutritionBars: const DiaryNutritionBarsData(
+                    carbs: 24,
+                    protein: 18,
+                    fat: 9,
+                    goals: DiaryMacroTargets(
+                      carbs: 120,
+                      protein: 90,
+                      fat: 45,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
         child: MaterialApp(
           locale: const Locale('en'),
@@ -207,25 +215,26 @@ void main() {
   testWidgets('keeps previous data visible while nutrition reloads', (
     tester,
   ) async {
-    var reloadToken = 0;
-    final reloadCompleter = Completer<DiaryNutritionBarsData>();
+    final controller = FakeDiaryDayDashboardController(
+      diaryDashboardLoadedStateForTest(
+        selectedDay: selectedDay,
+        nutritionBars: const DiaryNutritionBarsData(
+          carbs: 24,
+          protein: 18,
+          fat: 9,
+          goals: DiaryMacroTargets(
+            carbs: 120,
+            protein: 90,
+            fat: 45,
+          ),
+        ),
+      ),
+    );
     final container = ProviderContainer(
       overrides: [
-        diaryNutritionBarsDataProvider(selectedDay).overrideWith((ref) async {
-          if (reloadToken == 0) {
-            return const DiaryNutritionBarsData(
-              carbs: 24,
-              protein: 18,
-              fat: 9,
-              goals: DiaryMacroTargets(
-                carbs: 120,
-                protein: 90,
-                fat: 45,
-              ),
-            );
-          }
-          return reloadCompleter.future;
-        }),
+        diaryDayDashboardControllerProvider(
+          selectedDay,
+        ).overrideWith(() => controller),
       ],
     );
     addTearDown(container.dispose);
@@ -241,8 +250,15 @@ void main() {
       findsOneWidget,
     );
 
-    reloadToken = 1;
-    container.invalidate(diaryNutritionBarsDataProvider(selectedDay));
+    replaceFakeDiaryDashboardState(
+      controller,
+      const DiaryDayDashboardState(
+        data: null,
+        isFromCache: false,
+        isRefreshing: true,
+        error: null,
+      ),
+    );
     await tester.pump();
 
     expect(
@@ -265,9 +281,14 @@ Future<void> _pumpNutritionBars(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        diaryNutritionBarsDataProvider(
+        diaryDayDashboardControllerProvider(
           selectedDay,
-        ).overrideWith((ref) async => data),
+        ).overrideWithValue(
+          diaryDashboardLoadedStateForTest(
+            selectedDay: selectedDay,
+            nutritionBars: data,
+          ),
+        ),
       ],
       child: MaterialApp(
         locale: const Locale('en'),

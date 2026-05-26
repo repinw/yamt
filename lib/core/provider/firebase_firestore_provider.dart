@@ -53,7 +53,7 @@ void resetFirebaseFirestoreProviderDebugHooks() {
 }
 
 /// Returns Firestore instance unless session shutdown is already in progress.
-@riverpod
+@Riverpod(keepAlive: true)
 FirebaseFirestore? firebaseFirestore(Ref ref) {
   final isSessionShutdownInProgress = ref.watch(
     sessionShutdownControllerProvider,

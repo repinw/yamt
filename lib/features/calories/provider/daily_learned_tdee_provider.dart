@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
@@ -27,6 +29,9 @@ import 'package:yamt/features/health/presentation/controllers/'
 
 part 'daily_learned_tdee_provider.g.dart';
 
+const _dayKeyListEquality = ListEquality<String>();
+const _storedGoalListEquality = ListEquality<double>();
+
 /// Weekly learned TDEE target that is stable until the next boundary.
 class DailyLearnedTdeeGoalData {
   /// Creates learned TDEE goal data.
@@ -48,6 +53,208 @@ class DailyLearnedTdeeGoalData {
 
   /// Average active kcal for the week that created the learned target.
   final double averageActiveKcal;
+}
+
+/// One day request for learned TDEE batch resolution.
+@immutable
+class DailyLearnedTdeeGoalDayRequest {
+  /// Creates request for one day.
+  const DailyLearnedTdeeGoalDayRequest({
+    required this.day,
+    required this.storedGoalKcal,
+  });
+
+  /// Diary day.
+  final DateTime day;
+
+  /// Stored kcal goal for [day].
+  final double storedGoalKcal;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is DailyLearnedTdeeGoalDayRequest &&
+        isSameDiaryDay(other.day, day) &&
+        other.storedGoalKcal == storedGoalKcal;
+  }
+
+  @override
+  int get hashCode => Object.hash(diaryDayKey(day), storedGoalKcal);
+}
+
+/// Stable request key for learned TDEE batch resolution.
+@immutable
+class DailyLearnedTdeeGoalDaysRequest {
+  /// Creates request from day goals.
+  factory DailyLearnedTdeeGoalDaysRequest({
+    required DateTime today,
+    required Iterable<DailyLearnedTdeeGoalDayRequest> days,
+  }) {
+    final daysByKey = <String, DailyLearnedTdeeGoalDayRequest>{};
+    for (final request in days) {
+      final normalizedDay = normalizeDiaryDay(request.day);
+      daysByKey[diaryDayKey(normalizedDay)] = DailyLearnedTdeeGoalDayRequest(
+        day: normalizedDay,
+        storedGoalKcal: request.storedGoalKcal,
+      );
+    }
+
+    final normalizedToday = normalizeDiaryDay(today);
+    return DailyLearnedTdeeGoalDaysRequest._(
+      normalizedToday,
+      List<DailyLearnedTdeeGoalDayRequest>.unmodifiable(daysByKey.values),
+      List<String>.unmodifiable(daysByKey.keys),
+      List<double>.unmodifiable(
+        daysByKey.values.map((request) => request.storedGoalKcal),
+      ),
+    );
+  }
+
+  const DailyLearnedTdeeGoalDaysRequest._(
+    this.today,
+    this.days,
+    this._dayKeys,
+    this._storedGoals,
+  );
+
+  /// Normalized today.
+  final DateTime today;
+
+  /// Day requests.
+  final List<DailyLearnedTdeeGoalDayRequest> days;
+
+  final List<String> _dayKeys;
+  final List<double> _storedGoals;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is DailyLearnedTdeeGoalDaysRequest &&
+        isSameDiaryDay(other.today, today) &&
+        _dayKeyListEquality.equals(_dayKeys, other._dayKeys) &&
+        _storedGoalListEquality.equals(_storedGoals, other._storedGoals);
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      diaryDayKey(today),
+      _dayKeyListEquality.hash(_dayKeys),
+      _storedGoalListEquality.hash(_storedGoals),
+    );
+  }
+}
+
+/// Resolve optional learned TDEE overrides for multiple days.
+@riverpod
+Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
+  Ref ref,
+  DailyLearnedTdeeGoalDaysRequest request,
+) async {
+  ref.watch(calorieOverviewRevisionProvider);
+  final keepAliveLink = ref.keepAlive();
+  try {
+    final repository = ref.watch(calorieLogRepositoryProvider);
+    final settings = await ref.watch(calorieGoalControllerProvider.future);
+    if (!ref.mounted) {
+      throw StateError('Weekly learned TDEE disposed.');
+    }
+
+    final contexts = [
+      for (final dayRequest in request.days)
+        _learnedTdeeDayContext(
+          settings: settings,
+          dayRequest: dayRequest,
+          today: request.today,
+        ),
+    ].whereType<_LearnedTdeeDayContext>().toList(growable: false);
+    final result = <String, DailyLearnedTdeeGoalData?>{
+      for (final dayRequest in request.days) diaryDayKey(dayRequest.day): null,
+    };
+    if (contexts.isEmpty) {
+      return Map<String, DailyLearnedTdeeGoalData?>.unmodifiable(result);
+    }
+
+    final firstLearningStartDate = _earliestDay(
+      contexts.map((context) => context.firstLearningStartDate),
+    );
+    final lastLearningEndExclusive = nextDiaryDay(
+      _latestDay(
+        contexts.map((context) => context.lastWindow.windowEndDate),
+      ),
+    );
+    final entries = await repository.readEntriesInRange(
+      startInclusive: firstLearningStartDate,
+      endExclusive: lastLearningEndExclusive,
+    );
+    if (!ref.mounted) {
+      throw StateError('Weekly learned TDEE disposed.');
+    }
+    if (entries.isEmpty) {
+      return Map<String, DailyLearnedTdeeGoalData?>.unmodifiable(result);
+    }
+
+    final healthStatus = await ref.watch(
+      healthConnectionControllerProvider.future,
+    );
+    if (!ref.mounted) {
+      throw StateError('Weekly learned TDEE disposed.');
+    }
+    final manualEntries = await ref.watch(
+      manualHealthWeightEntriesControllerProvider.future,
+    );
+    if (!ref.mounted) {
+      throw StateError('Weekly learned TDEE disposed.');
+    }
+    final healthWeights = await _loadHealthWeights(
+      ref,
+      healthStatus: healthStatus,
+      startDate: _earliestDay(
+        contexts.map((context) => context.weightStartDate),
+      ),
+      endDateExclusive: nextDiaryDay(
+        _latestDay(
+          contexts.map((context) => context.lastWindow.nextBoundaryDay),
+        ),
+      ),
+    );
+    if (!ref.mounted) {
+      throw StateError('Weekly learned TDEE disposed.');
+    }
+    final activeKcalByDay = await _loadActiveKcalByDay(
+      ref,
+      settings: settings,
+      healthStatus: healthStatus,
+      windows: _uniqueWindows(contexts),
+    );
+    if (!ref.mounted) {
+      throw StateError('Weekly learned TDEE disposed.');
+    }
+
+    final entriesByDay = entries.groupByDiaryDayKey();
+    final manualWeightByDay = _manualWeightByDay(manualEntries);
+    final representativeWeightByDay = _representativeWeightByDay(
+      healthWeights,
+    );
+    for (final context in contexts) {
+      result[diaryDayKey(context.day)] = _resolveLearnedTdeeGoalFromLoadedData(
+        context: context,
+        settings: settings,
+        entriesByDay: entriesByDay,
+        manualWeightByDay: manualWeightByDay,
+        representativeWeightByDay: representativeWeightByDay,
+        activeKcalByDay: activeKcalByDay,
+      );
+    }
+
+    return Map<String, DailyLearnedTdeeGoalData?>.unmodifiable(result);
+  } finally {
+    keepAliveLink.close();
+  }
 }
 
 /// Resolve optional learned TDEE override for [day].
@@ -223,6 +430,177 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
   }
 
   return latest;
+}
+
+_LearnedTdeeDayContext? _learnedTdeeDayContext({
+  required CalorieGoalSettings settings,
+  required DailyLearnedTdeeGoalDayRequest dayRequest,
+  required DateTime today,
+}) {
+  final normalizedDay = normalizeDiaryDay(dayRequest.day);
+  final normalizedToday = normalizeDiaryDay(today);
+  final learningReferenceDay = normalizedDay.isAfter(normalizedToday)
+      ? normalizedToday
+      : normalizedDay;
+  final anchorEntry = settings.cycleAnchorEntryForDay(normalizedDay);
+  if (anchorEntry == null) {
+    return null;
+  }
+
+  final windows = _weeklyLearnedWindowsForDay(
+    anchorEntry: anchorEntry,
+    day: learningReferenceDay,
+  );
+  if (windows.isEmpty) {
+    return null;
+  }
+
+  final firstLearningStartDate = _learningStartDateForWindow(
+    anchorEntry: anchorEntry,
+    windowEndDate: windows.first.windowEndDate,
+  );
+  return _LearnedTdeeDayContext(
+    day: normalizedDay,
+    storedGoalKcal: dayRequest.storedGoalKcal,
+    anchorEntry: anchorEntry,
+    windows: windows,
+    firstLearningStartDate: firstLearningStartDate,
+    weightStartDate: _weightStartDateForLearning(
+      anchorEntry: anchorEntry,
+      firstLearningStartDate: firstLearningStartDate,
+    ),
+  );
+}
+
+DailyLearnedTdeeGoalData? _resolveLearnedTdeeGoalFromLoadedData({
+  required _LearnedTdeeDayContext context,
+  required CalorieGoalSettings settings,
+  required Map<String, List<CalorieEntry>> entriesByDay,
+  required Map<String, double> manualWeightByDay,
+  required Map<String, double> representativeWeightByDay,
+  required Map<String, int> activeKcalByDay,
+}) {
+  final snapshotEntry = settings.learnedTdeeEntryForDay(context.day);
+  final snapshot = snapshotEntry?.learnedTdeeSnapshot;
+  final snapshotFallback = _snapshotLearnedGoalForEntry(
+    learnedEntry: snapshotEntry,
+    storedGoalKcal: context.storedGoalKcal,
+  );
+  final contextLearningDays = buildCalorieCarryoverDateRange(
+    startInclusive: context.firstLearningStartDate,
+    endExclusive: nextDiaryDay(context.lastWindow.windowEndDate),
+  );
+  if (!_hasEntriesForAnyDay(
+    days: contextLearningDays,
+    entriesByDay: entriesByDay,
+  )) {
+    return null;
+  }
+
+  var previousGoalKcal = settings.goalKcalForDay(
+    previousDiaryDay(context.windows.first.windowStartDate),
+  );
+  if (previousGoalKcal <= 0) {
+    previousGoalKcal = context.storedGoalKcal;
+  }
+  var previousLearnedTdeeKcal = _learnedTdeeSeed(
+    settings: settings,
+    day: context.windows.first.windowStartDate,
+    fallbackGoalKcal: previousGoalKcal,
+  );
+  DailyLearnedTdeeGoalData? latest;
+
+  for (final window in context.windows) {
+    final learningDays = buildCalorieCarryoverDateRange(
+      startInclusive: window.learningStartDate,
+      endExclusive: nextDiaryDay(window.windowEndDate),
+    );
+    final intakeKcalByDay = _resolveLearningIntake(
+      days: learningDays,
+      entriesByDay: entriesByDay,
+      settings: settings,
+    );
+    if (intakeKcalByDay == null) {
+      return _latestOrLegacySnapshotBeforeWindow(
+        latest: latest,
+        settings: settings,
+        snapshotFallback: snapshotFallback,
+        snapshot: snapshot,
+        learningDays: learningDays,
+        entriesByDay: entriesByDay,
+        window: window,
+      );
+    }
+
+    final weightPoints = _weeklyWeightPoints(
+      settings: settings,
+      anchorEntry: context.anchorEntry,
+      window: window,
+      manualWeightByDay: manualWeightByDay,
+      representativeWeightByDay: representativeWeightByDay,
+    );
+    if (weightPoints.length < 2) {
+      return _latestOrSnapshotForMissingWeight(
+        latest: latest,
+        snapshotFallback: snapshotFallback,
+      );
+    }
+
+    final goalMode = _goalModeForDay(
+      settings: settings,
+      day: window.windowEndDate,
+    );
+    final goalSpeedKgPerWeek = goalMode == CalorieGoalMode.maintain
+        ? 0.0
+        : _goalSpeedForDay(settings: settings, day: window.windowEndDate);
+    final calculation = CalorieWeeklyCheckInCalculator.calculateLearnedGoal(
+      previousGoalKcal: previousGoalKcal,
+      previousLearnedTdeeKcal: previousLearnedTdeeKcal,
+      goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+      isLosing: goalMode == CalorieGoalMode.lose,
+      isGaining: goalMode == CalorieGoalMode.gain,
+      intakeKcalByDay: intakeKcalByDay,
+      weightPoints: weightPoints,
+    );
+    latest = DailyLearnedTdeeGoalData(
+      measured: calculation.measured,
+      calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
+      newGoalKcal: calculation.newGoalKcal,
+      averageActiveKcal: _averageActiveKcal(
+        days: window.windowDays,
+        activeKcalByDay: activeKcalByDay,
+      ),
+    );
+    previousGoalKcal = calculation.newGoalKcal;
+    previousLearnedTdeeKcal = calculation.calculatedTrueTdeeKcal;
+  }
+
+  return latest;
+}
+
+DateTime _earliestDay(Iterable<DateTime> days) {
+  return days.reduce((current, day) => day.isBefore(current) ? day : current);
+}
+
+DateTime _latestDay(Iterable<DateTime> days) {
+  return days.reduce((current, day) => day.isAfter(current) ? day : current);
+}
+
+List<_WeeklyLearnedWindow> _uniqueWindows(
+  List<_LearnedTdeeDayContext> contexts,
+) {
+  final windowsByKey = <String, _WeeklyLearnedWindow>{};
+  for (final context in contexts) {
+    for (final window in context.windows) {
+      windowsByKey[_windowKey(window)] = window;
+    }
+  }
+  return List<_WeeklyLearnedWindow>.unmodifiable(windowsByKey.values);
+}
+
+String _windowKey(_WeeklyLearnedWindow window) {
+  return '${diaryDayKey(window.windowStartDate)}:'
+      '${diaryDayKey(window.windowEndDate)}';
 }
 
 DailyLearnedTdeeGoalData? _latestOrSnapshotForMissingWeight({
@@ -700,6 +1078,26 @@ double _goalSpeedForDay({
   return settings.goalEntryForDay(day)?.calculatorProfile?.goalSpeedKgPerWeek ??
       settings.calculatorProfile?.goalSpeedKgPerWeek ??
       0.0;
+}
+
+class _LearnedTdeeDayContext {
+  const _LearnedTdeeDayContext({
+    required this.day,
+    required this.storedGoalKcal,
+    required this.anchorEntry,
+    required this.windows,
+    required this.firstLearningStartDate,
+    required this.weightStartDate,
+  });
+
+  final DateTime day;
+  final double storedGoalKcal;
+  final CalorieGoalHistoryEntry anchorEntry;
+  final List<_WeeklyLearnedWindow> windows;
+  final DateTime firstLearningStartDate;
+  final DateTime weightStartDate;
+
+  _WeeklyLearnedWindow get lastWindow => windows.last;
 }
 
 class _WeeklyLearnedWindow {
