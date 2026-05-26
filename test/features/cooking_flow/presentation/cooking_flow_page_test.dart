@@ -27,7 +27,7 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
-import 'package:yamt/features/kitchen_utensils/provider/'
+import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
     'kitchen_utensils_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

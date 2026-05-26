@@ -8,7 +8,5 @@ flowchart TD;
 household_access_recovery_utils.dart-->household_permission_recovery.dart;
 household_access_recovery_utils.dart-->household_scope_provider.dart;
 household_members_provider.dart-->household_permission_recovery.dart;
-household_membership_controller.dart-->household_invite_code_controller.dart;
-household_membership_controller.dart-->household_scope_provider.dart;
 household_scope_provider.dart-->household_members_provider.dart;
 ```

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';

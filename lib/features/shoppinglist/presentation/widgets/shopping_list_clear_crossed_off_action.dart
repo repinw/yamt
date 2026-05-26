@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_page_keys.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list clear crossed off action.

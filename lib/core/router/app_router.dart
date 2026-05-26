@@ -52,10 +52,10 @@ import 'package:yamt/features/onboarding/provider/'
 import 'package:yamt/features/product_search/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page.dart';

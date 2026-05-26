@@ -8,7 +8,7 @@ import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_profile_document_codec.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
-import 'package:yamt/features/household/provider/'
+import 'package:yamt/features/household/application/'
     'household_permission_recovery.dart';
 
 part 'household_members_provider.g.dart';

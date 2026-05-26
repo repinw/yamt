@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/shared_receipt_intent.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_flow_runner.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shared receipt flow runner.

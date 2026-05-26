@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -11,7 +11,7 @@ import 'package:yamt/features/kitchen_utensils/data/'
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/domain/'
     'kitchen_utensil_save_result.dart';
-import 'package:yamt/features/kitchen_utensils/provider/'
+import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
     'kitchen_utensils_controller.dart';
 
 class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {

@@ -19,7 +19,7 @@ import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
 
 class _FakeReceiptInputRepository implements ReceiptInputRepository {
   _FakeReceiptInputRepository({required this.pickFiles});

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
-import 'package:yamt/features/household/provider/household_invite_code_controller.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/household/presentation/controllers/household_invite_code_controller.dart';
 
 part 'household_membership_controller.g.dart';
 

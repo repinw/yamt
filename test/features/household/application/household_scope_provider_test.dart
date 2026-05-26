@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
 
 void main() {
   test('effectiveHouseholdDataOwnerUserIdProvider falls back to '

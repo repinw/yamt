@@ -9,12 +9,12 @@ import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/domain/'
     'kitchen_utensil_save_result.dart';
+import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
+    'kitchen_utensils_controller.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_card.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_sheet.dart';
-import 'package:yamt/features/kitchen_utensils/provider/'
-    'kitchen_utensils_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Kitchen utensils page.

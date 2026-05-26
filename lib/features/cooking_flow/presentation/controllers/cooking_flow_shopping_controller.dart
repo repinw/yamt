@@ -5,7 +5,7 @@ import 'package:yamt/features/cooking_flow/application/cooking_flow_wizard_state
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
 part 'cooking_flow_shopping_controller.g.dart';
 

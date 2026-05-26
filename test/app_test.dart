@@ -9,8 +9,8 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 
 import 'features/calories/support/fake_calories_repositories.dart';
 

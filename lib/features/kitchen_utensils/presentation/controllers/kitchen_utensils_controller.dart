@@ -4,9 +4,11 @@ import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/household/provider/'
+import 'package:yamt/features/household/application/'
     'household_access_recovery_utils.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/kitchen_utensils/application/'
+    'kitchen_utensil_mutation_service.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -15,8 +17,6 @@ import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil_rules.dart';
 import 'package:yamt/features/kitchen_utensils/domain/'
     'kitchen_utensil_save_result.dart';
-import 'package:yamt/features/kitchen_utensils/provider/'
-    'kitchen_utensil_mutation_service.dart';
 
 part 'kitchen_utensils_controller.g.dart';
 

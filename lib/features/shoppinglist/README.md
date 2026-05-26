@@ -8,8 +8,7 @@ list page.
 - Shopping-list item domain models.
 - Firestore/local repository implementations under `data/`.
 - List mutation and normalization helpers under `application/`.
-- Shopping-list page and widgets under `presentation/`.
-- Legacy shopping-list controller under `provider/`.
+- Shopping-list page, widgets, and controller under `presentation/`.
 
 ## Does Not Own
 
@@ -20,16 +19,15 @@ list page.
 ## Public Edge
 
 - `presentation/shopping_list_page.dart` for routing.
-- `provider/shopping_list_controller.dart` for existing feature integrations
-  that add or resolve shopping-list items.
+- `presentation/controllers/shopping_list_controller.dart` for existing feature
+  integrations that add or resolve shopping-list items.
 - `application/shopping_list_operations.dart` for value normalization helpers.
 - `domain/shopping_list_item.dart` for list item data.
 
 ## Providers
 
 - Repository providers live in `data/`.
-- `provider/` is legacy and contains the current list controller. Do not add new
-  provider files there unless moving it would create unrelated churn.
+- Controller providers live in `presentation/controllers/`.
 
 ## Accepted Dependencies
 

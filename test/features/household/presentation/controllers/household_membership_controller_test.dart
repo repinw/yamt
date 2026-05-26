@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
-import 'package:yamt/features/household/provider/household_invite_code_controller.dart';
-import 'package:yamt/features/household/provider/'
+import 'package:yamt/features/household/presentation/controllers/household_invite_code_controller.dart';
+import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
 
 class _TestHouseholdInviteCodeController extends HouseholdInviteCodeController {
   _TestHouseholdInviteCodeController({required this.initialCode});

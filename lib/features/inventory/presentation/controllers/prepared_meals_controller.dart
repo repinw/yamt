@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'

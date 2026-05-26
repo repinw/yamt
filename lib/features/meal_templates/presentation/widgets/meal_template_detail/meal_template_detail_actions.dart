@@ -16,7 +16,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
-import 'package:yamt/features/shoppinglist/provider/'
+import 'package:yamt/features/shoppinglist/presentation/controllers/'
     'shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

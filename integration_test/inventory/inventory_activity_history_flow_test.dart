@@ -25,7 +25,7 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _StreamingInventoryActivityEventRepository

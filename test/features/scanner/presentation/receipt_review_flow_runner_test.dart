@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_flow_runner.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _ThrowingReceiptCaptureFlowController

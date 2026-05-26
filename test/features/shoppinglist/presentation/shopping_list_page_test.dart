@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_page_keys.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_stats_card.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
 import '../support/fake_shopping_list_repository.dart';
 
 Widget _wrap(ProviderContainer container) {

@@ -1,13 +1,13 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/kitchen_utensils/application/'
+    'kitchen_utensil_mutation_service.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository_contract.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/domain/'
     'kitchen_utensil_save_result.dart';
-import 'package:yamt/features/kitchen_utensils/provider/'
-    'kitchen_utensil_mutation_service.dart';
 
 class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {
   bool saveSucceeds = true;

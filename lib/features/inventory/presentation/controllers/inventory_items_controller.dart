@@ -7,11 +7,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/provider/'
+import 'package:yamt/features/household/application/'
     'household_access_recovery_utils.dart';
-import 'package:yamt/features/household/provider/'
+import 'package:yamt/features/household/application/'
     'household_permission_recovery.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -28,7 +28,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
 part 'inventory_items_controller.g.dart';
 

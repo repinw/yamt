@@ -4,9 +4,9 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/household/provider/'
+import 'package:yamt/features/household/application/'
     'household_access_recovery_utils.dart';
-import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/features/inventory/data/'

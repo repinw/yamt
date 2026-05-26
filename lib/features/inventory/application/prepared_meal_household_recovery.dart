@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/household/provider/'
+import 'package:yamt/features/household/application/'
     'household_access_recovery_utils.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 

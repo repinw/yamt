@@ -6,10 +6,15 @@ Dependencies that create loops (inversions) are marked with `!`.
 ```mermaid
 flowchart TD;
 inventory_receipt_review_page.dart-->widgets;
+receipt_batch_flow_runner.dart-->controllers;
 receipt_batch_flow_runner.dart-->receipt_review_flow_runner.dart;
 receipt_batch_flow_runner.dart-->widgets;
+receipt_review_flow_runner.dart-->controllers;
 receipt_review_flow_runner.dart-->inventory_receipt_review_page.dart;
+shared_receipt_flow_runner.dart-->controllers;
 shared_receipt_flow_runner.dart-->receipt_batch_flow_runner.dart;
 shared_receipt_flow_runner.dart-->receipt_review_flow_runner.dart;
+shared_receipt_listener.dart-->controllers;
 shared_receipt_listener.dart-->shared_receipt_flow_runner.dart;
+widgets-->controllers;
 ```

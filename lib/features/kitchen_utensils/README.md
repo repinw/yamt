@@ -7,7 +7,8 @@ surface.
 
 - Kitchen utensil domain models.
 - Repository and image-url loading under `data/` and legacy `provider/`.
-- Kitchen utensil controller and mutation service.
+- Kitchen utensil controller under `presentation/controllers/`.
+- Kitchen utensil mutation service under `application/`.
 - Kitchen utensil page, list widgets, and cover UI.
 
 ## Does Not Own
@@ -19,8 +20,8 @@ surface.
 ## Public Edge
 
 - `presentation/kitchen_utensils_page.dart` for routing.
-- `provider/kitchen_utensils_controller.dart` for reading and mutating saved
-  utensils.
+- `presentation/controllers/kitchen_utensils_controller.dart` for reading and
+  mutating saved utensils.
 - `provider/kitchen_utensil_image_url_provider.dart` for resolving stored
   utensil image paths.
 - `domain/kitchen_utensil.dart` for tare item data.
@@ -30,9 +31,10 @@ surface.
 ## Providers
 
 - Repository providers live in `data/`.
-- `provider/` is legacy and holds the current controller and image helpers.
-  Avoid new provider files there unless moving them would create unrelated
-  churn.
+- Controller providers live in `presentation/controllers/`.
+- Application services live in `application/`.
+- `provider/` is legacy and still holds image helpers. Avoid new provider files
+  there unless moving them would create unrelated churn.
 
 ## Accepted Dependencies
 

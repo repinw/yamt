@@ -26,8 +26,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_search_launcher.dart';
 import 'package:yamt/features/product_search/presentation/'
     'manual_product_search_launcher.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 
 @Dependencies([
   appRouter,

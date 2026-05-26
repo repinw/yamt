@@ -16,18 +16,18 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
+import 'package:yamt/features/scanner/application/shared_receipt_service.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
 import 'package:yamt/features/scanner/presentation/shared_receipt_listener.dart';
 import 'package:yamt/features/scanner/provider/'
     'pending_shared_receipt_intent.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _FakeSharedReceiptService extends SharedReceiptService {

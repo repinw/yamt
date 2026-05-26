@@ -10,8 +10,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_add_initial_action.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

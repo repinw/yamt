@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_clear_crossed_off_action.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_item_tile.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_stats_card.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list content.

@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
-import 'package:yamt/features/household/provider/household_members_provider.dart';
+import 'package:yamt/features/household/application/household_members_provider.dart';
 
 void main() {
   test('householdMembersProvider returns the leader first', () async {

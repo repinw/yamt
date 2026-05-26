@@ -50,8 +50,8 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'product_ai_search_page/product_ai_search_page.dart';
-import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
 import '../../helpers/memory_app_preferences.dart';

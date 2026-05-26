@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/household/provider/'
+import 'package:yamt/features/household/application/'
     'household_permission_recovery.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
 class _FakeFridgeItemRepository implements InventoryItemRepository {
   _FakeFridgeItemRepository({required this.onReadAll});

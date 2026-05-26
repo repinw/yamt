@@ -23,6 +23,7 @@ cooking_flow_inventory_conflict_panels.dart-->cooking_flow_intro_page_assignment
 cooking_flow_inventory_conflict_panels.dart-->cooking_flow_localizations.dart;
 cooking_flow_on_the_fly_adjustment_card.dart-->cooking_flow_action_button.dart;
 cooking_flow_page.dart-->controllers;
+cooking_flow_page.dart-->cooking_flow_cooking_page.dart;
 cooking_flow_page.dart-->cooking_flow_finalize_messages.dart;
 cooking_flow_page.dart-->cooking_flow_page_body.dart;
 cooking_flow_page.dart-->cooking_flow_page_bottom_navigation.dart;
