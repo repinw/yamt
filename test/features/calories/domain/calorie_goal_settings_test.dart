@@ -61,6 +61,39 @@ void main() {
     expect(decoded.calorieMathVersion, currentCalorieMathVersion);
   });
 
+  test('legacy weekly snapshot json preserves learned tdee fallback', () {
+    final decoded = CalorieGoalSettings.fromJson({
+      'daily_kcal_goal': 2100,
+      'updated_at': '2026-03-01T08:00:00.000',
+      'goal_history': [
+        {
+          'daily_kcal_goal': 2100,
+          'effective_date': '2026-02-23T00:00:00.000',
+          'changed_at': '2026-03-01T08:00:00.000',
+          'source': 'weekly_checkin',
+          'weekly_check_in_snapshot': {
+            'window_start_date': '2026-02-16T00:00:00.000',
+            'window_end_date': '2026-02-22T00:00:00.000',
+            'trend_weight_change_per_day': -0.1,
+            'calculated_true_tdee_kcal': 2450,
+            'average_active_kcal': 350,
+            'new_goal_kcal': 2100,
+            'low_confidence': false,
+          },
+        },
+      ],
+      'skipped_intake_day_keys': const <Object>[],
+    });
+    final snapshot = decoded.goalHistory.single.weeklyCheckInSnapshot;
+
+    expect(snapshot, isNotNull);
+    expect(snapshot?.measuredTotalTdeeKcal, 2450);
+    expect(snapshot?.measuredBaseTdeeKcal, 2450);
+    expect(snapshot?.calculatedBaseTdeeKcal, 2450);
+    expect(snapshot?.averageCreditedActivityKcal, 350);
+    expect(snapshot?.baseGoalKcal, 2100);
+  });
+
   test('detects only future-start practice days', () {
     final today = DateTime(2026, 4, 24);
     final tomorrow = DateTime(2026, 4, 25);

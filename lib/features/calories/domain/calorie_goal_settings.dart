@@ -80,20 +80,28 @@ class CalorieGoalWeeklyCheckInSnapshot {
       trendWeightChangePerDay: const FlexibleDoubleConverter().fromJson(
         json['trend_weight_change_per_day'],
       ),
-      measuredTotalTdeeKcal: const FlexibleDoubleConverter().fromJson(
+      measuredTotalTdeeKcal: const NullableFlexibleDoubleConverter().fromJson(
         json['measured_total_tdee_kcal'],
       ),
-      measuredBaseTdeeKcal: const FlexibleDoubleConverter().fromJson(
+      measuredBaseTdeeKcal: const NullableFlexibleDoubleConverter().fromJson(
         json['measured_base_tdee_kcal'],
       ),
-      calculatedBaseTdeeKcal: const FlexibleDoubleConverter().fromJson(
+      calculatedBaseTdeeKcal: const NullableFlexibleDoubleConverter().fromJson(
         json['calculated_base_tdee_kcal'],
       ),
-      averageCreditedActivityKcal: const FlexibleDoubleConverter().fromJson(
-        json['average_credited_activity_kcal'],
-      ),
-      baseGoalKcal: const FlexibleDoubleConverter().fromJson(
+      averageCreditedActivityKcal: const NullableFlexibleDoubleConverter()
+          .fromJson(json['average_credited_activity_kcal']),
+      baseGoalKcal: const NullableFlexibleDoubleConverter().fromJson(
         json['base_goal_kcal'],
+      ),
+      calculatedTrueTdeeKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['calculated_true_tdee_kcal'],
+      ),
+      averageActiveKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['average_active_kcal'],
+      ),
+      newGoalKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['new_goal_kcal'],
       ),
       lowConfidence: json['low_confidence'] as bool,
       inputHash: json['input_hash'] as String?,
