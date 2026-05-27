@@ -14,6 +14,7 @@ import 'package:yamt/features/health/data/health_connection_service_provider.dar
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -120,6 +121,7 @@ class _DailyLearnedHarness {
     required List<HealthWeightSample> healthWeights,
     List<ManualHealthWeightEntry> manualWeights =
         const <ManualHealthWeightEntry>[],
+    FakeDiaryHealthService? diaryHealthService,
   }) {
     logRepository = FakeCalorieLogRepository(initialEntries: entries);
     settingsRepository = FakeCalorieSettingsRepository(
@@ -134,9 +136,9 @@ class _DailyLearnedHarness {
           (ref) => FakeHealthConnectionService(_readyStatus),
         ),
         diaryHealthServiceProvider.overrideWith(
-          (ref) => FakeDiaryHealthService(
-            const <String, DiaryHealthDayData>{},
-          ),
+          (ref) =>
+              diaryHealthService ??
+              FakeDiaryHealthService(const <String, DiaryHealthDayData>{}),
         ),
         healthWeightServiceProvider.overrideWith(
           (ref) => FakeHealthWeightService(healthWeights),
@@ -333,6 +335,48 @@ void main() {
     expect(result.measured.measuredTrueTdeeKcal, closeTo(2500, 0.01));
     expect(result.calculatedTrueTdeeKcal, closeTo(2475.99, 0.01));
     expect(result.newGoalKcal, closeTo(2475.99, 0.01));
+  });
+
+  test('uses aggregate activity kcal for learned active average', () async {
+    final startDay = DateTime(2026, 4);
+    final today = startDay.add(
+      const Duration(days: dailyLearnedTdeeMaximumLookbackDays),
+    );
+    final latestWindowStart = startDay.add(const Duration(days: 21));
+    final diaryHealthService = FakeTrendDiaryHealthService(
+      const <String, DiaryHealthDayData>{},
+      trendDays: [
+        for (var index = 0; index < 7; index += 1)
+          DiaryHealthActivityTrendDay(
+            day: latestWindowStart.add(Duration(days: index)),
+            totalSteps: 0,
+            activeEnergyKcal: 140,
+          ),
+      ],
+    );
+    final harness = _DailyLearnedHarness(
+      settings: _learnedSettings(
+        startDay: startDay,
+        windowEndDate: startDay.add(const Duration(days: 6)),
+      ),
+      entries: _dailyEntries(
+        startDay: startDay,
+        count: dailyLearnedTdeeMaximumLookbackDays,
+        kcalForIndex: (_) => 2500,
+      ),
+      healthWeights: _stableBoundaryWeights(
+        startDay: startDay,
+        boundaryCount: 4,
+      ),
+      diaryHealthService: diaryHealthService,
+    );
+    addTearDown(harness.dispose);
+
+    final result = await _readDailyLearned(harness.container, today: today);
+
+    expect(diaryHealthService.loadDayDataCallCount, 0);
+    expect(result, isNotNull);
+    expect(result!.averageActiveKcal, 140);
   });
 
   test(

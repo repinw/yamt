@@ -12,6 +12,7 @@ import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
+import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -333,14 +334,50 @@ class FakeDiaryHealthService implements DiaryHealthService {
   FakeDiaryHealthService(this.dataByDay);
 
   final Map<String, DiaryHealthDayData> dataByDay;
+  int loadDayDataCallCount = 0;
 
   @override
   Future<DiaryHealthDayData> loadDayData({
     required DateTime day,
     double? userHeightCm,
   }) async {
+    loadDayDataCallCount += 1;
     return dataByDay[diaryDayKey(day)] ??
         const DiaryHealthDayData(totalSteps: 0, workouts: []);
+  }
+}
+
+class FakeTrendDiaryHealthService extends FakeDiaryHealthService
+    implements DiaryHealthActivityTrendService {
+  FakeTrendDiaryHealthService(
+    super.dataByDay, {
+    required this.trendDays,
+    this.shouldThrowTrend = false,
+  });
+
+  final List<DiaryHealthActivityTrendDay> trendDays;
+  final bool shouldThrowTrend;
+  final trendRequests = <({DateTime startInclusive, DateTime endExclusive})>[];
+
+  @override
+  Future<List<DiaryHealthActivityTrendDay>> loadActivityTrendDays({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    trendRequests.add((
+      startInclusive: normalizeDiaryDay(startInclusive),
+      endExclusive: normalizeDiaryDay(endExclusive),
+    ));
+    if (shouldThrowTrend) {
+      throw StateError('trend failed');
+    }
+    return trendDays
+        .where(
+          (day) =>
+              !day.day.isBefore(startInclusive) &&
+              day.day.isBefore(endExclusive),
+        )
+        .toList(growable: false);
   }
 }
 

@@ -19,6 +19,7 @@ import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_energy_segment.dart';
@@ -300,10 +301,12 @@ void main() {
   );
 
   test(
-    'treats missing tracking start as today and ignores earlier health data',
+    'treats missing tracking start as rolling backfill boundary',
     () async {
       final today = DateTime.now();
-      final selectedDay = today.subtract(const Duration(days: 1));
+      final selectedDay = normalizeDiaryDay(
+        today.subtract(const Duration(days: 1)),
+      );
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: const CalorieGoalSettings.empty().applyGoalChange(
           dailyKcalGoal: 2100,
@@ -358,11 +361,11 @@ void main() {
       final persistedSettings = await settingsRepository.readSettings();
 
       expect(persistedSettings.activityTrackingStartDate, isNull);
-      expect(resolvedGoal.isActivityTrackingActive, isFalse);
-      expect(resolvedGoal.todayActiveKcal, 0);
-      expect(resolvedGoal.activityDeltaKcal, 0);
-      expect(resolvedGoal.activityComparisonKcal, 0);
-      expect(resolvedGoal.goalKcal, 2100);
+      expect(resolvedGoal.isActivityTrackingActive, isTrue);
+      expect(resolvedGoal.todayActiveKcal, 600);
+      expect(resolvedGoal.activityDeltaKcal, 50);
+      expect(resolvedGoal.activityComparisonKcal, 100);
+      expect(resolvedGoal.goalKcal, 2150);
     },
   );
 
@@ -420,6 +423,45 @@ void main() {
       expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
     },
   );
+
+  test('uses aggregate activity before loading detailed day data', () async {
+    final today = DateTime(2026, 4, 15);
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          dailyKcalGoal: 2100,
+          changedAt: DateTime(2026, 4, 14, 9),
+          calculatorProfile: null,
+          expectedActivityKcal: 200,
+        )
+        .copyWith(activityTrackingStartDate: today);
+    final diaryHealthService = FakeTrendDiaryHealthService(
+      const <String, DiaryHealthDayData>{},
+      trendDays: [
+        DiaryHealthActivityTrendDay(
+          day: today,
+          totalSteps: 2000,
+          activeEnergyKcal: 300,
+        ),
+      ],
+    );
+    final container = _createContainer(
+      today: today,
+      settings: settings,
+      diaryHealthService: diaryHealthService,
+    );
+    addTearDown(container.dispose);
+
+    final resolvedGoal = await container.read(
+      resolvedCalorieGoalForDayProvider(today).future,
+    );
+
+    expect(diaryHealthService.loadDayDataCallCount, 0);
+    expect(diaryHealthService.trendRequests.single.startInclusive, today);
+    expect(resolvedGoal.todayActiveKcal, 300);
+    expect(resolvedGoal.activityComparisonKcal, 100);
+    expect(resolvedGoal.activityDeltaKcal, 50);
+    expect(resolvedGoal.goalKcal, 2150);
+  });
 
   test(
     'ignores unassigned active energy without steps',

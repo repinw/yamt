@@ -26,6 +26,7 @@ import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -172,6 +173,76 @@ void main() {
     );
     expect(checkInData.lowConfidence, isTrue);
     expect(checkInData.calculation?.newGoalKcal, greaterThan(0));
+  });
+
+  test('uses aggregate activity trend for check-in health data', () async {
+    final today = DateTime(2026, 4, 15);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2400,
+        calculatorProfile: null,
+        effectiveDate: goalStart,
+      ).copyWith(activityTrackingStartDate: goalStart),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 7; index += 1)
+          _entry(
+            'entry-$index',
+            goalStart.add(Duration(days: index, hours: 8)),
+            2100,
+          ),
+      ],
+    );
+    final manualRepository = FakeManualHealthWeightRepository(
+      const <ManualHealthWeightEntry>[],
+    );
+    final healthWeightService = FakeHealthWeightService([
+      HealthWeightSample(recordedAt: goalStart, weightKg: 82),
+      HealthWeightSample(recordedAt: today, weightKg: 81.4),
+    ]);
+    final diaryHealthService = FakeTrendDiaryHealthService(
+      const <String, DiaryHealthDayData>{},
+      trendDays: [
+        for (var index = 0; index < 7; index += 1)
+          DiaryHealthActivityTrendDay(
+            day: goalStart.add(Duration(days: index)),
+            totalSteps: 0,
+            activeEnergyKcal: 100 + (index * 10),
+          ),
+        DiaryHealthActivityTrendDay(
+          day: today,
+          totalSteps: 0,
+          activeEnergyKcal: 250,
+        ),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+      healthConnectionService: FakeHealthConnectionService(_readyStatus),
+      healthWeightService: healthWeightService,
+      diaryHealthService: diaryHealthService,
+    );
+    addTearDown(container.dispose);
+
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
+
+    expect(diaryHealthService.loadDayDataCallCount, 0);
+    expect(
+      checkInData.days.map((day) => day.activeKcal),
+      <int>[100, 110, 120, 130, 140, 150, 160],
+    );
+    expect(checkInData.calculation?.lastWeekAverageActiveKcal, 130);
+    expect(checkInData.calculation?.todayActiveKcal, 250);
   });
 
   test(

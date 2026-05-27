@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:health/health.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/health/data/diary_health_activity_trend_cache_store.dart';
+import 'package:yamt/features/health/data/diary_health_activity_trend_day_cache_store.dart';
+import 'package:yamt/features/health/data/diary_health_day_cache_store.dart';
 import 'package:yamt/features/health/data/diary_health_read_queue.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/diary_health_service_cache_entry.dart';
@@ -62,9 +64,15 @@ class MobileDiaryHealthService
     Duration cacheTtl = _diaryHealthTodayCacheTtl,
     Duration historicalCacheTtl = _diaryHealthHistoricalCacheTtl,
   }) : _health = health ?? Health(),
-       _activityTrendCacheStore = preferences == null
+       _dayCacheStore = preferences == null
            ? null
-           : DiaryHealthActivityTrendCacheStore(
+           : DiaryHealthDayCacheStore(
+               preferences: preferences,
+               maxEntries: _maxDiaryHealthCacheEntries,
+             ),
+       _activityTrendDayCacheStore = preferences == null
+           ? null
+           : DiaryHealthActivityTrendDayCacheStore(
                preferences: preferences,
                maxEntries: _maxActivityTrendCacheEntries,
              ),
@@ -73,7 +81,8 @@ class MobileDiaryHealthService
        _historicalCacheTtl = historicalCacheTtl;
 
   final Health _health;
-  final DiaryHealthActivityTrendCacheStore? _activityTrendCacheStore;
+  final DiaryHealthDayCacheStore? _dayCacheStore;
+  final DiaryHealthActivityTrendDayCacheStore? _activityTrendDayCacheStore;
   final DateTime Function() _now;
   final Duration _todayCacheTtl;
   final Duration _historicalCacheTtl;
@@ -83,11 +92,16 @@ class MobileDiaryHealthService
       <String, DiaryHealthDayCacheEntry>{};
   final Map<String, Future<DiaryHealthDayData>> _inFlightByKey =
       <String, Future<DiaryHealthDayData>>{};
+  final Set<String> _backgroundRefreshKeys = <String>{};
   final Map<String, DiaryHealthActivityTrendCacheEntry>
   _activityTrendCacheByKey = <String, DiaryHealthActivityTrendCacheEntry>{};
+  final Map<String, DiaryHealthActivityTrendDayCacheEntry>
+  _activityTrendDayCacheByKey =
+      <String, DiaryHealthActivityTrendDayCacheEntry>{};
   final Map<String, Future<List<DiaryHealthActivityTrendDay>>>
   _activityTrendInFlightByKey =
       <String, Future<List<DiaryHealthActivityTrendDay>>>{};
+  final Set<String> _activityTrendBackgroundRefreshKeys = <String>{};
 
   @override
   Future<DiaryHealthDayData> loadDayData({
@@ -101,10 +115,15 @@ class MobileDiaryHealthService
       dayStart: dayStart,
       normalizedUserHeightCm: normalizedUserHeightCm,
     );
-    final cachedData = _cachedDayData(cacheKey);
-    if (cachedData != null) {
-      _logCachedDayData(dayStart: dayStart, data: cachedData);
-      return cachedData;
+    final cachedEntry = await _readCachedDayDataEntry(
+      cacheKey: cacheKey,
+      dayStart: dayStart,
+      dayEnd: dayEnd,
+      normalizedUserHeightCm: normalizedUserHeightCm,
+    );
+    if (cachedEntry != null) {
+      _logCachedDayData(dayStart: dayStart, data: cachedEntry.data);
+      return cachedEntry.data;
     }
     final pendingData = _inFlightByKey[cacheKey];
     if (pendingData != null) {
@@ -139,18 +158,32 @@ class MobileDiaryHealthService
     if (cachedDays != null) {
       return cachedDays;
     }
+    final cachedRange = await _readCachedActivityTrendDays(
+      startInclusive: start,
+      endExclusive: end,
+    );
+    if (cachedRange.isComplete) {
+      if (cachedRange.hasExpiredDays) {
+        final loadedAt = cachedRange.oldestLoadedAt ?? _now();
+        _cacheActivityTrendDaysInMemory(
+          cacheKey: cacheKey,
+          startInclusive: start,
+          endExclusive: end,
+          loadedAt: loadedAt,
+          checkedAt: loadedAt,
+          days: cachedRange.days,
+        );
+        _refreshActivityTrendDaysInBackground(
+          cacheKey: cacheKey,
+          startInclusive: start,
+          endExclusive: end,
+        );
+      }
+      return cachedRange.days;
+    }
     final pendingDays = _activityTrendInFlightByKey[cacheKey];
     if (pendingDays != null) {
       return pendingDays;
-    }
-    final persistentEntry = await _readPersistentActivityTrendCacheEntry(
-      cacheKey,
-    );
-    if (persistentEntry != null) {
-      _activityTrendCacheByKey[cacheKey] = persistentEntry;
-      if (!_isExpiredActivityTrendCacheEntry(persistentEntry, _now())) {
-        return persistentEntry.days;
-      }
     }
     final refreshedPendingDays = _activityTrendInFlightByKey[cacheKey];
     if (refreshedPendingDays != null) {
@@ -161,6 +194,7 @@ class MobileDiaryHealthService
           cacheKey: cacheKey,
           startInclusive: start,
           endExclusive: end,
+          cachedRange: cachedRange,
         ).whenComplete(
           () => _removeInFlightActivityTrendDays(cacheKey),
         );
@@ -172,24 +206,25 @@ class MobileDiaryHealthService
     required String cacheKey,
     required DateTime startInclusive,
     required DateTime endExclusive,
+    _ActivityTrendCacheRange? cachedRange,
   }) async {
+    if (cachedRange != null &&
+        cachedRange.hasCachedDays &&
+        cachedRange.missingRanges.isNotEmpty) {
+      return _loadAndCacheMissingActivityTrendDays(
+        cacheKey: cacheKey,
+        startInclusive: startInclusive,
+        endExclusive: endExclusive,
+        cachedRange: cachedRange,
+      );
+    }
     final staleEntry = _activityTrendCacheByKey[cacheKey];
     final staleDays = _usableStaleActivityTrendDays(staleEntry, _now());
     try {
-      final freshDays = await _readQueue.run(() async {
-        await _ensureConfigured();
-        final points = await _health.getHealthIntervalDataFromTypes(
-          startDate: startInclusive,
-          endDate: endExclusive,
-          types: _activityTrendQueryTypes,
-          interval: _activityTrendIntervalSeconds,
-        );
-        return _buildActivityTrendDays(
-          startInclusive: startInclusive,
-          endExclusive: endExclusive,
-          points: points,
-        );
-      });
+      final freshDays = await _readActivityTrendDaysFromHealth(
+        startInclusive: startInclusive,
+        endExclusive: endExclusive,
+      );
       final days = _resolveCacheableActivityTrendDays(
         startInclusive: startInclusive,
         freshDays: freshDays,
@@ -223,6 +258,70 @@ class MobileDiaryHealthService
     }
   }
 
+  Future<List<DiaryHealthActivityTrendDay>>
+  _loadAndCacheMissingActivityTrendDays({
+    required String cacheKey,
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+    required _ActivityTrendCacheRange cachedRange,
+  }) async {
+    final daysByKey = <String, DiaryHealthActivityTrendDay>{
+      for (final day in cachedRange.cachedDays) localDayKey(day.day): day,
+    };
+
+    for (final range in cachedRange.missingRanges) {
+      final freshDays = await _readActivityTrendDaysFromHealth(
+        startInclusive: range.startInclusive,
+        endExclusive: range.endExclusive,
+      );
+      await _cacheActivityTrendDayEntries(days: freshDays);
+      for (final day in freshDays) {
+        daysByKey[localDayKey(day.day)] = day;
+      }
+    }
+
+    final days = <DiaryHealthActivityTrendDay>[];
+    for (
+      var day = startInclusive;
+      day.isBefore(endExclusive);
+      day = nextLocalDay(day)
+    ) {
+      final cachedDay = daysByKey[localDayKey(day)];
+      if (cachedDay == null) {
+        throw StateError('Missing activity trend day after Health refresh.');
+      }
+      days.add(cachedDay);
+    }
+
+    await _cacheActivityTrendDays(
+      cacheKey: cacheKey,
+      startInclusive: startInclusive,
+      endExclusive: endExclusive,
+      days: days,
+    );
+    return List<DiaryHealthActivityTrendDay>.unmodifiable(days);
+  }
+
+  Future<List<DiaryHealthActivityTrendDay>> _readActivityTrendDaysFromHealth({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) {
+    return _readQueue.run(() async {
+      await _ensureConfigured();
+      final points = await _health.getHealthIntervalDataFromTypes(
+        startDate: startInclusive,
+        endDate: endExclusive,
+        types: _activityTrendQueryTypes,
+        interval: _activityTrendIntervalSeconds,
+      );
+      return _buildActivityTrendDays(
+        startInclusive: startInclusive,
+        endExclusive: endExclusive,
+        points: points,
+      );
+    });
+  }
+
   List<DiaryHealthActivityTrendDay> _resolveCacheableActivityTrendDays({
     required DateTime startInclusive,
     required List<DiaryHealthActivityTrendDay> freshDays,
@@ -249,20 +348,65 @@ class MobileDiaryHealthService
   }) async {
     final loadedAt = _now();
     final cachedDays = List<DiaryHealthActivityTrendDay>.unmodifiable(days);
-    _activityTrendCacheByKey[cacheKey] = DiaryHealthActivityTrendCacheEntry(
+    _cacheActivityTrendDaysInMemory(
+      cacheKey: cacheKey,
       startInclusive: startInclusive,
       endExclusive: endExclusive,
       loadedAt: loadedAt,
       checkedAt: loadedAt,
       days: cachedDays,
     );
-    _trimActivityTrendCache(loadedAt);
-    await _savePersistentActivityTrendCacheEntry(
-      cacheKey: cacheKey,
+    await _cacheActivityTrendDayEntries(
+      loadedAt: loadedAt,
+      days: cachedDays,
+    );
+  }
+
+  void _cacheActivityTrendDaysInMemory({
+    required String cacheKey,
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+    required DateTime loadedAt,
+    required DateTime checkedAt,
+    required List<DiaryHealthActivityTrendDay> days,
+  }) {
+    _activityTrendCacheByKey[cacheKey] = DiaryHealthActivityTrendCacheEntry(
       startInclusive: startInclusive,
       endExclusive: endExclusive,
       loadedAt: loadedAt,
-      days: cachedDays,
+      checkedAt: checkedAt,
+      days: List<DiaryHealthActivityTrendDay>.unmodifiable(days),
+    );
+    _trimActivityTrendCache(_now());
+  }
+
+  Future<void> _cacheActivityTrendDayEntries({
+    required List<DiaryHealthActivityTrendDay> days,
+    DateTime? loadedAt,
+  }) async {
+    final effectiveLoadedAt = loadedAt ?? _now();
+    final persistedDays = <DiaryHealthActivityTrendDay>[];
+    for (final day in days) {
+      final cacheKey = localDayKey(day.day);
+      final existing = _activityTrendDayCacheByKey[cacheKey];
+      if (_isEmptyActivityTrendDay(day) &&
+          existing != null &&
+          !_isEmptyActivityTrendDay(existing.day)) {
+        continue;
+      }
+      _activityTrendDayCacheByKey[cacheKey] =
+          DiaryHealthActivityTrendDayCacheEntry(
+            loadedAt: effectiveLoadedAt,
+            day: day,
+          );
+      persistedDays.add(day);
+    }
+    if (persistedDays.isEmpty) {
+      return;
+    }
+    await _activityTrendDayCacheStore?.saveDays(
+      loadedAt: effectiveLoadedAt,
+      days: persistedDays,
     );
   }
 
@@ -289,6 +433,23 @@ class MobileDiaryHealthService
       );
       if (identical(data, staleData)) {
         _touchStaleDayDataCacheEntry(cacheKey);
+        return data;
+      }
+      if (_isEmptyDayData(data)) {
+        final trendFallback = await _fallbackDayDataFromTrendCache(dayStart);
+        if (trendFallback != null) {
+          log(
+            'Used trend cache after empty Health day read. '
+            'day=${dayStart.toIso8601String()}',
+            name: _logName,
+          );
+          return trendFallback;
+        }
+        log(
+          'Skipped caching empty Health day read. '
+          'day=${dayStart.toIso8601String()}',
+          name: _logName,
+        );
         return data;
       }
       await _cacheDayData(cacheKey: cacheKey, dayStart: dayStart, data: data);
@@ -340,6 +501,27 @@ class MobileDiaryHealthService
       data: data,
     );
     _trimDayDataCache(loadedAt);
+    await _dayCacheStore?.save(
+      cacheKey: cacheKey,
+      dayStart: dayStart,
+      loadedAt: loadedAt,
+      data: data,
+    );
+  }
+
+  Future<DiaryHealthDayData?> _fallbackDayDataFromTrendCache(
+    DateTime dayStart,
+  ) async {
+    final trendEntry = await _readCachedActivityTrendDay(dayStart);
+    final trendDay = trendEntry?.day;
+    if (trendDay == null ||
+        (trendDay.totalSteps <= 0 && trendDay.activeEnergyKcal <= 0)) {
+      return null;
+    }
+    return DiaryHealthDayData(
+      totalSteps: trendDay.totalSteps,
+      workouts: const <HealthWorkoutSession>[],
+    );
   }
 
   Future<DiaryHealthDayData> _loadConfiguredDayDataFromHealth({
@@ -525,20 +707,106 @@ class MobileDiaryHealthService
         '${endExclusive.millisecondsSinceEpoch}';
   }
 
-  DiaryHealthDayData? _cachedDayData(String cacheKey) {
+  Future<DiaryHealthDayCacheEntry?> _readCachedDayDataEntry({
+    required String cacheKey,
+    required DateTime dayStart,
+    required DateTime dayEnd,
+    required double? normalizedUserHeightCm,
+  }) async {
     final cacheEntry = _cacheByKey[cacheKey];
-    if (cacheEntry == null) {
-      return null;
-    }
     final now = _now();
-    if (_isTooStaleDayCacheEntry(cacheEntry, now)) {
-      _cacheByKey.remove(cacheKey);
+    if (cacheEntry != null) {
+      if (_isTooStaleDayCacheEntry(cacheEntry, now)) {
+        _cacheByKey.remove(cacheKey);
+      } else {
+        if (_isExpiredCacheEntry(cacheEntry, now)) {
+          _refreshDayDataInBackground(
+            cacheKey: cacheKey,
+            dayStart: dayStart,
+            dayEnd: dayEnd,
+            normalizedUserHeightCm: normalizedUserHeightCm,
+          );
+        }
+        return cacheEntry;
+      }
+    }
+
+    final persistentEntry = await _readPersistentDayCacheEntry(cacheKey);
+    if (persistentEntry == null) {
       return null;
     }
-    if (_isExpiredCacheEntry(cacheEntry, now)) {
+    _cacheByKey[cacheKey] = persistentEntry;
+    if (_isExpiredCacheEntry(persistentEntry, now)) {
+      _refreshDayDataInBackground(
+        cacheKey: cacheKey,
+        dayStart: dayStart,
+        dayEnd: dayEnd,
+        normalizedUserHeightCm: normalizedUserHeightCm,
+      );
+    }
+    return persistentEntry;
+  }
+
+  Future<DiaryHealthDayCacheEntry?> _readPersistentDayCacheEntry(
+    String cacheKey,
+  ) async {
+    final snapshot = await _dayCacheStore?.read(
+      cacheKey: cacheKey,
+      now: _now(),
+      maxStaleAge: _diaryHealthMaxStaleCacheAge,
+    );
+    if (snapshot == null) {
       return null;
     }
-    return cacheEntry.data;
+    final data = snapshot.toDomain();
+    if (_isEmptyDayData(data)) {
+      return null;
+    }
+    return DiaryHealthDayCacheEntry(
+      dayStart: snapshot.dayStart,
+      loadedAt: snapshot.loadedAt,
+      checkedAt: snapshot.loadedAt,
+      data: data,
+    );
+  }
+
+  void _refreshDayDataInBackground({
+    required String cacheKey,
+    required DateTime dayStart,
+    required DateTime dayEnd,
+    required double? normalizedUserHeightCm,
+  }) {
+    if (_backgroundRefreshKeys.contains(cacheKey) ||
+        _inFlightByKey.containsKey(cacheKey)) {
+      return;
+    }
+    _backgroundRefreshKeys.add(cacheKey);
+    final future =
+        _loadAndCacheDayData(
+              cacheKey: cacheKey,
+              dayStart: dayStart,
+              dayEnd: dayEnd,
+              normalizedUserHeightCm: normalizedUserHeightCm,
+            )
+            .catchError((Object error, StackTrace stackTrace) {
+              log(
+                'Failed to refresh cached diary health day in background. '
+                'day=${dayStart.toIso8601String()}',
+                name: _logName,
+                error: error,
+                stackTrace: stackTrace,
+              );
+              final staleData = _cacheByKey[cacheKey]?.data;
+              return staleData ??
+                  const DiaryHealthDayData(
+                    totalSteps: 0,
+                    workouts: <HealthWorkoutSession>[],
+                  );
+            })
+            .whenComplete(() {
+              _backgroundRefreshKeys.remove(cacheKey);
+            });
+    unawaited(future);
   }
 
   List<DiaryHealthActivityTrendDay>? _cachedActivityTrendDays(
@@ -559,47 +827,122 @@ class MobileDiaryHealthService
     return cacheEntry.days;
   }
 
-  Future<DiaryHealthActivityTrendCacheEntry?>
-  _readPersistentActivityTrendCacheEntry(String cacheKey) async {
-    final cacheStore = _activityTrendCacheStore;
-    if (cacheStore == null) {
-      return null;
+  Future<_ActivityTrendCacheRange> _readCachedActivityTrendDays({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    final cachedDays = <DiaryHealthActivityTrendDay>[];
+    final missingDays = <DateTime>[];
+    var hasExpiredDays = false;
+    DateTime? oldestLoadedAt;
+
+    for (
+      var day = startInclusive;
+      day.isBefore(endExclusive);
+      day = nextLocalDay(day)
+    ) {
+      final entry = await _readCachedActivityTrendDay(day);
+      if (entry == null) {
+        missingDays.add(day);
+        continue;
+      }
+      cachedDays.add(entry.day);
+      final loadedAt = entry.loadedAt;
+      if (oldestLoadedAt == null || loadedAt.isBefore(oldestLoadedAt)) {
+        oldestLoadedAt = loadedAt;
+      }
+      if (_isExpiredActivityTrendDayCacheEntry(entry, _now())) {
+        hasExpiredDays = true;
+      }
     }
-    final snapshot = await cacheStore.read(
-      cacheKey: cacheKey,
-      now: _now(),
-      maxStaleAge: _diaryHealthMaxStaleCacheAge,
-    );
-    if (snapshot == null) {
-      return null;
-    }
-    return DiaryHealthActivityTrendCacheEntry(
-      startInclusive: snapshot.startInclusive,
-      endExclusive: snapshot.endExclusive,
-      loadedAt: snapshot.loadedAt,
-      checkedAt: snapshot.loadedAt,
-      days: snapshot.days,
+
+    return _ActivityTrendCacheRange(
+      cachedDays: List<DiaryHealthActivityTrendDay>.unmodifiable(cachedDays),
+      missingRanges: _buildMissingDayRanges(missingDays),
+      hasExpiredDays: hasExpiredDays,
+      oldestLoadedAt: oldestLoadedAt,
     );
   }
 
-  Future<void> _savePersistentActivityTrendCacheEntry({
+  Future<DiaryHealthActivityTrendDayCacheEntry?> _readCachedActivityTrendDay(
+    DateTime day,
+  ) async {
+    final cacheKey = localDayKey(day);
+    final now = _now();
+    final cacheEntry = _activityTrendDayCacheByKey[cacheKey];
+    if (cacheEntry != null) {
+      if (_isTooStaleActivityTrendDayCacheEntry(cacheEntry, now)) {
+        _activityTrendDayCacheByKey.remove(cacheKey);
+      } else {
+        return cacheEntry;
+      }
+    }
+
+    final persistentEntry = await _activityTrendDayCacheStore?.readDay(
+      day: day,
+      now: now,
+      maxStaleAge: _diaryHealthMaxStaleCacheAge,
+    );
+    if (persistentEntry == null) {
+      return null;
+    }
+    _activityTrendDayCacheByKey[cacheKey] = persistentEntry;
+    return persistentEntry;
+  }
+
+  List<_LocalDayRange> _buildMissingDayRanges(List<DateTime> missingDays) {
+    if (missingDays.isEmpty) {
+      return const <_LocalDayRange>[];
+    }
+    final ranges = <_LocalDayRange>[];
+    var start = missingDays.first;
+    var previous = start;
+
+    for (final day in missingDays.skip(1)) {
+      if (isSameLocalDay(day, nextLocalDay(previous))) {
+        previous = day;
+        continue;
+      }
+      ranges.add(_LocalDayRange(start, nextLocalDay(previous)));
+      start = day;
+      previous = day;
+    }
+    ranges.add(_LocalDayRange(start, nextLocalDay(previous)));
+    return List<_LocalDayRange>.unmodifiable(ranges);
+  }
+
+  void _refreshActivityTrendDaysInBackground({
     required String cacheKey,
     required DateTime startInclusive,
     required DateTime endExclusive,
-    required DateTime loadedAt,
-    required List<DiaryHealthActivityTrendDay> days,
-  }) async {
-    final cacheStore = _activityTrendCacheStore;
-    if (cacheStore == null) {
+  }) {
+    if (_activityTrendBackgroundRefreshKeys.contains(cacheKey) ||
+        _activityTrendInFlightByKey.containsKey(cacheKey)) {
       return;
     }
-    await cacheStore.save(
-      cacheKey: cacheKey,
-      startInclusive: startInclusive,
-      endExclusive: endExclusive,
-      loadedAt: loadedAt,
-      days: days,
-    );
+    _activityTrendBackgroundRefreshKeys.add(cacheKey);
+    final future =
+        _loadAndCacheActivityTrendDays(
+              cacheKey: cacheKey,
+              startInclusive: startInclusive,
+              endExclusive: endExclusive,
+            )
+            .catchError((Object error, StackTrace stackTrace) {
+              log(
+                'Failed to refresh cached diary health activity trend '
+                'in background. start=${startInclusive.toIso8601String()} '
+                'end=${endExclusive.toIso8601String()}',
+                name: _logName,
+                error: error,
+                stackTrace: stackTrace,
+              );
+              return _activityTrendCacheByKey[cacheKey]?.days ??
+                  const <DiaryHealthActivityTrendDay>[];
+            })
+            .whenComplete(() {
+              _activityTrendBackgroundRefreshKeys.remove(cacheKey);
+            });
+    unawaited(future);
   }
 
   bool _removeInFlightDayData(String cacheKey) {
@@ -652,6 +995,20 @@ class MobileDiaryHealthService
 
   bool _isTooStaleActivityTrendCacheEntry(
     DiaryHealthActivityTrendCacheEntry entry,
+    DateTime now,
+  ) {
+    return now.difference(entry.loadedAt) > _diaryHealthMaxStaleCacheAge;
+  }
+
+  bool _isExpiredActivityTrendDayCacheEntry(
+    DiaryHealthActivityTrendDayCacheEntry entry,
+    DateTime now,
+  ) {
+    return now.difference(entry.loadedAt) > _cacheTtlForDay(entry.day.day, now);
+  }
+
+  bool _isTooStaleActivityTrendDayCacheEntry(
+    DiaryHealthActivityTrendDayCacheEntry entry,
     DateTime now,
   ) {
     return now.difference(entry.loadedAt) > _diaryHealthMaxStaleCacheAge;
@@ -1191,9 +1548,11 @@ bool _isEmptyDayData(DiaryHealthDayData data) {
 }
 
 bool _isEmptyActivityTrendDays(List<DiaryHealthActivityTrendDay> days) {
-  return days.every(
-    (day) => day.totalSteps <= 0 && day.activeEnergyKcal <= 0,
-  );
+  return days.every(_isEmptyActivityTrendDay);
+}
+
+bool _isEmptyActivityTrendDay(DiaryHealthActivityTrendDay day) {
+  return day.totalSteps <= 0 && day.activeEnergyKcal <= 0;
 }
 
 num? _numericHealthValue(HealthDataPoint point) {
@@ -1324,4 +1683,31 @@ class _DateTimeInterval {
     }
     return remaining;
   }
+}
+
+class _LocalDayRange {
+  const _LocalDayRange(this.startInclusive, this.endExclusive);
+
+  final DateTime startInclusive;
+  final DateTime endExclusive;
+}
+
+class _ActivityTrendCacheRange {
+  const _ActivityTrendCacheRange({
+    required this.cachedDays,
+    required this.missingRanges,
+    required this.hasExpiredDays,
+    required this.oldestLoadedAt,
+  });
+
+  final List<DiaryHealthActivityTrendDay> cachedDays;
+  final List<_LocalDayRange> missingRanges;
+  final bool hasExpiredDays;
+  final DateTime? oldestLoadedAt;
+
+  bool get hasCachedDays => cachedDays.isNotEmpty;
+
+  List<DiaryHealthActivityTrendDay> get days => cachedDays;
+
+  bool get isComplete => missingRanges.isEmpty;
 }

@@ -550,12 +550,12 @@ class CalorieGoalSettings {
     return !normalizeDiaryDay(day).isBefore(normalizeDiaryDay(startDate));
   }
 
-  /// Marks the first activity tracking day without moving it forward.
+  /// Sets the activity tracking backfill boundary.
   CalorieGoalSettings markActivityTrackingStarted(DateTime startedAt) {
     final normalizedStartedAt = normalizeDiaryDay(startedAt);
     final currentStartDate = activityTrackingStartDate;
     if (currentStartDate != null &&
-        !normalizeDiaryDay(currentStartDate).isAfter(normalizedStartedAt)) {
+        isSameDiaryDay(currentStartDate, normalizedStartedAt)) {
       return this;
     }
     return copyWith(

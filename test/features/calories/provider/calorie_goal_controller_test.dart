@@ -1173,7 +1173,7 @@ void main() {
     expect(settings.isSkippedIntakeDay(skippedDay), isFalse);
   });
 
-  test('markActivityTrackingStarted stores first tracking day', () async {
+  test('markActivityTrackingStarted stores tracking backfill day', () async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
 
@@ -1193,11 +1193,15 @@ void main() {
     final savedAgain = await controller.markActivityTrackingStarted(
       startedAt: DateTime(2026, 4, 8, 12),
     );
+    final savedLater = await controller.markActivityTrackingStarted(
+      startedAt: DateTime(2026, 4, 10, 12),
+    );
 
     expect(saved, isTrue);
     expect(savedAgain, isTrue);
+    expect(savedLater, isTrue);
     final settings = await repository.readSettings();
-    expect(settings.activityTrackingStartDate, DateTime(2026, 4, 8));
+    expect(settings.activityTrackingStartDate, DateTime(2026, 4, 10));
   });
 
   test(

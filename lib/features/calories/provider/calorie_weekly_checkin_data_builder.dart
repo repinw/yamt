@@ -2,6 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_health_activity_kcal_reader.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
     show CalorieGoalMode;
@@ -735,6 +737,25 @@ Future<_WeeklyCheckInHealthData> _loadWeeklyCheckInHealthData({
   representativeWeightByDay = _representativeWeightByDay(healthWeightSamples);
 
   final diaryHealthService = ref.watch(diaryHealthServiceProvider);
+  final aggregateActiveKcalByDay = await loadAggregateHealthActivityKcalByDay(
+    diaryHealthService: diaryHealthService,
+    days: <DateTime>{...dates.windowDays, today}.toList(growable: false),
+    logName: _weeklyCheckInProviderLogName,
+    failureMessage: 'Failed to load aggregate activity for weekly check-in.',
+  );
+  if (!ref.mounted) {
+    throw StateError('Calorie weekly check-in disposed.');
+  }
+  if (aggregateActiveKcalByDay != null) {
+    activeKcalByDay.addAll(aggregateActiveKcalByDay);
+    todayActiveKcal = aggregateActiveKcalByDay[diaryDayKey(today)] ?? 0;
+    return _WeeklyCheckInHealthData(
+      activeKcalByDay: activeKcalByDay,
+      todayActiveKcal: todayActiveKcal,
+      representativeWeightByDay: representativeWeightByDay,
+    );
+  }
+
   final userHeightCm = settings.calculatorProfile?.heightCm;
   final windowDayData = await Future.wait(
     dates.windowDays.map(

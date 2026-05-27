@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'calorie_health_connection_sync.dart';
+part of 'calorie_health_activity_cache_warmup.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -8,31 +8,31 @@ part of 'calorie_health_connection_sync.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Keeps calorie settings in sync with Health connection state.
+/// Warms aggregate Health activity cache for the rolling learning window.
 
-@ProviderFor(calorieHealthConnectionSync)
-final calorieHealthConnectionSyncProvider =
-    CalorieHealthConnectionSyncProvider._();
+@ProviderFor(calorieHealthActivityCacheWarmup)
+final calorieHealthActivityCacheWarmupProvider =
+    CalorieHealthActivityCacheWarmupProvider._();
 
-/// Keeps calorie settings in sync with Health connection state.
+/// Warms aggregate Health activity cache for the rolling learning window.
 
-final class CalorieHealthConnectionSyncProvider
+final class CalorieHealthActivityCacheWarmupProvider
     extends $FunctionalProvider<void, void, void>
     with $Provider<void> {
-  /// Keeps calorie settings in sync with Health connection state.
-  CalorieHealthConnectionSyncProvider._()
+  /// Warms aggregate Health activity cache for the rolling learning window.
+  CalorieHealthActivityCacheWarmupProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'calorieHealthConnectionSyncProvider',
+        name: r'calorieHealthActivityCacheWarmupProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$calorieHealthConnectionSyncHash();
+  String debugGetCreateSourceHash() => _$calorieHealthActivityCacheWarmupHash();
 
   @$internal
   @override
@@ -41,7 +41,7 @@ final class CalorieHealthConnectionSyncProvider
 
   @override
   void create(Ref ref) {
-    return calorieHealthConnectionSync(ref);
+    return calorieHealthActivityCacheWarmup(ref);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -53,5 +53,5 @@ final class CalorieHealthConnectionSyncProvider
   }
 }
 
-String _$calorieHealthConnectionSyncHash() =>
-    r'c89d626428e52005f1298e7776edff6145443994';
+String _$calorieHealthActivityCacheWarmupHash() =>
+    r'e126a0c48c1c554c4374d60a3bad333d04bf2c69';

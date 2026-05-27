@@ -2,19 +2,17 @@ import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/health/data/diary_health_activity_trend_cache_codec.dart';
-import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
+import 'package:yamt/features/health/data/diary_health_day_cache_codec.dart';
+import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 
-const _logName = 'DiaryHealthActivityTrendCacheStore';
-const _persistentActivityTrendCachePrefix =
-    'diary_health_activity_trend_cache_v1:';
-const _persistentActivityTrendCacheIndexKey =
-    'diary_health_activity_trend_cache_v1:index';
+const _logName = 'DiaryHealthDayCacheStore';
+const _persistentDayCachePrefix = 'diary_health_day_cache_v1:';
+const _persistentDayCacheIndexKey = 'diary_health_day_cache_v1:index';
 
-/// Stores derived diary health activity trend totals in preferences.
-class DiaryHealthActivityTrendCacheStore {
-  /// Creates a persistent activity trend cache store.
-  const DiaryHealthActivityTrendCacheStore({
+/// Stores derived diary health day data in preferences.
+class DiaryHealthDayCacheStore {
+  /// Creates a persistent day cache store.
+  const DiaryHealthDayCacheStore({
     required AppPreferences preferences,
     required int maxEntries,
   }) : _preferences = preferences,
@@ -23,8 +21,8 @@ class DiaryHealthActivityTrendCacheStore {
   final AppPreferences _preferences;
   final int _maxEntries;
 
-  /// Reads cached derived trend totals for [cacheKey].
-  Future<DiaryHealthActivityTrendCacheSnapshot?> read({
+  /// Reads cached derived day data for [cacheKey].
+  Future<DiaryHealthDayCacheSnapshot?> read({
     required String cacheKey,
     required DateTime now,
     required Duration maxStaleAge,
@@ -34,7 +32,7 @@ class DiaryHealthActivityTrendCacheStore {
       if (raw == null || raw.isEmpty) {
         return null;
       }
-      final snapshot = DiaryHealthActivityTrendCacheSnapshot.decode(
+      final snapshot = DiaryHealthDayCacheSnapshot.decode(
         raw,
         cacheKey: cacheKey,
       );
@@ -45,7 +43,7 @@ class DiaryHealthActivityTrendCacheStore {
       return snapshot;
     } on Object catch (error, stackTrace) {
       log(
-        'Ignoring malformed diary health activity trend cache.',
+        'Ignoring malformed diary health day cache.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
@@ -55,29 +53,28 @@ class DiaryHealthActivityTrendCacheStore {
     }
   }
 
-  /// Saves cached derived trend totals for [cacheKey].
+  /// Saves cached derived day data for [cacheKey].
   Future<void> save({
     required String cacheKey,
-    required DateTime startInclusive,
-    required DateTime endExclusive,
+    required DateTime dayStart,
     required DateTime loadedAt,
-    required List<DiaryHealthActivityTrendDay> days,
+    required DiaryHealthDayData data,
   }) async {
     try {
-      final snapshot = DiaryHealthActivityTrendCacheSnapshot(
-        startInclusive: startInclusive,
-        endExclusive: endExclusive,
+      final snapshot = DiaryHealthDayCacheSnapshot.fromDomain(
+        cacheKey: cacheKey,
+        dayStart: dayStart,
         loadedAt: loadedAt,
-        days: days,
+        data: data,
       );
       await _preferences.setString(
         _cacheEntryKey(cacheKey),
-        snapshot.encode(cacheKey: cacheKey),
+        snapshot.encode(),
       );
       await _remember(cacheKey);
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to persist diary health activity trend cache.',
+        'Failed to persist diary health day cache.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
@@ -85,7 +82,7 @@ class DiaryHealthActivityTrendCacheStore {
     }
   }
 
-  /// Removes cached derived trend totals for [cacheKey].
+  /// Removes cached derived day data for [cacheKey].
   Future<void> remove(String cacheKey) async {
     await _preferences.remove(_cacheEntryKey(cacheKey));
     final cacheKeys = await _readIndex();
@@ -109,43 +106,41 @@ class DiaryHealthActivityTrendCacheStore {
 
   Future<List<String>> _readIndex() async {
     try {
-      final raw = await _preferences.getString(
-        _persistentActivityTrendCacheIndexKey,
-      );
+      final raw = await _preferences.getString(_persistentDayCacheIndexKey);
       if (raw == null || raw.isEmpty) {
         return <String>[];
       }
       final decoded = jsonDecode(raw);
       if (decoded is! List) {
-        await _preferences.remove(_persistentActivityTrendCacheIndexKey);
+        await _preferences.remove(_persistentDayCacheIndexKey);
         return <String>[];
       }
       return decoded.whereType<String>().toList(growable: true);
     } on Object catch (error, stackTrace) {
       log(
-        'Reset malformed diary health activity trend cache index.',
+        'Reset malformed diary health day cache index.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
       );
-      await _preferences.remove(_persistentActivityTrendCacheIndexKey);
+      await _preferences.remove(_persistentDayCacheIndexKey);
       return <String>[];
     }
   }
 
   Future<void> _writeIndex(List<String> cacheKeys) async {
     await _preferences.setString(
-      _persistentActivityTrendCacheIndexKey,
+      _persistentDayCacheIndexKey,
       jsonEncode(cacheKeys),
     );
   }
 
   String _cacheEntryKey(String cacheKey) {
-    return '$_persistentActivityTrendCachePrefix$cacheKey';
+    return '$_persistentDayCachePrefix$cacheKey';
   }
 
   bool _isTooStale(
-    DiaryHealthActivityTrendCacheSnapshot snapshot,
+    DiaryHealthDayCacheSnapshot snapshot,
     DateTime now,
     Duration maxStaleAge,
   ) {

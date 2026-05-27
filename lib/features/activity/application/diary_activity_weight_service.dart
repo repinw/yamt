@@ -16,10 +16,6 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 part 'diary_activity_weight_service.g.dart';
 
 const _logName = 'DiaryActivityWeightService';
-const _aggregateTrendKcalPolicy = _AggregateTrendKcalPolicy(
-  highActiveEnergyKcal: 1200,
-  maxActiveToStepKcalRatio: 4,
-);
 const _emptyDiaryHealthDayData = DiaryHealthDayData(
   totalSteps: 0,
   workouts: <HealthWorkoutSession>[],
@@ -233,7 +229,10 @@ class DiaryActivityWeightService {
       final trendDay = trendByDay[diaryDayKey(day)];
       activityTrend[index] = trendDay == null
           ? null
-          : _aggregateTrendKcalPolicy.resolveBurnedKcal(trendDay).toDouble();
+          : calculateAggregateDiaryBurnedCalories(
+              totalSteps: trendDay.totalSteps,
+              activeEnergyKcal: trendDay.activeEnergyKcal,
+            ).toDouble();
     }
   }
 
@@ -309,46 +308,6 @@ class DiaryActivityWeightService {
       }
     }
     return Map<String, HealthWeightSample>.unmodifiable(latestSampleByDay);
-  }
-}
-
-class _AggregateTrendKcalPolicy {
-  const _AggregateTrendKcalPolicy({
-    required this.highActiveEnergyKcal,
-    required this.maxActiveToStepKcalRatio,
-  });
-
-  final int highActiveEnergyKcal;
-  final int maxActiveToStepKcalRatio;
-
-  int resolveBurnedKcal(DiaryHealthActivityTrendDay trendDay) {
-    final stepCalories = estimateOutsideActivityStepCalories(
-      trendDay.totalSteps,
-    );
-    final activeEnergyKcal = trendDay.activeEnergyKcal;
-    if (!_isTrusted(
-      activeEnergyKcal: activeEnergyKcal,
-      stepCalories: stepCalories,
-    )) {
-      return stepCalories;
-    }
-    return activeEnergyKcal > stepCalories ? activeEnergyKcal : stepCalories;
-  }
-
-  bool _isTrusted({
-    required int activeEnergyKcal,
-    required int stepCalories,
-  }) {
-    if (activeEnergyKcal <= 0) {
-      return false;
-    }
-    if (activeEnergyKcal < highActiveEnergyKcal) {
-      return true;
-    }
-    if (stepCalories <= 0) {
-      return false;
-    }
-    return activeEnergyKcal <= stepCalories * maxActiveToStepKcalRatio;
   }
 }
 
