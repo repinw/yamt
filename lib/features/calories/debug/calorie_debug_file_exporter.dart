@@ -40,6 +40,18 @@ abstract class CalorieDebugFileExporter {
   });
 }
 
+/// Save-file callback used by [FilePickerCalorieDebugFileExporter].
+typedef CalorieDebugSaveFileCallback =
+    Future<String?> Function({
+      String? dialogTitle,
+      String? fileName,
+      String? initialDirectory,
+      FileType type,
+      List<String>? allowedExtensions,
+      Uint8List? bytes,
+      bool lockParentWindow,
+    });
+
 /// Provides the calorie debug file exporter.
 @riverpod
 CalorieDebugFileExporter calorieDebugFileExporter(Ref ref) {
@@ -49,7 +61,11 @@ CalorieDebugFileExporter calorieDebugFileExporter(Ref ref) {
 /// `file_picker` implementation for debug text export.
 class FilePickerCalorieDebugFileExporter implements CalorieDebugFileExporter {
   /// Creates file-picker exporter.
-  const FilePickerCalorieDebugFileExporter();
+  const FilePickerCalorieDebugFileExporter({
+    CalorieDebugSaveFileCallback? saveFile,
+  }) : _saveFile = saveFile;
+
+  final CalorieDebugSaveFileCallback? _saveFile;
 
   @override
   Future<CalorieDebugFileExportResult> saveText({
@@ -57,7 +73,8 @@ class FilePickerCalorieDebugFileExporter implements CalorieDebugFileExporter {
     required String fileName,
     required String text,
   }) async {
-    final path = await FilePicker.saveFile(
+    final saveFile = _saveFile ?? FilePicker.saveFile;
+    final path = await saveFile(
       dialogTitle: dialogTitle,
       fileName: fileName,
       type: FileType.custom,
