@@ -73,7 +73,7 @@ final class ResolvedCalorieGoalsForDaysProvider
 }
 
 String _$resolvedCalorieGoalsForDaysHash() =>
-    r'15ba215c4bfe583fe56c013c29564c358ab3e7bd';
+    r'4a437a6cb3e69ad3426ed86d6035caba3615ec0e';
 
 /// Resolved calorie goals keyed by diary day key.
 
@@ -166,7 +166,7 @@ final class ResolvedCalorieGoalForDayProvider
 }
 
 String _$resolvedCalorieGoalForDayHash() =>
-    r'198ae9babf7de110c13dd9dac976c652333afdfd';
+    r'3aae594afbc6290507bc3477bcde71bb981387dc';
 
 /// Resolved calorie goal for day.
 

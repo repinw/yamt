@@ -26,7 +26,8 @@ void main() {
     addTearDown(harness.dispose);
 
     final result = await harness.controller.printDebugDump(
-      DateTime(2026, 2, 25, 12),
+      now: DateTime(2026, 2, 25, 12),
+      saveDialogTitle: 'Save calorie debug TXT',
     );
 
     expect(
@@ -53,7 +54,8 @@ void main() {
       addTearDown(harness.dispose);
 
       final result = await harness.controller.printDebugDump(
-        DateTime(2026, 2, 25, 12),
+        now: DateTime(2026, 2, 25, 12),
+        saveDialogTitle: 'Save calorie debug TXT',
       );
 
       expect(result, isA<CalorieDebugDumpPrintCanceled>());
@@ -70,7 +72,24 @@ void main() {
     addTearDown(harness.dispose);
 
     final result = await harness.controller.printDebugDump(
-      DateTime(2026, 2, 25, 12),
+      now: DateTime(2026, 2, 25, 12),
+      saveDialogTitle: 'Save calorie debug TXT',
+    );
+
+    expect(result, isA<CalorieDebugDumpPrintFailure>());
+  });
+
+  test('printDebugDump returns failure result when export fails', () async {
+    final harness = _createHarness(
+      fileExporter: _FakeCalorieDebugFileExporter(
+        exception: Exception('file export failed'),
+      ),
+    );
+    addTearDown(harness.dispose);
+
+    final result = await harness.controller.printDebugDump(
+      now: DateTime(2026, 2, 25, 12),
+      saveDialogTitle: 'Save calorie debug TXT',
     );
 
     expect(result, isA<CalorieDebugDumpPrintFailure>());
@@ -197,19 +216,26 @@ class _FakeCalorieDebugFileExporter implements CalorieDebugFileExporter {
     this.result = const CalorieDebugFileExportSaved(
       path: '/tmp/yamt_diary_debug.txt',
     ),
+    this.exception,
   });
 
   final CalorieDebugFileExportResult result;
+  final Exception? exception;
   String? fileName;
   String? text;
 
   @override
   Future<CalorieDebugFileExportResult> saveText({
+    required String dialogTitle,
     required String fileName,
     required String text,
   }) async {
     this.fileName = fileName;
     this.text = text;
+    final exception = this.exception;
+    if (exception != null) {
+      throw exception;
+    }
     return result;
   }
 }

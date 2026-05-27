@@ -1117,7 +1117,9 @@
   "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
   "caloriesRemainingLabel": "Verbleibend",
+  "caloriesDebugActionsTooltip": "Kalorien-Debug-Aktionen",
   "caloriesDebugDumpAction": "Kalorien-Debug-TXT herunterladen",
+  "caloriesDebugDumpSaveDialogTitle": "Kalorien-Debug-TXT speichern",
   "caloriesDebugDumpPrinted":
       "Kalorien-Debug-TXT heruntergeladen ({rowCount} Zeilen).",
   "@caloriesDebugDumpPrinted": {
@@ -1131,6 +1133,24 @@
       "Kalorien-Debug-TXT-Download abgebrochen.",
   "caloriesDebugDumpFailed":
       "Kalorien-Debug-TXT konnte nicht heruntergeladen werden.",
+  "caloriesSettingsDebugDumpAction": "Kalorien-Einstellungen als JSON ausgeben",
+  "caloriesSettingsDebugDumpPrinted":
+      "Kalorien-Einstellungen-Debug-Ausgabe gedruckt ({entryCount} Zieleinträge).",
+  "@caloriesSettingsDebugDumpPrinted": {
+    "placeholders": {
+      "entryCount": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesSettingsDebugDumpFailed":
+      "Kalorien-Einstellungen-Debug-Ausgabe konnte nicht gedruckt werden.",
+  "caloriesWeeklyCheckInDebugDumpAction":
+      "Wochen-Check-in-Status ausgeben",
+  "caloriesWeeklyCheckInDebugDumpPrinted":
+      "Wochen-Check-in-Debug-Ausgabe gedruckt.",
+  "caloriesWeeklyCheckInDebugDumpFailed":
+      "Wochen-Check-in-Debug-Ausgabe konnte nicht gedruckt werden.",
   "burnWeekRunOverTitle": "Run beendet",
   "burnWeekRunRestartsOn": "Frischer Run startet am {date}.",
   "@burnWeekRunRestartsOn": {

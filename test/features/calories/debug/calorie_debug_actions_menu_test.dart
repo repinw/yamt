@@ -241,6 +241,7 @@ class _FakeCalorieDebugFileExporter implements CalorieDebugFileExporter {
 
   @override
   Future<CalorieDebugFileExportResult> saveText({
+    required String dialogTitle,
     required String fileName,
     required String text,
   }) async {

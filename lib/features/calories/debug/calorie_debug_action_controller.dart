@@ -106,7 +106,10 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
   }
 
   /// Exports calorie debug dump as TXT.
-  Future<CalorieDebugDumpPrintResult> printDebugDump(DateTime now) async {
+  Future<CalorieDebugDumpPrintResult> printDebugDump({
+    required DateTime now,
+    required String saveDialogTitle,
+  }) async {
     final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
     final diaryHealthService = ref.read(diaryHealthServiceProvider);
     final healthWeightService = ref.read(healthWeightServiceProvider);
@@ -130,6 +133,7 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
         now: now,
       );
       final exportResult = await fileExporter.saveText(
+        dialogTitle: saveDialogTitle,
         fileName: _calorieDebugDumpFileName(now),
         text: _calorieDebugDumpText(result: result, generatedAt: now),
       );
@@ -180,13 +184,14 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
   /// Prints calorie weekly check-in debug dump.
   Future<CalorieWeeklyCheckInDebugDumpPrintResult>
   printWeeklyCheckInDebugDump() async {
+    final checkInDataFuture = ref.read(calorieWeeklyCheckInDataProvider.future);
+    final healthStatusFuture = ref.read(
+      healthConnectionControllerProvider.future,
+    );
+
     try {
-      final checkInData = await ref.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
-      final healthStatus = await ref.read(
-        healthConnectionControllerProvider.future,
-      );
+      final checkInData = await checkInDataFuture;
+      final healthStatus = await healthStatusFuture;
       final encoded =
           const JsonEncoder.withIndent(
             '  ',

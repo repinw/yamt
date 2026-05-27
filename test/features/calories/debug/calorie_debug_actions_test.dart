@@ -46,6 +46,71 @@ void main() {
 
     expect(find.text('Could not download calorie debug TXT.'), findsOneWidget);
   });
+
+  testWidgets('settings debug dump snackbar shows success message', (
+    tester,
+  ) async {
+    final context = await _pumpSnackBarHarness(tester);
+
+    showCalorieSettingsDebugDumpResultSnackBar(
+      context: context,
+      result: const CalorieSettingsDebugDumpPrintSuccess(entryCount: 2),
+    );
+    await tester.pump();
+
+    expect(
+      find.text('Printed calorie settings debug dump (2 goal entries).'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('settings debug dump snackbar shows failure message', (
+    tester,
+  ) async {
+    final context = await _pumpSnackBarHarness(tester);
+
+    showCalorieSettingsDebugDumpResultSnackBar(
+      context: context,
+      result: const CalorieSettingsDebugDumpPrintFailure(),
+    );
+    await tester.pump();
+
+    expect(
+      find.text('Could not print calorie settings debug dump.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('weekly check-in debug dump snackbar shows success message', (
+    tester,
+  ) async {
+    final context = await _pumpSnackBarHarness(tester);
+
+    showCalorieWeeklyCheckInDebugDumpResultSnackBar(
+      context: context,
+      result: const CalorieWeeklyCheckInDebugDumpPrintSuccess(),
+    );
+    await tester.pump();
+
+    expect(find.text('Printed weekly check-in debug dump.'), findsOneWidget);
+  });
+
+  testWidgets('weekly check-in debug dump snackbar shows failure message', (
+    tester,
+  ) async {
+    final context = await _pumpSnackBarHarness(tester);
+
+    showCalorieWeeklyCheckInDebugDumpResultSnackBar(
+      context: context,
+      result: const CalorieWeeklyCheckInDebugDumpPrintFailure(),
+    );
+    await tester.pump();
+
+    expect(
+      find.text('Could not print weekly check-in debug dump.'),
+      findsOneWidget,
+    );
+  });
 }
 
 Future<BuildContext> _pumpSnackBarHarness(WidgetTester tester) async {

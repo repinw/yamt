@@ -24,11 +24,12 @@ void showCalorieSettingsDebugDumpResultSnackBar({
   required BuildContext context,
   required CalorieSettingsDebugDumpPrintResult result,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   final message = switch (result) {
     CalorieSettingsDebugDumpPrintSuccess(:final entryCount) =>
-      'Printed calorie settings debug dump ($entryCount goal entries).',
+      l10n.caloriesSettingsDebugDumpPrinted(entryCount),
     CalorieSettingsDebugDumpPrintFailure() =>
-      'Could not print calorie settings debug dump.',
+      l10n.caloriesSettingsDebugDumpFailed,
   };
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -40,11 +41,12 @@ void showCalorieWeeklyCheckInDebugDumpResultSnackBar({
   required BuildContext context,
   required CalorieWeeklyCheckInDebugDumpPrintResult result,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   final message = switch (result) {
     CalorieWeeklyCheckInDebugDumpPrintSuccess() =>
-      'Printed weekly check-in debug dump.',
+      l10n.caloriesWeeklyCheckInDebugDumpPrinted,
     CalorieWeeklyCheckInDebugDumpPrintFailure() =>
-      'Could not print weekly check-in debug dump.',
+      l10n.caloriesWeeklyCheckInDebugDumpFailed,
   };
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()

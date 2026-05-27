@@ -76,10 +76,12 @@ void main() {
         ingredients: ['1 Ingredient'],
       );
 
-      when(() => mockImporter.importRecipe(
-            any(),
-            localeName: any(named: 'localeName'),
-          )).thenAnswer((_) async => mockImport);
+      when(
+        () => mockImporter.importRecipe(
+          any(),
+          localeName: any(named: 'localeName'),
+        ),
+      ).thenAnswer((_) async => mockImport);
 
       await tester.pumpWidget(buildHarness(router: router));
       await tester.pumpAndSettle();
@@ -199,10 +201,12 @@ void main() {
         ],
       );
 
-      when(() => mockImporter.importRecipe(
-            any(),
-            localeName: any(named: 'localeName'),
-          )).thenAnswer((_) async => null);
+      when(
+        () => mockImporter.importRecipe(
+          any(),
+          localeName: any(named: 'localeName'),
+        ),
+      ).thenAnswer((_) async => null);
 
       await tester.pumpWidget(buildHarness(router: router));
       await tester.pumpAndSettle();

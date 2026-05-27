@@ -46,9 +46,9 @@ class MealTemplatesErrorState extends StatelessWidget {
                   l10n.preparedMealTemplatesLoadFailed,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        height: 1.5,
-                      ),
+                    color: colors.onSurfaceVariant,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 FilledButton.icon(

@@ -146,7 +146,7 @@ void main() {
 
       final refreshed = await _waitForDashboardRefresh(container, selectedDay);
 
-    expect(weekOverviewReadCount, greaterThanOrEqualTo(2));
+      expect(weekOverviewReadCount, greaterThanOrEqualTo(2));
       expect(
         refreshed.data?.weekOverview.days.last.activityBonusKcal,
         674.25,

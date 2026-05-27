@@ -5,7 +5,9 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'calorie_debug_file_exporter.g.dart';
 
 /// Result from saving a calorie debug text file.
 sealed class CalorieDebugFileExportResult {
@@ -32,15 +34,17 @@ class CalorieDebugFileExportCanceled extends CalorieDebugFileExportResult {
 abstract class CalorieDebugFileExporter {
   /// Saves [text] as [fileName].
   Future<CalorieDebugFileExportResult> saveText({
+    required String dialogTitle,
     required String fileName,
     required String text,
   });
 }
 
 /// Provides the calorie debug file exporter.
-final calorieDebugFileExporterProvider = Provider<CalorieDebugFileExporter>(
-  (ref) => const FilePickerCalorieDebugFileExporter(),
-);
+@riverpod
+CalorieDebugFileExporter calorieDebugFileExporter(Ref ref) {
+  return const FilePickerCalorieDebugFileExporter();
+}
 
 /// `file_picker` implementation for debug text export.
 class FilePickerCalorieDebugFileExporter implements CalorieDebugFileExporter {
@@ -49,11 +53,12 @@ class FilePickerCalorieDebugFileExporter implements CalorieDebugFileExporter {
 
   @override
   Future<CalorieDebugFileExportResult> saveText({
+    required String dialogTitle,
     required String fileName,
     required String text,
   }) async {
     final path = await FilePicker.saveFile(
-      dialogTitle: 'Save calorie debug TXT',
+      dialogTitle: dialogTitle,
       fileName: fileName,
       type: FileType.custom,
       allowedExtensions: const <String>['txt'],

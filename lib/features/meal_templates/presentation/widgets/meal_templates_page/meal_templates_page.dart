@@ -222,8 +222,7 @@ class MealTemplatesPage extends ConsumerWidget {
       PreparedMealTemplateSaveFailureReason.recipeLoadFailed =>
         l10n.preparedMealTemplateRecipeImportFailedMessage,
       PreparedMealTemplateSaveFailureReason.saveFailed ||
-      null =>
-        l10n.preparedMealTemplateCreateFailedMessage,
+      null => l10n.preparedMealTemplateCreateFailedMessage,
     };
   }
 

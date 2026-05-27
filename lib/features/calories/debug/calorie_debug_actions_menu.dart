@@ -37,20 +37,27 @@ extension _CalorieDebugActionDetails on _CalorieDebugAction {
   String label(AppLocalizations l10n) {
     return switch (this) {
       _CalorieDebugAction.debugDump => l10n.caloriesDebugDumpAction,
-      _CalorieDebugAction.settingsDump => 'Print calorie settings JSON',
-      _CalorieDebugAction.weeklyCheckInDump => 'Print weekly check-in state',
+      _CalorieDebugAction.settingsDump => l10n.caloriesSettingsDebugDumpAction,
+      _CalorieDebugAction.weeklyCheckInDump =>
+        l10n.caloriesWeeklyCheckInDebugDumpAction,
     };
   }
 
-  Future<void> run(BuildContext context, WidgetRef ref) {
+  Future<void> run(
+    BuildContext context,
+    CalorieDebugActionController controller,
+  ) {
     return switch (this) {
-      _CalorieDebugAction.debugDump => _printCalorieDebugDump(context, ref),
+      _CalorieDebugAction.debugDump => _printCalorieDebugDump(
+        context,
+        controller,
+      ),
       _CalorieDebugAction.settingsDump => _printCalorieSettingsDebugDump(
         context,
-        ref,
+        controller,
       ),
       _CalorieDebugAction.weeklyCheckInDump =>
-        _printCalorieWeeklyCheckInDebugDump(context, ref),
+        _printCalorieWeeklyCheckInDebugDump(context, controller),
     };
   }
 }
@@ -64,14 +71,17 @@ class CalorieDebugActionsMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return PopupMenuButton<_CalorieDebugAction>(
       key: CalorieDebugKeys.actionsMenuButton,
-      tooltip: 'Calorie debug actions',
+      tooltip: AppLocalizations.of(context)!.caloriesDebugActionsTooltip,
       useRootNavigator: true,
       icon: const Icon(Icons.bug_report_rounded),
       iconSize: 20,
       padding: EdgeInsets.zero,
       splashRadius: _appBarDebugIconSplashRadius,
       onSelected: (action) {
-        unawaited(action.run(context, ref));
+        final controller = ref.read(
+          calorieDebugActionControllerProvider.notifier,
+        );
+        unawaited(action.run(context, controller));
       },
       itemBuilder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -113,9 +123,15 @@ class _CalorieDebugMenuItem extends StatelessWidget {
   }
 }
 
-Future<void> _printCalorieDebugDump(BuildContext context, WidgetRef ref) async {
-  final controller = ref.read(calorieDebugActionControllerProvider.notifier);
-  final result = await controller.printDebugDump(DateTime.now());
+Future<void> _printCalorieDebugDump(
+  BuildContext context,
+  CalorieDebugActionController controller,
+) async {
+  final l10n = AppLocalizations.of(context)!;
+  final result = await controller.printDebugDump(
+    now: DateTime.now(),
+    saveDialogTitle: l10n.caloriesDebugDumpSaveDialogTitle,
+  );
   if (!context.mounted) {
     return;
   }
@@ -124,9 +140,8 @@ Future<void> _printCalorieDebugDump(BuildContext context, WidgetRef ref) async {
 
 Future<void> _printCalorieSettingsDebugDump(
   BuildContext context,
-  WidgetRef ref,
+  CalorieDebugActionController controller,
 ) async {
-  final controller = ref.read(calorieDebugActionControllerProvider.notifier);
   final result = await controller.printSettingsDebugDump();
   if (!context.mounted) {
     return;
@@ -139,9 +154,8 @@ Future<void> _printCalorieSettingsDebugDump(
 
 Future<void> _printCalorieWeeklyCheckInDebugDump(
   BuildContext context,
-  WidgetRef ref,
+  CalorieDebugActionController controller,
 ) async {
-  final controller = ref.read(calorieDebugActionControllerProvider.notifier);
   final result = await controller.printWeeklyCheckInDebugDump();
   if (!context.mounted) {
     return;

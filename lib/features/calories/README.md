@@ -11,6 +11,7 @@ state, and calorie-owned side effects from health or weight changes.
 - Calorie use-case providers and reactive cross-feature sync under
   `application/`.
 - Calorie pages, dialogs, sheets, and section widgets under `presentation/`.
+- Debug-only dump and export surfaces under `debug/`.
 - Legacy calorie controllers and derived providers under `provider/`.
 
 ## Does Not Own
@@ -32,6 +33,8 @@ state, and calorie-owned side effects from health or weight changes.
 - Domain models under `domain/` used by Diary, Activity, and Settings.
 - Complete presentation surfaces such as calorie entry editors, goal dialogs,
   calculator sheets, and diary health card parts.
+- Debug-only surfaces under `debug/`, currently composed by the Diary home shell
+  only in debug builds.
 
 Other features should depend on domain types or complete widgets instead of
 reassembling Calories internals. New calorie-owned side effects should live in

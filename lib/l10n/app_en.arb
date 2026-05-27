@@ -1086,7 +1086,9 @@
   "caloriesConsumedLabel": "Consumed",
   "caloriesGoalLabel": "Goal",
   "caloriesRemainingLabel": "Remaining",
+  "caloriesDebugActionsTooltip": "Calorie debug actions",
   "caloriesDebugDumpAction": "Download calorie debug TXT",
+  "caloriesDebugDumpSaveDialogTitle": "Save calorie debug TXT",
   "caloriesDebugDumpPrinted": "Downloaded calorie debug TXT ({rowCount} rows).",
   "@caloriesDebugDumpPrinted": {
     "placeholders": {
@@ -1097,6 +1099,23 @@
   },
   "caloriesDebugDumpCanceled": "Calorie debug TXT download canceled.",
   "caloriesDebugDumpFailed": "Could not download calorie debug TXT.",
+  "caloriesSettingsDebugDumpAction": "Print calorie settings JSON",
+  "caloriesSettingsDebugDumpPrinted":
+      "Printed calorie settings debug dump ({entryCount} goal entries).",
+  "@caloriesSettingsDebugDumpPrinted": {
+    "placeholders": {
+      "entryCount": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesSettingsDebugDumpFailed":
+      "Could not print calorie settings debug dump.",
+  "caloriesWeeklyCheckInDebugDumpAction": "Print weekly check-in state",
+  "caloriesWeeklyCheckInDebugDumpPrinted":
+      "Printed weekly check-in debug dump.",
+  "caloriesWeeklyCheckInDebugDumpFailed":
+      "Could not print weekly check-in debug dump.",
   "burnWeekRunOverTitle": "Run over",
   "burnWeekRunRestartsOn": "Fresh run starts on {date}.",
   "@burnWeekRunRestartsOn": {

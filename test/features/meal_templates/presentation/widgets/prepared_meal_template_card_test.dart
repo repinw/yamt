@@ -116,8 +116,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          cookingFlowSessionSnapshotProvider
-              .overrideWith((ref) => activeSession),
+          cookingFlowSessionSnapshotProvider.overrideWith(
+            (ref) => activeSession,
+          ),
         ],
         child: MaterialApp(
           locale: const Locale('en'),

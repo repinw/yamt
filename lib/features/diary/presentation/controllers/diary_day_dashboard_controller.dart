@@ -5,17 +5,14 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
-import 'package:yamt/features/diary/application/diary_entries_provider.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_day_dashboard_live_data_provider.dart';
 import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
@@ -144,38 +141,24 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     _invalidateDashboardInputs(normalizedDay);
 
     try {
-      final weekOverviewFuture = ref.read(
-        calorieWeekOverviewForWindowProvider(normalizedDay).future,
+      final liveData = await ref.read(
+        diaryDayDashboardLiveDataProvider(normalizedDay).future,
       );
-      final runStateFuture = ref.read(burnWeekRunControllerProvider.future);
-      final entriesFuture = ref
-          .read(calorieLogRepositoryProvider)
-          .readEntriesForDay(normalizedDay);
-
-      final weekOverview = await weekOverviewFuture;
       if (!ref.mounted) {
         return;
       }
-      final runState = await runStateFuture;
-      if (!ref.mounted) {
-        return;
-      }
-      final selectedDayEntries = await entriesFuture;
-      if (!ref.mounted) {
-        return;
-      }
-      final selectedDayOverview = weekOverview.days.last;
+      final selectedDayEntries = liveData.selectedDayEntries;
 
       final data = DiaryDayDashboardData(
         selectedDay: normalizedDay,
         refreshedAt: DateTime.now(),
-        weekOverview: weekOverview,
+        weekOverview: liveData.weekOverview,
         selectedDayEntries: selectedDayEntries,
-        runState: runState,
+        runState: liveData.runState,
         mealSections: _mealSectionsFrom(selectedDayEntries),
         nutritionBars: _nutritionBarsFrom(
           selectedDayEntries,
-          selectedDayOverview.goalKcal,
+          liveData.selectedDayOverview.goalKcal,
         ),
       );
       state = DiaryDayDashboardState(
@@ -208,19 +191,15 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   }
 
   void _invalidateDashboardInputs(DateTime normalizedDay) {
-    final visibleDays = buildDiaryVisibleDays(anchorDay: normalizedDay);
+    ref.read(diaryBalanceActionsProvider).refreshBalance(normalizedDay);
     ref
-      ..invalidate(diaryEntriesForDayProvider(normalizedDay))
-      ..invalidate(diaryBalanceSourceProvider(normalizedDay))
-      ..invalidate(resolvedCalorieGoalForDayProvider(normalizedDay))
-      ..invalidate(
-        resolvedCalorieGoalsForDaysProvider(
-          ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
-        ),
-      )
-      ..invalidate(calorieWeekOverviewForWindowProvider(normalizedDay))
+        .read(diaryNutritionBarsActionsProvider)
+        .refreshNutritionBars(
+          normalizedDay,
+        );
+    ref
       ..invalidate(diaryMealSectionsProvider(normalizedDay))
-      ..invalidate(diaryNutritionBarsDataProvider(normalizedDay));
+      ..invalidate(diaryDayDashboardLiveDataProvider(normalizedDay));
   }
 }
 
