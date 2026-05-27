@@ -61,6 +61,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
     if (state == AppLifecycleState.resumed) {
       _startTicker();
       if (mounted) {
+        _refreshBalanceOnResume(normalizeDiaryDay(widget.selectedDay));
         setState(() {});
       }
       return;
@@ -121,6 +122,12 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
           )
           .retry(),
     );
+  }
+
+  void _refreshBalanceOnResume(DateTime normalizedSelectedDay) {
+    ref
+      ..invalidate(diaryDayDashboardControllerProvider(normalizedSelectedDay))
+      ..read(diaryBalanceActionsProvider).refreshBalance(normalizedSelectedDay);
   }
 
   Widget _buildLoaded(DiaryBalanceSource source) {

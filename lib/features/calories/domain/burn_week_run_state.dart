@@ -3,11 +3,8 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 /// Number of days in one Burn Week.
 const int burnWeekDaysPerWeek = 7;
 
-/// First run week, used only before YAMT has learned a TDEE estimate.
+/// First week number shown for a fresh Burn Week run.
 const int burnWeekLearningRunWeekNumber = 1;
-
-/// First normal Burn Week after the initial learning run.
-const int burnWeekFirstGameRunWeekNumber = 2;
 
 /// Fresh users start with one heart.
 const int burnWeekInitialHeartCount = 1;

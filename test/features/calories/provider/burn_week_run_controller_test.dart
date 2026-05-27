@@ -368,7 +368,7 @@ void main() {
     final repository = _FakeBurnWeekRunStateRepository(
       buildState(
         currentWeekStartDayKey: diaryDayKey(futureStartDay),
-        runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        runWeekNumber: 2,
         starCount: 0,
         heartCount: 1,
       ),
@@ -531,7 +531,7 @@ void main() {
     expect(repository.state.heartCreditKcal, 875);
   });
 
-  test('bootstrapRunFrom can seed first game week position', () async {
+  test('bootstrapRunFrom can seed a custom run week position', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState.initial(),
     );
@@ -543,11 +543,11 @@ void main() {
         .bootstrapRunFrom(
           weekStartDate: DateTime(2026, 4, 21),
           heartCreditKcal: 875,
-          runWeekNumber: burnWeekFirstGameRunWeekNumber,
+          runWeekNumber: 2,
         );
 
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
-    expect(repository.state.runWeekNumber, burnWeekFirstGameRunWeekNumber);
+    expect(repository.state.runWeekNumber, 2);
     expect(repository.state.heartCreditKcal, 875);
   });
 
@@ -826,7 +826,7 @@ void main() {
     expect(repository.state.heartCount, burnWeekInitialHeartCount);
   });
 
-  test('restartRunFrom resets progress into first game week', () async {
+  test('restartRunFrom resets progress into first run week', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState(
         currentWeekStartDayKey: '2026-4-15',
@@ -846,7 +846,7 @@ void main() {
         .restartRunFrom(weekStartDate: DateTime(2026, 4, 21));
 
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
-    expect(repository.state.runWeekNumber, burnWeekFirstGameRunWeekNumber);
+    expect(repository.state.runWeekNumber, burnWeekLearningRunWeekNumber);
     expect(repository.state.starCount, 0);
     expect(repository.state.heartCount, burnWeekInitialHeartCount);
     expect(repository.state.heartCreditKcal, 0);

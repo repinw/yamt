@@ -104,14 +104,11 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                         template.name,
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.2,
-                              height: 1.25,
-                            ),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.2,
+                          height: 1.25,
+                        ),
                       ),
                       const Spacer(),
                       if (hasActiveCookflow) ...[
@@ -131,9 +128,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                                 '${l10n.preparedMealTemplatePortionsLabel}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
+                                style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       color: colors.onSurfaceVariant,
                                       fontWeight: FontWeight.w700,
@@ -158,9 +153,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
+                                style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       color: colors.onSurfaceVariant,
                                       fontWeight: FontWeight.w700,
@@ -289,10 +282,10 @@ class _ResumeCookflowButton extends StatelessWidget {
             Text(
               l10n.cookflowResumeLabel,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.2,
-                  ),
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.2,
+              ),
             ),
           ],
         ),

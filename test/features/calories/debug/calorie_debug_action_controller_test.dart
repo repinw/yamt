@@ -4,6 +4,7 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
@@ -19,12 +20,14 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import '../support/fake_calories_repositories.dart';
 
 void main() {
-  test('printDebugDump returns success result', () async {
-    final harness = _createHarness();
+  test('printDebugDump exports txt and returns success result', () async {
+    final exporter = _FakeCalorieDebugFileExporter();
+    final harness = _createHarness(fileExporter: exporter);
     addTearDown(harness.dispose);
 
     final result = await harness.controller.printDebugDump(
-      DateTime(2026, 2, 25, 12),
+      now: DateTime(2026, 2, 25, 12),
+      saveDialogTitle: 'Save calorie debug TXT',
     );
 
     expect(
@@ -35,7 +38,29 @@ void main() {
         greaterThan(0),
       ),
     );
+    expect(exporter.fileName, 'yamt_diary_debug_20260225_120000.txt');
+    expect(exporter.text, contains('YAMT diary debug dump'));
+    expect(exporter.text, contains('| date | time | type | name | kcal |'));
   });
+
+  test(
+    'printDebugDump returns canceled result when export is canceled',
+    () async {
+      final harness = _createHarness(
+        fileExporter: _FakeCalorieDebugFileExporter(
+          result: const CalorieDebugFileExportCanceled(),
+        ),
+      );
+      addTearDown(harness.dispose);
+
+      final result = await harness.controller.printDebugDump(
+        now: DateTime(2026, 2, 25, 12),
+        saveDialogTitle: 'Save calorie debug TXT',
+      );
+
+      expect(result, isA<CalorieDebugDumpPrintCanceled>());
+    },
+  );
 
   test('printDebugDump returns failure result after exception', () async {
     final harness = _createHarness(
@@ -47,7 +72,24 @@ void main() {
     addTearDown(harness.dispose);
 
     final result = await harness.controller.printDebugDump(
-      DateTime(2026, 2, 25, 12),
+      now: DateTime(2026, 2, 25, 12),
+      saveDialogTitle: 'Save calorie debug TXT',
+    );
+
+    expect(result, isA<CalorieDebugDumpPrintFailure>());
+  });
+
+  test('printDebugDump returns failure result when export fails', () async {
+    final harness = _createHarness(
+      fileExporter: _FakeCalorieDebugFileExporter(
+        exception: Exception('file export failed'),
+      ),
+    );
+    addTearDown(harness.dispose);
+
+    final result = await harness.controller.printDebugDump(
+      now: DateTime(2026, 2, 25, 12),
+      saveDialogTitle: 'Save calorie debug TXT',
     );
 
     expect(result, isA<CalorieDebugDumpPrintFailure>());
@@ -110,6 +152,7 @@ void main() {
 _CaloriePageActionHarness _createHarness({
   FakeCalorieLogRepository? logRepository,
   FakeCalorieSettingsRepository? settingsRepository,
+  CalorieDebugFileExporter? fileExporter,
   List<Override> overrides = const <Override>[],
 }) {
   final resolvedLogRepository = logRepository ?? FakeCalorieLogRepository();
@@ -129,6 +172,9 @@ _CaloriePageActionHarness _createHarness({
       ),
       healthWeightServiceProvider.overrideWithValue(
         FakeHealthWeightService([]),
+      ),
+      calorieDebugFileExporterProvider.overrideWithValue(
+        fileExporter ?? _FakeCalorieDebugFileExporter(),
       ),
       manualHealthWeightRepositoryProvider.overrideWithValue(
         FakeManualHealthWeightRepository([]),
@@ -162,6 +208,35 @@ class _CaloriePageActionHarness {
     await logRepository.dispose();
     await settingsRepository.dispose();
     container.dispose();
+  }
+}
+
+class _FakeCalorieDebugFileExporter implements CalorieDebugFileExporter {
+  _FakeCalorieDebugFileExporter({
+    this.result = const CalorieDebugFileExportSaved(
+      path: '/tmp/yamt_diary_debug.txt',
+    ),
+    this.exception,
+  });
+
+  final CalorieDebugFileExportResult result;
+  final Exception? exception;
+  String? fileName;
+  String? text;
+
+  @override
+  Future<CalorieDebugFileExportResult> saveText({
+    required String dialogTitle,
+    required String fileName,
+    required String text,
+  }) async {
+    this.fileName = fileName;
+    this.text = text;
+    final exception = this.exception;
+    if (exception != null) {
+      throw exception;
+    }
+    return result;
   }
 }
 
@@ -206,10 +281,11 @@ CalorieWeeklyCheckInData _weeklyCheckInData() {
     calculation: const CalorieWeeklyCheckInCalculation(
       trendWeightChangePerDay: -0.05,
       averageIntakeKcal: 2150,
-      measuredTrueTdeeKcal: 2500,
-      calculatedTrueTdeeKcal: 2450,
-      newGoalKcal: 2200,
-      lastWeekAverageActiveKcal: 300,
+      measuredTotalTdeeKcal: 2500,
+      measuredBaseTdeeKcal: 2200,
+      calculatedBaseTdeeKcal: 2450,
+      newBaseGoalKcal: 2200,
+      averageCreditedActivityKcal: 300,
       todayActiveKcal: 350,
       activityDeltaKcal: 25,
       dynamicGoalTodayKcal: 2225,

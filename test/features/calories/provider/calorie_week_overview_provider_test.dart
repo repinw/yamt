@@ -303,8 +303,8 @@ void main() {
       addTearDown(subscription.close);
       final overview = await container.read(provider.future);
 
-      expect(overview.carryoverBeforeTodayKcal, closeTo(166.667, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(2166.667, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, closeTo(208.333, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(2208.333, 0.001));
     },
   );
 
@@ -924,8 +924,8 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, 0);
-      expect(overview.todayFlexibleGoalKcal, 1900);
+      expect(overview.carryoverBeforeTodayKcal, 20);
+      expect(overview.todayFlexibleGoalKcal, 2020);
     },
   );
 

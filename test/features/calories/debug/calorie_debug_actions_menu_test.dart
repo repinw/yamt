@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions_menu.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -41,7 +42,7 @@ void main() {
     expect(find.byKey(CalorieDebugKeys.debugDumpButton), findsOneWidget);
   });
 
-  testWidgets('opens app bar debug menu and prints calorie dump', (
+  testWidgets('opens app bar debug menu and downloads calorie dump', (
     tester,
   ) async {
     await _pumpDebugMenu(tester);
@@ -64,7 +65,10 @@ void main() {
     await tester.tap(find.byKey(CalorieDebugKeys.debugDumpButton));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Printed calorie debug table'), findsOneWidget);
+    expect(
+      find.textContaining('Downloaded calorie debug TXT'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('debug menu shows failure snackbar when dump fails', (
@@ -84,7 +88,7 @@ void main() {
     await tester.tap(find.byKey(CalorieDebugKeys.debugDumpButton));
     await tester.pumpAndSettle();
 
-    expect(find.text('Could not print calorie debug table.'), findsOneWidget);
+    expect(find.text('Could not download calorie debug TXT.'), findsOneWidget);
   });
 
   testWidgets('debug menu prints settings and weekly check-in dumps', (
@@ -154,6 +158,9 @@ Future<void> _pumpDebugMenu(
         healthWeightServiceProvider.overrideWithValue(
           FakeHealthWeightService([]),
         ),
+        calorieDebugFileExporterProvider.overrideWithValue(
+          const _FakeCalorieDebugFileExporter(),
+        ),
         manualHealthWeightRepositoryProvider.overrideWithValue(
           FakeManualHealthWeightRepository([]),
         ),
@@ -203,6 +210,9 @@ Future<void> _pumpNestedDebugMenu(
         healthWeightServiceProvider.overrideWithValue(
           FakeHealthWeightService([]),
         ),
+        calorieDebugFileExporterProvider.overrideWithValue(
+          const _FakeCalorieDebugFileExporter(),
+        ),
         manualHealthWeightRepositoryProvider.overrideWithValue(
           FakeManualHealthWeightRepository([]),
         ),
@@ -224,4 +234,19 @@ Future<void> _pumpNestedDebugMenu(
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _FakeCalorieDebugFileExporter implements CalorieDebugFileExporter {
+  const _FakeCalorieDebugFileExporter();
+
+  @override
+  Future<CalorieDebugFileExportResult> saveText({
+    required String dialogTitle,
+    required String fileName,
+    required String text,
+  }) async {
+    return const CalorieDebugFileExportSaved(
+      path: '/tmp/yamt_diary_debug.txt',
+    );
+  }
 }

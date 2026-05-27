@@ -337,7 +337,7 @@ void main() {
     expect(result.newGoalKcal, closeTo(2475.99, 0.01));
   });
 
-  test('uses aggregate activity kcal for learned active average', () async {
+  test('uses aggregate activity kcal for credited activity average', () async {
     final startDay = DateTime(2026, 4);
     final today = startDay.add(
       const Duration(days: dailyLearnedTdeeMaximumLookbackDays),
@@ -376,7 +376,7 @@ void main() {
 
     expect(diaryHealthService.loadDayDataCallCount, 0);
     expect(result, isNotNull);
-    expect(result!.averageActiveKcal, 140);
+    expect(result!.averageActiveKcal, 26.25);
   });
 
   test(
@@ -481,7 +481,7 @@ void main() {
   });
 
   test(
-    'uses saved learned target when saved window now misses end weight',
+    'returns null when saved window now misses end weight',
     () async {
       final startDay = DateTime(2026, 4);
       final today = startDay.add(
@@ -508,9 +508,7 @@ void main() {
 
       final result = await _readDailyLearned(harness.container, today: today);
 
-      expect(result, isNotNull);
-      expect(result!.calculatedTrueTdeeKcal, closeTo(2580, 0.01));
-      expect(result.newGoalKcal, closeTo(2580, 0.01));
+      expect(result, isNull);
     },
   );
 
@@ -704,7 +702,7 @@ void main() {
   );
 
   test(
-    'does not let dirty learned snapshot block legacy fallback',
+    'dirty learned snapshot does not provide fallback without source data',
     () async {
       final startDay = DateTime(2026, 4, 8);
       final weekTwoStart = DateTime(2026, 4, 15);
@@ -756,12 +754,11 @@ void main() {
 
       final result = await _readDailyLearned(harness.container, today: today);
 
-      expect(result, isNotNull);
-      expect(result!.calculatedTrueTdeeKcal, 2650);
+      expect(result, isNull);
     },
   );
 
-  test('seeds same-day learned goal from anchor snapshot', () async {
+  test('seeds same-day learned goal from calculator profile', () async {
     final startDay = DateTime(2026, 4, 8);
     final today = DateTime(2026, 4, 15);
     final settings = CalorieGoalSettings.single(
@@ -807,8 +804,8 @@ void main() {
     );
 
     expect(result, isNotNull);
-    expect(result!.calculatedTrueTdeeKcal, closeTo(2700, 0.01));
-    expect(result.newGoalKcal, closeTo(2700, 0.01));
+    expect(result!.calculatedTrueTdeeKcal, closeTo(3792.53, 0.01));
+    expect(result.newGoalKcal, closeTo(2900, 0.01));
   });
 
   test('uses real starter-day weight before calculator fallback', () async {

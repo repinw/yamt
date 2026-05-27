@@ -81,11 +81,47 @@ class DiaryHealthMobileDayLoader {
     return future;
   }
 
+  /// Loads derived day data from Health and updates cache.
+  Future<DiaryHealthDayData> refreshDayData({
+    required DateTime day,
+    double? userHeightCm,
+  }) async {
+    final normalizedUserHeightCm = normalizeDiaryHealthUserHeightCm(
+      userHeightCm,
+    );
+    final dayStart = DateTime(day.year, day.month, day.day);
+    final dayEnd = dayStart.add(const Duration(days: 1));
+    final cacheKey = _cacheKey(
+      dayStart: dayStart,
+      normalizedUserHeightCm: normalizedUserHeightCm,
+    );
+    final refreshCacheKey = '$cacheKey:refresh';
+    final pendingData = _inFlightByKey[refreshCacheKey];
+    if (pendingData != null) {
+      return pendingData;
+    }
+
+    final future = _loadAndCacheDayData(
+      cacheKey: cacheKey,
+      dayStart: dayStart,
+      dayEnd: dayEnd,
+      normalizedUserHeightCm: normalizedUserHeightCm,
+      keepStaleOnEmpty: false,
+      useTrendFallback: false,
+      cacheEmptyData: true,
+    ).whenComplete(() => _removeInFlight(refreshCacheKey));
+    _inFlightByKey[refreshCacheKey] = future;
+    return future;
+  }
+
   Future<DiaryHealthDayData> _loadAndCacheDayData({
     required String cacheKey,
     required DateTime dayStart,
     required DateTime dayEnd,
     required double? normalizedUserHeightCm,
+    bool keepStaleOnEmpty = true,
+    bool useTrendFallback = true,
+    bool cacheEmptyData = false,
   }) async {
     final staleEntry = _cacheByKey[cacheKey];
     final staleData = _usableStaleDayData(staleEntry, _now());
@@ -99,26 +135,37 @@ class DiaryHealthMobileDayLoader {
         dayStart: dayStart,
         freshData: freshData,
         staleData: staleData,
+        keepStaleOnEmpty: keepStaleOnEmpty,
       );
       if (identical(data, staleData)) {
         _touchStaleDayDataCacheEntry(cacheKey);
         return data;
       }
       if (isEmptyDiaryHealthDayData(data)) {
-        final trendFallback = await _fallbackDayDataFromTrendCache(dayStart);
-        if (trendFallback != null) {
+        if (useTrendFallback) {
+          final trendFallback = await _fallbackDayDataFromTrendCache(dayStart);
+          if (trendFallback != null) {
+            log(
+              'Used trend cache after empty Health day read. '
+              'day=${dayStart.toIso8601String()}',
+              name: diaryHealthLogName,
+            );
+            return trendFallback;
+          }
+        }
+        if (cacheEmptyData) {
+          await _cacheDayData(
+            cacheKey: cacheKey,
+            dayStart: dayStart,
+            data: data,
+          );
+        } else {
           log(
-            'Used trend cache after empty Health day read. '
+            'Skipped caching empty Health day read. '
             'day=${dayStart.toIso8601String()}',
             name: diaryHealthLogName,
           );
-          return trendFallback;
         }
-        log(
-          'Skipped caching empty Health day read. '
-          'day=${dayStart.toIso8601String()}',
-          name: diaryHealthLogName,
-        );
         return data;
       }
       await _cacheDayData(cacheKey: cacheKey, dayStart: dayStart, data: data);
@@ -143,8 +190,10 @@ class DiaryHealthMobileDayLoader {
     required DateTime dayStart,
     required DiaryHealthDayData freshData,
     required DiaryHealthDayData? staleData,
+    required bool keepStaleOnEmpty,
   }) {
-    if (staleData == null ||
+    if (!keepStaleOnEmpty ||
+        staleData == null ||
         !isEmptyDiaryHealthDayData(freshData) ||
         isEmptyDiaryHealthDayData(staleData)) {
       return freshData;

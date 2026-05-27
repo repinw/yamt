@@ -348,16 +348,24 @@ class FakeDiaryHealthService implements DiaryHealthService {
 }
 
 class FakeTrendDiaryHealthService extends FakeDiaryHealthService
-    implements DiaryHealthActivityTrendService {
+    implements
+        DiaryHealthActivityTrendRefreshService,
+        DiaryHealthActivityTrendService {
   FakeTrendDiaryHealthService(
     super.dataByDay, {
     required this.trendDays,
+    List<DiaryHealthActivityTrendDay>? refreshTrendDays,
     this.shouldThrowTrend = false,
-  });
+    this.shouldThrowRefreshTrend = false,
+  }) : refreshTrendDays = refreshTrendDays ?? trendDays;
 
   final List<DiaryHealthActivityTrendDay> trendDays;
+  final List<DiaryHealthActivityTrendDay> refreshTrendDays;
   final bool shouldThrowTrend;
+  final bool shouldThrowRefreshTrend;
   final trendRequests = <({DateTime startInclusive, DateTime endExclusive})>[];
+  final refreshRequests =
+      <({DateTime startInclusive, DateTime endExclusive})>[];
 
   @override
   Future<List<DiaryHealthActivityTrendDay>> loadActivityTrendDays({
@@ -372,6 +380,27 @@ class FakeTrendDiaryHealthService extends FakeDiaryHealthService
       throw StateError('trend failed');
     }
     return trendDays
+        .where(
+          (day) =>
+              !day.day.isBefore(startInclusive) &&
+              day.day.isBefore(endExclusive),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Future<List<DiaryHealthActivityTrendDay>> refreshActivityTrendDays({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    refreshRequests.add((
+      startInclusive: normalizeDiaryDay(startInclusive),
+      endExclusive: normalizeDiaryDay(endExclusive),
+    ));
+    if (shouldThrowRefreshTrend) {
+      throw StateError('trend refresh failed');
+    }
+    return refreshTrendDays
         .where(
           (day) =>
               !day.day.isBefore(startInclusive) &&

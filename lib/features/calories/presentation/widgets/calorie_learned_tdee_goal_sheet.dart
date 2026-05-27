@@ -62,6 +62,7 @@ class _CalorieLearnedTdeeGoalSheetState
   late DateTime _goalStartDate;
   late CalorieGoalMode _goalMode;
   late String _lastNonMaintainGoalSpeedText;
+  var _didUserPickGoalStart = false;
   var _isSaving = false;
 
   double get _learnedTdeeKcal {
@@ -182,7 +183,7 @@ class _CalorieLearnedTdeeGoalSheetState
                       controller: _goalSpeedController,
                       label: l10n.caloriesCalculatorGoalSpeedLabel,
                       hintText: l10n.caloriesCalculatorGoalSpeedHint,
-                      onChanged: (_) => setState(() {}),
+                      onChanged: _updateGoalSpeed,
                     ),
                   ],
                   const SizedBox(height: AppSpacing.lg),
@@ -227,7 +228,11 @@ class _CalorieLearnedTdeeGoalSheetState
   }
 
   void _updateGoalMode(CalorieGoalMode nextGoalMode) {
+    if (nextGoalMode == _goalMode) {
+      return;
+    }
     setState(() {
+      _useTodayAsGoalStartForNewTarget();
       _goalMode = nextGoalMode;
       if (nextGoalMode == CalorieGoalMode.maintain) {
         final currentValue = _goalSpeedController.text.trim();
@@ -242,13 +247,25 @@ class _CalorieLearnedTdeeGoalSheetState
     });
   }
 
+  void _updateGoalSpeed(String _) {
+    setState(_useTodayAsGoalStartForNewTarget);
+  }
+
+  void _useTodayAsGoalStartForNewTarget() {
+    if (_didUserPickGoalStart) {
+      return;
+    }
+    _goalStartDate = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+  }
+
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = ref.read(calorieGoalControllerProvider.notifier);
-    final burnWeekController = ref.read(burnWeekRunControllerProvider.notifier);
     final logRepository = ref.read(calorieLogRepositoryProvider);
     final countGoalStartDayForLearning =
         await _resolveCountGoalStartDayForLearning(logRepository);
+    if (!mounted) {
+      return;
+    }
     if (countGoalStartDayForLearning == null && _startsToday) {
       return;
     }
@@ -256,6 +273,11 @@ class _CalorieLearnedTdeeGoalSheetState
       _isSaving = true;
     });
 
+    final container = ProviderScope.containerOf(context, listen: false);
+    final controller = container.read(calorieGoalControllerProvider.notifier);
+    final burnWeekController = container.read(
+      burnWeekRunControllerProvider.notifier,
+    );
     final saveResult = await controller.saveLearnedTdeeGoalWithResult(
       goalMode: _goalMode,
       goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
@@ -270,7 +292,7 @@ class _CalorieLearnedTdeeGoalSheetState
       if (saveResult.goalChanged) {
         await burnWeekController.restartRunFrom(
           weekStartDate: _goalStartDate,
-          runWeekNumber: burnWeekFirstGameRunWeekNumber,
+          runWeekNumber: burnWeekLearningRunWeekNumber,
         );
         if (!mounted) {
           return;
@@ -314,6 +336,7 @@ class _CalorieLearnedTdeeGoalSheetState
 
     setState(() {
       _goalStartDate = pickedDate;
+      _didUserPickGoalStart = true;
     });
   }
 

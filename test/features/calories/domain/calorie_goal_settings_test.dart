@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_migration.dart';
 
 void main() {
   test('empty settings have no goal', () {
@@ -51,7 +50,7 @@ void main() {
     expect(decoded.isActivityTrackingActiveForDay(DateTime(2026, 2, 26)), true);
   });
 
-  test('json without math version decodes as legacy', () {
+  test('json without math version decodes as current clean shape', () {
     final decoded = CalorieGoalSettings.fromJson({
       'daily_kcal_goal': 2100,
       'updated_at': DateTime(2026, 2, 25, 11),
@@ -59,7 +58,40 @@ void main() {
       'skipped_intake_day_keys': const <Object>[],
     });
 
-    expect(decoded.calorieMathVersion, legacyCalorieMathVersion);
+    expect(decoded.calorieMathVersion, currentCalorieMathVersion);
+  });
+
+  test('legacy weekly snapshot json preserves learned tdee fallback', () {
+    final decoded = CalorieGoalSettings.fromJson({
+      'daily_kcal_goal': 2100,
+      'updated_at': '2026-03-01T08:00:00.000',
+      'goal_history': [
+        {
+          'daily_kcal_goal': 2100,
+          'effective_date': '2026-02-23T00:00:00.000',
+          'changed_at': '2026-03-01T08:00:00.000',
+          'source': 'weekly_checkin',
+          'weekly_check_in_snapshot': {
+            'window_start_date': '2026-02-16T00:00:00.000',
+            'window_end_date': '2026-02-22T00:00:00.000',
+            'trend_weight_change_per_day': -0.1,
+            'calculated_true_tdee_kcal': 2450,
+            'average_active_kcal': 350,
+            'new_goal_kcal': 2100,
+            'low_confidence': false,
+          },
+        },
+      ],
+      'skipped_intake_day_keys': const <Object>[],
+    });
+    final snapshot = decoded.goalHistory.single.weeklyCheckInSnapshot;
+
+    expect(snapshot, isNotNull);
+    expect(snapshot?.measuredTotalTdeeKcal, 2450);
+    expect(snapshot?.measuredBaseTdeeKcal, 2450);
+    expect(snapshot?.calculatedBaseTdeeKcal, 2450);
+    expect(snapshot?.averageCreditedActivityKcal, 350);
+    expect(snapshot?.baseGoalKcal, 2100);
   });
 
   test('detects only future-start practice days', () {
@@ -109,67 +141,6 @@ void main() {
     expect(partialStartSettings.isGoalPracticeDay(today), isFalse);
     expect(partialStartSettings.isGoalPracticeDay(tomorrow), isFalse);
     expect(weeklyCheckInSettings.isGoalPracticeDay(today), isFalse);
-  });
-
-  test('hard migration preserves future counting start', () {
-    final today = DateTime(2026, 4, 24, 10);
-    final tomorrow = DateTime(2026, 4, 25);
-    final legacySettings = CalorieGoalSettings.fromJson({
-      'daily_kcal_goal': 2100,
-      'updated_at': today,
-      'goal_history': [
-        {
-          'daily_kcal_goal': 2100,
-          'effective_date': today,
-          'changed_at': today,
-          'counting_start_date': tomorrow,
-          'source': 'manual',
-        },
-      ],
-      'skipped_intake_day_keys': const <Object>[],
-    });
-
-    final migrated = migrateCalorieGoalSettingsToCurrentMath(
-      settings: legacySettings,
-      now: today,
-    );
-
-    expect(migrated.calorieMathVersion, currentCalorieMathVersion);
-    expect(migrated.goalHistory.single.effectiveDate, tomorrow);
-    expect(migrated.goalHistory.single.effectiveCountingStartDate, tomorrow);
-    expect(migrated.nextGoalStartAfterDay(today), tomorrow);
-  });
-
-  test('hard migration preserves active run day', () {
-    final today = DateTime(2026, 4, 24, 10);
-    final originalStartDate = DateTime(2026, 4, 8);
-    final currentRunStartDate = DateTime(2026, 4, 22);
-    final legacySettings = CalorieGoalSettings.fromJson({
-      'daily_kcal_goal': 2100,
-      'updated_at': today,
-      'goal_history': [
-        {
-          'daily_kcal_goal': 2100,
-          'effective_date': originalStartDate,
-          'changed_at': DateTime(2026, 4, 8, 9),
-          'counting_start_date': originalStartDate,
-          'source': 'manual',
-        },
-      ],
-      'skipped_intake_day_keys': const <Object>[],
-    });
-
-    final migrated = migrateCalorieGoalSettingsToCurrentMath(
-      settings: legacySettings,
-      now: today,
-    );
-
-    expect(migrated.calorieMathVersion, currentCalorieMathVersion);
-    expect(migrated.goalHistory.single.effectiveDate, currentRunStartDate);
-    expect(
-      migrated.goalHistory.single.effectiveCountingStartDate,
-      currentRunStartDate,
-    );
   });
 
   test('resolves goal history by day and resets balance on latest change', () {
@@ -272,103 +243,5 @@ void main() {
       ]),
       DateTime(2026, 2, 24),
     );
-  });
-
-  test('migration returns same settings if version is already current', () {
-    final today = DateTime(2026, 4, 24, 10);
-    final settings = CalorieGoalSettings.single(
-      dailyKcalGoal: 2000,
-      calculatorProfile: null,
-      effectiveDate: today,
-    );
-
-    final migrated = migrateCalorieGoalSettingsToCurrentMath(
-      settings: settings,
-      now: today,
-    );
-
-    expect(migrated, same(settings));
-  });
-
-  test('migration returns empty settings if legacy has no goal', () {
-    final today = DateTime(2026, 4, 24, 10);
-    final legacySettings = CalorieGoalSettings.fromJson({
-      'daily_kcal_goal': null,
-      'updated_at': today,
-      'goal_history': const <Object>[],
-      'skipped_intake_day_keys': const <Object>[],
-    });
-
-    final migrated = migrateCalorieGoalSettingsToCurrentMath(
-      settings: legacySettings,
-      now: today,
-    );
-
-    expect(migrated.calorieMathVersion, currentCalorieMathVersion);
-    expect(migrated.hasGoal, isFalse);
-    expect(migrated.updatedAt, today);
-  });
-
-  test('migration resolves expected activity kcal from profile', () {
-    final today = DateTime(2026, 4, 24, 10);
-    const profile = CalorieCalculatorProfile(
-      sex: CalorieCalculatorSex.male,
-      weightKg: 80,
-      heightCm: 180,
-      ageYears: 30,
-      activityLevel: 1.4,
-      goalMode: CalorieGoalMode.maintain,
-      goalSpeedKgPerWeek: 0,
-    );
-    final legacySettings = CalorieGoalSettings.fromJson({
-      'daily_kcal_goal': 2200,
-      'updated_at': today,
-      'calculator_profile': profile.toJson(),
-      'goal_history': [
-        {
-          'daily_kcal_goal': 2200,
-          'effective_date': today,
-          'changed_at': today,
-          'counting_start_date': today,
-          'source': 'manual',
-        },
-      ],
-      'skipped_intake_day_keys': const <Object>[],
-    });
-
-    final migrated = migrateCalorieGoalSettingsToCurrentMath(
-      settings: legacySettings,
-      now: today,
-    );
-
-    expect(migrated.calorieMathVersion, currentCalorieMathVersion);
-    expect(migrated.expectedActivityKcal, isNotNull);
-    expect(migrated.expectedActivityKcal, greaterThan(0));
-  });
-
-  test('migration expected activity null when profile is null', () {
-    final today = DateTime(2026, 4, 24, 10);
-    final legacySettings = CalorieGoalSettings.fromJson({
-      'daily_kcal_goal': 2200,
-      'updated_at': today,
-      'calculator_profile': null,
-      'goal_history': [
-        {
-          'daily_kcal_goal': 2200,
-          'effective_date': today,
-          'changed_at': today,
-          'counting_start_date': today,
-          'source': 'manual',
-        },
-      ],
-      'skipped_intake_day_keys': const <Object>[],
-    });
-
-    final migrated = migrateCalorieGoalSettingsToCurrentMath(
-      settings: legacySettings,
-      now: today,
-    );
-
-    expect(migrated.expectedActivityKcal, isNull);
   });
 }

@@ -18,7 +18,11 @@ DiaryHealthService createDiaryHealthService({AppPreferences? preferences}) {
 
 /// Mobile implementation of diary health data access.
 class MobileDiaryHealthService
-    implements DiaryHealthService, DiaryHealthActivityTrendService {
+    implements
+        DiaryHealthService,
+        DiaryHealthDayRefreshService,
+        DiaryHealthActivityTrendService,
+        DiaryHealthActivityTrendRefreshService {
   /// Creates an instance.
   MobileDiaryHealthService({
     Health? health,
@@ -77,11 +81,30 @@ class MobileDiaryHealthService
   }
 
   @override
+  Future<DiaryHealthDayData> refreshDayData({
+    required DateTime day,
+    double? userHeightCm,
+  }) {
+    return _dayLoader.refreshDayData(day: day, userHeightCm: userHeightCm);
+  }
+
+  @override
   Future<List<DiaryHealthActivityTrendDay>> loadActivityTrendDays({
     required DateTime startInclusive,
     required DateTime endExclusive,
   }) {
     return _activityTrendLoader.loadActivityTrendDays(
+      startInclusive: startInclusive,
+      endExclusive: endExclusive,
+    );
+  }
+
+  @override
+  Future<List<DiaryHealthActivityTrendDay>> refreshActivityTrendDays({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) {
+    return _activityTrendLoader.refreshActivityTrendDays(
       startInclusive: startInclusive,
       endExclusive: endExclusive,
     );

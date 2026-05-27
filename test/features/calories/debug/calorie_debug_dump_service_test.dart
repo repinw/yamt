@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_dump_service.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -89,7 +90,7 @@ void main() {
         settingsFuture: Future<CalorieGoalSettings>.value(
           CalorieGoalSettings.single(
             dailyKcalGoal: 2000,
-            calculatorProfile: null,
+            calculatorProfile: const CalorieCalculatorProfile.defaults(),
             effectiveDate: day,
           ),
         ),
@@ -102,16 +103,100 @@ void main() {
       expect(result.table, contains('eaten_day'));
       expect(result.table, contains('eaten_total'));
       expect(result.table, contains('entries=1'));
+      expect(result.table, contains('week_1_start'));
+      expect(result.table, contains('tdee_source=calculator_profile'));
+      expect(result.table, contains('weight_kg=80'));
+      expect(result.table, contains('height_cm=180'));
+      expect(result.table, contains('age_years=30'));
+      expect(result.table, contains('tdee=2136'));
+      expect(result.table, contains('week_1_summary'));
+      expect(result.table, contains('calculated_goal_total=2000'));
+      expect(result.table, contains('eaten_total=420'));
+      expect(result.table, contains('weight_change=0'));
       expect(result.table, contains('activity_day'));
-      expect(result.table, contains('steps_total'));
-      expect(result.table, contains('unassigned_active_energy_segments=1'));
+      expect(result.table, contains('activity_total'));
+      expect(result.table, contains('steps_outside_workouts=0'));
+      expect(result.table, contains('workout_kcal=500'));
       expect(result.table, contains('unassigned_active_energy_kcal=120'));
-      expect(result.table, contains('Run'));
-      expect(result.table, contains('manual_fallback'));
+      expect(result.table, isNot(contains('Run')));
+      expect(result.table, isNot(contains('workout |')));
+      expect(result.table, isNot(contains('manual_fallback')));
       expect(result.table, contains('health'));
+      expect(result.table, isNot(contains('2026-04-09')));
       expect(result.rowCount, 6);
     },
   );
+
+  test('buildCalorieDebugDump hides rows before first goal window', () async {
+    final oldDay = DateTime(2026, 4);
+    final goalStart = DateTime(2026, 4, 8);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          id: 'old-food',
+          name: 'Old food',
+          loggedAt: oldDay.add(const Duration(hours: 12)),
+          kcal: 1000,
+        ),
+        _entry(
+          id: 'goal-food',
+          name: 'Goal food',
+          loggedAt: goalStart.add(const Duration(hours: 12)),
+          kcal: 2000,
+        ),
+      ],
+    );
+    final diaryHealthService = FakeDiaryHealthService(
+      <String, DiaryHealthDayData>{
+        diaryDayKey(oldDay): const DiaryHealthDayData(
+          totalSteps: 9000,
+          workouts: <HealthWorkoutSession>[],
+        ),
+        diaryDayKey(goalStart): const DiaryHealthDayData(
+          totalSteps: 4000,
+          workouts: <HealthWorkoutSession>[],
+        ),
+      },
+    );
+    final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
+      HealthWeightSample(
+        recordedAt: oldDay.add(const Duration(hours: 7)),
+        weightKg: 85,
+      ),
+      HealthWeightSample(
+        recordedAt: goalStart.add(const Duration(hours: 7)),
+        weightKg: 84,
+      ),
+    ]);
+    final manualWeightRepository = FakeManualHealthWeightRepository(
+      const <ManualHealthWeightEntry>[],
+    );
+
+    final result = await buildCalorieDebugDump(
+      calorieLogRepository: logRepository,
+      diaryHealthService: diaryHealthService,
+      healthWeightService: healthWeightService,
+      manualWeightRepository: manualWeightRepository,
+      healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
+      settingsFuture: Future<CalorieGoalSettings>.value(
+        CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: goalStart,
+        ),
+      ),
+      now: goalStart.add(const Duration(hours: 20)),
+    );
+
+    expect(result.table, contains('| 2026-04-08 |  | summary |'));
+    expect(result.table, contains('| 2026-04-08 |  | eaten_day |'));
+    expect(result.table, contains('| 2026-04-08 |  | activity_day |'));
+    expect(result.table, contains('| 2026-04-08 |  | weight |'));
+    expect(result.table, contains('week_1_start'));
+    expect(result.table, contains('week_1_summary'));
+    expect(result.table, isNot(contains('2026-04-01')));
+    expect(result.rowCount, 6);
+  });
 
   test('buildCalorieDebugDump cascades exact weekly check-in goals', () async {
     final start = DateTime(2026, 4, 8);
@@ -167,16 +252,114 @@ void main() {
     );
 
     expect(result.table, contains('weekly_checkin'));
-    expect(result.table, contains('learned_tdee'));
+    expect(result.table, contains('learned_base_tdee'));
+    expect(result.table, contains('planned_vs_eaten'));
+    expect(result.table, contains('weight_trend'));
+    expect(result.table, contains('measured_total_tdee'));
+    expect(result.table, contains('measured_base_tdee'));
+    expect(result.table, contains('new_target'));
+    expect(result.table, contains('week_1_start'));
+    expect(result.table, contains('week_1_summary'));
+    expect(result.table, contains('week_2_start'));
+    expect(result.table, contains('week_2_summary'));
+    expect(result.table, contains('week_3_start'));
+    expect(result.table, contains('week_3_summary'));
+    expect(
+      result.table,
+      contains('| 2026-04-15 |  | week | week_2_start | 2000.60 |'),
+    );
+    expect(
+      result.table,
+      contains('| 2026-04-22 |  | week | week_3_start | 2001.02 |'),
+    );
+    expect(result.table, contains('tdee_source=learned_tdee'));
+    expect(
+      result.table,
+      contains('calculated_from_window=2026-4-8..2026-4-14'),
+    );
+    expect(result.table, contains('calculated_goal_total=14000'));
+    expect(result.table, contains('eaten_minus_goal=14'));
     expect(result.table, contains('window=2026-4-8..2026-4-14'));
     expect(result.table, contains('window=2026-4-15..2026-4-21'));
+    expect(result.table, contains('\n\n| 2026-04-15 |'));
+    expect(result.table, contains('\n\n| 2026-04-22 |'));
     expect(result.table, contains('learning_window=2026-4-8..2026-4-14'));
     expect(result.table, contains('learning_window=2026-4-8..2026-4-21'));
     expect(result.table, contains('previous_goal=2000'));
     expect(result.table, contains('previous_goal=2000.60'));
-    expect(result.table, contains('learned_tdee=2000.60'));
-    expect(result.table, contains('new_goal=2000.60'));
+    expect(result.table, contains('planned_total=14000'));
+    expect(result.table, contains('eaten_total=14014'));
+    expect(result.table, contains('weight_change=0'));
+    expect(
+      result.table,
+      contains('formula=average_eaten - weight_storage_per_day'),
+    );
+    expect(
+      result.table,
+      contains('formula=measured_total_tdee - credited_activity_average'),
+    );
+    expect(result.table, contains('activity_subtracted_from_total_tdee=0'));
+    expect(result.table, contains('learned_base_tdee=2000.60'));
+    expect(result.table, contains('new_target=2000.60'));
   });
+
+  test(
+    'buildCalorieDebugDump hides activity tdee fields without health',
+    () async {
+      final start = DateTime(2026, 4, 8);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 7; index += 1)
+            _entry(
+              id: 'food-$index',
+              name: 'Day $index food',
+              loggedAt: addDiaryDays(start, index).add(
+                const Duration(hours: 12),
+              ),
+              kcal: 2000,
+            ),
+        ],
+      );
+      final manualWeightRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          for (var index = 0; index < 7; index += 1)
+            ManualHealthWeightEntry(
+              day: addDiaryDays(start, index),
+              weightKg: 84,
+            ),
+        ],
+      );
+
+      final result = await buildCalorieDebugDump(
+        calorieLogRepository: logRepository,
+        diaryHealthService: FakeDiaryHealthService(const {}),
+        healthWeightService: FakeHealthWeightService(const []),
+        manualWeightRepository: manualWeightRepository,
+        healthStatusFuture: Future<HealthConnectionStatus>.value(
+          const HealthConnectionStatus.unsupported(),
+        ),
+        settingsFuture: Future<CalorieGoalSettings>.value(
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2000,
+            calculatorProfile: null,
+            effectiveDate: start,
+          ),
+        ),
+        now: DateTime(2026, 4, 15, 12),
+      );
+
+      expect(result.table, contains('weekly_checkin'));
+      expect(result.table, contains('measured_total_tdee'));
+      expect(result.table, contains('new_target'));
+      expect(result.table, isNot(contains('measured_base_tdee')));
+      expect(result.table, isNot(contains('credited_activity_average')));
+      expect(
+        result.table,
+        isNot(contains('activity_subtracted_from_total_tdee')),
+      );
+      expect(result.table, isNot(contains('dynamic_target_today')));
+    },
+  );
 }
 
 CalorieEntry _entry({

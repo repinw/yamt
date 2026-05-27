@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/application/burn_week_live_sync_provider.
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
@@ -110,6 +111,48 @@ void main() {
     expect(failed.isRefreshing, isFalse);
     expect(failed.error, isA<StateError>());
   });
+
+  test(
+    'refresh invalidates stale cached week overview before loading',
+    () async {
+      final preferences = MemoryAppPreferences();
+      var weekOverview = _weekOverviewWithActivityBonus(
+        selectedDay: selectedDay,
+        activityBonusKcal: 0,
+      );
+      var weekOverviewReadCount = 0;
+      final logRepository = FakeCalorieLogRepository();
+      addTearDown(logRepository.dispose);
+
+      final container = _dashboardContainer(
+        preferences: preferences,
+        logRepository: logRepository,
+        selectedDay: selectedDay,
+        weekOverviewBuilder: () {
+          weekOverviewReadCount += 1;
+          return weekOverview;
+        },
+      );
+      addTearDown(container.dispose);
+
+      await container.read(
+        calorieWeekOverviewForWindowProvider(selectedDay).future,
+      );
+      weekOverview = _weekOverviewWithActivityBonus(
+        selectedDay: selectedDay,
+        activityBonusKcal: 674.25,
+      );
+      container.read(diaryDayDashboardControllerProvider(selectedDay));
+
+      final refreshed = await _waitForDashboardRefresh(container, selectedDay);
+
+      expect(weekOverviewReadCount, greaterThanOrEqualTo(2));
+      expect(
+        refreshed.data?.weekOverview.days.last.activityBonusKcal,
+        674.25,
+      );
+    },
+  );
 }
 
 ProviderContainer _dashboardContainer({
@@ -117,6 +160,7 @@ ProviderContainer _dashboardContainer({
   required FakeCalorieLogRepository logRepository,
   required DateTime selectedDay,
   CalorieWeekOverview? weekOverview,
+  CalorieWeekOverview Function()? weekOverviewBuilder,
   Error? weekOverviewError,
 }) {
   final auth = _MockFirebaseAuth();
@@ -139,10 +183,44 @@ ProviderContainer _dashboardContainer({
         if (error != null) {
           throw error;
         }
+        final builder = weekOverviewBuilder;
+        if (builder != null) {
+          return builder();
+        }
         return weekOverview ??
             diaryWeekOverviewForTest(selectedDay: selectedDay);
       }),
     ],
+  );
+}
+
+CalorieWeekOverview _weekOverviewWithActivityBonus({
+  required DateTime selectedDay,
+  required double activityBonusKcal,
+}) {
+  final normalizedDay = normalizeDiaryDay(selectedDay);
+  final days = [
+    for (var offset = 6; offset >= 0; offset -= 1)
+      CalorieWeekDayOverview(
+        date: normalizedDay.subtract(Duration(days: offset)),
+        totalKcal: 0,
+        goalKcal: offset == 0 ? 2000 + activityBonusKcal : 2000,
+        baseGoalKcal: 2000,
+        activityBonusKcal: offset == 0 ? activityBonusKcal : 0,
+        entryCount: 0,
+      ),
+  ];
+  return CalorieWeekOverview(
+    days: days,
+    totalConsumedKcal: 0,
+    totalGoalKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),
+    remainingKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),
+    balanceStartDate: normalizedDay.subtract(const Duration(days: 6)),
+    carryoverBeforeTodayKcal: 0,
+    todayFlexibleGoalKcal: 2000 + activityBonusKcal,
+    goalStartsInFuture: false,
+    nextGoalStartDate: null,
+    futureGoalKcal: null,
   );
 }
 

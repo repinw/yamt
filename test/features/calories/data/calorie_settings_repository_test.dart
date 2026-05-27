@@ -4,7 +4,6 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 
 class _FakeCalorieSettingsUserSession implements CalorieSettingsUserSession {
@@ -100,8 +99,7 @@ void main() {
     expect(readBack.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
   });
 
-  test('readSettings hard migrates legacy calorie math document', () async {
-    final now = DateTime(2026, 4, 24, 10, 30);
+  test('readSettings decodes clean calorie settings document', () async {
     const profile = CalorieCalculatorProfile(
       sex: CalorieCalculatorSex.female,
       weightKg: 65,
@@ -120,6 +118,7 @@ void main() {
         .set({
           'daily_kcal_goal': 1850,
           'calculator_profile': profile.toJson(),
+          'calorie_math_version': currentCalorieMathVersion,
           'updated_at': DateTime(2026, 4, 18, 8),
           'goal_history': [
             {
@@ -137,13 +136,10 @@ void main() {
             'due_date': DateTime(2026, 4, 25),
           },
           'skipped_intake_day_keys': ['2026-4-18'],
-          'eating_window_start_minute_of_day': 360,
-          'eating_window_end_minute_of_day': 1320,
         });
     final repository = FirestoreCalorieSettingsRepository(
       session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
       firestore: firestore,
-      now: () => now,
     );
 
     final settings = await repository.readSettings();
@@ -152,20 +148,14 @@ void main() {
     expect(settings.dailyKcalGoal, 1850);
     expect(settings.goalHistory, hasLength(1));
     expect(settings.goalHistory.single.effectiveDate, DateTime(2026, 4, 18));
-    expect(settings.goalHistory.single.changedAt, DateTime(2026, 4, 18));
+    expect(settings.goalHistory.single.changedAt, DateTime(2026, 4, 18, 8));
     expect(
       settings.goalHistory.single.effectiveCountingStartDate,
       DateTime(2026, 4, 18),
     );
-    expect(
-      settings.expectedActivityKcal,
-      closeTo(
-        CalorieGoalCalculator.calculate(profile).expectedActivityKcal,
-        0.000001,
-      ),
-    );
-    expect(settings.pendingWeeklyCheckIn, isNull);
-    expect(settings.skippedIntakeDayKeys, isEmpty);
+    expect(settings.expectedActivityKcal, isNull);
+    expect(settings.pendingWeeklyCheckIn, isNotNull);
+    expect(settings.skippedIntakeDayKeys, ['2026-4-18']);
 
     final persistedSnapshot = await firestore
         .collection('users')
@@ -175,13 +165,11 @@ void main() {
         .get();
     final persisted = persistedSnapshot.data()!;
     expect(persisted['calorie_math_version'], currentCalorieMathVersion);
-    expect(persisted.containsKey('eating_window_start_minute_of_day'), isFalse);
   });
 
   test(
-    'readSettings preserves legacy top-level goal without history',
+    'readSettings preserves top-level goal without synthesizing history',
     () async {
-      final now = DateTime(2026, 4, 24, 10, 30);
       const profile = CalorieCalculatorProfile(
         sex: CalorieCalculatorSex.male,
         weightKg: 82,
@@ -200,13 +188,13 @@ void main() {
           .set({
             'daily_kcal_goal': 2300,
             'calculator_profile': profile.toJson(),
+            'calorie_math_version': currentCalorieMathVersion,
             'expected_activity_kcal': 420,
             'updated_at': DateTime(2026, 4, 2, 8),
           });
       final repository = FirestoreCalorieSettingsRepository(
         session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
         firestore: firestore,
-        now: () => now,
       );
 
       final settings = await repository.readSettings();
@@ -214,8 +202,7 @@ void main() {
       expect(settings.calorieMathVersion, currentCalorieMathVersion);
       expect(settings.dailyKcalGoal, 2300);
       expect(settings.hasGoal, isTrue);
-      expect(settings.goalHistory, hasLength(1));
-      expect(settings.goalHistory.single.dailyKcalGoal, 2300);
+      expect(settings.goalHistory, isEmpty);
       expect(settings.expectedActivityKcal, 420);
 
       final persistedSnapshot = await firestore
@@ -227,7 +214,7 @@ void main() {
       final persisted = persistedSnapshot.data()!;
       expect(persisted['daily_kcal_goal'], 2300);
       expect(persisted['calorie_math_version'], currentCalorieMathVersion);
-      expect(persisted['goal_history'], hasLength(1));
+      expect(persisted.containsKey('goal_history'), isFalse);
     },
   );
 

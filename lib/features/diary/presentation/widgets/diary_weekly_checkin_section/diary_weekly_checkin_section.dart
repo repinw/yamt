@@ -11,6 +11,8 @@ import 'package:yamt/features/diary/presentation/'
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_snackbars.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weekly_checkin_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_hint_host.dart';
@@ -43,6 +45,7 @@ class _DiaryWeeklyCheckInSectionState
   AsyncValue<DiaryWeeklyCheckInData> _state =
       const AsyncLoading<DiaryWeeklyCheckInData>();
   String? _hiddenWindowKey;
+  String? _reopenWindowKey;
 
   @override
   void initState() {
@@ -74,12 +77,33 @@ class _DiaryWeeklyCheckInSectionState
 
   @override
   Widget build(BuildContext context) {
+    final rawCheckInData = _rawCheckInData;
     final checkInData = _visibleCheckInData;
+    final dismissedPending = _dismissedPending(rawCheckInData);
     final weightTrackingFlow = ref.watch(diaryWeightTrackingFlowProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        if (dismissedPending != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.xs),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              key: DiaryWeeklyCheckInCardKeys.showAgainButton,
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+              ),
+              onPressed: () => _showWeeklyCheckInAgain(dismissedPending),
+              icon: const Icon(Icons.replay_rounded, size: 18),
+              label: Text(
+                AppLocalizations.of(
+                  context,
+                )!.caloriesWeeklyCheckInShowAgainAction,
+              ),
+            ),
+          ),
+        ],
         if (checkInData != null && checkInData.showDiaryHint) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           DiaryWeeklyCheckInHintHost(
@@ -97,9 +121,16 @@ class _DiaryWeeklyCheckInSectionState
     );
   }
 
+  DiaryWeeklyCheckInData? get _rawCheckInData {
+    return _state.value ?? _dialogs.lastCheckInData;
+  }
+
   DiaryWeeklyCheckInData? get _visibleCheckInData {
-    final rawCheckInData = _state.value ?? _dialogs.lastCheckInData;
-    return _isHidden(rawCheckInData) ? null : rawCheckInData;
+    final rawCheckInData = _rawCheckInData;
+    return _isHidden(rawCheckInData) ||
+            _dismissedPending(rawCheckInData) != null
+        ? null
+        : rawCheckInData;
   }
 
   void _startSubscription() {
@@ -133,6 +164,7 @@ class _DiaryWeeklyCheckInSectionState
       syncLearnedTdeeCache: actions.syncLearnedTdeeCache,
       openDialog: _openDialog,
     );
+    _openReopenedDialogIfReady(checkInData);
   }
 
   Future<void> _openDialog(DiaryWeeklyCheckInData checkInData) async {
@@ -223,6 +255,37 @@ class _DiaryWeeklyCheckInSectionState
     });
   }
 
+  Future<void> _showWeeklyCheckInAgain(
+    PendingCalorieGoalWeeklyCheckIn pending,
+  ) async {
+    setState(() {
+      _reopenWindowKey = pending.windowKey;
+    });
+    final actions = ref.read(diaryWeeklyCheckInActionsProvider);
+    final saved = await actions.showWeeklyCheckInAgain(pending);
+    if (!mounted || saved) {
+      return;
+    }
+    setState(() {
+      _reopenWindowKey = null;
+    });
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.caloriesWeeklyCheckInShowAgainFailed)),
+    );
+  }
+
+  void _openReopenedDialogIfReady(DiaryWeeklyCheckInData checkInData) {
+    final pending = checkInData.pendingWeeklyCheckIn;
+    if (pending == null ||
+        pending.isDismissed ||
+        pending.windowKey != _reopenWindowKey) {
+      return;
+    }
+    _reopenWindowKey = null;
+    unawaited(_openDialog(checkInData));
+  }
+
   Future<void> _toggleSkippedCalorieIntakeDay({
     required DateTime selectedDay,
     required bool isSkipped,
@@ -291,5 +354,12 @@ class _DiaryWeeklyCheckInSectionState
       return false;
     }
     return checkInData?.pendingWeeklyCheckIn?.windowKey == hiddenWindowKey;
+  }
+
+  PendingCalorieGoalWeeklyCheckIn? _dismissedPending(
+    DiaryWeeklyCheckInData? checkInData,
+  ) {
+    final pending = checkInData?.pendingWeeklyCheckIn;
+    return pending?.isDismissed == true ? pending : null;
   }
 }

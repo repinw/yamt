@@ -233,13 +233,13 @@ void main() {
     expect(firstGoal, isNotNull);
     expect(firstGoal!.day, normalizeDiaryDay(firstDay));
     expect(firstGoal.todayActiveKcal, 400);
-    expect(firstGoal.activityComparisonKcal, -100);
-    expect(firstGoal.goalKcal, 2100);
+    expect(firstGoal.activityComparisonKcal, 300);
+    expect(firstGoal.goalKcal, 2400);
     expect(secondGoal, isNotNull);
     expect(secondGoal!.day, normalizeDiaryDay(secondDay));
     expect(secondGoal.todayActiveKcal, 800);
-    expect(secondGoal.activityComparisonKcal, 300);
-    expect(secondGoal.goalKcal, 2250);
+    expect(secondGoal.activityComparisonKcal, 600);
+    expect(secondGoal.goalKcal, 2700);
   });
 
   test(
@@ -289,14 +289,14 @@ void main() {
 
       expect(resolvedGoal.day, normalizeDiaryDay(selectedDay));
       expect(resolvedGoal.storedGoalKcal, 2100);
-      expect(resolvedGoal.goalKcal, 2150);
-      expect(resolvedGoal.activityDeltaKcal, 50);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.expectedActivityKcal, 500);
+      expect(resolvedGoal.goalKcal, 2550);
+      expect(resolvedGoal.activityDeltaKcal, 450);
+      expect(resolvedGoal.activityComparisonKcal, 450);
+      expect(resolvedGoal.expectedActivityKcal, 2100);
       expect(resolvedGoal.todayActiveKcal, 600);
       expect(resolvedGoal.isActivityTrackingActive, isTrue);
       expect(resolvedGoal.usedLearnedTdee, isFalse);
-      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
+      expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
     },
   );
 
@@ -363,9 +363,9 @@ void main() {
       expect(persistedSettings.activityTrackingStartDate, isNull);
       expect(resolvedGoal.isActivityTrackingActive, isTrue);
       expect(resolvedGoal.todayActiveKcal, 600);
-      expect(resolvedGoal.activityDeltaKcal, 50);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.goalKcal, 2150);
+      expect(resolvedGoal.activityDeltaKcal, 450);
+      expect(resolvedGoal.activityComparisonKcal, 450);
+      expect(resolvedGoal.goalKcal, 2550);
     },
   );
 
@@ -413,55 +413,63 @@ void main() {
       );
 
       expect(resolvedGoal.storedGoalKcal, 2100);
-      expect(resolvedGoal.activityDeltaKcal, 50);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.expectedActivityKcal, 500);
-      expect(resolvedGoal.goalKcal, 2150);
+      expect(resolvedGoal.activityDeltaKcal, 450);
+      expect(resolvedGoal.activityComparisonKcal, 450);
+      expect(resolvedGoal.expectedActivityKcal, 2100);
+      expect(resolvedGoal.goalKcal, 2550);
       expect(resolvedGoal.todayActiveKcal, 600);
       expect(resolvedGoal.isActivityTrackingActive, isTrue);
       expect(resolvedGoal.usedLearnedTdee, isFalse);
-      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
+      expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
     },
   );
 
-  test('uses aggregate activity before loading detailed day data', () async {
-    final today = DateTime(2026, 4, 15);
-    final settings = const CalorieGoalSettings.empty()
-        .applyGoalChange(
-          dailyKcalGoal: 2100,
-          changedAt: DateTime(2026, 4, 14, 9),
-          calculatorProfile: null,
-          expectedActivityKcal: 200,
-        )
-        .copyWith(activityTrackingStartDate: today);
-    final diaryHealthService = FakeTrendDiaryHealthService(
-      const <String, DiaryHealthDayData>{},
-      trendDays: [
-        DiaryHealthActivityTrendDay(
-          day: today,
-          totalSteps: 2000,
-          activeEnergyKcal: 300,
-        ),
-      ],
-    );
-    final container = _createContainer(
-      today: today,
-      settings: settings,
-      diaryHealthService: diaryHealthService,
-    );
-    addTearDown(container.dispose);
+  test(
+    'uses detailed workout activity when aggregate trend is lower',
+    () async {
+      final today = DateTime(2026, 4, 15);
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            dailyKcalGoal: 2100,
+            changedAt: DateTime(2026, 4, 14, 9),
+            calculatorProfile: null,
+            expectedActivityKcal: 200,
+          )
+          .copyWith(activityTrackingStartDate: today);
+      final diaryHealthService = FakeTrendDiaryHealthService(
+        <String, DiaryHealthDayData>{
+          diaryDayKey(today): _healthDayWithWorkout(
+            day: today,
+            totalCalories: 899,
+          ),
+        },
+        trendDays: [
+          DiaryHealthActivityTrendDay(
+            day: today,
+            totalSteps: 2000,
+            activeEnergyKcal: 14,
+          ),
+        ],
+      );
+      final container = _createContainer(
+        today: today,
+        settings: settings,
+        diaryHealthService: diaryHealthService,
+      );
+      addTearDown(container.dispose);
 
-    final resolvedGoal = await container.read(
-      resolvedCalorieGoalForDayProvider(today).future,
-    );
+      final resolvedGoal = await container.read(
+        resolvedCalorieGoalForDayProvider(today).future,
+      );
 
-    expect(diaryHealthService.loadDayDataCallCount, 0);
-    expect(diaryHealthService.trendRequests.single.startInclusive, today);
-    expect(resolvedGoal.todayActiveKcal, 300);
-    expect(resolvedGoal.activityComparisonKcal, 100);
-    expect(resolvedGoal.activityDeltaKcal, 50);
-    expect(resolvedGoal.goalKcal, 2150);
-  });
+      expect(diaryHealthService.loadDayDataCallCount, 1);
+      expect(diaryHealthService.trendRequests, isEmpty);
+      expect(resolvedGoal.todayActiveKcal, 899);
+      expect(resolvedGoal.activityComparisonKcal, 674.25);
+      expect(resolvedGoal.activityDeltaKcal, 674.25);
+      expect(resolvedGoal.goalKcal, 2774.25);
+    },
+  );
 
   test(
     'ignores unassigned active energy without steps',
@@ -505,10 +513,10 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.todayActiveKcal, 0);
-      expect(resolvedGoal.activityComparisonKcal, -200);
-      expect(resolvedGoal.activityDeltaKcal, 0);
-      expect(resolvedGoal.goalKcal, 2100);
+      expect(resolvedGoal.todayActiveKcal, 300);
+      expect(resolvedGoal.activityComparisonKcal, 225);
+      expect(resolvedGoal.activityDeltaKcal, 225);
+      expect(resolvedGoal.goalKcal, 2325);
     },
   );
 
@@ -551,10 +559,10 @@ void main() {
       resolvedCalorieGoalForDayProvider(today).future,
     );
 
-    expect(resolvedGoal.goalKcal, 2100);
-    expect(resolvedGoal.activityDeltaKcal, 0);
-    expect(resolvedGoal.activityComparisonKcal, 0);
-    expect(resolvedGoal.expectedActivityKcal, 0);
+    expect(resolvedGoal.goalKcal, 2475);
+    expect(resolvedGoal.activityDeltaKcal, 375);
+    expect(resolvedGoal.activityComparisonKcal, 375);
+    expect(resolvedGoal.expectedActivityKcal, 2100);
     expect(resolvedGoal.todayActiveKcal, 500);
     expect(resolvedGoal.isActivityTrackingActive, isTrue);
     expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
@@ -634,11 +642,11 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.goalKcal, 2175);
-      expect(resolvedGoal.activityDeltaKcal, 75);
-      expect(resolvedGoal.activityComparisonKcal, 150);
-      expect(resolvedGoal.expectedActivityKcal, 300);
-      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
+      expect(resolvedGoal.goalKcal, 2437.5);
+      expect(resolvedGoal.activityDeltaKcal, 337.5);
+      expect(resolvedGoal.activityComparisonKcal, 337.5);
+      expect(resolvedGoal.expectedActivityKcal, 2100);
+      expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
     },
   );
 
@@ -701,9 +709,9 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.activityDeltaKcal, 50);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.goalKcal, 2150);
+      expect(resolvedGoal.activityDeltaKcal, 75);
+      expect(resolvedGoal.activityComparisonKcal, 75);
+      expect(resolvedGoal.goalKcal, 2175);
       expect(resolvedGoal.usedLearnedTdee, isTrue);
       expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
     },
@@ -752,6 +760,10 @@ void main() {
             weightKg: 80,
           ),
           HealthWeightSample(
+            recordedAt: DateTime(2026, 4, 15, 7),
+            weightKg: 79.3,
+          ),
+          HealthWeightSample(
             recordedAt: today.add(const Duration(hours: 7)),
             weightKg: 79.2,
           ),
@@ -789,7 +801,7 @@ void main() {
 
       expect(resolvedToday.storedGoalKcal, 2400);
       expect(resolvedToday.goalKcal, 2400);
-      expect(resolvedToday.usedLearnedTdee, isTrue);
+      expect(resolvedToday.usedLearnedTdee, isFalse);
       expect(resolvedHistorical.storedGoalKcal, 2400);
       expect(resolvedHistorical.goalKcal, 2400);
 
@@ -868,9 +880,9 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.storedGoalKcal, 2580);
-      expect(resolvedGoal.goalKcal, 2580);
-      expect(resolvedGoal.usedLearnedTdee, isTrue);
+      expect(resolvedGoal.storedGoalKcal, 2400);
+      expect(resolvedGoal.goalKcal, 2400);
+      expect(resolvedGoal.usedLearnedTdee, isFalse);
     },
   );
 
@@ -938,9 +950,9 @@ void main() {
         resolvedCalorieGoalForDayProvider(selectedDay).future,
       );
 
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.activityDeltaKcal, 50);
-      expect(resolvedGoal.goalKcal, 2150);
+      expect(resolvedGoal.activityComparisonKcal, 75);
+      expect(resolvedGoal.activityDeltaKcal, 75);
+      expect(resolvedGoal.goalKcal, 2175);
       expect(resolvedGoal.usedLearnedTdee, isTrue);
       expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
     },
@@ -1009,8 +1021,8 @@ void main() {
       );
 
       expect(resolvedGoal.activityDeltaKcal, 0);
-      expect(resolvedGoal.activityComparisonKcal, -400);
-      expect(resolvedGoal.goalKcal, 2000);
+      expect(resolvedGoal.activityComparisonKcal, 0);
+      expect(resolvedGoal.goalKcal, 1910);
       expect(resolvedGoal.wasClampedToMinimum, isFalse);
     },
   );

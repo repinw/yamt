@@ -7,7 +7,8 @@ Widget _dialogUnderTest({
   required Future<void> Function({
     required String email,
     required String password,
-  }) onSubmitCredentials,
+  })
+  onSubmitCredentials,
   required String Function(Object error) errorMessageFor,
   bool Function(Object error)? shouldBubbleSubmitError,
 }) {
@@ -175,8 +176,8 @@ void main() {
                         l10n: l10n,
                         onSubmitCredentials:
                             ({required email, required password}) async {
-                          throw customError;
-                        },
+                              throw customError;
+                            },
                         errorMessageFor: (error) => 'Error',
                         shouldBubbleSubmitError: (error) => true,
                       ),

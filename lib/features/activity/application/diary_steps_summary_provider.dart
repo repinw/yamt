@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/domain/diary_activity_summary.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -27,9 +28,16 @@ Future<DiaryActivitySummary> diaryStepsSummary(Ref ref, DateTime day) async {
     );
   }
 
-  final dayData = await diaryHealthService.loadDayData(
-    day: normalizedDay,
-    userHeightCm: userHeightCm,
-  );
+  final dayData = switch (diaryHealthService) {
+    final DiaryHealthDayRefreshService refreshService =>
+      await refreshService.refreshDayData(
+        day: normalizedDay,
+        userHeightCm: userHeightCm,
+      ),
+    _ => await diaryHealthService.loadDayData(
+      day: normalizedDay,
+      userHeightCm: userHeightCm,
+    ),
+  };
   return buildDiaryActivitySummary(day: normalizedDay, dayData: dayData);
 }

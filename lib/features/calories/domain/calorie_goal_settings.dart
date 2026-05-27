@@ -9,10 +9,7 @@ part 'calorie_goal_settings.g.dart';
 const defaultDailyCalorieGoalKcal = 2500.0;
 
 /// The current calorie math data version.
-const currentCalorieMathVersion = 2;
-
-/// Legacy version used when stored settings have no version.
-const legacyCalorieMathVersion = 1;
+const currentCalorieMathVersion = 3;
 
 const _keepValue = Object();
 
@@ -36,23 +33,82 @@ enum CalorieGoalSource {
 }
 
 /// Defines calorie goal weekly check in snapshot.
-@JsonSerializable(fieldRename: FieldRename.snake)
 class CalorieGoalWeeklyCheckInSnapshot {
   /// The calorie goal weekly check in snapshot.
   const CalorieGoalWeeklyCheckInSnapshot({
     required this.windowStartDate,
     required this.windowEndDate,
     required this.trendWeightChangePerDay,
-    required this.calculatedTrueTdeeKcal,
-    required this.averageActiveKcal,
     required this.lowConfidence,
+    double? measuredTotalTdeeKcal,
+    double? measuredBaseTdeeKcal,
+    double? calculatedBaseTdeeKcal,
+    double? averageCreditedActivityKcal,
+    double? baseGoalKcal,
+    double? calculatedTrueTdeeKcal,
+    double? averageActiveKcal,
+    double? newGoalKcal,
     this.inputHash,
     this.invalidatedAt,
-  });
+  }) : measuredTotalTdeeKcal =
+           measuredTotalTdeeKcal ?? calculatedTrueTdeeKcal ?? 0,
+       measuredBaseTdeeKcal =
+           measuredBaseTdeeKcal ??
+           measuredTotalTdeeKcal ??
+           calculatedTrueTdeeKcal ??
+           0,
+       calculatedBaseTdeeKcal =
+           calculatedBaseTdeeKcal ?? calculatedTrueTdeeKcal ?? 0,
+       averageCreditedActivityKcal =
+           averageCreditedActivityKcal ?? averageActiveKcal ?? 0,
+       baseGoalKcal =
+           baseGoalKcal ??
+           newGoalKcal ??
+           calculatedBaseTdeeKcal ??
+           calculatedTrueTdeeKcal ??
+           0;
 
   /// Creates a [CalorieGoalWeeklyCheckInSnapshot] for from json.
   factory CalorieGoalWeeklyCheckInSnapshot.fromJson(Map<String, dynamic> json) {
-    return _$CalorieGoalWeeklyCheckInSnapshotFromJson(json);
+    return CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: const FlexibleDateTimeConverter().fromJson(
+        json['window_start_date'],
+      ),
+      windowEndDate: const FlexibleDateTimeConverter().fromJson(
+        json['window_end_date'],
+      ),
+      trendWeightChangePerDay: const FlexibleDoubleConverter().fromJson(
+        json['trend_weight_change_per_day'],
+      ),
+      measuredTotalTdeeKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['measured_total_tdee_kcal'],
+      ),
+      measuredBaseTdeeKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['measured_base_tdee_kcal'],
+      ),
+      calculatedBaseTdeeKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['calculated_base_tdee_kcal'],
+      ),
+      averageCreditedActivityKcal: const NullableFlexibleDoubleConverter()
+          .fromJson(json['average_credited_activity_kcal']),
+      baseGoalKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['base_goal_kcal'],
+      ),
+      calculatedTrueTdeeKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['calculated_true_tdee_kcal'],
+      ),
+      averageActiveKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['average_active_kcal'],
+      ),
+      newGoalKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['new_goal_kcal'],
+      ),
+      lowConfidence: json['low_confidence'] as bool,
+      inputHash: json['input_hash'] as String?,
+      invalidatedAt: const NullableFlexibleDateTimeConverter().fromJson(
+        json['invalidated_at'],
+      ),
+    );
   }
 
   /// The window start date.
@@ -67,13 +123,20 @@ class CalorieGoalWeeklyCheckInSnapshot {
   @FlexibleDoubleConverter()
   final double trendWeightChangePerDay;
 
-  /// The calculated true tdee kcal.
-  @FlexibleDoubleConverter()
-  final double calculatedTrueTdeeKcal;
+  /// The measured total TDEE kcal before activity is removed.
+  final double measuredTotalTdeeKcal;
 
-  /// The average active kcal.
-  @FlexibleDoubleConverter()
-  final double averageActiveKcal;
+  /// The measured Base-TDEE kcal before smoothing.
+  final double measuredBaseTdeeKcal;
+
+  /// The smoothed learned Base-TDEE kcal.
+  final double calculatedBaseTdeeKcal;
+
+  /// Average corrected activity kcal in the learning window.
+  final double averageCreditedActivityKcal;
+
+  /// The base daily goal after target mode and movement cap.
+  final double baseGoalKcal;
 
   /// The low confidence.
   final bool lowConfidence;
@@ -93,6 +156,12 @@ class CalorieGoalWeeklyCheckInSnapshot {
   /// Whether this snapshot can seed later weekly calculations directly.
   bool get isInputTrusted => inputHash != null && !isInputDirty;
 
+  /// Backwards-compatible label while old UI text is renamed.
+  double get calculatedTrueTdeeKcal => calculatedBaseTdeeKcal;
+
+  /// Backwards-compatible label while old UI text is renamed.
+  double get averageActiveKcal => averageCreditedActivityKcal;
+
   /// Copy with.
   CalorieGoalWeeklyCheckInSnapshot copyWith({
     Object? inputHash = _keepValue,
@@ -102,8 +171,11 @@ class CalorieGoalWeeklyCheckInSnapshot {
       windowStartDate: windowStartDate,
       windowEndDate: windowEndDate,
       trendWeightChangePerDay: trendWeightChangePerDay,
-      calculatedTrueTdeeKcal: calculatedTrueTdeeKcal,
-      averageActiveKcal: averageActiveKcal,
+      measuredTotalTdeeKcal: measuredTotalTdeeKcal,
+      measuredBaseTdeeKcal: measuredBaseTdeeKcal,
+      calculatedBaseTdeeKcal: calculatedBaseTdeeKcal,
+      averageCreditedActivityKcal: averageCreditedActivityKcal,
+      baseGoalKcal: baseGoalKcal,
       lowConfidence: lowConfidence,
       inputHash: inputHash == _keepValue
           ? this.inputHash
@@ -116,7 +188,36 @@ class CalorieGoalWeeklyCheckInSnapshot {
 
   /// To json.
   Map<String, dynamic> toJson() {
-    return _$CalorieGoalWeeklyCheckInSnapshotToJson(this);
+    return <String, dynamic>{
+      'window_start_date': const FlexibleDateTimeConverter().toJson(
+        windowStartDate,
+      ),
+      'window_end_date': const FlexibleDateTimeConverter().toJson(
+        windowEndDate,
+      ),
+      'trend_weight_change_per_day': const FlexibleDoubleConverter().toJson(
+        trendWeightChangePerDay,
+      ),
+      'measured_total_tdee_kcal': const FlexibleDoubleConverter().toJson(
+        measuredTotalTdeeKcal,
+      ),
+      'measured_base_tdee_kcal': const FlexibleDoubleConverter().toJson(
+        measuredBaseTdeeKcal,
+      ),
+      'calculated_base_tdee_kcal': const FlexibleDoubleConverter().toJson(
+        calculatedBaseTdeeKcal,
+      ),
+      'average_credited_activity_kcal': const FlexibleDoubleConverter().toJson(
+        averageCreditedActivityKcal,
+      ),
+      'base_goal_kcal': const FlexibleDoubleConverter().toJson(baseGoalKcal),
+      'low_confidence': lowConfidence,
+      if (inputHash != null) 'input_hash': inputHash,
+      if (invalidatedAt != null)
+        'invalidated_at': const NullableFlexibleDateTimeConverter().toJson(
+          invalidatedAt,
+        ),
+    };
   }
 }
 
@@ -347,7 +448,7 @@ class CalorieGoalSettings {
   final CalorieCalculatorProfile? calculatorProfile;
 
   /// The calorie math data version.
-  @JsonKey(defaultValue: legacyCalorieMathVersion)
+  @JsonKey(defaultValue: currentCalorieMathVersion)
   final int calorieMathVersion;
 
   /// Expected daily activity kcal from PAL or learned activity baseline.
@@ -414,7 +515,7 @@ class CalorieGoalSettings {
 
   /// The latest learned tdee kcal.
   double? get latestLearnedTdeeKcal {
-    return latestLearnedTdeeEntry?.learnedTdeeSnapshot?.calculatedTrueTdeeKcal;
+    return latestLearnedTdeeEntry?.learnedTdeeSnapshot?.calculatedBaseTdeeKcal;
   }
 
   /// The latest learned tdee changed at.

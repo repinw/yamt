@@ -25,12 +25,13 @@ void main() {
 
     expect(result.trendWeightChangePerDay, closeTo(-0.08036, 0.00001));
     expect(result.averageIntakeKcal, closeTo(2347.14, 0.01));
-    expect(result.measuredTrueTdeeKcal, closeTo(2909.64, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2571.79, 0.01));
-    expect(result.newGoalKcal, closeTo(2571.79, 0.01));
-    expect(result.lastWeekAverageActiveKcal, closeTo(292.57, 0.01));
-    expect(result.activityDeltaKcal, 0);
-    expect(result.dynamicGoalTodayKcal, closeTo(2571.79, 0.01));
+    expect(result.measuredTotalTdeeKcal, closeTo(2909.64, 0.01));
+    expect(result.measuredBaseTdeeKcal, closeTo(2690.21, 0.01));
+    expect(result.calculatedBaseTdeeKcal, closeTo(2505.96, 0.01));
+    expect(result.newBaseGoalKcal, closeTo(2505.96, 0.01));
+    expect(result.averageCreditedActivityKcal, closeTo(219.43, 0.01));
+    expect(result.activityDeltaKcal, 112.5);
+    expect(result.dynamicGoalTodayKcal, closeTo(2618.46, 0.01));
   });
 
   test('caps weekly goal movement to keep one check-in stable', () {
@@ -76,14 +77,15 @@ void main() {
     expect(result.trendWeightChangePerDay, closeTo(-0.1, 0.00001));
     expect(result.averageIntakeKcal, 2000);
     expect(result.measuredTrueTdeeKcal, closeTo(2700, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2350, 0.01));
-    expect(result.newGoalKcal, closeTo(2350, 0.01));
-    expect(result.lastWeekAverageActiveKcal, 100);
-    expect(result.activityDeltaKcal, 75);
-    expect(result.dynamicGoalTodayKcal, closeTo(2425, 0.01));
+    expect(result.measuredBaseTdeeKcal, closeTo(2625, 0.01));
+    expect(result.calculatedBaseTdeeKcal, closeTo(2327.5, 0.01));
+    expect(result.newBaseGoalKcal, closeTo(2327.5, 0.01));
+    expect(result.averageCreditedActivityKcal, 75);
+    expect(result.activityDeltaKcal, 187.5);
+    expect(result.dynamicGoalTodayKcal, closeTo(2515, 0.01));
   });
 
-  test('does not lower dynamic today goal when activity is below baseline', () {
+  test('rest day uses learned Base-TDEE without activity credit', () {
     final result = CalorieWeeklyCheckInCalculator.calculate(
       previousGoalKcal: 1600,
       previousLearnedTdeeKcal: 1600,
@@ -99,7 +101,8 @@ void main() {
     );
 
     expect(result.activityDeltaKcal, 0);
-    expect(result.dynamicGoalTodayKcal, 1600);
+    expect(result.measuredBaseTdeeKcal, closeTo(1000, 0.01));
+    expect(result.dynamicGoalTodayKcal, closeTo(1420, 0.01));
   });
 
   test(

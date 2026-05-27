@@ -6,7 +6,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_migration.dart';
 
 part 'calorie_settings_repository.g.dart';
 
@@ -45,14 +44,11 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
   FirestoreCalorieSettingsRepository({
     required CalorieSettingsUserSession session,
     required FirebaseFirestore firestore,
-    DateTime Function()? now,
   }) : _session = session,
-       _firestore = firestore,
-       _now = now ?? DateTime.now;
+       _firestore = firestore;
 
   final CalorieSettingsUserSession _session;
   final FirebaseFirestore _firestore;
-  final DateTime Function() _now;
 
   @override
   Stream<CalorieGoalSettings> watchSettings() {
@@ -66,11 +62,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
     return Stream<CalorieGoalSettings>.multi((controller) {
       final subscription = _document(userId).snapshots().listen(
         (snapshot) {
-          final decoded = _decodeSnapshot(snapshot);
-          controller.add(decoded.settings);
-          if (decoded.shouldPersistMigration) {
-            unawaited(_persistMigratedSettings(userId, decoded.settings));
-          }
+          controller.add(_decodeSnapshot(snapshot));
         },
         onError: (Object error, StackTrace stackTrace) {
           log(
@@ -96,11 +88,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
 
     try {
       final snapshot = await _document(userId).get();
-      final decoded = _decodeSnapshot(snapshot);
-      if (decoded.shouldPersistMigration) {
-        await _persistMigratedSettings(userId, decoded.settings);
-      }
-      return decoded.settings;
+      return _decodeSnapshot(snapshot);
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read calorie settings for user $userId',
@@ -175,30 +163,17 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
         .doc(_defaultSettingsDocumentId);
   }
 
-  _DecodedCalorieSettings _decodeSnapshot(
+  CalorieGoalSettings _decodeSnapshot(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
   ) {
     if (!snapshot.exists) {
-      return const _DecodedCalorieSettings(
-        settings: CalorieGoalSettings.empty(),
-        shouldPersistMigration: false,
-      );
+      return const CalorieGoalSettings.empty();
     }
 
     final rawData = snapshot.data() ?? const <String, dynamic>{};
     final normalizedData = normalizeFirestoreJson(rawData);
     try {
-      final settings = CalorieGoalSettings.fromJson(normalizedData);
-      final shouldPersistMigration =
-          settings.calorieMathVersion < currentCalorieMathVersion;
-      final migratedSettings = migrateCalorieGoalSettingsToCurrentMath(
-        settings: settings,
-        now: _now(),
-      );
-      return _DecodedCalorieSettings(
-        settings: migratedSettings,
-        shouldPersistMigration: shouldPersistMigration,
-      );
+      return CalorieGoalSettings.fromJson(normalizedData);
     } on Object catch (error, stackTrace) {
       log(
         'Malformed calorie settings document ${snapshot.id}',
@@ -206,43 +181,9 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
         error: error,
         stackTrace: stackTrace,
       );
-      return const _DecodedCalorieSettings(
-        settings: CalorieGoalSettings.empty(),
-        shouldPersistMigration: false,
-      );
+      return const CalorieGoalSettings.empty();
     }
   }
-
-  Future<void> _persistMigratedSettings(
-    String userId,
-    CalorieGoalSettings settings,
-  ) async {
-    try {
-      await _document(userId).set(settings.toJson());
-      log(
-        'Hard migrated calorie settings for user $userId to math version '
-        '${settings.calorieMathVersion}.',
-        name: _repositoryLogName,
-      );
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to persist migrated calorie settings for user $userId',
-        name: _repositoryLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-}
-
-class _DecodedCalorieSettings {
-  const _DecodedCalorieSettings({
-    required this.settings,
-    required this.shouldPersistMigration,
-  });
-
-  final CalorieGoalSettings settings;
-  final bool shouldPersistMigration;
 }
 
 /// Calorie settings repository.

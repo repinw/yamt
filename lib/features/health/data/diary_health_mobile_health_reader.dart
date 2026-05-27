@@ -53,10 +53,16 @@ class DiaryHealthMobileHealthReader {
         types: activityTrendQueryTypes,
         interval: activityTrendIntervalSeconds,
       );
+      final workoutPoints = await _health.getHealthDataFromTypes(
+        types: workoutQueryTypes,
+        startTime: startInclusive,
+        endTime: endExclusive,
+      );
       return _buildActivityTrendDays(
         startInclusive: startInclusive,
         endExclusive: endExclusive,
         points: points,
+        workoutPoints: workoutPoints,
       );
     });
   }
@@ -200,6 +206,7 @@ class DiaryHealthMobileHealthReader {
     required DateTime startInclusive,
     required DateTime endExclusive,
     required List<HealthDataPoint> points,
+    required List<HealthDataPoint> workoutPoints,
   }) {
     final stepsByDay = <String, int>{};
     final activeEnergyByDay = <String, int>{};
@@ -219,6 +226,20 @@ class DiaryHealthMobileHealthReader {
         activeEnergyByDay[key] = (activeEnergyByDay[key] ?? 0) + value;
       }
     }
+    final workoutCaloriesByDay = <String, int>{};
+    for (final point in workoutPoints) {
+      final workout = _buildWorkoutSession(point);
+      final calories = workout.totalCalories;
+      if (calories == null || calories <= 0) {
+        continue;
+      }
+      final day = normalizeLocalDay(workout.start);
+      if (day.isBefore(startInclusive) || !day.isBefore(endExclusive)) {
+        continue;
+      }
+      final key = localDayKey(day);
+      workoutCaloriesByDay[key] = (workoutCaloriesByDay[key] ?? 0) + calories;
+    }
 
     final days = <DiaryHealthActivityTrendDay>[];
     for (
@@ -227,11 +248,15 @@ class DiaryHealthMobileHealthReader {
       day = nextLocalDay(day)
     ) {
       final key = localDayKey(day);
+      final activeEnergyKcal = activeEnergyByDay[key] ?? 0;
+      final workoutCalories = workoutCaloriesByDay[key] ?? 0;
       days.add(
         DiaryHealthActivityTrendDay(
           day: day,
           totalSteps: stepsByDay[key] ?? 0,
-          activeEnergyKcal: activeEnergyByDay[key] ?? 0,
+          activeEnergyKcal: activeEnergyKcal > workoutCalories
+              ? activeEnergyKcal
+              : workoutCalories,
         ),
       );
     }

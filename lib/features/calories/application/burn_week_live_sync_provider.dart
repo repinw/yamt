@@ -5,7 +5,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/'
     'burn_week_live_overview_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -64,7 +63,7 @@ Object? burnWeekLiveSync(Ref ref) {
     final nextGoalStartDate = weekOverviewValue.nextGoalStartDate;
     if (settings.hasLearnedTdee && nextGoalStartDate != null) {
       final normalizedGoalStartDate = normalizeDiaryDay(nextGoalStartDate);
-      if (!_isScheduledFutureGameRun(
+      if (!_isScheduledFutureFreshRun(
         runState: runState,
         storedWeekStartDate: storedWeekStartDate,
         expectedWeekStartDate: normalizedGoalStartDate,
@@ -72,7 +71,7 @@ Object? burnWeekLiveSync(Ref ref) {
         _queueRunRestart(
           ref,
           weekStartDate: normalizedGoalStartDate,
-          runWeekNumber: burnWeekFirstGameRunWeekNumber,
+          runWeekNumber: burnWeekLearningRunWeekNumber,
         );
       }
       return null;
@@ -103,7 +102,7 @@ Object? burnWeekLiveSync(Ref ref) {
     _queueRunRestart(
       ref,
       weekStartDate: syncWeekStartDate,
-      runWeekNumber: _resolveRestartRunWeekNumber(settings),
+      runWeekNumber: burnWeekLearningRunWeekNumber,
     );
     return null;
   }
@@ -269,12 +268,6 @@ bool _isInitialBurnWeekRunState(BurnWeekRunState state) {
       !state.missedTrackingThisWeek;
 }
 
-int _resolveRestartRunWeekNumber(CalorieGoalSettings settings) {
-  return settings.hasLearnedTdee
-      ? burnWeekFirstGameRunWeekNumber
-      : burnWeekLearningRunWeekNumber;
-}
-
 bool _shouldRepairBackfilledInitialRun({
   required BurnWeekRunState runState,
   required DateTime? storedWeekStartDate,
@@ -316,14 +309,14 @@ bool _looksLikeFreshRun(BurnWeekRunState state) {
       !state.starBrokeThisWeek;
 }
 
-bool _isScheduledFutureGameRun({
+bool _isScheduledFutureFreshRun({
   required BurnWeekRunState runState,
   required DateTime? storedWeekStartDate,
   required DateTime expectedWeekStartDate,
 }) {
   return storedWeekStartDate != null &&
       _isSameDiaryDay(storedWeekStartDate, expectedWeekStartDate) &&
-      runState.runWeekNumber == burnWeekFirstGameRunWeekNumber &&
+      runState.runWeekNumber == burnWeekLearningRunWeekNumber &&
       runState.starCount == 0 &&
       runState.heartCount == burnWeekInitialHeartCount &&
       runState.heartCreditKcal == 0 &&

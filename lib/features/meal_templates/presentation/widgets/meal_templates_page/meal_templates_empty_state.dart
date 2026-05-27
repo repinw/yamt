@@ -46,18 +46,18 @@ class MealTemplatesEmptyState extends ConsumerWidget {
                   l10n.homeCookbook,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      ),
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   l10n.preparedMealTemplatesEmptyState,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        height: 1.5,
-                      ),
+                    color: colors.onSurfaceVariant,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 FilledButton.icon(

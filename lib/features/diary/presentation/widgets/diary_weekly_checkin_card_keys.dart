@@ -15,6 +15,11 @@ abstract final class DiaryWeeklyCheckInCardKeys {
     'diary-weekly-checkin-continue',
   );
 
+  /// The weekly check-in show-again button.
+  static const showAgainButton = ValueKey<String>(
+    'diary-weekly-checkin-show-again',
+  );
+
   /// The weekly check-in track missing weight button.
   static const trackMissingWeightButton = ValueKey<String>(
     'diary-weekly-checkin-track-missing-weight',
