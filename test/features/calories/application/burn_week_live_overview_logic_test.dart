@@ -26,6 +26,16 @@ void main() {
     expect(currentWeekStartDate, DateTime(2026, 4, 21));
   });
 
+  test('live week start ignores an expired stored anchor', () {
+    final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
+      currentDay: DateTime(2026, 4, 15, 12),
+      balanceStartDate: DateTime(2026, 4, 8),
+      storedWeekStartDayKey: '2026-4-8',
+    );
+
+    expect(currentWeekStartDate, DateTime(2026, 4, 15));
+  });
+
   test('run week one ignores previous overflow completely', () {
     final previousOverflowKcal = resolveBurnWeekPreviousOverflowKcal(
       cycleCarryoverBeforeTodayKcal: 250,

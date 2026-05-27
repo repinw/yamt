@@ -91,6 +91,31 @@ void main() {
   );
 
   test(
+    'resolve starts fresh weekly metrics when stored run week expired',
+    () async {
+      final selectedDay = DateTime(2026, 4, 15);
+      final expiredWeekStart = DateTime(2026, 4, 8);
+      final data = await _resolveBalanceData(
+        selectedDay: selectedDay,
+        now: selectedDay.add(const Duration(hours: 12)),
+        runState: const BurnWeekRunState.initial().copyWith(
+          currentWeekStartDayKey: diaryDayKey(expiredWeekStart),
+          runWeekNumber: 2,
+        ),
+        weekOverview: _weekOverview(
+          selectedDay: selectedDay,
+          balanceStartDate: expiredWeekStart,
+          dayTotals: const <double>[2500, 2600, 2550, 2700, 2600, 2830, 0],
+          goalKcal: 2600,
+        ),
+      );
+
+      expect(data.loadedMetrics?.weekly.pacing.actualConsumedKcal, 0);
+      expect(data.loadedMetrics?.weekly.progressDay, 1);
+    },
+  );
+
+  test(
     'source waits for run state instead of falling back to initial',
     () async {
       final selectedDay = DateTime(2026, 4, 27);
@@ -185,6 +210,7 @@ CalorieWeekOverview _weekOverview({
   required DateTime selectedDay,
   List<double> dayTotals = const <double>[0, 0, 0, 0, 0, 0, 0],
   double goalKcal = 2000,
+  DateTime? balanceStartDate,
   bool goalStartsInFuture = false,
   DateTime? nextGoalStartDate,
   double? futureGoalKcal,
@@ -212,7 +238,8 @@ CalorieWeekOverview _weekOverview({
     totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,
     remainingKcal: totalGoalKcal - totalConsumedKcal,
-    balanceStartDate: addDiaryDays(normalizedSelectedDay, -6),
+    balanceStartDate:
+        balanceStartDate ?? addDiaryDays(normalizedSelectedDay, -6),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: goalKcal,
     goalStartsInFuture: goalStartsInFuture,

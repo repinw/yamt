@@ -185,8 +185,12 @@ bool shouldUseStoredBurnWeekStartDate({
   final normalizedStoredWeekStart = normalizeDiaryDay(storedWeekStartDate);
   final normalizedCurrentDay = normalizeDiaryDay(currentDay);
   final normalizedBalanceStartDate = normalizeDiaryDay(balanceStartDate);
+  final storedWeekEnd = normalizedStoredWeekStart.add(
+    const Duration(days: burnWeekDaysPerWeek),
+  );
   return !normalizedStoredWeekStart.isAfter(normalizedCurrentDay) &&
-      !normalizedStoredWeekStart.isBefore(normalizedBalanceStartDate);
+      !normalizedStoredWeekStart.isBefore(normalizedBalanceStartDate) &&
+      normalizedCurrentDay.isBefore(storedWeekEnd);
 }
 
 /// Resolves live current Burn Week start date.
