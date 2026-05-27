@@ -176,6 +176,27 @@ int? calculateDiaryBurnedCalories({
       estimateOutsideActivityStepCalories(stepsOutsideWorkouts);
 }
 
+/// Calculates credited burned kcal from aggregate daily Health totals.
+int calculateAggregateDiaryBurnedCalories({
+  required int totalSteps,
+  required int activeEnergyKcal,
+}) {
+  const highActiveEnergyKcal = 1200;
+  const maxActiveToStepKcalRatio = 4;
+
+  final stepCalories = estimateOutsideActivityStepCalories(totalSteps);
+  if (activeEnergyKcal <= 0) {
+    return stepCalories;
+  }
+  if (activeEnergyKcal >= highActiveEnergyKcal) {
+    if (stepCalories <= 0 ||
+        activeEnergyKcal > stepCalories * maxActiveToStepKcalRatio) {
+      return stepCalories;
+    }
+  }
+  return activeEnergyKcal > stepCalories ? activeEnergyKcal : stepCalories;
+}
+
 /// Estimate credited calories for active energy without a matching workout.
 int estimateUnassignedActiveEnergyCalories(HealthEnergySegment segment) {
   final totalSteps = segment.totalSteps;

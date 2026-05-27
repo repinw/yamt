@@ -10,6 +10,8 @@ import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/widgets/app_background.dart';
 import 'package:yamt/features/calories/application/'
+    'calorie_health_activity_cache_warmup.dart';
+import 'package:yamt/features/calories/application/'
     'calorie_health_connection_sync.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
@@ -35,6 +37,7 @@ class YAMT extends ConsumerStatefulWidget {
 }
 
 class _YAMTState extends ConsumerState<YAMT> {
+  ProviderSubscription<void>? _calorieActivityCacheWarmupSubscription;
   ProviderSubscription<void>? _calorieHealthSyncSubscription;
   Timer? _calorieHealthSyncTimer;
 
@@ -54,6 +57,7 @@ class _YAMTState extends ConsumerState<YAMT> {
 
   @override
   void dispose() {
+    _calorieActivityCacheWarmupSubscription?.close();
     _calorieHealthSyncSubscription?.close();
     _calorieHealthSyncTimer?.cancel();
     super.dispose();
@@ -89,6 +93,11 @@ class _YAMTState extends ConsumerState<YAMT> {
     }
     _calorieHealthSyncSubscription ??= ref.listenManual<void>(
       calorieHealthConnectionSyncProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    _calorieActivityCacheWarmupSubscription ??= ref.listenManual<void>(
+      calorieHealthActivityCacheWarmupProvider,
       (_, _) {},
       fireImmediately: true,
     );

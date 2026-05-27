@@ -1,6 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_health_activity_kcal_reader.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
     show CalorieGoalMode;
@@ -31,6 +33,7 @@ part 'daily_learned_tdee_provider.g.dart';
 
 const _dayKeyListEquality = ListEquality<String>();
 const _storedGoalListEquality = ListEquality<double>();
+const _learnedTdeeLogName = 'DailyLearnedTdeeProvider';
 
 /// Weekly learned TDEE target that is stable until the next boundary.
 class DailyLearnedTdeeGoalData {
@@ -801,12 +804,26 @@ Future<Map<String, int>> _loadActiveKcalByDay(
   }
 
   final diaryHealthService = ref.watch(diaryHealthServiceProvider);
-  final userHeightCm = settings.calculatorProfile?.heightCm;
   final days = {
     for (final window in windows)
       for (final windowDay in window.windowDays)
         diaryDayKey(windowDay): windowDay,
   }.values.toList(growable: false);
+  final aggregateActiveKcalByDay = await loadAggregateHealthActivityKcalByDay(
+    diaryHealthService: diaryHealthService,
+    days: days,
+    logName: _learnedTdeeLogName,
+    failureMessage: 'Failed to load aggregate activity for learned TDEE.',
+  );
+  if (!ref.mounted) {
+    throw StateError('Weekly learned TDEE disposed.');
+  }
+  if (aggregateActiveKcalByDay != null) {
+    activeKcalByDay.addAll(aggregateActiveKcalByDay);
+    return activeKcalByDay;
+  }
+
+  final userHeightCm = settings.calculatorProfile?.heightCm;
   final dayDataResults = await Future.wait([
     for (final day in days)
       () async {

@@ -3,6 +3,8 @@ import 'dart:developer' show log;
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_health_activity_kcal_reader.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
@@ -20,6 +22,7 @@ part 'calorie_resolved_goal_provider.g.dart';
 
 const _resolvedGoalLogName = 'ResolvedCalorieGoalProvider';
 const _dayKeyListEquality = ListEquality<String>();
+const _activityTrackingBackfillDayCount = 30;
 
 /// Defines resolved calorie goal data.
 class ResolvedCalorieGoalData {
@@ -136,7 +139,9 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
     }
     if (healthStatus.accessState == HealthDataAccessState.ready &&
         settings.activityTrackingStartDate == null) {
-      settings = settings.markActivityTrackingStarted(referenceNow);
+      settings = settings.markActivityTrackingStarted(
+        _activityTrackingStartDate(referenceNow),
+      );
     }
 
     final storedGoalsByDay = <String, double>{};
@@ -256,7 +261,9 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     }
     if (healthStatus.accessState == HealthDataAccessState.ready &&
         settings.activityTrackingStartDate == null) {
-      settings = settings.markActivityTrackingStarted(referenceNow);
+      settings = settings.markActivityTrackingStarted(
+        _activityTrackingStartDate(referenceNow),
+      );
     }
     final storedGoalKcal = settings.goalKcalForDay(normalizedDay);
     if (!kReleaseMode) {
@@ -517,9 +524,23 @@ Future<_ResolvedDayActivityData> _loadDayActivityData(
       isTrackingActive: false,
     );
   }
-  final dayData = await ref
-      .watch(diaryHealthServiceProvider)
-      .loadDayData(day: day, userHeightCm: userHeightCm);
+  final diaryHealthService = ref.watch(diaryHealthServiceProvider);
+  final trendActiveKcal = await loadAggregateHealthActivityKcalForDay(
+    diaryHealthService: diaryHealthService,
+    day: day,
+    logName: _resolvedGoalLogName,
+    failureMessage: 'Failed to load aggregate activity for resolved goal.',
+  );
+  if (trendActiveKcal != null) {
+    return _ResolvedDayActivityData(
+      todayActiveKcal: trendActiveKcal,
+      isTrackingActive: true,
+    );
+  }
+  final dayData = await diaryHealthService.loadDayData(
+    day: day,
+    userHeightCm: userHeightCm,
+  );
   final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
   return _ResolvedDayActivityData(
     todayActiveKcal:
@@ -551,4 +572,11 @@ double? _expectedActivityKcalForDay({
     return null;
   }
   return CalorieGoalCalculator.calculate(profile).expectedActivityKcal;
+}
+
+DateTime _activityTrackingStartDate(DateTime now) {
+  return addDiaryDays(
+    normalizeDiaryDay(now),
+    -(_activityTrackingBackfillDayCount - 1),
+  );
 }

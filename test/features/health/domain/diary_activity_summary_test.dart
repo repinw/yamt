@@ -283,6 +283,58 @@ void main() {
       );
     });
   });
+
+  group('calculateAggregateDiaryBurnedCalories', () {
+    test('falls back to step estimate without active energy', () {
+      expect(
+        calculateAggregateDiaryBurnedCalories(
+          totalSteps: 2500,
+          activeEnergyKcal: 0,
+        ),
+        100,
+      );
+    });
+
+    test('uses trusted active energy above step estimate', () {
+      expect(
+        calculateAggregateDiaryBurnedCalories(
+          totalSteps: 2500,
+          activeEnergyKcal: 180,
+        ),
+        180,
+      );
+    });
+
+    test('drops suspicious high active energy without steps', () {
+      expect(
+        calculateAggregateDiaryBurnedCalories(
+          totalSteps: 0,
+          activeEnergyKcal: 1600,
+        ),
+        0,
+      );
+    });
+
+    test('drops suspicious high active energy above step ratio', () {
+      expect(
+        calculateAggregateDiaryBurnedCalories(
+          totalSteps: 5000,
+          activeEnergyKcal: 1200,
+        ),
+        200,
+      );
+    });
+
+    test('keeps high active energy inside step ratio', () {
+      expect(
+        calculateAggregateDiaryBurnedCalories(
+          totalSteps: 20000,
+          activeEnergyKcal: 1600,
+        ),
+        1600,
+      );
+    });
+  });
 }
 
 HealthEnergySegment _energySegment({

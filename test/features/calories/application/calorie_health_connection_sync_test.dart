@@ -36,16 +36,43 @@ void main() {
       settingsRepository: settingsRepository,
       healthService: FakeHealthConnectionService(_readyStatus),
     );
-    final expectedTrackingStartBefore = normalizeDiaryDay(DateTime.now());
+    final expectedTrackingStartBefore = addDiaryDays(
+      normalizeDiaryDay(DateTime.now()),
+      -29,
+    );
 
-    container.read(calorieHealthConnectionSyncProvider);
+    _startSync(container);
     final settings = await _waitForActivityTrackingStart(container);
-    final expectedTrackingStartAfter = normalizeDiaryDay(DateTime.now());
+    final expectedTrackingStartAfter = addDiaryDays(
+      normalizeDiaryDay(DateTime.now()),
+      -29,
+    );
 
     expect([
       expectedTrackingStartBefore,
       expectedTrackingStartAfter,
     ], contains(settings.activityTrackingStartDate));
+  });
+
+  test('uses recent goal start when it is inside rolling backfill', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final goalStart = addDiaryDays(today, -2);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2400,
+        calculatorProfile: null,
+        effectiveDate: goalStart,
+      ),
+    );
+    final container = _buildContainer(
+      settingsRepository: settingsRepository,
+      healthService: FakeHealthConnectionService(_readyStatus),
+    );
+
+    _startSync(container);
+    final settings = await _waitForActivityTrackingStart(container);
+
+    expect(settings.activityTrackingStartDate, goalStart);
   });
 
   test('skips activity tracking start when Health is not ready', () async {
