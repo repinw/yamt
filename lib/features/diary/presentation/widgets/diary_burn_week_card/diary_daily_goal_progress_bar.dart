@@ -20,6 +20,7 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
     required this.activitySegmentKcal,
     required this.numberFormat,
     required this.unit,
+    this.activitySegmentReferenceKcal,
     this.compact = false,
     super.key,
   });
@@ -32,6 +33,9 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
 
   /// Positive activity kcal displayed at the end of the bar.
   final double activitySegmentKcal;
+
+  /// Target basis used to size the activity segment visually.
+  final double? activitySegmentReferenceKcal;
 
   /// Locale-aware number formatter.
   final NumberFormat numberFormat;
@@ -51,10 +55,18 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
       math.max<double>(0, activitySegmentKcal),
       target,
     );
+    final activityReferenceCandidate = activitySegmentReferenceKcal ?? target;
+    final boundedActivityReference = target <= 0
+        ? activityReferenceCandidate
+        : math.min<double>(target, activityReferenceCandidate);
+    final activityReference = math.max<double>(
+      activitySegment,
+      boundedActivityReference,
+    );
     final eatenRatio = target <= 0 ? 0.0 : (eatenKcal / target).clamp(0.0, 1.0);
-    final activitySegmentRatio = target <= 0
+    final activitySegmentRatio = activityReference <= 0
         ? 0.0
-        : (activitySegment / target).clamp(0.0, 1.0);
+        : (activitySegment / activityReference).clamp(0.0, 1.0);
     final targetLabel = formatDiaryKcal(numberFormat, target, unit);
     final activitySegmentLabel = formatDiarySignedKcal(
       activitySegment,

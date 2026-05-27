@@ -33,6 +33,7 @@ class DiaryWeeklyCheckInCalculationRows extends StatelessWidget {
   const DiaryWeeklyCheckInCalculationRows({
     required this.calculation,
     required this.lowConfidence,
+    required this.usesHealthActivity,
     super.key,
   });
 
@@ -42,6 +43,9 @@ class DiaryWeeklyCheckInCalculationRows extends StatelessWidget {
   /// Whether calculation is low confidence.
   final bool lowConfidence;
 
+  /// Whether health activity was available.
+  final bool usesHealthActivity;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -49,7 +53,13 @@ class DiaryWeeklyCheckInCalculationRows extends StatelessWidget {
       children: <Widget>[
         _TrendRow(calculation: calculation),
         const SizedBox(height: AppSpacing.sm),
-        _TrueTdeeRow(calculation: calculation),
+        _MeasuredTotalTdeeRow(calculation: calculation),
+        if (usesHealthActivity) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          _MeasuredBaseTdeeRow(calculation: calculation),
+          const SizedBox(height: AppSpacing.sm),
+          _CreditedActivityRow(calculation: calculation),
+        ],
         const SizedBox(height: AppSpacing.sm),
         _NewTargetRow(calculation: calculation),
         if (lowConfidence) ...const <Widget>[
@@ -80,8 +90,8 @@ class _TrendRow extends StatelessWidget {
   }
 }
 
-class _TrueTdeeRow extends StatelessWidget {
-  const _TrueTdeeRow({required this.calculation});
+class _MeasuredTotalTdeeRow extends StatelessWidget {
+  const _MeasuredTotalTdeeRow({required this.calculation});
 
   final CalorieWeeklyCheckInCalculation calculation;
 
@@ -90,9 +100,45 @@ class _TrueTdeeRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return _MetricRow(
-      label: l10n.caloriesWeeklyCheckInDialogTrueTdeeLabel,
+      label: l10n.caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel,
       value:
-          '${_formatKcal(context, calculation.calculatedTrueTdeeKcal)} '
+          '${_formatKcal(context, calculation.measuredTotalTdeeKcal)} '
+          '${l10n.caloriesUnitKcal}',
+    );
+  }
+}
+
+class _MeasuredBaseTdeeRow extends StatelessWidget {
+  const _MeasuredBaseTdeeRow({required this.calculation});
+
+  final CalorieWeeklyCheckInCalculation calculation;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return _MetricRow(
+      label: l10n.caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel,
+      value:
+          '${_formatKcal(context, calculation.measuredBaseTdeeKcal)} '
+          '${l10n.caloriesUnitKcal}',
+    );
+  }
+}
+
+class _CreditedActivityRow extends StatelessWidget {
+  const _CreditedActivityRow({required this.calculation});
+
+  final CalorieWeeklyCheckInCalculation calculation;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return _MetricRow(
+      label: l10n.caloriesWeeklyCheckInDialogCreditedActivityAverageLabel,
+      value:
+          '${_formatKcal(context, calculation.averageCreditedActivityKcal)} '
           '${l10n.caloriesUnitKcal}',
     );
   }

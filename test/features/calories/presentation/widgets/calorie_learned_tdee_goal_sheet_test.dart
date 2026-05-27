@@ -334,6 +334,84 @@ void main() {
     expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
   });
 
+  testWidgets('saving changed learned goal restarts Burn Week at week one', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final goalStartDate = today.subtract(const Duration(days: 6));
+    final initialSettings = _learnedTdeeSettings(
+      goalStartDate: goalStartDate,
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    final logRepository = FakeCalorieLogRepository();
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      BurnWeekRunState(
+        currentWeekStartDayKey: diaryDayKey(
+          goalStartDate.subtract(const Duration(days: 49)),
+        ),
+        lastActiveDayKey: diaryDayKey(today),
+        runWeekNumber: 8,
+        starCount: 7,
+        heartCount: 1,
+        heartCreditKcal: 0,
+        starBrokeThisWeek: false,
+        missedTrackingThisWeek: false,
+      ),
+    );
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        initialSettings: initialSettings,
+        overrides: <Override>[
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          burnWeekRunStateRepositoryProvider.overrideWithValue(
+            runStateRepository,
+          ),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lose'));
+    await tester.pumpAndSettle();
+
+    final goalStartValue = tester.widget<Text>(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartValue),
+    );
+    expect(goalStartValue.data, DateFormat.yMMMd('en').format(today));
+
+    await tester.ensureVisible(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(runStateRepository.saveCallCount, 1);
+    expect(
+      runStateRepository.state.currentWeekStartDayKey,
+      diaryDayKey(
+        today,
+      ),
+    );
+    expect(
+      runStateRepository.state.runWeekNumber,
+      burnWeekLearningRunWeekNumber,
+    );
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
+  });
+
   testWidgets('shows failure snackbar when learned TDEE save fails', (
     tester,
   ) async {
@@ -365,6 +443,10 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsOneWidget);

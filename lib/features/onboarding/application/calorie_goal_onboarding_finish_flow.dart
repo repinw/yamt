@@ -91,9 +91,7 @@ class CalorieGoalOnboardingFinishFlow {
     if (!_isMounted()) {
       return false;
     }
-    final runWeekNumber = existingSettings.hasLearnedTdee
-        ? burnWeekFirstGameRunWeekNumber
-        : burnWeekLearningRunWeekNumber;
+    const runWeekNumber = burnWeekLearningRunWeekNumber;
     final goalSaved = await _goalController.saveCalculatedGoal(
       request.profile,
       goalStartDate: request.goalStartDate,
@@ -108,6 +106,7 @@ class CalorieGoalOnboardingFinishFlow {
       now: referenceNow,
       dailyGoalKcal: request.dailyGoalKcal,
       runWeekNumber: runWeekNumber,
+      scheduleFutureStart: existingSettings.hasLearnedTdee,
       catchUpEstimate: request.catchUpEstimate,
       placeholderName: request.placeholderName,
     );
@@ -118,13 +117,14 @@ class CalorieGoalOnboardingFinishFlow {
     required DateTime now,
     required double dailyGoalKcal,
     required int runWeekNumber,
+    required bool scheduleFutureStart,
     required CalorieGoalOnboardingCatchUpEstimate? catchUpEstimate,
     required String placeholderName,
   }) async {
     final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
     final normalizedToday = normalizeDiaryDay(now);
     if (normalizedGoalStartDate.isAfter(normalizedToday)) {
-      if (runWeekNumber > burnWeekLearningRunWeekNumber) {
+      if (scheduleFutureStart) {
         await _burnWeekController.restartRunFrom(
           weekStartDate: normalizedGoalStartDate,
           runWeekNumber: runWeekNumber,

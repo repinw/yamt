@@ -100,6 +100,7 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
     freshness: freshness,
     latestLearnedTdeeAt: settings.latestLearnedTdeeChangedAt,
     lowConfidence: dayData.lowConfidence,
+    usesHealthActivity: dayData.usesHealthActivity,
     inputHash: dayData.inputHash,
   );
 }
@@ -307,6 +308,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
       missingIntakeDays: windowIntakeData.missingIntakeDays,
       missingWeightDays: const <DateTime>[],
       lowConfidence: false,
+      usesHealthActivity: healthData.usesHealthActivity,
       inputHash: null,
     );
   }
@@ -325,6 +327,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
       missingIntakeDays: learningIntakeData.missingIntakeDays,
       missingWeightDays: const <DateTime>[],
       lowConfidence: false,
+      usesHealthActivity: healthData.usesHealthActivity,
       inputHash: null,
     );
   }
@@ -334,6 +337,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     weightData: weightData,
     windowDays: windowIntakeData.days,
     missingIntakeDays: windowIntakeData.missingIntakeDays,
+    usesHealthActivity: healthData.usesHealthActivity,
   );
   if (weightBlockedData != null) {
     return weightBlockedData;
@@ -346,6 +350,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     calorieEntriesByDay: calorieEntriesByDay,
     manualWeightByDay: _manualWeightByDay(manualEntries),
     representativeWeightByDay: healthData.representativeWeightByDay,
+    activeKcalByDay: healthData.activeKcalByDay,
     heartDayKeys: heartDayKeys,
   );
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
@@ -362,6 +367,10 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
         .where((day) => !day.isHeartDay)
         .map((day) => day.activeKcal)
         .toList(growable: false),
+    learningActiveKcalByDay: _activityKcalByDay(
+      days: dates.learningDays,
+      activeKcalByDay: healthData.activeKcalByDay,
+    ),
     todayActiveKcal: healthData.todayActiveKcal,
     weightPoints: weightData.weightPoints,
   );
@@ -372,6 +381,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     calorieEntriesByDay: calorieEntriesByDay,
     settings: settings,
     weightData: weightData,
+    activeKcalByDay: healthData.activeKcalByDay,
     heartDayKeys: heartDayKeys,
   );
   if (!kReleaseMode) {
@@ -406,6 +416,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     missingIntakeDays: windowIntakeData.missingIntakeDays,
     missingWeightDays: const <DateTime>[],
     lowConfidence: weightData.weightPoints.length <= 2,
+    usesHealthActivity: healthData.usesHealthActivity,
     inputHash: inputHash,
   );
 }
@@ -417,6 +428,7 @@ _WeeklyLearningSeed _cascadedPreviousLearningSeedForWindow({
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
   required Map<String, double> manualWeightByDay,
   required Map<String, double> representativeWeightByDay,
+  required Map<String, int> activeKcalByDay,
   required Set<String> heartDayKeys,
 }) {
   final anchorEntry = dates.anchorEntry;
@@ -428,14 +440,6 @@ _WeeklyLearningSeed _cascadedPreviousLearningSeedForWindow({
       anchorEntry: null,
     );
   }
-  final resolvedSeed = _latestResolvedWeeklyLearningSeedBeforeDay(
-    settings: settings,
-    day: pendingWeeklyCheckIn.windowStartDate,
-  );
-  if (resolvedSeed != null) {
-    return resolvedSeed;
-  }
-
   var windowStartDate = CalorieWeeklyWindowResolver.firstWindowStartDate(
     anchorEntry,
   );
@@ -509,11 +513,15 @@ _WeeklyLearningSeed _cascadedPreviousLearningSeedForWindow({
       isLosing: goalMode == CalorieGoalMode.lose,
       isGaining: goalMode == CalorieGoalMode.gain,
       intakeKcalByDay: learningIntakeData.intakeKcalByDay,
+      rawActivityKcalByDay: _activityKcalByDay(
+        days: previousDates.learningDays,
+        activeKcalByDay: activeKcalByDay,
+      ),
       weightPoints: weightData.weightPoints,
     );
     seed = _WeeklyLearningSeed(
       previousGoalKcal: calculation.newGoalKcal,
-      previousLearnedTdeeKcal: calculation.calculatedTrueTdeeKcal,
+      previousLearnedTdeeKcal: calculation.calculatedBaseTdeeKcal,
     );
     windowStartDate = nextDiaryDay(windowEndDate);
   }
@@ -544,18 +552,6 @@ double _previousLearnedTdeeKcalBeforeDay({
   required DateTime fallbackDay,
   required CalorieGoalHistoryEntry? anchorEntry,
 }) {
-  final learnedTdeeKcal = _latestResolvedLearnedBeforeDay(
-    settings: settings,
-    day: day,
-  )?.learnedTdeeSnapshot?.calculatedTrueTdeeKcal;
-  if (learnedTdeeKcal != null) {
-    return learnedTdeeKcal;
-  }
-  final anchorLearnedTdeeKcal =
-      anchorEntry?.learnedTdeeSnapshot?.calculatedTrueTdeeKcal;
-  if (anchorLearnedTdeeKcal != null) {
-    return anchorLearnedTdeeKcal;
-  }
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
     settings: settings,
     day: fallbackDay,
@@ -564,62 +560,6 @@ double _previousLearnedTdeeKcalBeforeDay({
     return CalorieGoalCalculator.calculate(calculatorProfile).tdeeKcal;
   }
   return settings.goalKcalForDay(fallbackDay);
-}
-
-CalorieGoalHistoryEntry? _latestResolvedLearnedBeforeDay({
-  required CalorieGoalSettings settings,
-  required DateTime day,
-}) {
-  final normalizedDay = normalizeDiaryDay(day);
-  CalorieGoalHistoryEntry? learnedEntry;
-  for (final entry in settings.sortedGoalHistory) {
-    final snapshot = entry.learnedTdeeSnapshot;
-    if (snapshot == null) {
-      continue;
-    }
-    if (!snapshot.windowEndDate.isBefore(normalizedDay)) {
-      continue;
-    }
-    final currentSnapshot = learnedEntry?.learnedTdeeSnapshot;
-    if (currentSnapshot != null &&
-        !currentSnapshot.windowEndDate.isBefore(snapshot.windowEndDate)) {
-      continue;
-    }
-    learnedEntry = entry;
-  }
-  return learnedEntry;
-}
-
-_WeeklyLearningSeed? _latestResolvedWeeklyLearningSeedBeforeDay({
-  required CalorieGoalSettings settings,
-  required DateTime day,
-}) {
-  final normalizedDay = normalizeDiaryDay(day);
-  CalorieGoalHistoryEntry? learnedEntry;
-  for (final entry in settings.sortedGoalHistory) {
-    final snapshot = entry.learnedTdeeSnapshot;
-    if (snapshot == null || entry.source != CalorieGoalSource.weeklyCheckIn) {
-      continue;
-    }
-    if (!snapshot.windowEndDate.isBefore(normalizedDay)) {
-      continue;
-    }
-    final currentSnapshot = learnedEntry?.learnedTdeeSnapshot;
-    if (currentSnapshot != null &&
-        !currentSnapshot.windowEndDate.isBefore(snapshot.windowEndDate)) {
-      continue;
-    }
-    learnedEntry = entry;
-  }
-  final snapshot = learnedEntry?.learnedTdeeSnapshot;
-  if (snapshot == null) {
-    return null;
-  }
-  return _WeeklyLearningSeed(
-    previousGoalKcal:
-        learnedEntry?.dailyKcalGoal ?? snapshot.calculatedTrueTdeeKcal,
-    previousLearnedTdeeKcal: snapshot.calculatedTrueTdeeKcal,
-  );
 }
 
 _WeeklyCheckInWindowDates _resolveWeeklyCheckInWindowDates({
@@ -705,7 +645,7 @@ Future<_WeeklyCheckInHealthData> _loadWeeklyCheckInHealthData({
   required DateTime today,
 }) async {
   final activeKcalByDay = <String, int>{
-    for (final day in dates.windowDays) diaryDayKey(day): 0,
+    for (final day in dates.learningDays) diaryDayKey(day): 0,
   };
   var todayActiveKcal = 0;
   var representativeWeightByDay = const <String, double>{};
@@ -719,6 +659,7 @@ Future<_WeeklyCheckInHealthData> _loadWeeklyCheckInHealthData({
       activeKcalByDay: activeKcalByDay,
       todayActiveKcal: todayActiveKcal,
       representativeWeightByDay: representativeWeightByDay,
+      usesHealthActivity: false,
     );
   }
 
@@ -739,7 +680,7 @@ Future<_WeeklyCheckInHealthData> _loadWeeklyCheckInHealthData({
   final diaryHealthService = ref.watch(diaryHealthServiceProvider);
   final aggregateActiveKcalByDay = await loadAggregateHealthActivityKcalByDay(
     diaryHealthService: diaryHealthService,
-    days: <DateTime>{...dates.windowDays, today}.toList(growable: false),
+    days: <DateTime>{...dates.learningDays, today}.toList(growable: false),
     logName: _weeklyCheckInProviderLogName,
     failureMessage: 'Failed to load aggregate activity for weekly check-in.',
   );
@@ -753,12 +694,13 @@ Future<_WeeklyCheckInHealthData> _loadWeeklyCheckInHealthData({
       activeKcalByDay: activeKcalByDay,
       todayActiveKcal: todayActiveKcal,
       representativeWeightByDay: representativeWeightByDay,
+      usesHealthActivity: true,
     );
   }
 
   final userHeightCm = settings.calculatorProfile?.heightCm;
-  final windowDayData = await Future.wait(
-    dates.windowDays.map(
+  final learningDayData = await Future.wait(
+    dates.learningDays.map(
       (day) => diaryHealthService.loadDayData(
         day: day,
         userHeightCm: userHeightCm,
@@ -768,10 +710,12 @@ Future<_WeeklyCheckInHealthData> _loadWeeklyCheckInHealthData({
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  for (var index = 0; index < dates.windowDays.length; index += 1) {
-    activeKcalByDay[diaryDayKey(dates.windowDays[index])] = _resolveActiveKcal(
-      day: dates.windowDays[index],
-      dayData: windowDayData[index],
+  for (var index = 0; index < dates.learningDays.length; index += 1) {
+    activeKcalByDay[diaryDayKey(
+      dates.learningDays[index],
+    )] = _resolveActiveKcal(
+      day: dates.learningDays[index],
+      dayData: learningDayData[index],
     );
   }
 
@@ -786,6 +730,7 @@ Future<_WeeklyCheckInHealthData> _loadWeeklyCheckInHealthData({
     activeKcalByDay: activeKcalByDay,
     todayActiveKcal: todayActiveKcal,
     representativeWeightByDay: representativeWeightByDay,
+    usesHealthActivity: true,
   );
 }
 
@@ -1032,6 +977,7 @@ _CalorieWeeklyCheckInDayData? _validateWeeklyCheckInWeightData({
   required _WeeklyCheckInWeightData weightData,
   required List<CalorieWeeklyCheckInWindowDay> windowDays,
   required List<DateTime> missingIntakeDays,
+  required bool usesHealthActivity,
 }) {
   final missingWeightDays = <DateTime>[];
   final hasLearningStartWeight =
@@ -1050,6 +996,7 @@ _CalorieWeeklyCheckInDayData? _validateWeeklyCheckInWeightData({
       missingIntakeDays: missingIntakeDays,
       missingWeightDays: missingWeightDays,
       lowConfidence: false,
+      usesHealthActivity: usesHealthActivity,
       inputHash: null,
     );
   }
@@ -1062,6 +1009,7 @@ _CalorieWeeklyCheckInDayData? _validateWeeklyCheckInWeightData({
       missingIntakeDays: missingIntakeDays,
       missingWeightDays: missingWeightDays,
       lowConfidence: false,
+      usesHealthActivity: usesHealthActivity,
       inputHash: null,
     );
   }
@@ -1072,6 +1020,15 @@ double _sumCalories(List<CalorieEntry> entries) {
   return entries.fold<double>(0, (sum, entry) => sum + entry.totalKcal);
 }
 
+List<int> _activityKcalByDay({
+  required List<DateTime> days,
+  required Map<String, int> activeKcalByDay,
+}) {
+  return days
+      .map((day) => activeKcalByDay[diaryDayKey(day)] ?? 0)
+      .toList(growable: false);
+}
+
 String _weeklyCheckInInputHash({
   required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
   required _WeeklyCheckInWindowDates dates,
@@ -1079,6 +1036,7 @@ String _weeklyCheckInInputHash({
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
   required CalorieGoalSettings settings,
   required _WeeklyCheckInWeightData weightData,
+  required Map<String, int> activeKcalByDay,
   required Set<String> heartDayKeys,
 }) {
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
@@ -1086,7 +1044,7 @@ String _weeklyCheckInInputHash({
     day: weeklyCheckIn.windowEndDate,
   );
   final buffer = StringBuffer()
-    ..write('weekly-checkin-v1')
+    ..write('weekly-checkin-v2')
     ..write('|window=')
     ..write(
       _windowKey(weeklyCheckIn.windowStartDate, weeklyCheckIn.windowEndDate),
@@ -1122,7 +1080,9 @@ String _weeklyCheckInInputHash({
         ..write(':count=')
         ..write(entries.length)
         ..write(':kcal=')
-        ..write(_hashDouble(_sumCalories(entries)));
+        ..write(_hashDouble(_sumCalories(entries)))
+        ..write(':active=')
+        ..write(activeKcalByDay[dayKey] ?? 0);
     }
   }
 
@@ -1134,7 +1094,7 @@ String _weeklyCheckInInputHash({
       ..write(_hashDouble(point.weightKg));
   }
 
-  return 'v1:${_fnv1a32(buffer.toString())}';
+  return 'v2:${_fnv1a32(buffer.toString())}';
 }
 
 String _hashDouble(double value) {
@@ -1156,14 +1116,6 @@ DateTime _learningStartDateForCheckIn({
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
 }) {
-  final previousResolvedSnapshot = _latestResolvedLearnedBeforeDay(
-    settings: settings,
-    day: pendingWeeklyCheckIn.windowStartDate,
-  );
-  if (previousResolvedSnapshot != null) {
-    return normalizeDiaryDay(pendingWeeklyCheckIn.windowStartDate);
-  }
-
   final anchorEntry = settings.cycleAnchorEntryForDay(
     pendingWeeklyCheckIn.windowEndDate,
   );
@@ -1273,14 +1225,13 @@ int _resolveActiveKcal({
   required DiaryHealthDayData dayData,
 }) {
   final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
-  return calculateDiaryBurnedCalories(
-        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
-        workoutCalories: summary.workouts.map(
-          (workout) => workout.totalCalories,
-        ),
-        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
-      ) ??
-      0;
+  return calculateImportedHealthActivityKcal(
+    stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+    workoutCalories: summary.workouts.map(
+      (workout) => workout.totalCalories,
+    ),
+    unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
+  );
 }
 
 String _windowKey(DateTime startDate, DateTime endDate) {
@@ -1351,6 +1302,7 @@ class _CalorieWeeklyCheckInDayData {
     required this.missingIntakeDays,
     required this.missingWeightDays,
     required this.lowConfidence,
+    required this.usesHealthActivity,
     required this.inputHash,
   });
 
@@ -1360,6 +1312,7 @@ class _CalorieWeeklyCheckInDayData {
   final List<DateTime> missingIntakeDays;
   final List<DateTime> missingWeightDays;
   final bool lowConfidence;
+  final bool usesHealthActivity;
   final String? inputHash;
 }
 
@@ -1409,11 +1362,13 @@ class _WeeklyCheckInHealthData {
     required this.activeKcalByDay,
     required this.todayActiveKcal,
     required this.representativeWeightByDay,
+    required this.usesHealthActivity,
   });
 
   final Map<String, int> activeKcalByDay;
   final int todayActiveKcal;
   final Map<String, double> representativeWeightByDay;
+  final bool usesHealthActivity;
 }
 
 class _WeeklyLearningSeed {

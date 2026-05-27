@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
@@ -121,12 +122,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   /// Refreshes this dashboard from live providers.
   Future<void> retry() {
     final normalizedDay = normalizeDiaryDay(selectedDay);
-    ref
-      ..invalidate(diaryEntriesForDayProvider(normalizedDay))
-      ..invalidate(diaryBalanceSourceProvider(normalizedDay))
-      ..invalidate(calorieWeekOverviewForWindowProvider(normalizedDay))
-      ..invalidate(diaryMealSectionsProvider(normalizedDay))
-      ..invalidate(diaryNutritionBarsDataProvider(normalizedDay));
+    _invalidateDashboardInputs(normalizedDay);
 
     return _refresh(
       normalizedDay: normalizedDay,
@@ -145,6 +141,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     required DiaryDayDashboardCacheStore cacheStore,
   }) async {
     state = state.copyWith(isRefreshing: true, error: null);
+    _invalidateDashboardInputs(normalizedDay);
 
     try {
       final weekOverviewFuture = ref.read(
@@ -208,6 +205,22 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       }
       state = state.copyWith(isRefreshing: false, error: error);
     }
+  }
+
+  void _invalidateDashboardInputs(DateTime normalizedDay) {
+    final visibleDays = buildDiaryVisibleDays(anchorDay: normalizedDay);
+    ref
+      ..invalidate(diaryEntriesForDayProvider(normalizedDay))
+      ..invalidate(diaryBalanceSourceProvider(normalizedDay))
+      ..invalidate(resolvedCalorieGoalForDayProvider(normalizedDay))
+      ..invalidate(
+        resolvedCalorieGoalsForDaysProvider(
+          ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
+        ),
+      )
+      ..invalidate(calorieWeekOverviewForWindowProvider(normalizedDay))
+      ..invalidate(diaryMealSectionsProvider(normalizedDay))
+      ..invalidate(diaryNutritionBarsDataProvider(normalizedDay));
   }
 }
 

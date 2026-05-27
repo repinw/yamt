@@ -182,12 +182,10 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     int? runWeekNumber,
   }) async {
     final current = await future;
-    final resolvedRunWeekNumber =
-        runWeekNumber ?? _resolveFreshRunWeekNumber(current);
     return _save(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
-        runWeekNumber: resolvedRunWeekNumber,
+        runWeekNumber: runWeekNumber ?? burnWeekLearningRunWeekNumber,
         heartDayKeys: current.heartDayKeys,
         heartStarBreakDayKeys: current.heartStarBreakDayKeys,
       ),
@@ -324,13 +322,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       current.copyWith(heartCount: nextHeartCount),
       previous: current,
     );
-  }
-
-  int _resolveFreshRunWeekNumber(BurnWeekRunState current) {
-    if (current.runWeekNumber > burnWeekLearningRunWeekNumber) {
-      return burnWeekFirstGameRunWeekNumber;
-    }
-    return burnWeekLearningRunWeekNumber;
   }
 
   BurnWeekRunState _advanceToNextWeek({

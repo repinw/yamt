@@ -199,7 +199,7 @@ void main() {
       expect(runStateRepository.state.runWeekNumber, 1);
     });
 
-    test('learned TDEE same-day goal starts Burn Week as game week', () async {
+    test('learned TDEE same-day goal starts Burn Week at week one', () async {
       final now = DateTime(2026, 4, 22, 12);
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: _learnedTdeeSettings(
@@ -230,12 +230,12 @@ void main() {
       expect(runStateRepository.state.currentWeekStartDayKey, '2026-4-22');
       expect(
         runStateRepository.state.runWeekNumber,
-        burnWeekFirstGameRunWeekNumber,
+        burnWeekLearningRunWeekNumber,
       );
       expect(runStateRepository.state.heartCreditKcal, 0);
     });
 
-    test('learned TDEE future goal schedules game week start', () async {
+    test('learned TDEE future goal schedules first run week start', () async {
       final now = DateTime(2026, 4, 22, 12);
       final futureGoalStart = DateTime(2026, 4, 24, 9);
       final settingsRepository = FakeCalorieSettingsRepository(
@@ -267,7 +267,7 @@ void main() {
       expect(runStateRepository.state.currentWeekStartDayKey, '2026-4-24');
       expect(
         runStateRepository.state.runWeekNumber,
-        burnWeekFirstGameRunWeekNumber,
+        burnWeekLearningRunWeekNumber,
       );
     });
 

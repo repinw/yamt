@@ -1021,6 +1021,10 @@
   "caloriesWeeklyCheckInDialogWindowLabel": "Window",
   "caloriesWeeklyCheckInDialogTrendLabel": "Weight trend",
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Learned TDEE",
+  "caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel": "Measured total TDEE",
+  "caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel": "Measured base TDEE",
+  "caloriesWeeklyCheckInDialogCreditedActivityAverageLabel":
+      "Credited activity avg",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "New target",
   "caloriesWeeklyCheckInDialogLowConfidence":
       "Low confidence: only start and end weights were available.",
@@ -1043,6 +1047,9 @@
   "caloriesWeeklyCheckInHintUrgentTitle": "Target needs refresh",
   "caloriesWeeklyCheckInHintUrgentBody":
       "You have been using older target data for a while now.",
+  "caloriesWeeklyCheckInShowAgainAction": "Show weekly check-in",
+  "caloriesWeeklyCheckInShowAgainFailed":
+      "Could not reopen the weekly check-in.",
   "caloriesWeeklyCheckInSkipDayAction": "Mark day as skipped",
   "caloriesWeeklyCheckInUnskipDayAction": "Undo skipped day",
   "caloriesWeeklyCheckInAutoAdjustedHint":
@@ -1079,8 +1086,8 @@
   "caloriesConsumedLabel": "Consumed",
   "caloriesGoalLabel": "Goal",
   "caloriesRemainingLabel": "Remaining",
-  "caloriesDebugDumpAction": "Print calorie debug table",
-  "caloriesDebugDumpPrinted": "Printed calorie debug table ({rowCount} rows).",
+  "caloriesDebugDumpAction": "Download calorie debug TXT",
+  "caloriesDebugDumpPrinted": "Downloaded calorie debug TXT ({rowCount} rows).",
   "@caloriesDebugDumpPrinted": {
     "placeholders": {
       "rowCount": {
@@ -1088,7 +1095,8 @@
       }
     }
   },
-  "caloriesDebugDumpFailed": "Could not print calorie debug table.",
+  "caloriesDebugDumpCanceled": "Calorie debug TXT download canceled.",
+  "caloriesDebugDumpFailed": "Could not download calorie debug TXT.",
   "burnWeekRunOverTitle": "Run over",
   "burnWeekRunRestartsOn": "Fresh run starts on {date}.",
   "@burnWeekRunRestartsOn": {

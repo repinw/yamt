@@ -1049,6 +1049,10 @@
   "caloriesWeeklyCheckInDialogWindowLabel": "Zeitraum",
   "caloriesWeeklyCheckInDialogTrendLabel": "Gewichtstrend",
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Gelernter TDEE",
+  "caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel": "Gemessener Gesamt-TDEE",
+  "caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel": "Gemessener Basis-TDEE",
+  "caloriesWeeklyCheckInDialogCreditedActivityAverageLabel":
+      "Angerechnete Aktivität Ø",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
   "caloriesWeeklyCheckInDialogLowConfidence":
       "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
@@ -1073,6 +1077,9 @@
       "Ziel braucht Aktualisierung",
   "caloriesWeeklyCheckInHintUrgentBody":
       "Du verwendest schon länger ältere Zieldaten.",
+  "caloriesWeeklyCheckInShowAgainAction": "Wochen-Check-in anzeigen",
+  "caloriesWeeklyCheckInShowAgainFailed":
+      "Der Wochen-Check-in konnte nicht erneut geöffnet werden.",
   "caloriesWeeklyCheckInSkipDayAction": "Tag als ausgelassen markieren",
   "caloriesWeeklyCheckInUnskipDayAction":
       "Ausgelassen-Markierung entfernen",
@@ -1110,9 +1117,9 @@
   "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
   "caloriesRemainingLabel": "Verbleibend",
-  "caloriesDebugDumpAction": "Kalorien-Debug-Tabelle ausgeben",
+  "caloriesDebugDumpAction": "Kalorien-Debug-TXT herunterladen",
   "caloriesDebugDumpPrinted":
-      "Kalorien-Debug-Tabelle ausgegeben ({rowCount} Zeilen).",
+      "Kalorien-Debug-TXT heruntergeladen ({rowCount} Zeilen).",
   "@caloriesDebugDumpPrinted": {
     "placeholders": {
       "rowCount": {
@@ -1120,8 +1127,10 @@
       }
     }
   },
+  "caloriesDebugDumpCanceled":
+      "Kalorien-Debug-TXT-Download abgebrochen.",
   "caloriesDebugDumpFailed":
-      "Kalorien-Debug-Tabelle konnte nicht ausgegeben werden.",
+      "Kalorien-Debug-TXT konnte nicht heruntergeladen werden.",
   "burnWeekRunOverTitle": "Run beendet",
   "burnWeekRunRestartsOn": "Frischer Run startet am {date}.",
   "@burnWeekRunRestartsOn": {

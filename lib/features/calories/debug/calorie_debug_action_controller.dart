@@ -5,6 +5,7 @@ import 'dart:developer' as developer;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_dump_service.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -16,26 +17,39 @@ import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
 
 part 'calorie_debug_action_controller.g.dart';
 
-/// Result from printing calorie debug dump.
+/// Result from exporting calorie debug dump.
 sealed class CalorieDebugDumpPrintResult {
   const CalorieDebugDumpPrintResult();
 }
 
-/// Successful calorie debug dump print.
+/// Successful calorie debug dump export.
 class CalorieDebugDumpPrintSuccess extends CalorieDebugDumpPrintResult {
   /// Creates success result.
-  const CalorieDebugDumpPrintSuccess({required this.rowCount});
+  const CalorieDebugDumpPrintSuccess({
+    required this.rowCount,
+    this.filePath,
+  });
 
-  /// Number of rows printed.
+  /// Number of rows exported.
   final int rowCount;
+
+  /// Saved path, when the platform exposes one.
+  final String? filePath;
 }
 
-/// Failed calorie debug dump print.
+/// User canceled calorie debug dump export.
+class CalorieDebugDumpPrintCanceled extends CalorieDebugDumpPrintResult {
+  /// Creates canceled result.
+  const CalorieDebugDumpPrintCanceled();
+}
+
+/// Failed calorie debug dump export.
 class CalorieDebugDumpPrintFailure extends CalorieDebugDumpPrintResult {
   /// Creates failure result.
   const CalorieDebugDumpPrintFailure();
@@ -91,11 +105,12 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
     return null;
   }
 
-  /// Prints calorie debug dump.
+  /// Exports calorie debug dump as TXT.
   Future<CalorieDebugDumpPrintResult> printDebugDump(DateTime now) async {
     final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
     final diaryHealthService = ref.read(diaryHealthServiceProvider);
     final healthWeightService = ref.read(healthWeightServiceProvider);
+    final fileExporter = ref.read(calorieDebugFileExporterProvider);
     final manualWeightRepository = ref.read(
       manualHealthWeightRepositoryProvider,
     );
@@ -114,14 +129,22 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
         settingsFuture: settingsFuture,
         now: now,
       );
-      developer.log(
-        'Calorie debug dump\n${result.table}',
-        name: 'CalorieDebugDump',
+      final exportResult = await fileExporter.saveText(
+        fileName: _calorieDebugDumpFileName(now),
+        text: _calorieDebugDumpText(result: result, generatedAt: now),
       );
-      return CalorieDebugDumpPrintSuccess(rowCount: result.rowCount);
+      return switch (exportResult) {
+        CalorieDebugFileExportSaved(:final path) =>
+          CalorieDebugDumpPrintSuccess(
+            rowCount: result.rowCount,
+            filePath: path,
+          ),
+        CalorieDebugFileExportCanceled() =>
+          const CalorieDebugDumpPrintCanceled(),
+      };
     } on Object catch (error, stackTrace) {
       developer.log(
-        'Failed to build calorie debug dump.',
+        'Failed to build or export calorie debug dump.',
         name: 'CalorieDebugDump',
         error: error,
         stackTrace: stackTrace,
@@ -161,9 +184,19 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
       final checkInData = await ref.read(
         calorieWeeklyCheckInDataProvider.future,
       );
-      final encoded = const JsonEncoder.withIndent(
-        '  ',
-      ).convert(_weeklyCheckInDataDebugJson(checkInData));
+      final healthStatus = await ref.read(
+        healthConnectionControllerProvider.future,
+      );
+      final encoded =
+          const JsonEncoder.withIndent(
+            '  ',
+          ).convert(
+            _weeklyCheckInDataDebugJson(
+              checkInData,
+              usesHealthActivity:
+                  healthStatus.accessState == HealthDataAccessState.ready,
+            ),
+          );
       _logDebugDump(
         name: 'CalorieWeeklyCheckInDebugDump',
         dump: 'calorieWeeklyCheckInData\n$encoded',
@@ -181,6 +214,44 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
   }
 }
 
+String _calorieDebugDumpText({
+  required CalorieDebugDumpResult result,
+  required DateTime generatedAt,
+}) {
+  final rangeLabel =
+      '${_formatDebugDumpDate(result.startInclusive)}'
+      '..${_formatDebugDumpDate(previousDiaryDay(result.endExclusive))}';
+  return [
+    'YAMT diary debug dump',
+    'Generated: ${generatedAt.toLocal().toIso8601String()}',
+    'Range: $rangeLabel',
+    'Rows: ${result.rowCount}',
+    '',
+    result.table,
+  ].join('\n');
+}
+
+String _calorieDebugDumpFileName(DateTime now) {
+  final local = now.toLocal();
+  return 'yamt_diary_debug_${_formatDebugDumpStamp(local)}.txt';
+}
+
+String _formatDebugDumpStamp(DateTime dateTime) {
+  return '${dateTime.year.toString().padLeft(4, '0')}'
+      '${dateTime.month.toString().padLeft(2, '0')}'
+      '${dateTime.day.toString().padLeft(2, '0')}_'
+      '${dateTime.hour.toString().padLeft(2, '0')}'
+      '${dateTime.minute.toString().padLeft(2, '0')}'
+      '${dateTime.second.toString().padLeft(2, '0')}';
+}
+
+String _formatDebugDumpDate(DateTime dateTime) {
+  final local = dateTime.toLocal();
+  return '${local.year.toString().padLeft(4, '0')}-'
+      '${local.month.toString().padLeft(2, '0')}-'
+      '${local.day.toString().padLeft(2, '0')}';
+}
+
 Object? _jsonDebugValue(Object? value) {
   return switch (value) {
     DateTime() => value.toIso8601String(),
@@ -193,8 +264,9 @@ Object? _jsonDebugValue(Object? value) {
 }
 
 Map<String, Object?> _weeklyCheckInDataDebugJson(
-  CalorieWeeklyCheckInData checkInData,
-) {
+  CalorieWeeklyCheckInData checkInData, {
+  required bool usesHealthActivity,
+}) {
   return <String, Object?>{
     'today': diaryDayKey(DateTime.now()),
     'has_pending': checkInData.hasPending,
@@ -220,8 +292,18 @@ Map<String, Object?> _weeklyCheckInDataDebugJson(
     'cache_weekly_check_in': _pendingWeeklyCheckInDebugJson(
       checkInData.cacheWeeklyCheckIn,
     ),
-    'calculation': _calculationDebugJson(checkInData.calculation),
-    'days': checkInData.days.map(_windowDayDebugJson).toList(growable: false),
+    'calculation': _calculationDebugJson(
+      checkInData.calculation,
+      usesHealthActivity: usesHealthActivity,
+    ),
+    'days': checkInData.days
+        .map(
+          (day) => _windowDayDebugJson(
+            day,
+            usesHealthActivity: usesHealthActivity,
+          ),
+        )
+        .toList(growable: false),
   };
 }
 
@@ -241,25 +323,36 @@ Map<String, Object?>? _pendingWeeklyCheckInDebugJson(
 }
 
 Map<String, Object?>? _calculationDebugJson(
-  CalorieWeeklyCheckInCalculation? calculation,
-) {
+  CalorieWeeklyCheckInCalculation? calculation, {
+  required bool usesHealthActivity,
+}) {
   if (calculation == null) {
     return null;
   }
   return <String, Object?>{
     'trend_weight_change_per_day': calculation.trendWeightChangePerDay,
     'average_intake_kcal': calculation.averageIntakeKcal,
-    'measured_true_tdee_kcal': calculation.measuredTrueTdeeKcal,
-    'calculated_true_tdee_kcal': calculation.calculatedTrueTdeeKcal,
-    'new_goal_kcal': calculation.newGoalKcal,
-    'last_week_average_active_kcal': calculation.lastWeekAverageActiveKcal,
-    'today_active_kcal': calculation.todayActiveKcal,
-    'activity_delta_kcal': calculation.activityDeltaKcal,
-    'dynamic_goal_today_kcal': calculation.dynamicGoalTodayKcal,
+    'measured_total_tdee_kcal': calculation.measuredTotalTdeeKcal,
+    'calculated_base_tdee_kcal': calculation.calculatedBaseTdeeKcal,
+    'new_base_goal_kcal': calculation.newBaseGoalKcal,
+    'new_target_kcal': calculation.newBaseGoalKcal,
+    if (usesHealthActivity) ...{
+      'measured_base_tdee_kcal': calculation.measuredBaseTdeeKcal,
+      'average_credited_activity_kcal': calculation.averageCreditedActivityKcal,
+      'credited_activity_average_kcal': calculation.averageCreditedActivityKcal,
+      'activity_subtracted_from_total_tdee_kcal':
+          calculation.averageCreditedActivityKcal,
+      'today_active_kcal': calculation.todayActiveKcal,
+      'activity_delta_kcal': calculation.activityDeltaKcal,
+      'dynamic_goal_today_kcal': calculation.dynamicGoalTodayKcal,
+    },
   };
 }
 
-Map<String, Object?> _windowDayDebugJson(CalorieWeeklyCheckInWindowDay day) {
+Map<String, Object?> _windowDayDebugJson(
+  CalorieWeeklyCheckInWindowDay day, {
+  required bool usesHealthActivity,
+}) {
   return <String, Object?>{
     'day': diaryDayKey(day.day),
     'has_entries': day.hasEntries,
@@ -267,7 +360,7 @@ Map<String, Object?> _windowDayDebugJson(CalorieWeeklyCheckInWindowDay day) {
     'resolved_intake_kcal': day.resolvedIntakeKcal,
     'is_skipped_intake_day': day.isSkippedIntakeDay,
     'is_heart_day': day.isHeartDay,
-    'active_kcal': day.activeKcal,
+    if (usesHealthActivity) 'active_kcal': day.activeKcal,
     'weight_kg': day.weightKg,
   };
 }

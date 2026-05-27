@@ -11,6 +11,7 @@ void showCalorieDebugDumpResultSnackBar({
   final message = switch (result) {
     CalorieDebugDumpPrintSuccess(:final rowCount) =>
       l10n.caloriesDebugDumpPrinted(rowCount),
+    CalorieDebugDumpPrintCanceled() => l10n.caloriesDebugDumpCanceled,
     CalorieDebugDumpPrintFailure() => l10n.caloriesDebugDumpFailed,
   };
   ScaffoldMessenger.of(context)

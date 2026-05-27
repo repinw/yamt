@@ -6,56 +6,6 @@ part of 'calorie_goal_settings.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-CalorieGoalWeeklyCheckInSnapshot _$CalorieGoalWeeklyCheckInSnapshotFromJson(
-  Map<String, dynamic> json,
-) => CalorieGoalWeeklyCheckInSnapshot(
-  windowStartDate: const FlexibleDateTimeConverter().fromJson(
-    json['window_start_date'],
-  ),
-  windowEndDate: const FlexibleDateTimeConverter().fromJson(
-    json['window_end_date'],
-  ),
-  trendWeightChangePerDay: const FlexibleDoubleConverter().fromJson(
-    json['trend_weight_change_per_day'],
-  ),
-  calculatedTrueTdeeKcal: const FlexibleDoubleConverter().fromJson(
-    json['calculated_true_tdee_kcal'],
-  ),
-  averageActiveKcal: const FlexibleDoubleConverter().fromJson(
-    json['average_active_kcal'],
-  ),
-  lowConfidence: json['low_confidence'] as bool,
-  inputHash: json['input_hash'] as String?,
-  invalidatedAt: const NullableFlexibleDateTimeConverter().fromJson(
-    json['invalidated_at'],
-  ),
-);
-
-Map<String, dynamic> _$CalorieGoalWeeklyCheckInSnapshotToJson(
-  CalorieGoalWeeklyCheckInSnapshot instance,
-) => <String, dynamic>{
-  'window_start_date': const FlexibleDateTimeConverter().toJson(
-    instance.windowStartDate,
-  ),
-  'window_end_date': const FlexibleDateTimeConverter().toJson(
-    instance.windowEndDate,
-  ),
-  'trend_weight_change_per_day': const FlexibleDoubleConverter().toJson(
-    instance.trendWeightChangePerDay,
-  ),
-  'calculated_true_tdee_kcal': const FlexibleDoubleConverter().toJson(
-    instance.calculatedTrueTdeeKcal,
-  ),
-  'average_active_kcal': const FlexibleDoubleConverter().toJson(
-    instance.averageActiveKcal,
-  ),
-  'low_confidence': instance.lowConfidence,
-  'input_hash': ?instance.inputHash,
-  'invalidated_at': ?const NullableFlexibleDateTimeConverter().toJson(
-    instance.invalidatedAt,
-  ),
-};
-
 PendingCalorieGoalWeeklyCheckIn _$PendingCalorieGoalWeeklyCheckInFromJson(
   Map<String, dynamic> json,
 ) => PendingCalorieGoalWeeklyCheckIn(
@@ -183,7 +133,7 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           [],
-      calorieMathVersion: (json['calorie_math_version'] as num?)?.toInt() ?? 1,
+      calorieMathVersion: (json['calorie_math_version'] as num?)?.toInt() ?? 3,
       expectedActivityKcal: const NullableFlexibleDoubleConverter().fromJson(
         json['expected_activity_kcal'],
       ),

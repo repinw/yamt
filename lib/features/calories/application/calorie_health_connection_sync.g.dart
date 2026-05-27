@@ -54,4 +54,4 @@ final class CalorieHealthConnectionSyncProvider
 }
 
 String _$calorieHealthConnectionSyncHash() =>
-    r'c89d626428e52005f1298e7776edff6145443994';
+    r'aefe8d47c1d4c40b043cd344523d6bdf18f1c1a7';

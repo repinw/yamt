@@ -458,7 +458,7 @@ void main() {
     });
 
     test(
-      'keeps scheduled game week while the goal starts in the future',
+      'keeps scheduled fresh week while the goal starts in the future',
       () async {
         final today = normalizeDiaryDay(DateTime.now());
         final tomorrow = nextDiaryDay(today);
@@ -480,7 +480,7 @@ void main() {
           settings: _learnedGoalSettings(tomorrow),
           initialRunState: BurnWeekRunState(
             currentWeekStartDayKey: diaryDayKey(tomorrow),
-            runWeekNumber: burnWeekFirstGameRunWeekNumber,
+            runWeekNumber: burnWeekLearningRunWeekNumber,
             starCount: 0,
             heartCount: burnWeekInitialHeartCount,
             heartCreditKcal: 0,
@@ -500,7 +500,7 @@ void main() {
     );
 
     test(
-      'schedules learned future goal start as first game week',
+      'schedules learned future goal start as first run week',
       () async {
         final today = normalizeDiaryDay(DateTime.now());
         final tomorrow = nextDiaryDay(today);
@@ -542,7 +542,7 @@ void main() {
         expect(controller.restartCalls, <DateTime>[tomorrow]);
         expect(
           controller.restartRunWeekNumbers,
-          <int?>[burnWeekFirstGameRunWeekNumber],
+          <int?>[burnWeekLearningRunWeekNumber],
         );
         expect(controller.resetCallCount(), 0);
       },
@@ -572,7 +572,7 @@ void main() {
           settings: _learnedGoalSettings(tomorrow),
           initialRunState: BurnWeekRunState(
             currentWeekStartDayKey: diaryDayKey(staleStart),
-            runWeekNumber: burnWeekFirstGameRunWeekNumber,
+            runWeekNumber: burnWeekLearningRunWeekNumber,
             starCount: 0,
             heartCount: 3,
             heartCreditKcal: 0,
@@ -589,7 +589,7 @@ void main() {
         expect(controller.restartCalls, <DateTime>[tomorrow]);
         expect(
           controller.restartRunWeekNumbers,
-          <int?>[burnWeekFirstGameRunWeekNumber],
+          <int?>[burnWeekLearningRunWeekNumber],
         );
         expect(controller.resetCallCount(), 0);
       },
@@ -636,7 +636,7 @@ void main() {
     );
 
     test(
-      'restarts learned stale cycle as first game week',
+      'restarts learned stale cycle as first run week',
       () async {
         final today = normalizeDiaryDay(DateTime.now());
         late _RecordingBurnWeekRunController controller;
@@ -670,7 +670,7 @@ void main() {
         expect(controller.restartCalls, <DateTime>[today]);
         expect(
           controller.restartRunWeekNumbers,
-          <int?>[burnWeekFirstGameRunWeekNumber],
+          <int?>[burnWeekLearningRunWeekNumber],
         );
       },
     );

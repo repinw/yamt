@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 const _appBarDebugIconSplashRadius = 18.0;
 
@@ -27,15 +28,15 @@ extension _CalorieDebugActionDetails on _CalorieDebugAction {
 
   IconData get icon {
     return switch (this) {
-      _CalorieDebugAction.debugDump => Icons.table_chart_rounded,
+      _CalorieDebugAction.debugDump => Icons.download_rounded,
       _CalorieDebugAction.settingsDump => Icons.data_object_rounded,
       _CalorieDebugAction.weeklyCheckInDump => Icons.rule_rounded,
     };
   }
 
-  String get label {
+  String label(AppLocalizations l10n) {
     return switch (this) {
-      _CalorieDebugAction.debugDump => 'Print calorie debug table',
+      _CalorieDebugAction.debugDump => l10n.caloriesDebugDumpAction,
       _CalorieDebugAction.settingsDump => 'Print calorie settings JSON',
       _CalorieDebugAction.weeklyCheckInDump => 'Print weekly check-in state',
     };
@@ -73,6 +74,7 @@ class CalorieDebugActionsMenu extends ConsumerWidget {
         unawaited(action.run(context, ref));
       },
       itemBuilder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return [
           for (final action in _CalorieDebugAction.values)
             PopupMenuItem<_CalorieDebugAction>(
@@ -80,7 +82,7 @@ class CalorieDebugActionsMenu extends ConsumerWidget {
               value: action,
               child: _CalorieDebugMenuItem(
                 icon: action.icon,
-                label: action.label,
+                label: action.label(l10n),
               ),
             ),
         ];

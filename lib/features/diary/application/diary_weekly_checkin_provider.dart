@@ -84,6 +84,16 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
   return DiaryWeeklyCheckInActions(
     syncLearnedTdeeCache: checkInController.syncLearnedTdeeCache,
     applyWeeklyCheckIn: checkInController.applyWeeklyCheckIn,
+    showWeeklyCheckInAgain: (pendingWeeklyCheckIn) async {
+      final saved = await checkInController.showPendingWeeklyCheckInAgain(
+        pendingWeeklyCheckIn,
+      );
+      if (saved && ref.mounted) {
+        checkin_provider.invalidateCalorieWeeklyCheckInData(ref);
+        ref.invalidate(diaryWeeklyCheckInDataProvider);
+      }
+      return saved;
+    },
     setSkippedIntakeDay: pageActionController.setSkippedIntakeDay,
     refreshCheckInData: () {
       if (!ref.mounted) {
@@ -103,6 +113,10 @@ class DiaryWeeklyCheckInActions {
     syncLearnedTdeeCache,
     required Future<bool> Function(DiaryWeeklyCheckInData data)
     applyWeeklyCheckIn,
+    required Future<bool> Function(
+      PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+    )
+    showWeeklyCheckInAgain,
     required Future<bool> Function({
       required DateTime selectedDay,
       required bool isSkipped,
@@ -111,12 +125,17 @@ class DiaryWeeklyCheckInActions {
     required void Function() refreshCheckInData,
   }) : _syncLearnedTdeeCache = syncLearnedTdeeCache,
        _applyWeeklyCheckIn = applyWeeklyCheckIn,
+       _showWeeklyCheckInAgain = showWeeklyCheckInAgain,
        _setSkippedIntakeDay = setSkippedIntakeDay,
        _refreshCheckInData = refreshCheckInData;
 
   final Future<void> Function(DiaryWeeklyCheckInData data)
   _syncLearnedTdeeCache;
   final Future<bool> Function(DiaryWeeklyCheckInData data) _applyWeeklyCheckIn;
+  final Future<bool> Function(
+    PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+  )
+  _showWeeklyCheckInAgain;
   final Future<bool> Function({
     required DateTime selectedDay,
     required bool isSkipped,
@@ -132,6 +151,13 @@ class DiaryWeeklyCheckInActions {
   /// Applies a weekly check-in.
   Future<bool> applyWeeklyCheckIn(DiaryWeeklyCheckInData data) {
     return _applyWeeklyCheckIn(data);
+  }
+
+  /// Reopens a dismissed weekly check-in window.
+  Future<bool> showWeeklyCheckInAgain(
+    PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+  ) {
+    return _showWeeklyCheckInAgain(pendingWeeklyCheckIn);
   }
 
   /// Marks or unmarks a selected intake day as skipped.

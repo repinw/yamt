@@ -241,7 +241,7 @@ void main() {
       checkInData.days.map((day) => day.activeKcal),
       <int>[100, 110, 120, 130, 140, 150, 160],
     );
-    expect(checkInData.calculation?.lastWeekAverageActiveKcal, 130);
+    expect(checkInData.calculation?.lastWeekAverageActiveKcal, 97.5);
     expect(checkInData.calculation?.todayActiveKcal, 250);
   });
 
@@ -957,9 +957,9 @@ void main() {
       expect(checkInData.days.last.weightKg, 81.4);
       expect(
         checkInData.calculation?.trendWeightChangePerDay,
-        closeTo(-0.08571, 0.00001),
+        closeTo(-0.085063, 0.00001),
       );
-      expect(checkInData.calculation?.averageIntakeKcal, closeTo(2130, 0.01));
+      expect(checkInData.calculation?.averageIntakeKcal, closeTo(2080, 0.01));
 
       await logRepository.saveEntry(
         _entry('previous-entry-0', DateTime(2026, 4, 8, 8), 3000),
@@ -972,7 +972,7 @@ void main() {
 
       expect(
         recomputedData.calculation?.averageIntakeKcal,
-        closeTo(2130, 0.01),
+        closeTo(2151.43, 0.01),
       );
     },
   );
@@ -1184,7 +1184,7 @@ void main() {
   );
 
   test(
-    'previous snapshot limits next check-in read to current window',
+    'previous snapshot does not limit next check-in source data',
     () async {
       final today = DateTime(2026, 4, 22);
       final goalStart = DateTime(2026, 4, 8);
@@ -1256,9 +1256,9 @@ void main() {
       );
 
       expect(checkInData.isReady, isTrue);
-      expect(rangeStart, DateTime(2026, 4, 15));
+      expect(rangeStart, DateTime(2026, 4, 8));
       expect(rangeEnd, DateTime(2026, 4, 22));
-      expect(checkInData.inputHash, startsWith('v1:'));
+      expect(checkInData.inputHash, startsWith('v2:'));
       expect(checkInData.calculation?.averageIntakeKcal, closeTo(3000, 0.01));
     },
   );
@@ -1328,7 +1328,7 @@ void main() {
         DateTime(2026, 4, 14),
       );
       expect(checkInData.isReady, isTrue);
-      expect(checkInData.inputHash, startsWith('v1:'));
+      expect(checkInData.inputHash, startsWith('v2:'));
     },
   );
 

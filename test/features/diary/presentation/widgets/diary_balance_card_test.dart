@@ -764,6 +764,126 @@ void main() {
     expect(tickerTickCount, greaterThan(initialTickCount));
   });
 
+  testWidgets('refreshes balance when app resumes', (tester) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+    var weekOverviewReadCount = 0;
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+      onWeekOverviewRead: () {
+        weekOverviewReadCount += 1;
+      },
+    );
+    final initialReadCount = weekOverviewReadCount;
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+
+    expect(weekOverviewReadCount, greaterThan(initialReadCount));
+  });
+
+  testWidgets('daily progress shows corrected 899 kcal activity visibly', (
+    tester,
+  ) async {
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-4-27',
+      ),
+      goalKcal: 2774.25,
+      baseGoalKcal: 2100,
+      activityBonusKcal: 674.25,
+      todayFlexibleGoalKcal: 2774.25,
+    );
+
+    final trackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
+    );
+    final activityRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+    );
+
+    expect(
+      activityRect.width / trackRect.width,
+      closeTo(674.25 / 2774.25, 0.02),
+    );
+    expect(activityRect.right, closeTo(trackRect.right, 0.5));
+  });
+
+  testWidgets('daily progress keeps activity visible with carryover', (
+    tester,
+  ) async {
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-4-27',
+      ),
+      goalKcal: 2774.25,
+      baseGoalKcal: 2100,
+      activityBonusKcal: 674.25,
+      todayFlexibleGoalKcal: 5000,
+    );
+
+    final trackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
+    );
+    final activityRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+    );
+
+    expect(
+      activityRect.width / trackRect.width,
+      closeTo(674.25 / 2774.25, 0.02),
+    );
+    expect(activityRect.right, closeTo(trackRect.right, 0.5));
+  });
+
+  testWidgets('daily progress keeps activity visible with negative carryover', (
+    tester,
+  ) async {
+    await _pumpDailyProgressBar(
+      tester,
+      eatenKcal: 1358,
+      targetKcal: 1471,
+      activitySegmentKcal: 674.25,
+      activitySegmentReferenceKcal: 2774.25,
+    );
+    await tester.pumpAndSettle();
+
+    final trackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
+    );
+    final activityRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+    );
+
+    expect(
+      activityRect.width / trackRect.width,
+      closeTo(674.25 / 1471, 0.02),
+    );
+    expect(activityRect.right, closeTo(trackRect.right, 0.5));
+  });
+
   testWidgets('shows retry content when week overview fails', (tester) async {
     final selectedDay = normalizeDiaryDay(
       DateTime.now().subtract(const Duration(days: 1)),
@@ -795,6 +915,7 @@ Future<void> _pumpBalanceCard(
   required List<double> dayTotals,
   required BurnWeekRunState runState,
   VoidCallback? onBurnWeekLiveSyncWatch,
+  VoidCallback? onWeekOverviewRead,
   VoidCallback? onBalanceTickerTick,
   Duration? tickerPeriod,
   bool settle = true,
@@ -868,6 +989,7 @@ Future<void> _pumpBalanceCard(
         calorieWeekOverviewForWindowProvider(
           normalizedSelectedDay,
         ).overrideWith((ref) {
+          onWeekOverviewRead?.call();
           if (weekOverviewThrows) {
             throw StateError('week overview failed');
           }
@@ -966,6 +1088,7 @@ Future<void> _pumpDailyProgressBar(
   required double eatenKcal,
   required double targetKcal,
   required double activitySegmentKcal,
+  double? activitySegmentReferenceKcal,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -977,6 +1100,7 @@ Future<void> _pumpDailyProgressBar(
               eatenKcal: eatenKcal,
               targetKcal: targetKcal,
               activitySegmentKcal: activitySegmentKcal,
+              activitySegmentReferenceKcal: activitySegmentReferenceKcal,
               numberFormat: NumberFormat.decimalPattern('en'),
               unit: 'kcal',
             ),

@@ -15,7 +15,22 @@ void main() {
     await tester.pump();
 
     expect(
-      find.text('Printed calorie debug table (3 rows).'),
+      find.text('Downloaded calorie debug TXT (3 rows).'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('debug dump snackbar shows canceled message', (tester) async {
+    final context = await _pumpSnackBarHarness(tester);
+
+    showCalorieDebugDumpResultSnackBar(
+      context: context,
+      result: const CalorieDebugDumpPrintCanceled(),
+    );
+    await tester.pump();
+
+    expect(
+      find.text('Calorie debug TXT download canceled.'),
       findsOneWidget,
     );
   });
@@ -29,7 +44,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Could not print calorie debug table.'), findsOneWidget);
+    expect(find.text('Could not download calorie debug TXT.'), findsOneWidget);
   });
 }
 

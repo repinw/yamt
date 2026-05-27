@@ -66,6 +66,27 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return saved;
   }
 
+  /// Clears dismissal for a pending weekly check in.
+  Future<bool> showPendingWeeklyCheckInAgain(
+    PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+  ) async {
+    state = const AsyncLoading();
+    final restoredPending = pendingWeeklyCheckIn.copyWith(dismissedAt: null);
+    final saved = await ref
+        .read(calorieGoalControllerProvider.notifier)
+        .setPendingWeeklyCheckIn(restoredPending);
+    if (!ref.mounted) {
+      return saved;
+    }
+    state = saved
+        ? const AsyncData(null)
+        : AsyncError(
+            StateError('Failed to reopen pending weekly check-in.'),
+            StackTrace.empty,
+          );
+    return saved;
+  }
+
   /// Sync learned TDEE cache for a ready weekly check in.
   Future<bool> syncLearnedTdeeCache(
     CalorieWeeklyCheckInData checkInData,
@@ -208,12 +229,24 @@ bool _hasMatchingWeeklyCheckInSnapshot({
           weeklyCheckInSnapshot.trendWeightChangePerDay,
         ) &&
         _sameDouble(
-          snapshot.calculatedTrueTdeeKcal,
-          weeklyCheckInSnapshot.calculatedTrueTdeeKcal,
+          snapshot.measuredTotalTdeeKcal,
+          weeklyCheckInSnapshot.measuredTotalTdeeKcal,
         ) &&
         _sameDouble(
-          snapshot.averageActiveKcal,
-          weeklyCheckInSnapshot.averageActiveKcal,
+          snapshot.measuredBaseTdeeKcal,
+          weeklyCheckInSnapshot.measuredBaseTdeeKcal,
+        ) &&
+        _sameDouble(
+          snapshot.calculatedBaseTdeeKcal,
+          weeklyCheckInSnapshot.calculatedBaseTdeeKcal,
+        ) &&
+        _sameDouble(
+          snapshot.averageCreditedActivityKcal,
+          weeklyCheckInSnapshot.averageCreditedActivityKcal,
+        ) &&
+        _sameDouble(
+          snapshot.baseGoalKcal,
+          weeklyCheckInSnapshot.baseGoalKcal,
         ) &&
         snapshot.inputHash == weeklyCheckInSnapshot.inputHash &&
         snapshot.invalidatedAt == weeklyCheckInSnapshot.invalidatedAt;
@@ -249,8 +282,11 @@ CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
     windowStartDate: weeklyCheckIn.windowStartDate,
     windowEndDate: weeklyCheckIn.windowEndDate,
     trendWeightChangePerDay: calculation.trendWeightChangePerDay,
-    calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
-    averageActiveKcal: calculation.lastWeekAverageActiveKcal,
+    measuredTotalTdeeKcal: calculation.measuredTotalTdeeKcal,
+    measuredBaseTdeeKcal: calculation.measuredBaseTdeeKcal,
+    calculatedBaseTdeeKcal: calculation.calculatedBaseTdeeKcal,
+    averageCreditedActivityKcal: calculation.averageCreditedActivityKcal,
+    baseGoalKcal: calculation.newBaseGoalKcal,
     lowConfidence: lowConfidence,
     inputHash: inputHash,
   );

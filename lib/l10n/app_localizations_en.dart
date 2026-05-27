@@ -1793,6 +1793,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogTrueTdeeLabel => 'Learned TDEE';
 
   @override
+  String get caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel => 'Measured total TDEE';
+
+  @override
+  String get caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel => 'Measured base TDEE';
+
+  @override
+  String get caloriesWeeklyCheckInDialogCreditedActivityAverageLabel => 'Credited activity avg';
+
+  @override
   String get caloriesWeeklyCheckInDialogNewTargetLabel => 'New target';
 
   @override
@@ -1836,6 +1845,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesWeeklyCheckInHintUrgentBody => 'You have been using older target data for a while now.';
+
+  @override
+  String get caloriesWeeklyCheckInShowAgainAction => 'Show weekly check-in';
+
+  @override
+  String get caloriesWeeklyCheckInShowAgainFailed => 'Could not reopen the weekly check-in.';
 
   @override
   String get caloriesWeeklyCheckInSkipDayAction => 'Mark day as skipped';
@@ -1883,15 +1898,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesRemainingLabel => 'Remaining';
 
   @override
-  String get caloriesDebugDumpAction => 'Print calorie debug table';
+  String get caloriesDebugDumpAction => 'Download calorie debug TXT';
 
   @override
   String caloriesDebugDumpPrinted(int rowCount) {
-    return 'Printed calorie debug table ($rowCount rows).';
+    return 'Downloaded calorie debug TXT ($rowCount rows).';
   }
 
   @override
-  String get caloriesDebugDumpFailed => 'Could not print calorie debug table.';
+  String get caloriesDebugDumpCanceled => 'Calorie debug TXT download canceled.';
+
+  @override
+  String get caloriesDebugDumpFailed => 'Could not download calorie debug TXT.';
 
   @override
   String get burnWeekRunOverTitle => 'Run over';

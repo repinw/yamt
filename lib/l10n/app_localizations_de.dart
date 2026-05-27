@@ -1793,6 +1793,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogTrueTdeeLabel => 'Gelernter TDEE';
 
   @override
+  String get caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel => 'Gemessener Gesamt-TDEE';
+
+  @override
+  String get caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel => 'Gemessener Basis-TDEE';
+
+  @override
+  String get caloriesWeeklyCheckInDialogCreditedActivityAverageLabel => 'Angerechnete Aktivität Ø';
+
+  @override
   String get caloriesWeeklyCheckInDialogNewTargetLabel => 'Neues Ziel';
 
   @override
@@ -1836,6 +1845,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesWeeklyCheckInHintUrgentBody => 'Du verwendest schon länger ältere Zieldaten.';
+
+  @override
+  String get caloriesWeeklyCheckInShowAgainAction => 'Wochen-Check-in anzeigen';
+
+  @override
+  String get caloriesWeeklyCheckInShowAgainFailed => 'Der Wochen-Check-in konnte nicht erneut geöffnet werden.';
 
   @override
   String get caloriesWeeklyCheckInSkipDayAction => 'Tag als ausgelassen markieren';
@@ -1883,15 +1898,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesRemainingLabel => 'Verbleibend';
 
   @override
-  String get caloriesDebugDumpAction => 'Kalorien-Debug-Tabelle ausgeben';
+  String get caloriesDebugDumpAction => 'Kalorien-Debug-TXT herunterladen';
 
   @override
   String caloriesDebugDumpPrinted(int rowCount) {
-    return 'Kalorien-Debug-Tabelle ausgegeben ($rowCount Zeilen).';
+    return 'Kalorien-Debug-TXT heruntergeladen ($rowCount Zeilen).';
   }
 
   @override
-  String get caloriesDebugDumpFailed => 'Kalorien-Debug-Tabelle konnte nicht ausgegeben werden.';
+  String get caloriesDebugDumpCanceled => 'Kalorien-Debug-TXT-Download abgebrochen.';
+
+  @override
+  String get caloriesDebugDumpFailed => 'Kalorien-Debug-TXT konnte nicht heruntergeladen werden.';
 
   @override
   String get burnWeekRunOverTitle => 'Run beendet';

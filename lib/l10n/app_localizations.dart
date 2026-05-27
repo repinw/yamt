@@ -3491,6 +3491,24 @@ abstract class AppLocalizations {
   /// **'Learned TDEE'**
   String get caloriesWeeklyCheckInDialogTrueTdeeLabel;
 
+  /// No description provided for @caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Measured total TDEE'**
+  String get caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Measured base TDEE'**
+  String get caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogCreditedActivityAverageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Credited activity avg'**
+  String get caloriesWeeklyCheckInDialogCreditedActivityAverageLabel;
+
   /// No description provided for @caloriesWeeklyCheckInDialogNewTargetLabel.
   ///
   /// In en, this message translates to:
@@ -3581,6 +3599,18 @@ abstract class AppLocalizations {
   /// **'You have been using older target data for a while now.'**
   String get caloriesWeeklyCheckInHintUrgentBody;
 
+  /// No description provided for @caloriesWeeklyCheckInShowAgainAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Show weekly check-in'**
+  String get caloriesWeeklyCheckInShowAgainAction;
+
+  /// No description provided for @caloriesWeeklyCheckInShowAgainFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reopen the weekly check-in.'**
+  String get caloriesWeeklyCheckInShowAgainFailed;
+
   /// No description provided for @caloriesWeeklyCheckInSkipDayAction.
   ///
   /// In en, this message translates to:
@@ -3662,19 +3692,25 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesDebugDumpAction.
   ///
   /// In en, this message translates to:
-  /// **'Print calorie debug table'**
+  /// **'Download calorie debug TXT'**
   String get caloriesDebugDumpAction;
 
   /// No description provided for @caloriesDebugDumpPrinted.
   ///
   /// In en, this message translates to:
-  /// **'Printed calorie debug table ({rowCount} rows).'**
+  /// **'Downloaded calorie debug TXT ({rowCount} rows).'**
   String caloriesDebugDumpPrinted(int rowCount);
+
+  /// No description provided for @caloriesDebugDumpCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie debug TXT download canceled.'**
+  String get caloriesDebugDumpCanceled;
 
   /// No description provided for @caloriesDebugDumpFailed.
   ///
   /// In en, this message translates to:
-  /// **'Could not print calorie debug table.'**
+  /// **'Could not download calorie debug TXT.'**
   String get caloriesDebugDumpFailed;
 
   /// No description provided for @burnWeekRunOverTitle.

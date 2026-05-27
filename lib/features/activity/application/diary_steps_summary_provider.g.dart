@@ -70,7 +70,7 @@ final class DiaryStepsSummaryProvider
   }
 }
 
-String _$diaryStepsSummaryHash() => r'3f414a15dd540dca41a156ba0f1b4063857c1337';
+String _$diaryStepsSummaryHash() => r'ad4581959d11e41b183a8202f26961eb75889ecc';
 
 /// Provides real step data for one diary day.
 

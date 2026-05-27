@@ -834,7 +834,7 @@ void main() {
     addTearDown(repository.dispose);
     final runStateRepository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState.initial().copyWith(
-        runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        runWeekNumber: 2,
         heartCount: 2,
       ),
     );
@@ -866,7 +866,7 @@ void main() {
         currentWeekStartDayKey: diaryDayKey(
           startOfCalendarWeek(oldDay),
         ),
-        runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        runWeekNumber: 2,
         heartCount: 1,
       ),
     );
@@ -907,7 +907,7 @@ void main() {
     final runStateRepository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(futureStartDay),
-        runWeekNumber: burnWeekFirstGameRunWeekNumber,
+        runWeekNumber: 2,
         heartCount: 1,
       ),
     );

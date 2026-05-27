@@ -12,6 +12,7 @@ class DiaryDailyBalanceMetrics {
     required this.dayLeftKcal,
     required this.targetKcal,
     required this.activitySegmentKcal,
+    required this.activitySegmentReferenceKcal,
   });
 
   /// Calorie adjustment from active heart credit.
@@ -37,6 +38,9 @@ class DiaryDailyBalanceMetrics {
 
   /// Positive activity kcal that extends the daily progress bar.
   final double activitySegmentKcal;
+
+  /// Target basis used to size the activity segment visually.
+  final double activitySegmentReferenceKcal;
 }
 
 /// Resolves daily target and heart-adjusted display values from scalar inputs.
@@ -60,6 +64,11 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     activitySegmentKcal: activitySegmentKcal,
   );
   final positiveActivitySegmentKcal = math.max<double>(0, activitySegmentKcal);
+  final activitySegmentReferenceKcal = resolveDiaryActivitySegmentReferenceKcal(
+    goalKcal: goalKcal,
+    baseGoalKcal: baseGoalKcal,
+    activitySegmentKcal: positiveActivitySegmentKcal,
+  );
   final realDayLeftKcal = targetKcal - realEatenKcal;
   final dayLeftKcal = isHeartDay ? 0.0 : realDayLeftKcal + heartAdjustmentKcal;
 
@@ -72,6 +81,7 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     dayLeftKcal: dayLeftKcal,
     targetKcal: targetKcal,
     activitySegmentKcal: positiveActivitySegmentKcal,
+    activitySegmentReferenceKcal: activitySegmentReferenceKcal,
   );
 }
 
@@ -92,4 +102,17 @@ double resolveDiaryDailyTargetKcal({
     positiveActivitySegmentKcal - alreadyCountedActivityKcal,
   );
   return flexibleGoalKcal + missingActivityKcal;
+}
+
+/// Resolves the visual target basis for the activity segment.
+double resolveDiaryActivitySegmentReferenceKcal({
+  required double goalKcal,
+  required double baseGoalKcal,
+  required double activitySegmentKcal,
+}) {
+  final positiveActivitySegmentKcal = math.max<double>(0, activitySegmentKcal);
+  return math.max<double>(
+    goalKcal,
+    baseGoalKcal + positiveActivitySegmentKcal,
+  );
 }

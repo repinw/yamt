@@ -97,6 +97,38 @@ class DiaryHealthMobileActivityTrendLoader {
     return future;
   }
 
+  /// Loads aggregate trend days from Health and updates cache.
+  Future<List<DiaryHealthActivityTrendDay>> refreshActivityTrendDays({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    final start = normalizeLocalDay(startInclusive);
+    final end = normalizeLocalDay(endExclusive);
+    if (!start.isBefore(end)) {
+      return const <DiaryHealthActivityTrendDay>[];
+    }
+
+    final cacheKey = _rangeCacheKey(
+      startInclusive: start,
+      endExclusive: end,
+    );
+    final refreshCacheKey = '$cacheKey:refresh';
+    final pendingDays = _inFlightByKey[refreshCacheKey];
+    if (pendingDays != null) {
+      return pendingDays;
+    }
+
+    final future = _loadAndCacheRangeDays(
+      cacheKey: cacheKey,
+      startInclusive: start,
+      endExclusive: end,
+      keepStaleOnEmpty: false,
+      overwriteEmptyDays: true,
+    ).whenComplete(() => _removeInFlight(refreshCacheKey));
+    _inFlightByKey[refreshCacheKey] = future;
+    return future;
+  }
+
   /// Reads one cached aggregate trend day from memory or persistence.
   Future<DiaryHealthActivityTrendDayCacheEntry?> readCachedDay(
     DateTime day,
@@ -129,6 +161,8 @@ class DiaryHealthMobileActivityTrendLoader {
     required DateTime startInclusive,
     required DateTime endExclusive,
     _ActivityTrendCacheRange? cachedRange,
+    bool keepStaleOnEmpty = true,
+    bool overwriteEmptyDays = false,
   }) async {
     if (cachedRange != null &&
         cachedRange.hasCachedDays &&
@@ -151,6 +185,7 @@ class DiaryHealthMobileActivityTrendLoader {
         startInclusive: startInclusive,
         freshDays: freshDays,
         staleDays: staleDays,
+        keepStaleOnEmpty: keepStaleOnEmpty,
       );
       if (identical(days, staleDays)) {
         _touchStaleRange(cacheKey);
@@ -161,6 +196,7 @@ class DiaryHealthMobileActivityTrendLoader {
         startInclusive: startInclusive,
         endExclusive: endExclusive,
         days: days,
+        overwriteEmptyDays: overwriteEmptyDays,
       );
       return days;
     } on Object catch (error, stackTrace) {
@@ -227,8 +263,10 @@ class DiaryHealthMobileActivityTrendLoader {
     required DateTime startInclusive,
     required List<DiaryHealthActivityTrendDay> freshDays,
     required List<DiaryHealthActivityTrendDay>? staleDays,
+    required bool keepStaleOnEmpty,
   }) {
-    if (staleDays == null ||
+    if (!keepStaleOnEmpty ||
+        staleDays == null ||
         !isEmptyDiaryHealthActivityTrendDays(freshDays) ||
         isEmptyDiaryHealthActivityTrendDays(staleDays)) {
       return freshDays;
@@ -246,6 +284,7 @@ class DiaryHealthMobileActivityTrendLoader {
     required DateTime startInclusive,
     required DateTime endExclusive,
     required List<DiaryHealthActivityTrendDay> days,
+    bool overwriteEmptyDays = false,
   }) async {
     final loadedAt = _now();
     final cachedDays = List<DiaryHealthActivityTrendDay>.unmodifiable(days);
@@ -257,7 +296,11 @@ class DiaryHealthMobileActivityTrendLoader {
       checkedAt: loadedAt,
       days: cachedDays,
     );
-    await _cacheDayEntries(loadedAt: loadedAt, days: cachedDays);
+    await _cacheDayEntries(
+      loadedAt: loadedAt,
+      days: cachedDays,
+      overwriteEmptyDays: overwriteEmptyDays,
+    );
   }
 
   void _cacheRangeInMemory({
@@ -281,13 +324,15 @@ class DiaryHealthMobileActivityTrendLoader {
   Future<void> _cacheDayEntries({
     required List<DiaryHealthActivityTrendDay> days,
     DateTime? loadedAt,
+    bool overwriteEmptyDays = false,
   }) async {
     final effectiveLoadedAt = loadedAt ?? _now();
     final persistedDays = <DiaryHealthActivityTrendDay>[];
     for (final day in days) {
       final cacheKey = localDayKey(day.day);
       final existing = _dayCacheByKey[cacheKey];
-      if (isEmptyDiaryHealthActivityTrendDay(day) &&
+      if (!overwriteEmptyDays &&
+          isEmptyDiaryHealthActivityTrendDay(day) &&
           existing != null &&
           !isEmptyDiaryHealthActivityTrendDay(existing.day)) {
         continue;

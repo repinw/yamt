@@ -365,6 +365,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.caloriesRemainingLabel,
     l10n.caloriesDebugDumpAction,
     l10n.caloriesDebugDumpPrinted(3),
+    l10n.caloriesDebugDumpCanceled,
     l10n.caloriesDebugDumpFailed,
     l10n.caloriesProteinLabel,
     l10n.caloriesCarbsLabel,

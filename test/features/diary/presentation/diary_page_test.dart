@@ -341,6 +341,59 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
   });
 
+  testWidgets('show-again button reopens dismissed weekly check-in', (
+    tester,
+  ) async {
+    late ProviderContainer container;
+    final windowStartDate = DateTime(2026, 4, 21);
+    final dismissedCheckIn = _weeklyCheckInCheckInData(
+      windowStartDate: windowStartDate,
+      shouldAutoOpen: false,
+      dismissedAt: DateTime(2026, 4, 28, 9),
+    );
+    final reopenedCheckIn = _weeklyCheckInCheckInData(
+      windowStartDate: windowStartDate,
+      shouldAutoOpen: false,
+    );
+
+    container = await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      initialWeeklyCheckIn: dismissedCheckIn,
+      overrides: [
+        diaryWeeklyCheckInActionsProvider.overrideWithValue(
+          DiaryWeeklyCheckInActions(
+            syncLearnedTdeeCache: (_) async {},
+            applyWeeklyCheckIn: (_) async => true,
+            showWeeklyCheckInAgain: (_) async {
+              _setWeeklyCheckInData(container, reopenedCheckIn);
+              return true;
+            },
+            setSkippedIntakeDay:
+                ({
+                  required selectedDay,
+                  required isSkipped,
+                }) async => true,
+            refreshCheckInData: () {},
+          ),
+        ),
+      ],
+    );
+
+    expect(
+      find.byKey(DiaryWeeklyCheckInCardKeys.showAgainButton),
+      findsOneWidget,
+    );
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.showAgainButton));
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.text('Apr 21 - Apr 27'), findsOneWidget);
+  });
+
   testWidgets('weekly check-in hint opens missing weight day', (tester) async {
     final missingWeightDay = DateTime(2026, 4, 21);
 
@@ -1298,6 +1351,7 @@ DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
   return DiaryWeeklyCheckInActions(
     syncLearnedTdeeCache: (_) async {},
     applyWeeklyCheckIn: (_) async => true,
+    showWeeklyCheckInAgain: (_) async => true,
     setSkippedIntakeDay:
         ({
           required selectedDay,
@@ -1310,6 +1364,7 @@ DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
 DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
   required DateTime windowStartDate,
   bool shouldAutoOpen = true,
+  DateTime? dismissedAt,
   CalorieWeeklyCheckInBlockedReason? blockedReason,
   List<DateTime> missingWeightDays = const <DateTime>[],
   List<CalorieWeeklyCheckInWindowDay> days =
@@ -1319,6 +1374,7 @@ DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
     windowStartDate: windowStartDate,
     windowEndDate: windowStartDate.add(const Duration(days: 6)),
     dueDate: windowStartDate.add(const Duration(days: 7)),
+    dismissedAt: dismissedAt,
   );
   return DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: pending,

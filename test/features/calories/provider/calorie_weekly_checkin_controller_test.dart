@@ -76,6 +76,43 @@ void main() {
     );
   });
 
+  test('showPendingWeeklyCheckInAgain clears pending dismissal', () async {
+    final dismissedPending = _pendingWeeklyCheckIn().copyWith(
+      dismissedAt: DateTime(2026, 4, 15, 10),
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: _settingsWithGoal().copyWithPendingWeeklyCheckIn(
+        dismissedPending,
+      ),
+    );
+    addTearDown(settingsRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final shown = await container
+        .read(calorieWeeklyCheckInControllerProvider.notifier)
+        .showPendingWeeklyCheckInAgain(dismissedPending);
+
+    expect(shown, isTrue);
+    final settings = await settingsRepository.readSettings();
+    expect(
+      settings.pendingWeeklyCheckIn?.windowKey,
+      dismissedPending.windowKey,
+    );
+    expect(settings.pendingWeeklyCheckIn?.isDismissed, isFalse);
+    expect(
+      container.read(calorieWeeklyCheckInControllerProvider).hasError,
+      isFalse,
+    );
+  });
+
   test('dismissPendingWeeklyCheckIn reports sync failure', () async {
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: _settingsWithGoal(),
@@ -494,10 +531,15 @@ void main() {
               windowEndDate: cacheWeeklyCheckIn.windowEndDate,
               trendWeightChangePerDay:
                   _defaultWeeklyCheckInCalculation.trendWeightChangePerDay,
-              calculatedTrueTdeeKcal:
+              measuredTotalTdeeKcal:
+                  _defaultWeeklyCheckInCalculation.measuredTotalTdeeKcal,
+              measuredBaseTdeeKcal:
+                  _defaultWeeklyCheckInCalculation.measuredBaseTdeeKcal,
+              calculatedBaseTdeeKcal:
                   _defaultWeeklyCheckInCalculation.calculatedTrueTdeeKcal,
-              averageActiveKcal:
+              averageCreditedActivityKcal:
                   _defaultWeeklyCheckInCalculation.lastWeekAverageActiveKcal,
+              baseGoalKcal: _defaultWeeklyCheckInCalculation.newGoalKcal,
               lowConfidence: false,
             ),
           ),
@@ -524,89 +566,106 @@ void main() {
     expect(settings.latestLearnedTdeeKcal, 2665.82);
   });
 
-  test('syncLearnedTdeeCache refreshes copied same-window snapshots', () async {
-    final goalStart = DateTime(2026, 4, 8);
-    final pendingWeeklyCheckIn = PendingCalorieGoalWeeklyCheckIn(
-      windowStartDate: goalStart,
-      windowEndDate: DateTime(2026, 4, 14),
-      dueDate: DateTime(2026, 4, 15),
-    );
-    final staleSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: goalStart,
-      windowEndDate: DateTime(2026, 4, 14),
-      trendWeightChangePerDay: -0.02,
-      calculatedTrueTdeeKcal: 2500,
-      averageActiveKcal: 200,
-      lowConfidence: false,
-    );
-    final freshSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: goalStart,
-      windowEndDate: DateTime(2026, 4, 14),
-      trendWeightChangePerDay: -0.10893,
-      calculatedTrueTdeeKcal: 2665.82,
-      averageActiveKcal: 300,
-      lowConfidence: false,
-    );
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings:
-          CalorieGoalSettings.single(
-                dailyKcalGoal: 2426.875,
-                calculatorProfile: const CalorieCalculatorProfile(
-                  sex: CalorieCalculatorSex.male,
-                  weightKg: 84,
-                  heightCm: 172,
-                  ageYears: 31,
-                  activityLevel: 1.375,
-                  goalMode: CalorieGoalMode.maintain,
-                  goalSpeedKgPerWeek: 0,
+  test(
+    'syncLearnedTdeeCache does not refresh copied same-window snapshots',
+    () async {
+      final goalStart = DateTime(2026, 4, 8);
+      final pendingWeeklyCheckIn = PendingCalorieGoalWeeklyCheckIn(
+        windowStartDate: goalStart,
+        windowEndDate: DateTime(2026, 4, 14),
+        dueDate: DateTime(2026, 4, 15),
+      );
+      final staleSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: goalStart,
+        windowEndDate: DateTime(2026, 4, 14),
+        trendWeightChangePerDay: -0.02,
+        calculatedTrueTdeeKcal: 2500,
+        averageActiveKcal: 200,
+        lowConfidence: false,
+      );
+      final freshSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: goalStart,
+        windowEndDate: DateTime(2026, 4, 14),
+        trendWeightChangePerDay: -0.10893,
+        measuredTotalTdeeKcal:
+            _defaultWeeklyCheckInCalculation.measuredTotalTdeeKcal,
+        measuredBaseTdeeKcal:
+            _defaultWeeklyCheckInCalculation.measuredBaseTdeeKcal,
+        calculatedBaseTdeeKcal:
+            _defaultWeeklyCheckInCalculation.calculatedTrueTdeeKcal,
+        averageCreditedActivityKcal:
+            _defaultWeeklyCheckInCalculation.lastWeekAverageActiveKcal,
+        baseGoalKcal: _defaultWeeklyCheckInCalculation.newGoalKcal,
+        lowConfidence: false,
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings:
+            CalorieGoalSettings.single(
+                  dailyKcalGoal: 2426.875,
+                  calculatorProfile: const CalorieCalculatorProfile(
+                    sex: CalorieCalculatorSex.male,
+                    weightKg: 84,
+                    heightCm: 172,
+                    ageYears: 31,
+                    activityLevel: 1.375,
+                    goalMode: CalorieGoalMode.maintain,
+                    goalSpeedKgPerWeek: 0,
+                  ),
+                  effectiveDate: goalStart,
+                  source: CalorieGoalSource.calculator,
+                )
+                .applyGoalChange(
+                  changedAt: pendingWeeklyCheckIn.dueDate,
+                  dailyKcalGoal: 2500,
+                  calculatorProfile: null,
+                  source: CalorieGoalSource.weeklyCheckIn,
+                  weeklyCheckInSnapshot: freshSnapshot,
+                )
+                .applyGoalChange(
+                  changedAt: pendingWeeklyCheckIn.dueDate.add(
+                    const Duration(hours: 9),
+                  ),
+                  dailyKcalGoal: 2500,
+                  calculatorProfile: const CalorieCalculatorProfile.defaults(),
+                  source: CalorieGoalSource.calculator,
+                  weeklyCheckInSnapshot: staleSnapshot,
                 ),
-                effectiveDate: goalStart,
-                source: CalorieGoalSource.calculator,
-              )
-              .applyGoalChange(
-                changedAt: pendingWeeklyCheckIn.dueDate,
-                dailyKcalGoal: 2500,
-                calculatorProfile: null,
-                source: CalorieGoalSource.weeklyCheckIn,
-                weeklyCheckInSnapshot: freshSnapshot,
-              )
-              .applyGoalChange(
-                changedAt: pendingWeeklyCheckIn.dueDate.add(
-                  const Duration(hours: 9),
-                ),
-                dailyKcalGoal: 2500,
-                calculatorProfile: const CalorieCalculatorProfile.defaults(),
-                source: CalorieGoalSource.calculator,
-                weeklyCheckInSnapshot: staleSnapshot,
-              ),
-    );
-    addTearDown(settingsRepository.dispose);
-    final container = ProviderContainer(
-      overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(
-          settingsRepository,
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    await container.read(calorieGoalControllerProvider.future);
-
-    final refreshed = await container
-        .read(calorieWeeklyCheckInControllerProvider.notifier)
-        .syncLearnedTdeeCache(
-          _weeklyCheckInData(
-            pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+      );
+      addTearDown(settingsRepository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
           ),
-        );
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(calorieGoalControllerProvider.future);
 
-    expect(refreshed, isTrue);
-    final settings = await settingsRepository.readSettings();
-    expect(settings.latestLearnedTdeeKcal, 2665.82);
-    expect(
-      settings.latestGoalEntry?.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal,
-      2665.82,
-    );
-  });
+      final refreshed = await container
+          .read(calorieWeeklyCheckInControllerProvider.notifier)
+          .syncLearnedTdeeCache(
+            _weeklyCheckInData(
+              pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+            ),
+          );
+
+      expect(refreshed, isTrue);
+      final settings = await settingsRepository.readSettings();
+      expect(settings.latestLearnedTdeeKcal, 2500);
+      expect(
+        settings.latestGoalEntry?.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal,
+        2500,
+      );
+      final weeklyCheckInEntry = settings.goalHistory.firstWhere(
+        (entry) => entry.isWeeklyCheckIn,
+      );
+      expect(
+        weeklyCheckInEntry.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal,
+        2665.82,
+      );
+    },
+  );
 }
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {

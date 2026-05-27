@@ -52,8 +52,8 @@ Contains Firestore repositories and contracts:
   `users/{uid}/calorie_entries/{entryId}`.
 - `CalorieSettingsRepository` and `FirestoreCalorieSettingsRepository`: Read,
   stream, and save `CalorieGoalSettings` under
-  `users/{uid}/calorie_settings/default`. Older math versions are migrated on
-  read.
+  `users/{uid}/calorie_settings/default`. Malformed or obsolete math documents
+  decode as empty settings and are replaced by the next clean save.
 - `CalorieProductCacheRepositoryContract` and
   `FirestoreCalorieProductCacheRepository`: Resolve product profiles by checking
   user overrides first, then the global catalog, then the OFF cache.
@@ -253,7 +253,7 @@ Generated Riverpod and JSON files. They should not be edited manually.
   `users/{inventoryOwnerUid}/inventory_items/{itemId}`
 
 All Firestore reads normalize data through `normalizeFirestoreJson`, making
-timestamps and older JSON shapes decode reliably into domain objects.
+timestamps decode reliably into domain objects.
 
 ## Tests
 
@@ -261,7 +261,7 @@ timestamps and older JSON shapes decode reliably into domain objects.
 
 - Domain tests cover entry math, goal settings, budget, balance, weekly
   check-in, Burn Week, JSON converters, and onboarding catch-up.
-- Data tests cover Firestore repositories, product cache, settings migration,
+- Data tests cover Firestore repositories, product cache, clean settings decode,
   and inventory commit.
 - Provider tests cover entries, goal controller, resolved goals, week overview,
   balance summary, weekly check-ins, daily learned TDEE, and Burn Week sync.

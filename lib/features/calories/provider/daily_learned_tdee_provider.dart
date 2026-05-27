@@ -40,22 +40,31 @@ class DailyLearnedTdeeGoalData {
   /// Creates learned TDEE goal data.
   const DailyLearnedTdeeGoalData({
     required this.measured,
-    required this.calculatedTrueTdeeKcal,
-    required this.newGoalKcal,
-    required this.averageActiveKcal,
+    required this.calculatedBaseTdeeKcal,
+    required this.newBaseGoalKcal,
+    required this.averageCreditedActivityKcal,
   });
 
   /// The measured TDEE before EMA smoothing.
   final CalorieMeasuredTdeeCalculation measured;
 
-  /// The smoothed learned maintenance TDEE.
-  final double calculatedTrueTdeeKcal;
+  /// The smoothed learned Base-TDEE.
+  final double calculatedBaseTdeeKcal;
 
-  /// The capped target goal.
-  final double newGoalKcal;
+  /// The capped base target goal.
+  final double newBaseGoalKcal;
 
-  /// Average active kcal for the week that created the learned target.
-  final double averageActiveKcal;
+  /// Average credited activity kcal for the learned window.
+  final double averageCreditedActivityKcal;
+
+  /// Backwards-compatible label while old UI copy is renamed.
+  double get calculatedTrueTdeeKcal => calculatedBaseTdeeKcal;
+
+  /// Backwards-compatible label for base goal.
+  double get newGoalKcal => newBaseGoalKcal;
+
+  /// Backwards-compatible label for credited activity average.
+  double get averageActiveKcal => averageCreditedActivityKcal;
 }
 
 /// One day request for learned TDEE batch resolution.
@@ -307,12 +316,6 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
   if (!ref.mounted) {
     throw StateError('Weekly learned TDEE disposed.');
   }
-  final snapshotEntry = settings.learnedTdeeEntryForDay(normalizedDay);
-  final snapshot = snapshotEntry?.learnedTdeeSnapshot;
-  final snapshotFallback = _snapshotLearnedGoalForEntry(
-    learnedEntry: snapshotEntry,
-    storedGoalKcal: storedGoalKcal,
-  );
   if (entries.isEmpty) {
     return null;
   }
@@ -378,15 +381,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
       settings: settings,
     );
     if (intakeKcalByDay == null) {
-      return _latestOrLegacySnapshotBeforeWindow(
-        latest: latest,
-        settings: settings,
-        snapshotFallback: snapshotFallback,
-        snapshot: snapshot,
-        learningDays: learningDays,
-        entriesByDay: entriesByDay,
-        window: window,
-      );
+      return latest;
     }
 
     final weightPoints = _weeklyWeightPoints(
@@ -397,10 +392,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
       representativeWeightByDay: representativeWeightByDay,
     );
     if (weightPoints.length < 2) {
-      return _latestOrSnapshotForMissingWeight(
-        latest: latest,
-        snapshotFallback: snapshotFallback,
-      );
+      return latest;
     }
 
     final goalMode = _goalModeForDay(
@@ -417,19 +409,21 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
       isLosing: goalMode == CalorieGoalMode.lose,
       isGaining: goalMode == CalorieGoalMode.gain,
       intakeKcalByDay: intakeKcalByDay,
+      rawActivityKcalByDay: _activityKcalByDay(
+        days: learningDays,
+        activeKcalByDay: activeKcalByDay,
+      ),
       weightPoints: weightPoints,
     );
     latest = DailyLearnedTdeeGoalData(
       measured: calculation.measured,
-      calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
-      newGoalKcal: calculation.newGoalKcal,
-      averageActiveKcal: _averageActiveKcal(
-        days: window.windowDays,
-        activeKcalByDay: activeKcalByDay,
-      ),
+      calculatedBaseTdeeKcal: calculation.calculatedBaseTdeeKcal,
+      newBaseGoalKcal: calculation.newBaseGoalKcal,
+      averageCreditedActivityKcal:
+          calculation.measured.averageCreditedActivityKcal,
     );
     previousGoalKcal = calculation.newGoalKcal;
-    previousLearnedTdeeKcal = calculation.calculatedTrueTdeeKcal;
+    previousLearnedTdeeKcal = calculation.calculatedBaseTdeeKcal;
   }
 
   return latest;
@@ -483,12 +477,6 @@ DailyLearnedTdeeGoalData? _resolveLearnedTdeeGoalFromLoadedData({
   required Map<String, double> representativeWeightByDay,
   required Map<String, int> activeKcalByDay,
 }) {
-  final snapshotEntry = settings.learnedTdeeEntryForDay(context.day);
-  final snapshot = snapshotEntry?.learnedTdeeSnapshot;
-  final snapshotFallback = _snapshotLearnedGoalForEntry(
-    learnedEntry: snapshotEntry,
-    storedGoalKcal: context.storedGoalKcal,
-  );
   final contextLearningDays = buildCalorieCarryoverDateRange(
     startInclusive: context.firstLearningStartDate,
     endExclusive: nextDiaryDay(context.lastWindow.windowEndDate),
@@ -524,15 +512,7 @@ DailyLearnedTdeeGoalData? _resolveLearnedTdeeGoalFromLoadedData({
       settings: settings,
     );
     if (intakeKcalByDay == null) {
-      return _latestOrLegacySnapshotBeforeWindow(
-        latest: latest,
-        settings: settings,
-        snapshotFallback: snapshotFallback,
-        snapshot: snapshot,
-        learningDays: learningDays,
-        entriesByDay: entriesByDay,
-        window: window,
-      );
+      return latest;
     }
 
     final weightPoints = _weeklyWeightPoints(
@@ -543,10 +523,7 @@ DailyLearnedTdeeGoalData? _resolveLearnedTdeeGoalFromLoadedData({
       representativeWeightByDay: representativeWeightByDay,
     );
     if (weightPoints.length < 2) {
-      return _latestOrSnapshotForMissingWeight(
-        latest: latest,
-        snapshotFallback: snapshotFallback,
-      );
+      return latest;
     }
 
     final goalMode = _goalModeForDay(
@@ -563,19 +540,21 @@ DailyLearnedTdeeGoalData? _resolveLearnedTdeeGoalFromLoadedData({
       isLosing: goalMode == CalorieGoalMode.lose,
       isGaining: goalMode == CalorieGoalMode.gain,
       intakeKcalByDay: intakeKcalByDay,
+      rawActivityKcalByDay: _activityKcalByDay(
+        days: learningDays,
+        activeKcalByDay: activeKcalByDay,
+      ),
       weightPoints: weightPoints,
     );
     latest = DailyLearnedTdeeGoalData(
       measured: calculation.measured,
-      calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
-      newGoalKcal: calculation.newGoalKcal,
-      averageActiveKcal: _averageActiveKcal(
-        days: window.windowDays,
-        activeKcalByDay: activeKcalByDay,
-      ),
+      calculatedBaseTdeeKcal: calculation.calculatedBaseTdeeKcal,
+      newBaseGoalKcal: calculation.newBaseGoalKcal,
+      averageCreditedActivityKcal:
+          calculation.measured.averageCreditedActivityKcal,
     );
     previousGoalKcal = calculation.newGoalKcal;
-    previousLearnedTdeeKcal = calculation.calculatedTrueTdeeKcal;
+    previousLearnedTdeeKcal = calculation.calculatedBaseTdeeKcal;
   }
 
   return latest;
@@ -606,59 +585,6 @@ String _windowKey(_WeeklyLearnedWindow window) {
       '${diaryDayKey(window.windowEndDate)}';
 }
 
-DailyLearnedTdeeGoalData? _latestOrSnapshotForMissingWeight({
-  required DailyLearnedTdeeGoalData? latest,
-  required DailyLearnedTdeeGoalData? snapshotFallback,
-}) {
-  return latest ?? snapshotFallback;
-}
-
-DailyLearnedTdeeGoalData? _latestOrLegacySnapshotBeforeWindow({
-  required DailyLearnedTdeeGoalData? latest,
-  required CalorieGoalSettings settings,
-  required DailyLearnedTdeeGoalData? snapshotFallback,
-  required CalorieGoalWeeklyCheckInSnapshot? snapshot,
-  required List<DateTime> learningDays,
-  required Map<String, List<CalorieEntry>> entriesByDay,
-  required _WeeklyLearnedWindow window,
-}) {
-  if (latest != null) {
-    return latest;
-  }
-  if (snapshot == null) {
-    return null;
-  }
-  if (!window.windowEndDate.isBefore(
-    normalizeDiaryDay(snapshot.windowStartDate),
-  )) {
-    return null;
-  }
-  if (_hasLearnedSnapshotForWindow(settings: settings, window: window)) {
-    return null;
-  }
-  if (_hasEntriesForAnyDay(days: learningDays, entriesByDay: entriesByDay)) {
-    return null;
-  }
-  return snapshotFallback;
-}
-
-bool _hasLearnedSnapshotForWindow({
-  required CalorieGoalSettings settings,
-  required _WeeklyLearnedWindow window,
-}) {
-  for (final entry in settings.sortedGoalHistory) {
-    final snapshot = entry.learnedTdeeSnapshot;
-    if (snapshot == null) {
-      continue;
-    }
-    if (isSameDiaryDay(snapshot.windowStartDate, window.windowStartDate) &&
-        isSameDiaryDay(snapshot.windowEndDate, window.windowEndDate)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 bool _hasEntriesForAnyDay({
   required List<DateTime> days,
   required Map<String, List<CalorieEntry>> entriesByDay,
@@ -670,26 +596,6 @@ bool _hasEntriesForAnyDay({
     }
   }
   return false;
-}
-
-DailyLearnedTdeeGoalData? _snapshotLearnedGoalForEntry({
-  required CalorieGoalHistoryEntry? learnedEntry,
-  required double storedGoalKcal,
-}) {
-  final snapshot = learnedEntry?.learnedTdeeSnapshot;
-  if (snapshot == null) {
-    return null;
-  }
-  return DailyLearnedTdeeGoalData(
-    measured: CalorieMeasuredTdeeCalculation(
-      trendWeightChangePerDay: snapshot.trendWeightChangePerDay,
-      averageIntakeKcal: snapshot.calculatedTrueTdeeKcal,
-      measuredTrueTdeeKcal: snapshot.calculatedTrueTdeeKcal,
-    ),
-    calculatedTrueTdeeKcal: snapshot.calculatedTrueTdeeKcal,
-    newGoalKcal: learnedEntry?.dailyKcalGoal ?? storedGoalKcal,
-    averageActiveKcal: snapshot.averageActiveKcal,
-  );
 }
 
 List<_WeeklyLearnedWindow> _weeklyLearnedWindowsForDay({
@@ -987,20 +893,6 @@ double _learnedTdeeSeed({
   required DateTime day,
   required double fallbackGoalKcal,
 }) {
-  final learnedTdeeKcal = _latestLearnedBeforeDay(
-    settings: settings,
-    day: day,
-  )?.learnedTdeeSnapshot?.calculatedTrueTdeeKcal;
-  if (learnedTdeeKcal != null) {
-    return learnedTdeeKcal;
-  }
-  final anchorLearnedTdeeKcal = settings
-      .activeGoalEntryForDay(day)
-      ?.learnedTdeeSnapshot
-      ?.calculatedTrueTdeeKcal;
-  if (anchorLearnedTdeeKcal != null) {
-    return anchorLearnedTdeeKcal;
-  }
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
     settings: settings,
     day: day,
@@ -1011,50 +903,27 @@ double _learnedTdeeSeed({
   return fallbackGoalKcal;
 }
 
-CalorieGoalHistoryEntry? _latestLearnedBeforeDay({
-  required CalorieGoalSettings settings,
-  required DateTime day,
-}) {
-  final normalizedDay = normalizeDiaryDay(day);
-  CalorieGoalHistoryEntry? learnedEntry;
-  for (final entry in settings.sortedGoalHistory) {
-    if (!entry.effectiveDate.isBefore(normalizedDay)) {
-      break;
-    }
-    if (entry.hasLearnedTdee) {
-      learnedEntry = entry;
-    }
-  }
-  return learnedEntry;
-}
-
 int _resolveActiveKcal({
   required DateTime day,
   required DiaryHealthDayData dayData,
 }) {
   final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
-  return calculateDiaryBurnedCalories(
-        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
-        workoutCalories: summary.workouts.map(
-          (workout) => workout.totalCalories,
-        ),
-        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
-      ) ??
-      0;
+  return calculateImportedHealthActivityKcal(
+    stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+    workoutCalories: summary.workouts.map(
+      (workout) => workout.totalCalories,
+    ),
+    unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
+  );
 }
 
-double _averageActiveKcal({
+List<int> _activityKcalByDay({
   required List<DateTime> days,
   required Map<String, int> activeKcalByDay,
 }) {
-  if (days.isEmpty) {
-    return 0;
-  }
-  final total = days.fold<int>(
-    0,
-    (sum, day) => sum + (activeKcalByDay[diaryDayKey(day)] ?? 0),
-  );
-  return total / days.length;
+  return days
+      .map((day) => activeKcalByDay[diaryDayKey(day)] ?? 0)
+      .toList(growable: false);
 }
 
 Map<String, double> _manualWeightByDay(

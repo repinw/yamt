@@ -108,7 +108,6 @@ class CalorieGoalController extends _$CalorieGoalController {
       expectedActivityKcal: calculation.expectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
-      weeklyCheckInSnapshot: currentGoalEntry?.learnedTdeeSnapshot,
       replaceFutureHistory: true,
     );
     final saved = await _persistSettings(nextSettings);
@@ -169,9 +168,6 @@ class CalorieGoalController extends _$CalorieGoalController {
       expectedActivityKcal: currentExpectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: currentSource,
-      weeklyCheckInSnapshot:
-          currentGoalEntry?.learnedTdeeSnapshot ??
-          previousSettings.latestLearnedTdeeEntry?.learnedTdeeSnapshot,
       replaceFutureHistory: true,
     );
     return _persistSettings(nextSettings);
@@ -334,17 +330,6 @@ class CalorieGoalController extends _$CalorieGoalController {
           isLosing: goalMode == CalorieGoalMode.lose,
           isGaining: goalMode == CalorieGoalMode.gain,
         );
-    final currentLearnedSnapshot = currentGoalEntry?.learnedTdeeSnapshot;
-    final latestLearnedSnapshot =
-        previousSettings.latestLearnedTdeeEntry?.learnedTdeeSnapshot;
-    final nextExpectedActivityKcal =
-        currentLearnedSnapshot?.averageActiveKcal ??
-        latestLearnedSnapshot?.averageActiveKcal ??
-        currentGoalEntry?.expectedActivityKcal ??
-        previousSettings.expectedActivityKcal;
-    final expectedActivityChanged =
-        currentGoalEntry?.expectedActivityKcal != null &&
-        currentGoalEntry?.expectedActivityKcal != nextExpectedActivityKcal;
     final goalChanged =
         currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
         currentGoalEntry?.effectiveCountingStartDate !=
@@ -355,7 +340,6 @@ class CalorieGoalController extends _$CalorieGoalController {
           normalizedGoalStartDate: normalizedGoalStartDate,
           countGoalStartDayForLearning: countGoalStartDayForLearning,
         ) ||
-        expectedActivityChanged ||
         !_sameCalculatorProfile(
           currentGoalEntry?.calculatorProfile,
           nextProfile,
@@ -368,10 +352,8 @@ class CalorieGoalController extends _$CalorieGoalController {
       changedAt: changedAt,
       dailyKcalGoal: nextDailyKcalGoal,
       calculatorProfile: nextProfile,
-      expectedActivityKcal: nextExpectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
-      weeklyCheckInSnapshot: currentLearnedSnapshot ?? latestLearnedSnapshot,
       replaceFutureHistory: true,
     );
     final saved = await _persistSettings(nextSettings);
@@ -389,7 +371,6 @@ class CalorieGoalController extends _$CalorieGoalController {
       changedAt: completedAt,
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: null,
-      expectedActivityKcal: weeklyCheckInSnapshot.averageActiveKcal,
       source: CalorieGoalSource.weeklyCheckIn,
       weeklyCheckInSnapshot: weeklyCheckInSnapshot,
     );
@@ -400,10 +381,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       expectedActivityKcal: previousSettings.expectedActivityKcal,
       activityTrackingStartDate: snapshotSettings.activityTrackingStartDate,
       updatedAt: snapshotSettings.updatedAt,
-      goalHistory: _refreshCopiedWeeklyCheckInSnapshots(
-        entries: snapshotSettings.goalHistory,
-        weeklyCheckInSnapshot: weeklyCheckInSnapshot,
-      ),
+      goalHistory: snapshotSettings.goalHistory,
       pendingWeeklyCheckIn: previousSettings.pendingWeeklyCheckIn,
       skippedIntakeDayKeys: snapshotSettings.skippedIntakeDayKeys,
     );
@@ -560,43 +538,6 @@ bool _sameCalculatorProfile(
       left.activityLevel == right.activityLevel &&
       left.goalMode == right.goalMode &&
       left.goalSpeedKgPerWeek == right.goalSpeedKgPerWeek;
-}
-
-List<CalorieGoalHistoryEntry> _refreshCopiedWeeklyCheckInSnapshots({
-  required List<CalorieGoalHistoryEntry> entries,
-  required CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshot,
-}) {
-  return List<CalorieGoalHistoryEntry>.unmodifiable([
-    for (final entry in entries)
-      if (!entry.isWeeklyCheckIn &&
-          _isSameWeeklyCheckInWindow(
-            entry.weeklyCheckInSnapshot,
-            weeklyCheckInSnapshot,
-          ))
-        CalorieGoalHistoryEntry(
-          dailyKcalGoal: entry.dailyKcalGoal,
-          calculatorProfile: entry.calculatorProfile,
-          expectedActivityKcal: entry.expectedActivityKcal,
-          effectiveDate: entry.effectiveDate,
-          changedAt: entry.changedAt,
-          countingStartDate: entry.countingStartDate,
-          source: entry.source,
-          weeklyCheckInSnapshot: weeklyCheckInSnapshot,
-        )
-      else
-        entry,
-  ]);
-}
-
-bool _isSameWeeklyCheckInWindow(
-  CalorieGoalWeeklyCheckInSnapshot? left,
-  CalorieGoalWeeklyCheckInSnapshot right,
-) {
-  if (left == null) {
-    return false;
-  }
-  return isSameDiaryDay(left.windowStartDate, right.windowStartDate) &&
-      isSameDiaryDay(left.windowEndDate, right.windowEndDate);
 }
 
 DateTime _goalChangeTimestamp({

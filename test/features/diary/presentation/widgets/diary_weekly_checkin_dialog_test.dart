@@ -33,6 +33,10 @@ void main() {
       find.byKey(DiaryWeeklyCheckInDialogKeys.trackMissingWeightButton),
       findsNothing,
     );
+    expect(find.text('Measured total TDEE'), findsOneWidget);
+    expect(find.text('Measured base TDEE'), findsOneWidget);
+    expect(find.text('Credited activity avg'), findsOneWidget);
+    expect(find.text('New target'), findsOneWidget);
 
     await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.laterButton));
     await tester.pumpAndSettle();
@@ -79,6 +83,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(results, [DiaryWeeklyCheckInDialogAction.trackMissingWeight]);
+  });
+
+  testWidgets('ready dialog hides health activity metrics without health', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _App(
+        checkInData: _checkInData(usesHealthActivity: false),
+        onResult: (_) {},
+      ),
+    );
+
+    await _openDialog(tester);
+
+    expect(find.text('Measured total TDEE'), findsOneWidget);
+    expect(find.text('New target'), findsOneWidget);
+    expect(find.text('Measured base TDEE'), findsNothing);
+    expect(find.text('Credited activity avg'), findsNothing);
   });
 }
 
@@ -129,6 +151,7 @@ DiaryWeeklyCheckInData _checkInData({
   CalorieWeeklyCheckInBlockedReason? blockedReason,
   List<DateTime> missingWeightDays = const <DateTime>[],
   bool lowConfidence = false,
+  bool usesHealthActivity = true,
 }) {
   final pending = PendingCalorieGoalWeeklyCheckIn(
     windowStartDate: DateTime(2026, 4),
@@ -144,10 +167,11 @@ DiaryWeeklyCheckInData _checkInData({
         ? const CalorieWeeklyCheckInCalculation(
             trendWeightChangePerDay: -0.05,
             averageIntakeKcal: 2150,
-            measuredTrueTdeeKcal: 2500,
-            calculatedTrueTdeeKcal: 2450,
-            newGoalKcal: 2200,
-            lastWeekAverageActiveKcal: 300,
+            measuredTotalTdeeKcal: 2500,
+            measuredBaseTdeeKcal: 2200,
+            calculatedBaseTdeeKcal: 2450,
+            newBaseGoalKcal: 2200,
+            averageCreditedActivityKcal: 300,
             todayActiveKcal: 350,
             activityDeltaKcal: 25,
             dynamicGoalTodayKcal: 2225,
@@ -159,5 +183,6 @@ DiaryWeeklyCheckInData _checkInData({
     freshness: CalorieLearnedTdeeFreshness.fresh,
     latestLearnedTdeeAt: null,
     lowConfidence: lowConfidence,
+    usesHealthActivity: usesHealthActivity,
   );
 }

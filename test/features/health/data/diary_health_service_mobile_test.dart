@@ -115,57 +115,69 @@ void main() {
     ]);
   });
 
-  test('loadActivityTrendDays reads daily aggregate buckets', () async {
-    final firstDay = DateTime(2026, 4, 17);
-    final secondDay = DateTime(2026, 4, 18);
-    final endDay = DateTime(2026, 4, 19);
-    final fakeHealth = _FakeHealth(
-      intervalDataPoints: [
-        _buildNumericPoint(
-          type: HealthDataType.STEPS,
-          unit: HealthDataUnit.COUNT,
-          start: firstDay,
-          end: secondDay,
-          value: 4000,
-        ),
-        _buildNumericPoint(
-          type: HealthDataType.ACTIVE_ENERGY_BURNED,
-          unit: HealthDataUnit.KILOCALORIE,
-          start: firstDay,
-          end: secondDay,
-          value: 220,
-        ),
-        _buildNumericPoint(
-          type: HealthDataType.STEPS,
-          unit: HealthDataUnit.COUNT,
-          start: secondDay,
-          end: endDay,
-          value: 3000,
-        ),
-      ],
-      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
-        HealthDataType.WORKOUT: <HealthDataPoint>[],
-        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
-      },
-      totalStepsResponses: const <String, int?>{},
-    );
-    final service = MobileDiaryHealthService(health: fakeHealth);
+  test(
+    'loadActivityTrendDays includes workout kcal in trend buckets',
+    () async {
+      final firstDay = DateTime(2026, 4, 17);
+      final secondDay = DateTime(2026, 4, 18);
+      final endDay = DateTime(2026, 4, 19);
+      final fakeHealth = _FakeHealth(
+        intervalDataPoints: [
+          _buildNumericPoint(
+            type: HealthDataType.STEPS,
+            unit: HealthDataUnit.COUNT,
+            start: firstDay,
+            end: secondDay,
+            value: 4000,
+          ),
+          _buildNumericPoint(
+            type: HealthDataType.ACTIVE_ENERGY_BURNED,
+            unit: HealthDataUnit.KILOCALORIE,
+            start: firstDay,
+            end: secondDay,
+            value: 220,
+          ),
+          _buildNumericPoint(
+            type: HealthDataType.STEPS,
+            unit: HealthDataUnit.COUNT,
+            start: secondDay,
+            end: endDay,
+            value: 3000,
+          ),
+        ],
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: firstDay.add(const Duration(hours: 18)),
+              end: firstDay.add(const Duration(hours: 19)),
+              totalCalories: 899,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+        },
+        totalStepsResponses: const <String, int?>{},
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
 
-    final trendDays = await service.loadActivityTrendDays(
-      startInclusive: firstDay,
-      endExclusive: endDay,
-    );
+      final trendDays = await service.loadActivityTrendDays(
+        startInclusive: firstDay,
+        endExclusive: endDay,
+      );
 
-    expect(fakeHealth.requestedIntervalTypes, <List<HealthDataType>>[
-      <HealthDataType>[
-        HealthDataType.STEPS,
-        HealthDataType.ACTIVE_ENERGY_BURNED,
-      ],
-    ]);
-    expect(trendDays.map((day) => day.day), <DateTime>[firstDay, secondDay]);
-    expect(trendDays.map((day) => day.totalSteps), <int>[4000, 3000]);
-    expect(trendDays.map((day) => day.activeEnergyKcal), <int>[220, 0]);
-  });
+      expect(fakeHealth.requestedIntervalTypes, <List<HealthDataType>>[
+        <HealthDataType>[
+          HealthDataType.STEPS,
+          HealthDataType.ACTIVE_ENERGY_BURNED,
+        ],
+      ]);
+      expect(fakeHealth.requestedHealthDataTypes, <List<HealthDataType>>[
+        <HealthDataType>[HealthDataType.WORKOUT],
+      ]);
+      expect(trendDays.map((day) => day.day), <DateTime>[firstDay, secondDay]);
+      expect(trendDays.map((day) => day.totalSteps), <int>[4000, 3000]);
+      expect(trendDays.map((day) => day.activeEnergyKcal), <int>[899, 0]);
+    },
+  );
 
   test(
     'loadActivityTrendDays reads persisted trend before health connect',
@@ -278,6 +290,69 @@ void main() {
       expect(cachedHealth.requestedIntervalTypes, isEmpty);
     },
   );
+
+  test('refreshActivityTrendDays bypasses fresh in-memory cache', () async {
+    final day = DateTime(2026, 4, 27);
+    final endDay = DateTime(2026, 4, 28);
+    final intervalDataPoints = <HealthDataPoint>[
+      _buildNumericPoint(
+        type: HealthDataType.ACTIVE_ENERGY_BURNED,
+        unit: HealthDataUnit.KILOCALORIE,
+        start: day,
+        end: endDay,
+        value: 120,
+      ),
+    ];
+    final fakeHealth = _FakeHealth(
+      intervalDataPoints: intervalDataPoints,
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{},
+      totalStepsResponses: const <String, int?>{},
+    );
+    final service = MobileDiaryHealthService(
+      health: fakeHealth,
+      now: () => DateTime(2026, 4, 27, 12),
+    );
+
+    final firstRead = await service.loadActivityTrendDays(
+      startInclusive: day,
+      endExclusive: endDay,
+    );
+    intervalDataPoints
+      ..clear()
+      ..add(
+        _buildNumericPoint(
+          type: HealthDataType.ACTIVE_ENERGY_BURNED,
+          unit: HealthDataUnit.KILOCALORIE,
+          start: day,
+          end: endDay,
+          value: 899,
+        ),
+      );
+    final cachedRead = await service.loadActivityTrendDays(
+      startInclusive: day,
+      endExclusive: endDay,
+    );
+    final refreshedRead = await service.refreshActivityTrendDays(
+      startInclusive: day,
+      endExclusive: endDay,
+    );
+    intervalDataPoints.clear();
+    final deletedRead = await service.refreshActivityTrendDays(
+      startInclusive: day,
+      endExclusive: endDay,
+    );
+    final cachedDeletedRead = await service.loadActivityTrendDays(
+      startInclusive: day,
+      endExclusive: endDay,
+    );
+
+    expect(firstRead.single.activeEnergyKcal, 120);
+    expect(cachedRead.single.activeEnergyKcal, 120);
+    expect(refreshedRead.single.activeEnergyKcal, 899);
+    expect(deletedRead.single.activeEnergyKcal, 0);
+    expect(cachedDeletedRead.single.activeEnergyKcal, 0);
+    expect(fakeHealth.requestedIntervalTypes, hasLength(3));
+  });
 
   test(
     'loadActivityTrendDays resets malformed persisted trend index',
@@ -744,6 +819,68 @@ void main() {
     expect(cachedHealth.configureCalls, 0);
     expect(cachedHealth.requestedStepIntervals, isEmpty);
   });
+
+  test(
+    'refreshDayData overwrites persisted workout with empty Health day',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18));
+      final workoutEnd = day.add(const Duration(hours: 19));
+      final preferences = MemoryAppPreferences();
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 899,
+              totalSteps: 2800,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 6772,
+        },
+      );
+      final service = MobileDiaryHealthService(
+        health: fakeHealth,
+        preferences: preferences,
+        now: () => DateTime(2026, 4, 27, 12),
+      );
+
+      final firstRead = await service.loadDayData(day: day);
+      final deletedHealth = _FakeHealth(
+        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): null,
+        },
+      );
+      final deletedService = MobileDiaryHealthService(
+        health: deletedHealth,
+        preferences: preferences,
+        now: () => DateTime(2026, 4, 27, 12, 1),
+      );
+
+      final cachedRead = await deletedService.loadDayData(day: day);
+      final refreshedRead = await deletedService.refreshDayData(day: day);
+      final overwrittenRead = await deletedService.loadDayData(day: day);
+
+      expect(firstRead.workouts.single.totalCalories, 899);
+      expect(cachedRead.workouts.single.totalCalories, 899);
+      expect(refreshedRead.totalSteps, 0);
+      expect(refreshedRead.workouts, isEmpty);
+      expect(overwrittenRead.totalSteps, 0);
+      expect(overwrittenRead.workouts, isEmpty);
+      expect(deletedHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+      ]);
+    },
+  );
 
   test(
     'loadDayData drops stale cache after hard stale age',

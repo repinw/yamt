@@ -36,6 +36,25 @@ void main() {
     expect(metrics.dayLeftKcal, 2014);
   });
 
+  test(
+    'keeps activity segment based on base plus activity when carryover grows',
+    () {
+      final metrics = resolveDiaryDailyBalanceMetrics(
+        flexibleGoalKcal: 5000,
+        totalKcal: 655,
+        goalKcal: 2669,
+        baseGoalKcal: 2498,
+        activitySegmentKcal: 171,
+        bufferAdjustmentKcal: 0,
+        heartCreditKcal: 0,
+        isHeartDay: false,
+      );
+
+      expect(metrics.targetKcal, 5000);
+      expect(metrics.activitySegmentReferenceKcal, 2669);
+    },
+  );
+
   test('applies heart credit to display values only', () {
     final metrics = resolveDiaryDailyBalanceMetrics(
       flexibleGoalKcal: 2669,
