@@ -34,11 +34,11 @@ void debugLog(
   Object? error,
   StackTrace? stackTrace,
 }) {
-  if (shouldSuppressDebugLogs) {
-    return;
-  }
-
   assert(() {
+    if (shouldSuppressDebugLogs) {
+      return true;
+    }
+
     appLog(message, name: name, error: error, stackTrace: stackTrace);
     return true;
   }(), 'debugLog should run only in debug mode.');
