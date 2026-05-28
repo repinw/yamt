@@ -219,26 +219,28 @@ class ReceiptReviewResolutionService {
     required bool globalSaved,
     required DateTime now,
   }) async {
-    await _runPostInventorySaveTask(
-      'barcode selection learning',
-      () => _recordBarcodeSelections(
-        resolvedItems,
-        globalSaved: globalSaved,
-        now: now,
+    await Future.wait<void>([
+      _runPostInventorySaveTask(
+        'barcode selection learning',
+        () => _recordBarcodeSelections(
+          resolvedItems,
+          globalSaved: globalSaved,
+          now: now,
+        ),
       ),
-    );
-    await _runPostInventorySaveTask(
-      'receipt alias learning',
-      () => _persistReceiptAliases(
-        resolvedItems,
-        globalSaved: globalSaved,
-        now: now,
+      _runPostInventorySaveTask(
+        'receipt alias learning',
+        () => _persistReceiptAliases(
+          resolvedItems,
+          globalSaved: globalSaved,
+          now: now,
+        ),
       ),
-    );
-    await _runPostInventorySaveTask(
-      'calorie profile handoff',
-      () => _persistCalorieProfiles(inventoryItems, now: now),
-    );
+      _runPostInventorySaveTask(
+        'calorie profile handoff',
+        () => _persistCalorieProfiles(inventoryItems, now: now),
+      ),
+    ]);
   }
 
   Future<void> _runPostInventorySaveTask(
