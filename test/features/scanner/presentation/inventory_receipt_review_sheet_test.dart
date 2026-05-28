@@ -1245,6 +1245,9 @@ void main() {
 
     expect(savedDrafts, isNotNull);
     expect(savedDrafts!.single.isConfirmed, isTrue);
+    expect(savedDrafts!.single.selectedGlobalFoodItemId, 'off-4061458029995');
+    expect(savedDrafts!.single.item.name, 'Waffelhörnchen Haselnuss-Vanille');
+    expect(savedDrafts!.single.item.barcode, '4061458029995');
   });
 
   testWidgets('edited item can search after empty lazy lookup', (

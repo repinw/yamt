@@ -38,6 +38,8 @@ Other features may consume these public Inventory entry points:
   `InventoryItemEatRequest`
 - Repository providers from `data/` when tests or app composition need explicit
   overrides
+- `InventoryReceiptItemEditorSheet` and `InventoryReceiptCandidatePickerSheet`
+  for scanner/inventory receipt-review correction flows.
 - `PreparedMealCover` for features that display prepared-meal thumbnails.
 - `AppInventoryEatActionColors` and `AppInventoryBuyAgainActionColors` for
   inventory action semantics shared with cookflow.

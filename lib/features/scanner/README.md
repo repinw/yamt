@@ -48,8 +48,8 @@ widget is documented as a reusable scanner surface.
 Scanner currently has explicit dependencies on:
 
 - `inventory` for `InventoryItem`, `OffProductSearchResult`, global food
-  matching, inventory persistence, receipt alias persistence, and manual
-  product result models.
+  matching, inventory persistence, receipt alias persistence, manual product
+  result models, and inventory-owned receipt correction sheets.
 - `product_search` for the public manual product search route used during
   receipt review fallback and product correction.
 - `calories` for product nutrition cache handoff after reviewed receipt items

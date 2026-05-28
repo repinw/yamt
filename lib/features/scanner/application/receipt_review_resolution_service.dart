@@ -198,17 +198,12 @@ class ReceiptReviewResolutionService {
       inventoryItemsToSave,
     );
     if (inventorySaved) {
-      await _recordBarcodeSelections(
-        resolvedItems,
+      await _persistPostInventorySideEffects(
+        resolvedItems: resolvedItems,
+        inventoryItems: inventoryItemsToSave,
         globalSaved: globalSaved,
         now: now,
       );
-      await _persistReceiptAliases(
-        resolvedItems,
-        globalSaved: globalSaved,
-        now: now,
-      );
-      await _persistCalorieProfiles(inventoryItemsToSave, now: now);
     }
     return ReceiptReviewPersistResult(
       saved: inventorySaved,
@@ -216,6 +211,50 @@ class ReceiptReviewResolutionService {
           ? inventoryItemsToSave
           : const <InventoryItem>[],
     );
+  }
+
+  Future<void> _persistPostInventorySideEffects({
+    required List<_ResolvedReviewItem> resolvedItems,
+    required List<InventoryItem> inventoryItems,
+    required bool globalSaved,
+    required DateTime now,
+  }) async {
+    await _runPostInventorySaveTask(
+      'barcode selection learning',
+      () => _recordBarcodeSelections(
+        resolvedItems,
+        globalSaved: globalSaved,
+        now: now,
+      ),
+    );
+    await _runPostInventorySaveTask(
+      'receipt alias learning',
+      () => _persistReceiptAliases(
+        resolvedItems,
+        globalSaved: globalSaved,
+        now: now,
+      ),
+    );
+    await _runPostInventorySaveTask(
+      'calorie profile handoff',
+      () => _persistCalorieProfiles(inventoryItems, now: now),
+    );
+  }
+
+  Future<void> _runPostInventorySaveTask(
+    String label,
+    Future<void> Function() task,
+  ) async {
+    try {
+      await task();
+    } on Object catch (error, stackTrace) {
+      appLog(
+        'Receipt review post-save task failed: $label.',
+        name: _resolutionLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   GlobalFoodItem _buildProductFromDraft({

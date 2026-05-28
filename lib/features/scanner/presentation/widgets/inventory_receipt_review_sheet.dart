@@ -23,6 +23,7 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/features/scanner/application/'
     'receipt_review_candidate_resolution_service.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_candidate_lookup.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 import 'package:yamt/features/scanner/domain/'
@@ -474,43 +475,24 @@ class _InventoryReceiptReviewSheetState
     }
 
     final currentDraft = _items[currentIndex];
-    if (!_isSameCandidateLookupInput(lookupItem, currentDraft.item)) {
+    if (!hasSameReceiptReviewCandidateLookupInput(
+      lookupItem,
+      currentDraft.item,
+    )) {
       return currentDraft;
     }
     final nextDraft = currentDraft == draft
         ? resolvedDraft
-        : _mergeResolvedCandidatesIntoCurrentDraft(
+        : mergeResolvedReceiptReviewCandidates(
             currentDraft: currentDraft,
             resolvedDraft: resolvedDraft,
+            lookupItem: lookupItem,
           );
     setState(() {
       _candidateResolvedItemIds.add(itemId);
       _items[currentIndex] = nextDraft;
     });
     return nextDraft;
-  }
-
-  ReceiptReviewItemDraft _mergeResolvedCandidatesIntoCurrentDraft({
-    required ReceiptReviewItemDraft currentDraft,
-    required ReceiptReviewItemDraft resolvedDraft,
-  }) {
-    if (currentDraft.hasCandidates) {
-      return currentDraft;
-    }
-
-    return currentDraft.copyWith(candidates: resolvedDraft.candidates);
-  }
-
-  bool _isSameCandidateLookupInput(
-    InventoryItem lookupItem,
-    InventoryItem currentItem,
-  ) {
-    return lookupItem.id == currentItem.id &&
-        lookupItem.name == currentItem.name &&
-        lookupItem.brand == currentItem.brand &&
-        lookupItem.barcode == currentItem.barcode &&
-        lookupItem.weight == currentItem.weight &&
-        lookupItem.storeName == currentItem.storeName;
   }
 
   void _setCandidateLoadingItemId(String itemId) {
@@ -553,10 +535,11 @@ class _InventoryReceiptReviewSheetState
     }
     final currentDraft = _items[index];
     final nextDraft = transform(currentDraft);
-    final shouldInvalidateCandidateResolution = !_isSameCandidateLookupInput(
-      currentDraft.item,
-      nextDraft.item,
-    );
+    final shouldInvalidateCandidateResolution =
+        !hasSameReceiptReviewCandidateLookupInput(
+          currentDraft.item,
+          nextDraft.item,
+        );
     setState(() {
       if (shouldInvalidateCandidateResolution) {
         _candidateResolvedItemIds.remove(itemId);

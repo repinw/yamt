@@ -115,6 +115,9 @@ class _RecordingGlobalFoodReceiptAliasRepository
 
 class _RecordingGlobalBarcodeCandidateRepository
     implements GlobalBarcodeCandidateRepository {
+  _RecordingGlobalBarcodeCandidateRepository({this.throwOnRecord = false});
+
+  final bool throwOnRecord;
   final List<({String barcode, GlobalFoodItem globalFoodItem})>
   recordedSelections = <({String barcode, GlobalFoodItem globalFoodItem})>[];
 
@@ -132,6 +135,9 @@ class _RecordingGlobalBarcodeCandidateRepository
     required GlobalFoodItem globalFoodItem,
     required DateTime selectedAt,
   }) async {
+    if (throwOnRecord) {
+      throw StateError('Barcode learning failed.');
+    }
     recordedSelections.add((barcode: barcode, globalFoodItem: globalFoodItem));
   }
 }
@@ -410,6 +416,38 @@ void main() {
       '4006381333931',
     );
   });
+
+  test(
+    'persistReviewedItems keeps save success when barcode learning fails',
+    () async {
+      final globalRepository = _RecordingGlobalFoodItemRepository();
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository(
+        throwOnRecord: true,
+      );
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        globalFoodItemRepository: globalRepository,
+        globalBarcodeCandidateRepository: barcodeRepository,
+        inventoryItemRepository: inventoryRepository,
+      );
+
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(id: 'draft-1', name: 'Milk').copyWith(
+              barcode: '4006381333931',
+            ),
+          ),
+        ],
+      );
+
+      expect(result.saved, isTrue);
+      expect(globalRepository.appendedItems, hasLength(1));
+      expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(barcodeRepository.recordedSelections, isEmpty);
+    },
+  );
 
   test(
     'persistReviewedItems keeps cleared selected candidate fields null',
