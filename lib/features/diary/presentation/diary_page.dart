@@ -168,15 +168,13 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                 DiaryWeeklyCheckInSection(
                   selectedDay: calendarState.selectedDay,
                 ),
-              if (dashboardState.data != null) ...[
-                const SizedBox(height: AppSpacing.xl),
-                DiaryActivityWeightSection(
+              const SizedBox(height: AppSpacing.xl),
+              DiaryActivityWeightSection(
+                selectedDay: calendarState.selectedDay,
+                header: DiaryWeeklyBalanceSummary(
                   selectedDay: calendarState.selectedDay,
-                  header: DiaryWeeklyBalanceSummary(
-                    selectedDay: calendarState.selectedDay,
-                  ),
                 ),
-              ],
+              ),
               const SizedBox(height: AppSpacing.xxl),
             ],
           ),

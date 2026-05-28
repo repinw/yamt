@@ -334,6 +334,71 @@ void main() {
     expect(find.text('5.000'), findsOneWidget);
   });
 
+  testWidgets('compact activity section keeps header state after loading', (
+    tester,
+  ) async {
+    var headerDisposeCount = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ..._commonOverrides(),
+          _stepsSummaryOverride(
+            selectedDay,
+            _activitySummary(
+              selectedDay,
+              totalSteps: 6500,
+              stepsDuringWorkouts: 1500,
+              stepsOutsideWorkouts: 5000,
+            ),
+          ),
+          _activityWeightOverride(
+            selectedDay,
+            _activityWeightData(
+              selectedDay,
+              activityKcal: 450,
+              activeMinutes: 45,
+              selectedWeightKg: 78.4,
+              hasSelectedDayWeight: true,
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DiaryActivityWeightSection(
+              selectedDay: selectedDay,
+              header: _DisposableHeader(
+                onDispose: () {
+                  headerDisposeCount += 1;
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Stable header'), findsOneWidget);
+    expect(find.text('SCHRITTE'), findsOneWidget);
+    expect(find.text('AKTIVITÄT'), findsOneWidget);
+    expect(find.text('GEWICHT'), findsOneWidget);
+    expect(find.textContaining('450 kcal', findRichText: true), findsNothing);
+    final loadingSize = tester.getSize(find.byType(DiaryActivityWeightSection));
+
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
+
+    final loadedSize = tester.getSize(find.byType(DiaryActivityWeightSection));
+    expect(headerDisposeCount, 0);
+    expect(loadedSize.height, loadingSize.height);
+    expect(find.text('Stable header'), findsOneWidget);
+    expect(find.text('AKTIVITÄT'), findsOneWidget);
+  });
+
   testWidgets('compact activity section expands weight details', (
     tester,
   ) async {
@@ -1225,4 +1290,26 @@ Future<void> _pumpDiaryWidget(
 
 AppLocalizations _l10n(WidgetTester tester) {
   return AppLocalizations.of(tester.element(find.byType(Scaffold).first))!;
+}
+
+class _DisposableHeader extends StatefulWidget {
+  const _DisposableHeader({required this.onDispose});
+
+  final VoidCallback onDispose;
+
+  @override
+  State<_DisposableHeader> createState() => _DisposableHeaderState();
+}
+
+class _DisposableHeaderState extends State<_DisposableHeader> {
+  @override
+  void dispose() {
+    widget.onDispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text('Stable header');
+  }
 }

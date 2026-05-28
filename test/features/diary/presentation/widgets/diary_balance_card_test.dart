@@ -183,6 +183,10 @@ void main() {
     final valueLabel = find.text('15,726 / 17,755 kcal');
 
     expect(valueLabel, findsOneWidget);
+    expect(find.byIcon(Icons.local_fire_department_rounded), findsNothing);
+    expect(find.text('6'), findsOneWidget);
+    expect(find.text('Day 6 of 7'), findsOneWidget);
+    expect(find.text('Week 6'), findsNothing);
     expect(tester.getRect(valueLabel).right, closeTo(trackRect.right, 1));
   });
 

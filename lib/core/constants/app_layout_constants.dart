@@ -246,6 +246,9 @@ abstract final class AppSizes {
   /// Font size for compact metric values.
   static const double compactMetricValueFont = 16;
 
+  /// Reserved height for compact metric values.
+  static const double compactMetricValueSlotHeight = 24;
+
   /// Divider width for compact metric cards.
   static const double compactMetricDividerWidth = 1;
 

@@ -632,6 +632,26 @@ void main() {
     expect(find.textContaining('4,321', findRichText: true), findsOneWidget);
   });
 
+  testWidgets('shows activity skeleton while dashboard is loading', (
+    tester,
+  ) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      dashboardState: const DiaryDayDashboardState(
+        data: null,
+        isFromCache: false,
+        isRefreshing: true,
+        error: null,
+      ),
+      initialFrameCount: 0,
+    );
+
+    expect(find.byType(DiaryActivityWeightSection), findsOneWidget);
+    expect(find.byType(DiaryWeeklyBalanceSummary), findsOneWidget);
+    expect(find.byType(DiaryWeeklyCheckInSection), findsNothing);
+  });
+
   testWidgets('shows weekly check-in success card for todays learned target', (
     tester,
   ) async {
@@ -1084,6 +1104,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   HealthConnectionService? healthConnectionService,
   MemoryAppPreferences? appPreferences,
   BurnWeekRunState? burnWeekRunState,
+  DiaryDayDashboardState? dashboardState,
   Map<String, DiaryHealthDayData> healthDataByDay =
       const <String, DiaryHealthDayData>{},
   VoidCallback? onInventoryBuild,
@@ -1137,12 +1158,13 @@ Future<ProviderContainer> _pumpDiaryPage(
       diaryDayDashboardControllerProvider(
         normalizedSelectedDay,
       ).overrideWithValue(
-        diaryDashboardLoadedStateForTest(
-          selectedDay: normalizedSelectedDay,
-          weekOverview: weekOverview,
-          selectedDayEntries: selectedDayEntries,
-          runState: burnWeekRunState ?? const BurnWeekRunState.initial(),
-        ),
+        dashboardState ??
+            diaryDashboardLoadedStateForTest(
+              selectedDay: normalizedSelectedDay,
+              weekOverview: weekOverview,
+              selectedDayEntries: selectedDayEntries,
+              runState: burnWeekRunState ?? const BurnWeekRunState.initial(),
+            ),
       ),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       burnWeekRunStateRepositoryProvider.overrideWithValue(
