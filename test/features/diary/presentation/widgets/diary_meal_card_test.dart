@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
@@ -48,14 +49,15 @@ void main() {
       find.byWidgetPredicate(
         (widget) =>
             widget is DecoratedBox &&
-            widget.decoration == AppSurfaceCard.decoration(colors),
+            widget.decoration == AppQuietSurfaces.cardDecoration(colors),
       ),
       findsOneWidget,
     );
     expect(
       find.byWidgetPredicate(
         (widget) =>
-            widget is Padding && widget.padding == AppSurfaceCard.padding,
+            widget is Padding &&
+            widget.padding == const EdgeInsets.all(AppSpacing.md),
       ),
       findsOneWidget,
     );

@@ -37,13 +37,9 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final pageColor = Color.alphaBlend(
-      colors.primary.withValues(alpha: 0.035),
-      colors.surface,
-    );
 
     return ColoredBox(
-      color: pageColor,
+      color: AppQuietSurfaces.pageBackground(colors),
       child: CustomScrollView(
         slivers: [
           if (includeHomeShellChrome)

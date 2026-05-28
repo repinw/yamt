@@ -24,10 +24,10 @@ void main() {
     final frame = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
     final decoration = frame.decoration as BoxDecoration;
 
-    expect(decoration.color, AppEditorialSurfaces.liftedCard(colors));
+    expect(decoration.color, AppQuietSurfaces.cardDecoration(colors).color);
     expect(
       (decoration.border as Border?)?.top.color,
-      AppEditorialSurfaces.solidCardBorder(colors),
+      (AppQuietSurfaces.cardDecoration(colors).border as Border?)?.top.color,
     );
     expect(decoration.boxShadow, isNotEmpty);
     expect(find.byKey(const ValueKey<String>('metric-child')), findsOneWidget);

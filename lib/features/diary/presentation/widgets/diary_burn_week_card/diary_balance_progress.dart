@@ -34,7 +34,7 @@ class DiaryBalanceProgressBar extends StatelessWidget {
   /// Total days represented by the bar.
   final int totalDays;
 
-  /// Whether to render the slim, marker-free diary summary version.
+  /// Whether to render the slim diary summary version.
   final bool compact;
 
   @override
@@ -66,6 +66,15 @@ class DiaryBalanceProgressBar extends StatelessWidget {
               actualConsumedKcal,
               weeklyGoalKcal,
             );
+            final targetRatio = _ratioForKcal(targetKcal, weeklyGoalKcal);
+            final targetMarkerLeft =
+                (width * targetRatio - diaryBalanceTargetMarkerWidth / 2).clamp(
+                  0.0,
+                  math.max<double>(
+                    0,
+                    width - diaryBalanceTargetMarkerWidth,
+                  ),
+                );
 
             return ClipRRect(
               key: DiaryBalanceCardKeys.progressTrack,
@@ -111,6 +120,16 @@ class DiaryBalanceProgressBar extends StatelessWidget {
                         bottom: 0,
                         child: ColoredBox(color: dividerColor),
                       ),
+                    Positioned(
+                      key: DiaryBalanceCardKeys.targetMarker,
+                      left: targetMarkerLeft,
+                      top: 0,
+                      width: diaryBalanceTargetMarkerWidth,
+                      bottom: 0,
+                      child: ColoredBox(
+                        color: colors.onSurface.withValues(alpha: 0.72),
+                      ),
+                    ),
                   ],
                 ),
               ),

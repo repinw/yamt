@@ -44,15 +44,20 @@ class DiaryWeeklyBalanceCard extends StatelessWidget {
     final valueLabel =
         '$actualKcal / $goalKcal '
         '${l10n.caloriesUnitKcal}';
+    final runDayLabel = l10n.diaryBalanceDayProgressLabel(
+      weeklyMetrics.progressDay,
+      weeklyMetrics.totalDays,
+    );
+    final weekLabel = l10n.diaryBalanceWeekLabel(runWeekNumber);
 
     return DiaryBalanceShell(
       framed: framed,
       child: Row(
         children: [
-          Icon(
-            Icons.local_fire_department_rounded,
-            color: activity,
-            size: 18,
+          _WeekNumberBadge(
+            value: numberFormat.format(runWeekNumber),
+            semanticLabel: weekLabel,
+            accentColor: activity,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -63,7 +68,7 @@ class DiaryWeeklyBalanceCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        l10n.diaryBalanceWeekLabel(runWeekNumber),
+                        runDayLabel,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -107,6 +112,62 @@ class DiaryWeeklyBalanceCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _WeekNumberBadge extends StatelessWidget {
+  const _WeekNumberBadge({
+    required this.value,
+    required this.semanticLabel,
+    required this.accentColor,
+  });
+
+  final String value;
+  final String semanticLabel;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Semantics(
+      label: semanticLabel,
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: accentColor.withValues(alpha: 0.42),
+            ),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: 28,
+              minHeight: 24,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xs,
+              ),
+              child: Center(
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0,
+                    height: 1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

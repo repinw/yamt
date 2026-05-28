@@ -310,6 +310,48 @@ abstract final class AppEditorialSurfaces {
   }
 }
 
+/// Quiet grouped-list surfaces used by settings-style pages.
+abstract final class AppQuietSurfaces {
+  /// Shared card radius for quiet grouped cards.
+  static const double cardRadius = 16;
+
+  /// Shared quiet page background.
+  static Color pageBackground(ColorScheme colors) {
+    return Color.alphaBlend(
+      colors.primary.withValues(alpha: 0.035),
+      colors.surface,
+    );
+  }
+
+  /// Shared quiet card border radius.
+  static BorderRadius cardBorderRadius() => BorderRadius.circular(cardRadius);
+
+  /// Shared quiet card decoration.
+  static BoxDecoration cardDecoration(
+    ColorScheme colors, {
+    bool withShadow = true,
+  }) {
+    final isDark = colors.brightness == Brightness.dark;
+
+    return BoxDecoration(
+      color: isDark ? colors.surfaceContainerLow : colors.surface,
+      borderRadius: cardBorderRadius(),
+      border: Border.all(
+        color: colors.outlineVariant.withValues(alpha: isDark ? 0.24 : 0.18),
+      ),
+      boxShadow: withShadow
+          ? [
+              BoxShadow(
+                color: colors.shadow.withValues(alpha: isDark ? 0.18 : 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ]
+          : null,
+    );
+  }
+}
+
 /// App-wide raised card design used by primary content cards.
 abstract final class AppSurfaceCard {
   /// Shared radius for primary content cards.

@@ -141,36 +141,37 @@ class _DiaryActivityWeightSectionState
 
     return Column(
       children: [
-        if (data == null)
-          DiaryCompactActivityWeightSkeleton(header: widget.header)
-        else
-          DiaryCompactActivityWeightCard(
-            data: data,
-            header: widget.header,
-            stepsState: currentStepsState,
-            isStepsExpanded: _isStepsExpanded,
-            isActivityExpanded: _isActivityExpanded,
-            isWeightExpanded: _isWeightExpanded,
-            onToggleSteps: () {
-              setState(() {
-                _isStepsExpanded = !_isStepsExpanded;
-              });
-            },
-            onToggleActivity: () {
-              setState(() {
-                _isActivityExpanded = !_isActivityExpanded;
-              });
-            },
-            onTapWeight: () {
-              if (showWeightWarning) {
-                _openWeightDialog(data, normalizedDay);
-                return;
-              }
-              setState(() {
-                _isWeightExpanded = !_isWeightExpanded;
-              });
-            },
-          ),
+        DiaryCompactActivityWeightSurface(
+          header: widget.header,
+          body: data == null
+              ? const DiaryCompactActivityWeightSkeletonRow()
+              : DiaryCompactActivityWeightMetricsRow(
+                  data: data,
+                  stepsState: currentStepsState,
+                  isStepsExpanded: _isStepsExpanded,
+                  isActivityExpanded: _isActivityExpanded,
+                  isWeightExpanded: _isWeightExpanded,
+                  onToggleSteps: () {
+                    setState(() {
+                      _isStepsExpanded = !_isStepsExpanded;
+                    });
+                  },
+                  onToggleActivity: () {
+                    setState(() {
+                      _isActivityExpanded = !_isActivityExpanded;
+                    });
+                  },
+                  onTapWeight: () {
+                    if (showWeightWarning) {
+                      _openWeightDialog(data, normalizedDay);
+                      return;
+                    }
+                    setState(() {
+                      _isWeightExpanded = !_isWeightExpanded;
+                    });
+                  },
+                ),
+        ),
         if (data != null && data.needsHealthConnection) ...[
           const SizedBox(height: AppSpacing.md),
           DiaryHealthConnectMetricCard(accessState: data.healthAccessState),

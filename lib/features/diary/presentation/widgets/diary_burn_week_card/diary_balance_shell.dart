@@ -20,28 +20,15 @@ class DiaryBalanceShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
-    final baseSurface = AppEditorialSurfaces.liftedCard(colors);
 
     if (!framed) {
       return child;
     }
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: baseSurface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
-        boxShadow: [
-          BoxShadow(
-            color: AppEditorialSurfaces.ambientShadow(colors),
-            blurRadius: isDark ? 22 : 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+      decoration: AppQuietSurfaces.cardDecoration(colors),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: child,
       ),
     );

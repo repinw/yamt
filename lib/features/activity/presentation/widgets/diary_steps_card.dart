@@ -52,7 +52,7 @@ class _DiaryStepsCardState extends ConsumerState<DiaryStepsCard>
       children: [
         Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           child: AppInkWell(
             onTap: canExpand
                 ? () {
@@ -61,7 +61,7 @@ class _DiaryStepsCardState extends ConsumerState<DiaryStepsCard>
                     });
                   }
                 : null,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
             child: MetricDetailCardShell(
               child: summaryState.when(
                 skipLoadingOnReload: true,

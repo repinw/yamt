@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Shared max width for the settings content column.
-const settingsMaxWidth = 560.0;
+const double settingsMaxWidth = AppSizes.narrowContentMaxWidth;
 
 const _settingsTileIconSize = 34.0;
 
@@ -77,24 +78,10 @@ class SettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: isDark ? colors.surfaceContainerLow : colors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: isDark ? 0.24 : 0.18),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.shadow.withValues(alpha: isDark ? 0.18 : 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: AppQuietSurfaces.cardDecoration(colors),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: AppQuietSurfaces.cardBorderRadius(),
         child: child,
       ),
     );

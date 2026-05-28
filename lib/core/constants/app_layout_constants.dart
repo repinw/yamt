@@ -198,6 +198,9 @@ abstract final class AppSizes {
   /// Base clearance reserved for the floating home shell bottom chrome.
   static const double homeShellBottomBarClearance = 96;
 
+  /// Max width for settings-style content columns.
+  static const double narrowContentMaxWidth = 560;
+
   /// Diameter for circular home top bar icon buttons.
   static const double homeTopBarIconButton = 36;
 
@@ -222,15 +225,6 @@ abstract final class AppSizes {
   /// Icon size for segmented controls.
   static const double segmentedControlIcon = 16;
 
-  /// Dark theme blur for compact metric card shadows.
-  static const double compactMetricCardShadowBlurDark = 22;
-
-  /// Light theme blur for compact metric card shadows.
-  static const double compactMetricCardShadowBlurLight = 16;
-
-  /// Vertical offset for compact metric card shadows.
-  static const double compactMetricCardShadowYOffset = 6;
-
   /// Icon size for compact metric labels.
   static const double compactMetricIcon = 16;
 
@@ -245,6 +239,9 @@ abstract final class AppSizes {
 
   /// Font size for compact metric values.
   static const double compactMetricValueFont = 16;
+
+  /// Reserved height for compact metric values.
+  static const double compactMetricValueSlotHeight = 24;
 
   /// Divider width for compact metric cards.
   static const double compactMetricDividerWidth = 1;

@@ -50,9 +50,9 @@ class DiaryMealCard extends StatelessWidget {
     final accentColors = MetricAccentColors.of(context);
 
     return DecoratedBox(
-      decoration: AppSurfaceCard.decoration(colors),
+      decoration: AppQuietSurfaces.cardDecoration(colors),
       child: Padding(
-        padding: AppSurfaceCard.padding,
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: [
             Material(

@@ -183,6 +183,10 @@ void main() {
     final valueLabel = find.text('15,726 / 17,755 kcal');
 
     expect(valueLabel, findsOneWidget);
+    expect(find.byIcon(Icons.local_fire_department_rounded), findsNothing);
+    expect(find.text('6'), findsOneWidget);
+    expect(find.text('Day 6 of 7'), findsOneWidget);
+    expect(find.text('Week 6'), findsNothing);
     expect(tester.getRect(valueLabel).right, closeTo(trackRect.right, 1));
   });
 
@@ -200,6 +204,25 @@ void main() {
         .where((widget) => widget.width == 1);
 
     expect(dividerPositions, hasLength(6));
+  });
+
+  testWidgets('weekly compact progress shows time-based target marker', (
+    tester,
+  ) async {
+    await _pumpWeeklyBalanceCard(tester);
+    await tester.pumpAndSettle();
+
+    final trackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.progressTrack),
+    );
+    final targetRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.targetMarker),
+    );
+
+    expect(
+      targetRect.center.dxRatioWithin(trackRect),
+      closeTo(6 / 7, 0.02),
+    );
   });
 
   testWidgets('daily progress shows activity as an end extension', (
