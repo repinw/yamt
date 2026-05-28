@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -17,9 +18,11 @@ class DiaryWeeklyCheckInSuccessCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final numberFormat = NumberFormat.decimalPattern(locale);
+    final colors = Theme.of(context).colorScheme;
 
-    return Card(
+    return DecoratedBox(
       key: DiaryWeeklyCheckInCardKeys.successCard,
+      decoration: AppQuietSurfaces.cardDecoration(colors),
       child: Padding(
         padding: AppInsets.card,
         child: Text(

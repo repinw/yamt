@@ -129,6 +129,27 @@ void main() {
     expect(decoration.boxShadow?.single.blurRadius, 18);
   });
 
+  test('quiet surfaces match settings-style card treatment', () {
+    final light = ColorScheme.fromSeed(seedColor: AppColors.seed);
+    final dark = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: Brightness.dark,
+    );
+
+    final lightDecoration = AppQuietSurfaces.cardDecoration(light);
+    final darkDecoration = AppQuietSurfaces.cardDecoration(dark);
+
+    expect(
+      AppQuietSurfaces.pageBackground(light),
+      Color.alphaBlend(light.primary.withValues(alpha: 0.035), light.surface),
+    );
+    expect(lightDecoration.color, light.surface);
+    expect(darkDecoration.color, dark.surfaceContainerLow);
+    expect(lightDecoration.borderRadius, AppQuietSurfaces.cardBorderRadius());
+    expect(lightDecoration.boxShadow?.single.blurRadius, 18);
+    expect(lightDecoration.boxShadow?.single.offset, const Offset(0, 8));
+  });
+
   test('soul gradient builds light and dark primary gradients', () {
     final light = ColorScheme.fromSeed(seedColor: AppColors.seed);
     final dark = ColorScheme.fromSeed(

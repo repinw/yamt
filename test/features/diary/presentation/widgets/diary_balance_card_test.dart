@@ -206,6 +206,25 @@ void main() {
     expect(dividerPositions, hasLength(6));
   });
 
+  testWidgets('weekly compact progress shows time-based target marker', (
+    tester,
+  ) async {
+    await _pumpWeeklyBalanceCard(tester);
+    await tester.pumpAndSettle();
+
+    final trackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.progressTrack),
+    );
+    final targetRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.targetMarker),
+    );
+
+    expect(
+      targetRect.center.dxRatioWithin(trackRect),
+      closeTo(6 / 7, 0.02),
+    );
+  });
+
   testWidgets('daily progress shows activity as an end extension', (
     tester,
   ) async {

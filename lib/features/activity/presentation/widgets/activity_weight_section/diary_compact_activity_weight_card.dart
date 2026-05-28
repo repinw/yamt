@@ -287,26 +287,9 @@ class _CompactMetricsFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppEditorialSurfaces.liftedCard(colors),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
-        boxShadow: [
-          BoxShadow(
-            color: AppEditorialSurfaces.ambientShadow(colors),
-            blurRadius: isDark
-                ? AppSizes.compactMetricCardShadowBlurDark
-                : AppSizes.compactMetricCardShadowBlurLight,
-            offset: const Offset(
-              0,
-              AppSizes.compactMetricCardShadowYOffset,
-            ),
-          ),
-        ],
-      ),
+      decoration: AppQuietSurfaces.cardDecoration(colors),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: child,

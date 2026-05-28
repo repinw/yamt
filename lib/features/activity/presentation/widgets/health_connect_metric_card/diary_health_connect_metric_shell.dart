@@ -73,7 +73,7 @@ class DiaryHealthConnectMetricShell extends StatelessWidget {
         color: Colors.transparent,
         child: AppInkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(

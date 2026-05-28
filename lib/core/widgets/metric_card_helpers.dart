@@ -13,23 +13,11 @@ class MetricDetailCardShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppEditorialSurfaces.liftedCard(colors),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
-        boxShadow: [
-          BoxShadow(
-            color: AppEditorialSurfaces.ambientShadow(colors),
-            blurRadius: isDark ? 30 : 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+      decoration: AppQuietSurfaces.cardDecoration(colors),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: child,
       ),
     );
@@ -62,27 +50,17 @@ class MetricCardFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
-    final radius = BorderRadius.circular(28);
+    final radius = AppQuietSurfaces.cardBorderRadius();
     final content = padding == null
         ? child
         : Padding(padding: padding!, child: child);
+    final decoration = AppQuietSurfaces.cardDecoration(
+      colors,
+      withShadow: withShadow,
+    );
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppEditorialSurfaces.liftedCard(colors),
-        borderRadius: radius,
-        border: Border.all(color: AppEditorialSurfaces.solidCardBorder(colors)),
-        boxShadow: withShadow
-            ? [
-                BoxShadow(
-                  color: AppEditorialSurfaces.ambientShadow(colors),
-                  blurRadius: isDark ? 26 : 20,
-                  offset: const Offset(0, 8),
-                ),
-              ]
-            : null,
-      ),
+      decoration: decoration,
       child: clip ? ClipRRect(borderRadius: radius, child: content) : content,
     );
   }
