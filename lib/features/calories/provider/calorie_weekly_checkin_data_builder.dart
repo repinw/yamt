@@ -46,6 +46,7 @@ const _weeklyCheckInProviderLogName = 'CalorieWeeklyCheckInProvider';
 Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
   Ref ref,
 ) async {
+  // Trigger recompute when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
 
   final settingsFuture = ref.watch(calorieGoalControllerProvider.future);

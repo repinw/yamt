@@ -11,7 +11,10 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
-/// Stable hash for weekly check-in calculation inputs.
+/// Stable non-cryptographic hash for weekly check-in calculation inputs.
+///
+/// Uses a small inline FNV-1a implementation to keep the persisted `v2:` hash
+/// scheme deterministic without adding a runtime dependency for cache keys.
 String weeklyCheckInInputHash({
   required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
   required CalorieWeeklyCheckInWindowDates dates,
@@ -87,6 +90,7 @@ String _hashDouble(double value) {
   return value.toStringAsFixed(4);
 }
 
+// Non-cryptographic fingerprint only; do not use for security decisions.
 String _fnv1a32(String input) {
   const offsetBasis = 0x811c9dc5;
   const prime = 0x01000193;

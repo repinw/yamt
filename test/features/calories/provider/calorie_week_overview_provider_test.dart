@@ -489,8 +489,7 @@ void main() {
       var startedDayReads = 0;
       var activeDayReads = 0;
       var maxActiveDayReads = 0;
-      final logRepository = FakeCalorieLogRepository();
-      logRepository
+      final logRepository = FakeCalorieLogRepository()
         ..onReadEntriesInRange = (startInclusive, endExclusive) async {
           throw StateError('range read failed');
         }

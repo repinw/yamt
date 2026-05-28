@@ -10,6 +10,7 @@ part 'diary_entries_provider.g.dart';
 /// Provides calorie entries for one normalized diary day.
 @riverpod
 Stream<List<CalorieEntry>> diaryEntriesForDay(Ref ref, DateTime day) {
+  // Trigger stream rebuild when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
   final normalizedDay = normalizeDiaryDay(day);
   return ref

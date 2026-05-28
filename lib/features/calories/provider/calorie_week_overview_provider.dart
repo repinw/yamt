@@ -171,6 +171,7 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
   Ref ref,
   DateTime visibleWindowEnd,
 ) async {
+  // Trigger recompute when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final days = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
@@ -409,6 +410,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
+    // Trigger recompute when calorie logs mutate through overview revision.
     ref.watch(calorieOverviewRevisionProvider);
     final normalizedDay = normalizeDiaryDay(day);
     final repository = ref.watch(calorieLogRepositoryProvider);

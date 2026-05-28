@@ -39,6 +39,7 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
   Ref ref,
   DailyLearnedTdeeGoalDaysRequest request,
 ) async {
+  // Trigger recompute when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
   final keepAliveLink = ref.keepAlive();
   try {
@@ -155,6 +156,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
   required DateTime today,
   required double storedGoalKcal,
 }) async {
+  // Trigger recompute when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final settingsFuture = ref.watch(calorieGoalControllerProvider.future);

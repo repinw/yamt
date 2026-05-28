@@ -140,6 +140,7 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
+    // Trigger recompute when calorie logs mutate through overview revision.
     ref.watch(calorieOverviewRevisionProvider);
     final referenceNow = ref.watch(calorieBalanceNowProvider)();
     final healthStatusFuture = ref.watch(
@@ -264,6 +265,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
+    // Trigger recompute when calorie logs mutate through overview revision.
     ref.watch(calorieOverviewRevisionProvider);
     final normalizedDay = normalizeDiaryDay(day);
     final referenceNow = ref.watch(calorieBalanceNowProvider)();
