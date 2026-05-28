@@ -295,6 +295,39 @@ double _homeChromeOpacity(WidgetTester tester, Type chromeType) {
       .opacity;
 }
 
+FixedScrollMetrics _homeShellScrollMetrics({required double pixels}) {
+  return FixedScrollMetrics(
+    minScrollExtent: 0,
+    maxScrollExtent: 1000,
+    pixels: pixels,
+    viewportDimension: 844,
+    axisDirection: AxisDirection.down,
+    devicePixelRatio: 1,
+  );
+}
+
+void _dispatchHomeShellScrollUpdate(
+  BuildContext context, {
+  required double pixels,
+  required double scrollDelta,
+}) {
+  ScrollUpdateNotification(
+    metrics: _homeShellScrollMetrics(pixels: pixels),
+    context: context,
+    scrollDelta: scrollDelta,
+  ).dispatch(context);
+}
+
+void _dispatchHomeShellScrollEnd(
+  BuildContext context, {
+  required double pixels,
+}) {
+  ScrollEndNotification(
+    metrics: _homeShellScrollMetrics(pixels: pixels),
+    context: context,
+  ).dispatch(context);
+}
+
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
@@ -714,6 +747,212 @@ void main() {
     expect(
       _homeChromeOpacity(tester, HomeShellBottomChrome),
       moreOrLessEquals(initialBottomOpacity),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome stays visible on shallow scroll pages', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: const CustomScrollView(
+          slivers: [
+            HomeShellTabTopChrome(title: 'Today'),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 980,
+                child: Text('Shallow content'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    await tester.drag(
+      find.byType(CustomScrollView).first,
+      const Offset(0, -260),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(initialBottomOpacity),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome snaps after partial scrolls settle', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellTabTopChrome(title: 'Today'),
+            SliverList.builder(
+              itemCount: 40,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  height: 72,
+                  child: Text('Row $index'),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -96));
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(1),
+    );
+
+    await tester.drag(find.text('Row 7'), const Offset(0, -190));
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(0),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome reveals when scroll ends near top', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellTabTopChrome(title: 'Today'),
+            SliverList.builder(
+              itemCount: 40,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  height: 72,
+                  child: Text('Row $index'),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scrollContext = tester.element(find.byType(CustomScrollView).first);
+    _dispatchHomeShellScrollUpdate(
+      scrollContext,
+      pixels: 220,
+      scrollDelta: 220,
+    );
+    _dispatchHomeShellScrollEnd(scrollContext, pixels: 220);
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(0),
+    );
+
+    _dispatchHomeShellScrollEnd(scrollContext, pixels: 5);
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(1),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome snaps open at exact threshold', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellTabTopChrome(title: 'Today'),
+            SliverList.builder(
+              itemCount: 40,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  height: 72,
+                  child: Text('Row $index'),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scrollContext = tester.element(find.byType(CustomScrollView).first);
+    _dispatchHomeShellScrollUpdate(
+      scrollContext,
+      pixels: 160,
+      scrollDelta: 160,
+    );
+    _dispatchHomeShellScrollEnd(scrollContext, pixels: 160);
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(1),
+    );
+
+    _dispatchHomeShellScrollUpdate(
+      scrollContext,
+      pixels: 163.2,
+      scrollDelta: 163.2,
+    );
+    _dispatchHomeShellScrollEnd(scrollContext, pixels: 163.2);
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(0),
     );
     expect(tester.takeException(), isNull);
   });

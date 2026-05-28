@@ -188,6 +188,7 @@ class _HomeShellChromeVisibilityController extends ValueNotifier<double> {
 
   static const _hideScrollDistance = 320;
   static const _revealScrollDistance = 140;
+  static const _snapVisibilityThreshold = 0.5;
   static const _topRevealThreshold = 8;
 
   double get visibility => value;
@@ -200,9 +201,16 @@ class _HomeShellChromeVisibilityController extends ValueNotifier<double> {
       return false;
     }
 
+    if (_hasShortScrollRange(notification.metrics)) {
+      reveal();
+      return false;
+    }
+
     if (notification is ScrollUpdateNotification &&
         notification.scrollDelta != null) {
       _updateFromScrollDelta(notification.scrollDelta!);
+    } else if (notification is ScrollEndNotification) {
+      _settleAfterScrollEnd(notification.metrics);
     } else if (notification.metrics.pixels <=
         notification.metrics.minScrollExtent + _topRevealThreshold) {
       reveal();
@@ -213,6 +221,20 @@ class _HomeShellChromeVisibilityController extends ValueNotifier<double> {
 
   void reveal() {
     _setVisibility(1);
+  }
+
+  bool _hasShortScrollRange(ScrollMetrics metrics) {
+    return metrics.maxScrollExtent - metrics.minScrollExtent <
+        _hideScrollDistance;
+  }
+
+  void _settleAfterScrollEnd(ScrollMetrics metrics) {
+    if (metrics.pixels <= metrics.minScrollExtent + _topRevealThreshold) {
+      reveal();
+      return;
+    }
+
+    _setVisibility(visibility >= _snapVisibilityThreshold ? 1 : 0);
   }
 
   void _updateFromScrollDelta(double scrollDelta) {
