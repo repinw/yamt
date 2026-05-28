@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/debug/debug_log.dart';
 import 'package:yamt/features/scanner/application/'
     'receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
@@ -82,7 +82,20 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
 
     state = const AsyncLoading();
 
+    Stopwatch? pickStopwatch;
+    assert(() {
+      pickStopwatch = startDebugStopwatch();
+      return true;
+    }(), 'Start debug receipt input pick timing.');
     final inputResult = await _pickInput(source);
+    assert(() {
+      _debugLogReceiptFlowTiming(
+        'input pick',
+        stopDebugStopwatch(pickStopwatch),
+        source,
+      );
+      return true;
+    }(), 'Log debug receipt input pick timing.');
     if (!ref.mounted) {
       return ReceiptCaptureFlowResult.inputFailed(
         source: source,
@@ -151,11 +164,29 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     required ReceiptInputSource source,
     required ReceiptInputSelection selection,
   }) async {
+    Stopwatch? totalStopwatch;
+    assert(() {
+      totalStopwatch = startDebugStopwatch();
+      return true;
+    }(), 'Start debug receipt flow total timing.');
     try {
       final analysisRepository = ref.read(receiptAnalysisRepositoryProvider);
+      Stopwatch? analysisStopwatch;
+      assert(() {
+        analysisStopwatch = startDebugStopwatch();
+        return true;
+      }(), 'Start debug receipt analysis timing.');
       final analysisResult = await analysisRepository.analyzeSelection(
         selection,
       );
+      assert(() {
+        _debugLogReceiptFlowTiming(
+          'analysis',
+          stopDebugStopwatch(analysisStopwatch),
+          source,
+        );
+        return true;
+      }(), 'Log debug receipt analysis timing.');
       if (!ref.mounted) {
         return ReceiptCaptureFlowResult.analysisFailed(
           source: source,
@@ -163,24 +194,55 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
         );
       }
 
-      return switch (analysisResult) {
-        ReceiptAnalysisSuccess(:final extraction) => _setAndReturn(
-          ReceiptCaptureFlowResult.completed(
-            source: source,
-            extraction: extraction,
-            reviewDrafts: await _prepareReviewDrafts(extraction),
-            receiptPreviewBytes: selection.bytes,
-          ),
-        ),
-        ReceiptAnalysisFailure(:final errorCode) => _setAndReturn(
-          ReceiptCaptureFlowResult.analysisFailed(
-            source: source,
-            errorCode: errorCode,
-          ),
-        ),
-      };
+      switch (analysisResult) {
+        case ReceiptAnalysisSuccess(:final extraction):
+          Stopwatch? draftStopwatch;
+          assert(() {
+            draftStopwatch = startDebugStopwatch();
+            return true;
+          }(), 'Start debug receipt draft prep timing.');
+          final reviewDrafts = await _prepareReviewDrafts(extraction);
+          assert(() {
+            _debugLogReceiptFlowTiming(
+              'draft prep',
+              stopDebugStopwatch(draftStopwatch),
+              source,
+              itemCount: reviewDrafts.length,
+            );
+            _debugLogReceiptFlowTiming(
+              'total',
+              stopDebugStopwatch(totalStopwatch),
+              source,
+              itemCount: reviewDrafts.length,
+            );
+            return true;
+          }(), 'Log debug receipt draft prep and total timing.');
+          return _setAndReturn(
+            ReceiptCaptureFlowResult.completed(
+              source: source,
+              extraction: extraction,
+              reviewDrafts: reviewDrafts,
+              receiptPreviewBytes: selection.bytes,
+            ),
+          );
+        case ReceiptAnalysisFailure(:final errorCode):
+          assert(() {
+            _debugLogReceiptFlowTiming(
+              'failed total',
+              stopDebugStopwatch(totalStopwatch),
+              source,
+            );
+            return true;
+          }(), 'Log debug failed receipt total timing.');
+          return _setAndReturn(
+            ReceiptCaptureFlowResult.analysisFailed(
+              source: source,
+              errorCode: errorCode,
+            ),
+          );
+      }
     } on Object catch (error, stackTrace) {
-      log(
+      appLog(
         'Receipt flow analysis failed unexpectedly',
         name: 'ReceiptCaptureFlowController',
         error: error,
@@ -227,9 +289,12 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
       final result = await resolutionService.persistReviewedItems(
         reviewedItems,
       );
+      if (!ref.mounted) {
+        return false;
+      }
       return result.saved;
     } on Object catch (error, stackTrace) {
-      log(
+      appLog(
         'Receipt flow storage failed unexpectedly',
         name: 'ReceiptCaptureFlowController',
         error: error,
@@ -238,4 +303,18 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
       return false;
     }
   }
+}
+
+void _debugLogReceiptFlowTiming(
+  String stage,
+  Duration elapsed,
+  ReceiptInputSource source, {
+  int? itemCount,
+}) {
+  final itemSuffix = itemCount == null ? '' : ', items: $itemCount';
+  debugLog(
+    'Receipt ${source.name} flow $stage took '
+    '${elapsed.inMilliseconds}ms$itemSuffix.',
+    name: 'ReceiptCaptureFlowController',
+  );
 }

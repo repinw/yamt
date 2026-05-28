@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -61,7 +60,6 @@ class _FakeReceiptReviewResolutionService
   _FakeReceiptReviewResolutionService({required this.onPrepareDrafts})
     : super(
         mapper: _UnsupportedMapper(),
-        matcher: _UnsupportedMatcher(),
         globalFoodItemRepository: _UnsupportedGlobalRepository(),
         inventoryItemRepository: _UnsupportedInventoryRepository(),
       );
@@ -84,10 +82,6 @@ class _UnsupportedMapper implements ReceiptToReviewItemDraftMapper {
   List<ReceiptReviewItemDraft> map(ReceiptAnalysisExtraction extraction) {
     throw UnimplementedError();
   }
-}
-
-class _UnsupportedMatcher extends GlobalFoodItemMatcher {
-  _UnsupportedMatcher();
 }
 
 class _UnsupportedGlobalRepository implements GlobalFoodItemRepository {

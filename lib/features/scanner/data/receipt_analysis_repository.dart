@@ -1,7 +1,5 @@
-import 'dart:developer' show log;
-
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/debug/debug_log.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_clients.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_parser.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository_helpers.dart';
@@ -23,6 +21,9 @@ abstract final class _ReceiptAnalysisRepositoryFailures {
   );
   static const parse = ReceiptAnalysisResult.failed(
     errorCode: ReceiptAnalysisErrorCodes.parseFailed,
+  );
+  static const unexpected = ReceiptAnalysisResult.failed(
+    errorCode: ReceiptAnalysisErrorCodes.unexpected,
   );
 }
 
@@ -61,12 +62,44 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
     required String templateId,
     required ReceiptInputSelection selection,
   }) async {
+    Stopwatch? totalStopwatch;
+    assert(() {
+      totalStopwatch = startDebugStopwatch();
+      return true;
+    }(), 'Start debug receipt analysis total timing.');
     try {
-      final resolvedInputs = await buildReceiptTemplateInputs(selection);
+      Stopwatch? inputStopwatch;
+      assert(() {
+        inputStopwatch = startDebugStopwatch();
+        return true;
+      }(), 'Start debug receipt analysis input timing.');
+      final resolvedInputs = await _buildTemplateInputs(selection);
+      assert(() {
+        _logReceiptAnalysisTiming(
+          'input',
+          stopDebugStopwatch(inputStopwatch),
+          selection: selection,
+        );
+        return true;
+      }(), 'Log debug receipt analysis input timing.');
+
+      Stopwatch? requestStopwatch;
+      assert(() {
+        requestStopwatch = startDebugStopwatch();
+        return true;
+      }(), 'Start debug receipt analysis request timing.');
       final responseText = await _templateModelClient.generateContent(
         templateId: templateId,
         inputs: resolvedInputs,
       );
+      assert(() {
+        _logReceiptAnalysisTiming(
+          'model',
+          stopDebugStopwatch(requestStopwatch),
+          selection: selection,
+        );
+        return true;
+      }(), 'Log debug receipt analysis request timing.');
 
       final normalizedResponse = _normalizeReceiptAnalysisResponse(
         responseText,
@@ -75,14 +108,38 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
         return _ReceiptAnalysisRepositoryFailures.emptyResponse;
       }
 
-      _logReceiptAnalysisRawResponse(normalizedResponse);
+      assert(() {
+        _logReceiptAnalysisRawResponse(normalizedResponse);
+        return true;
+      }(), 'Log debug receipt analysis raw response.');
+      Stopwatch? parseStopwatch;
+      assert(() {
+        parseStopwatch = startDebugStopwatch();
+        return true;
+      }(), 'Start debug receipt analysis parse timing.');
       final extraction = _parse(normalizedResponse);
+      assert(() {
+        _logReceiptAnalysisTiming(
+          'parse',
+          stopDebugStopwatch(parseStopwatch),
+          selection: selection,
+        );
+        _logReceiptAnalysisTiming(
+          'total',
+          stopDebugStopwatch(totalStopwatch),
+          selection: selection,
+          itemCount: extraction.items.length,
+        );
+        return true;
+      }(), 'Log debug receipt analysis parse and total timing.');
       return ReceiptAnalysisResult.succeeded(
         rawResponse: normalizedResponse,
         extraction: extraction,
       );
     } on _ReceiptParseException {
       return _ReceiptAnalysisRepositoryFailures.parse;
+    } on _ReceiptInputPreparationException {
+      return _ReceiptAnalysisRepositoryFailures.unexpected;
     } on Object catch (error, stackTrace) {
       _logReceiptAnalysisRepositoryError(
         message: 'Receipt AI request failed',
@@ -90,6 +147,21 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
         stackTrace: stackTrace,
       );
       return _ReceiptAnalysisRepositoryFailures.aiRequest;
+    }
+  }
+
+  Future<Map<String, Object?>> _buildTemplateInputs(
+    ReceiptInputSelection selection,
+  ) async {
+    try {
+      return await buildReceiptTemplateInputs(selection);
+    } on Object catch (error, stackTrace) {
+      _logReceiptAnalysisRepositoryError(
+        message: 'Receipt input preparation failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      throw const _ReceiptInputPreparationException();
     }
   }
 
@@ -109,6 +181,10 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
 
 final class _ReceiptParseException implements Exception {}
 
+final class _ReceiptInputPreparationException implements Exception {
+  const _ReceiptInputPreparationException();
+}
+
 String? _normalizeReceiptAnalysisResponse(String? responseText) {
   if (responseText == null || responseText.trim().isEmpty) {
     return null;
@@ -118,11 +194,21 @@ String? _normalizeReceiptAnalysisResponse(String? responseText) {
 }
 
 void _logReceiptAnalysisRawResponse(String rawResponse) {
-  if (!kDebugMode) {
-    return;
-  }
+  debugLog('Receipt AI raw response:\n$rawResponse', name: _repositoryLogName);
+}
 
-  log('Receipt AI raw response:\n$rawResponse', name: _repositoryLogName);
+void _logReceiptAnalysisTiming(
+  String stage,
+  Duration elapsed, {
+  required ReceiptInputSelection selection,
+  int? itemCount,
+}) {
+  final itemSuffix = itemCount == null ? '' : ', items: $itemCount';
+  debugLog(
+    'Receipt analysis $stage took ${elapsed.inMilliseconds}ms '
+    'for ${selection.name}$itemSuffix.',
+    name: _repositoryLogName,
+  );
 }
 
 void _logReceiptAnalysisRepositoryError({
@@ -130,5 +216,10 @@ void _logReceiptAnalysisRepositoryError({
   required Object error,
   required StackTrace stackTrace,
 }) {
-  log(message, name: _repositoryLogName, error: error, stackTrace: stackTrace);
+  appLog(
+    message,
+    name: _repositoryLogName,
+    error: error,
+    stackTrace: stackTrace,
+  );
 }

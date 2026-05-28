@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository_contract.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
@@ -29,46 +28,6 @@ class _FakeMapper implements ReceiptToReviewItemDraftMapper {
   @override
   List<ReceiptReviewItemDraft> map(ReceiptAnalysisExtraction extraction) {
     return drafts;
-  }
-}
-
-class _FakeMatcher extends GlobalFoodItemMatcher {
-  _FakeMatcher({
-    required this.candidatesByItemId,
-    required this.defaultSelections,
-    this.defaultSelectionsNeedingReview = const <String, bool>{},
-  });
-
-  final Map<String, List<GlobalFoodMatchCandidate>> candidatesByItemId;
-  final Map<String, String?> defaultSelections;
-  final Map<String, bool> defaultSelectionsNeedingReview;
-  final List<String> searchedItemIds = <String>[];
-
-  @override
-  Future<List<GlobalFoodMatchCandidate>> findCandidates(
-    InventoryItem item,
-  ) async {
-    searchedItemIds.add(item.id);
-    return candidatesByItemId[item.id] ?? const <GlobalFoodMatchCandidate>[];
-  }
-
-  @override
-  String? defaultSelectionFor(List<GlobalFoodMatchCandidate> candidates) {
-    if (candidates.isEmpty) {
-      return null;
-    }
-    return defaultSelections[candidates.first.item.id] ??
-        candidates.first.item.id;
-  }
-
-  @override
-  bool defaultSelectionNeedsReviewFor(
-    List<GlobalFoodMatchCandidate> candidates,
-  ) {
-    if (candidates.isEmpty) {
-      return false;
-    }
-    return defaultSelectionsNeedingReview[candidates.first.item.id] ?? false;
   }
 }
 
@@ -156,6 +115,9 @@ class _RecordingGlobalFoodReceiptAliasRepository
 
 class _RecordingGlobalBarcodeCandidateRepository
     implements GlobalBarcodeCandidateRepository {
+  _RecordingGlobalBarcodeCandidateRepository({this.throwOnRecord = false});
+
+  final bool throwOnRecord;
   final List<({String barcode, GlobalFoodItem globalFoodItem})>
   recordedSelections = <({String barcode, GlobalFoodItem globalFoodItem})>[];
 
@@ -173,6 +135,9 @@ class _RecordingGlobalBarcodeCandidateRepository
     required GlobalFoodItem globalFoodItem,
     required DateTime selectedAt,
   }) async {
+    if (throwOnRecord) {
+      throw StateError('Barcode learning failed.');
+    }
     recordedSelections.add((barcode: barcode, globalFoodItem: globalFoodItem));
   }
 }
@@ -236,9 +201,13 @@ GlobalFoodItem _product({
   required String id,
   required String name,
   String? brand,
+  String? category,
   String? barcode,
   String? imageUrl,
   String? packageWeight,
+  String? servingSize,
+  double? servingQuantity,
+  String? servingQuantityUnit,
   GlobalFoodNutrition? nutrition,
   GlobalFoodItemStatus status = GlobalFoodItemStatus.active,
 }) {
@@ -246,9 +215,13 @@ GlobalFoodItem _product({
     id: id,
     name: name,
     brand: brand,
+    category: category,
     barcode: barcode,
     imageUrl: imageUrl,
     packageWeight: packageWeight,
+    servingSize: servingSize,
+    servingQuantity: servingQuantity,
+    servingQuantityUnit: servingQuantityUnit,
     now: DateTime.parse('2026-03-01T10:00:00Z'),
     nutrition: nutrition,
     status: status,
@@ -256,137 +229,12 @@ GlobalFoodItem _product({
 }
 
 void main() {
-  test('prepareDrafts attaches candidates and default selection', () async {
-    final product = _product(id: 'milk', name: 'Milk', brand: 'Acme');
+  test('prepareDrafts maps drafts without candidate prefetch', () async {
     final draft = ReceiptReviewItemDraft(
       item: _item(id: 'draft-1', name: 'Milk', brand: 'Acme'),
     );
-    final matcher = _FakeMatcher(
-      candidatesByItemId: <String, List<GlobalFoodMatchCandidate>>{
-        'draft-1': <GlobalFoodMatchCandidate>[
-          GlobalFoodMatchCandidate(
-            item: product,
-            score: 100,
-            reason: GlobalFoodMatchReason.fingerprintExact,
-          ),
-        ],
-      },
-      defaultSelections: <String, String?>{'milk': 'milk'},
-    );
     final service = ReceiptReviewResolutionService(
       mapper: _FakeMapper(<ReceiptReviewItemDraft>[draft]),
-      matcher: matcher,
-      globalFoodItemRepository: _RecordingGlobalFoodItemRepository(),
-      inventoryItemRepository: _RecordingInventoryItemRepository(),
-    );
-
-    final prepared = await service.prepareDrafts(
-      const ReceiptAnalysisExtraction(
-        root: <String, dynamic>{},
-        items: <ReceiptAnalysisItem>[],
-      ),
-    );
-
-    expect(prepared, hasLength(1));
-    expect(prepared.single.candidates.single.item.id, 'milk');
-    expect(prepared.single.selectedGlobalFoodItemId, 'milk');
-    expect(prepared.single.selectionNeedsReview, isFalse);
-    expect(matcher.searchedItemIds, <String>['draft-1']);
-  });
-
-  test(
-    'prepareDrafts keeps best candidate visible but flagged for review',
-    () async {
-      final product = _product(id: 'gouda', name: 'Gouda', brand: 'Milbona');
-      final draft = ReceiptReviewItemDraft(
-        item: _item(
-          id: 'draft-1',
-          name: 'KÄSE SCHEIBEN 150G',
-          brand: 'Milbona',
-        ),
-      );
-      final service = ReceiptReviewResolutionService(
-        mapper: _FakeMapper(<ReceiptReviewItemDraft>[draft]),
-        matcher: _FakeMatcher(
-          candidatesByItemId: <String, List<GlobalFoodMatchCandidate>>{
-            'draft-1': <GlobalFoodMatchCandidate>[
-              GlobalFoodMatchCandidate(
-                item: product,
-                score: 42,
-                reason: GlobalFoodMatchReason.nameTokenMatch,
-              ),
-            ],
-          },
-          defaultSelections: <String, String?>{'gouda': 'gouda'},
-          defaultSelectionsNeedingReview: <String, bool>{'gouda': true},
-        ),
-        globalFoodItemRepository: _RecordingGlobalFoodItemRepository(),
-        inventoryItemRepository: _RecordingInventoryItemRepository(),
-      );
-
-      final prepared = await service.prepareDrafts(
-        const ReceiptAnalysisExtraction(
-          root: <String, dynamic>{},
-          items: <ReceiptAnalysisItem>[],
-        ),
-      );
-
-      expect(prepared.single.selectedGlobalFoodItemId, 'gouda');
-      expect(prepared.single.selectionNeedsReview, isTrue);
-    },
-  );
-
-  test('prepareDrafts requires weight confirmation for default candidate '
-      'when receipt weight missing', () async {
-    final product = _product(
-      id: 'gouda',
-      name: 'Gouda',
-      brand: 'Milbona',
-      packageWeight: '800 g',
-    );
-    final draft = ReceiptReviewItemDraft(
-      item: _item(id: 'draft-1', name: 'KAESE SCHEIBEN', brand: 'Milbona'),
-    );
-    final service = ReceiptReviewResolutionService(
-      mapper: _FakeMapper(<ReceiptReviewItemDraft>[draft]),
-      matcher: _FakeMatcher(
-        candidatesByItemId: <String, List<GlobalFoodMatchCandidate>>{
-          'draft-1': <GlobalFoodMatchCandidate>[
-            GlobalFoodMatchCandidate(
-              item: product,
-              score: 42,
-              reason: GlobalFoodMatchReason.nameBrandStrong,
-            ),
-          ],
-        },
-        defaultSelections: <String, String?>{'gouda': 'gouda'},
-      ),
-      globalFoodItemRepository: _RecordingGlobalFoodItemRepository(),
-      inventoryItemRepository: _RecordingInventoryItemRepository(),
-    );
-
-    final prepared = await service.prepareDrafts(
-      const ReceiptAnalysisExtraction(
-        root: <String, dynamic>{},
-        items: <ReceiptAnalysisItem>[],
-      ),
-    );
-
-    expect(prepared.single.selectedGlobalFoodItemId, 'gouda');
-  });
-
-  test('prepareDrafts skips matcher lookup for review-only drafts', () async {
-    final matcher = _FakeMatcher(
-      candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-      defaultSelections: const <String, String?>{},
-    );
-    final service = ReceiptReviewResolutionService(
-      mapper: _FakeMapper(<ReceiptReviewItemDraft>[
-        ReceiptReviewItemDraft(
-          item: _item(id: 'deposit-1', name: 'Deposit', isDeposit: true),
-        ),
-      ]),
-      matcher: matcher,
       globalFoodItemRepository: _RecordingGlobalFoodItemRepository(),
       inventoryItemRepository: _RecordingInventoryItemRepository(),
     );
@@ -400,7 +248,30 @@ void main() {
 
     expect(prepared, hasLength(1));
     expect(prepared.single.candidates, isEmpty);
-    expect(matcher.searchedItemIds, isEmpty);
+    expect(prepared.single.selectedGlobalFoodItemId, isNull);
+    expect(prepared.single.selectionNeedsReview, isFalse);
+  });
+
+  test('prepareDrafts skips matcher lookup for review-only drafts', () async {
+    final service = ReceiptReviewResolutionService(
+      mapper: _FakeMapper(<ReceiptReviewItemDraft>[
+        ReceiptReviewItemDraft(
+          item: _item(id: 'deposit-1', name: 'Deposit', isDeposit: true),
+        ),
+      ]),
+      globalFoodItemRepository: _RecordingGlobalFoodItemRepository(),
+      inventoryItemRepository: _RecordingInventoryItemRepository(),
+    );
+
+    final prepared = await service.prepareDrafts(
+      const ReceiptAnalysisExtraction(
+        root: <String, dynamic>{},
+        items: <ReceiptAnalysisItem>[],
+      ),
+    );
+
+    expect(prepared, hasLength(1));
+    expect(prepared.single.candidates, isEmpty);
   });
 
   test(
@@ -411,10 +282,6 @@ void main() {
       final inventoryRepository = _RecordingInventoryItemRepository();
       final service = ReceiptReviewResolutionService(
         mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-        matcher: _FakeMatcher(
-          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-          defaultSelections: const <String, String?>{},
-        ),
         globalFoodItemRepository: globalRepository,
         inventoryItemRepository: inventoryRepository,
         globalFoodItemIdGenerator: () => 'global-food-fixed',
@@ -458,10 +325,6 @@ void main() {
       final inventoryRepository = _RecordingInventoryItemRepository();
       final service = ReceiptReviewResolutionService(
         mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-        matcher: _FakeMatcher(
-          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-          defaultSelections: const <String, String?>{},
-        ),
         globalFoodItemRepository: globalRepository,
         inventoryItemRepository: inventoryRepository,
         globalFoodItemIdGenerator: () => 'global-food-fixed',
@@ -514,10 +377,6 @@ void main() {
     final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository();
     final service = ReceiptReviewResolutionService(
       mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-      matcher: _FakeMatcher(
-        candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-        defaultSelections: const <String, String?>{},
-      ),
       globalFoodItemRepository: globalRepository,
       globalBarcodeCandidateRepository: barcodeRepository,
       inventoryItemRepository: inventoryRepository,
@@ -558,16 +417,134 @@ void main() {
     );
   });
 
+  test(
+    'persistReviewedItems keeps save success when barcode learning fails',
+    () async {
+      final globalRepository = _RecordingGlobalFoodItemRepository();
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository(
+        throwOnRecord: true,
+      );
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        globalFoodItemRepository: globalRepository,
+        globalBarcodeCandidateRepository: barcodeRepository,
+        inventoryItemRepository: inventoryRepository,
+      );
+
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(id: 'draft-1', name: 'Milk').copyWith(
+              barcode: '4006381333931',
+            ),
+          ),
+        ],
+      );
+
+      expect(result.saved, isTrue);
+      expect(globalRepository.appendedItems, hasLength(1));
+      expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(barcodeRepository.recordedSelections, isEmpty);
+    },
+  );
+
+  test(
+    'persistReviewedItems keeps cleared selected candidate fields null',
+    () async {
+      const nutrition = GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 100,
+        per100Protein: 10,
+        per100Carbs: 20,
+        per100Fat: 3,
+      );
+      final selected = _product(
+        id: 'milk',
+        name: 'Milk',
+        brand: 'Wrong Brand',
+        category: 'Wrong Category',
+        barcode: '4006381333931',
+        imageUrl: 'https://example.test/wrong.png',
+        servingSize: '100 g',
+        servingQuantity: 100,
+        servingQuantityUnit: 'g',
+        nutrition: nutrition,
+      );
+      final globalRepository = _RecordingGlobalFoodItemRepository();
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        globalFoodItemRepository: globalRepository,
+        inventoryItemRepository: inventoryRepository,
+        globalFoodItemIdGenerator: () => 'global-food-fixed',
+      );
+
+      final itemWithClearedProductFields =
+          _item(
+                id: 'draft-1',
+                name: 'Milk',
+              )
+              .copyWith(
+                productSnapshot: selected.toProductSnapshot(),
+              )
+              .copyWith(
+                brand: null,
+                category: null,
+                barcode: null,
+                imageUrl: null,
+                servingSize: null,
+                servingQuantity: null,
+                servingQuantityUnit: null,
+                nutrition: null,
+              );
+
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: itemWithClearedProductFields,
+            candidates: <GlobalFoodMatchCandidate>[
+              GlobalFoodMatchCandidate(
+                item: selected,
+                score: 100,
+                reason: GlobalFoodMatchReason.nameExact,
+              ),
+            ],
+            selectedGlobalFoodItemId: 'milk',
+          ),
+        ],
+      );
+
+      expect(result.saved, isTrue);
+      expect(globalRepository.appendedItems, hasLength(1));
+      expect(globalRepository.appendedItems.single.id, 'global-food-fixed');
+      expect(globalRepository.appendedItems.single.brand, isNull);
+      expect(globalRepository.appendedItems.single.category, isNull);
+      expect(globalRepository.appendedItems.single.barcode, isNull);
+      expect(globalRepository.appendedItems.single.imageUrl, isNull);
+      expect(globalRepository.appendedItems.single.servingSize, isNull);
+      expect(globalRepository.appendedItems.single.servingQuantity, isNull);
+      expect(globalRepository.appendedItems.single.servingQuantityUnit, isNull);
+      expect(globalRepository.appendedItems.single.nutrition, isNull);
+      final savedSnapshot =
+          inventoryRepository.appendedItems.single.productSnapshot;
+      expect(savedSnapshot.brand, isNull);
+      expect(savedSnapshot.category, isNull);
+      expect(savedSnapshot.barcode, isNull);
+      expect(savedSnapshot.imageUrl, isNull);
+      expect(savedSnapshot.servingSize, isNull);
+      expect(savedSnapshot.servingQuantity, isNull);
+      expect(savedSnapshot.servingQuantityUnit, isNull);
+      expect(savedSnapshot.nutrition, isNull);
+    },
+  );
+
   test('persistReviewedItems keeps confirmed weight on new products', () async {
     final globalRepository = _RecordingGlobalFoodItemRepository();
     final inventoryRepository = _RecordingInventoryItemRepository();
     final aliasRepository = _RecordingGlobalFoodReceiptAliasRepository();
     final service = ReceiptReviewResolutionService(
       mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-      matcher: _FakeMatcher(
-        candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-        defaultSelections: const <String, String?>{},
-      ),
       globalFoodItemRepository: globalRepository,
       globalFoodReceiptAliasRepository: aliasRepository,
       inventoryItemRepository: inventoryRepository,
@@ -600,10 +577,6 @@ void main() {
       final aliasRepository = _RecordingGlobalFoodReceiptAliasRepository();
       final service = ReceiptReviewResolutionService(
         mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-        matcher: _FakeMatcher(
-          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-          defaultSelections: const <String, String?>{},
-        ),
         globalFoodItemRepository: globalRepository,
         globalFoodReceiptAliasRepository: aliasRepository,
         inventoryItemRepository: inventoryRepository,
@@ -643,10 +616,6 @@ void main() {
       final aliasRepository = _RecordingGlobalFoodReceiptAliasRepository();
       final service = ReceiptReviewResolutionService(
         mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-        matcher: _FakeMatcher(
-          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-          defaultSelections: const <String, String?>{},
-        ),
         globalFoodItemRepository: globalRepository,
         globalFoodReceiptAliasRepository: aliasRepository,
         inventoryItemRepository: inventoryRepository,
@@ -700,10 +669,6 @@ void main() {
       final inventoryRepository = _RecordingInventoryItemRepository();
       final service = ReceiptReviewResolutionService(
         mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-        matcher: _FakeMatcher(
-          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-          defaultSelections: const <String, String?>{},
-        ),
         globalFoodItemRepository: globalRepository,
         inventoryItemRepository: inventoryRepository,
       );
@@ -760,10 +725,6 @@ void main() {
     final calorieCacheRepository = _RecordingCalorieProductCacheRepository();
     final service = ReceiptReviewResolutionService(
       mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-      matcher: _FakeMatcher(
-        candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-        defaultSelections: const <String, String?>{},
-      ),
       globalFoodItemRepository: globalRepository,
       inventoryItemRepository: inventoryRepository,
       calorieProductCacheRepository: calorieCacheRepository,
@@ -772,7 +733,17 @@ void main() {
 
     final result = await service.persistReviewedItems(<ReceiptReviewItemDraft>[
       ReceiptReviewItemDraft(
-        item: _item(id: 'draft-1', name: 'Waffelh Edb/Nuss', brand: 'Mucci'),
+        item:
+            _item(
+              id: 'draft-1',
+              name: 'Waffelh Edb/Nuss',
+              brand: 'Mucci',
+            ).copyWith(
+              productSnapshot: selected.toProductSnapshot().copyWith(
+                name: 'Waffelh Edb/Nuss',
+                brand: 'Mucci',
+              ),
+            ),
         candidates: <GlobalFoodMatchCandidate>[
           GlobalFoodMatchCandidate(
             item: selected,
@@ -829,10 +800,6 @@ void main() {
     final inventoryRepository = _RecordingInventoryItemRepository();
     final service = ReceiptReviewResolutionService(
       mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-      matcher: _FakeMatcher(
-        candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-        defaultSelections: const <String, String?>{},
-      ),
       globalFoodItemRepository: globalRepository,
       inventoryItemRepository: inventoryRepository,
     );
@@ -864,10 +831,6 @@ void main() {
       final inventoryRepository = _RecordingInventoryItemRepository();
       final service = ReceiptReviewResolutionService(
         mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
-        matcher: _FakeMatcher(
-          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
-          defaultSelections: const <String, String?>{},
-        ),
         globalFoodItemRepository: globalRepository,
         inventoryItemRepository: inventoryRepository,
       );

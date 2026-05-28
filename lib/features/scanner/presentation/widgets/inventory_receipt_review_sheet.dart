@@ -7,11 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
-    'global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -25,9 +22,9 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
-import 'package:yamt/features/scanner/domain/'
-    'receipt_review_item_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
+import 'package:yamt/features/scanner/presentation/controllers/'
+    'receipt_review_sheet_controller.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_preview_button.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
@@ -78,41 +75,29 @@ class InventoryReceiptReviewSheet extends ConsumerStatefulWidget {
 class _InventoryReceiptReviewSheetState
     extends ConsumerState<InventoryReceiptReviewSheet> {
   static const _priceSummaryCalculator = ReceiptReviewPriceSummaryCalculator();
-  static const _itemProcessor = ReceiptReviewItemProcessor();
 
-  late final List<ReceiptReviewItemDraft> _items;
-  late final ReceiptReviewMetadata _receiptMetadata;
+  late final ReceiptReviewSheetControllerProvider _controllerProvider;
   final Map<String, GlobalKey> _itemKeys = <String, GlobalKey>{};
-  var _isSaving = false;
-  String? _candidateLoadingItemId;
 
   @override
   void initState() {
     super.initState();
-    final result = _itemProcessor.process(widget.items);
-    _items = [
-      for (final draft in result.items)
-        draft.syncToSelectedCandidate().prepareForReceiptReview(),
-    ];
-    _receiptMetadata = result.metadata;
-  }
-
-  bool get _canSave {
-    if (_isSaving) {
-      return false;
-    }
-    final savableItems = _items.where((item) => item.canBeSavedToInventory);
-    if (savableItems.isEmpty) {
-      return false;
-    }
-    return savableItems.every((item) => item.isConfirmed);
+    _controllerProvider = receiptReviewSheetControllerProvider(widget.items);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final controller = ref.read(_controllerProvider.notifier);
+      unawaited(controller.resolveCandidatesLazily());
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final sheetState = ref.watch(_controllerProvider);
     final l10n = AppLocalizations.of(context)!;
-    final currency = _currencyFormat(context);
-    final priceSummary = _priceSummaryCalculator.calculate(_items);
+    final currency = _currencyFormat(context, sheetState.items);
+    final priceSummary = _priceSummaryCalculator.calculate(sheetState.items);
     final colors = Theme.of(context).colorScheme;
 
     return SafeArea(
@@ -137,8 +122,8 @@ class _InventoryReceiptReviewSheetState
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   InventoryReceiptReviewHeader(
-                    isSaving: _isSaving,
-                    canSave: _canSave,
+                    isSaving: sheetState.isSaving,
+                    canSave: sheetState.canSave,
                     onSaveTap: _saveReviewedItems,
                   ),
                   const SizedBox(height: 16),
@@ -153,6 +138,7 @@ class _InventoryReceiptReviewSheetState
                 l10n: l10n,
                 currency: currency,
                 priceSummary: priceSummary,
+                sheetState: sheetState,
               ),
             ),
           ],
@@ -166,65 +152,105 @@ class _InventoryReceiptReviewSheetState
     required AppLocalizations l10n,
     required NumberFormat currency,
     required ReceiptReviewPriceSummary priceSummary,
+    required ReceiptReviewSheetState sheetState,
   }) {
     final colors = Theme.of(context).colorScheme;
 
-    if (_items.isEmpty) {
+    if (sheetState.items.isEmpty) {
       return Align(
         alignment: Alignment.centerLeft,
         child: Text(l10n.inventoryReceiptReviewEmpty),
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(14, 18, 14, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          InventoryReceiptReviewMetadataOverview(
-            storeName: _receiptMetadata.storeName,
-            receiptDate: _receiptMetadata.receiptDate,
-            receiptTimeText: _receiptMetadata.receiptTimeText,
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(14, 18, 14, 0),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate.fixed([
+              InventoryReceiptReviewMetadataOverview(
+                storeName: sheetState.metadata.storeName,
+                receiptDate: sheetState.metadata.receiptDate,
+                receiptTimeText: sheetState.metadata.receiptTimeText,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                l10n.inventoryReceiptReviewDetectedItems.toUpperCase(),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+            ]),
           ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.inventoryReceiptReviewDetectedItems.toUpperCase(),
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colors.onSurfaceVariant,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w600,
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return _buildReviewItemCard(
+                  context: context,
+                  index: index,
+                  currency: currency,
+                  sheetState: sheetState,
+                );
+              },
+              childCount: sheetState.items.length,
             ),
           ),
-          const SizedBox(height: 12),
-          for (final entry in _items.indexed) ...[
-            InventoryReceiptReviewItemCard(
-              key: _itemKeyFor(entry.$2.item.id),
-              draft: entry.$2,
-              index: entry.$1,
-              currency: currency,
-              onEditTap: _openItemEditor,
-              onSwitchTap: _openCandidatePicker,
-              onConfirmTap: () => _toggleItemConfirmed(entry.$2.item.id),
-              canConfirm: entry.$2.canConfirmReceiptReview,
-              isActionLoading: _candidateLoadingItemId == entry.$2.item.id,
-            ),
-            const SizedBox(height: 12),
-          ],
-          const SizedBox(height: 24),
-          InventoryReceiptReviewPriceOverview(
-            totalPrice: priceSummary.totalPrice,
-            storablePrice: priceSummary.storablePrice,
-            excludedPrice: priceSummary.excludedPrice,
-            currency: currency,
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(14, 24, 14, 32),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate.fixed([
+              InventoryReceiptReviewPriceOverview(
+                totalPrice: priceSummary.totalPrice,
+                storablePrice: priceSummary.storablePrice,
+                excludedPrice: priceSummary.excludedPrice,
+                currency: currency,
+              ),
+              const SizedBox(height: 40),
+            ]),
           ),
-          const SizedBox(height: 40),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReviewItemCard({
+    required BuildContext context,
+    required int index,
+    required NumberFormat currency,
+    required ReceiptReviewSheetState sheetState,
+  }) {
+    final draft = sheetState.items[index];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InventoryReceiptReviewItemCard(
+        key: _itemKeyFor(draft.item.id),
+        draft: draft,
+        index: index,
+        currency: currency,
+        onEditTap: _openItemEditor,
+        onSwitchTap: _openCandidatePicker,
+        onConfirmTap: () => _toggleItemConfirmed(draft.item.id),
+        canConfirm: draft.canConfirmReceiptReview,
+        isActionLoading: sheetState.candidateLoadingItemId == draft.item.id,
+        isEnabled: !sheetState.isSaving,
       ),
     );
   }
 
   Future<void> _openItemEditor(String itemId) async {
-    final draft = _draftForItemId(itemId);
+    final controller = ref.read(_controllerProvider.notifier);
+    if (ref.read(_controllerProvider).isSaving) {
+      return;
+    }
+    final draft = controller.draftForItemId(itemId);
     if (draft == null || draft.item.isDiscount) {
       return;
     }
@@ -233,19 +259,32 @@ class _InventoryReceiptReviewSheetState
     if (!mounted || editedItem == null) {
       return;
     }
-
-    _replaceDraftByItemId(itemId, (currentDraft) {
-      return currentDraft.copyWith(item: editedItem).prepareForReceiptReview();
-    });
-  }
-
-  Future<void> _openCandidatePicker(String itemId) async {
-    if (_candidateLoadingItemId != null) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    if (container.read(_controllerProvider).isSaving) {
       return;
     }
 
-    final draft = await _prepareDraftForCandidateSelection(itemId);
+    container
+        .read(_controllerProvider.notifier)
+        .applyEditedItem(
+          itemId,
+          editedItem,
+        );
+  }
+
+  Future<void> _openCandidatePicker(String itemId) async {
+    final controller = ref.read(_controllerProvider.notifier);
+    final sheetState = ref.read(_controllerProvider);
+    if (sheetState.isSaving || sheetState.candidateLoadingItemId != null) {
+      return;
+    }
+
+    final draft = await controller.prepareDraftForCandidateSelection(itemId);
     if (!mounted || draft == null || !draft.canBeSavedToInventory) {
+      return;
+    }
+    var container = ProviderScope.containerOf(context, listen: false);
+    if (container.read(_controllerProvider).isSaving) {
       return;
     }
 
@@ -263,6 +302,10 @@ class _InventoryReceiptReviewSheetState
     if (!mounted || selection == null) {
       return;
     }
+    container = ProviderScope.containerOf(context, listen: false);
+    if (container.read(_controllerProvider).isSaving) {
+      return;
+    }
 
     switch (selection.kind) {
       case ReceiptCandidatePickerSelectionKind.candidate:
@@ -270,27 +313,31 @@ class _InventoryReceiptReviewSheetState
         if (candidateId == null) {
           return;
         }
-        _replaceDraftByItemId(itemId, (draft) {
-          return draft
-              .selectCandidate(candidateId)
-              .syncToSelectedCandidate()
-              .prepareForReceiptReview();
-        });
+        container
+            .read(_controllerProvider.notifier)
+            .selectCandidate(
+              itemId,
+              candidateId,
+            );
       case ReceiptCandidatePickerSelectionKind.manualEntry:
         await _openManualProductEntry(itemId);
     }
   }
 
   Future<void> _openManualProductEntry(String itemId) async {
-    final index = _indexForItemId(itemId);
-    if (index < 0) {
+    final controller = ref.read(_controllerProvider.notifier);
+    if (ref.read(_controllerProvider).isSaving) {
+      return;
+    }
+    final draft = controller.draftForItemId(itemId);
+    if (draft == null) {
       return;
     }
     final result =
         await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
           context: context,
           args: ManualProductSearchRouteArgs.manualProduct(
-            item: _items[index].item,
+            item: draft.item,
             includeStoreInSearch: false,
             includeWeightInSearch: false,
           ),
@@ -298,117 +345,18 @@ class _InventoryReceiptReviewSheetState
     if (!mounted || result == null) {
       return;
     }
-
-    final matcher = ref.read(globalFoodItemMatcherProvider);
-    _replaceDraftByItemId(itemId, (draft) {
-      final selectedProduct = result.selectedProduct;
-      final selectedGlobalFoodItemId = result.selectedGlobalFoodItemId;
-      if (selectedProduct == null && selectedGlobalFoodItemId == null) {
-        return draft
-            .copyWith(item: result.item)
-            .selectNewItem()
-            .prepareForReceiptReview();
-      }
-
-      final scannedCandidate = selectedProduct != null
-          ? matcher.candidateFromExternalResult(selectedProduct)
-          : result.item.toRecentReceiptReviewCandidate(
-              globalFoodItemId: selectedGlobalFoodItemId!,
-            );
-      final mergedCandidates = <GlobalFoodMatchCandidate>[
-        scannedCandidate,
-        ...draft.candidates.where(
-          (candidate) => candidate.item.id != scannedCandidate.item.id,
-        ),
-      ];
-      final updatedDraft = draft
-          .copyWith(
-            item: result.item,
-            candidates: mergedCandidates,
-            selectionNeedsReview: false,
-          )
-          .selectCandidate(scannedCandidate.item.id);
-      return updatedDraft.prepareForReceiptReview();
-    });
-  }
-
-  Future<ReceiptReviewItemDraft?> _prepareDraftForCandidateSelection(
-    String itemId,
-  ) async {
-    final index = _indexForItemId(itemId);
-    if (index < 0) {
-      return null;
-    }
-    final draft = _items[index];
-    if (!draft.canBeSavedToInventory) {
-      return null;
-    }
-    if (draft.hasCandidates) {
-      return draft;
-    }
-
-    setState(() {
-      _candidateLoadingItemId = itemId;
-    });
-
-    try {
-      final matcher = ref.read(globalFoodItemMatcherProvider);
-      final candidates = await matcher.findCandidates(draft.item);
-      if (!mounted) {
-        return null;
-      }
-      final currentIndex = _indexForItemId(itemId);
-      if (currentIndex < 0) {
-        return null;
-      }
-
-      final updatedDraft = draft
-          .copyWith(candidates: candidates)
-          .applyAutomaticSelection(
-            matcher.defaultSelectionFor(candidates),
-            selectionNeedsReview: matcher.defaultSelectionNeedsReviewFor(
-              candidates,
-            ),
-          );
-      final syncedDraft = updatedDraft
-          .syncToSelectedCandidate()
-          .prepareForReceiptReview();
-      setState(() {
-        _items[currentIndex] = syncedDraft;
-      });
-      return syncedDraft;
-    } finally {
-      if (mounted) {
-        setState(() {
-          _candidateLoadingItemId = null;
-        });
-      }
-    }
-  }
-
-  int _indexForItemId(String itemId) {
-    return _items.indexWhere((draft) => draft.item.id == itemId);
-  }
-
-  ReceiptReviewItemDraft? _draftForItemId(String itemId) {
-    final index = _indexForItemId(itemId);
-    if (index < 0) {
-      return null;
-    }
-    return _items[index];
-  }
-
-  void _replaceDraftByItemId(
-    String itemId,
-    ReceiptReviewItemDraft Function(ReceiptReviewItemDraft draft) transform,
-  ) {
-    final index = _indexForItemId(itemId);
-    if (index < 0) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    if (container.read(_controllerProvider).isSaving) {
       return;
     }
-    setState(() {
-      _items[index] = transform(_items[index]);
-    });
+    container
+        .read(_controllerProvider.notifier)
+        .applyManualProductResult(
+          itemId: itemId,
+          item: result.item,
+          selectedProduct: result.selectedProduct,
+          selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
+        );
   }
 
   Future<void> _openReceiptPreview() async {
@@ -427,28 +375,19 @@ class _InventoryReceiptReviewSheetState
   }
 
   Future<void> _saveReviewedItems() async {
-    if (!_canSave) {
-      return;
-    }
-
-    setState(() {
-      _isSaving = true;
-    });
-    await widget.onSaveTap(List<ReceiptReviewItemDraft>.from(_items));
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _isSaving = false;
-    });
+    final controller = ref.read(_controllerProvider.notifier);
+    await controller.saveReviewedItems(widget.onSaveTap);
   }
 
-  NumberFormat _currencyFormat(BuildContext context) {
+  NumberFormat _currencyFormat(
+    BuildContext context,
+    List<ReceiptReviewItemDraft> items,
+  ) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     return buildCurrencyFormat(
       locale: locale,
       currencyCode: resolveSharedCurrencyCode(
-        _items.map((draft) => draft.item.currencyCode),
+        items.map((draft) => draft.item.currencyCode),
       ),
     );
   }
@@ -466,56 +405,16 @@ class _InventoryReceiptReviewSheetState
   }
 
   void _toggleItemConfirmed(String itemId) {
-    final draft = _draftForItemId(itemId);
-    if (draft == null || !draft.canBeSavedToInventory) {
-      return;
-    }
-    if (draft.isConfirmed) {
-      _replaceDraftByItemId(itemId, (currentDraft) {
-        return currentDraft.copyWith(isConfirmed: false);
-      });
-      return;
-    }
-    if (!draft.canConfirmReceiptReview) {
+    final controller = ref.read(_controllerProvider.notifier);
+    final nextItemId = controller.toggleItemConfirmed(itemId);
+    if (nextItemId == null) {
       return;
     }
 
-    _replaceDraftByItemId(itemId, (currentDraft) {
-      return currentDraft.copyWith(
-        isConfirmed: true,
-        selectionNeedsReview: false,
-        weightNeedsAttention: false,
-      );
-    });
-    _scrollToNextPendingItem(afterItemId: itemId);
+    _scrollToItem(nextItemId);
   }
 
-  void _scrollToNextPendingItem({required String afterItemId}) {
-    final currentIndex = _indexForItemId(afterItemId);
-    if (currentIndex < 0) {
-      return;
-    }
-
-    String? nextItemId;
-    for (var index = currentIndex + 1; index < _items.length; index++) {
-      final draft = _items[index];
-      if (draft.canBeSavedToInventory && !draft.isConfirmed) {
-        nextItemId = draft.item.id;
-        break;
-      }
-    }
-    if (nextItemId == null) {
-      for (final draft in _items) {
-        if (draft.canBeSavedToInventory && !draft.isConfirmed) {
-          nextItemId = draft.item.id;
-          break;
-        }
-      }
-    }
-    if (nextItemId == null) {
-      return;
-    }
-
+  void _scrollToItem(String nextItemId) {
     final context = _itemKeys[nextItemId]?.currentContext;
     if (context == null) {
       return;

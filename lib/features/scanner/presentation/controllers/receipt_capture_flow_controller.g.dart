@@ -55,7 +55,7 @@ final class ReceiptCaptureFlowControllerProvider
 }
 
 String _$receiptCaptureFlowControllerHash() =>
-    r'6681349f51549e6180aaf4b43571fdbf9b1c7591';
+    r'e03ccfcaf49be20ece22b04d67f8024ad313927e';
 
 /// Defines receipt capture flow controller.
 

@@ -79,9 +79,10 @@ Do not move feature-specific models into `core` just to avoid thinking about
 ownership. If a shared concept depends on a feature's domain models, keep it in
 the feature that naturally owns that data.
 
-## Widget Structure
+## Widget & File Structure
 
-- Prefer small widgets/files over large page files.
+- **CRITICAL: Split Large Files**: AI must always split large files, providers, controllers, services, and models. Do not let files grow large. If a file exceeds 250-300 lines or starts doing multiple things, split it into smaller, highly focused files immediately.
+- **Prefer small files over large page/service files**: High complexity and large files are strictly prohibited.
 - For larger widgets, use component folders under
   `lib/features/<feature>/presentation/widgets/<widget_name>/`.
 - Put the main widget in `<widget_name>/<widget_name>.dart`.
@@ -89,6 +90,7 @@ the feature that naturally owns that data.
 - Callers import the concrete main widget file directly.
 - Split widgets as small as practical when it improves editability and keeps
   each file focused.
+- **Keep Functions Small**: Keep functions and methods extremely focused and small (target < 20 lines). Split complex logic out into private helpers or separate domain classes.
 
 ## Controller Naming
 

@@ -24,6 +24,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
     required this.canConfirm,
     super.key,
     this.isActionLoading = false,
+    this.isEnabled = true,
   });
 
   /// The draft.
@@ -50,6 +51,9 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
   /// Whether action loading.
   final bool isActionLoading;
 
+  /// Whether interactions are enabled.
+  final bool isEnabled;
+
   @override
   Widget build(BuildContext context) {
     final draft = this.draft;
@@ -72,7 +76,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
       color: Colors.transparent,
       child: AppInkWell(
         key: Key('receipt_review_edit_button_$index'),
-        onTap: item.isDiscount ? null : () => onEditTap(item.id),
+        onTap: item.isDiscount || !isEnabled ? null : () => onEditTap(item.id),
         borderRadius: BorderRadius.circular(18),
         child: Ink(
           decoration: AppReceiptReviewSurfaces.panelDecoration(
@@ -128,6 +132,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
                         viewData: viewData,
                         onSwitchTap: onSwitchTap,
                         isActionLoading: isActionLoading,
+                        isEnabled: isEnabled,
                         canConfirm: canConfirm,
                         onConfirmTap: onConfirmTap,
                       ),
@@ -239,6 +244,7 @@ class _ReceiptItemFooter extends StatelessWidget {
     required this.viewData,
     required this.onSwitchTap,
     required this.isActionLoading,
+    required this.isEnabled,
     required this.canConfirm,
     required this.onConfirmTap,
   });
@@ -250,6 +256,7 @@ class _ReceiptItemFooter extends StatelessWidget {
   final _ReceiptItemCardViewData viewData;
   final ValueChanged<String> onSwitchTap;
   final bool isActionLoading;
+  final bool isEnabled;
   final bool canConfirm;
   final VoidCallback onConfirmTap;
 
@@ -292,13 +299,14 @@ class _ReceiptItemFooter extends StatelessWidget {
                 key: viewData.actionButtonKey(index),
                 visualState: viewData.visualState,
                 isLoading: isActionLoading,
+                isEnabled: isEnabled,
                 onPressed: _handleAction,
               ),
             if (draft.canBeSavedToInventory)
               _ReceiptItemConfirmButton(
                 index: index,
                 isConfirmed: draft.isConfirmed,
-                isEnabled: canConfirm,
+                isEnabled: isEnabled && canConfirm,
                 onPressed: onConfirmTap,
               ),
           ],
@@ -308,7 +316,7 @@ class _ReceiptItemFooter extends StatelessWidget {
   }
 
   void _handleAction() {
-    if (isActionLoading) {
+    if (isActionLoading || !isEnabled) {
       return;
     }
     onSwitchTap(itemId);
@@ -588,12 +596,14 @@ class _ReceiptItemActionButton extends StatelessWidget {
     required this.visualState,
     required this.onPressed,
     required this.isLoading,
+    required this.isEnabled,
     super.key,
   });
 
   final _ReceiptItemVisualState visualState;
   final VoidCallback onPressed;
   final bool isLoading;
+  final bool isEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -607,7 +617,7 @@ class _ReceiptItemActionButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: TextButton(
-        onPressed: isLoading ? null : onPressed,
+        onPressed: isLoading || !isEnabled ? null : onPressed,
         style: TextButton.styleFrom(
           backgroundColor: isDetermine
               ? colors.primaryContainer
