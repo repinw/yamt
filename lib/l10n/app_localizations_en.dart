@@ -552,6 +552,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetAmountLabel => 'Enter amount';
 
   @override
+  String inventoryItemEatSheetAvailableAmount(Object amount, Object unit) {
+    return 'Available in inventory: $amount $unit';
+  }
+
+  @override
   String get inventoryItemEatSheetQuickSelectLabel => 'Quick select';
 
   @override
