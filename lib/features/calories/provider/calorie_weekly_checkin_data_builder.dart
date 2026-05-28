@@ -3,13 +3,24 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/'
-    'calorie_health_activity_kcal_reader.dart';
+    'calorie_weekly_checkin_build_models.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_health_loader.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_input_hash.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_intake_resolver.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_weight_resolver.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_window_resolver.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_learning_seed_resolver.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
     show CalorieGoalMode;
-import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
@@ -19,13 +30,11 @@ import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dar
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
-import 'package:yamt/features/health/domain/diary_activity_summary.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/features/health/presentation/controllers/'
@@ -37,18 +46,32 @@ const _weeklyCheckInProviderLogName = 'CalorieWeeklyCheckInProvider';
 Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
   Ref ref,
 ) async {
+  // Trigger recompute when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
 
-  final settings = await ref.watch(calorieGoalControllerProvider.future);
+  final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
+  final balanceNow = ref.watch(calorieBalanceNowProvider);
+  final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
+  final manualEntriesFuture = ref.watch(
+    manualHealthWeightEntriesControllerProvider.future,
+  );
+  final calorieLogRepository = ref.watch(calorieLogRepositoryProvider);
+  final healthStatusFuture = ref.watch(
+    healthConnectionControllerProvider.future,
+  );
+  final healthWeightService = ref.watch(healthWeightServiceProvider);
+  final diaryHealthService = ref.watch(diaryHealthServiceProvider);
+
+  final settings = await settingsFuture;
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  final today = normalizeDiaryDay(ref.watch(calorieBalanceNowProvider)());
-  final pendingWeeklyCheckIn = _resolvePendingWeeklyCheckIn(
+  final today = normalizeDiaryDay(balanceNow());
+  final pendingWeeklyCheckIn = resolvePendingCalorieWeeklyCheckIn(
     settings: settings,
     today: today,
   );
-  final freshness = _resolveLearnedTdeeFreshness(
+  final freshness = resolveCalorieLearnedTdeeFreshness(
     settings: settings,
     today: today,
   );
@@ -61,7 +84,7 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
   final cacheWeeklyCheckIn = shouldLoadPendingWindow
       ? pendingWeeklyCheckIn
       : shouldRefreshStaleCache
-      ? _resolveLatestCompletedWeeklyCheckIn(
+      ? resolveLatestCompletedCalorieWeeklyCheckIn(
           settings: settings,
           today: today,
         )
@@ -75,13 +98,18 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
     );
   }
 
-  final runState = await ref.watch(burnWeekRunControllerProvider.future);
+  final runState = await runStateFuture;
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
   final heartDayKeys = runState.heartDayKeys.toSet();
   final dayData = await _loadWindowDayData(
     ref: ref,
+    calorieLogRepository: calorieLogRepository,
+    manualEntriesFuture: manualEntriesFuture,
+    healthStatusFuture: healthStatusFuture,
+    healthWeightService: healthWeightService,
+    diaryHealthService: diaryHealthService,
     settings: settings,
     pendingWeeklyCheckIn: cacheWeeklyCheckIn,
     today: today,
@@ -124,175 +152,51 @@ CalorieWeeklyCheckInData _emptyWeeklyCheckInData({
   );
 }
 
-PendingCalorieGoalWeeklyCheckIn? _resolveLatestCompletedWeeklyCheckIn({
-  required CalorieGoalSettings settings,
-  required DateTime today,
-}) {
-  final countingGoalEntry = settings.countingGoalEntryForDay(today);
-  if (countingGoalEntry == null) {
-    return null;
-  }
-  final anchorEntry =
-      settings.cycleAnchorEntryForDay(today) ?? countingGoalEntry;
-  if (!anchorEntry.hasGoal) {
-    return null;
-  }
-
-  PendingCalorieGoalWeeklyCheckIn? latestWindow;
-  var windowStartDate = CalorieWeeklyWindowResolver.firstWindowStartDate(
-    anchorEntry,
-  );
-  while (true) {
-    final countedDayCount =
-        CalorieWeeklyWindowResolver.windowLengthDaysForStart(
-          anchorEntry: anchorEntry,
-          windowStartDate: windowStartDate,
-        );
-    final windowEndDate = _resolveWindowEndDate(
-      windowStartDate: windowStartDate,
-      countedDayCount: countedDayCount,
-    );
-    final dueDate = nextDiaryDay(windowEndDate);
-    if (dueDate.isAfter(today)) {
-      return latestWindow;
-    }
-    latestWindow = PendingCalorieGoalWeeklyCheckIn(
-      windowStartDate: windowStartDate,
-      windowEndDate: windowEndDate,
-      dueDate: dueDate,
-    );
-    windowStartDate = nextDiaryDay(windowEndDate);
-  }
-}
-
-PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
-  required CalorieGoalSettings settings,
-  required DateTime today,
-}) {
-  final countingGoalEntry = settings.countingGoalEntryForDay(today);
-  if (countingGoalEntry == null) {
-    return null;
-  }
-  final anchorEntry =
-      settings.cycleAnchorEntryForDay(today) ?? countingGoalEntry;
-  if (!anchorEntry.hasGoal) {
-    return null;
-  }
-  final firstWindowStartDate = CalorieWeeklyWindowResolver.firstWindowStartDate(
-    anchorEntry,
-  );
-
-  final resolvedWindowKeys = <String>{};
-  for (final entry in settings.sortedGoalHistory) {
-    final snapshot = entry.learnedTdeeSnapshot;
-    if (snapshot == null) {
-      continue;
-    }
-    if (snapshot.windowStartDate.isBefore(firstWindowStartDate)) {
-      continue;
-    }
-    resolvedWindowKeys.add(
-      _windowKey(snapshot.windowStartDate, snapshot.windowEndDate),
-    );
-  }
-
-  final persistedPending = settings.pendingWeeklyCheckIn;
-  PendingCalorieGoalWeeklyCheckIn? resolvedPersistedPending;
-  var windowStartDate = firstWindowStartDate;
-  while (true) {
-    final countedDayCount =
-        CalorieWeeklyWindowResolver.windowLengthDaysForStart(
-          anchorEntry: anchorEntry,
-          windowStartDate: windowStartDate,
-        );
-    final windowEndDate = _resolveWindowEndDate(
-      windowStartDate: windowStartDate,
-      countedDayCount: countedDayCount,
-    );
-    final dueDate = nextDiaryDay(windowEndDate);
-    if (dueDate.isAfter(today)) {
-      return resolvedPersistedPending;
-    }
-    final windowKey = _windowKey(windowStartDate, windowEndDate);
-    final isPersistedPending =
-        persistedPending != null && persistedPending.windowKey == windowKey;
-    if (resolvedWindowKeys.contains(windowKey)) {
-      if (isPersistedPending) {
-        resolvedPersistedPending = persistedPending;
-      }
-      windowStartDate = nextDiaryDay(windowEndDate);
-      continue;
-    }
-    if (isPersistedPending) {
-      return persistedPending;
-    }
-
-    return PendingCalorieGoalWeeklyCheckIn(
-      windowStartDate: windowStartDate,
-      windowEndDate: windowEndDate,
-      dueDate: dueDate,
-    );
-  }
-}
-
-CalorieLearnedTdeeFreshness _resolveLearnedTdeeFreshness({
-  required CalorieGoalSettings settings,
-  required DateTime today,
-}) {
-  final learnedAt = settings.latestLearnedTdeeChangedAt;
-  if (learnedAt == null) {
-    return CalorieLearnedTdeeFreshness.none;
-  }
-  final daysSinceLearned = today
-      .difference(normalizeDiaryDay(learnedAt))
-      .inDays;
-  if (daysSinceLearned >= learnedTdeeUrgentStaleAfterDays) {
-    return CalorieLearnedTdeeFreshness.urgent;
-  }
-  if (daysSinceLearned >= learnedTdeeStaleAfterDays) {
-    return CalorieLearnedTdeeFreshness.stale;
-  }
-  return CalorieLearnedTdeeFreshness.fresh;
-}
-
-Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
+Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
   required Ref ref,
+  required CalorieLogRepositoryContract calorieLogRepository,
+  required Future<List<ManualHealthWeightEntry>> manualEntriesFuture,
+  required Future<HealthConnectionStatus> healthStatusFuture,
+  required HealthWeightService healthWeightService,
+  required DiaryHealthService diaryHealthService,
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   required DateTime today,
   required Set<String> heartDayKeys,
 }) async {
-  final dates = _resolveWeeklyCheckInWindowDates(
+  final dates = resolveCalorieWeeklyCheckInWindowDates(
     settings: settings,
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
   );
-  final calorieEntriesByDay = await _readCheckInCalorieEntriesByDay(
-    ref: ref,
-    startInclusive: _cascadeStartDateForDates(dates),
+  final calorieEntriesByDay = await readCheckInCalorieEntriesByDay(
+    calorieLogRepository: calorieLogRepository,
+    startInclusive: dates.learningStartDate,
     endExclusive: nextDiaryDay(pendingWeeklyCheckIn.windowEndDate),
   );
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  final manualEntries = await ref.watch(
-    manualHealthWeightEntriesControllerProvider.future,
-  );
+  final manualEntries = await manualEntriesFuture;
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  final healthData = await _loadWeeklyCheckInHealthData(
-    ref: ref,
+  final healthData = await loadCalorieWeeklyCheckInHealthData(
+    healthStatusFuture: healthStatusFuture,
+    healthWeightService: healthWeightService,
+    diaryHealthService: diaryHealthService,
     settings: settings,
     dates: dates,
     today: today,
+    isMounted: () => ref.mounted,
   );
-  final weightData = _mergeWeeklyCheckInWeights(
+  final manualWeightByDayMap = manualWeightByDay(manualEntries);
+  final weightData = mergeWeeklyCheckInWeights(
     dates: dates,
     anchorEntry: dates.anchorEntry,
-    manualWeightByDay: _manualWeightByDay(manualEntries),
+    manualWeightByDay: manualWeightByDayMap,
     representativeWeightByDay: healthData.representativeWeightByDay,
   );
-  final windowIntakeData = _resolveWindowIntakeData(
+  final windowIntakeData = resolveWeeklyWindowIntakeData(
     days: dates.windowDays,
     calorieEntriesByDay: calorieEntriesByDay,
     settings: settings,
@@ -301,7 +205,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     heartDayKeys: heartDayKeys,
   );
   if (windowIntakeData.blockedReason != null) {
-    return _CalorieWeeklyCheckInDayData(
+    return CalorieWeeklyCheckInDayData(
       days: windowIntakeData.days,
       calculation: null,
       blockedReason: windowIntakeData.blockedReason,
@@ -313,14 +217,14 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     );
   }
 
-  final learningIntakeData = _resolveLearningIntakeData(
+  final learningIntakeData = resolveWeeklyLearningIntakeData(
     days: dates.learningDays,
     calorieEntriesByDay: calorieEntriesByDay,
     settings: settings,
     heartDayKeys: heartDayKeys,
   );
   if (learningIntakeData.blockedReason != null) {
-    return _CalorieWeeklyCheckInDayData(
+    return CalorieWeeklyCheckInDayData(
       days: windowIntakeData.days,
       calculation: null,
       blockedReason: learningIntakeData.blockedReason,
@@ -332,7 +236,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     );
   }
 
-  final weightBlockedData = _validateWeeklyCheckInWeightData(
+  final weightBlockedData = validateWeeklyCheckInWeightData(
     dates: dates,
     weightData: weightData,
     windowDays: windowIntakeData.days,
@@ -343,12 +247,12 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     return weightBlockedData;
   }
 
-  final previousLearningSeed = _cascadedPreviousLearningSeedForWindow(
+  final previousLearningSeed = resolveCascadedPreviousLearningSeedForWindow(
     settings: settings,
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
     dates: dates,
     calorieEntriesByDay: calorieEntriesByDay,
-    manualWeightByDay: _manualWeightByDay(manualEntries),
+    manualWeightByDay: manualWeightByDayMap,
     representativeWeightByDay: healthData.representativeWeightByDay,
     activeKcalByDay: healthData.activeKcalByDay,
     heartDayKeys: heartDayKeys,
@@ -367,14 +271,14 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
         .where((day) => !day.isHeartDay)
         .map((day) => day.activeKcal)
         .toList(growable: false),
-    learningActiveKcalByDay: _activityKcalByDay(
+    learningActiveKcalByDay: activityKcalByDay(
       days: dates.learningDays,
       activeKcalByDay: healthData.activeKcalByDay,
     ),
     todayActiveKcal: healthData.todayActiveKcal,
     weightPoints: weightData.weightPoints,
   );
-  final inputHash = _weeklyCheckInInputHash(
+  final inputHash = weeklyCheckInInputHash(
     weeklyCheckIn: pendingWeeklyCheckIn,
     dates: dates,
     previousLearningSeed: previousLearningSeed,
@@ -409,7 +313,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     log(message, name: _weeklyCheckInProviderLogName);
   }
 
-  return _CalorieWeeklyCheckInDayData(
+  return CalorieWeeklyCheckInDayData(
     days: windowIntakeData.days,
     calculation: calculation,
     blockedReason: null,
@@ -419,1043 +323,4 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     usesHealthActivity: healthData.usesHealthActivity,
     inputHash: inputHash,
   );
-}
-
-_WeeklyLearningSeed _cascadedPreviousLearningSeedForWindow({
-  required CalorieGoalSettings settings,
-  required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
-  required _WeeklyCheckInWindowDates dates,
-  required Map<String, List<CalorieEntry>> calorieEntriesByDay,
-  required Map<String, double> manualWeightByDay,
-  required Map<String, double> representativeWeightByDay,
-  required Map<String, int> activeKcalByDay,
-  required Set<String> heartDayKeys,
-}) {
-  final anchorEntry = dates.anchorEntry;
-  if (anchorEntry == null) {
-    return _baseLearningSeedForWindow(
-      settings: settings,
-      windowStartDate: pendingWeeklyCheckIn.windowStartDate,
-      windowEndDate: pendingWeeklyCheckIn.windowEndDate,
-      anchorEntry: null,
-    );
-  }
-  var windowStartDate = CalorieWeeklyWindowResolver.firstWindowStartDate(
-    anchorEntry,
-  );
-  final firstWindowCountedDayCount =
-      CalorieWeeklyWindowResolver.windowLengthDaysForStart(
-        anchorEntry: anchorEntry,
-        windowStartDate: windowStartDate,
-      );
-  final firstWindowEndDate = _resolveWindowEndDate(
-    windowStartDate: windowStartDate,
-    countedDayCount: firstWindowCountedDayCount,
-  );
-  var seed = _baseLearningSeedForWindow(
-    settings: settings,
-    windowStartDate: windowStartDate,
-    windowEndDate: firstWindowEndDate,
-    anchorEntry: anchorEntry,
-  );
-
-  while (windowStartDate.isBefore(pendingWeeklyCheckIn.windowStartDate)) {
-    final countedDayCount =
-        CalorieWeeklyWindowResolver.windowLengthDaysForStart(
-          anchorEntry: anchorEntry,
-          windowStartDate: windowStartDate,
-        );
-    final windowEndDate = _resolveWindowEndDate(
-      windowStartDate: windowStartDate,
-      countedDayCount: countedDayCount,
-    );
-    final previousWindow = PendingCalorieGoalWeeklyCheckIn(
-      windowStartDate: windowStartDate,
-      windowEndDate: windowEndDate,
-      dueDate: nextDiaryDay(windowEndDate),
-    );
-    final previousDates = _resolveWeeklyCheckInWindowDates(
-      settings: settings,
-      pendingWeeklyCheckIn: previousWindow,
-    );
-    final learningIntakeData = _resolveLearningIntakeData(
-      days: previousDates.learningDays,
-      calorieEntriesByDay: calorieEntriesByDay,
-      settings: settings,
-      heartDayKeys: heartDayKeys,
-    );
-    if (learningIntakeData.blockedReason != null) {
-      return seed;
-    }
-
-    final weightData = _mergeWeeklyCheckInWeights(
-      dates: previousDates,
-      anchorEntry: previousDates.anchorEntry,
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
-    );
-    if (weightData.weightPoints.length < 2) {
-      return seed;
-    }
-
-    final calculatorProfile =
-        CalorieWeeklyWindowResolver.calculatorProfileForDay(
-          settings: settings,
-          day: previousWindow.windowEndDate,
-        );
-    final goalMode = calculatorProfile?.goalMode ?? CalorieGoalMode.maintain;
-    final calculation = CalorieWeeklyCheckInCalculator.calculateLearnedGoal(
-      previousGoalKcal: seed.previousGoalKcal,
-      previousLearnedTdeeKcal: seed.previousLearnedTdeeKcal,
-      goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
-          ? 0
-          : calculatorProfile?.goalSpeedKgPerWeek ?? 0,
-      isLosing: goalMode == CalorieGoalMode.lose,
-      isGaining: goalMode == CalorieGoalMode.gain,
-      intakeKcalByDay: learningIntakeData.intakeKcalByDay,
-      rawActivityKcalByDay: _activityKcalByDay(
-        days: previousDates.learningDays,
-        activeKcalByDay: activeKcalByDay,
-      ),
-      weightPoints: weightData.weightPoints,
-    );
-    seed = _WeeklyLearningSeed(
-      previousGoalKcal: calculation.newGoalKcal,
-      previousLearnedTdeeKcal: calculation.calculatedBaseTdeeKcal,
-    );
-    windowStartDate = nextDiaryDay(windowEndDate);
-  }
-
-  return seed;
-}
-
-_WeeklyLearningSeed _baseLearningSeedForWindow({
-  required CalorieGoalSettings settings,
-  required DateTime windowStartDate,
-  required DateTime windowEndDate,
-  required CalorieGoalHistoryEntry? anchorEntry,
-}) {
-  return _WeeklyLearningSeed(
-    previousGoalKcal: settings.goalKcalForDay(windowEndDate),
-    previousLearnedTdeeKcal: _previousLearnedTdeeKcalBeforeDay(
-      settings: settings,
-      day: windowStartDate,
-      fallbackDay: windowEndDate,
-      anchorEntry: anchorEntry,
-    ),
-  );
-}
-
-double _previousLearnedTdeeKcalBeforeDay({
-  required CalorieGoalSettings settings,
-  required DateTime day,
-  required DateTime fallbackDay,
-  required CalorieGoalHistoryEntry? anchorEntry,
-}) {
-  final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
-    settings: settings,
-    day: fallbackDay,
-  );
-  if (calculatorProfile != null) {
-    return CalorieGoalCalculator.calculate(calculatorProfile).tdeeKcal;
-  }
-  return settings.goalKcalForDay(fallbackDay);
-}
-
-_WeeklyCheckInWindowDates _resolveWeeklyCheckInWindowDates({
-  required CalorieGoalSettings settings,
-  required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
-}) {
-  final windowLengthDays = _windowLengthDays(pendingWeeklyCheckIn);
-  final learningStartDate = _learningStartDateForCheckIn(
-    settings: settings,
-    pendingWeeklyCheckIn: pendingWeeklyCheckIn,
-  );
-  final windowDays = <DateTime>[
-    for (var index = 0; index < windowLengthDays; index += 1)
-      addDiaryDays(pendingWeeklyCheckIn.windowStartDate, index),
-  ];
-  final learningDays = _buildInclusiveDays(
-    startDate: learningStartDate,
-    endDate: pendingWeeklyCheckIn.windowEndDate,
-  );
-  final anchorEntry = settings.cycleAnchorEntryForDay(
-    pendingWeeklyCheckIn.windowEndDate,
-  );
-  final anchorWeightSourceDay = anchorEntry == null
-      ? null
-      : CalorieWeeklyWindowResolver.anchorWeightSourceDayForWindow(
-          anchorEntry: anchorEntry,
-          windowStartDate: pendingWeeklyCheckIn.windowStartDate,
-        );
-  final learningPreviousBoundaryDay = previousDiaryDay(learningStartDate);
-  final shouldUseLearningPreviousBoundary =
-      learningPreviousBoundaryDay.isAfter(
-        normalizeDiaryDay(
-          anchorEntry?.effectiveCountingStartDate ?? learningStartDate,
-        ),
-      ) ||
-      learningStartDate.isAfter(pendingWeeklyCheckIn.windowStartDate);
-  final isFirstWindow =
-      anchorEntry != null &&
-      CalorieWeeklyWindowResolver.isFirstWindowStart(
-        anchorEntry: anchorEntry,
-        windowStartDate: pendingWeeklyCheckIn.windowStartDate,
-      );
-  return _WeeklyCheckInWindowDates(
-    pendingWeeklyCheckIn: pendingWeeklyCheckIn,
-    anchorEntry: anchorEntry,
-    anchorWeightSourceDay: anchorWeightSourceDay,
-    learningStartDate: learningStartDate,
-    learningDays: learningDays,
-    windowDays: windowDays,
-    learningPreviousBoundaryDay: learningPreviousBoundaryDay,
-    shouldUseLearningPreviousBoundary: shouldUseLearningPreviousBoundary,
-    isFirstWindow: isFirstWindow,
-    previousBoundaryDay: isFirstWindow
-        ? null
-        : previousDiaryDay(pendingWeeklyCheckIn.windowStartDate),
-    nextBoundaryDay: nextDiaryDay(pendingWeeklyCheckIn.windowEndDate),
-  );
-}
-
-Future<Map<String, List<CalorieEntry>>> _readCheckInCalorieEntriesByDay({
-  required Ref ref,
-  required DateTime startInclusive,
-  required DateTime endExclusive,
-}) async {
-  final calorieEntries = await ref
-      .watch(calorieLogRepositoryProvider)
-      .readEntriesInRange(
-        startInclusive: startInclusive,
-        endExclusive: endExclusive,
-      );
-  final calorieEntriesByDay = <String, List<CalorieEntry>>{};
-  for (final entry in calorieEntries) {
-    final key = diaryDayKey(entry.loggedAt);
-    calorieEntriesByDay.putIfAbsent(key, () => <CalorieEntry>[]).add(entry);
-  }
-  return calorieEntriesByDay;
-}
-
-Future<_WeeklyCheckInHealthData> _loadWeeklyCheckInHealthData({
-  required Ref ref,
-  required CalorieGoalSettings settings,
-  required _WeeklyCheckInWindowDates dates,
-  required DateTime today,
-}) async {
-  final activeKcalByDay = <String, int>{
-    for (final day in dates.learningDays) diaryDayKey(day): 0,
-  };
-  var todayActiveKcal = 0;
-  var representativeWeightByDay = const <String, double>{};
-
-  final status = await ref.watch(healthConnectionControllerProvider.future);
-  if (!ref.mounted) {
-    throw StateError('Calorie weekly check-in disposed.');
-  }
-  if (status.accessState != HealthDataAccessState.ready) {
-    return _WeeklyCheckInHealthData(
-      activeKcalByDay: activeKcalByDay,
-      todayActiveKcal: todayActiveKcal,
-      representativeWeightByDay: representativeWeightByDay,
-      usesHealthActivity: false,
-    );
-  }
-
-  final healthWeightSamples = await ref
-      .watch(healthWeightServiceProvider)
-      .loadWeightSamples(
-        startInclusive: _earliestDay([
-          _cascadeStartDateForDates(dates),
-          ...dates.healthWeightStartCandidates,
-        ]),
-        endExclusive: nextDiaryDay(dates.nextBoundaryDay),
-      );
-  if (!ref.mounted) {
-    throw StateError('Calorie weekly check-in disposed.');
-  }
-  representativeWeightByDay = _representativeWeightByDay(healthWeightSamples);
-
-  final diaryHealthService = ref.watch(diaryHealthServiceProvider);
-  final aggregateActiveKcalByDay = await loadAggregateHealthActivityKcalByDay(
-    diaryHealthService: diaryHealthService,
-    days: <DateTime>{...dates.learningDays, today}.toList(growable: false),
-    logName: _weeklyCheckInProviderLogName,
-    failureMessage: 'Failed to load aggregate activity for weekly check-in.',
-  );
-  if (!ref.mounted) {
-    throw StateError('Calorie weekly check-in disposed.');
-  }
-  if (aggregateActiveKcalByDay != null) {
-    activeKcalByDay.addAll(aggregateActiveKcalByDay);
-    todayActiveKcal = aggregateActiveKcalByDay[diaryDayKey(today)] ?? 0;
-    return _WeeklyCheckInHealthData(
-      activeKcalByDay: activeKcalByDay,
-      todayActiveKcal: todayActiveKcal,
-      representativeWeightByDay: representativeWeightByDay,
-      usesHealthActivity: true,
-    );
-  }
-
-  final userHeightCm = settings.calculatorProfile?.heightCm;
-  final learningDayData = await Future.wait(
-    dates.learningDays.map(
-      (day) => diaryHealthService.loadDayData(
-        day: day,
-        userHeightCm: userHeightCm,
-      ),
-    ),
-  );
-  if (!ref.mounted) {
-    throw StateError('Calorie weekly check-in disposed.');
-  }
-  for (var index = 0; index < dates.learningDays.length; index += 1) {
-    activeKcalByDay[diaryDayKey(
-      dates.learningDays[index],
-    )] = _resolveActiveKcal(
-      day: dates.learningDays[index],
-      dayData: learningDayData[index],
-    );
-  }
-
-  todayActiveKcal = _resolveActiveKcal(
-    day: today,
-    dayData: await diaryHealthService.loadDayData(
-      day: today,
-      userHeightCm: userHeightCm,
-    ),
-  );
-  return _WeeklyCheckInHealthData(
-    activeKcalByDay: activeKcalByDay,
-    todayActiveKcal: todayActiveKcal,
-    representativeWeightByDay: representativeWeightByDay,
-    usesHealthActivity: true,
-  );
-}
-
-_WeeklyCheckInWeightData _mergeWeeklyCheckInWeights({
-  required _WeeklyCheckInWindowDates dates,
-  required CalorieGoalHistoryEntry? anchorEntry,
-  required Map<String, double> manualWeightByDay,
-  required Map<String, double> representativeWeightByDay,
-}) {
-  final weightByDay = <String, double>{};
-  final weightPointByDay = <String, CalorieWeeklyCheckInWeightPoint>{};
-  for (final day in dates.learningDays) {
-    _putWeightIfAbsent(
-      weightByDay: weightByDay,
-      weightPointByDay: weightPointByDay,
-      displayDay: day,
-      weightKg: manualWeightByDay[diaryDayKey(day)],
-      dayIndex: dates.dayIndexFor(day),
-    );
-    _putWeightIfAbsent(
-      weightByDay: weightByDay,
-      weightPointByDay: weightPointByDay,
-      displayDay: day,
-      weightKg: representativeWeightByDay[diaryDayKey(day)],
-      dayIndex: dates.dayIndexFor(day),
-    );
-  }
-
-  final anchorWeightSourceDay = dates.anchorWeightSourceDay;
-  if (anchorWeightSourceDay != null) {
-    final anchorDayKey = diaryDayKey(anchorWeightSourceDay);
-    _putBoundaryWeightIfAbsent(
-      weightByDay: weightByDay,
-      weightPointByDay: weightPointByDay,
-      displayDay: dates.pendingWeeklyCheckIn.windowStartDate,
-      dayIndex: dates.dayIndexFor(dates.pendingWeeklyCheckIn.windowStartDate),
-      dayKey: anchorDayKey,
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
-    );
-  }
-
-  if (dates.shouldUseLearningPreviousBoundary) {
-    final learningPreviousBoundaryDayKey = diaryDayKey(
-      dates.learningPreviousBoundaryDay,
-    );
-    _putBoundaryWeightIfAbsent(
-      weightByDay: weightByDay,
-      weightPointByDay: weightPointByDay,
-      displayDay: dates.learningStartDate,
-      dayIndex: 0,
-      dayKey: learningPreviousBoundaryDayKey,
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
-    );
-  }
-
-  if (dates.isFirstWindow && anchorEntry != null) {
-    _putWeightIfAbsent(
-      weightByDay: weightByDay,
-      weightPointByDay: weightPointByDay,
-      displayDay: dates.pendingWeeklyCheckIn.windowStartDate,
-      weightKg: anchorEntry.calculatorProfile?.weightKg,
-      dayIndex: dates.dayIndexFor(dates.pendingWeeklyCheckIn.windowStartDate),
-    );
-  }
-
-  final previousBoundaryDay = dates.previousBoundaryDay;
-  if (previousBoundaryDay != null) {
-    _putBoundaryWeightIfAbsent(
-      weightByDay: weightByDay,
-      weightPointByDay: weightPointByDay,
-      displayDay: dates.pendingWeeklyCheckIn.windowStartDate,
-      dayIndex: dates.dayIndexFor(dates.pendingWeeklyCheckIn.windowStartDate),
-      dayKey: diaryDayKey(previousBoundaryDay),
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
-    );
-  }
-
-  _putBoundaryWeightIfAbsent(
-    weightByDay: weightByDay,
-    weightPointByDay: weightPointByDay,
-    displayDay: dates.pendingWeeklyCheckIn.windowEndDate,
-    dayIndex: dates.dayIndexFor(dates.nextBoundaryDay),
-    dayKey: diaryDayKey(dates.nextBoundaryDay),
-    manualWeightByDay: manualWeightByDay,
-    representativeWeightByDay: representativeWeightByDay,
-  );
-
-  final weightPoints = weightPointByDay.values.toList(growable: false)
-    ..sort((left, right) => left.dayIndex.compareTo(right.dayIndex));
-  return _WeeklyCheckInWeightData(
-    weightByDay: Map<String, double>.unmodifiable(weightByDay),
-    weightPoints: List<CalorieWeeklyCheckInWeightPoint>.unmodifiable(
-      weightPoints,
-    ),
-  );
-}
-
-void _putBoundaryWeightIfAbsent({
-  required Map<String, double> weightByDay,
-  required Map<String, CalorieWeeklyCheckInWeightPoint> weightPointByDay,
-  required DateTime displayDay,
-  required int dayIndex,
-  required String dayKey,
-  required Map<String, double> manualWeightByDay,
-  required Map<String, double> representativeWeightByDay,
-}) {
-  _putWeightIfAbsent(
-    weightByDay: weightByDay,
-    weightPointByDay: weightPointByDay,
-    displayDay: displayDay,
-    weightKg: manualWeightByDay[dayKey],
-    dayIndex: dayIndex,
-  );
-  _putWeightIfAbsent(
-    weightByDay: weightByDay,
-    weightPointByDay: weightPointByDay,
-    displayDay: displayDay,
-    weightKg: representativeWeightByDay[dayKey],
-    dayIndex: dayIndex,
-  );
-}
-
-_WeeklyWindowIntakeData _resolveWindowIntakeData({
-  required List<DateTime> days,
-  required Map<String, List<CalorieEntry>> calorieEntriesByDay,
-  required CalorieGoalSettings settings,
-  required Map<String, int> activeKcalByDay,
-  required Map<String, double> weightByDay,
-  required Set<String> heartDayKeys,
-}) {
-  final missingIntakeDays = <DateTime>[];
-  final windowDays = <CalorieWeeklyCheckInWindowDay>[];
-  for (final day in days) {
-    final dayKey = diaryDayKey(day);
-    final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
-    final isHeartDay = heartDayKeys.contains(dayKey);
-    if (dayEntries.isEmpty && !isHeartDay) {
-      missingIntakeDays.add(day);
-    }
-    windowDays.add(
-      CalorieWeeklyCheckInWindowDay(
-        day: day,
-        hasEntries: dayEntries.isNotEmpty && !isHeartDay,
-        loggedIntakeKcal: _sumCalories(dayEntries),
-        resolvedIntakeKcal: null,
-        isSkippedIntakeDay: settings.isSkippedIntakeDay(day),
-        isHeartDay: isHeartDay,
-        activeKcal: activeKcalByDay[dayKey] ?? 0,
-        weightKg: weightByDay[dayKey],
-      ),
-    );
-  }
-
-  if (missingIntakeDays.length >= weeklyCheckInMissingIntakeBlockThreshold) {
-    return _WeeklyWindowIntakeData.blocked(
-      days: windowDays,
-      blockedReason: CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays,
-      missingIntakeDays: missingIntakeDays,
-    );
-  }
-
-  return _resolveSkippedWindowIntake(
-    windowDays: windowDays,
-    missingIntakeDays: missingIntakeDays,
-  );
-}
-
-_WeeklyWindowIntakeData _resolveSkippedWindowIntake({
-  required List<CalorieWeeklyCheckInWindowDay> windowDays,
-  required List<DateTime> missingIntakeDays,
-}) {
-  final resolvedWindowIntake = <double>[];
-  for (var index = 0; index < windowDays.length; index += 1) {
-    final day = windowDays[index];
-    if (day.isHeartDay) {
-      continue;
-    }
-    if (day.hasEntries) {
-      resolvedWindowIntake.add(day.loggedIntakeKcal);
-      windowDays[index] = _copyWindowDayWithResolvedIntake(
-        day: day,
-        hasEntries: true,
-        loggedIntakeKcal: day.loggedIntakeKcal,
-        resolvedIntakeKcal: day.loggedIntakeKcal,
-      );
-      continue;
-    }
-    if (!day.isSkippedIntakeDay) {
-      return _WeeklyWindowIntakeData.blocked(
-        days: windowDays,
-        blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
-        missingIntakeDays: missingIntakeDays,
-      );
-    }
-    if (resolvedWindowIntake.isEmpty) {
-      return _WeeklyWindowIntakeData.blocked(
-        days: windowDays,
-        blockedReason:
-            CalorieWeeklyCheckInBlockedReason.skippedDayWithoutPriorAverage,
-        missingIntakeDays: missingIntakeDays,
-      );
-    }
-    final interpolatedIntakeKcal = CalorieDomainMath.average(
-      resolvedWindowIntake,
-    );
-    resolvedWindowIntake.add(interpolatedIntakeKcal);
-    windowDays[index] = _copyWindowDayWithResolvedIntake(
-      day: day,
-      hasEntries: false,
-      loggedIntakeKcal: 0,
-      resolvedIntakeKcal: interpolatedIntakeKcal,
-    );
-  }
-
-  return _WeeklyWindowIntakeData.ready(
-    days: windowDays,
-    missingIntakeDays: missingIntakeDays,
-  );
-}
-
-CalorieWeeklyCheckInWindowDay _copyWindowDayWithResolvedIntake({
-  required CalorieWeeklyCheckInWindowDay day,
-  required bool hasEntries,
-  required double loggedIntakeKcal,
-  required double resolvedIntakeKcal,
-}) {
-  return CalorieWeeklyCheckInWindowDay(
-    day: day.day,
-    hasEntries: hasEntries,
-    loggedIntakeKcal: loggedIntakeKcal,
-    resolvedIntakeKcal: resolvedIntakeKcal,
-    isSkippedIntakeDay: day.isSkippedIntakeDay,
-    isHeartDay: day.isHeartDay,
-    activeKcal: day.activeKcal,
-    weightKg: day.weightKg,
-  );
-}
-
-_CalorieWeeklyCheckInDayData? _validateWeeklyCheckInWeightData({
-  required _WeeklyCheckInWindowDates dates,
-  required _WeeklyCheckInWeightData weightData,
-  required List<CalorieWeeklyCheckInWindowDay> windowDays,
-  required List<DateTime> missingIntakeDays,
-  required bool usesHealthActivity,
-}) {
-  final missingWeightDays = <DateTime>[];
-  final hasLearningStartWeight =
-      weightData.weightByDay[diaryDayKey(dates.learningStartDate)] != null;
-  final hasWindowEndWeight =
-      weightData.weightByDay[diaryDayKey(
-        dates.pendingWeeklyCheckIn.windowEndDate,
-      )] !=
-      null;
-  if (weightData.weightPoints.length < 2 && !hasLearningStartWeight) {
-    missingWeightDays.add(dates.learningStartDate);
-    return _CalorieWeeklyCheckInDayData(
-      days: windowDays,
-      calculation: null,
-      blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
-      missingIntakeDays: missingIntakeDays,
-      missingWeightDays: missingWeightDays,
-      lowConfidence: false,
-      usesHealthActivity: usesHealthActivity,
-      inputHash: null,
-    );
-  }
-  if (weightData.weightPoints.length < 2 && !hasWindowEndWeight) {
-    missingWeightDays.add(dates.pendingWeeklyCheckIn.windowEndDate);
-    return _CalorieWeeklyCheckInDayData(
-      days: windowDays,
-      calculation: null,
-      blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
-      missingIntakeDays: missingIntakeDays,
-      missingWeightDays: missingWeightDays,
-      lowConfidence: false,
-      usesHealthActivity: usesHealthActivity,
-      inputHash: null,
-    );
-  }
-  return null;
-}
-
-double _sumCalories(List<CalorieEntry> entries) {
-  return entries.fold<double>(0, (sum, entry) => sum + entry.totalKcal);
-}
-
-List<int> _activityKcalByDay({
-  required List<DateTime> days,
-  required Map<String, int> activeKcalByDay,
-}) {
-  return days
-      .map((day) => activeKcalByDay[diaryDayKey(day)] ?? 0)
-      .toList(growable: false);
-}
-
-String _weeklyCheckInInputHash({
-  required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
-  required _WeeklyCheckInWindowDates dates,
-  required _WeeklyLearningSeed previousLearningSeed,
-  required Map<String, List<CalorieEntry>> calorieEntriesByDay,
-  required CalorieGoalSettings settings,
-  required _WeeklyCheckInWeightData weightData,
-  required Map<String, int> activeKcalByDay,
-  required Set<String> heartDayKeys,
-}) {
-  final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
-    settings: settings,
-    day: weeklyCheckIn.windowEndDate,
-  );
-  final buffer = StringBuffer()
-    ..write('weekly-checkin-v2')
-    ..write('|window=')
-    ..write(
-      _windowKey(weeklyCheckIn.windowStartDate, weeklyCheckIn.windowEndDate),
-    )
-    ..write('|learning=')
-    ..write(diaryDayKey(dates.learningStartDate))
-    ..write(':')
-    ..write(diaryDayKey(weeklyCheckIn.windowEndDate))
-    ..write('|math=')
-    ..write(settings.calorieMathVersion)
-    ..write('|prevGoal=')
-    ..write(_hashDouble(previousLearningSeed.previousGoalKcal))
-    ..write('|prevTdee=')
-    ..write(_hashDouble(previousLearningSeed.previousLearnedTdeeKcal))
-    ..write('|mode=')
-    ..write(calculatorProfile?.goalMode.name ?? CalorieGoalMode.maintain.name)
-    ..write('|speed=')
-    ..write(_hashDouble(calculatorProfile?.goalSpeedKgPerWeek ?? 0));
-
-  for (final day in dates.learningDays) {
-    final dayKey = diaryDayKey(day);
-    final entries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
-    final isHeartDay = heartDayKeys.contains(dayKey);
-    buffer
-      ..write('|day=')
-      ..write(dayKey)
-      ..write(':heart=')
-      ..write(isHeartDay)
-      ..write(':skipped=')
-      ..write(settings.isSkippedIntakeDay(day));
-    if (!isHeartDay) {
-      buffer
-        ..write(':count=')
-        ..write(entries.length)
-        ..write(':kcal=')
-        ..write(_hashDouble(_sumCalories(entries)))
-        ..write(':active=')
-        ..write(activeKcalByDay[dayKey] ?? 0);
-    }
-  }
-
-  for (final point in weightData.weightPoints) {
-    buffer
-      ..write('|weight=')
-      ..write(point.dayIndex)
-      ..write(':')
-      ..write(_hashDouble(point.weightKg));
-  }
-
-  return 'v2:${_fnv1a32(buffer.toString())}';
-}
-
-String _hashDouble(double value) {
-  return value.toStringAsFixed(4);
-}
-
-String _fnv1a32(String input) {
-  const offsetBasis = 0x811c9dc5;
-  const prime = 0x01000193;
-  var hash = offsetBasis;
-  for (final codeUnit in input.codeUnits) {
-    hash ^= codeUnit;
-    hash = (hash * prime) & 0xffffffff;
-  }
-  return hash.toRadixString(16).padLeft(8, '0');
-}
-
-DateTime _learningStartDateForCheckIn({
-  required CalorieGoalSettings settings,
-  required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
-}) {
-  final anchorEntry = settings.cycleAnchorEntryForDay(
-    pendingWeeklyCheckIn.windowEndDate,
-  );
-  final anchorStartDate = anchorEntry == null
-      ? pendingWeeklyCheckIn.windowStartDate
-      : CalorieWeeklyWindowResolver.firstWindowStartDate(anchorEntry);
-  final oldestAllowedStartDate = pendingWeeklyCheckIn.windowEndDate.subtract(
-    const Duration(days: dailyLearnedTdeeMaximumLookbackDays - 1),
-  );
-  if (anchorStartDate.isBefore(oldestAllowedStartDate)) {
-    return normalizeDiaryDay(oldestAllowedStartDate);
-  }
-  return normalizeDiaryDay(anchorStartDate);
-}
-
-DateTime _cascadeStartDateForDates(_WeeklyCheckInWindowDates dates) {
-  return dates.learningStartDate;
-}
-
-List<DateTime> _buildInclusiveDays({
-  required DateTime startDate,
-  required DateTime endDate,
-}) {
-  final normalizedStartDate = normalizeDiaryDay(startDate);
-  final normalizedEndDate = normalizeDiaryDay(endDate);
-  return <DateTime>[
-    for (
-      var day = normalizedStartDate;
-      !day.isAfter(normalizedEndDate);
-      day = nextDiaryDay(day)
-    )
-      day,
-  ];
-}
-
-_WeeklyLearningIntakeData _resolveLearningIntakeData({
-  required List<DateTime> days,
-  required Map<String, List<CalorieEntry>> calorieEntriesByDay,
-  required CalorieGoalSettings settings,
-  required Set<String> heartDayKeys,
-}) {
-  final missingIntakeDays = <DateTime>[];
-  final intakeKcalByDay = <double>[];
-
-  for (final day in days) {
-    if (heartDayKeys.contains(diaryDayKey(day))) {
-      continue;
-    }
-    final dayEntries =
-        calorieEntriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
-    if (dayEntries.isNotEmpty) {
-      intakeKcalByDay.add(
-        dayEntries.fold<double>(
-          0,
-          (sum, entry) => sum + entry.totalKcal,
-        ),
-      );
-      continue;
-    }
-
-    missingIntakeDays.add(day);
-    if (!settings.isSkippedIntakeDay(day)) {
-      return _WeeklyLearningIntakeData.blocked(
-        blockedReason:
-            missingIntakeDays.length >= weeklyCheckInMissingIntakeBlockThreshold
-            ? CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays
-            : CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
-        missingIntakeDays: missingIntakeDays,
-      );
-    }
-    if (intakeKcalByDay.isEmpty) {
-      return _WeeklyLearningIntakeData.blocked(
-        blockedReason:
-            CalorieWeeklyCheckInBlockedReason.skippedDayWithoutPriorAverage,
-        missingIntakeDays: missingIntakeDays,
-      );
-    }
-
-    intakeKcalByDay.add(
-      intakeKcalByDay.fold<double>(0, (sum, value) => sum + value) /
-          intakeKcalByDay.length,
-    );
-  }
-
-  return _WeeklyLearningIntakeData.ready(
-    intakeKcalByDay: intakeKcalByDay,
-    missingIntakeDays: missingIntakeDays,
-  );
-}
-
-Map<String, double> _representativeWeightByDay(
-  List<HealthWeightSample> samples,
-) {
-  final samplesByDay = <String, List<double>>{};
-  for (final sample in samples) {
-    final key = diaryDayKey(sample.recordedAt);
-    samplesByDay.putIfAbsent(key, () => <double>[]).add(sample.weightKg);
-  }
-  return {
-    for (final entry in samplesByDay.entries)
-      entry.key: CalorieDomainMath.median(entry.value),
-  };
-}
-
-int _resolveActiveKcal({
-  required DateTime day,
-  required DiaryHealthDayData dayData,
-}) {
-  final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
-  return calculateImportedHealthActivityKcal(
-    stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
-    workoutCalories: summary.workouts.map(
-      (workout) => workout.totalCalories,
-    ),
-    unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
-  );
-}
-
-String _windowKey(DateTime startDate, DateTime endDate) {
-  return '${diaryDayKey(startDate)}:${diaryDayKey(endDate)}';
-}
-
-DateTime _resolveWindowEndDate({
-  required DateTime windowStartDate,
-  required int countedDayCount,
-}) {
-  assert(countedDayCount > 0, 'Window must contain counted days.');
-  return addDiaryDays(windowStartDate, countedDayCount - 1);
-}
-
-int _windowLengthDays(PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn) {
-  return pendingWeeklyCheckIn.windowEndDate
-          .difference(pendingWeeklyCheckIn.windowStartDate)
-          .inDays +
-      1;
-}
-
-Map<String, double> _manualWeightByDay(
-  List<ManualHealthWeightEntry> manualEntries,
-) {
-  return <String, double>{
-    for (final entry in manualEntries) diaryDayKey(entry.day): entry.weightKg,
-  };
-}
-
-void _putWeightIfAbsent({
-  required Map<String, double> weightByDay,
-  required Map<String, CalorieWeeklyCheckInWeightPoint> weightPointByDay,
-  required DateTime displayDay,
-  required double? weightKg,
-  required int dayIndex,
-}) {
-  if (weightKg == null) {
-    return;
-  }
-  final displayDayKey = diaryDayKey(displayDay);
-  if (weightByDay.containsKey(displayDayKey)) {
-    return;
-  }
-  weightByDay[displayDayKey] = weightKg;
-  weightPointByDay[displayDayKey] = CalorieWeeklyCheckInWeightPoint(
-    dayIndex: dayIndex,
-    weightKg: weightKg,
-  );
-}
-
-DateTime _earliestDay(List<DateTime> days) {
-  assert(days.isNotEmpty, 'At least one day is required.');
-  var earliest = normalizeDiaryDay(days.first);
-  for (final day in days.skip(1)) {
-    final normalizedDay = normalizeDiaryDay(day);
-    if (normalizedDay.isBefore(earliest)) {
-      earliest = normalizedDay;
-    }
-  }
-  return earliest;
-}
-
-class _CalorieWeeklyCheckInDayData {
-  const _CalorieWeeklyCheckInDayData({
-    required this.days,
-    required this.calculation,
-    required this.blockedReason,
-    required this.missingIntakeDays,
-    required this.missingWeightDays,
-    required this.lowConfidence,
-    required this.usesHealthActivity,
-    required this.inputHash,
-  });
-
-  final List<CalorieWeeklyCheckInWindowDay> days;
-  final CalorieWeeklyCheckInCalculation? calculation;
-  final CalorieWeeklyCheckInBlockedReason? blockedReason;
-  final List<DateTime> missingIntakeDays;
-  final List<DateTime> missingWeightDays;
-  final bool lowConfidence;
-  final bool usesHealthActivity;
-  final String? inputHash;
-}
-
-class _WeeklyCheckInWindowDates {
-  const _WeeklyCheckInWindowDates({
-    required this.pendingWeeklyCheckIn,
-    required this.anchorEntry,
-    required this.anchorWeightSourceDay,
-    required this.learningStartDate,
-    required this.learningDays,
-    required this.windowDays,
-    required this.learningPreviousBoundaryDay,
-    required this.shouldUseLearningPreviousBoundary,
-    required this.isFirstWindow,
-    required this.previousBoundaryDay,
-    required this.nextBoundaryDay,
-  });
-
-  final PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn;
-  final CalorieGoalHistoryEntry? anchorEntry;
-  final DateTime? anchorWeightSourceDay;
-  final DateTime learningStartDate;
-  final List<DateTime> learningDays;
-  final List<DateTime> windowDays;
-  final DateTime learningPreviousBoundaryDay;
-  final bool shouldUseLearningPreviousBoundary;
-  final bool isFirstWindow;
-  final DateTime? previousBoundaryDay;
-  final DateTime nextBoundaryDay;
-
-  List<DateTime> get healthWeightStartCandidates {
-    return <DateTime>[
-      learningStartDate,
-      ?anchorWeightSourceDay,
-      if (shouldUseLearningPreviousBoundary) learningPreviousBoundaryDay,
-      ?previousBoundaryDay,
-    ];
-  }
-
-  int dayIndexFor(DateTime day) {
-    return normalizeDiaryDay(day).difference(learningStartDate).inDays;
-  }
-}
-
-class _WeeklyCheckInHealthData {
-  const _WeeklyCheckInHealthData({
-    required this.activeKcalByDay,
-    required this.todayActiveKcal,
-    required this.representativeWeightByDay,
-    required this.usesHealthActivity,
-  });
-
-  final Map<String, int> activeKcalByDay;
-  final int todayActiveKcal;
-  final Map<String, double> representativeWeightByDay;
-  final bool usesHealthActivity;
-}
-
-class _WeeklyLearningSeed {
-  const _WeeklyLearningSeed({
-    required this.previousGoalKcal,
-    required this.previousLearnedTdeeKcal,
-  });
-
-  final double previousGoalKcal;
-  final double previousLearnedTdeeKcal;
-}
-
-class _WeeklyCheckInWeightData {
-  const _WeeklyCheckInWeightData({
-    required this.weightByDay,
-    required this.weightPoints,
-  });
-
-  final Map<String, double> weightByDay;
-  final List<CalorieWeeklyCheckInWeightPoint> weightPoints;
-}
-
-class _WeeklyWindowIntakeData {
-  const _WeeklyWindowIntakeData._({
-    required this.days,
-    required this.missingIntakeDays,
-    required this.blockedReason,
-  });
-
-  factory _WeeklyWindowIntakeData.ready({
-    required List<CalorieWeeklyCheckInWindowDay> days,
-    required List<DateTime> missingIntakeDays,
-  }) {
-    return _WeeklyWindowIntakeData._(
-      days: List<CalorieWeeklyCheckInWindowDay>.unmodifiable(days),
-      missingIntakeDays: List<DateTime>.unmodifiable(missingIntakeDays),
-      blockedReason: null,
-    );
-  }
-
-  factory _WeeklyWindowIntakeData.blocked({
-    required List<CalorieWeeklyCheckInWindowDay> days,
-    required CalorieWeeklyCheckInBlockedReason blockedReason,
-    required List<DateTime> missingIntakeDays,
-  }) {
-    return _WeeklyWindowIntakeData._(
-      days: List<CalorieWeeklyCheckInWindowDay>.unmodifiable(days),
-      missingIntakeDays: List<DateTime>.unmodifiable(missingIntakeDays),
-      blockedReason: blockedReason,
-    );
-  }
-
-  final List<CalorieWeeklyCheckInWindowDay> days;
-  final List<DateTime> missingIntakeDays;
-  final CalorieWeeklyCheckInBlockedReason? blockedReason;
-}
-
-class _WeeklyLearningIntakeData {
-  const _WeeklyLearningIntakeData._({
-    required this.intakeKcalByDay,
-    required this.missingIntakeDays,
-    required this.blockedReason,
-  });
-
-  factory _WeeklyLearningIntakeData.ready({
-    required List<double> intakeKcalByDay,
-    required List<DateTime> missingIntakeDays,
-  }) {
-    return _WeeklyLearningIntakeData._(
-      intakeKcalByDay: List<double>.unmodifiable(intakeKcalByDay),
-      missingIntakeDays: List<DateTime>.unmodifiable(missingIntakeDays),
-      blockedReason: null,
-    );
-  }
-
-  factory _WeeklyLearningIntakeData.blocked({
-    required CalorieWeeklyCheckInBlockedReason blockedReason,
-    required List<DateTime> missingIntakeDays,
-  }) {
-    return _WeeklyLearningIntakeData._(
-      intakeKcalByDay: const <double>[],
-      missingIntakeDays: List<DateTime>.unmodifiable(missingIntakeDays),
-      blockedReason: blockedReason,
-    );
-  }
-
-  final List<double> intakeKcalByDay;
-  final List<DateTime> missingIntakeDays;
-  final CalorieWeeklyCheckInBlockedReason? blockedReason;
 }

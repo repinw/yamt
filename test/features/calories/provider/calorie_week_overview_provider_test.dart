@@ -481,6 +481,56 @@ void main() {
   );
 
   test(
+    'calorieWeekConsumptionSnapshot fallback reads visible days concurrently',
+    () async {
+      final today = DateTime(2026, 3, 20);
+      final releaseDayReads = Completer<void>();
+      final allDayReadsStarted = Completer<void>();
+      var startedDayReads = 0;
+      var activeDayReads = 0;
+      var maxActiveDayReads = 0;
+      final logRepository = FakeCalorieLogRepository()
+        ..onReadEntriesInRange = (startInclusive, endExclusive) async {
+          throw StateError('range read failed');
+        }
+        ..onReadEntriesForDay = (day) async {
+          startedDayReads += 1;
+          activeDayReads += 1;
+          if (activeDayReads > maxActiveDayReads) {
+            maxActiveDayReads = activeDayReads;
+          }
+          if (startedDayReads == diaryVisibleDayCount &&
+              !allDayReadsStarted.isCompleted) {
+            allDayReadsStarted.complete();
+          }
+          await releaseDayReads.future;
+          activeDayReads -= 1;
+          return const <CalorieEntry>[];
+        };
+      addTearDown(logRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final snapshotFuture = container.read(
+        calorieWeekConsumptionSnapshotForWindowProvider(today).future,
+      );
+      await allDayReadsStarted.future.timeout(const Duration(seconds: 1));
+
+      expect(startedDayReads, diaryVisibleDayCount);
+      expect(maxActiveDayReads, diaryVisibleDayCount);
+
+      releaseDayReads.complete();
+      final snapshot = await snapshotFuture;
+      expect(snapshot.days, hasLength(diaryVisibleDayCount));
+    },
+  );
+
+  test(
     'calorieWeekConsumptionSnapshot follows visible window controller',
     () async {
       final windowEnd = DateTime(2026, 3, 20);

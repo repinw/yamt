@@ -24,14 +24,11 @@ calorie_week_overview_provider.dart-->calorie_resolved_goal_provider.dart;
 calorie_week_overview_provider.dart-->calorie_visible_window_controller.dart;
 calorie_weekly_checkin_controller.dart-->burn_week_run_controller.dart;
 calorie_weekly_checkin_controller.dart-->calorie_goal_controller.dart;
-calorie_weekly_checkin_controller.dart-->calorie_weekly_checkin_models.dart;
 calorie_weekly_checkin_data_builder.dart-->burn_week_run_controller.dart;
 calorie_weekly_checkin_data_builder.dart-->calorie_balance_now_provider.dart;
 calorie_weekly_checkin_data_builder.dart-->calorie_goal_controller.dart;
 calorie_weekly_checkin_data_builder.dart-->calorie_overview_revision_provider.dart;
-calorie_weekly_checkin_data_builder.dart-->calorie_weekly_checkin_models.dart;
 calorie_weekly_checkin_provider.dart-->calorie_weekly_checkin_data_builder.dart;
-calorie_weekly_checkin_provider.dart-->calorie_weekly_checkin_models.dart;
 daily_learned_tdee_provider.dart-->calorie_goal_controller.dart;
 daily_learned_tdee_provider.dart-->calorie_overview_revision_provider.dart;
 ```

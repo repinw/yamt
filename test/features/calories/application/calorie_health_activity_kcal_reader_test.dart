@@ -80,13 +80,96 @@ void main() {
     expect(service.refreshCallCount, 1);
   });
 
-  test('keeps raw high aggregate active energy for calorie math', () async {
+  test('keeps raw high aggregate active energy for calorie math', () {
     final activeKcal = calculateAggregateImportedHealthActivityKcal(
       totalSteps: 0,
       activeEnergyKcal: 899,
     );
 
     expect(activeKcal, 899);
+  });
+
+  test('loads detailed activity for forced days only', () async {
+    final aggregateDay = DateTime(2026, 4, 8);
+    final detailedDay = DateTime(2026, 4, 9);
+    final service = FakeTrendDiaryHealthService(
+      <String, DiaryHealthDayData>{
+        diaryDayKey(detailedDay): const DiaryHealthDayData(
+          totalSteps: 1000,
+          workouts: [],
+        ),
+      },
+      trendDays: [
+        DiaryHealthActivityTrendDay(
+          day: aggregateDay,
+          totalSteps: 0,
+          activeEnergyKcal: 250,
+        ),
+        DiaryHealthActivityTrendDay(
+          day: detailedDay,
+          totalSteps: 0,
+          activeEnergyKcal: 999,
+        ),
+      ],
+    );
+
+    final activeKcalByDay = await loadHealthActivityKcalByDay(
+      diaryHealthService: service,
+      days: [aggregateDay, detailedDay],
+      logName: 'test',
+      aggregateFailureMessage: 'failed',
+      forceRefreshDayKeys: {diaryDayKey(detailedDay)},
+    );
+
+    expect(activeKcalByDay, {
+      diaryDayKey(aggregateDay): 250,
+      diaryDayKey(detailedDay): 40,
+    });
+    expect(service.trendRequests, [
+      (
+        startInclusive: aggregateDay,
+        endExclusive: nextDiaryDay(aggregateDay),
+      ),
+    ]);
+    expect(service.loadDayDataCallCount, 1);
+  });
+
+  test('falls back to detailed activity when aggregate load fails', () async {
+    final firstDay = DateTime(2026, 4, 8);
+    final secondDay = DateTime(2026, 4, 9);
+    final service = FakeTrendDiaryHealthService(
+      <String, DiaryHealthDayData>{
+        diaryDayKey(firstDay): const DiaryHealthDayData(
+          totalSteps: 1000,
+          workouts: [],
+        ),
+        diaryDayKey(secondDay): const DiaryHealthDayData(
+          totalSteps: 2000,
+          workouts: [],
+        ),
+      },
+      trendDays: const <DiaryHealthActivityTrendDay>[],
+      shouldThrowTrend: true,
+    );
+
+    final activeKcalByDay = await loadHealthActivityKcalByDay(
+      diaryHealthService: service,
+      days: [firstDay, secondDay],
+      logName: 'test',
+      aggregateFailureMessage: 'failed',
+    );
+
+    expect(activeKcalByDay, {
+      diaryDayKey(firstDay): 40,
+      diaryDayKey(secondDay): 80,
+    });
+    expect(service.trendRequests, [
+      (
+        startInclusive: firstDay,
+        endExclusive: nextDiaryDay(secondDay),
+      ),
+    ]);
+    expect(service.loadDayDataCallCount, 2);
   });
 
   test('keeps unassigned active energy without steps for calorie math', () {

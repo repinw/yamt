@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_data_builder.dart';
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_models.dart';
 
 part 'calorie_weekly_checkin_provider.g.dart';
 

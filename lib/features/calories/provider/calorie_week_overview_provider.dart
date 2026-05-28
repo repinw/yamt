@@ -171,6 +171,7 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
   Ref ref,
   DateTime visibleWindowEnd,
 ) async {
+  // Trigger recompute when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final days = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
@@ -227,14 +228,13 @@ Future<Map<String, List<CalorieEntry>>> _readVisibleEntriesByDaySafely({
     );
   }
 
-  final entriesByDay = <String, List<CalorieEntry>>{};
   final dayEntries = await Future.wait(
     days.map((day) => _readEntriesForDaySafely(repository, day)),
   );
-  for (var index = 0; index < days.length; index += 1) {
-    entriesByDay[diaryDayKey(days[index])] = dayEntries[index];
-  }
-  return entriesByDay;
+  return <String, List<CalorieEntry>>{
+    for (var index = 0; index < days.length; index += 1)
+      diaryDayKey(days[index]): dayEntries[index],
+  };
 }
 
 /// Calorie week overview.
@@ -254,24 +254,26 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
-    final snapshot = await ref.watch(
+    final visibleDays = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
+    final snapshotFuture = ref.watch(
       calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
     );
+    final repository = ref.watch(calorieLogRepositoryProvider);
+    final goalState = ref.watch(calorieGoalControllerProvider);
+    final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
+    final resolvedGoalsFuture = ref.watch(
+      resolvedCalorieGoalsForDaysProvider(
+        ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
+      ).future,
+    );
+
+    final snapshot = await snapshotFuture;
     if (!ref.mounted) {
       throw StateError('Calorie week overview disposed.');
     }
-    final repository = ref.watch(calorieLogRepositoryProvider);
-    final goalState = ref.watch(calorieGoalControllerProvider);
     final settings =
         goalState.asData?.value ?? const CalorieGoalSettings.empty();
-    final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
-    final resolvedGoalsByDay = await ref.watch(
-      resolvedCalorieGoalsForDaysProvider(
-        ResolvedCalorieGoalDaysRequest.fromDays(
-          snapshot.days.map((day) => day.date),
-        ),
-      ).future,
-    );
+    final resolvedGoalsByDay = await resolvedGoalsFuture;
     if (!ref.mounted) {
       throw StateError('Calorie week overview disposed.');
     }
@@ -324,11 +326,13 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       startInclusive: carryoverStartDate,
       endExclusive: visibleWindowStart,
     );
-    final historicalGoalsByDay = await ref.watch(
-      resolvedCalorieGoalsForDaysProvider(
-        ResolvedCalorieGoalDaysRequest.fromDays(historicalDays),
-      ).future,
-    );
+    final historicalGoalsByDay = historicalDays.isEmpty
+        ? const <String, ResolvedCalorieGoalData>{}
+        : await ref.read(
+            resolvedCalorieGoalsForDaysProvider(
+              ResolvedCalorieGoalDaysRequest.fromDays(historicalDays),
+            ).future,
+          );
     if (!ref.mounted) {
       throw StateError('Calorie week overview disposed.');
     }
@@ -406,6 +410,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
+    // Trigger recompute when calorie logs mutate through overview revision.
     ref.watch(calorieOverviewRevisionProvider);
     final normalizedDay = normalizeDiaryDay(day);
     final repository = ref.watch(calorieLogRepositoryProvider);

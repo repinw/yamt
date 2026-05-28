@@ -11,4 +11,7 @@ calorie_debug_actions.dart-->calorie_debug_action_controller.dart;
 calorie_debug_actions_menu.dart-->calorie_debug_action_controller.dart;
 calorie_debug_actions_menu.dart-->calorie_debug_actions.dart;
 calorie_debug_actions_menu.dart-->calorie_debug_keys.dart;
+calorie_debug_dump_service.dart-->calorie_debug_dump_formatting.dart;
+calorie_debug_dump_service.dart-->calorie_debug_weekly_checkin_rows.dart;
+calorie_debug_weekly_checkin_rows.dart-->calorie_debug_dump_formatting.dart;
 ```
