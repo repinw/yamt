@@ -227,14 +227,13 @@ Future<Map<String, List<CalorieEntry>>> _readVisibleEntriesByDaySafely({
     );
   }
 
-  final entriesByDay = <String, List<CalorieEntry>>{};
-  for (final day in days) {
-    entriesByDay[diaryDayKey(day)] = await _readEntriesForDaySafely(
-      repository,
-      day,
-    );
-  }
-  return entriesByDay;
+  final dayEntries = await Future.wait(
+    days.map((day) => _readEntriesForDaySafely(repository, day)),
+  );
+  return <String, List<CalorieEntry>>{
+    for (var index = 0; index < days.length; index += 1)
+      diaryDayKey(days[index]): dayEntries[index],
+  };
 }
 
 /// Calorie week overview.
