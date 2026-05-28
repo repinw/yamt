@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/data/'
     'burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -13,8 +15,6 @@ import 'package:yamt/features/calories/provider/'
     'calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';

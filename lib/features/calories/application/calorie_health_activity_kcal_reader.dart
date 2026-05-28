@@ -109,3 +109,101 @@ Future<int?> loadAggregateHealthActivityKcalForDay({
   );
   return activeKcalByDay?[diaryDayKey(day)];
 }
+
+/// Loads imported activity kcal for days, preferring aggregate range reads.
+///
+/// [forceRefreshDayKeys] are loaded from detailed day data so selected/today
+/// views can use workout details that may be fresher than aggregate cache.
+Future<Map<String, int>> loadHealthActivityKcalByDay({
+  required DiaryHealthService diaryHealthService,
+  required Iterable<DateTime> days,
+  required String logName,
+  required String aggregateFailureMessage,
+  double? userHeightCm,
+  Set<String> forceRefreshDayKeys = const <String>{},
+}) async {
+  final normalizedDaysByKey = <String, DateTime>{
+    for (final day in days)
+      diaryDayKey(normalizeDiaryDay(day)): normalizeDiaryDay(day),
+  };
+  final activeKcalByDay = <String, int>{
+    for (final dayKey in normalizedDaysByKey.keys) dayKey: 0,
+  };
+  final detailedDays = normalizedDaysByKey.values
+      .where((day) => forceRefreshDayKeys.contains(diaryDayKey(day)))
+      .toList(growable: false);
+  final aggregateDays = normalizedDaysByKey.values
+      .where((day) => !forceRefreshDayKeys.contains(diaryDayKey(day)))
+      .toList(growable: false);
+
+  if (aggregateDays.isNotEmpty) {
+    final aggregateActiveKcalByDay = await loadAggregateHealthActivityKcalByDay(
+      diaryHealthService: diaryHealthService,
+      days: aggregateDays,
+      logName: logName,
+      failureMessage: aggregateFailureMessage,
+    );
+    if (aggregateActiveKcalByDay == null) {
+      await _loadDetailedActivityKcalByDay(
+        activeKcalByDay: activeKcalByDay,
+        diaryHealthService: diaryHealthService,
+        days: aggregateDays,
+        userHeightCm: userHeightCm,
+      );
+    } else {
+      activeKcalByDay.addAll(aggregateActiveKcalByDay);
+    }
+  }
+
+  await _loadDetailedActivityKcalByDay(
+    activeKcalByDay: activeKcalByDay,
+    diaryHealthService: diaryHealthService,
+    days: detailedDays,
+    userHeightCm: userHeightCm,
+    forceRefresh: true,
+  );
+  return activeKcalByDay;
+}
+
+Future<void> _loadDetailedActivityKcalByDay({
+  required Map<String, int> activeKcalByDay,
+  required DiaryHealthService diaryHealthService,
+  required Iterable<DateTime> days,
+  double? userHeightCm,
+  bool forceRefresh = false,
+}) async {
+  for (final day in days) {
+    activeKcalByDay[diaryDayKey(day)] = await _loadDetailedActivityKcal(
+      diaryHealthService: diaryHealthService,
+      day: day,
+      userHeightCm: userHeightCm,
+      forceRefresh: forceRefresh,
+    );
+  }
+}
+
+Future<int> _loadDetailedActivityKcal({
+  required DiaryHealthService diaryHealthService,
+  required DateTime day,
+  double? userHeightCm,
+  bool forceRefresh = false,
+}) async {
+  final refreshService = diaryHealthService is DiaryHealthDayRefreshService
+      ? diaryHealthService as DiaryHealthDayRefreshService
+      : null;
+  final dayData = forceRefresh && refreshService != null
+      ? await refreshService.refreshDayData(
+          day: day,
+          userHeightCm: userHeightCm,
+        )
+      : await diaryHealthService.loadDayData(
+          day: day,
+          userHeightCm: userHeightCm,
+        );
+  final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+  return calculateImportedHealthActivityKcal(
+    stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+    workoutCalories: summary.workouts.map((workout) => workout.totalCalories),
+    unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
+  );
+}

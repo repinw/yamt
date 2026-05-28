@@ -6,4 +6,20 @@ Dependencies that create loops (inversions) are marked with `!`.
 ```mermaid
 flowchart TD;
 burn_week_live_sync_provider.dart-->burn_week_live_overview_logic.dart;
+calorie_weekly_checkin_build_models.dart-->calorie_weekly_checkin_models.dart;
+calorie_weekly_checkin_health_loader.dart-->calorie_health_activity_kcal_reader.dart;
+calorie_weekly_checkin_health_loader.dart-->calorie_weekly_checkin_build_models.dart;
+calorie_weekly_checkin_input_hash.dart-->calorie_weekly_checkin_build_models.dart;
+calorie_weekly_checkin_input_hash.dart-->calorie_weekly_checkin_intake_resolver.dart;
+calorie_weekly_checkin_input_hash.dart-->calorie_weekly_checkin_window_resolver.dart;
+calorie_weekly_checkin_intake_resolver.dart-->calorie_weekly_checkin_build_models.dart;
+calorie_weekly_checkin_intake_resolver.dart-->calorie_weekly_checkin_models.dart;
+calorie_weekly_checkin_weight_resolver.dart-->calorie_weekly_checkin_build_models.dart;
+calorie_weekly_checkin_weight_resolver.dart-->calorie_weekly_checkin_models.dart;
+calorie_weekly_checkin_window_resolver.dart-->calorie_weekly_checkin_build_models.dart;
+calorie_weekly_checkin_window_resolver.dart-->calorie_weekly_checkin_models.dart;
+calorie_weekly_learning_seed_resolver.dart-->calorie_weekly_checkin_build_models.dart;
+calorie_weekly_learning_seed_resolver.dart-->calorie_weekly_checkin_intake_resolver.dart;
+calorie_weekly_learning_seed_resolver.dart-->calorie_weekly_checkin_weight_resolver.dart;
+calorie_weekly_learning_seed_resolver.dart-->calorie_weekly_checkin_window_resolver.dart;
 ```

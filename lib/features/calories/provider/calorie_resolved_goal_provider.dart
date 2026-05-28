@@ -5,16 +5,19 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_health_activity_kcal_reader.dart';
+import 'package:yamt/features/calories/application/'
+    'daily_learned_tdee_models.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/daily_learned_tdee_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
-import 'package:yamt/features/health/domain/diary_activity_summary.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
@@ -137,15 +140,19 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
+    ref.watch(calorieOverviewRevisionProvider);
     final referenceNow = ref.watch(calorieBalanceNowProvider)();
-    final now = normalizeDiaryDay(referenceNow);
-    final healthStatus = await ref.watch(
+    final healthStatusFuture = ref.watch(
       healthConnectionControllerProvider.future,
     );
+    final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
+    final diaryHealthService = ref.watch(diaryHealthServiceProvider);
+    final now = normalizeDiaryDay(referenceNow);
+    final healthStatus = await healthStatusFuture;
     if (!ref.mounted) {
       throw StateError('Resolved calorie goals disposed.');
     }
-    var settings = await ref.watch(calorieGoalControllerProvider.future);
+    var settings = await settingsFuture;
     if (!ref.mounted) {
       throw StateError('Resolved calorie goals disposed.');
     }
@@ -176,7 +183,7 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
         ? Future<Map<String, DailyLearnedTdeeGoalData?>>.value(
             const <String, DailyLearnedTdeeGoalData?>{},
           )
-        : ref.watch(
+        : ref.read(
             dailyLearnedTdeeGoalsForDaysProvider(
               DailyLearnedTdeeGoalDaysRequest(
                 today: now,
@@ -187,24 +194,19 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
     final selectedDayKey = request.days.isEmpty
         ? null
         : diaryDayKey(request.days.last);
-    final dayActivityEntries = await Future.wait(
-      learnedRequests.map((learnedRequest) async {
-        final dayKey = diaryDayKey(learnedRequest.day);
-        final shouldRefreshActivity = dayKey == selectedDayKey;
-        final dayActivity = await _loadDayActivityData(
-          ref,
-          learnedRequest.day,
-          settings: settings,
-          healthStatus: healthStatus,
-          userHeightCm: settings.calculatorProfile?.heightCm,
-          forceRefreshDayData:
-              shouldRefreshActivity || isSameDiaryDay(learnedRequest.day, now),
-        );
-        return MapEntry<String, _ResolvedDayActivityData>(
-          dayKey,
-          dayActivity,
-        );
-      }),
+    final forceRefreshDayKeys = <String>{
+      for (final learnedRequest in learnedRequests)
+        if (diaryDayKey(learnedRequest.day) == selectedDayKey ||
+            isSameDiaryDay(learnedRequest.day, now))
+          diaryDayKey(learnedRequest.day),
+    };
+    final dayActivityByKey = await _loadActivityDataByDay(
+      diaryHealthService: diaryHealthService,
+      days: learnedRequests.map((request) => request.day),
+      settings: settings,
+      healthStatus: healthStatus,
+      userHeightCm: settings.calculatorProfile?.heightCm,
+      forceRefreshDayKeys: forceRefreshDayKeys,
     );
     if (!ref.mounted) {
       throw StateError('Resolved calorie goals disposed.');
@@ -213,9 +215,6 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
     if (!ref.mounted) {
       throw StateError('Resolved calorie goals disposed.');
     }
-    final dayActivityByKey = Map<String, _ResolvedDayActivityData>.fromEntries(
-      dayActivityEntries,
-    );
     final goalsByDay = <String, ResolvedCalorieGoalData>{};
 
     for (final day in request.days) {
@@ -265,16 +264,20 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
+    ref.watch(calorieOverviewRevisionProvider);
     final normalizedDay = normalizeDiaryDay(day);
     final referenceNow = ref.watch(calorieBalanceNowProvider)();
-    final now = normalizeDiaryDay(referenceNow);
-    final healthStatus = await ref.watch(
+    final healthStatusFuture = ref.watch(
       healthConnectionControllerProvider.future,
     );
+    final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
+    final diaryHealthService = ref.watch(diaryHealthServiceProvider);
+    final now = normalizeDiaryDay(referenceNow);
+    final healthStatus = await healthStatusFuture;
     if (!ref.mounted) {
       throw StateError('Resolved calorie goal disposed.');
     }
-    var settings = await ref.watch(calorieGoalControllerProvider.future);
+    var settings = await settingsFuture;
     if (!ref.mounted) {
       throw StateError('Resolved calorie goal disposed.');
     }
@@ -313,21 +316,28 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
       );
     }
 
-    final dayActivity = await _loadDayActivityData(
-      ref,
-      normalizedDay,
-      settings: settings,
-      healthStatus: healthStatus,
-      userHeightCm: settings.calculatorProfile?.heightCm,
-      forceRefreshDayData: true,
-    );
-    final learnedGoal = await ref.watch(
+    final learnedGoalFuture = ref.read(
       dailyLearnedTdeeGoalForDayProvider(
         day: normalizedDay,
         today: now,
         storedGoalKcal: storedGoalKcal,
       ).future,
     );
+    final dayActivityByKey = await _loadActivityDataByDay(
+      diaryHealthService: diaryHealthService,
+      days: [normalizedDay],
+      settings: settings,
+      healthStatus: healthStatus,
+      userHeightCm: settings.calculatorProfile?.heightCm,
+      forceRefreshDayKeys: {diaryDayKey(normalizedDay)},
+    );
+    final dayActivity =
+        dayActivityByKey[diaryDayKey(normalizedDay)] ??
+        const _ResolvedDayActivityData(
+          todayActiveKcal: 0,
+          isTrackingActive: false,
+        );
+    final learnedGoal = await learnedGoalFuture;
     if (!ref.mounted) {
       throw StateError('Resolved calorie goal disposed.');
     }
@@ -533,45 +543,52 @@ class _ResolvedDayActivityData {
   final bool isTrackingActive;
 }
 
-Future<_ResolvedDayActivityData> _loadDayActivityData(
-  Ref ref,
-  DateTime day, {
+Future<Map<String, _ResolvedDayActivityData>> _loadActivityDataByDay({
+  required DiaryHealthService diaryHealthService,
+  required Iterable<DateTime> days,
   required CalorieGoalSettings settings,
   required HealthConnectionStatus healthStatus,
   double? userHeightCm,
-  bool forceRefreshDayData = false,
+  Set<String> forceRefreshDayKeys = const <String>{},
 }) async {
-  if (healthStatus.accessState != HealthDataAccessState.ready ||
-      !settings.isActivityTrackingActiveForDay(day)) {
-    return const _ResolvedDayActivityData(
-      todayActiveKcal: 0,
-      isTrackingActive: false,
+  final normalizedDaysByKey = <String, DateTime>{
+    for (final day in days)
+      diaryDayKey(normalizeDiaryDay(day)): normalizeDiaryDay(day),
+  };
+  final activityByDay = <String, _ResolvedDayActivityData>{
+    for (final dayKey in normalizedDaysByKey.keys)
+      dayKey: const _ResolvedDayActivityData(
+        todayActiveKcal: 0,
+        isTrackingActive: false,
+      ),
+  };
+  if (healthStatus.accessState != HealthDataAccessState.ready) {
+    return activityByDay;
+  }
+
+  final activeDays = normalizedDaysByKey.values
+      .where(settings.isActivityTrackingActiveForDay)
+      .toList(growable: false);
+  if (activeDays.isEmpty) {
+    return activityByDay;
+  }
+
+  final activeKcalByDay = await loadHealthActivityKcalByDay(
+    diaryHealthService: diaryHealthService,
+    days: activeDays,
+    logName: _resolvedGoalLogName,
+    aggregateFailureMessage: 'Failed to load aggregate activity for goals.',
+    userHeightCm: userHeightCm,
+    forceRefreshDayKeys: forceRefreshDayKeys,
+  );
+  for (final day in activeDays) {
+    final dayKey = diaryDayKey(day);
+    activityByDay[dayKey] = _ResolvedDayActivityData(
+      todayActiveKcal: activeKcalByDay[dayKey] ?? 0,
+      isTrackingActive: true,
     );
   }
-  final diaryHealthService = ref.watch(diaryHealthServiceProvider);
-  final refreshService = diaryHealthService is DiaryHealthDayRefreshService
-      ? diaryHealthService as DiaryHealthDayRefreshService
-      : null;
-  final dayData = forceRefreshDayData && refreshService != null
-      ? await refreshService.refreshDayData(
-          day: day,
-          userHeightCm: userHeightCm,
-        )
-      : await diaryHealthService.loadDayData(
-          day: day,
-          userHeightCm: userHeightCm,
-        );
-  final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
-  return _ResolvedDayActivityData(
-    todayActiveKcal: calculateImportedHealthActivityKcal(
-      stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
-      workoutCalories: summary.workouts.map(
-        (workout) => workout.totalCalories,
-      ),
-      unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
-    ),
-    isTrackingActive: true,
-  );
+  return activityByDay;
 }
 
 DateTime _activityTrackingStartDate(DateTime now) {
