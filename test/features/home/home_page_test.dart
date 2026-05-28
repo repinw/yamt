@@ -718,6 +718,99 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('home shell chrome stays visible on shallow scroll pages', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: const CustomScrollView(
+          slivers: [
+            HomeShellTabTopChrome(title: 'Today'),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 980,
+                child: Text('Shallow content'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialBottomOpacity = _homeChromeOpacity(
+      tester,
+      HomeShellBottomChrome,
+    );
+
+    await tester.drag(
+      find.byType(CustomScrollView).first,
+      const Offset(0, -260),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(initialBottomOpacity),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shell chrome snaps after partial scrolls settle', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellTabTopChrome(title: 'Today'),
+            SliverList.builder(
+              itemCount: 40,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  height: 72,
+                  child: Text('Row $index'),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -96));
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(1),
+    );
+
+    await tester.drag(find.text('Row 7'), const Offset(0, -190));
+    await tester.pumpAndSettle();
+
+    expect(
+      _homeChromeOpacity(tester, HomeShellBottomChrome),
+      moreOrLessEquals(0),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('home shell chrome ignores nested vertical scroll views', (
     tester,
   ) async {
