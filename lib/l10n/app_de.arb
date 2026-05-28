@@ -309,6 +309,13 @@
     }
   },
   "inventoryItemEatSheetAmountLabel": "Menge eingeben",
+  "inventoryItemEatSheetAvailableAmount": "Im Vorrat verfügbar: {amount} {unit}",
+  "@inventoryItemEatSheetAvailableAmount": {
+    "placeholders": {
+      "amount": {},
+      "unit": {}
+    }
+  },
   "inventoryItemEatSheetQuickSelectLabel": "Schnellwahl",
   "inventoryItemEatSheetAllAction": "Alles",
   "inventoryAmountDialogAllRemainingAction": "Alles/Rest",

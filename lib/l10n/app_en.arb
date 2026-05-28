@@ -306,6 +306,13 @@
     }
   },
   "inventoryItemEatSheetAmountLabel": "Enter amount",
+  "inventoryItemEatSheetAvailableAmount": "Available in inventory: {amount} {unit}",
+  "@inventoryItemEatSheetAvailableAmount": {
+    "placeholders": {
+      "amount": {},
+      "unit": {}
+    }
+  },
   "inventoryItemEatSheetQuickSelectLabel": "Quick select",
   "inventoryItemEatSheetAllAction": "All",
   "inventoryAmountDialogAllRemainingAction": "All/Rest",

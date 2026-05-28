@@ -1048,6 +1048,12 @@ abstract class AppLocalizations {
   /// **'Enter amount'**
   String get inventoryItemEatSheetAmountLabel;
 
+  /// No description provided for @inventoryItemEatSheetAvailableAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Available in inventory: {amount} {unit}'**
+  String inventoryItemEatSheetAvailableAmount(Object amount, Object unit);
+
   /// No description provided for @inventoryItemEatSheetQuickSelectLabel.
   ///
   /// In en, this message translates to:

@@ -216,6 +216,7 @@ Widget _buildTestApp({
   GlobalFoodServingSuggestionRepository? servingSuggestionRepository,
   DateTime? initialLoggedAt,
   MealType? initialMealType,
+  Locale locale = const Locale('en'),
 }) {
   return ProviderScope(
     overrides: [
@@ -225,7 +226,7 @@ Widget _buildTestApp({
         ),
     ],
     child: MaterialApp(
-      locale: const Locale('en'),
+      locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
@@ -385,6 +386,37 @@ void main() {
       expect(result, isNull);
     },
   );
+
+  testWidgets('shows the available inventory amount', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItem(),
+        maxAmount: 1000,
+        onResult: (_) {},
+      ),
+    );
+
+    await _openSheet(tester);
+
+    expect(find.text('Available in inventory: 1000 g'), findsOneWidget);
+  });
+
+  testWidgets('shows the localized available inventory amount', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItem(),
+        maxAmount: 1000,
+        locale: const Locale('de'),
+        onResult: (_) {},
+      ),
+    );
+
+    await _openSheet(tester);
+
+    expect(find.text('Im Vorrat verfügbar: 1000 g'), findsOneWidget);
+  });
 
   testWidgets('done on number keyboard unfocuses amount field', (tester) async {
     InventoryItemEatRequest? result;

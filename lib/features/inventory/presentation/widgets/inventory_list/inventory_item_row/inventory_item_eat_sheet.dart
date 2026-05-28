@@ -263,6 +263,7 @@ class _InventoryItemEatSheetState
         focusNode: _activeAmountFocusNode,
         modeOptions: amountModeOptions,
         selectedModeId: selectedAmountModeId,
+        availableAmountLabel: _availableInventoryAmountLabel(l10n),
         totalLabel: _amountTotalLabel(l10n),
         errorText: _usesPortionMode
             ? _portionCountErrorText ?? _portionAmountErrorText
@@ -308,6 +309,13 @@ class _InventoryItemEatSheetState
     );
 
     return InventoryItemEatSheetView(data: viewData);
+  }
+
+  String _availableInventoryAmountLabel(AppLocalizations l10n) {
+    return l10n.inventoryItemEatSheetAvailableAmount(
+      _eatController.formatInventoryAmount(widget.maxAmount),
+      _inventoryAmountUnit.localizedName(l10n),
+    );
   }
 
   String? _inventoryUnitLabel(AppLocalizations l10n) {

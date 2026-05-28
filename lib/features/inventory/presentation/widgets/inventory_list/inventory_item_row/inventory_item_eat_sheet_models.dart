@@ -47,6 +47,7 @@ class InventoryItemEatSheetAmountSectionData {
     required this.focusNode,
     required this.modeOptions,
     required this.selectedModeId,
+    required this.availableAmountLabel,
     required this.totalLabel,
     required this.errorText,
     required this.selectedAmount,
@@ -64,6 +65,7 @@ class InventoryItemEatSheetAmountSectionData {
   final FocusNode focusNode;
   final List<InventoryItemEatAmountModeOption> modeOptions;
   final String selectedModeId;
+  final String availableAmountLabel;
   final String? totalLabel;
   final String? errorText;
   final int? selectedAmount;

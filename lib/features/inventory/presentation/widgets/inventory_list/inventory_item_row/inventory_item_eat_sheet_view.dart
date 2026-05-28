@@ -111,6 +111,14 @@ class _InventoryItemEatAmountSection extends StatelessWidget {
           onClearAndFocus: data.onClearAndFocus,
           onSubmitted: data.onSubmitted,
         ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          data.availableAmountLabel,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         if (data.quickOptions.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
           Row(
