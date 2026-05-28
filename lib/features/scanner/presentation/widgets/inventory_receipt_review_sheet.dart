@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/debug/debug_log.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
@@ -41,12 +42,13 @@ import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_price_overview.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const String _receiptReviewSheetLogName = 'InventoryReceiptReviewSheet';
+
 /// Main receipt review content shown inside the full-screen review flow.
 @Dependencies([
   inventoryItemRepository,
   inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
-  receiptReviewCandidateResolutionService,
 ])
 class InventoryReceiptReviewSheet extends ConsumerStatefulWidget {
   /// The inventory receipt review sheet.
@@ -79,6 +81,7 @@ class _InventoryReceiptReviewSheetState
     extends ConsumerState<InventoryReceiptReviewSheet> {
   static const _priceSummaryCalculator = ReceiptReviewPriceSummaryCalculator();
   static const _itemProcessor = ReceiptReviewItemProcessor();
+  static const _lazyCandidateResolutionConcurrency = 3;
 
   late final List<ReceiptReviewItemDraft> _items;
   late final ReceiptReviewMetadata _receiptMetadata;
@@ -185,61 +188,97 @@ class _InventoryReceiptReviewSheetState
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(14, 18, 14, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          InventoryReceiptReviewMetadataOverview(
-            storeName: _receiptMetadata.storeName,
-            receiptDate: _receiptMetadata.receiptDate,
-            receiptTimeText: _receiptMetadata.receiptTimeText,
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(14, 18, 14, 0),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate.fixed([
+              InventoryReceiptReviewMetadataOverview(
+                storeName: _receiptMetadata.storeName,
+                receiptDate: _receiptMetadata.receiptDate,
+                receiptTimeText: _receiptMetadata.receiptTimeText,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                l10n.inventoryReceiptReviewDetectedItems.toUpperCase(),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+            ]),
           ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.inventoryReceiptReviewDetectedItems.toUpperCase(),
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colors.onSurfaceVariant,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w600,
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return _buildReviewItemCard(
+                  context: context,
+                  index: index,
+                  currency: currency,
+                );
+              },
+              childCount: _items.length,
             ),
           ),
-          const SizedBox(height: 12),
-          for (final entry in _items.indexed) ...[
-            InventoryReceiptReviewItemCard(
-              key: _itemKeyFor(entry.$2.item.id),
-              draft: entry.$2,
-              index: entry.$1,
-              currency: currency,
-              onEditTap: _openItemEditor,
-              onSwitchTap: _openCandidatePicker,
-              onConfirmTap: () => _toggleItemConfirmed(entry.$2.item.id),
-              canConfirm: entry.$2.canConfirmReceiptReview,
-              isActionLoading: _candidateLoadingItemId == entry.$2.item.id,
-            ),
-            const SizedBox(height: 12),
-          ],
-          const SizedBox(height: 24),
-          InventoryReceiptReviewPriceOverview(
-            totalPrice: priceSummary.totalPrice,
-            storablePrice: priceSummary.storablePrice,
-            excludedPrice: priceSummary.excludedPrice,
-            currency: currency,
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(14, 24, 14, 32),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate.fixed([
+              InventoryReceiptReviewPriceOverview(
+                totalPrice: priceSummary.totalPrice,
+                storablePrice: priceSummary.storablePrice,
+                excludedPrice: priceSummary.excludedPrice,
+                currency: currency,
+              ),
+              const SizedBox(height: 40),
+            ]),
           ),
-          const SizedBox(height: 40),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReviewItemCard({
+    required BuildContext context,
+    required int index,
+    required NumberFormat currency,
+  }) {
+    final draft = _items[index];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InventoryReceiptReviewItemCard(
+        key: _itemKeyFor(draft.item.id),
+        draft: draft,
+        index: index,
+        currency: currency,
+        onEditTap: _openItemEditor,
+        onSwitchTap: _openCandidatePicker,
+        onConfirmTap: () => _toggleItemConfirmed(draft.item.id),
+        canConfirm: draft.canConfirmReceiptReview,
+        isActionLoading: _candidateLoadingItemId == draft.item.id,
+        isEnabled: !_isSaving,
       ),
     );
   }
 
   Future<void> _openItemEditor(String itemId) async {
+    if (_isSaving) {
+      return;
+    }
     final draft = _draftForItemId(itemId);
     if (draft == null || draft.item.isDiscount) {
       return;
     }
 
     final editedItem = await _showItemEditor(draft.item);
-    if (!mounted || editedItem == null) {
+    if (!mounted || _isSaving || editedItem == null) {
       return;
     }
 
@@ -249,12 +288,15 @@ class _InventoryReceiptReviewSheetState
   }
 
   Future<void> _openCandidatePicker(String itemId) async {
-    if (_candidateLoadingItemId != null) {
+    if (_isSaving || _candidateLoadingItemId != null) {
       return;
     }
 
     final draft = await _prepareDraftForCandidateSelection(itemId);
-    if (!mounted || draft == null || !draft.canBeSavedToInventory) {
+    if (!mounted ||
+        _isSaving ||
+        draft == null ||
+        !draft.canBeSavedToInventory) {
       return;
     }
 
@@ -269,7 +311,7 @@ class _InventoryReceiptReviewSheetState
             return InventoryReceiptCandidatePickerSheet(draft: draft);
           },
         );
-    if (!mounted || selection == null) {
+    if (!mounted || _isSaving || selection == null) {
       return;
     }
 
@@ -291,10 +333,14 @@ class _InventoryReceiptReviewSheetState
   }
 
   Future<void> _openManualProductEntry(String itemId) async {
+    if (_isSaving) {
+      return;
+    }
     final index = _indexForItemId(itemId);
     if (index < 0) {
       return;
     }
+    final resolver = ref.read(receiptReviewCandidateResolutionServiceProvider);
     final result =
         await pushManualProductSearchPage<InventoryReceiptManualProductResult>(
           context: context,
@@ -304,14 +350,10 @@ class _InventoryReceiptReviewSheetState
             includeWeightInSearch: false,
           ),
         );
-    if (!context.mounted || result == null) {
+    if (!mounted || _isSaving || result == null) {
       return;
     }
 
-    final resolver = ProviderScope.containerOf(
-      context,
-      listen: false,
-    ).read(receiptReviewCandidateResolutionServiceProvider);
     _replaceDraftByItemId(itemId, (draft) {
       return resolver.applyManualProductResult(
         draft: draft,
@@ -346,11 +388,18 @@ class _InventoryReceiptReviewSheetState
 
   Future<void> _resolveCandidatesLazily() async {
     final resolver = ref.read(receiptReviewCandidateResolutionServiceProvider);
-    for (final itemId in _pendingCandidateItemIds()) {
-      if (!mounted) {
-        return;
-      }
-      await _resolveCandidatesForItem(itemId, resolver: resolver);
+    final itemIds = _pendingCandidateItemIds();
+    for (var index = 0; mounted && index < itemIds.length;) {
+      final nextIndex = index + _lazyCandidateResolutionConcurrency;
+      final endIndex = nextIndex < itemIds.length ? nextIndex : itemIds.length;
+      final batchItemIds = itemIds.sublist(index, endIndex);
+      index = endIndex;
+      await Future.wait(
+        <Future<ReceiptReviewItemDraft?>>[
+          for (final itemId in batchItemIds)
+            _resolveCandidatesForItem(itemId, resolver: resolver),
+        ],
+      );
     }
   }
 
@@ -393,7 +442,9 @@ class _InventoryReceiptReviewSheetState
     }
 
     return future.whenComplete(() {
-      _candidateResolutionFutures.remove(itemId);
+      if (identical(_candidateResolutionFutures[itemId], future)) {
+        _candidateResolutionFutures.remove(itemId)?.ignore();
+      }
       if (showLoading) {
         _clearCandidateLoadingItemId(itemId);
       }
@@ -426,11 +477,28 @@ class _InventoryReceiptReviewSheetState
     if (!_isSameCandidateLookupInput(lookupItem, currentDraft.item)) {
       return currentDraft;
     }
+    final nextDraft = currentDraft == draft
+        ? resolvedDraft
+        : _mergeResolvedCandidatesIntoCurrentDraft(
+            currentDraft: currentDraft,
+            resolvedDraft: resolvedDraft,
+          );
     setState(() {
       _candidateResolvedItemIds.add(itemId);
-      _items[currentIndex] = resolvedDraft;
+      _items[currentIndex] = nextDraft;
     });
-    return resolvedDraft;
+    return nextDraft;
+  }
+
+  ReceiptReviewItemDraft _mergeResolvedCandidatesIntoCurrentDraft({
+    required ReceiptReviewItemDraft currentDraft,
+    required ReceiptReviewItemDraft resolvedDraft,
+  }) {
+    if (currentDraft.hasCandidates) {
+      return currentDraft;
+    }
+
+    return currentDraft.copyWith(candidates: resolvedDraft.candidates);
   }
 
   bool _isSameCandidateLookupInput(
@@ -483,8 +551,21 @@ class _InventoryReceiptReviewSheetState
     if (index < 0) {
       return;
     }
+    final currentDraft = _items[index];
+    final nextDraft = transform(currentDraft);
+    final shouldInvalidateCandidateResolution = !_isSameCandidateLookupInput(
+      currentDraft.item,
+      nextDraft.item,
+    );
     setState(() {
-      _items[index] = transform(_items[index]);
+      if (shouldInvalidateCandidateResolution) {
+        _candidateResolvedItemIds.remove(itemId);
+        _candidateResolutionFutures.remove(itemId)?.ignore();
+        if (_candidateLoadingItemId == itemId) {
+          _candidateLoadingItemId = null;
+        }
+      }
+      _items[index] = nextDraft;
     });
   }
 
@@ -511,13 +592,22 @@ class _InventoryReceiptReviewSheetState
     setState(() {
       _isSaving = true;
     });
-    await widget.onSaveTap(List<ReceiptReviewItemDraft>.from(_items));
-    if (!mounted) {
-      return;
+    try {
+      await widget.onSaveTap(List<ReceiptReviewItemDraft>.from(_items));
+    } on Object catch (error, stackTrace) {
+      appLog(
+        'Receipt review save failed',
+        name: _receiptReviewSheetLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
-    setState(() {
-      _isSaving = false;
-    });
   }
 
   NumberFormat _currencyFormat(BuildContext context) {
@@ -543,6 +633,9 @@ class _InventoryReceiptReviewSheetState
   }
 
   void _toggleItemConfirmed(String itemId) {
+    if (_isSaving) {
+      return;
+    }
     final draft = _draftForItemId(itemId);
     if (draft == null || !draft.canBeSavedToInventory) {
       return;

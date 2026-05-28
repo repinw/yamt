@@ -1,7 +1,6 @@
-import 'dart:developer' show log;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/debug/debug_log.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/data/'
@@ -102,13 +101,19 @@ class ReceiptReviewResolutionService {
   Future<List<ReceiptReviewItemDraft>> prepareDrafts(
     ReceiptAnalysisExtraction extraction,
   ) async {
-    final stopwatch = Stopwatch()..start();
+    Stopwatch? stopwatch;
+    assert(() {
+      stopwatch = startDebugStopwatch();
+      return true;
+    }(), 'Start debug receipt review resolution timing.');
     final baseDrafts = _mapper.map(extraction);
-    stopwatch.stop();
-    _debugLogResolutionTiming(
-      'mapped ${baseDrafts.length} draft(s) without candidate prefetch',
-      stopwatch.elapsed,
-    );
+    assert(() {
+      _debugLogResolutionTiming(
+        'mapped ${baseDrafts.length} draft(s) without candidate prefetch',
+        stopDebugStopwatch(stopwatch),
+      );
+      return true;
+    }(), 'Log debug receipt review resolution timing.');
     return baseDrafts;
   }
 
@@ -172,7 +177,7 @@ class ReceiptReviewResolutionService {
         globalItemsToSave.isEmpty ||
         await _globalFoodItemRepository.appendAll(globalItemsToSave);
     if (!globalSaved) {
-      log(
+      appLog(
         'Failed to persist global food items. '
         'Continuing with inventory-only save.',
         name: _resolutionLogName,
@@ -228,22 +233,19 @@ class ReceiptReviewResolutionService {
       id: _globalFoodItemIdGenerator(),
       name: draft.item.name,
       now: now,
-      brand: draft.item.brand ?? selectedProduct?.brand,
-      category: draft.item.category ?? selectedProduct?.category,
+      brand: draft.item.brand,
+      category: draft.item.category,
       storeName: draft.item.storeName.isEmpty
           ? selectedProduct?.storeName
           : draft.item.storeName,
-      barcode: draft.item.barcode ?? selectedProduct?.barcode,
-      imageUrl: draft.item.imageUrl ?? selectedProduct?.imageUrl,
+      barcode: draft.item.barcode,
+      imageUrl: draft.item.imageUrl,
       packageWeight: persistedWeight.weight,
-      servingSize: draft.item.servingSize ?? selectedProduct?.servingSize,
-      servingQuantity:
-          draft.item.servingQuantity ?? selectedProduct?.servingQuantity,
-      servingQuantityUnit:
-          draft.item.servingQuantityUnit ??
-          selectedProduct?.servingQuantityUnit,
+      servingSize: draft.item.servingSize,
+      servingQuantity: draft.item.servingQuantity,
+      servingQuantityUnit: draft.item.servingQuantityUnit,
       foodFingerprint: draft.item.resolvedFoodFingerprint,
-      nutrition: draft.item.nutrition ?? selectedProduct?.nutrition,
+      nutrition: draft.item.nutrition,
       status: status,
     );
   }
@@ -260,21 +262,19 @@ class ReceiptReviewResolutionService {
 
     return selectedProduct.copyWith(
       name: draft.item.name,
-      brand: draft.item.brand ?? selectedProduct.brand,
-      category: draft.item.category ?? selectedProduct.category,
+      brand: draft.item.brand,
+      category: draft.item.category,
       storeName: draft.item.storeName.isEmpty
           ? selectedProduct.storeName
           : draft.item.storeName,
-      barcode: draft.item.barcode ?? selectedProduct.barcode,
-      imageUrl: draft.item.imageUrl ?? selectedProduct.imageUrl,
+      barcode: draft.item.barcode,
+      imageUrl: draft.item.imageUrl,
       packageWeight: persistedWeight.weight,
-      servingSize: draft.item.servingSize ?? selectedProduct.servingSize,
-      servingQuantity:
-          draft.item.servingQuantity ?? selectedProduct.servingQuantity,
-      servingQuantityUnit:
-          draft.item.servingQuantityUnit ?? selectedProduct.servingQuantityUnit,
+      servingSize: draft.item.servingSize,
+      servingQuantity: draft.item.servingQuantity,
+      servingQuantityUnit: draft.item.servingQuantityUnit,
       foodFingerprint: draft.item.resolvedFoodFingerprint,
-      nutrition: draft.item.nutrition ?? selectedProduct.nutrition,
+      nutrition: draft.item.nutrition,
       updatedAt: now,
     );
   }
@@ -329,20 +329,18 @@ class ReceiptReviewResolutionService {
     return classifyGlobalFoodItemEdit(
       currentItem: selectedProduct,
       name: draft.item.name,
-      brand: draft.item.brand ?? selectedProduct.brand,
-      category: draft.item.category ?? selectedProduct.category,
+      brand: draft.item.brand,
+      category: draft.item.category,
       storeName: draft.item.storeName.isEmpty
           ? selectedProduct.storeName
           : draft.item.storeName,
-      barcode: draft.item.barcode ?? selectedProduct.barcode,
-      imageUrl: draft.item.imageUrl ?? selectedProduct.imageUrl,
+      barcode: draft.item.barcode,
+      imageUrl: draft.item.imageUrl,
       packageWeight: persistedWeight.weight,
-      servingSize: draft.item.servingSize ?? selectedProduct.servingSize,
-      servingQuantity:
-          draft.item.servingQuantity ?? selectedProduct.servingQuantity,
-      servingQuantityUnit:
-          draft.item.servingQuantityUnit ?? selectedProduct.servingQuantityUnit,
-      nutrition: draft.item.nutrition ?? selectedProduct.nutrition,
+      servingSize: draft.item.servingSize,
+      servingQuantity: draft.item.servingQuantity,
+      servingQuantityUnit: draft.item.servingQuantityUnit,
+      nutrition: draft.item.nutrition,
     );
   }
 
@@ -409,7 +407,7 @@ class ReceiptReviewResolutionService {
 
     final saved = await repository.appendAll(aliases);
     if (!saved) {
-      log(
+      appLog(
         'Failed to persist global food receipt aliases.',
         name: _resolutionLogName,
       );
@@ -442,6 +440,7 @@ class ReceiptReviewResolutionService {
       return;
     }
 
+    final futures = <Future<void>>[];
     for (final item in resolvedItems) {
       if (!globalSaved && item.requiresGlobalPersistence) {
         continue;
@@ -450,12 +449,15 @@ class ReceiptReviewResolutionService {
       if (barcode == null || barcode.isEmpty) {
         continue;
       }
-      await repository.recordSelection(
-        barcode: barcode,
-        globalFoodItem: item.resolvedProduct,
-        selectedAt: now,
+      futures.add(
+        repository.recordSelection(
+          barcode: barcode,
+          globalFoodItem: item.resolvedProduct,
+          selectedAt: now,
+        ),
       );
     }
+    await Future.wait<void>(futures);
   }
 
   Future<void> _persistCalorieProfiles(
@@ -476,17 +478,25 @@ class ReceiptReviewResolutionService {
       profilesByBarcode[profile.barcode] = profile;
     }
 
-    for (final profile in profilesByBarcode.values) {
-      final saved = await cacheRepository.saveUserOverride(
-        profile: _buildUserOverrideProfile(profile),
-        reason: 'receipt_review_selection',
+    await Future.wait<void>([
+      for (final profile in profilesByBarcode.values)
+        _saveCalorieOverride(cacheRepository, profile),
+    ]);
+  }
+
+  Future<void> _saveCalorieOverride(
+    CalorieProductCacheRepositoryContract cacheRepository,
+    CalorieProductProfile profile,
+  ) async {
+    final saved = await cacheRepository.saveUserOverride(
+      profile: _buildUserOverrideProfile(profile),
+      reason: 'receipt_review_selection',
+    );
+    if (!saved) {
+      appLog(
+        'Failed to persist calorie override for ${profile.barcode}.',
+        name: _resolutionLogName,
       );
-      if (!saved) {
-        log(
-          'Failed to persist calorie override for ${profile.barcode}.',
-          name: _resolutionLogName,
-        );
-      }
     }
   }
 
@@ -555,13 +565,10 @@ String _defaultGlobalFoodItemId() {
 }
 
 void _debugLogResolutionTiming(String stage, Duration elapsed) {
-  assert(() {
-    log(
-      'Receipt review resolution $stage in ${elapsed.inMilliseconds}ms.',
-      name: _resolutionLogName,
-    );
-    return true;
-  }(), 'Receipt resolution timing log should run only in debug mode.');
+  debugLog(
+    'Receipt review resolution $stage in ${elapsed.inMilliseconds}ms.',
+    name: _resolutionLogName,
+  );
 }
 
 class _ResolvedReviewItem {

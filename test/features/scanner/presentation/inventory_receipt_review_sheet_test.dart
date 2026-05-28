@@ -10,6 +10,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/application/'
@@ -233,6 +234,7 @@ class _CompletingOffProductSearchRepository
 
   final Completer<List<OffProductSearchResult>> completer =
       Completer<List<OffProductSearchResult>>();
+  int searchCount = 0;
   String? lastQuery;
 
   @override
@@ -243,6 +245,7 @@ class _CompletingOffProductSearchRepository
     String? weight,
     int limit = 15,
   }) {
+    searchCount++;
     lastQuery = query;
     return completer.future;
   }
@@ -251,7 +254,79 @@ class _CompletingOffProductSearchRepository
   Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
     required String barcode,
   }) {
+    searchCount++;
     return completer.future;
+  }
+}
+
+class _SequencedOffProductSearchRepository
+    implements OffProductSearchRepository {
+  _SequencedOffProductSearchRepository(this.resultsByQuery);
+
+  final Map<String, List<OffProductSearchResult>> resultsByQuery;
+  final List<String> queries = <String>[];
+
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) async {
+    queries.add(query);
+    return _resultsFor(query).take(limit).toList(growable: false);
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    queries.add(barcode);
+    return _resultsFor(barcode);
+  }
+
+  List<OffProductSearchResult> _resultsFor(String query) {
+    return resultsByQuery[query] ?? const <OffProductSearchResult>[];
+  }
+}
+
+class _TrackingOffProductSearchRepository
+    implements OffProductSearchRepository {
+  final List<String> queries = <String>[];
+  final Map<String, Completer<List<OffProductSearchResult>>> _completers =
+      <String, Completer<List<OffProductSearchResult>>>{};
+
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) {
+    queries.add(query);
+    final completer = Completer<List<OffProductSearchResult>>();
+    _completers[query] = completer;
+    return completer.future;
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) {
+    queries.add(barcode);
+    final completer = Completer<List<OffProductSearchResult>>();
+    _completers[barcode] = completer;
+    return completer.future;
+  }
+
+  void completeOpenQueries() {
+    for (final completer in _completers.values) {
+      if (!completer.isCompleted) {
+        completer.complete(const <OffProductSearchResult>[]);
+      }
+    }
   }
 }
 
@@ -944,6 +1019,306 @@ void main() {
     );
     expect(find.text('110 ml'), findsOneWidget);
     expect(find.textContaining('215 kcal'), findsOneWidget);
+  });
+
+  testWidgets('lazy candidate resolution starts bounded concurrent lookups', (
+    tester,
+  ) async {
+    final externalRepository = _TrackingOffProductSearchRepository();
+    final matcher = GlobalFoodItemMatcher(
+      offProductSearchRepository: externalRepository,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          for (final name in <String>[
+            'First Product',
+            'Second Product',
+            'Third Product',
+            'Fourth Product',
+          ])
+            ReceiptReviewItemDraft(
+              item: _item(
+                id: name,
+                isDeposit: false,
+                isDiscount: false,
+                name: name,
+              ),
+            ),
+        ],
+        overrides: <Override>[
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      externalRepository.queries,
+      <String>['First Product', 'Second Product', 'Third Product'],
+    );
+
+    externalRepository.completeOpenQueries();
+    await tester.pump();
+
+    expect(
+      externalRepository.queries,
+      <String>[
+        'First Product',
+        'Second Product',
+        'Third Product',
+        'Fourth Product',
+      ],
+    );
+
+    externalRepository.completeOpenQueries();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+    'determine action reuses pending lookup after confirm toggle',
+    (tester) async {
+      final externalRepository = _CompletingOffProductSearchRepository();
+      final matcher = GlobalFoodItemMatcher(
+        offProductSearchRepository: externalRepository,
+      );
+
+      await tester.pumpWidget(
+        _wrap(
+          drafts: <ReceiptReviewItemDraft>[
+            ReceiptReviewItemDraft(
+              item: _item(
+                id: 'food',
+                isDeposit: false,
+                isDiscount: false,
+                name: 'Waffelh Edb/Nuss',
+                weight: '110 ml',
+                nutrition: _testNutrition,
+              ),
+            ),
+          ],
+          overrides: <Override>[
+            globalFoodItemMatcherProvider.overrideWithValue(matcher),
+          ],
+          onCancelTap: () {},
+          onSaveTap: (_) async {},
+        ),
+      );
+      await tester.pump();
+
+      expect(externalRepository.searchCount, 1);
+
+      await _confirmReviewItem(tester, 0);
+      await _confirmReviewItem(tester, 0);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_determine_button_0')),
+      );
+      await tester.pump();
+
+      expect(externalRepository.searchCount, 1);
+
+      externalRepository.completer.complete(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4061458029995',
+            name: 'Waffelhörnchen Haselnuss-Vanille',
+            brand: 'Aldi, Froneri, Mucci',
+            packageWeight: '110 ml',
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 215,
+            ),
+            score: 34,
+          ),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+      final l10n = AppLocalizations.of(context)!;
+
+      expect(
+        find.text(l10n.inventoryReceiptReviewProductSelectionLabel),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Waffelhörnchen Haselnuss-Vanille'),
+        findsAtLeastNWidgets(1),
+      );
+
+      Navigator.of(context, rootNavigator: true).pop();
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets('lazy candidate resolution keeps confirmed item confirmed', (
+    tester,
+  ) async {
+    List<ReceiptReviewItemDraft>? savedDrafts;
+    final externalRepository = _CompletingOffProductSearchRepository();
+    final matcher = GlobalFoodItemMatcher(
+      offProductSearchRepository: externalRepository,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'Waffelh Edb/Nuss',
+              weight: '110 ml',
+              nutrition: _testNutrition,
+            ),
+          ),
+        ],
+        overrides: <Override>[
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+        onDraftSaveTap: (drafts) async {
+          savedDrafts = drafts;
+        },
+      ),
+    );
+    await tester.pump();
+
+    await _confirmReviewItem(tester, 0);
+
+    externalRepository.completer.complete(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4061458029995',
+          name: 'Waffelhörnchen Haselnuss-Vanille',
+          brand: 'Aldi, Froneri, Mucci',
+          packageWeight: '110 ml',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 215,
+          ),
+          score: 34,
+        ),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.undo), findsOneWidget);
+    final saveButton = tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_save_button')),
+    );
+    expect(saveButton.onPressed, isNotNull);
+    expect(externalRepository.searchCount, 1);
+
+    await _confirmReviewItem(tester, 0);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_switch_button_0')),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    expect(externalRepository.searchCount, 1);
+    expect(
+      find.text(l10n.inventoryReceiptReviewProductSelectionLabel),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Waffelhörnchen Haselnuss-Vanille'),
+      findsAtLeastNWidgets(1),
+    );
+
+    Navigator.of(context, rootNavigator: true).pop();
+    await tester.pumpAndSettle();
+
+    await _confirmReviewItem(tester, 0);
+
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pumpAndSettle();
+
+    expect(savedDrafts, isNotNull);
+    expect(savedDrafts!.single.isConfirmed, isTrue);
+  });
+
+  testWidgets('edited item can search after empty lazy lookup', (
+    tester,
+  ) async {
+    final externalRepository = _SequencedOffProductSearchRepository(
+      <String, List<OffProductSearchResult>>{
+        'Unknown Product': const <OffProductSearchResult>[],
+        'Known Product': <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4061458029995',
+            name: 'Known Product Match',
+            brand: 'Acme',
+            packageWeight: '500 g',
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 215,
+            ),
+            score: 34,
+          ),
+        ],
+      },
+    );
+    final matcher = GlobalFoodItemMatcher(
+      offProductSearchRepository: externalRepository,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'Unknown Product',
+            ),
+          ),
+        ],
+        overrides: <Override>[
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(externalRepository.queries, <String>['Unknown Product']);
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_name')),
+      'Known Product',
+    );
+    await tester.pump();
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_determine_button_0')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      externalRepository.queries,
+      <String>['Unknown Product', 'Known Product'],
+    );
+    expect(find.text('Known Product Match'), findsAtLeastNWidgets(1));
   });
 
   testWidgets('determine action reuses lazy lookup and opens sheet', (
@@ -1842,6 +2217,80 @@ void main() {
 
     saveCompleter.complete();
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('item interactions are disabled while saving', (tester) async {
+    final saveCompleter = Completer<void>();
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <InventoryItem>[
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) => saveCompleter.future,
+      ),
+    );
+
+    await _confirmReviewItem(tester, 0);
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pump();
+
+    final editInkWell = tester.widget<AppInkWell>(
+      find.byKey(const Key('receipt_review_edit_button_0')),
+    );
+    final confirmButton = tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_confirm_button_0')),
+    );
+
+    expect(editInkWell.onTap, isNull);
+    expect(confirmButton.onPressed, isNull);
+
+    saveCompleter.complete();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('save action resets loading state after failure', (
+    tester,
+  ) async {
+    final saveCompleter = Completer<void>();
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <InventoryItem>[
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) => saveCompleter.future,
+      ),
+    );
+
+    await _confirmReviewItem(tester, 0);
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    saveCompleter.completeError(Exception('save failed'));
+    await tester.pumpAndSettle();
+
+    final saveButton = tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_save_button')),
+    );
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(saveButton.onPressed, isNotNull);
   });
 
   testWidgets('missing receipt weight needs explicit confirm before save', (

@@ -44,6 +44,10 @@ GlobalFoodItemEditKind classifyGlobalFoodItemEdit({
   );
   result = _mergeEditKinds(
     result,
+    _classifyStringChange(currentItem.category, category),
+  );
+  result = _mergeEditKinds(
+    result,
     _classifyBarcodeChange(currentItem.barcode, barcode),
   );
   result = _mergeEditKinds(

@@ -53,6 +53,9 @@ GlobalFoodItem _globalFood({
   String? imageUrl = 'https://example.test/milk.png',
   String? foodFingerprint = 'milk-brand',
   String? packageWeight = '750 g',
+  String? servingSize = '100 g',
+  double? servingQuantity = 100,
+  String? servingQuantityUnit = 'g',
   GlobalFoodNutrition? nutrition = _nutrition,
 }) {
   return GlobalFoodItem.create(
@@ -65,6 +68,9 @@ GlobalFoodItem _globalFood({
     imageUrl: imageUrl,
     packageWeight: packageWeight,
     foodFingerprint: foodFingerprint,
+    servingSize: servingSize,
+    servingQuantity: servingQuantity,
+    servingQuantityUnit: servingQuantityUnit,
     nutrition: nutrition,
   );
 }
@@ -167,6 +173,9 @@ void main() {
       expect(result.item.barcode, '123456');
       expect(result.item.imageUrl, 'https://example.test/milk.png');
       expect(result.item.foodFingerprint, 'milk-brand');
+      expect(result.item.servingSize, '100 g');
+      expect(result.item.servingQuantity, 100);
+      expect(result.item.servingQuantityUnit, 'g');
       expect(result.item.nutrition, _nutrition);
     });
   });

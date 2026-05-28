@@ -195,9 +195,13 @@ GlobalFoodItem _product({
   required String id,
   required String name,
   String? brand,
+  String? category,
   String? barcode,
   String? imageUrl,
   String? packageWeight,
+  String? servingSize,
+  double? servingQuantity,
+  String? servingQuantityUnit,
   GlobalFoodNutrition? nutrition,
   GlobalFoodItemStatus status = GlobalFoodItemStatus.active,
 }) {
@@ -205,9 +209,13 @@ GlobalFoodItem _product({
     id: id,
     name: name,
     brand: brand,
+    category: category,
     barcode: barcode,
     imageUrl: imageUrl,
     packageWeight: packageWeight,
+    servingSize: servingSize,
+    servingQuantity: servingQuantity,
+    servingQuantityUnit: servingQuantityUnit,
     now: DateTime.parse('2026-03-01T10:00:00Z'),
     nutrition: nutrition,
     status: status,
@@ -403,6 +411,96 @@ void main() {
     );
   });
 
+  test(
+    'persistReviewedItems keeps cleared selected candidate fields null',
+    () async {
+      const nutrition = GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 100,
+        per100Protein: 10,
+        per100Carbs: 20,
+        per100Fat: 3,
+      );
+      final selected = _product(
+        id: 'milk',
+        name: 'Milk',
+        brand: 'Wrong Brand',
+        category: 'Wrong Category',
+        barcode: '4006381333931',
+        imageUrl: 'https://example.test/wrong.png',
+        servingSize: '100 g',
+        servingQuantity: 100,
+        servingQuantityUnit: 'g',
+        nutrition: nutrition,
+      );
+      final globalRepository = _RecordingGlobalFoodItemRepository();
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        globalFoodItemRepository: globalRepository,
+        inventoryItemRepository: inventoryRepository,
+        globalFoodItemIdGenerator: () => 'global-food-fixed',
+      );
+
+      final itemWithClearedProductFields =
+          _item(
+                id: 'draft-1',
+                name: 'Milk',
+              )
+              .copyWith(
+                productSnapshot: selected.toProductSnapshot(),
+              )
+              .copyWith(
+                brand: null,
+                category: null,
+                barcode: null,
+                imageUrl: null,
+                servingSize: null,
+                servingQuantity: null,
+                servingQuantityUnit: null,
+                nutrition: null,
+              );
+
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: itemWithClearedProductFields,
+            candidates: <GlobalFoodMatchCandidate>[
+              GlobalFoodMatchCandidate(
+                item: selected,
+                score: 100,
+                reason: GlobalFoodMatchReason.nameExact,
+              ),
+            ],
+            selectedGlobalFoodItemId: 'milk',
+          ),
+        ],
+      );
+
+      expect(result.saved, isTrue);
+      expect(globalRepository.appendedItems, hasLength(1));
+      expect(globalRepository.appendedItems.single.id, 'global-food-fixed');
+      expect(globalRepository.appendedItems.single.brand, isNull);
+      expect(globalRepository.appendedItems.single.category, isNull);
+      expect(globalRepository.appendedItems.single.barcode, isNull);
+      expect(globalRepository.appendedItems.single.imageUrl, isNull);
+      expect(globalRepository.appendedItems.single.servingSize, isNull);
+      expect(globalRepository.appendedItems.single.servingQuantity, isNull);
+      expect(globalRepository.appendedItems.single.servingQuantityUnit, isNull);
+      expect(globalRepository.appendedItems.single.nutrition, isNull);
+      final savedSnapshot =
+          inventoryRepository.appendedItems.single.productSnapshot;
+      expect(savedSnapshot.brand, isNull);
+      expect(savedSnapshot.category, isNull);
+      expect(savedSnapshot.barcode, isNull);
+      expect(savedSnapshot.imageUrl, isNull);
+      expect(savedSnapshot.servingSize, isNull);
+      expect(savedSnapshot.servingQuantity, isNull);
+      expect(savedSnapshot.servingQuantityUnit, isNull);
+      expect(savedSnapshot.nutrition, isNull);
+    },
+  );
+
   test('persistReviewedItems keeps confirmed weight on new products', () async {
     final globalRepository = _RecordingGlobalFoodItemRepository();
     final inventoryRepository = _RecordingInventoryItemRepository();
@@ -597,7 +695,17 @@ void main() {
 
     final result = await service.persistReviewedItems(<ReceiptReviewItemDraft>[
       ReceiptReviewItemDraft(
-        item: _item(id: 'draft-1', name: 'Waffelh Edb/Nuss', brand: 'Mucci'),
+        item:
+            _item(
+              id: 'draft-1',
+              name: 'Waffelh Edb/Nuss',
+              brand: 'Mucci',
+            ).copyWith(
+              productSnapshot: selected.toProductSnapshot().copyWith(
+                name: 'Waffelh Edb/Nuss',
+                brand: 'Mucci',
+              ),
+            ),
         candidates: <GlobalFoodMatchCandidate>[
           GlobalFoodMatchCandidate(
             item: selected,

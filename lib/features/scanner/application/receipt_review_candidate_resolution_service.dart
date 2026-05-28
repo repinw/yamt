@@ -1,13 +1,11 @@
-import 'dart:developer' show log;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/debug/debug_log.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
-import 'package:yamt/features/scanner/domain/'
-    'receipt_review_item_draft_extensions.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 
 part 'receipt_review_candidate_resolution_service.g.dart';
 
@@ -40,14 +38,20 @@ class ReceiptReviewCandidateResolutionService {
       return draft;
     }
 
-    final stopwatch = Stopwatch()..start();
+    Stopwatch? stopwatch;
+    assert(() {
+      stopwatch = startDebugStopwatch();
+      return true;
+    }(), 'Start debug candidate resolution timing.');
     final candidates = await _findCandidates(draft);
-    stopwatch.stop();
-    _debugLogCandidateResolutionTiming(
-      draft: draft,
-      candidateCount: candidates.length,
-      elapsed: stopwatch.elapsed,
-    );
+    assert(() {
+      _debugLogCandidateResolutionTiming(
+        draft: draft,
+        candidateCount: candidates.length,
+        elapsed: stopDebugStopwatch(stopwatch),
+      );
+      return true;
+    }(), 'Log debug candidate resolution timing.');
     return _applyCandidateResolution(draft, candidates);
   }
 
@@ -58,18 +62,20 @@ class ReceiptReviewCandidateResolutionService {
     required OffProductSearchResult? selectedProduct,
     required String? selectedGlobalFoodItemId,
   }) {
-    if (selectedProduct == null && selectedGlobalFoodItemId == null) {
+    final GlobalFoodMatchCandidate scannedCandidate;
+    final globalFoodItemId = selectedGlobalFoodItemId;
+    if (globalFoodItemId != null) {
+      scannedCandidate = item.toRecentReceiptReviewCandidate(
+        globalFoodItemId: globalFoodItemId,
+      );
+    } else if (selectedProduct != null) {
+      scannedCandidate = _matcher.candidateFromExternalResult(selectedProduct);
+    } else {
       return draft
           .copyWith(item: item)
           .selectNewItem()
           .prepareForReceiptReview();
     }
-
-    final scannedCandidate = selectedProduct != null
-        ? _matcher.candidateFromExternalResult(selectedProduct)
-        : item.toRecentReceiptReviewCandidate(
-            globalFoodItemId: selectedGlobalFoodItemId!,
-          );
     final mergedCandidates = <GlobalFoodMatchCandidate>[
       scannedCandidate,
       ...draft.candidates.where(
@@ -91,8 +97,8 @@ class ReceiptReviewCandidateResolutionService {
   ) async {
     try {
       return await _matcher.findCandidates(draft.item);
-    } catch (error, stackTrace) {
-      log(
+    } on Object catch (error, stackTrace) {
+      appLog(
         'Receipt review candidate lookup failed',
         name: _candidateResolutionLogName,
         error: error,
@@ -124,12 +130,9 @@ void _debugLogCandidateResolutionTiming({
   required int candidateCount,
   required Duration elapsed,
 }) {
-  assert(() {
-    log(
-      'Resolved ${draft.item.id} to $candidateCount candidate(s) in '
-      '${elapsed.inMilliseconds}ms.',
-      name: _candidateResolutionLogName,
-    );
-    return true;
-  }(), 'Receipt candidate timing log should run only in debug mode.');
+  debugLog(
+    'Resolved ${draft.item.id} to $candidateCount candidate(s) in '
+    '${elapsed.inMilliseconds}ms.',
+    name: _candidateResolutionLogName,
+  );
 }

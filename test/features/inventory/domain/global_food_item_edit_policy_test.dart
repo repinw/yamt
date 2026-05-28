@@ -84,6 +84,22 @@ void main() {
     expect(kind, GlobalFoodItemEditKind.createNewCandidate);
   });
 
+  test('classify creates new candidate when existing category is cleared', () {
+    final item = GlobalFoodItem.create(
+      id: 'milk',
+      name: 'Milk',
+      now: now,
+      category: 'Dairy',
+    );
+
+    final kind = classifyGlobalFoodItemEdit(
+      currentItem: item,
+      name: 'Milk',
+    );
+
+    expect(kind, GlobalFoodItemEditKind.createNewCandidate);
+  });
+
   test('classify keeps equivalent package weight on same candidate', () {
     final item = GlobalFoodItem.create(
       id: 'milk',

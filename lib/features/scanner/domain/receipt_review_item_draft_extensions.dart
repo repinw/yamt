@@ -56,6 +56,9 @@ extension ReceiptReviewItemDraftReviewExtensions on ReceiptReviewItemDraft {
         barcode: candidateItem.barcode,
         imageUrl: candidateItem.imageUrl,
         foodFingerprint: candidateItem.resolvedFoodFingerprint,
+        servingSize: candidateItem.servingSize,
+        servingQuantity: candidateItem.servingQuantity,
+        servingQuantityUnit: candidateItem.servingQuantityUnit,
         nutrition: candidateItem.nutrition,
       ),
     );

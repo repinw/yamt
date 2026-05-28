@@ -1,11 +1,10 @@
 import 'dart:convert';
-import 'dart:developer' show log;
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:yamt/core/debug/debug_log.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 const int _maxReceiptAnalysisBytes = 12 * 1024 * 1024;
@@ -13,28 +12,47 @@ const int _maxReceiptImageEdge = 1800;
 const int _receiptImageJpegQuality = 82;
 const String _jpegMimeType = 'image/jpeg';
 const String _receiptInputLogName = 'ReceiptAnalysisInput';
+const List<({int maxEdge, int quality})> _receiptImageEncodeAttempts = [
+  (maxEdge: _maxReceiptImageEdge, quality: _receiptImageJpegQuality),
+  (maxEdge: 1600, quality: 74),
+  (maxEdge: 1400, quality: 68),
+  (maxEdge: 1200, quality: 60),
+  (maxEdge: 1000, quality: 55),
+];
+const Set<String> _unsupportedReceiptImageMimeTypes = <String>{
+  'image/heic',
+  'image/heif',
+  'image/heic-sequence',
+  'image/heif-sequence',
+};
 
 /// Build receipt template inputs.
 Future<Map<String, Object?>> buildReceiptTemplateInputs(
   ReceiptInputSelection selection,
 ) async {
-  final stopwatch = Stopwatch()..start();
+  Stopwatch? stopwatch;
+  assert(() {
+    stopwatch = startDebugStopwatch();
+    return true;
+  }(), 'Start debug receipt input timing.');
+  _throwIfUnsupportedReceiptImageMimeType(selection.mimeType);
   final sourceBytes = await _resolveSelectionBytes(selection);
+  _throwIfReceiptInputTooLarge(sourceBytes.length);
   final input = await _optimizeAnalysisInput(
     bytes: sourceBytes,
     mimeType: selection.mimeType,
   );
-  if (input.bytes.length > _maxReceiptAnalysisBytes) {
-    throw _ReceiptInputFileTooLargeException(input.bytes.length);
-  }
+  _throwIfReceiptInputTooLarge(input.bytes.length);
   final base64Data = base64Encode(input.bytes);
-  stopwatch.stop();
-  _debugLogPreparedInput(
-    selection: selection,
-    sourceByteLength: sourceBytes.length,
-    input: input,
-    elapsed: stopwatch.elapsed,
-  );
+  assert(() {
+    _debugLogPreparedInput(
+      selection: selection,
+      sourceByteLength: sourceBytes.length,
+      input: input,
+      elapsed: stopDebugStopwatch(stopwatch),
+    );
+    return true;
+  }(), 'Log debug receipt input timing.');
 
   return <String, Object?>{
     'mimeType': input.mimeType,
@@ -57,10 +75,20 @@ Future<Uint8List> _resolveSelectionBytes(
   }
   final file = XFile(filePath);
   final fileLength = await file.length();
-  if (fileLength > _maxReceiptAnalysisBytes) {
-    throw _ReceiptInputFileTooLargeException(fileLength);
-  }
+  _throwIfReceiptInputTooLarge(fileLength);
   return file.readAsBytes();
+}
+
+void _throwIfReceiptInputTooLarge(int byteLength) {
+  if (byteLength > _maxReceiptAnalysisBytes) {
+    throw _ReceiptInputFileTooLargeException(byteLength);
+  }
+}
+
+void _throwIfUnsupportedReceiptImageMimeType(String mimeType) {
+  if (_isUnsupportedReceiptImageMimeType(mimeType)) {
+    throw _ReceiptUnsupportedImageFormatException(mimeType);
+  }
 }
 
 Future<_ReceiptAnalysisInput> _optimizeAnalysisInput({
@@ -80,6 +108,15 @@ Future<_ReceiptAnalysisInput> _optimizeAnalysisInput({
       },
       debugLabel: 'receipt-image-optimize',
     );
+    if (result['decodeFailed'] == true) {
+      throw const _ReceiptInputImageDecodeException();
+    }
+    if (result['tooLarge'] == true) {
+      final byteLength = result['byteLength'];
+      throw _ReceiptInputFileTooLargeException(
+        byteLength is int ? byteLength : bytes.length,
+      );
+    }
     final optimizedBytes = result['bytes'];
     final optimizedMimeType = result['mimeType'];
     if (optimizedBytes is! Uint8List || optimizedMimeType is! String) {
@@ -90,8 +127,10 @@ Future<_ReceiptAnalysisInput> _optimizeAnalysisInput({
       mimeType: optimizedMimeType,
       optimized: result['optimized'] == true,
     );
+  } on _ReceiptInputImageDecodeException {
+    rethrow;
   } on Object catch (error, stackTrace) {
-    log(
+    appLog(
       'Receipt image optimization failed; using original input.',
       name: _receiptInputLogName,
       error: error,
@@ -111,18 +150,41 @@ Map<String, Object?> _optimizeImageBytes(Map<String, Object?> input) {
   final decoded = img.decodeImage(bytes);
   if (decoded == null) {
     return <String, Object?>{
-      'bytes': bytes,
-      'mimeType': mimeType,
-      'optimized': false,
+      'decodeFailed': true,
     };
   }
 
   final oriented = img.bakeOrientation(decoded);
-  final resized = _resizeForAnalysis(oriented);
-  final encoded = Uint8List.fromList(
-    img.encodeJpg(resized, quality: _receiptImageJpegQuality),
-  );
-  if (encoded.length >= bytes.length && identical(resized, oriented)) {
+  Uint8List? smallestEncoded;
+  for (final attempt in _receiptImageEncodeAttempts) {
+    final resized = _resizeForAnalysis(
+      oriented,
+      targetMaxEdge: attempt.maxEdge,
+    );
+    final encoded = img.encodeJpg(resized, quality: attempt.quality);
+    if (smallestEncoded == null || encoded.length < smallestEncoded.length) {
+      smallestEncoded = encoded;
+    }
+
+    if (encoded.length > _maxReceiptAnalysisBytes) {
+      continue;
+    }
+    if (encoded.length >= bytes.length && identical(resized, oriented)) {
+      return <String, Object?>{
+        'bytes': bytes,
+        'mimeType': mimeType,
+        'optimized': false,
+      };
+    }
+
+    return <String, Object?>{
+      'bytes': encoded,
+      'mimeType': _jpegMimeType,
+      'optimized': true,
+    };
+  }
+
+  if (bytes.length <= _maxReceiptAnalysisBytes) {
     return <String, Object?>{
       'bytes': bytes,
       'mimeType': mimeType,
@@ -131,19 +193,18 @@ Map<String, Object?> _optimizeImageBytes(Map<String, Object?> input) {
   }
 
   return <String, Object?>{
-    'bytes': encoded,
-    'mimeType': _jpegMimeType,
-    'optimized': true,
+    'tooLarge': true,
+    'byteLength': smallestEncoded?.length ?? bytes.length,
   };
 }
 
-img.Image _resizeForAnalysis(img.Image image) {
-  final maxEdge = math.max(image.width, image.height);
-  if (maxEdge <= _maxReceiptImageEdge) {
+img.Image _resizeForAnalysis(img.Image image, {required int targetMaxEdge}) {
+  final sourceMaxEdge = math.max(image.width, image.height);
+  if (sourceMaxEdge <= targetMaxEdge) {
     return image;
   }
 
-  final scale = _maxReceiptImageEdge / maxEdge;
+  final scale = targetMaxEdge / sourceMaxEdge;
   final width = math.max(1, (image.width * scale).round());
   final height = math.max(1, (image.height * scale).round());
   return img.copyResize(
@@ -155,7 +216,19 @@ img.Image _resizeForAnalysis(img.Image image) {
 }
 
 bool _isOptimizableImageMimeType(String mimeType) {
-  return mimeType.trim().toLowerCase().startsWith('image/');
+  final normalizedMimeType = _normalizedMimeType(mimeType);
+  return normalizedMimeType.startsWith('image/') &&
+      !_unsupportedReceiptImageMimeTypes.contains(normalizedMimeType);
+}
+
+bool _isUnsupportedReceiptImageMimeType(String mimeType) {
+  return _unsupportedReceiptImageMimeTypes.contains(
+    _normalizedMimeType(mimeType),
+  );
+}
+
+String _normalizedMimeType(String mimeType) {
+  return mimeType.split(';').first.trim().toLowerCase();
 }
 
 void _debugLogPreparedInput({
@@ -164,17 +237,14 @@ void _debugLogPreparedInput({
   required _ReceiptAnalysisInput input,
   required Duration elapsed,
 }) {
-  assert(() {
-    log(
-      'Prepared receipt AI input for ${selection.name} in '
-      '${elapsed.inMilliseconds}ms '
-      '($sourceByteLength -> ${input.bytes.length} bytes, '
-      'mime: ${selection.mimeType} -> ${input.mimeType}, '
-      'optimized: ${input.optimized}).',
-      name: _receiptInputLogName,
-    );
-    return true;
-  }(), 'Receipt input timing log should run only in debug mode.');
+  debugLog(
+    'Prepared receipt AI input for ${selection.name} in '
+    '${elapsed.inMilliseconds}ms '
+    '($sourceByteLength -> ${input.bytes.length} bytes, '
+    'mime: ${selection.mimeType} -> ${input.mimeType}, '
+    'optimized: ${input.optimized}).',
+    name: _receiptInputLogName,
+  );
 }
 
 class _ReceiptAnalysisInput {
@@ -199,4 +269,14 @@ class _ReceiptInputFileTooLargeException implements Exception {
   const _ReceiptInputFileTooLargeException(this.byteLength);
 
   final int byteLength;
+}
+
+class _ReceiptUnsupportedImageFormatException implements Exception {
+  const _ReceiptUnsupportedImageFormatException(this.mimeType);
+
+  final String mimeType;
+}
+
+class _ReceiptInputImageDecodeException implements Exception {
+  const _ReceiptInputImageDecodeException();
 }
