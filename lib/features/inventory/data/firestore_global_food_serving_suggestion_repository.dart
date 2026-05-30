@@ -227,7 +227,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
           label: normalizedLabel,
           updatedAtText: nowText,
         );
-        return;
+        Error.throwWithStackTrace(error, stackTrace);
       }
       log(
         'Failed to record serving suggestion.',
@@ -357,6 +357,10 @@ class FirestoreGlobalFoodServingSuggestionRepository
   }) async {
     final snapshot = await _globalCollection()
         .where('item_key', isEqualTo: itemKey)
+        .orderBy('unique_user_count', descending: true)
+        .orderBy('selection_count', descending: true)
+        .orderBy('updated_at', descending: true)
+        .limit(limit)
         .get();
 
     final suggestions = <GlobalFoodServingSuggestion>[];

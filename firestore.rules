@@ -802,23 +802,15 @@ service cloud.firestore {
         )
         && request.resource.data.id == resource.data.id
         && request.resource.data.item_key == resource.data.item_key
-        && (
-          !('global_food_item_id' in resource.data)
-          || request.resource.data.global_food_item_id
-            == resource.data.global_food_item_id
-        )
-        && (
-          !('food_fingerprint' in resource.data)
-          || request.resource.data.food_fingerprint
-            == resource.data.food_fingerprint
-        )
+        && request.resource.data.get('global_food_item_id', null)
+          == resource.data.get('global_food_item_id', null)
+        && request.resource.data.get('food_fingerprint', null)
+          == resource.data.get('food_fingerprint', null)
         && request.resource.data.amount == resource.data.amount
         && request.resource.data.unit == resource.data.unit
         && request.resource.data.created_at == resource.data.created_at
-        && (
-          !('label' in resource.data)
-          || request.resource.data.label == resource.data.label
-        )
+        && request.resource.data.get('label', null)
+          == resource.data.get('label', null)
         && request.resource.data.selection_count
           == resource.data.selection_count + 1
         && request.resource.data.unique_user_count >= resource.data.unique_user_count
@@ -938,16 +930,10 @@ service cloud.firestore {
         && isValidUserServingVote(request.resource.data, suggestionId)
         && request.resource.data.item_key == resource.data.item_key
         && request.resource.data.suggestion_id == resource.data.suggestion_id
-        && (
-          !('global_food_item_id' in resource.data)
-          || request.resource.data.global_food_item_id
-            == resource.data.global_food_item_id
-        )
-        && (
-          !('food_fingerprint' in resource.data)
-          || request.resource.data.food_fingerprint
-            == resource.data.food_fingerprint
-        )
+        && request.resource.data.get('global_food_item_id', null)
+          == resource.data.get('global_food_item_id', null)
+        && request.resource.data.get('food_fingerprint', null)
+          == resource.data.get('food_fingerprint', null)
         && request.resource.data.amount == resource.data.amount
         && request.resource.data.unit == resource.data.unit
         && request.resource.data.created_at == resource.data.created_at;

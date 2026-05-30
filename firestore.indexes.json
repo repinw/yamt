@@ -47,6 +47,28 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "global_food_item_serving_sizes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "item_key",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "unique_user_count",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "selection_count",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updated_at",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
