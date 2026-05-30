@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_serving_suggestion_service.dart';
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
-import 'package:yamt/features/inventory/data/'
-    'global_food_serving_suggestion_repository.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -205,12 +205,8 @@ class _InventoryItemEatSheetState
   }
 
   Future<void> _loadServingSuggestions() async {
-    final suggestions = await ref
-        .read(globalFoodServingSuggestionRepositoryProvider)
-        .readSuggestions(
-          foodFingerprint: widget.item.resolvedFoodFingerprint,
-          globalFoodItemId: widget.item.globalFoodItemId,
-        );
+    final service = ref.read(inventoryServingSuggestionServiceProvider);
+    final suggestions = await service.readSuggestions(widget.item);
     if (!mounted) {
       return;
     }
@@ -758,6 +754,20 @@ class _InventoryItemEatSheetState
       ),
     );
     if (!mounted || result == null) {
+      return;
+    }
+
+    final service = ProviderScope.containerOf(context, listen: false).read(
+      inventoryServingSuggestionServiceProvider,
+    );
+    await service.recordCreatedPortion(
+      item: widget.item,
+      amount: result.amount,
+      unit: result.unit,
+      label: result.label,
+      selectedAt: DateTime.now(),
+    );
+    if (!mounted) {
       return;
     }
 

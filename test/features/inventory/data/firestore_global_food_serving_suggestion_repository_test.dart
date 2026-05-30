@@ -99,6 +99,54 @@ void main() {
   });
 
   test(
+    'readSuggestions dedupes shared keys while preserving labels',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection(_globalCollection).doc('global').set(
+        <String, dynamic>{
+          'id': 'global',
+          'item_key': 'global_off-cheese',
+          'global_food_item_id': 'off-cheese',
+          'amount': 35,
+          'unit': 'g',
+          'selection_count': 5,
+          'unique_user_count': 4,
+          'created_at': '2026-04-09T10:00:00.000Z',
+          'updated_at': '2026-04-09T10:00:00.000Z',
+        },
+      );
+      await firestore.collection(_globalCollection).doc('fingerprint').set(
+        <String, dynamic>{
+          'id': 'fingerprint',
+          'item_key': 'fingerprint_cheese__brand',
+          'amount': 35,
+          'unit': 'g',
+          'label': 'Scheibe',
+          'selection_count': 1,
+          'unique_user_count': 1,
+          'created_at': '2026-04-10T10:00:00.000Z',
+          'updated_at': '2026-04-10T10:00:00.000Z',
+        },
+      );
+
+      final repository = FirestoreGlobalFoodServingSuggestionRepository(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
+
+      final suggestions = await repository.readSuggestions(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'off-cheese',
+      );
+
+      expect(suggestions.globalSuggestions, hasLength(1));
+      expect(suggestions.globalSuggestions.single.itemKey, 'global_off-cheese');
+      expect(suggestions.globalSuggestions.single.amount, 35);
+      expect(suggestions.globalSuggestions.single.label, 'Scheibe');
+    },
+  );
+
+  test(
     'recordSelection writes shared counters and increments unique users once',
     () async {
       final firestore = FakeFirebaseFirestore();
@@ -146,10 +194,19 @@ void main() {
           .collection(_votesCollection)
           .doc('global_off-cheese_g_35000')
           .get();
+      final secondUserRepository =
+          FirestoreGlobalFoodServingSuggestionRepository(
+            firestore: firestore,
+            currentUserId: 'user-2',
+          );
+      final secondUserSuggestions = await secondUserRepository.readSuggestions(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'off-cheese',
+      );
 
       expect(sharedSnapshot.data()!['selection_count'], 2);
       expect(sharedSnapshot.data()!['unique_user_count'], 1);
-      expect(sharedSnapshot.data()!['label'], isNull);
+      expect(sharedSnapshot.data()!['label'], 'Scheibe');
       expect(globalPrefSnapshot.data()!['amount'], 35);
       expect(globalPrefSnapshot.data()!['label'], 'Scheibe');
       expect(fingerprintPrefSnapshot.data()!['amount'], 35);
@@ -158,6 +215,8 @@ void main() {
         voteSnapshot.data()!['suggestion_id'],
         'global_off-cheese_g_35000',
       );
+      expect(secondUserSuggestions.globalSuggestions.single.amount, 35);
+      expect(secondUserSuggestions.globalSuggestions.single.label, 'Scheibe');
     },
   );
 
@@ -205,7 +264,7 @@ void main() {
   );
 
   test(
-    'recordSelection keeps labels without shared serving document',
+    'recordSelection shares fingerprint servings without global items',
     () async {
       final firestore = FakeFirebaseFirestore();
       final repository = FirestoreGlobalFoodServingSuggestionRepository(
@@ -231,6 +290,7 @@ void main() {
 
       final sharedSnapshot = await firestore
           .collection(_globalCollection)
+          .doc('fingerprint_cheese__brand_g_35000')
           .get();
       final fingerprintPrefSnapshot = await firestore
           .collection(_usersCollection)
@@ -238,14 +298,27 @@ void main() {
           .collection(_prefsCollection)
           .doc('fingerprint_cheese__brand')
           .get();
+      final secondUserRepository =
+          FirestoreGlobalFoodServingSuggestionRepository(
+            firestore: firestore,
+            currentUserId: 'user-2',
+          );
+      final suggestions = await secondUserRepository.readSuggestions(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'pending-cheese__brand',
+      );
 
-      expect(sharedSnapshot.docs, isEmpty);
+      expect(sharedSnapshot.data()!['item_key'], 'fingerprint_cheese__brand');
+      expect(sharedSnapshot.data()!['label'], 'Scheibe');
       expect(fingerprintPrefSnapshot.data()!['label'], 'Scheibe');
+      expect(suggestions.globalSuggestions, hasLength(1));
+      expect(suggestions.globalSuggestions.single.amount, 35);
+      expect(suggestions.globalSuggestions.single.label, 'Scheibe');
     },
   );
 
   test(
-    'recordSelection skips shared writes for pending global food items',
+    'recordSelection uses fingerprint key for pending global food items',
     () async {
       final firestore = FakeFirebaseFirestore();
       final repository = FirestoreGlobalFoodServingSuggestionRepository(
@@ -263,6 +336,7 @@ void main() {
 
       final sharedSnapshot = await firestore
           .collection(_globalCollection)
+          .doc('fingerprint_cheese__brand_g_27000')
           .get();
       final fingerprintPrefSnapshot = await firestore
           .collection(_usersCollection)
@@ -271,7 +345,8 @@ void main() {
           .doc('fingerprint_cheese__brand')
           .get();
 
-      expect(sharedSnapshot.docs, isEmpty);
+      expect(sharedSnapshot.data()!['amount'], 27);
+      expect(sharedSnapshot.data()!['global_food_item_id'], isNull);
       expect(fingerprintPrefSnapshot.data()!['amount'], 27);
     },
   );
