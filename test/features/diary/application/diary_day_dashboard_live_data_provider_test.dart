@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -54,6 +56,47 @@ void main() {
     expect(data.selectedDayEntries, same(entries));
     expect(data.selectedDayOverview, same(weekOverview.days.last));
   });
+
+  test('keeps read future alive while week overview loads', () async {
+    final selectedDay = DateTime(2026, 4, 27, 18);
+    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final completions = <Completer<CalorieWeekOverview>>[];
+    final observer = _RecordingProviderObserver();
+    final repository = FakeCalorieLogRepository();
+    final container = ProviderContainer(
+      observers: [observer],
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(repository),
+        calorieWeekOverviewForWindowProvider(
+          normalizedDay,
+        ).overrideWith((ref) {
+          final completer = Completer<CalorieWeekOverview>();
+          completions.add(completer);
+          return completer.future;
+        }),
+        burnWeekRunControllerProvider.overrideWith(
+          () => _FakeBurnWeekRunController(const BurnWeekRunState.initial()),
+        ),
+      ],
+    );
+    addTearDown(repository.dispose);
+    addTearDown(container.dispose);
+
+    final dataFuture = container.read(
+      diaryDayDashboardLiveDataProvider(selectedDay).future,
+    );
+    await container.pump();
+
+    expect(completions, hasLength(1));
+    expect(observer.failures, isEmpty);
+
+    final weekOverview = _weekOverview(selectedDay: normalizedDay);
+    completions.single.complete(weekOverview);
+    final data = await dataFuture.timeout(const Duration(seconds: 1));
+
+    expect(data.weekOverview, same(weekOverview));
+    expect(observer.failures, isEmpty);
+  });
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
@@ -64,6 +107,19 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
   @override
   Future<BurnWeekRunState> build() async {
     return runState;
+  }
+}
+
+final class _RecordingProviderObserver extends ProviderObserver {
+  final failures = <Object>[];
+
+  @override
+  void providerDidFail(
+    ProviderObserverContext context,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    failures.add(error);
   }
 }
 

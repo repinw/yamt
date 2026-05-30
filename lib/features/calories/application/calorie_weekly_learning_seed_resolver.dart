@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_weight_resolver.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_window_resolver.dart';
+import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
     show CalorieGoalMode;
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -154,7 +155,12 @@ double previousLearnedTdeeKcalBeforeDay({
     day: fallbackDay,
   );
   if (calculatorProfile != null) {
-    return CalorieGoalCalculator.calculate(calculatorProfile).tdeeKcal;
+    final result = CalorieGoalCalculator.calculate(calculatorProfile);
+    if (settings.isActivityTrackingActiveForDay(day)) {
+      return result.tdeeKcal -
+          (result.expectedActivityKcal * importedActivityCorrectionFactor);
+    }
+    return result.tdeeKcal;
   }
   return settings.goalKcalForDay(fallbackDay);
 }

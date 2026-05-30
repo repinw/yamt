@@ -153,6 +153,52 @@ void main() {
       );
     },
   );
+
+  test('coalesces overlapping live refreshes', () async {
+    final preferences = MemoryAppPreferences();
+    final logRepository = FakeCalorieLogRepository();
+    final weekOverviewCompleter = Completer<CalorieWeekOverview>();
+    final observer = _RecordingProviderObserver();
+    var weekOverviewReadCount = 0;
+    addTearDown(logRepository.dispose);
+
+    final container = _dashboardContainer(
+      preferences: preferences,
+      logRepository: logRepository,
+      selectedDay: selectedDay,
+      observers: [observer],
+      weekOverviewBuilder: () {
+        weekOverviewReadCount += 1;
+        return weekOverviewCompleter.future;
+      },
+    );
+    addTearDown(container.dispose);
+
+    final provider = diaryDayDashboardControllerProvider(selectedDay);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+    await Future<void>.delayed(Duration.zero);
+
+    final retryFuture = container.read(provider.notifier).retry();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(weekOverviewReadCount, 1);
+
+    weekOverviewCompleter.complete(
+      diaryWeekOverviewForTest(selectedDay: selectedDay),
+    );
+    await retryFuture;
+    final refreshed = await _waitForDashboardRefresh(container, selectedDay);
+
+    expect(refreshed.isRefreshing, isFalse);
+    expect(refreshed.error, isNull);
+    expect(observer.failures, isEmpty);
+    expect(weekOverviewReadCount, 1);
+  });
 }
 
 ProviderContainer _dashboardContainer({
@@ -160,8 +206,9 @@ ProviderContainer _dashboardContainer({
   required FakeCalorieLogRepository logRepository,
   required DateTime selectedDay,
   CalorieWeekOverview? weekOverview,
-  CalorieWeekOverview Function()? weekOverviewBuilder,
+  FutureOr<CalorieWeekOverview> Function()? weekOverviewBuilder,
   Error? weekOverviewError,
+  List<ProviderObserver> observers = const <ProviderObserver>[],
 }) {
   final auth = _MockFirebaseAuth();
   final user = _MockUser();
@@ -169,6 +216,7 @@ ProviderContainer _dashboardContainer({
   when(() => auth.currentUser).thenReturn(user);
 
   return ProviderContainer(
+    observers: observers,
     overrides: [
       appPreferencesProvider.overrideWithValue(preferences),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
@@ -192,6 +240,19 @@ ProviderContainer _dashboardContainer({
       }),
     ],
   );
+}
+
+final class _RecordingProviderObserver extends ProviderObserver {
+  final failures = <Object>[];
+
+  @override
+  void providerDidFail(
+    ProviderObserverContext context,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    failures.add(error);
+  }
 }
 
 CalorieWeekOverview _weekOverviewWithActivityBonus({

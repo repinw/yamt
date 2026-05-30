@@ -79,7 +79,39 @@ CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
   required CalorieGoalSettings settings,
   required Set<String> heartDayKeys,
 }) {
+  final loggedVals = <double>[];
   final missingIntakeDays = <DateTime>[];
+
+  for (final day in days) {
+    if (heartDayKeys.contains(diaryDayKey(day))) {
+      continue;
+    }
+    final dayEntries =
+        calorieEntriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
+    if (dayEntries.isNotEmpty) {
+      loggedVals.add(sumCalorieEntryKcal(dayEntries));
+    } else {
+      missingIntakeDays.add(day);
+    }
+  }
+
+  if (missingIntakeDays.length >= weeklyCheckInMissingIntakeBlockThreshold) {
+    return CalorieWeeklyLearningIntakeData.blocked(
+      blockedReason: CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays,
+      missingIntakeDays: missingIntakeDays,
+    );
+  }
+
+  if (loggedVals.isEmpty && missingIntakeDays.isNotEmpty) {
+    return CalorieWeeklyLearningIntakeData.blocked(
+      blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
+      missingIntakeDays: missingIntakeDays,
+    );
+  }
+
+  final averageLogged = loggedVals.isEmpty
+      ? 0.0
+      : CalorieDomainMath.average(loggedVals);
   final intakeKcalByDay = <double>[];
 
   for (final day in days) {
@@ -90,28 +122,15 @@ CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
         calorieEntriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
     if (dayEntries.isNotEmpty) {
       intakeKcalByDay.add(sumCalorieEntryKcal(dayEntries));
-      continue;
+    } else {
+      if (!settings.isSkippedIntakeDay(day)) {
+        return CalorieWeeklyLearningIntakeData.blocked(
+          blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
+          missingIntakeDays: missingIntakeDays,
+        );
+      }
+      intakeKcalByDay.add(averageLogged);
     }
-
-    missingIntakeDays.add(day);
-    if (!settings.isSkippedIntakeDay(day)) {
-      return CalorieWeeklyLearningIntakeData.blocked(
-        blockedReason:
-            missingIntakeDays.length >= weeklyCheckInMissingIntakeBlockThreshold
-            ? CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays
-            : CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
-        missingIntakeDays: missingIntakeDays,
-      );
-    }
-    if (intakeKcalByDay.isEmpty) {
-      return CalorieWeeklyLearningIntakeData.blocked(
-        blockedReason:
-            CalorieWeeklyCheckInBlockedReason.skippedDayWithoutPriorAverage,
-        missingIntakeDays: missingIntakeDays,
-      );
-    }
-
-    intakeKcalByDay.add(CalorieDomainMath.average(intakeKcalByDay));
   }
 
   return CalorieWeeklyLearningIntakeData.ready(
@@ -139,47 +158,55 @@ CalorieWeeklyWindowIntakeData _resolveSkippedWindowIntake({
   required List<CalorieWeeklyCheckInWindowDay> windowDays,
   required List<DateTime> missingIntakeDays,
 }) {
-  final resolvedWindowIntake = <double>[];
+  final loggedVals = <double>[];
+  for (final day in windowDays) {
+    if (day.isHeartDay) {
+      continue;
+    }
+    if (day.hasEntries) {
+      loggedVals.add(day.loggedIntakeKcal);
+    }
+  }
+
+  if (loggedVals.isEmpty && missingIntakeDays.isNotEmpty) {
+    return CalorieWeeklyWindowIntakeData.blocked(
+      days: windowDays,
+      blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
+      missingIntakeDays: missingIntakeDays,
+    );
+  }
+
+  final averageLogged = loggedVals.isEmpty
+      ? 0.0
+      : CalorieDomainMath.average(loggedVals);
+
   for (var index = 0; index < windowDays.length; index += 1) {
     final day = windowDays[index];
     if (day.isHeartDay) {
       continue;
     }
     if (day.hasEntries) {
-      resolvedWindowIntake.add(day.loggedIntakeKcal);
       windowDays[index] = _copyWindowDayWithResolvedIntake(
         day: day,
         hasEntries: true,
         loggedIntakeKcal: day.loggedIntakeKcal,
         resolvedIntakeKcal: day.loggedIntakeKcal,
       );
-      continue;
-    }
-    if (!day.isSkippedIntakeDay) {
-      return CalorieWeeklyWindowIntakeData.blocked(
-        days: windowDays,
-        blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
-        missingIntakeDays: missingIntakeDays,
+    } else {
+      if (!day.isSkippedIntakeDay) {
+        return CalorieWeeklyWindowIntakeData.blocked(
+          days: windowDays,
+          blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
+          missingIntakeDays: missingIntakeDays,
+        );
+      }
+      windowDays[index] = _copyWindowDayWithResolvedIntake(
+        day: day,
+        hasEntries: false,
+        loggedIntakeKcal: 0,
+        resolvedIntakeKcal: averageLogged,
       );
     }
-    if (resolvedWindowIntake.isEmpty) {
-      return CalorieWeeklyWindowIntakeData.blocked(
-        days: windowDays,
-        blockedReason:
-            CalorieWeeklyCheckInBlockedReason.skippedDayWithoutPriorAverage,
-        missingIntakeDays: missingIntakeDays,
-      );
-    }
-    final interpolatedIntakeKcal = CalorieDomainMath.average(
-      resolvedWindowIntake,
-    );
-    resolvedWindowIntake.add(interpolatedIntakeKcal);
-    windowDays[index] = _copyWindowDayWithResolvedIntake(
-      day: day,
-      hasEntries: false,
-      loggedIntakeKcal: 0,
-      resolvedIntakeKcal: interpolatedIntakeKcal,
-    );
   }
 
   return CalorieWeeklyWindowIntakeData.ready(

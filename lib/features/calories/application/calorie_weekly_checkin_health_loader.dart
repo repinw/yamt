@@ -52,9 +52,13 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
   _throwIfUnmounted(isMounted);
   representativeWeightByDay = _representativeWeightByDay(healthWeightSamples);
 
+  final activeDays = <DateTime>{
+    ...dates.learningDays,
+    today,
+  }.where(settings.isActivityTrackingActiveForDay).toList(growable: false);
   final loadedActiveKcalByDay = await loadHealthActivityKcalByDay(
     diaryHealthService: diaryHealthService,
-    days: <DateTime>{...dates.learningDays, today}.toList(growable: false),
+    days: activeDays,
     userHeightCm: settings.calculatorProfile?.heightCm,
     logName: _weeklyCheckInHealthLoaderLogName,
     aggregateFailureMessage:

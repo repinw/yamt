@@ -125,9 +125,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
   }
 
   void _refreshBalanceOnResume(DateTime normalizedSelectedDay) {
-    ref
-      ..invalidate(diaryDayDashboardControllerProvider(normalizedSelectedDay))
-      ..read(diaryBalanceActionsProvider).refreshBalance(normalizedSelectedDay);
+    _retryBalance(normalizedSelectedDay);
   }
 
   Widget _buildLoaded(DiaryBalanceSource source) {

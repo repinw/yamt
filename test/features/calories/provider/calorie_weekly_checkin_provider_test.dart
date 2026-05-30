@@ -723,7 +723,7 @@ void main() {
       );
       expect(checkInData.blockedReason, isNull);
       expect(checkInData.calculation, isNotNull);
-      expect(checkInData.calculation!.newGoalKcal, greaterThan(2426.88));
+      expect(checkInData.calculation!.newGoalKcal, greaterThan(2300));
     },
   );
 
@@ -1934,7 +1934,8 @@ void main() {
   );
 
   test(
-    'skipped intake day uses prior average and still allows calculation',
+    'skipped intake day uses average of logged days in the window and '
+    'still allows calculation',
     () async {
       final today = DateTime(2026, 4, 15);
       final goalStart = DateTime(2026, 4, 8);
@@ -1984,7 +1985,7 @@ void main() {
         (day) => day.day == DateTime(2026, 4, 11),
       );
       expect(skippedDay.isSkippedIntakeDay, isTrue);
-      expect(skippedDay.resolvedIntakeKcal, closeTo(2200, 0.01));
+      expect(skippedDay.resolvedIntakeKcal, closeTo(2350, 0.01));
     },
   );
 }
