@@ -87,6 +87,45 @@ void main() {
     expect(find.text('Please enter a valid height.'), findsOneWidget);
   });
 
+  testWidgets('personal-info number field done action hides keyboard focus', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final formProvider = calorieGoalCalculatorFormControllerProvider(
+      null,
+      useEmptyDefaults: true,
+    );
+
+    await _pumpLocalized(
+      tester,
+      ProviderScope(
+        child: Consumer(
+          builder: (context, ref, _) {
+            return Step1PersonalInfo(
+              state: ref.watch(formProvider),
+              notifier: ref.read(formProvider.notifier),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(TextFormField).first);
+    await tester.pump();
+
+    final fieldFocusNode = tester
+        .widget<EditableText>(find.byType(EditableText).first)
+        .focusNode;
+    expect(fieldFocusNode.hasFocus, isTrue);
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+
+    expect(fieldFocusNode.hasFocus, isFalse);
+  });
+
   testWidgets('activity step updates the calculator activity option', (
     tester,
   ) async {

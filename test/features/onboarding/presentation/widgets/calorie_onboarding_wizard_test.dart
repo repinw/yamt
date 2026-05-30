@@ -179,6 +179,43 @@ void main() {
     expect(find.text('Please enter your weight.'), findsOneWidget);
   });
 
+  testWidgets('keeps next action visible while keyboard is open', (
+    tester,
+  ) async {
+    const keyboardPhysicalHeight = 320.0;
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    addTearDown(tester.view.resetViewInsets);
+
+    await _pumpOnboarding(tester);
+    await _startWizard(tester);
+
+    await tester.tap(find.byType(TextFormField).first);
+    tester.view.viewInsets = const FakeViewPadding(
+      bottom: keyboardPhysicalHeight,
+    );
+    await tester.pumpAndSettle();
+
+    final nextButton = find.widgetWithText(FilledButton, 'Next');
+    final fieldFocusNode = tester
+        .widget<EditableText>(find.byType(EditableText).first)
+        .focusNode;
+    final screenHeight = tester.getSize(find.byType(MaterialApp)).height;
+    final keyboardLogicalHeight =
+        keyboardPhysicalHeight / tester.view.devicePixelRatio;
+    final keyboardTop = screenHeight - keyboardLogicalHeight;
+
+    expect(fieldFocusNode.hasFocus, isTrue);
+    expect(nextButton, findsOneWidget);
+    expect(tester.getRect(nextButton).bottom, lessThanOrEqualTo(keyboardTop));
+
+    await tester.tap(nextButton);
+    await tester.pumpAndSettle();
+
+    expect(fieldFocusNode.hasFocus, isFalse);
+  });
+
   testWidgets('shows minimum goal warning on ready step', (tester) async {
     await _pumpOnboarding(tester);
     await _goToStartDateStep(
