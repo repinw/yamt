@@ -744,6 +744,7 @@ class _InventoryItemEatSheetState
 
   Future<void> _showNewPortionDialog() async {
     final l10n = AppLocalizations.of(context)!;
+    final service = ref.read(inventoryServingSuggestionServiceProvider);
     final result = await showDialog<NewPortionDialogResult>(
       context: context,
       builder: (_) => NewPortionDialog(
@@ -757,16 +758,24 @@ class _InventoryItemEatSheetState
       return;
     }
 
-    final service = ProviderScope.containerOf(context, listen: false).read(
-      inventoryServingSuggestionServiceProvider,
-    );
-    await service.recordCreatedPortion(
-      item: widget.item,
-      amount: result.amount,
-      unit: result.unit,
-      label: result.label,
-      selectedAt: DateTime.now(),
-    );
+    try {
+      await service.recordCreatedPortion(
+        item: widget.item,
+        amount: result.amount,
+        unit: result.unit,
+        label: result.label,
+        selectedAt: DateTime.now(),
+      );
+    } on Object {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(l10n.inventoryItemActionFailed)),
+          );
+      }
+      return;
+    }
     if (!mounted) {
       return;
     }

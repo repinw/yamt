@@ -1,4 +1,4 @@
-import 'dart:developer' show log;
+import 'dart:developer' as developer;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -10,12 +10,25 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'inventory_serving_suggestion_service.g.dart';
 
+/// Logs serving suggestion failures.
+typedef InventoryServingSuggestionLogger =
+    void Function(
+      String message, {
+      String name,
+      Object? error,
+      StackTrace? stackTrace,
+    });
+
 /// Coordinates serving suggestion reads and writes for inventory items.
 class InventoryServingSuggestionService {
   /// The inventory serving suggestion service.
-  const InventoryServingSuggestionService(this._repository);
+  const InventoryServingSuggestionService(
+    this._repository, {
+    InventoryServingSuggestionLogger? logger,
+  }) : _logger = logger ?? developer.log;
 
   final GlobalFoodServingSuggestionRepository _repository;
+  final InventoryServingSuggestionLogger _logger;
 
   /// Reads learned suggestions for [item].
   Future<GlobalFoodServingSuggestionSet> readSuggestions(
@@ -37,7 +50,7 @@ class InventoryServingSuggestionService {
     required DateTime selectedAt,
     String? label,
   }) {
-    return recordSelection(
+    return _repository.recordSelection(
       foodFingerprint: item.resolvedFoodFingerprint,
       globalFoodItemId: item.globalFoodItemId,
       amount: amount,
@@ -47,7 +60,7 @@ class InventoryServingSuggestionService {
     );
   }
 
-  /// Records a learned serving selection.
+  /// Records a background learned serving selection without surfacing failures.
   Future<void> recordSelection({
     required String foodFingerprint,
     required double amount,
@@ -66,7 +79,7 @@ class InventoryServingSuggestionService {
         selectedAt: selectedAt,
       );
     } on Object catch (error, stackTrace) {
-      log(
+      _logger(
         'Failed to record inventory serving suggestion.',
         name: 'InventoryServingSuggestionService',
         error: error,
