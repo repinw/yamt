@@ -13,7 +13,7 @@ AsyncValue<BurnWeekRunState> diaryBurnWeekRunState(Ref ref) {
 /// Actions needed by diary Burn Week presentation widgets.
 @riverpod
 DiaryBurnWeekRunActions diaryBurnWeekRunActions(Ref ref) {
-  final controller = ref.read(burnWeekRunControllerProvider.notifier);
+  final controller = ref.watch(burnWeekRunControllerProvider.notifier);
   return DiaryBurnWeekRunActions(
     useHeartForDay: controller.useHeartForDay,
   );

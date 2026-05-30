@@ -112,4 +112,4 @@ final class DiaryBurnWeekRunActionsProvider
 }
 
 String _$diaryBurnWeekRunActionsHash() =>
-    r'f86d3fe229aea0a93cd75c6bc8e01504b98492ed';
+    r'abc632ed755c6aa48d91afb42f203df7c57c015a';
