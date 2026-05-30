@@ -4,14 +4,14 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
+import 'package:yamt/features/diary/application/diary_burn_week_run_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Shared heart counter shown in the home shell app bar.
-class HomeHeartCounterButton extends ConsumerWidget {
+/// Diary heart counter shown in the home shell app bar.
+class DiaryHeartCounterButton extends ConsumerWidget {
   /// Creates heart counter button.
-  const HomeHeartCounterButton({required this.runState, super.key});
+  const DiaryHeartCounterButton({required this.runState, super.key});
 
   /// Current Burn Week run state.
   final BurnWeekRunState runState;
@@ -40,7 +40,7 @@ class HomeHeartCounterButton extends ConsumerWidget {
       child: Semantics(
         button: canUseHeart,
         label: tooltip,
-        child: _HomeHeartCounterPill(
+        child: _DiaryHeartCounterPill(
           count: runState.heartCount,
           isHeartDay: isHeartDay,
           onPressed: canUseHeart
@@ -81,7 +81,7 @@ class HomeHeartCounterButton extends ConsumerWidget {
     required DateTime selectedDay,
     required String dayLabel,
   }) async {
-    final controller = ref.read(burnWeekRunControllerProvider.notifier);
+    final actions = ref.read(diaryBurnWeekRunActionsProvider);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -107,12 +107,12 @@ class HomeHeartCounterButton extends ConsumerWidget {
     if (!context.mounted || confirmed != true) {
       return;
     }
-    await controller.useHeartForDay(selectedDay);
+    await actions.useHeartForDay(selectedDay);
   }
 }
 
-class _HomeHeartCounterPill extends StatelessWidget {
-  const _HomeHeartCounterPill({
+class _DiaryHeartCounterPill extends StatelessWidget {
+  const _DiaryHeartCounterPill({
     required this.count,
     required this.isHeartDay,
     required this.onPressed,

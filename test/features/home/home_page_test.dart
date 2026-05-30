@@ -1050,7 +1050,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('hides heart counter during learning week', (tester) async {
+  testWidgets('shows disabled heart counter during learning week', (
+    tester,
+  ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
 
@@ -1062,8 +1064,43 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(HomeHeartCounterButton), findsNothing);
-    expect(find.text('x 1'), findsNothing);
+    expect(find.byType(DiaryHeartCounterButton), findsOneWidget);
+    expect(find.text('x 1'), findsOneWidget);
+
+    await tester.tap(find.byType(DiaryHeartCounterButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Use heart day?'), findsNothing);
+  });
+
+  testWidgets('heart counter works during week one of a started run', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final selectedDay = normalizeDiaryDay(DateTime.now());
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(startOfCalendarWeek(selectedDay)),
+        runWeekNumber: 1,
+        heartCount: 1,
+      ),
+    );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        burnWeekRunStateRepository: runStateRepository,
+        selectedDiaryDay: selectedDay,
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DiaryHeartCounterButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Use heart day?'), findsOneWidget);
   });
 
   testWidgets('hides heart counter on inventory tab after learning week', (
@@ -1088,7 +1125,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(HomeHeartCounterButton), findsNothing);
+    expect(find.byType(DiaryHeartCounterButton), findsNothing);
     expect(find.text('x 2'), findsNothing);
   });
 
@@ -1120,7 +1157,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(HomeHeartCounterButton));
+    await tester.tap(find.byType(DiaryHeartCounterButton));
     await tester.pumpAndSettle();
 
     expect(find.text('Use heart day?'), findsOneWidget);
@@ -1161,7 +1198,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(HomeHeartCounterButton));
+    await tester.tap(find.byType(DiaryHeartCounterButton));
     await tester.pumpAndSettle();
 
     expect(find.text('Use heart day?'), findsNothing);

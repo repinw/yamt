@@ -139,7 +139,7 @@ void main() {
             runWeekNumber: burnWeekLearningRunWeekNumber,
           )
           .canUseHeartForDay(DateTime(2026, 4, 21), today: today),
-      isFalse,
+      isTrue,
     );
     expect(
       state
