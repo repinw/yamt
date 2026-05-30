@@ -5,15 +5,15 @@ import 'package:yamt/features/calories/domain/'
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
-import 'package:yamt/features/inventory/data/'
-    'global_food_serving_suggestion_repository.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_serving_suggestion_service.dart';
 
 part 'inventory_calorie_entry_post_persist_hook.g.dart';
 
 /// The inventory calorie entry post persist hook provider.
 @riverpod
 CalorieEntryPostPersistHook inventoryCalorieEntryPostPersistHook(Ref ref) {
-  final repository = ref.read(globalFoodServingSuggestionRepositoryProvider);
+  final service = ref.read(inventoryServingSuggestionServiceProvider);
 
   return ({
     required CalorieEntry entry,
@@ -27,7 +27,7 @@ CalorieEntryPostPersistHook inventoryCalorieEntryPostPersistHook(Ref ref) {
       entry: entry,
       inventoryContext: inventoryContext,
     );
-    await repository.recordSelection(
+    await service.recordSelection(
       foodFingerprint: inventoryContext.foodFingerprint,
       globalFoodItemId: inventoryContext.globalFoodItemId,
       amount: learnedServing.amount,

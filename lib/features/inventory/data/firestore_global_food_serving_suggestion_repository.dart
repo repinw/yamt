@@ -45,11 +45,11 @@ class FirestoreGlobalFoodServingSuggestionRepository
         fingerprintKey: fingerprintKey,
         globalKey: globalKey,
       );
-      final globalFuture = globalKey == null
-          ? Future<List<GlobalFoodServingSuggestion>>.value(
-              const <GlobalFoodServingSuggestion>[],
-            )
-          : _readGlobalSuggestions(itemKey: globalKey, limit: safeLimit);
+      final globalFuture = _readSharedSuggestions(
+        fingerprintKey: fingerprintKey,
+        globalKey: globalKey,
+        limit: safeLimit,
+      );
       final results = await Future.wait<Object?>(<Future<Object?>>[
         personalFuture,
         globalFuture,
@@ -122,7 +122,8 @@ class FirestoreGlobalFoodServingSuggestionRepository
         ),
     ];
 
-    if (globalKey == null) {
+    final sharedKey = globalKey ?? fingerprintKey;
+    if (sharedKey == null) {
       await _writePreferenceTargetsSafely(
         targets: preferenceTargets,
         amount: normalizedAmount,
@@ -134,7 +135,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
     }
 
     final suggestionId = buildServingSuggestionDocumentId(
-      itemKey: globalKey,
+      itemKey: sharedKey,
       amount: normalizedAmount,
       unit: unit,
     );
@@ -182,7 +183,11 @@ class FirestoreGlobalFoodServingSuggestionRepository
         final nextSelectionCount = (selectionCount ?? 0) + 1;
         final nextUniqueUserCount =
             (uniqueUserCount ?? 0) + (voteSnapshot.exists ? 0 : 1);
-        final globalId = globalFoodItemId?.trim();
+        final globalId = globalKey == null ? null : globalFoodItemId?.trim();
+        final sharedLabel = _resolveSharedLabelFromData(
+          data: currentData,
+          newLabel: normalizedLabel,
+        );
 
         for (final entry in preferenceDataByDocument.entries) {
           transaction.set(entry.key, entry.value);
@@ -191,19 +196,22 @@ class FirestoreGlobalFoodServingSuggestionRepository
         transaction
           ..set(suggestionRef, <String, dynamic>{
             'id': suggestionId,
-            'item_key': globalKey,
+            'item_key': sharedKey,
             'global_food_item_id': globalId,
+            'food_fingerprint': foodFingerprint.trim(),
             'amount': normalizedAmount,
             'unit': unit.jsonValue,
+            'label': sharedLabel,
             'selection_count': nextSelectionCount,
             'unique_user_count': nextUniqueUserCount,
             'created_at': currentData['created_at'] ?? nowText,
             'updated_at': nowText,
           })
           ..set(voteRef, <String, dynamic>{
-            'item_key': globalKey,
+            'item_key': sharedKey,
             'suggestion_id': suggestionId,
             'global_food_item_id': globalId,
+            'food_fingerprint': foodFingerprint.trim(),
             'amount': normalizedAmount,
             'unit': unit.jsonValue,
             'created_at': voteSnapshot.data()?['created_at'] ?? nowText,
@@ -346,6 +354,30 @@ class FirestoreGlobalFoodServingSuggestionRepository
     return error.code == 'permission-denied';
   }
 
+  Future<List<GlobalFoodServingSuggestion>> _readSharedSuggestions({
+    required String? fingerprintKey,
+    required String? globalKey,
+    required int limit,
+  }) async {
+    final itemKeys = <String>[
+      ?globalKey,
+      if (fingerprintKey != globalKey) ?fingerprintKey,
+    ];
+    if (itemKeys.isEmpty) {
+      return const <GlobalFoodServingSuggestion>[];
+    }
+
+    final results = await Future.wait(
+      itemKeys.map((itemKey) {
+        return _readGlobalSuggestions(itemKey: itemKey, limit: limit);
+      }),
+    );
+    final suggestions = <GlobalFoodServingSuggestion>[
+      for (final result in results) ...result,
+    ];
+    return _dedupeSharedSuggestions(suggestions, limit);
+  }
+
   Future<List<GlobalFoodServingSuggestion>> _readGlobalSuggestions({
     required String itemKey,
     required int limit,
@@ -395,6 +427,39 @@ class FirestoreGlobalFoodServingSuggestionRepository
       return suggestions;
     }
     return suggestions.take(limit).toList(growable: false);
+  }
+
+  List<GlobalFoodServingSuggestion> _dedupeSharedSuggestions(
+    List<GlobalFoodServingSuggestion> suggestions,
+    int limit,
+  ) {
+    suggestions.sort(compareServingSuggestions);
+    final indexByValue = <String, int>{};
+    final deduped = <GlobalFoodServingSuggestion>[];
+    for (final suggestion in suggestions) {
+      final key = _suggestionValueKey(suggestion);
+      final existingIndex = indexByValue[key];
+      if (existingIndex != null) {
+        final existing = deduped[existingIndex];
+        if (existing.label == null && suggestion.label != null) {
+          deduped[existingIndex] = existing.copyWith(
+            label: suggestion.label,
+          );
+        }
+        continue;
+      }
+      if (deduped.length == limit) {
+        continue;
+      }
+      indexByValue[key] = deduped.length;
+      deduped.add(suggestion);
+    }
+    return deduped;
+  }
+
+  String _suggestionValueKey(GlobalFoodServingSuggestion suggestion) {
+    return '${suggestion.unit.jsonValue}:'
+        '${buildServingSuggestionAmountKey(suggestion.amount)}';
   }
 
   CollectionReference<Map<String, dynamic>> _globalCollection() {
@@ -514,4 +579,11 @@ String? _resolvePreferenceLabelFromData({
     return null;
   }
   return _readOptionalString(data['label']);
+}
+
+String? _resolveSharedLabelFromData({
+  required Map<String, dynamic>? data,
+  required String? newLabel,
+}) {
+  return newLabel ?? _readOptionalString(data?['label']);
 }

@@ -40,6 +40,27 @@ class _FakeGlobalFoodServingSuggestionRepository
     implements GlobalFoodServingSuggestionRepository {
   GlobalFoodServingSuggestionSet nextResult =
       const GlobalFoodServingSuggestionSet.empty();
+  final List<
+    ({
+      String foodFingerprint,
+      String? globalFoodItemId,
+      double amount,
+      ConsumedUnit unit,
+      DateTime selectedAt,
+      String? label,
+    })
+  >
+  calls =
+      <
+        ({
+          String foodFingerprint,
+          String? globalFoodItemId,
+          double amount,
+          ConsumedUnit unit,
+          DateTime selectedAt,
+          String? label,
+        })
+      >[];
 
   @override
   Future<GlobalFoodServingSuggestionSet> readSuggestions({
@@ -58,7 +79,16 @@ class _FakeGlobalFoodServingSuggestionRepository
     required DateTime selectedAt,
     String? globalFoodItemId,
     String? label,
-  }) async {}
+  }) async {
+    calls.add((
+      foodFingerprint: foodFingerprint,
+      globalFoodItemId: globalFoodItemId,
+      amount: amount,
+      unit: unit,
+      selectedAt: selectedAt,
+      label: label,
+    ));
+  }
 }
 
 InventoryItem _amountItemWithServing() {
@@ -838,6 +868,48 @@ void main() {
     expect(result?.portionBaseUnit, ConsumedUnit.grams);
     expect(result?.portionCount, 3);
     expect(result?.portionLabel, 'Scheibe');
+  });
+
+  testWidgets('persists a new portion as soon as it is saved', (
+    tester,
+  ) async {
+    final item = _slicedCheeseItem().copyWith(
+      globalFoodItemId: 'off-sliced-cheese',
+    );
+    final repository = _FakeGlobalFoodServingSuggestionRepository();
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: item,
+        maxAmount: 200,
+        onResult: (_) {},
+        servingSuggestionRepository: repository,
+      ),
+    );
+
+    await _openSheet(tester);
+    await _selectAmountMode(tester, '+ New portion...');
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_label_field')),
+      'Scheibe',
+    );
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      '25',
+    );
+    await tester.tap(find.text('Save portion'));
+    await tester.pumpAndSettle();
+
+    expect(repository.calls, hasLength(1));
+    expect(
+      repository.calls.single.foodFingerprint,
+      item.resolvedFoodFingerprint,
+    );
+    expect(repository.calls.single.globalFoodItemId, 'off-sliced-cheese');
+    expect(repository.calls.single.amount, 25);
+    expect(repository.calls.single.unit, ConsumedUnit.grams);
+    expect(repository.calls.single.label, 'Scheibe');
+    expect(find.text('Scheibe (25g)'), findsOneWidget);
   });
 
   testWidgets('logs fractional fixed-unit portions exactly', (tester) async {
