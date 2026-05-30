@@ -126,6 +126,45 @@ void main() {
     expect(fieldFocusNode.hasFocus, isFalse);
   });
 
+  testWidgets('personal-info number field tap outside hides keyboard focus', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final formProvider = calorieGoalCalculatorFormControllerProvider(
+      null,
+      useEmptyDefaults: true,
+    );
+
+    await _pumpLocalized(
+      tester,
+      ProviderScope(
+        child: Consumer(
+          builder: (context, ref, _) {
+            return Step1PersonalInfo(
+              state: ref.watch(formProvider),
+              notifier: ref.read(formProvider.notifier),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(TextFormField).first);
+    await tester.pump();
+
+    final fieldFocusNode = tester
+        .widget<EditableText>(find.byType(EditableText).first)
+        .focusNode;
+    expect(fieldFocusNode.hasFocus, isTrue);
+
+    await tester.tapAt(const Offset(20, 20));
+    await tester.pump();
+
+    expect(fieldFocusNode.hasFocus, isFalse);
+  });
+
   testWidgets('activity step updates the calculator activity option', (
     tester,
   ) async {
