@@ -51,7 +51,10 @@ class OnboardingLabeledTextField extends StatelessWidget {
         TextFormField(
           initialValue: initialValue,
           onChanged: onChanged,
+          onFieldSubmitted: (_) => _dismissKeyboard(),
+          onTapOutside: (_) => _dismissKeyboard(),
           keyboardType: keyboardType,
+          textInputAction: TextInputAction.done,
           decoration: InputDecoration(
             hintText: hintText,
             errorText: errorText,
@@ -82,5 +85,9 @@ class OnboardingLabeledTextField extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void _dismissKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 }

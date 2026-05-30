@@ -65,7 +65,12 @@ class _CalorieOnboardingWizardState
     }
   }
 
+  void _dismissKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
   Future<void> _handleNext() async {
+    _dismissKeyboard();
     final formProvider = calorieGoalCalculatorFormControllerProvider(
       widget.initialSettings.calculatorProfile,
       useEmptyDefaults: true,
@@ -122,6 +127,7 @@ class _CalorieOnboardingWizardState
   }
 
   Future<void> _handleBack() async {
+    _dismissKeyboard();
     final formProvider = calorieGoalCalculatorFormControllerProvider(
       widget.initialSettings.calculatorProfile,
       useEmptyDefaults: true,
@@ -175,7 +181,6 @@ class _CalorieOnboardingWizardState
     final formState = ref.watch(formProvider);
     final formNotifier = ref.read(formProvider.notifier);
     final finishFlow = ref.watch(calorieGoalOnboardingFinishFlowProvider);
-    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final l10n = AppLocalizations.of(context)!;
     final nextLabel =
         _wizardController.currentStep == CalorieOnboardingStep.info
@@ -207,7 +212,6 @@ class _CalorieOnboardingWizardState
               ),
               if (_wizardController.showsStepChrome)
                 CalorieOnboardingWizardChrome(
-                  isKeyboardVisible: isKeyboardVisible,
                   progress: _wizardController.progress,
                   nextLabel: nextLabel,
                   onBack: _handleBack,

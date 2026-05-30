@@ -5,16 +5,12 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 class CalorieOnboardingWizardChrome extends StatelessWidget {
   /// Creates onboarding wizard chrome.
   const CalorieOnboardingWizardChrome({
-    required this.isKeyboardVisible,
     required this.progress,
     required this.nextLabel,
     required this.onBack,
     required this.onNext,
     super.key,
   });
-
-  /// Whether the keyboard is covering the lower screen area.
-  final bool isKeyboardVisible;
 
   /// Progress bar value.
   final double progress;
@@ -30,6 +26,8 @@ class CalorieOnboardingWizardChrome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+
     return Positioned.fill(
       child: Stack(
         children: [
@@ -37,11 +35,11 @@ class CalorieOnboardingWizardChrome extends StatelessWidget {
             progress: progress,
             onBack: onBack,
           ),
-          if (!isKeyboardVisible)
-            _BottomChrome(
-              nextLabel: nextLabel,
-              onNext: onNext,
-            ),
+          _BottomChrome(
+            bottomInset: keyboardInset,
+            nextLabel: nextLabel,
+            onNext: onNext,
+          ),
         ],
       ),
     );
@@ -104,10 +102,12 @@ class _TopChrome extends StatelessWidget {
 
 class _BottomChrome extends StatelessWidget {
   const _BottomChrome({
+    required this.bottomInset,
     required this.nextLabel,
     required this.onNext,
   });
 
+  final double bottomInset;
   final String nextLabel;
   final VoidCallback onNext;
 
@@ -116,7 +116,7 @@ class _BottomChrome extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Positioned(
-      bottom: 0,
+      bottom: bottomInset,
       left: 0,
       right: 0,
       child: Container(

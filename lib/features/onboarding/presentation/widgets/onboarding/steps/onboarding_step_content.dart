@@ -25,6 +25,7 @@ class OnboardingStepContent extends StatelessWidget {
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.only(
         top: 80,
         bottom: 120,

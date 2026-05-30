@@ -959,7 +959,7 @@ void main() {
   );
 
   test(
-    'does not lower learned goal on a rest day below the stored goal',
+    'keeps learned base goal on a rest day without activity subtraction',
     () async {
       final today = DateTime(2026, 4, 15);
       final sourceStart = today.subtract(const Duration(days: 7));
@@ -990,7 +990,7 @@ void main() {
               lowConfidence: false,
             ),
           )
-          .copyWith(activityTrackingStartDate: today);
+          .copyWith(activityTrackingStartDate: sourceStart);
 
       final container = _createContainer(
         today: today,
@@ -1023,6 +1023,8 @@ void main() {
       expect(resolvedGoal.activityDeltaKcal, 0);
       expect(resolvedGoal.activityComparisonKcal, 0);
       expect(resolvedGoal.goalKcal, 1910);
+      expect(resolvedGoal.lastWeekAverageActiveKcal, 300);
+      expect(resolvedGoal.usedLearnedTdee, isTrue);
       expect(resolvedGoal.wasClampedToMinimum, isFalse);
     },
   );
