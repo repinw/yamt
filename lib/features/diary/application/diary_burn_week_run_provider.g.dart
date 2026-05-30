@@ -19,10 +19,10 @@ final class DiaryBurnWeekRunStateProvider
     extends
         $FunctionalProvider<
           AsyncValue<BurnWeekRunState>,
-          BurnWeekRunState,
-          FutureOr<BurnWeekRunState>
+          AsyncValue<BurnWeekRunState>,
+          AsyncValue<BurnWeekRunState>
         >
-    with $FutureModifier<BurnWeekRunState>, $FutureProvider<BurnWeekRunState> {
+    with $Provider<AsyncValue<BurnWeekRunState>> {
   /// Diary-facing Burn Week run state adapter.
   DiaryBurnWeekRunStateProvider._()
     : super(
@@ -40,18 +40,26 @@ final class DiaryBurnWeekRunStateProvider
 
   @$internal
   @override
-  $FutureProviderElement<BurnWeekRunState> $createElement(
+  $ProviderElement<AsyncValue<BurnWeekRunState>> $createElement(
     $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  ) => $ProviderElement(pointer);
 
   @override
-  FutureOr<BurnWeekRunState> create(Ref ref) {
+  AsyncValue<BurnWeekRunState> create(Ref ref) {
     return diaryBurnWeekRunState(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<BurnWeekRunState> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<BurnWeekRunState>>(value),
+    );
   }
 }
 
 String _$diaryBurnWeekRunStateHash() =>
-    r'9eeeb8b89c43853778517594e30e9a98d840d2a7';
+    r'ae53931d0a3eb324b17aa00d4ba950e389b4468a';
 
 /// Actions needed by diary Burn Week presentation widgets.
 

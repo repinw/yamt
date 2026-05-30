@@ -21,7 +21,7 @@ class DiaryHomeShellTopChrome extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final localeName = Localizations.localeOf(context).toLanguageTag();
     final diaryCalendarState = ref.watch(diaryCalendarControllerProvider);
-    final runState = ref.watch(diaryBurnWeekRunStateProvider).asData?.value;
+    final runState = ref.watch(diaryBurnWeekRunStateProvider).value;
     return HomeShellTabTopChrome(
       title: diaryCalendarState.isSelectedToday
           ? l10n.diaryTodayTitle

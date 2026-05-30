@@ -6,8 +6,8 @@ part 'diary_burn_week_run_provider.g.dart';
 
 /// Diary-facing Burn Week run state adapter.
 @riverpod
-Future<BurnWeekRunState> diaryBurnWeekRunState(Ref ref) {
-  return ref.watch(burnWeekRunControllerProvider.future);
+AsyncValue<BurnWeekRunState> diaryBurnWeekRunState(Ref ref) {
+  return ref.watch(burnWeekRunControllerProvider);
 }
 
 /// Actions needed by diary Burn Week presentation widgets.

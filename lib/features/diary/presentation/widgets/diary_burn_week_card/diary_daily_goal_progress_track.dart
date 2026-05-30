@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 
 const Duration _progressAnimationDuration = Duration(milliseconds: 1000);
 const Curve _progressAnimationCurve = Curves.easeOut;
-const double _activitySegmentPreviewOpacity = 0.3;
 
 /// Animated daily kcal progress track.
 class DiaryDailyGoalProgressTrack extends StatelessWidget {
@@ -66,7 +66,7 @@ class DiaryDailyGoalProgressTrack extends StatelessWidget {
                     width: width,
                     activitySegmentRatio: activitySegmentRatio,
                     color: activityColor.withValues(
-                      alpha: _activitySegmentPreviewOpacity,
+                      alpha: AppOpacities.diaryActivityPreviewSegment,
                     ),
                   ),
                 _EatenProgressSegment(
