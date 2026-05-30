@@ -124,7 +124,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
 
     final sharedKey = globalKey ?? fingerprintKey;
     if (sharedKey == null) {
-      await _writePreferenceTargetsSafely(
+      await _writePreferenceTargets(
         targets: preferenceTargets,
         amount: normalizedAmount,
         unit: unit,
@@ -220,7 +220,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
       });
     } on FirebaseException catch (error, stackTrace) {
       if (_isPermissionDenied(error)) {
-        await _writePreferenceTargetsSafely(
+        await _writePreferenceTargets(
           targets: preferenceTargets,
           amount: normalizedAmount,
           unit: unit,
@@ -235,34 +235,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
         error: error,
         stackTrace: stackTrace,
       );
-    }
-  }
-
-  Future<void> _writePreferenceTargetsSafely({
-    required List<_PreferenceWriteTarget> targets,
-    required double amount,
-    required ConsumedUnit unit,
-    required String? label,
-    required String updatedAtText,
-  }) async {
-    try {
-      await _writePreferenceTargets(
-        targets: targets,
-        amount: amount,
-        unit: unit,
-        label: label,
-        updatedAtText: updatedAtText,
-      );
-    } on FirebaseException catch (error, stackTrace) {
-      if (_isPermissionDenied(error)) {
-        return;
-      }
-      log(
-        'Failed to record personal serving suggestion.',
-        name: _repositoryLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      Error.throwWithStackTrace(error, stackTrace);
     }
   }
 
@@ -382,26 +355,9 @@ class FirestoreGlobalFoodServingSuggestionRepository
     required String itemKey,
     required int limit,
   }) async {
-    QuerySnapshot<Map<String, dynamic>> snapshot;
-    try {
-      snapshot = await _globalCollection()
-          .where('item_key', isEqualTo: itemKey)
-          .orderBy('unique_user_count', descending: true)
-          .orderBy('selection_count', descending: true)
-          .orderBy('updated_at', descending: true)
-          .limit(limit)
-          .get();
-    } on FirebaseException catch (error, stackTrace) {
-      log(
-        'Serving suggestion index missing, falling back to client-side sort.',
-        name: _repositoryLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      snapshot = await _globalCollection()
-          .where('item_key', isEqualTo: itemKey)
-          .get();
-    }
+    final snapshot = await _globalCollection()
+        .where('item_key', isEqualTo: itemKey)
+        .get();
 
     final suggestions = <GlobalFoodServingSuggestion>[];
     for (var index = 0; index < snapshot.docs.length; index++) {

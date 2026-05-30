@@ -583,8 +583,10 @@ service cloud.firestore {
           'id',
           'item_key',
           'global_food_item_id',
+          'food_fingerprint',
           'amount',
           'unit',
+          'label',
           'selection_count',
           'unique_user_count',
           'created_at',
@@ -593,7 +595,6 @@ service cloud.firestore {
         && data.keys().hasAll([
           'id',
           'item_key',
-          'global_food_item_id',
           'amount',
           'unit',
           'selection_count',
@@ -605,15 +606,26 @@ service cloud.firestore {
         && data.id is string
         && data.item_key is string
         && data.item_key.size() > 0
-        && data.global_food_item_id is string
-        && data.global_food_item_id.size() > 0
-        && exists(
-          /databases/$(database)/documents/global_food_items/$(data.global_food_item_id)
+        && isOptionalString(data, 'global_food_item_id')
+        && isOptionalString(data, 'food_fingerprint')
+        && (
+          (
+            data.global_food_item_id is string
+            && data.global_food_item_id.size() > 0
+            && exists(
+              /databases/$(database)/documents/global_food_items/$(data.global_food_item_id)
+            )
+          )
+          || (
+            data.food_fingerprint is string
+            && data.food_fingerprint.size() > 0
+          )
         )
         && data.amount is number
         && data.amount > 0
         && data.unit is string
         && isAllowedServingSuggestionUnit(data.unit)
+        && isOptionalString(data, 'label')
         && data.selection_count is int
         && data.selection_count > 0
         && data.unique_user_count is int
@@ -629,6 +641,7 @@ service cloud.firestore {
           'food_fingerprint',
           'amount',
           'unit',
+          'label',
           'updated_at',
         ])
         && data.keys().hasAll([
@@ -647,7 +660,8 @@ service cloud.firestore {
         && data.unit is string
         && isAllowedServingSuggestionUnit(data.unit)
         && data.updated_at is string
-        && isOptionalString(data, 'global_food_item_id');
+        && isOptionalString(data, 'global_food_item_id')
+        && isOptionalString(data, 'label');
     }
 
     function isValidUserServingVote(data, suggestionId) {
@@ -655,6 +669,7 @@ service cloud.firestore {
           'item_key',
           'suggestion_id',
           'global_food_item_id',
+          'food_fingerprint',
           'amount',
           'unit',
           'created_at',
@@ -663,7 +678,6 @@ service cloud.firestore {
         && data.keys().hasAll([
           'item_key',
           'suggestion_id',
-          'global_food_item_id',
           'amount',
           'unit',
           'created_at',
@@ -672,8 +686,18 @@ service cloud.firestore {
         && data.suggestion_id == suggestionId
         && data.item_key is string
         && data.item_key.size() > 0
-        && data.global_food_item_id is string
-        && data.global_food_item_id.size() > 0
+        && isOptionalString(data, 'global_food_item_id')
+        && isOptionalString(data, 'food_fingerprint')
+        && (
+          (
+            data.global_food_item_id is string
+            && data.global_food_item_id.size() > 0
+          )
+          || (
+            data.food_fingerprint is string
+            && data.food_fingerprint.size() > 0
+          )
+        )
         && data.amount is number
         && data.amount > 0
         && data.unit is string
@@ -778,11 +802,23 @@ service cloud.firestore {
         )
         && request.resource.data.id == resource.data.id
         && request.resource.data.item_key == resource.data.item_key
-        && request.resource.data.global_food_item_id
-          == resource.data.global_food_item_id
+        && (
+          !('global_food_item_id' in resource.data)
+          || request.resource.data.global_food_item_id
+            == resource.data.global_food_item_id
+        )
+        && (
+          !('food_fingerprint' in resource.data)
+          || request.resource.data.food_fingerprint
+            == resource.data.food_fingerprint
+        )
         && request.resource.data.amount == resource.data.amount
         && request.resource.data.unit == resource.data.unit
         && request.resource.data.created_at == resource.data.created_at
+        && (
+          !('label' in resource.data)
+          || request.resource.data.label == resource.data.label
+        )
         && request.resource.data.selection_count
           == resource.data.selection_count + 1
         && request.resource.data.unique_user_count >= resource.data.unique_user_count
@@ -902,8 +938,16 @@ service cloud.firestore {
         && isValidUserServingVote(request.resource.data, suggestionId)
         && request.resource.data.item_key == resource.data.item_key
         && request.resource.data.suggestion_id == resource.data.suggestion_id
-        && request.resource.data.global_food_item_id
-          == resource.data.global_food_item_id
+        && (
+          !('global_food_item_id' in resource.data)
+          || request.resource.data.global_food_item_id
+            == resource.data.global_food_item_id
+        )
+        && (
+          !('food_fingerprint' in resource.data)
+          || request.resource.data.food_fingerprint
+            == resource.data.food_fingerprint
+        )
         && request.resource.data.amount == resource.data.amount
         && request.resource.data.unit == resource.data.unit
         && request.resource.data.created_at == resource.data.created_at;
