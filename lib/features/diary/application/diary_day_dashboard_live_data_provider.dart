@@ -36,22 +36,27 @@ Future<DiaryDayDashboardLiveData> diaryDayDashboardLiveData(
   Ref ref,
   DateTime selectedDay,
 ) async {
-  final normalizedDay = normalizeDiaryDay(selectedDay);
-  final weekOverviewFuture = ref.watch(
-    calorieWeekOverviewForWindowProvider(normalizedDay).future,
-  );
-  final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
-  final entriesFuture = ref
-      .watch(calorieLogRepositoryProvider)
-      .readEntriesForDay(normalizedDay);
+  final keepAliveLink = ref.keepAlive();
+  try {
+    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final weekOverviewFuture = ref.watch(
+      calorieWeekOverviewForWindowProvider(normalizedDay).future,
+    );
+    final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
+    final entriesFuture = ref
+        .watch(calorieLogRepositoryProvider)
+        .readEntriesForDay(normalizedDay);
 
-  final weekOverview = await weekOverviewFuture;
-  final runState = await runStateFuture;
-  final selectedDayEntries = await entriesFuture;
+    final weekOverview = await weekOverviewFuture;
+    final runState = await runStateFuture;
+    final selectedDayEntries = await entriesFuture;
 
-  return DiaryDayDashboardLiveData(
-    weekOverview: weekOverview,
-    selectedDayEntries: selectedDayEntries,
-    runState: runState,
-  );
+    return DiaryDayDashboardLiveData(
+      weekOverview: weekOverview,
+      selectedDayEntries: selectedDayEntries,
+      runState: runState,
+    );
+  } finally {
+    keepAliveLink.close();
+  }
 }

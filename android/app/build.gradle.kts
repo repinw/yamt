@@ -23,7 +23,7 @@ dependencies {
 
   // TODO: Add the dependencies for Firebase products you want to use
   // When using the BoM, don't specify versions in Firebase dependencies
-  implementation("com.google.firebase:firebase-analytics")
+  releaseImplementation("com.google.firebase:firebase-analytics")
 
 
   // Add the dependencies for any other desired Firebase products

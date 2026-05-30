@@ -46,9 +46,11 @@ void main() {
           _entry('day-$index', addDiaryDays(firstStart, index), 2000),
         ],
     };
-    final previousLearnedTdee = CalorieGoalCalculator.calculate(
+    final profileResult = CalorieGoalCalculator.calculate(
       const CalorieCalculatorProfile.defaults(),
-    ).tdeeKcal;
+    );
+    final previousLearnedTdee =
+        profileResult.tdeeKcal - (profileResult.expectedActivityKcal * 0.75);
     final expected = CalorieWeeklyCheckInCalculator.calculateLearnedGoal(
       previousGoalKcal: 2000,
       previousLearnedTdeeKcal: previousLearnedTdee,
@@ -94,9 +96,11 @@ void main() {
       settings: settings,
       pendingWeeklyCheckIn: pending,
     );
-    final expectedPreviousTdee = CalorieGoalCalculator.calculate(
+    final profileResult = CalorieGoalCalculator.calculate(
       const CalorieCalculatorProfile.defaults(),
-    ).tdeeKcal;
+    );
+    final expectedPreviousBaseTdee =
+        profileResult.tdeeKcal - (profileResult.expectedActivityKcal * 0.75);
 
     final seed = resolveCascadedPreviousLearningSeedForWindow(
       settings: settings,
@@ -110,8 +114,35 @@ void main() {
     );
 
     expect(seed.previousGoalKcal, 2000);
-    expect(seed.previousLearnedTdeeKcal, expectedPreviousTdee);
+    expect(seed.previousLearnedTdeeKcal, expectedPreviousBaseTdee);
   });
+
+  test(
+    'does not subtract expected activity when activity tracking is inactive',
+    () {
+      final start = DateTime(2026, 4, 2);
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: const CalorieCalculatorProfile.defaults(),
+        effectiveDate: start,
+        countingStartDate: start,
+      );
+
+      final seed = baseLearningSeedForWindow(
+        settings: settings,
+        windowStartDate: start,
+        windowEndDate: addDiaryDays(start, 6),
+        anchorEntry: settings.goalHistory.first,
+      );
+
+      final expectedBaseTdee =
+          CalorieGoalCalculator.calculate(
+            const CalorieCalculatorProfile.defaults(),
+          ).tdeeKcal;
+
+      expect(seed.previousLearnedTdeeKcal, expectedBaseTdee);
+    },
+  );
 }
 
 CalorieGoalSettings _settings(DateTime start) {
@@ -120,6 +151,7 @@ CalorieGoalSettings _settings(DateTime start) {
     calculatorProfile: const CalorieCalculatorProfile.defaults(),
     effectiveDate: start,
     countingStartDate: start,
+    activityTrackingStartDate: start,
   );
 }
 

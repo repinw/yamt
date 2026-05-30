@@ -88,6 +88,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
     dayKey: diaryDayKey(dates.nextBoundaryDay),
     manualWeightByDay: manualWeightByDay,
     representativeWeightByDay: representativeWeightByDay,
+    decoupleWeightPointKey: true,
   );
 
   final weightPoints = weightPointByDay.values.toList(growable: false)
@@ -162,6 +163,7 @@ void _putBoundaryWeightIfAbsent({
   required String dayKey,
   required Map<String, double> manualWeightByDay,
   required Map<String, double> representativeWeightByDay,
+  bool decoupleWeightPointKey = false,
 }) {
   _putWeightIfAbsent(
     weightByDay: weightByDay,
@@ -169,6 +171,7 @@ void _putBoundaryWeightIfAbsent({
     displayDay: displayDay,
     weightKg: manualWeightByDay[dayKey],
     dayIndex: dayIndex,
+    weightPointKey: decoupleWeightPointKey ? dayKey : null,
   );
   _putWeightIfAbsent(
     weightByDay: weightByDay,
@@ -176,6 +179,7 @@ void _putBoundaryWeightIfAbsent({
     displayDay: displayDay,
     weightKg: representativeWeightByDay[dayKey],
     dayIndex: dayIndex,
+    weightPointKey: decoupleWeightPointKey ? dayKey : null,
   );
 }
 
@@ -185,17 +189,20 @@ void _putWeightIfAbsent({
   required DateTime displayDay,
   required double? weightKg,
   required int dayIndex,
+  String? weightPointKey,
 }) {
   if (weightKg == null) {
     return;
   }
   final displayDayKey = diaryDayKey(displayDay);
-  if (weightByDay.containsKey(displayDayKey)) {
-    return;
+  final ptKey = weightPointKey ?? displayDayKey;
+  if (!weightByDay.containsKey(displayDayKey)) {
+    weightByDay[displayDayKey] = weightKg;
   }
-  weightByDay[displayDayKey] = weightKg;
-  weightPointByDay[displayDayKey] = CalorieWeeklyCheckInWeightPoint(
-    dayIndex: dayIndex,
-    weightKg: weightKg,
-  );
+  if (!weightPointByDay.containsKey(ptKey)) {
+    weightPointByDay[ptKey] = CalorieWeeklyCheckInWeightPoint(
+      dayIndex: dayIndex,
+      weightKg: weightKg,
+    );
+  }
 }

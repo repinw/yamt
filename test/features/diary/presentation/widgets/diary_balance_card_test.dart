@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -815,6 +817,52 @@ void main() {
     expect(weekOverviewReadCount, greaterThan(initialReadCount));
   });
 
+  testWidgets('keeps loading dashboard refresh alive on resume', (
+    tester,
+  ) async {
+    final selectedDay = normalizeDiaryDay(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+    final observer = _RecordingProviderObserver();
+    final weekOverviewCompleter = Completer<CalorieWeekOverview>();
+    var weekOverviewReadCount = 0;
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+      observers: [observer],
+      weekOverviewBuilder: () {
+        weekOverviewReadCount += 1;
+        return weekOverviewCompleter.future;
+      },
+      settle: false,
+    );
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+
+    expect(weekOverviewReadCount, 1);
+
+    weekOverviewCompleter.complete(
+      _weekOverview(
+        selectedDay: selectedDay,
+        weekStartDate: selectedDay,
+        dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(observer.failures, isEmpty);
+    expect(find.byType(DiaryBalanceLoading), findsNothing);
+  });
+
   testWidgets('daily progress shows corrected 899 kcal activity visibly', (
     tester,
   ) async {
@@ -939,7 +987,9 @@ Future<void> _pumpBalanceCard(
   required BurnWeekRunState runState,
   VoidCallback? onBurnWeekLiveSyncWatch,
   VoidCallback? onWeekOverviewRead,
+  FutureOr<CalorieWeekOverview> Function()? weekOverviewBuilder,
   VoidCallback? onBalanceTickerTick,
+  List<ProviderObserver> observers = const <ProviderObserver>[],
   Duration? tickerPeriod,
   bool settle = true,
   double goalKcal = 2000,
@@ -977,6 +1027,7 @@ Future<void> _pumpBalanceCard(
 
   await tester.pumpWidget(
     ProviderScope(
+      observers: observers,
       overrides: [
         appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
         authStateChangesProvider.overrideWith(
@@ -1015,6 +1066,10 @@ Future<void> _pumpBalanceCard(
           onWeekOverviewRead?.call();
           if (weekOverviewThrows) {
             throw StateError('week overview failed');
+          }
+          final builder = weekOverviewBuilder;
+          if (builder != null) {
+            return builder();
           }
           return weekOverview;
         }),
@@ -1253,6 +1308,19 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
 }
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+final class _RecordingProviderObserver extends ProviderObserver {
+  final failures = <Object>[];
+
+  @override
+  void providerDidFail(
+    ProviderObserverContext context,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    failures.add(error);
+  }
+}
 
 extension on Offset {
   double dxRatioWithin(Rect rect) {

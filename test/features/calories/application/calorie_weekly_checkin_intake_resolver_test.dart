@@ -53,19 +53,48 @@ void main() {
     expect(data.missingIntakeDays, [secondDay]);
   });
 
-  test('interpolates skipped days from prior resolved intake', () {
+  test(
+    'interpolates skipped days from average of logged days in the window',
+    () {
+      final start = DateTime(2026, 4, 2);
+      final skippedDay = nextDiaryDay(start);
+      final thirdDay = nextDiaryDay(skippedDay);
+      final settings = _settings(
+        start,
+      ).setSkippedIntakeDay(day: skippedDay, isSkipped: true);
+
+      final data = resolveWeeklyWindowIntakeData(
+        days: [start, skippedDay, thirdDay],
+        calorieEntriesByDay: {
+          diaryDayKey(start): [_entry('a', start, 1000)],
+          diaryDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
+        },
+        settings: settings,
+        activeKcalByDay: const <String, int>{},
+        weightByDay: const <String, double>{},
+        heartDayKeys: const <String>{},
+      );
+
+      expect(data.blockedReason, isNull);
+      expect(
+        data.days.map((day) => day.resolvedIntakeKcal).toList(growable: false),
+        [1000, 1500, 2000],
+      );
+      expect(data.days[1].hasEntries, isFalse);
+    },
+  );
+
+  test('does not block when the first day of the week is skipped', () {
     final start = DateTime(2026, 4, 2);
-    final skippedDay = nextDiaryDay(start);
-    final thirdDay = nextDiaryDay(skippedDay);
+    final secondDay = nextDiaryDay(start);
     final settings = _settings(
       start,
-    ).setSkippedIntakeDay(day: skippedDay, isSkipped: true);
+    ).setSkippedIntakeDay(day: start, isSkipped: true);
 
     final data = resolveWeeklyWindowIntakeData(
-      days: [start, skippedDay, thirdDay],
+      days: [start, secondDay],
       calorieEntriesByDay: {
-        diaryDayKey(start): [_entry('a', start, 1000)],
-        diaryDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
+        diaryDayKey(secondDay): [_entry('b', secondDay, 1800)],
       },
       settings: settings,
       activeKcalByDay: const <String, int>{},
@@ -76,9 +105,9 @@ void main() {
     expect(data.blockedReason, isNull);
     expect(
       data.days.map((day) => day.resolvedIntakeKcal).toList(growable: false),
-      [1000, 1000, 2000],
+      [1800, 1800],
     );
-    expect(data.days[1].hasEntries, isFalse);
+    expect(data.days[0].hasEntries, isFalse);
   });
 
   test('learning intake ignores heart days', () {

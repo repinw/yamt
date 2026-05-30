@@ -131,11 +131,22 @@ double _resolveProgressWeeklyGoalKcal({
       return sum + day.baseGoalKcal;
     },
   );
-
-  return math.max<double>(
+  final baseWeeklyGoalKcal = math.max<double>(
     fallbackDailyGoalKcal * burnWeekDaysPerWeek,
     visibleCurrentWeekBaseGoalKcal,
   );
+
+  final currentWeekActivityBonus = weekOverview.days.fold<double>(
+    0,
+    (sum, day) {
+      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+        return sum;
+      }
+      return sum + day.activityBonusKcal;
+    },
+  );
+
+  return baseWeeklyGoalKcal + currentWeekActivityBonus;
 }
 
 BurnWeekMockMetrics _resolveBurnWeekMetrics({

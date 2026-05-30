@@ -24,18 +24,32 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
       ? 1.0
       : resolveBurnWeekCurrentDayProgress(now);
   final fallbackDailyGoalKcal = resolveBurnWeekMockGoalKcal(
-    todayOverview.goalKcal,
+    todayOverview.baseGoalKcal,
   );
-  final currentWeekGoalKcal = weekOverview.days.fold<double>(0, (sum, day) {
-    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-      return sum;
-    }
-    return sum + day.goalKcal;
-  });
-  final rawWeeklyGoalKcal = math.max<double>(
+  final visibleCurrentWeekBaseGoalKcal = weekOverview.days.fold<double>(
+    0,
+    (sum, day) {
+      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+        return sum;
+      }
+      return sum + day.baseGoalKcal;
+    },
+  );
+  final baseWeeklyGoalKcal = math.max<double>(
     fallbackDailyGoalKcal * burnWeekDaysPerWeek,
-    currentWeekGoalKcal,
+    visibleCurrentWeekBaseGoalKcal,
   );
+
+  final currentWeekActivityBonus = weekOverview.days.fold<double>(
+    0,
+    (sum, day) {
+      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+        return sum;
+      }
+      return sum + day.activityBonusKcal;
+    },
+  );
+  final rawWeeklyGoalKcal = baseWeeklyGoalKcal + currentWeekActivityBonus;
   final adjustedWeeklyGoalKcal = math.max<double>(
     fallbackDailyGoalKcal,
     rawWeeklyGoalKcal + previousWeekOverflowKcal,
@@ -70,7 +84,7 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
   return BurnWeekMockMetrics(
     dailyGoalKcal: dailyGoalKcal,
     weeklyGoalKcal: adjustedWeeklyGoalKcal,
-    usesFallbackGoal: todayOverview.goalKcal <= 0,
+    usesFallbackGoal: todayOverview.baseGoalKcal <= 0,
     paceRatio: (targetKcal / adjustedWeeklyGoalKcal).clamp(0.0, 1.0),
     targetKcal: targetKcal,
     consumedKcal: consumedKcal,

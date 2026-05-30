@@ -82,6 +82,53 @@ void main() {
     },
   );
 
+  test('loads activity only from activity tracking start date', () async {
+    final start = DateTime(2026, 4, 8);
+    final secondDay = nextDiaryDay(start);
+    final today = DateTime(2026, 4, 15);
+    final dates = _dates(start: start, secondDay: secondDay);
+    final diaryHealthService = FakeTrendDiaryHealthService(
+      const {},
+      trendDays: [
+        DiaryHealthActivityTrendDay(
+          day: start,
+          totalSteps: 0,
+          activeEnergyKcal: 200,
+        ),
+        DiaryHealthActivityTrendDay(
+          day: secondDay,
+          totalSteps: 0,
+          activeEnergyKcal: 210,
+        ),
+        DiaryHealthActivityTrendDay(
+          day: today,
+          totalSteps: 0,
+          activeEnergyKcal: 300,
+        ),
+      ],
+    );
+
+    final data = await loadCalorieWeeklyCheckInHealthData(
+      healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
+      healthWeightService: FakeHealthWeightService(const []),
+      diaryHealthService: diaryHealthService,
+      settings: _settings(start, activityTrackingStartDate: secondDay),
+      dates: dates,
+      today: today,
+      isMounted: () => true,
+    );
+
+    expect(data.activeKcalByDay[diaryDayKey(start)], 0);
+    expect(data.activeKcalByDay[diaryDayKey(secondDay)], 210);
+    expect(data.todayActiveKcal, 300);
+    expect(diaryHealthService.trendRequests, [
+      (
+        startInclusive: secondDay,
+        endExclusive: nextDiaryDay(today),
+      ),
+    ]);
+  });
+
   test('returns empty health data when access is unavailable', () async {
     final start = DateTime(2026, 4, 8);
     final secondDay = nextDiaryDay(start);
@@ -126,12 +173,15 @@ void main() {
   });
 }
 
-CalorieGoalSettings _settings(DateTime start) {
+CalorieGoalSettings _settings(
+  DateTime start, {
+  DateTime? activityTrackingStartDate,
+}) {
   return CalorieGoalSettings.single(
     dailyKcalGoal: 2000,
     calculatorProfile: null,
     effectiveDate: start,
-  );
+  ).copyWith(activityTrackingStartDate: activityTrackingStartDate ?? start);
 }
 
 CalorieWeeklyCheckInWindowDates _dates({

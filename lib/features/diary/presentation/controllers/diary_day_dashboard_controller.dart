@@ -67,6 +67,8 @@ class DiaryDayDashboardState {
 /// Loads and caches the render-ready diary dashboard for one day.
 @riverpod
 class DiaryDayDashboardController extends _$DiaryDayDashboardController {
+  Future<void>? _refreshInFlight;
+
   @override
   DiaryDayDashboardState build(DateTime selectedDay) {
     final normalizedDay = normalizeDiaryDay(selectedDay);
@@ -119,7 +121,6 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   /// Refreshes this dashboard from live providers.
   Future<void> retry() {
     final normalizedDay = normalizeDiaryDay(selectedDay);
-    _invalidateDashboardInputs(normalizedDay);
 
     return _refresh(
       normalizedDay: normalizedDay,
@@ -132,6 +133,33 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   }
 
   Future<void> _refresh({
+    required DateTime normalizedDay,
+    required String? userId,
+    required AppPreferences preferences,
+    required DiaryDayDashboardCacheStore cacheStore,
+  }) async {
+    final inFlight = _refreshInFlight;
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final refresh = _runRefresh(
+      normalizedDay: normalizedDay,
+      userId: userId,
+      preferences: preferences,
+      cacheStore: cacheStore,
+    );
+    _refreshInFlight = refresh;
+    try {
+      await refresh;
+    } finally {
+      if (identical(_refreshInFlight, refresh)) {
+        _refreshInFlight = null;
+      }
+    }
+  }
+
+  Future<void> _runRefresh({
     required DateTime normalizedDay,
     required String? userId,
     required AppPreferences preferences,

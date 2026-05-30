@@ -1157,14 +1157,16 @@ Future<ProviderContainer> _pumpDiaryPage(
       ),
       diaryDayDashboardControllerProvider(
         normalizedSelectedDay,
-      ).overrideWithValue(
-        dashboardState ??
-            diaryDashboardLoadedStateForTest(
-              selectedDay: normalizedSelectedDay,
-              weekOverview: weekOverview,
-              selectedDayEntries: selectedDayEntries,
-              runState: burnWeekRunState ?? const BurnWeekRunState.initial(),
-            ),
+      ).overrideWith(
+        () => FakeDiaryDayDashboardController(
+          dashboardState ??
+              diaryDashboardLoadedStateForTest(
+                selectedDay: normalizedSelectedDay,
+                weekOverview: weekOverview,
+                selectedDayEntries: selectedDayEntries,
+                runState: burnWeekRunState ?? const BurnWeekRunState.initial(),
+              ),
+        ),
       ),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       burnWeekRunStateRepositoryProvider.overrideWithValue(

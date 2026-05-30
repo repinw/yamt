@@ -105,6 +105,59 @@ void main() {
 
     expect(weights, {diaryDayKey(DateTime(2026, 4, 2)): 82});
   });
+
+  test(
+    'allows Sunday and Monday weights to co-exist in weightPoints '
+    'without key collision',
+    () {
+      final start = DateTime(2026, 4, 2);
+      final end = addDiaryDays(start, 6);
+      final sunday = end;
+      final monday = nextDiaryDay(end);
+
+      final dates = CalorieWeeklyCheckInWindowDates(
+        pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
+          windowStartDate: start,
+          windowEndDate: end,
+          dueDate: nextDiaryDay(end),
+        ),
+        anchorEntry: null,
+        anchorWeightSourceDay: null,
+        learningStartDate: start,
+        learningDays: [start, sunday],
+        windowDays: [start, sunday],
+        learningPreviousBoundaryDay: previousDiaryDay(start),
+        shouldUseLearningPreviousBoundary: false,
+        isFirstWindow: false,
+        previousBoundaryDay: null,
+        nextBoundaryDay: monday,
+      );
+
+      final data = mergeWeeklyCheckInWeights(
+        dates: dates,
+        anchorEntry: null,
+        manualWeightByDay: {
+          diaryDayKey(sunday): 80.0,
+          diaryDayKey(monday): 79.5,
+        },
+        representativeWeightByDay: const <String, double>{},
+      );
+
+      expect(data.weightByDay[diaryDayKey(sunday)], 80.0);
+      expect(data.weightPoints.length, 2);
+      final indices = data.weightPoints.map((pt) => pt.dayIndex).toList();
+      expect(indices.contains(dates.dayIndexFor(sunday)), isTrue);
+      expect(indices.contains(dates.dayIndexFor(monday)), isTrue);
+      final sundayWeight = data.weightPoints
+          .firstWhere((pt) => pt.dayIndex == dates.dayIndexFor(sunday))
+          .weightKg;
+      final mondayWeight = data.weightPoints
+          .firstWhere((pt) => pt.dayIndex == dates.dayIndexFor(monday))
+          .weightKg;
+      expect(sundayWeight, 80.0);
+      expect(mondayWeight, 79.5);
+    },
+  );
 }
 
 CalorieGoalSettings _settings(DateTime start) {

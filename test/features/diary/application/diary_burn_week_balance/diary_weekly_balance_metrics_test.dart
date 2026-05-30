@@ -133,6 +133,90 @@ void main() {
       7,
     );
   });
+
+  test('weekly goal grows when activity is tracked', () {
+    final selectedDay = DateTime(2026, 4, 28);
+    final currentWeekStartDate = DateTime(2026, 4, 27);
+
+    // We construct a week overview where the first day has baseGoal 1800
+    // but goalKcal 2300 (500 activity bonus).
+    final days = [
+      CalorieWeekDayOverview(
+        date: currentWeekStartDate,
+        totalKcal: 2000,
+        goalKcal: 2300,
+        baseGoalKcal: 1800,
+        activityBonusKcal: 500,
+        entryCount: 1,
+      ),
+      CalorieWeekDayOverview(
+        date: selectedDay,
+        totalKcal: 1000,
+        goalKcal: 1800,
+        baseGoalKcal: 1800,
+        entryCount: 1,
+      ),
+      for (var offset = 2; offset < 7; offset += 1)
+        CalorieWeekDayOverview(
+          date: addDiaryDays(currentWeekStartDate, offset),
+          totalKcal: 0,
+          goalKcal: 1800,
+          baseGoalKcal: 1800,
+          entryCount: 0,
+        ),
+    ];
+
+    final totalConsumedKcal = days.fold<double>(
+      0,
+      (sum, day) => sum + day.totalKcal,
+    );
+    final totalGoalKcal = days.fold<double>(
+      0,
+      (sum, day) => sum + day.goalKcal,
+    );
+    final weekOverview = CalorieWeekOverview(
+      days: days,
+      totalConsumedKcal: totalConsumedKcal,
+      totalGoalKcal: totalGoalKcal,
+      remainingKcal: totalGoalKcal - totalConsumedKcal,
+      balanceStartDate: currentWeekStartDate,
+      carryoverBeforeTodayKcal: 0,
+      todayFlexibleGoalKcal: days[1].goalKcal,
+      goalStartsInFuture: false,
+      nextGoalStartDate: null,
+      futureGoalKcal: null,
+    );
+
+    final metricsNextDay = resolveDiaryWeeklyBalanceMetrics(
+      weekOverview: weekOverview,
+      selectedDayOverview: weekOverview.days[1],
+      selectedDayEntries: const <CalorieEntry>[],
+      currentWeekStartDate: currentWeekStartDate,
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-4-27',
+      ),
+      now: selectedDay.add(const Duration(hours: 12)),
+    );
+
+    // Weekly goal should be:
+    // max(1800 * 7 = 12600, visibleCurrentWeekGoalKcal = 12600 + 500 = 13100)
+    expect(metricsNextDay.goalKcal, 13100);
+
+    final metricsTrainingDay = resolveDiaryWeeklyBalanceMetrics(
+      weekOverview: weekOverview,
+      selectedDayOverview: weekOverview.days[0],
+      selectedDayEntries: const <CalorieEntry>[],
+      currentWeekStartDate: currentWeekStartDate,
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-4-27',
+      ),
+      now: currentWeekStartDate.add(const Duration(hours: 12)),
+    );
+
+    // Even when selecting the training day, it should remain
+    // 13100 instead of jumping to 16100.
+    expect(metricsTrainingDay.goalKcal, 13100);
+  });
 }
 
 CalorieWeekOverview _weekOverview({

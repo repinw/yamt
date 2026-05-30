@@ -359,7 +359,7 @@ void main() {
       settings: _learnedSettings(
         startDay: startDay,
         windowEndDate: startDay.add(const Duration(days: 6)),
-      ),
+      ).copyWith(activityTrackingStartDate: latestWindowStart),
       entries: _dailyEntries(
         startDay: startDay,
         count: dailyLearnedTdeeMaximumLookbackDays,
@@ -378,6 +378,56 @@ void main() {
     expect(diaryHealthService.loadDayDataCallCount, 0);
     expect(result, isNotNull);
     expect(result!.averageActiveKcal, 26.25);
+  });
+
+  test('ignores aggregate activity before activity tracking start', () async {
+    final startDay = DateTime(2026, 4);
+    final today = startDay.add(
+      const Duration(days: dailyLearnedTdeeMaximumLookbackDays),
+    );
+    final latestWindowStart = startDay.add(const Duration(days: 21));
+    final trackingStartDate = latestWindowStart.add(const Duration(days: 3));
+    final diaryHealthService = FakeTrendDiaryHealthService(
+      const <String, DiaryHealthDayData>{},
+      trendDays: [
+        for (var index = 0; index < 7; index += 1)
+          DiaryHealthActivityTrendDay(
+            day: latestWindowStart.add(Duration(days: index)),
+            totalSteps: 0,
+            activeEnergyKcal: 140,
+          ),
+      ],
+    );
+    final harness = _DailyLearnedHarness(
+      settings: _learnedSettings(
+        startDay: startDay,
+        windowEndDate: startDay.add(const Duration(days: 6)),
+      ).copyWith(activityTrackingStartDate: trackingStartDate),
+      entries: _dailyEntries(
+        startDay: startDay,
+        count: dailyLearnedTdeeMaximumLookbackDays,
+        kcalForIndex: (_) => 2500,
+      ),
+      healthWeights: _stableBoundaryWeights(
+        startDay: startDay,
+        boundaryCount: 4,
+      ),
+      diaryHealthService: diaryHealthService,
+    );
+    addTearDown(harness.dispose);
+
+    final result = await _readDailyLearned(harness.container, today: today);
+
+    expect(result, isNotNull);
+    expect(result!.averageActiveKcal, 15);
+    expect(diaryHealthService.trendRequests, [
+      (
+        startInclusive: trackingStartDate,
+        endExclusive: nextDiaryDay(
+          latestWindowStart.add(const Duration(days: 6)),
+        ),
+      ),
+    ]);
   });
 
   test(
@@ -774,6 +824,7 @@ void main() {
         goalSpeedKgPerWeek: 0,
       ),
       effectiveDate: startDay,
+      activityTrackingStartDate: startDay,
       source: CalorieGoalSource.calculator,
       weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
         windowStartDate: DateTime(2026, 4),
@@ -805,8 +856,8 @@ void main() {
     );
 
     expect(result, isNotNull);
-    expect(result!.calculatedTrueTdeeKcal, closeTo(3792.53, 0.01));
-    expect(result.newGoalKcal, closeTo(2900, 0.01));
+    expect(result!.calculatedTrueTdeeKcal, closeTo(2732.94, 0.01));
+    expect(result.newGoalKcal, closeTo(2732.94, 0.01));
   });
 
   test('uses real starter-day weight before calculator fallback', () async {
@@ -851,42 +902,46 @@ void main() {
     expect(result.measured.measuredTrueTdeeKcal, closeTo(4833.33, 0.01));
   });
 
-  test('interpolates skipped intake days from prior average', () async {
-    final startDay = DateTime(2026, 4);
-    final today = startDay.add(const Duration(days: 9));
-    final skippedDay = startDay.add(const Duration(days: 1));
-    final settings = _learnedSettings(
-      startDay: startDay,
-      windowEndDate: startDay.add(const Duration(days: 6)),
-    ).setSkippedIntakeDay(day: skippedDay, isSkipped: true);
-    final harness = _DailyLearnedHarness(
-      settings: settings,
-      entries: <CalorieEntry>[
-        _entry('entry-0', startDay.add(const Duration(hours: 8)), 2000),
-        for (var index = 2; index < 9; index += 1)
-          _entry(
-            'entry-$index',
-            startDay.add(Duration(days: index, hours: 8)),
-            2500,
+  test(
+    'interpolates skipped intake days from average of logged days in '
+    'the window',
+    () async {
+      final startDay = DateTime(2026, 4);
+      final today = startDay.add(const Duration(days: 9));
+      final skippedDay = startDay.add(const Duration(days: 1));
+      final settings = _learnedSettings(
+        startDay: startDay,
+        windowEndDate: startDay.add(const Duration(days: 6)),
+      ).setSkippedIntakeDay(day: skippedDay, isSkipped: true);
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: <CalorieEntry>[
+          _entry('entry-0', startDay.add(const Duration(hours: 8)), 2000),
+          for (var index = 2; index < 9; index += 1)
+            _entry(
+              'entry-$index',
+              startDay.add(Duration(days: index, hours: 8)),
+              2500,
+            ),
+        ],
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          HealthWeightSample(
+            recordedAt: startDay.add(
+              const Duration(days: weeklyCheckInWindowLengthDays),
+            ),
+            weightKg: 80,
           ),
-      ],
-      healthWeights: <HealthWeightSample>[
-        HealthWeightSample(recordedAt: startDay, weightKg: 80),
-        HealthWeightSample(
-          recordedAt: startDay.add(
-            const Duration(days: weeklyCheckInWindowLengthDays),
-          ),
-          weightKg: 80,
-        ),
-      ],
-    );
-    addTearDown(harness.dispose);
+        ],
+      );
+      addTearDown(harness.dispose);
 
-    final result = await _readDailyLearned(harness.container, today: today);
+      final result = await _readDailyLearned(harness.container, today: today);
 
-    expect(result, isNotNull);
-    expect(result!.measured.averageIntakeKcal, closeTo(2357.14, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2387.14, 0.01));
-    expect(result.newGoalKcal, closeTo(2387.14, 0.01));
-  });
+      expect(result, isNotNull);
+      expect(result!.measured.averageIntakeKcal, closeTo(2416.67, 0.01));
+      expect(result.calculatedTrueTdeeKcal, closeTo(2405.0, 0.01));
+      expect(result.newGoalKcal, closeTo(2405.0, 0.01));
+    },
+  );
 }

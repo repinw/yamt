@@ -10,5 +10,9 @@
     <application
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/debug_network_security_config"
-        tools:targetApi="28" />
+        tools:targetApi="28">
+        <meta-data
+            android:name="firebase_analytics_collection_deactivated"
+            android:value="true" />
+    </application>
 </manifest>
