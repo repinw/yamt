@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/'
     'firestore_global_food_serving_suggestion_repository.dart';
@@ -25,7 +26,60 @@ class _DenyingTransactionFakeFirebaseFirestore extends FakeFirebaseFirestore {
   }
 }
 
+class _MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+
+// ignore: subtype_of_sealed_class, mocktail verifies Firestore query chaining.
+class _MockCollectionReference extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+// ignore: subtype_of_sealed_class, mocktail verifies Firestore query chaining.
+class _MockQuery extends Mock implements Query<Map<String, dynamic>> {}
+
+class _MockQuerySnapshot extends Mock
+    implements QuerySnapshot<Map<String, dynamic>> {}
+
 void main() {
+  test('readSuggestions applies global query ordering and limit', () async {
+    final firestore = _MockFirebaseFirestore();
+    final collection = _MockCollectionReference();
+    final query = _MockQuery();
+    final snapshot = _MockQuerySnapshot();
+    when(() => firestore.collection(_globalCollection)).thenReturn(collection);
+    when(
+      () => collection.where('item_key', isEqualTo: 'global_off-cheese'),
+    ).thenReturn(query);
+    when(
+      () => query.orderBy('unique_user_count', descending: true),
+    ).thenReturn(query);
+    when(
+      () => query.orderBy('selection_count', descending: true),
+    ).thenReturn(query);
+    when(() => query.orderBy('updated_at', descending: true)).thenReturn(query);
+    when(() => query.limit(3)).thenReturn(query);
+    when(query.get).thenAnswer((_) async => snapshot);
+    when(() => snapshot.docs).thenReturn(const []);
+
+    final repository = FirestoreGlobalFoodServingSuggestionRepository(
+      firestore: firestore,
+      currentUserId: null,
+    );
+
+    await repository.readSuggestions(
+      foodFingerprint: '',
+      globalFoodItemId: 'off-cheese',
+      limit: 3,
+    );
+
+    verifyInOrder([
+      () => collection.where('item_key', isEqualTo: 'global_off-cheese'),
+      () => query.orderBy('unique_user_count', descending: true),
+      () => query.orderBy('selection_count', descending: true),
+      () => query.orderBy('updated_at', descending: true),
+      () => query.limit(3),
+      query.get,
+    ]);
+  });
+
   test('readSuggestions prefers the newest personal preference', () async {
     final firestore = FakeFirebaseFirestore();
     await firestore
@@ -352,7 +406,8 @@ void main() {
   );
 
   test(
-    'recordSelection keeps personal preference when shared write is denied',
+    'recordSelection keeps personal preference and throws '
+    'when shared write is denied',
     () async {
       final firestore = _DenyingTransactionFakeFirebaseFirestore();
       final repository = FirestoreGlobalFoodServingSuggestionRepository(
@@ -360,13 +415,22 @@ void main() {
         currentUserId: 'user-1',
       );
 
-      await repository.recordSelection(
-        foodFingerprint: 'cheese__brand',
-        globalFoodItemId: 'off-cheese',
-        amount: 35,
-        unit: ConsumedUnit.grams,
-        label: 'Scheibe',
-        selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+      await expectLater(
+        repository.recordSelection(
+          foodFingerprint: 'cheese__brand',
+          globalFoodItemId: 'off-cheese',
+          amount: 35,
+          unit: ConsumedUnit.grams,
+          label: 'Scheibe',
+          selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+        ),
+        throwsA(
+          isA<FirebaseException>().having(
+            (error) => error.code,
+            'code',
+            'permission-denied',
+          ),
+        ),
       );
 
       final sharedSnapshot = await firestore

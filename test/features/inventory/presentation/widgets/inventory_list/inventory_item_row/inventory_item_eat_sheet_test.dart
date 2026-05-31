@@ -40,6 +40,7 @@ class _FakeGlobalFoodServingSuggestionRepository
     implements GlobalFoodServingSuggestionRepository {
   GlobalFoodServingSuggestionSet nextResult =
       const GlobalFoodServingSuggestionSet.empty();
+  Exception? recordFailure;
   final List<
     ({
       String foodFingerprint,
@@ -80,6 +81,10 @@ class _FakeGlobalFoodServingSuggestionRepository
     String? globalFoodItemId,
     String? label,
   }) async {
+    final failure = recordFailure;
+    if (failure != null) {
+      throw failure;
+    }
     calls.add((
       foodFingerprint: foodFingerprint,
       globalFoodItemId: globalFoodItemId,
@@ -910,6 +915,39 @@ void main() {
     expect(repository.calls.single.unit, ConsumedUnit.grams);
     expect(repository.calls.single.label, 'Scheibe');
     expect(find.text('Scheibe (25g)'), findsOneWidget);
+  });
+
+  testWidgets('shows feedback when new portion save fails', (tester) async {
+    final repository = _FakeGlobalFoodServingSuggestionRepository()
+      ..recordFailure = Exception('no write permission');
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _slicedCheeseItem().copyWith(
+          globalFoodItemId: 'off-sliced-cheese',
+        ),
+        maxAmount: 200,
+        onResult: (_) {},
+        servingSuggestionRepository: repository,
+      ),
+    );
+
+    await _openSheet(tester);
+    await _selectAmountMode(tester, '+ New portion...');
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_label_field')),
+      'Scheibe',
+    );
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      '25',
+    );
+    await tester.tap(find.text('Save portion'));
+    await tester.pumpAndSettle();
+
+    expect(repository.calls, isEmpty);
+    expect(find.text('Scheibe (25g)'), findsNothing);
+    expect(find.text('Action failed. Please try again.'), findsOneWidget);
   });
 
   testWidgets('logs fractional fixed-unit portions exactly', (tester) async {
