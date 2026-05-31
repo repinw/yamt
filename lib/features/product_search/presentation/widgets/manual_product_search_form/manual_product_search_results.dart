@@ -4,6 +4,8 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_result_quality.dart';
+import 'package:yamt/features/inventory/presentation/utils/'
+    'off_product_nutrition_grade_extension.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -52,10 +54,9 @@ class ManualProductSearchResults extends StatelessWidget {
                 imageUrl: result.imageUrl,
                 packageWeight: result.packageWeight,
                 nutrition: result.nutrition,
-                statusLabel: _nutritionGradeLabel(
-                  l10n,
-                  gradeOffProductNutrition(result.nutrition),
-                ),
+                statusLabel: gradeOffProductNutrition(
+                  result.nutrition,
+                ).localizedLabel(l10n),
                 onTap: () => onSelect(result),
                 trailing: onEatSelect != null
                     ? _ManualProductSearchActions(
@@ -73,23 +74,6 @@ class ManualProductSearchResults extends StatelessWidget {
       ],
     );
   }
-}
-
-String _nutritionGradeLabel(
-  AppLocalizations l10n,
-  OffProductNutritionGrade grade,
-) {
-  return switch (grade) {
-    OffProductNutritionGrade.missing => l10n.inventoryManualAddNutritionMissing,
-    OffProductNutritionGrade.missingCalories =>
-      l10n.inventoryManualAddNutritionMissingCalories,
-    OffProductNutritionGrade.incomplete =>
-      l10n.inventoryManualAddNutritionIncomplete,
-    OffProductNutritionGrade.complete =>
-      l10n.inventoryManualAddNutritionComplete,
-    OffProductNutritionGrade.verified =>
-      l10n.inventoryManualAddNutritionVerified,
-  };
 }
 
 class _ManualProductSearchActions extends StatelessWidget {

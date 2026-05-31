@@ -199,15 +199,33 @@ int _knownNutritionValueCount(GlobalFoodNutrition? nutrition) {
     return 0;
   }
 
-  return <double?>[
-    nutrition.per100Kcal,
-    nutrition.per100Fat,
-    nutrition.per100SaturatedFat,
-    nutrition.per100Carbs,
-    nutrition.per100Sugar,
-    nutrition.per100Protein,
-    nutrition.per100Salt,
-    nutrition.per100PolyunsaturatedFat,
-    nutrition.per100Fiber,
-  ].where((value) => value != null).length;
+  var count = 0;
+  if (nutrition.per100Kcal != null) {
+    count++;
+  }
+  if (nutrition.per100Fat != null) {
+    count++;
+  }
+  if (nutrition.per100SaturatedFat != null) {
+    count++;
+  }
+  if (nutrition.per100Carbs != null) {
+    count++;
+  }
+  if (nutrition.per100Sugar != null) {
+    count++;
+  }
+  if (nutrition.per100Protein != null) {
+    count++;
+  }
+  if (nutrition.per100Salt != null) {
+    count++;
+  }
+  if (nutrition.per100PolyunsaturatedFat != null) {
+    count++;
+  }
+  if (nutrition.per100Fiber != null) {
+    count++;
+  }
+  return count;
 }
