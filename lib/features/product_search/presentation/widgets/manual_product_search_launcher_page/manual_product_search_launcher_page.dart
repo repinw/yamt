@@ -13,6 +13,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
+import 'package:yamt/features/product_search/domain/'
+    'manual_product_eat_now_nutrition.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'
@@ -475,7 +477,7 @@ class _InventoryReceiptManualProductLauncherPageState
     required String? globalPackageWeight,
   }) {
     if (action != InventoryReceiptManualProductAction.eatNow ||
-        item.nutrition?.hasAnyNutritionValue != true) {
+        !hasRequiredEatNowNutrition(item.nutrition)) {
       return null;
     }
     return InventoryReceiptManualProductResult(

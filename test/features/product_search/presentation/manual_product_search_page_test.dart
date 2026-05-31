@@ -940,7 +940,7 @@ void main() {
   });
 
   testWidgets(
-    'word search hides products missing mandatory Germany nutrition fields',
+    'word search marks products missing mandatory nutrition fields',
     (tester) async {
       final offRepository = _RecordingOffProductSearchRepository(
         const <OffProductSearchResult>[
@@ -995,8 +995,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pump();
 
-      expect(find.text('Incomplete Zero'), findsNothing);
+      expect(find.text('Incomplete Zero'), findsOneWidget);
       expect(find.text('Complete Zero'), findsOneWidget);
+      expect(find.text('Nährwerte unvollständig'), findsOneWidget);
+      expect(find.text('Nährwerte verifiziert'), findsOneWidget);
     },
   );
 

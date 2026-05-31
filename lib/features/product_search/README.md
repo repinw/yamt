@@ -61,6 +61,31 @@ launcher/editor/AI pages keep typed results and no-animation behavior inside
 the current modal flow. Do not call `Navigator.push` from individual
 product-search widgets; use the route helper instead.
 
+## OFF Result Grading
+
+Manual search and barcode lookup must grade OFF products instead of hiding
+them only because nutrition is incomplete.
+
+- Show plausible OFF matches even when nutrition fields are missing.
+- Mark each result with a nutrition grade: missing nutrition, missing calories,
+  incomplete nutrition, complete nutrition, or verified nutrition.
+- Allow inventory-oriented flows to continue with incomplete nutrition when
+  the product identity and package data are useful.
+- Treat eat-now and calorie-tracking flows as nutrition-dependent. If kcal or
+  other required fields are missing, route the user into the editor so they can
+  scan a nutrition label or fill the fields before saving.
+- Collapse duplicate OFF rows only when they share the same normalized barcode,
+  package size does not conflict, overlapping nutrition values do not conflict,
+  and one row has either a better nutrition grade or more known fields within
+  the same grade without losing known nutrition fields.
+- Do not hide rows only because the name or brand looks similar. Different
+  barcode, package size, country recipe, or conflicting nutrition values are
+  separate candidates.
+- A barcode plus confirmed nutrition-label OCR produces a complete local draft,
+  not a verified global product. Global verification should require repeated
+  independent confirmations of the same barcode, package size, and normalized
+  nutrition values without recent conflicts.
+
 ## Accepted Dependencies
 
 - Depends on `inventory` domain/data for `InventoryItem`,

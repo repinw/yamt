@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_result_quality.dart';
+import 'package:yamt/features/inventory/presentation/utils/'
+    'off_product_nutrition_grade_extension.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_lookup_candidate.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -193,6 +197,9 @@ class _BarcodeCandidateTile extends StatelessWidget {
       packageWeight: candidate.packageWeight,
       nutrition: candidate.nutrition,
       topLabel: sourceLabel,
+      statusLabel: gradeOffProductNutrition(
+        candidate.nutrition,
+      ).localizedLabel(l10n),
       onTap: showActionButtons
           ? null
           : () => onSelect(

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_result_quality.dart';
+import 'package:yamt/features/inventory/presentation/utils/'
+    'off_product_nutrition_grade_extension.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -35,6 +39,8 @@ class ManualProductSearchResults extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       children: [
         for (var index = 0; index < results.length; index++) ...[
@@ -48,6 +54,9 @@ class ManualProductSearchResults extends StatelessWidget {
                 imageUrl: result.imageUrl,
                 packageWeight: result.packageWeight,
                 nutrition: result.nutrition,
+                statusLabel: gradeOffProductNutrition(
+                  result.nutrition,
+                ).localizedLabel(l10n),
                 onTap: () => onSelect(result),
                 trailing: onEatSelect != null
                     ? _ManualProductSearchActions(

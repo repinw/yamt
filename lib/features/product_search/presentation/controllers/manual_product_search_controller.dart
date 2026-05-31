@@ -7,6 +7,8 @@ import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_result_quality.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_item_edit_policy.dart';
@@ -16,6 +18,8 @@ import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
+import 'package:yamt/features/product_search/domain/'
+    'manual_product_eat_now_nutrition.dart';
 import 'package:yamt/features/product_search/domain/'
     'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search/domain/manual_product_weight_input.dart';
@@ -462,7 +466,7 @@ class InventoryReceiptManualProductController
               _config.item.servingQuantityUnit,
           nutrition: hasNutrition
               ? GlobalFoodNutrition(
-                  qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+                  qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
                   per100Kcal: kcal,
                   per100SaturatedFat: saturatedFat,
                   per100PolyunsaturatedFat: polyunsaturatedFat,
@@ -516,7 +520,7 @@ class InventoryReceiptManualProductController
     final inventoryWeight = weightInput.normalizedWeight;
     final nutrition = selection.nutrition ?? _config.item.nutrition;
     if (action == InventoryReceiptManualProductAction.eatNow) {
-      if (nutrition?.hasAnyNutritionValue != true) {
+      if (!hasRequiredEatNowNutrition(nutrition)) {
         return null;
       }
     }
@@ -583,12 +587,7 @@ class InventoryReceiptManualProductController
             weight: _resolvedSearchWeight(),
             limit: _searchResultLimit,
           );
-      final filteredResults = results
-          .where(
-            (result) =>
-                result.nutrition?.hasEuMandatoryNutritionDeclaration == true,
-          )
-          .toList(growable: false);
+      final visibleResults = collapseDominatedOffProductSearchResults(results);
 
       if (!ref.mounted || requestId != _activeSearchRequestId) {
         return;
@@ -596,7 +595,7 @@ class InventoryReceiptManualProductController
 
       state = state.copyWith(
         isSearching: false,
-        searchResults: filteredResults,
+        searchResults: visibleResults,
       );
     } on Object catch (error, stackTrace) {
       log(

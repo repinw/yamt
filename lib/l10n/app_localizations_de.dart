@@ -789,6 +789,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddResultActionEat => 'Essen';
 
   @override
+  String get inventoryManualAddNutritionMissing => 'Nährwerte fehlen';
+
+  @override
+  String get inventoryManualAddNutritionMissingCalories => 'Kalorien fehlen';
+
+  @override
+  String get inventoryManualAddNutritionIncomplete => 'Nährwerte unvollständig';
+
+  @override
+  String get inventoryManualAddNutritionComplete => 'Nährwerte vollständig';
+
+  @override
+  String get inventoryManualAddNutritionVerified => 'Nährwerte verifiziert';
+
+  @override
   String get inventoryManualAddCreateOwnAction => 'Manuell erstellen';
 
   @override

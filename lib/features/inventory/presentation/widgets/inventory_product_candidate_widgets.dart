@@ -17,6 +17,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
     this.packageWeight,
     this.nutrition,
     this.topLabel,
+    this.statusLabel,
     this.onTap,
     this.trailing,
   });
@@ -38,6 +39,9 @@ class InventoryProductCandidateTile extends StatelessWidget {
 
   /// Optional top tag label.
   final String? topLabel;
+
+  /// Optional status tag label.
+  final String? statusLabel;
 
   /// Optional tap on whole tile.
   final VoidCallback? onTap;
@@ -70,6 +74,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
               packageWeight: packageWeight,
               nutrition: nutrition,
               topLabel: topLabel,
+              statusLabel: statusLabel,
             ),
           ),
           if (trailing != null) ...[
@@ -238,6 +243,7 @@ class _InventoryProductCandidateDetails extends StatelessWidget {
     required this.packageWeight,
     required this.nutrition,
     required this.topLabel,
+    required this.statusLabel,
   });
 
   final String name;
@@ -245,18 +251,30 @@ class _InventoryProductCandidateDetails extends StatelessWidget {
   final String? packageWeight;
   final GlobalFoodNutrition? nutrition;
   final String? topLabel;
+  final String? statusLabel;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final normalizedBrand = _normalizeText(brand);
+    final topLabels = <String>[
+      if (_normalizeText(topLabel) case final String label) label,
+      if (_normalizeText(statusLabel) case final String label) label,
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (topLabel case final String label when label.trim().isNotEmpty) ...[
-          _InventoryProductCandidateTag(label: label.trim()),
+        if (topLabels.isNotEmpty) ...[
+          Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xxs,
+            children: [
+              for (final label in topLabels)
+                _InventoryProductCandidateTag(label: label),
+            ],
+          ),
           const SizedBox(height: AppSpacing.xs),
         ],
         Text(

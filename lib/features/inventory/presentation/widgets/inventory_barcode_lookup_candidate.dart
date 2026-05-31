@@ -1,5 +1,6 @@
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/off_product_search_result_quality.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -166,7 +167,10 @@ List<InventoryBarcodeLookupCandidate> mergeInventoryBarcodeCandidates({
       return merged;
     }
   }
-  for (final candidate in offCandidates) {
+  final visibleOffCandidates = collapseDominatedOffProductSearchResults(
+    offCandidates,
+  );
+  for (final candidate in visibleOffCandidates) {
     final resolved = InventoryBarcodeLookupCandidate.fromOffProduct(candidate);
     final key = inventoryBarcodeCandidateDedupeKey(resolved);
     if (!seenOffKeys.add(key)) {

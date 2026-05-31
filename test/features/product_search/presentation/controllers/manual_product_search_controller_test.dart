@@ -247,6 +247,44 @@ void main() {
     },
   );
 
+  test('buildSavePayload marks entered nutrition complete but unverified', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    const selectedProduct = OffProductSearchResult(
+      code: '4311596490202',
+      name: 'Booster Absolute Zero',
+      brand: 'Booster',
+      packageWeight: '330 ml',
+      score: 100,
+    );
+    final config = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: selectedProduct,
+    );
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final controller = container.read(provider.notifier)
+      ..updateKcalText('2')
+      ..updateFatText('0')
+      ..updateSaturatedFatText('0')
+      ..updateCarbsText('0.01')
+      ..updateSugarText('0.01')
+      ..updateProteinText('0.02')
+      ..updateSaltText('0.01');
+
+    final payload = controller.buildSavePayload();
+
+    expect(payload, isNotNull);
+    expect(
+      payload?.item.nutrition?.qualityStatus,
+      GlobalFoodNutritionQualityStatus.unverified,
+    );
+    expect(
+      payload?.item.nutrition?.hasEuMandatoryNutritionDeclaration,
+      isTrue,
+    );
+  });
+
   test('buildSavePayload allows eat action without package weight', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -404,6 +442,37 @@ void main() {
           brand: 'Brand',
           packageWeight: '1 l',
           score: 99,
+        ),
+        action: InventoryReceiptManualProductAction.eatNow,
+      );
+
+      expect(payload, isNull);
+    },
+  );
+
+  test(
+    'buildDirectSearchResultPayload returns null when core macros are missing',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final config = InventoryReceiptManualProductConfig(item: _item());
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final controller = container.read(provider.notifier);
+
+      final payload = controller.buildDirectSearchResultPayload(
+        product: const OffProductSearchResult(
+          code: '4006381333931',
+          name: 'Milk',
+          brand: 'Brand',
+          packageWeight: '1 l',
+          score: 99,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+            per100Kcal: 100,
+            per100Protein: 10,
+            per100Fat: 3,
+          ),
         ),
         action: InventoryReceiptManualProductAction.eatNow,
       );
@@ -582,8 +651,8 @@ void main() {
   );
 
   test(
-    'updateSearchQuery keeps only OFF results with Germany-required'
-    ' nutrition values',
+    'updateSearchQuery shows incomplete OFF results and collapses safe'
+    ' duplicates',
     () async {
       final repository = _RecordingOffProductSearchRepository(
         const <OffProductSearchResult>[
@@ -609,7 +678,7 @@ void main() {
             ),
           ),
           OffProductSearchResult(
-            code: '4311596490203',
+            code: '4311596490202',
             name: 'Complete Zero',
             brand: 'Booster',
             packageWeight: '330 ml',
@@ -646,7 +715,7 @@ void main() {
       final state = container.read(provider);
       expect(
         state.searchResults.map((result) => result.name),
-        <String>['Complete Zero'],
+        <String>['No Nutrition', 'Complete Zero'],
       );
       expect(repository.lastQuery, 'Zero');
       expect(repository.lastStore, isNull);
