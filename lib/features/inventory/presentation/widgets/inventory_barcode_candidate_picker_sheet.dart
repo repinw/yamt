@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_result_quality.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_lookup_candidate.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -193,6 +195,10 @@ class _BarcodeCandidateTile extends StatelessWidget {
       packageWeight: candidate.packageWeight,
       nutrition: candidate.nutrition,
       topLabel: sourceLabel,
+      statusLabel: _nutritionGradeLabel(
+        l10n,
+        gradeOffProductNutrition(candidate.nutrition),
+      ),
       onTap: showActionButtons
           ? null
           : () => onSelect(
@@ -224,4 +230,21 @@ class _BarcodeCandidateTile extends StatelessWidget {
           : null,
     );
   }
+}
+
+String _nutritionGradeLabel(
+  AppLocalizations l10n,
+  OffProductNutritionGrade grade,
+) {
+  return switch (grade) {
+    OffProductNutritionGrade.missing => l10n.inventoryManualAddNutritionMissing,
+    OffProductNutritionGrade.missingCalories =>
+      l10n.inventoryManualAddNutritionMissingCalories,
+    OffProductNutritionGrade.incomplete =>
+      l10n.inventoryManualAddNutritionIncomplete,
+    OffProductNutritionGrade.complete =>
+      l10n.inventoryManualAddNutritionComplete,
+    OffProductNutritionGrade.verified =>
+      l10n.inventoryManualAddNutritionVerified,
+  };
 }

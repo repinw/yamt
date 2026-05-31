@@ -1450,6 +1450,36 @@ abstract class AppLocalizations {
   /// **'Eat'**
   String get inventoryManualAddResultActionEat;
 
+  /// No description provided for @inventoryManualAddNutritionMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition missing'**
+  String get inventoryManualAddNutritionMissing;
+
+  /// No description provided for @inventoryManualAddNutritionMissingCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories missing'**
+  String get inventoryManualAddNutritionMissingCalories;
+
+  /// No description provided for @inventoryManualAddNutritionIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition incomplete'**
+  String get inventoryManualAddNutritionIncomplete;
+
+  /// No description provided for @inventoryManualAddNutritionComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition complete'**
+  String get inventoryManualAddNutritionComplete;
+
+  /// No description provided for @inventoryManualAddNutritionVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition verified'**
+  String get inventoryManualAddNutritionVerified;
+
   /// No description provided for @inventoryManualAddCreateOwnAction.
   ///
   /// In en, this message translates to:

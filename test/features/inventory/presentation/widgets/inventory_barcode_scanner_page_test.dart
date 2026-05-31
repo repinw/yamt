@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_candidate_picker_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -158,6 +159,54 @@ void main() {
       expect(
         inventoryBarcodeCandidateDedupeKey(first),
         isNot(inventoryBarcodeCandidateDedupeKey(second)),
+      );
+    },
+  );
+
+  test(
+    'mergeInventoryBarcodeCandidates hides weaker OFF duplicate by barcode',
+    () {
+      final merged = mergeInventoryBarcodeCandidates(
+        learnedCandidates: const <GlobalBarcodeCandidate>[],
+        offCandidates: const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Acme',
+            packageWeight: '1 l',
+            score: 100,
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+              per100Kcal: 64,
+              per100Fat: 3.5,
+              per100Carbs: 4.8,
+              per100Protein: 3.4,
+            ),
+          ),
+          OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Acme',
+            packageWeight: '1000 ml',
+            score: 90,
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+              per100Kcal: 64,
+              per100Fat: 3.5,
+              per100SaturatedFat: 2.2,
+              per100Carbs: 4.8,
+              per100Sugar: 4.8,
+              per100Protein: 3.4,
+              per100Salt: 0.12,
+            ),
+          ),
+        ],
+      );
+
+      expect(merged, hasLength(1));
+      expect(
+        merged.single.nutrition?.hasEuMandatoryNutritionDeclaration,
+        isTrue,
       );
     },
   );
