@@ -20,7 +20,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_quick_eat_flow.dart';
-import 'package:yamt/features/product_search/presentation/inventory_manual_add_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Diary quick-eat sources.
@@ -65,23 +66,23 @@ class DiaryQuickEatFlow {
           loggedAt: loggedAt,
         );
       case DiaryQuickEatSource.barcode:
-        await _openManualAdd(
+        await _openProductSearchHub(
           context: context,
-          action: InventoryManualAddInitialAction.barcodeScan,
+          initialIntent: ProductSearchHubInitialIntent.barcode,
           mealType: mealType,
           loggedAt: loggedAt,
         );
       case DiaryQuickEatSource.manualSearch:
-        await _openManualAdd(
+        await _openProductSearchHub(
           context: context,
-          action: InventoryManualAddInitialAction.manualSearch,
+          initialIntent: ProductSearchHubInitialIntent.search,
           mealType: mealType,
           loggedAt: loggedAt,
         );
       case DiaryQuickEatSource.ai:
-        await _openManualAdd(
+        await _openProductSearchHub(
           context: context,
-          action: InventoryManualAddInitialAction.aiSuggestion,
+          initialIntent: ProductSearchHubInitialIntent.ai,
           mealType: mealType,
           loggedAt: loggedAt,
         );
@@ -91,17 +92,16 @@ class DiaryQuickEatFlow {
     }
   }
 
-  static Future<void> _openManualAdd({
+  static Future<void> _openProductSearchHub({
     required BuildContext context,
-    required InventoryManualAddInitialAction action,
+    required ProductSearchHubInitialIntent initialIntent,
     required MealType mealType,
     required DateTime loggedAt,
   }) async {
     await context.push<void>(
-      AppRoutes.homeInventoryManualAdd,
-      extra: InventoryManualAddRouteArgs(
-        initialAction: action,
-        quickEatOnly: true,
+      AppRoutes.homeProductSearchHub,
+      extra: ProductSearchHubRouteArgs.diary(
+        initialIntent: initialIntent,
         preselectedMealType: mealType,
         preselectedLoggedAt: loggedAt,
       ),

@@ -125,6 +125,7 @@ class ManualProductSearchRouteArgs {
     required this.showActionSelector,
     required this.autofocusSearch,
     required this.initialStartVoiceSearch,
+    required this.quickEatConfig,
     this.selectedProduct,
     this.initialRecentItem,
     this.initialPrompt,
@@ -140,6 +141,8 @@ class ManualProductSearchRouteArgs {
     bool showEatImmediatelyOption = false,
     InventoryReceiptManualProductAction initialAction =
         InventoryReceiptManualProductAction.addToInventory,
+    InventoryManualAddQuickEatConfig quickEatConfig =
+        InventoryManualAddQuickEatConfig.standard,
   }) {
     return ManualProductSearchRouteArgs._(
       flow: ManualProductSearchChildFlow.manualProduct,
@@ -152,6 +155,7 @@ class ManualProductSearchRouteArgs {
       showActionSelector: true,
       autofocusSearch: false,
       initialStartVoiceSearch: false,
+      quickEatConfig: quickEatConfig,
     );
   }
 
@@ -164,6 +168,8 @@ class ManualProductSearchRouteArgs {
     required bool showActionSelector,
     bool autofocusSearch = false,
     bool initialStartVoiceSearch = false,
+    InventoryManualAddQuickEatConfig quickEatConfig =
+        InventoryManualAddQuickEatConfig.standard,
     InventoryItem? initialRecentItem,
     String? initialInfoMessage,
     ManualProductSearchRouteSaveHandler? onSaved,
@@ -180,6 +186,7 @@ class ManualProductSearchRouteArgs {
       showActionSelector: showActionSelector,
       autofocusSearch: autofocusSearch,
       initialStartVoiceSearch: initialStartVoiceSearch,
+      quickEatConfig: quickEatConfig,
       initialRecentItem: initialRecentItem,
       initialInfoMessage: initialInfoMessage,
       onSaved: onSaved,
@@ -192,6 +199,8 @@ class ManualProductSearchRouteArgs {
     required String initialPrompt,
     required bool showEatImmediatelyOption,
     required InventoryReceiptManualProductAction initialAction,
+    InventoryManualAddQuickEatConfig quickEatConfig =
+        InventoryManualAddQuickEatConfig.standard,
   }) {
     return ManualProductSearchRouteArgs._(
       flow: ManualProductSearchChildFlow.aiSearch,
@@ -204,6 +213,7 @@ class ManualProductSearchRouteArgs {
       showActionSelector: true,
       autofocusSearch: false,
       initialStartVoiceSearch: false,
+      quickEatConfig: quickEatConfig,
       initialPrompt: initialPrompt,
     );
   }
@@ -278,6 +288,9 @@ class ManualProductSearchRouteArgs {
   /// Whether editor voice search should start immediately.
   final bool initialStartVoiceSearch;
 
+  /// Quick-eat config scoped to product-search child pages.
+  final InventoryManualAddQuickEatConfig quickEatConfig;
+
   /// Optional editor info message.
   final String? initialInfoMessage;
 
@@ -296,7 +309,6 @@ class ManualProductSearchRouteArgs {
 
 /// Builds a product-search child route page from URL state.
 @Dependencies([
-  inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
 ])
 Page<Object?> buildManualProductSearchRoutePage(
@@ -321,45 +333,51 @@ Page<Object?> buildManualProductSearchRoutePage(
 
 /// Builds the product-search child widget from parsed route args.
 @Dependencies([
-  inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
 ])
 Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
-  return switch (args.flow) {
-    ManualProductSearchChildFlow.manualProduct =>
-      InventoryReceiptManualProductPage(
-        item: args.item,
-        selectedProduct: args.selectedProduct,
-        includeStoreInSearch: args.includeStoreInSearch,
-        includeWeightInSearch: args.includeWeightInSearch,
-        showEatImmediatelyOption: args.showEatImmediatelyOption,
-        initialAction: args.initialAction,
+  return ProviderScope(
+    overrides: [
+      inventoryManualAddQuickEatConfigProvider.overrideWithValue(
+        args.quickEatConfig,
       ),
-    ManualProductSearchChildFlow.editor =>
-      InventoryReceiptManualProductEditorPage(
-        config: InventoryReceiptManualProductConfig(
+    ],
+    child: switch (args.flow) {
+      ManualProductSearchChildFlow.manualProduct =>
+        InventoryReceiptManualProductPage(
           item: args.item,
           selectedProduct: args.selectedProduct,
           includeStoreInSearch: args.includeStoreInSearch,
           includeWeightInSearch: args.includeWeightInSearch,
+          showEatImmediatelyOption: args.showEatImmediatelyOption,
+          initialAction: args.initialAction,
         ),
+      ManualProductSearchChildFlow.editor =>
+        InventoryReceiptManualProductEditorPage(
+          config: InventoryReceiptManualProductConfig(
+            item: args.item,
+            selectedProduct: args.selectedProduct,
+            includeStoreInSearch: args.includeStoreInSearch,
+            includeWeightInSearch: args.includeWeightInSearch,
+          ),
+          showEatImmediatelyOption: args.showEatImmediatelyOption,
+          initialAction: args.initialAction,
+          closeCurrentEditorOnSave: args.closeCurrentEditorOnSave,
+          showActionSelector: args.showActionSelector,
+          autofocusSearch: args.autofocusSearch,
+          initialStartVoiceSearch: args.initialStartVoiceSearch,
+          initialRecentItem: args.initialRecentItem,
+          initialInfoMessage: args.initialInfoMessage,
+          onSaved: args.onSaved,
+        ),
+      ManualProductSearchChildFlow.aiSearch => ManualProductAiSearchPage(
+        item: args.item,
+        initialPrompt: args.initialPrompt ?? '',
         showEatImmediatelyOption: args.showEatImmediatelyOption,
         initialAction: args.initialAction,
-        closeCurrentEditorOnSave: args.closeCurrentEditorOnSave,
-        showActionSelector: args.showActionSelector,
-        autofocusSearch: args.autofocusSearch,
-        initialStartVoiceSearch: args.initialStartVoiceSearch,
-        initialRecentItem: args.initialRecentItem,
-        initialInfoMessage: args.initialInfoMessage,
-        onSaved: args.onSaved,
       ),
-    ManualProductSearchChildFlow.aiSearch => ManualProductAiSearchPage(
-      item: args.item,
-      initialPrompt: args.initialPrompt ?? '',
-      showEatImmediatelyOption: args.showEatImmediatelyOption,
-      initialAction: args.initialAction,
-    ),
-  };
+    },
+  );
 }
 
 /// Redirect target for invalid product-search child URLs.
@@ -371,7 +389,7 @@ String? redirectInvalidManualProductSearchRoute(
     manualProductSearchRoutePayloadStoreProvider,
   );
   return ManualProductSearchRouteArgs.tryParse(state, payloadStore) == null
-      ? AppRoutes.homeInventoryManualAdd
+      ? AppRoutes.homeProductSearchHub
       : null;
 }
 

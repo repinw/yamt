@@ -11,10 +11,13 @@ receipt_batch_flow_runner.dart-->receipt_review_flow_runner.dart;
 receipt_batch_flow_runner.dart-->widgets;
 receipt_review_flow_runner.dart-->controllers;
 receipt_review_flow_runner.dart-->inventory_receipt_review_page.dart;
+receipt_review_item_action_flow.dart-->controllers;
+receipt_review_item_action_flow.dart-->receipt_review_manual_product_selection_flow.dart;
 shared_receipt_flow_runner.dart-->controllers;
 shared_receipt_flow_runner.dart-->receipt_batch_flow_runner.dart;
 shared_receipt_flow_runner.dart-->receipt_review_flow_runner.dart;
 shared_receipt_listener.dart-->controllers;
 shared_receipt_listener.dart-->shared_receipt_flow_runner.dart;
 widgets-->controllers;
+widgets-->receipt_review_item_action_flow.dart;
 ```

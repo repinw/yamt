@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_manual_add_initial_action.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
@@ -33,10 +33,9 @@ class InventoryActionSheetFlow {
     required BuildContext context,
     required AppLocalizations l10n,
   }) {
-    return _openManualAddPage(
+    return _openProductSearchHub(
       context,
-      l10n,
-      initialAction: InventoryManualAddInitialAction.manualSearch,
+      initialIntent: ProductSearchHubInitialIntent.search,
     );
   }
 
@@ -45,10 +44,9 @@ class InventoryActionSheetFlow {
     required BuildContext context,
     required AppLocalizations l10n,
   }) {
-    return _openManualAddPage(
+    return _openProductSearchHub(
       context,
-      l10n,
-      initialAction: InventoryManualAddInitialAction.aiSuggestion,
+      initialIntent: ProductSearchHubInitialIntent.ai,
     );
   }
 
@@ -57,10 +55,9 @@ class InventoryActionSheetFlow {
     required BuildContext context,
     required AppLocalizations l10n,
   }) {
-    return _openManualAddPage(
+    return _openProductSearchHub(
       context,
-      l10n,
-      initialAction: InventoryManualAddInitialAction.barcodeScan,
+      initialIntent: ProductSearchHubInitialIntent.barcode,
     );
   }
 
@@ -82,6 +79,13 @@ class InventoryActionSheetFlow {
     return _runBatchFlow(context, ref, l10n);
   }
 
+  /// Open product search hub.
+  static Future<void> openProductSearchHub({
+    required BuildContext context,
+  }) async {
+    await _openProductSearchHub(context);
+  }
+
   /// Open action sheet.
   static Future<void> openActionSheet({
     required BuildContext context,
@@ -97,15 +101,15 @@ class InventoryActionSheetFlow {
         return InventoryReceiptActionsSheet(
           isCameraEnabled: isCameraEnabled,
           onManualAddTap: () {
-            Navigator.of(sheetContext).pop();
-            unawaited(_openManualAddPage(context, l10n));
+            sheetContext.pop();
+            unawaited(_openProductSearchHub(context));
           },
           onScanCameraTap: () {
-            Navigator.of(sheetContext).pop();
+            sheetContext.pop();
             unawaited(_runFlow(context, ref, l10n, ReceiptInputSource.camera));
           },
           onUploadFileTap: () {
-            Navigator.of(sheetContext).pop();
+            sheetContext.pop();
             unawaited(_runBatchFlow(context, ref, l10n));
           },
         );
@@ -113,20 +117,15 @@ class InventoryActionSheetFlow {
     );
   }
 
-  static Future<void> _openManualAddPage(
-    BuildContext context,
-    AppLocalizations l10n, {
-    InventoryManualAddInitialAction initialAction =
-        InventoryManualAddInitialAction.launcher,
+  static Future<void> _openProductSearchHub(
+    BuildContext context, {
+    ProductSearchHubInitialIntent initialIntent =
+        ProductSearchHubInitialIntent.launcher,
   }) async {
-    final saved = await context.push<bool>(
-      AppRoutes.homeInventoryManualAdd,
-      extra: initialAction,
+    await context.push<void>(
+      AppRoutes.homeProductSearchHub,
+      extra: ProductSearchHubRouteArgs.inventory(initialIntent: initialIntent),
     );
-    if (!context.mounted || saved != true) {
-      return;
-    }
-    _showSnackBar(context, l10n.inventoryManualAddSaved);
   }
 
   static Future<void> _runFlow(
@@ -169,11 +168,5 @@ class InventoryActionSheetFlow {
       onItemsSaved: () => ref.invalidate(inventoryItemsControllerProvider),
     );
     await runner.run();
-  }
-
-  static void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }

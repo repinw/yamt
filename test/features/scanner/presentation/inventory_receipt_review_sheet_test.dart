@@ -23,6 +23,10 @@ import 'package:yamt/features/inventory/domain/'
     'global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_nutrition/data/'
@@ -31,6 +35,12 @@ import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_search_page.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
@@ -87,6 +97,8 @@ const _testNutrition = GlobalFoodNutrition(
 );
 
 @Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
   inventoryItemRepository,
   inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
@@ -135,6 +147,20 @@ Widget _wrap({
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
         pageBuilder: buildManualProductSearchRoutePage,
+      ),
+      GoRoute(
+        path: AppRoutes.homeProductSearchHub,
+        builder: (context, state) {
+          final args = resolveProductSearchHubRouteArgs(state.extra);
+          return ProductSearchHubPage(args: args);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.homeProductSearchHubSearch,
+        builder: (context, state) {
+          final args = resolveProductSearchHubRouteArgs(state.extra);
+          return ProductSearchHubSearchPage(args: args);
+        },
       ),
     ],
   );
@@ -542,6 +568,8 @@ final Uint8List _receiptPreviewPng = Uint8List.fromList(const <int>[
 ]);
 
 @Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
   inventoryItemRepository,
   inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
@@ -1499,7 +1527,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
-      find.byKey(const Key('receipt_review_manual_scan_button')),
+      find.byKey(const Key('product_search_hub_barcode_action')),
     );
     await tester.pumpAndSettle();
 
@@ -1624,7 +1652,9 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
-      find.byKey(const Key('receipt_review_manual_recent_item_recent-yogurt')),
+      find.byKey(
+        const Key('product_search_hub_recently_selected_item_recent-yogurt'),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -1729,12 +1759,10 @@ void main() {
     await tester.tap(find.text(l10n.inventoryReceiptReviewManualDataAction));
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
-    );
+    await tester.tap(find.byKey(const Key('product_search_hub_search_field')));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(const Key('receipt_review_manual_search_field')),
+      find.byKey(const Key('product_search_hub_search_field')),
       'Yogurt',
     );
     await tester.pump(const Duration(milliseconds: 350));
@@ -1742,7 +1770,7 @@ void main() {
 
     await tester.tap(
       find.byKey(
-        const Key('receipt_review_manual_search_result_4006381333931'),
+        const Key('product_search_hub_search_result_4006381333931'),
       ),
     );
     await tester.pumpAndSettle();
@@ -1852,7 +1880,7 @@ void main() {
       expect(ocrButtonFinder, findsNothing);
 
       await tester.tap(
-        find.byKey(const Key('receipt_review_manual_scan_button')),
+        find.byKey(const Key('product_search_hub_barcode_action')),
       );
       await tester.pumpAndSettle();
 

@@ -1,12 +1,13 @@
 # Product Search Feature
 
-Product search owns the manual product lookup, barcode-assisted product
-selection, AI product draft review, and product-search-specific form state used
-when an inventory flow needs a product match or manual nutrition input.
+Product search owns the legacy manual product lookup/editor internals,
+barcode-assisted product selection, AI product draft review, and
+product-search-specific form state used when a manual product flow needs a
+product match or manual nutrition input.
 
 ## Owns
 
-- Manual product search launcher, editor, form widgets, and AI search page.
+- Legacy manual product search page/editor, form widgets, and AI search page.
 - Manual product search controller, state, config, and save payload models.
 - Product AI search repository, parsed AI search domain models, and AI result
   builders.
@@ -34,13 +35,8 @@ when an inventory flow needs a product match or manual nutrition input.
   `presentation/widgets/manual_product_search_page_types.dart`.
 - `InventoryReceiptManualProductAction` via
   `presentation/controllers/manual_product_search_models.dart`.
-- `InventoryManualAddPage`, `InventoryManualAddRouteArgs`, and
-  `InventoryManualAddInitialAction` via
-  `presentation/inventory_manual_add_page.dart` for inventory-owned add flows
-  that are routed by app composition.
-
-Other features should use these entry points instead of assembling internal
-form widgets or controller state directly.
+New product-picking entry points use `product_search_hub`. Existing
+manual editor routes remain here until the hub fully owns that editor surface.
 
 ## Providers
 

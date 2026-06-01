@@ -60,6 +60,7 @@ class TextVoiceSearchBar extends StatefulWidget {
     super.key,
     this.voiceButtonKey,
     this.clearButtonKey,
+    this.focusNode,
     this.readOnly = false,
     this.autofocus = false,
     this.enabled = true,
@@ -70,8 +71,10 @@ class TextVoiceSearchBar extends StatefulWidget {
     this.voiceSearchService,
     this.voiceSearchController,
     this.onVoiceSearchPressed,
+    this.onClearPressed,
     this.trailingActions = const <Widget>[],
     this.hintText,
+    this.clearTooltip,
     this.prefixIcon,
     this.useCompactSurface = false,
   });
@@ -90,6 +93,9 @@ class TextVoiceSearchBar extends StatefulWidget {
 
   /// Optional key for the clear button.
   final Key? clearButtonKey;
+
+  /// Optional focus node for the text field.
+  final FocusNode? focusNode;
 
   /// Whether text field should be read-only.
   final bool readOnly;
@@ -121,11 +127,17 @@ class TextVoiceSearchBar extends StatefulWidget {
   /// Optional external voice button handler.
   final VoidCallback? onVoiceSearchPressed;
 
+  /// Optional custom clear handler.
+  final VoidCallback? onClearPressed;
+
   /// Extra trailing actions rendered after the voice button.
   final List<Widget> trailingActions;
 
   /// Optional hint text shown inside the field instead of a floating label.
   final String? hintText;
+
+  /// Optional clear button tooltip.
+  final String? clearTooltip;
 
   /// Optional custom prefix icon for field.
   final Widget? prefixIcon;
@@ -238,12 +250,14 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
             hintText: widget.hintText,
             fieldKey: widget.fieldKey,
             clearButtonKey: widget.clearButtonKey,
+            focusNode: widget.focusNode,
             readOnly: widget.readOnly,
             autofocus: widget.autofocus,
             enabled: widget.enabled,
             isSearching: widget.isSearching,
             prefixIcon: widget.prefixIcon,
             useCompactSurface: widget.useCompactSurface,
+            clearTooltip: widget.clearTooltip,
             voiceButton: voiceButton,
             onTap: widget.onTap,
             onChanged: widget.onChanged,
@@ -301,6 +315,12 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
   }
 
   void _handleClearPressed() {
+    final customHandler = widget.onClearPressed;
+    if (customHandler != null) {
+      customHandler();
+      unawaited(stopVoiceSearchIfNeeded());
+      return;
+    }
     widget.controller.clear();
     widget.onChanged?.call('');
     unawaited(stopVoiceSearchIfNeeded());
@@ -411,12 +431,14 @@ class _TextVoiceSearchField extends StatelessWidget {
     required this.hintText,
     required this.fieldKey,
     required this.clearButtonKey,
+    required this.focusNode,
     required this.readOnly,
     required this.autofocus,
     required this.enabled,
     required this.isSearching,
     required this.prefixIcon,
     required this.useCompactSurface,
+    required this.clearTooltip,
     required this.voiceButton,
     required this.onTap,
     required this.onChanged,
@@ -428,12 +450,14 @@ class _TextVoiceSearchField extends StatelessWidget {
   final String? hintText;
   final Key fieldKey;
   final Key? clearButtonKey;
+  final FocusNode? focusNode;
   final bool readOnly;
   final bool autofocus;
   final bool enabled;
   final bool isSearching;
   final Widget? prefixIcon;
   final bool useCompactSurface;
+  final String? clearTooltip;
   final Widget voiceButton;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
@@ -457,6 +481,7 @@ class _TextVoiceSearchField extends StatelessWidget {
         final field = TextField(
           key: fieldKey,
           controller: controller,
+          focusNode: focusNode,
           keyboardType: TextInputType.text,
           readOnly: readOnly,
           autofocus: autofocus,
@@ -528,6 +553,7 @@ class _TextVoiceSearchField extends StatelessWidget {
               hasText: hasText,
               enabled: enabled,
               clearButtonKey: clearButtonKey,
+              clearTooltip: clearTooltip,
               voiceButton: voiceButton,
               onClearPressed: onClearPressed,
             ),
@@ -572,6 +598,7 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
     required this.hasText,
     required this.enabled,
     required this.clearButtonKey,
+    required this.clearTooltip,
     required this.voiceButton,
     required this.onClearPressed,
   });
@@ -580,6 +607,7 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
   final bool hasText;
   final bool enabled;
   final Key? clearButtonKey;
+  final String? clearTooltip;
   final Widget voiceButton;
   final VoidCallback onClearPressed;
 
@@ -606,7 +634,9 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
           IconButton(
             key: clearButtonKey,
             onPressed: enabled ? onClearPressed : null,
-            tooltip: AppLocalizations.of(context)!.inventorySearchClearAction,
+            tooltip:
+                clearTooltip ??
+                AppLocalizations.of(context)!.inventorySearchClearAction,
             icon: const Icon(Icons.cleaning_services_outlined),
           ),
         voiceButton,

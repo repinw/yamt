@@ -39,6 +39,7 @@ class InventoryReceiptManualProductController
     extends _$InventoryReceiptManualProductController {
   static const _searchDebounceDuration = Duration(milliseconds: 300);
   static const _searchResultLimit = 20;
+  static const _nutritionValueTolerance = 0.000001;
 
   Timer? _searchDebounce;
   @override
@@ -464,20 +465,19 @@ class InventoryReceiptManualProductController
           servingQuantityUnit:
               matchedProduct?.servingQuantityUnit ??
               _config.item.servingQuantityUnit,
-          nutrition: hasNutrition
-              ? GlobalFoodNutrition(
-                  qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
-                  per100Kcal: kcal,
-                  per100SaturatedFat: saturatedFat,
-                  per100PolyunsaturatedFat: polyunsaturatedFat,
-                  per100Protein: protein,
-                  per100Carbs: carbs,
-                  per100Sugar: sugar,
-                  per100Fiber: fiber,
-                  per100Fat: fat,
-                  per100Salt: salt,
-                )
-              : selectedProduct?.nutrition ?? _config.item.nutrition,
+          nutrition: _resolvedSaveNutrition(
+            hasNutrition: hasNutrition,
+            selectedProduct: selectedProduct,
+            kcal: kcal,
+            saturatedFat: saturatedFat,
+            polyunsaturatedFat: polyunsaturatedFat,
+            protein: protein,
+            carbs: carbs,
+            sugar: sugar,
+            fiber: fiber,
+            fat: fat,
+            salt: salt,
+          ),
         )
         .withResolvedAmount(
           weight: inventoryWeight,
@@ -503,6 +503,44 @@ class InventoryReceiptManualProductController
       ),
       globalPackageWeight: globalPackageWeight,
     );
+  }
+
+  GlobalFoodNutrition? _resolvedSaveNutrition({
+    required bool hasNutrition,
+    required InventoryReceiptManualProductSelection? selectedProduct,
+    required double? kcal,
+    required double? saturatedFat,
+    required double? polyunsaturatedFat,
+    required double? protein,
+    required double? carbs,
+    required double? sugar,
+    required double? fiber,
+    required double? fat,
+    required double? salt,
+  }) {
+    final sourceNutrition =
+        selectedProduct?.nutrition ?? _config.item.nutrition;
+    if (!hasNutrition) {
+      return sourceNutrition;
+    }
+
+    final nutrition = GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+      per100Kcal: kcal,
+      per100SaturatedFat: saturatedFat,
+      per100PolyunsaturatedFat: polyunsaturatedFat,
+      per100Protein: protein,
+      per100Carbs: carbs,
+      per100Sugar: sugar,
+      per100Fiber: fiber,
+      per100Fat: fat,
+      per100Salt: salt,
+    );
+    if (sourceNutrition == null ||
+        !_hasSameNutritionValues(nutrition, sourceNutrition)) {
+      return nutrition;
+    }
+    return nutrition.copyWith(qualityStatus: sourceNutrition.qualityStatus);
   }
 
   /// Builds a direct search-result payload without mutating page state.
@@ -777,6 +815,34 @@ class InventoryReceiptManualProductController
       return true;
     }
     return editKind == GlobalFoodItemEditKind.patchExisting;
+  }
+
+  bool _hasSameNutritionValues(
+    GlobalFoodNutrition left,
+    GlobalFoodNutrition right,
+  ) {
+    return _hasSameNutritionAmount(left.per100Kcal, right.per100Kcal) &&
+        _hasSameNutritionAmount(left.per100Protein, right.per100Protein) &&
+        _hasSameNutritionAmount(left.per100Carbs, right.per100Carbs) &&
+        _hasSameNutritionAmount(left.per100Fat, right.per100Fat) &&
+        _hasSameNutritionAmount(left.per100Salt, right.per100Salt) &&
+        _hasSameNutritionAmount(
+          left.per100SaturatedFat,
+          right.per100SaturatedFat,
+        ) &&
+        _hasSameNutritionAmount(
+          left.per100PolyunsaturatedFat,
+          right.per100PolyunsaturatedFat,
+        ) &&
+        _hasSameNutritionAmount(left.per100Sugar, right.per100Sugar) &&
+        _hasSameNutritionAmount(left.per100Fiber, right.per100Fiber);
+  }
+
+  bool _hasSameNutritionAmount(double? left, double? right) {
+    if (left == null || right == null) {
+      return left == right;
+    }
+    return (left - right).abs() <= _nutritionValueTolerance;
   }
 
   GlobalFoodItem _globalFoodItemFromSelection(

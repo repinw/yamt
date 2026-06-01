@@ -22,7 +22,8 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/product_search/presentation/inventory_manual_add_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/diary_dashboard_test_support.dart';
@@ -34,14 +35,13 @@ import '../support/diary_dashboard_test_support.dart';
   inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
-  testWidgets('manual quick-eat sources push manual add with route args', (
+  testWidgets('manual quick-eat sources push hub with diary route args', (
     tester,
   ) async {
-    final cases = <DiaryQuickEatSource, InventoryManualAddInitialAction>{
-      DiaryQuickEatSource.barcode: InventoryManualAddInitialAction.barcodeScan,
-      DiaryQuickEatSource.manualSearch:
-          InventoryManualAddInitialAction.manualSearch,
-      DiaryQuickEatSource.ai: InventoryManualAddInitialAction.aiSuggestion,
+    final cases = <DiaryQuickEatSource, ProductSearchHubInitialIntent>{
+      DiaryQuickEatSource.barcode: ProductSearchHubInitialIntent.barcode,
+      DiaryQuickEatSource.manualSearch: ProductSearchHubInitialIntent.search,
+      DiaryQuickEatSource.ai: ProductSearchHubInitialIntent.ai,
     };
 
     for (final entry in cases.entries) {
@@ -55,8 +55,8 @@ void main() {
       await tester.tap(find.byKey(_openFlowButtonKey));
       await tester.pumpAndSettle();
 
-      expect(find.text('action:${entry.value.name}'), findsOneWidget);
-      expect(find.text('quickEatOnly:true'), findsOneWidget);
+      expect(find.text('intent:${entry.value.name}'), findsOneWidget);
+      expect(find.text('mode:diary'), findsOneWidget);
       expect(find.text('mealType:lunch'), findsOneWidget);
       expect(find.text('loggedDay:2026-04-27'), findsOneWidget);
     }
@@ -377,9 +377,9 @@ class _RouteHarness extends StatelessWidget {
           ),
         ),
         GoRoute(
-          path: AppRoutes.homeInventoryManualAdd,
+          path: AppRoutes.homeProductSearchHub,
           builder: (context, state) {
-            final args = state.extra! as InventoryManualAddRouteArgs;
+            final args = state.extra! as ProductSearchHubRouteArgs;
             final loggedAt = args.preselectedLoggedAt!;
             final dayText =
                 '${loggedAt.year.toString().padLeft(4, '0')}-'
@@ -389,8 +389,8 @@ class _RouteHarness extends StatelessWidget {
             return Scaffold(
               body: Column(
                 children: [
-                  Text('action:${args.initialAction.name}'),
-                  Text('quickEatOnly:${args.quickEatOnly}'),
+                  Text('intent:${args.initialIntent.name}'),
+                  Text('mode:${args.mode.name}'),
                   Text('mealType:${args.preselectedMealType!.jsonValue}'),
                   Text('loggedDay:$dayText'),
                 ],

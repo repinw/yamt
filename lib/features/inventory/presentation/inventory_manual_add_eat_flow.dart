@@ -21,7 +21,7 @@ import 'package:yamt/l10n/app_localizations.dart';
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
 ])
-Future<void> completeInventoryManualAddEatFlow({
+Future<bool> completeInventoryManualAddEatFlow({
   required BuildContext context,
   required InventoryItem item,
   required InventoryItemEatRequest request,
@@ -35,7 +35,7 @@ Future<void> completeInventoryManualAddEatFlow({
       context: context,
       message: l10n.inventoryItemActionFailed,
     );
-    return;
+    return false;
   }
 
   final container = ProviderScope.containerOf(context, listen: false);
@@ -53,7 +53,7 @@ Future<void> completeInventoryManualAddEatFlow({
     );
     await inventoryReady;
     if (!context.mounted) {
-      return;
+      return false;
     }
 
     final pendingConsumption = await inventoryController
@@ -68,16 +68,16 @@ Future<void> completeInventoryManualAddEatFlow({
           message: l10n.inventoryItemActionFailed,
         );
       }
-      return;
+      return false;
     }
     if (!context.mounted) {
       await inventoryController.discardPendingConsumption(
         pendingConsumption.id,
       );
-      return;
+      return false;
     }
 
-    await InventoryItemEatFlow.complete(
+    return InventoryItemEatFlow.complete(
       context: context,
       container: container,
       itemBeforeMutation: item,
@@ -97,6 +97,7 @@ Future<void> completeInventoryManualAddEatFlow({
         message: l10n.inventoryItemActionFailed,
       );
     }
+    return false;
   } finally {
     inventorySubscription.close();
   }
