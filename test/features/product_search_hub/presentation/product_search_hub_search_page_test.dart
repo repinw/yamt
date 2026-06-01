@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -151,6 +153,67 @@ void main() {
     expect(
       find.byKey(const Key('product_search_hub_search_result_initial-milk')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('focused search ignores stale lookup results', (tester) async {
+    final firstLookup = Completer<ProductSearchHubSearchLookupResult>();
+    final queries = <String>[];
+
+    await tester.pumpWidget(
+      _buildHarness(
+        lookupProducts:
+            ({required query, required limit, store, weight}) async {
+              queries.add(query);
+              if (query == 'Milk') {
+                return firstLookup.future;
+              }
+              return ProductSearchHubSearchLookupResult.success(
+                const <OffProductSearchResult>[
+                  OffProductSearchResult(
+                    code: 'bread',
+                    name: 'Bread',
+                    score: 1,
+                  ),
+                ],
+              );
+            },
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _pumpFocusedSearchReady(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('product_search_hub_search_field')),
+      'Milk',
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+
+    await tester.enterText(
+      find.byKey(const Key('product_search_hub_search_field')),
+      'Bread',
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    firstLookup.complete(
+      ProductSearchHubSearchLookupResult.success(
+        const <OffProductSearchResult>[
+          OffProductSearchResult(code: 'milk', name: 'Milk', score: 1),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(queries, const <String>['Milk', 'Bread']);
+    expect(
+      find.byKey(const Key('product_search_hub_search_result_bread')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('product_search_hub_search_result_milk')),
+      findsNothing,
     );
   });
 

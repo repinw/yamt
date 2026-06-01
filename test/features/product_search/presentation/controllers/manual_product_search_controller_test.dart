@@ -285,6 +285,44 @@ void main() {
     );
   });
 
+  test('buildSavePayload keeps verified nutrition with tiny float drift', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    const selectedProduct = OffProductSearchResult(
+      code: '4311596490202',
+      name: 'Booster Absolute Zero',
+      brand: 'Booster',
+      packageWeight: '330 ml',
+      score: 100,
+      nutrition: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 2.0000004,
+        per100Protein: 0,
+        per100Carbs: 0.0100004,
+        per100Fat: 0,
+      ),
+    );
+    final config = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: selectedProduct,
+    );
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final controller = container.read(provider.notifier)
+      ..updateKcalText('2')
+      ..updateFatText('0')
+      ..updateCarbsText('0.01')
+      ..updateProteinText('0');
+
+    final payload = controller.buildSavePayload();
+
+    expect(payload, isNotNull);
+    expect(
+      payload?.item.nutrition?.qualityStatus,
+      GlobalFoodNutritionQualityStatus.verified,
+    );
+  });
+
   test('buildSavePayload allows eat action without package weight', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

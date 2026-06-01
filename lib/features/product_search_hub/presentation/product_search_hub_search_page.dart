@@ -82,6 +82,7 @@ class _ProductSearchHubSearchPageState
   @override
   void dispose() {
     _isClosing = true;
+    _activeSearchRequestId++;
     _searchDebounce?.cancel();
     _keyboardDelay.dispose();
     _voiceSearchController.dispose();
@@ -202,6 +203,9 @@ class _ProductSearchHubSearchPageState
   }
 
   Future<void> _runProductSearch(String query, int requestId) async {
+    if (!_isCurrentSearchRequest(requestId)) {
+      return;
+    }
     setState(() {
       _isSearching = true;
       _hasSearchFailed = false;
@@ -214,7 +218,7 @@ class _ProductSearchHubSearchPageState
       query: query,
       limit: productSearchHubSearchResultLimit,
     );
-    if (!mounted || requestId != _activeSearchRequestId) {
+    if (!_isCurrentSearchRequest(requestId)) {
       return;
     }
     setState(() {
@@ -222,6 +226,10 @@ class _ProductSearchHubSearchPageState
       _hasSearchFailed = lookupResult.hasFailed;
       _searchResults = lookupResult.results;
     });
+  }
+
+  bool _isCurrentSearchRequest(int requestId) {
+    return mounted && !_isClosing && requestId == _activeSearchRequestId;
   }
 
   @override

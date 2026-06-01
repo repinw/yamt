@@ -15,17 +15,37 @@ const productSearchHubSearchMinQueryLength = 2;
 /// Small timer helper for focused search keyboard requests.
 class ProductSearchHubSearchDelay {
   Timer? _timer;
+  Completer<void>? _completer;
 
-  /// Waits for [duration], canceling any previous pending wait.
+  /// Waits for [duration], completing any previous pending wait.
   Future<void> wait(Duration duration) {
-    _timer?.cancel();
+    _completePendingWait();
     final completer = Completer<void>();
-    _timer = Timer(duration, completer.complete);
+    _completer = completer;
+    _timer = Timer(duration, () {
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+      if (identical(_completer, completer)) {
+        _completer = null;
+        _timer = null;
+      }
+    });
     return completer.future;
   }
 
   /// Cancels the pending wait.
   void dispose() {
+    _completePendingWait();
+  }
+
+  void _completePendingWait() {
     _timer?.cancel();
+    _timer = null;
+    final completer = _completer;
+    _completer = null;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete();
+    }
   }
 }

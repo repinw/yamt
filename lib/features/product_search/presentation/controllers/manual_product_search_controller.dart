@@ -39,6 +39,7 @@ class InventoryReceiptManualProductController
     extends _$InventoryReceiptManualProductController {
   static const _searchDebounceDuration = Duration(milliseconds: 300);
   static const _searchResultLimit = 20;
+  static const _nutritionValueTolerance = 0.000001;
 
   Timer? _searchDebounce;
   @override
@@ -820,15 +821,28 @@ class InventoryReceiptManualProductController
     GlobalFoodNutrition left,
     GlobalFoodNutrition right,
   ) {
-    return left.per100Kcal == right.per100Kcal &&
-        left.per100Protein == right.per100Protein &&
-        left.per100Carbs == right.per100Carbs &&
-        left.per100Fat == right.per100Fat &&
-        left.per100Salt == right.per100Salt &&
-        left.per100SaturatedFat == right.per100SaturatedFat &&
-        left.per100PolyunsaturatedFat == right.per100PolyunsaturatedFat &&
-        left.per100Sugar == right.per100Sugar &&
-        left.per100Fiber == right.per100Fiber;
+    return _hasSameNutritionAmount(left.per100Kcal, right.per100Kcal) &&
+        _hasSameNutritionAmount(left.per100Protein, right.per100Protein) &&
+        _hasSameNutritionAmount(left.per100Carbs, right.per100Carbs) &&
+        _hasSameNutritionAmount(left.per100Fat, right.per100Fat) &&
+        _hasSameNutritionAmount(left.per100Salt, right.per100Salt) &&
+        _hasSameNutritionAmount(
+          left.per100SaturatedFat,
+          right.per100SaturatedFat,
+        ) &&
+        _hasSameNutritionAmount(
+          left.per100PolyunsaturatedFat,
+          right.per100PolyunsaturatedFat,
+        ) &&
+        _hasSameNutritionAmount(left.per100Sugar, right.per100Sugar) &&
+        _hasSameNutritionAmount(left.per100Fiber, right.per100Fiber);
+  }
+
+  bool _hasSameNutritionAmount(double? left, double? right) {
+    if (left == null || right == null) {
+      return left == right;
+    }
+    return (left - right).abs() <= _nutritionValueTolerance;
   }
 
   GlobalFoodItem _globalFoodItemFromSelection(
