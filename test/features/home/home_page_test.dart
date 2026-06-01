@@ -38,8 +38,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_home_shell_top_chrome.dart';
-import 'package:yamt/features/product_search/presentation/'
-    'inventory_manual_add_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
@@ -349,7 +349,7 @@ Widget _buildHarness({
   DateTime? selectedDiaryDay,
   bool? isCameraSupported,
   ThemeData? theme,
-  ValueChanged<Object?>? onManualAddRouteExtra,
+  ValueChanged<Object?>? onHubRouteExtra,
 }) {
   final today = normalizeDiaryDay(DateTime.now());
   final dashboardDay = selectedDiaryDay == null
@@ -404,9 +404,9 @@ Widget _buildHarness({
         ],
       ),
       GoRoute(
-        path: AppRoutes.homeInventoryManualAdd,
+        path: AppRoutes.homeProductSearchHub,
         builder: (context, state) {
-          onManualAddRouteExtra?.call(state.extra);
+          onHubRouteExtra?.call(state.extra);
           return const SizedBox();
         },
       ),
@@ -1499,7 +1499,7 @@ void main() {
   ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
-    Object? manualAddRouteExtra;
+    Object? hubRouteExtra;
 
     await tester.pumpWidget(
       _buildHarness(
@@ -1508,7 +1508,7 @@ void main() {
         inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
           _inventoryItem('item-1'),
         ]),
-        onManualAddRouteExtra: (extra) => manualAddRouteExtra = extra,
+        onHubRouteExtra: (extra) => hubRouteExtra = extra,
       ),
     );
     await tester.pumpAndSettle();
@@ -1525,10 +1525,9 @@ void main() {
     await tester.tap(find.text('Manual search'));
     await tester.pumpAndSettle();
 
-    expect(
-      manualAddRouteExtra,
-      InventoryManualAddInitialAction.manualSearch,
-    );
+    final args = hubRouteExtra! as ProductSearchHubRouteArgs;
+    expect(args.mode, ProductSearchHubMode.inventory);
+    expect(args.initialIntent, ProductSearchHubInitialIntent.search);
   });
 
   testWidgets('inventory shell fab opens ai suggestion route', (
@@ -1536,7 +1535,7 @@ void main() {
   ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
-    Object? manualAddRouteExtra;
+    Object? hubRouteExtra;
 
     await tester.pumpWidget(
       _buildHarness(
@@ -1545,7 +1544,7 @@ void main() {
         inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
           _inventoryItem('item-1'),
         ]),
-        onManualAddRouteExtra: (extra) => manualAddRouteExtra = extra,
+        onHubRouteExtra: (extra) => hubRouteExtra = extra,
       ),
     );
     await tester.pumpAndSettle();
@@ -1555,10 +1554,9 @@ void main() {
     await tester.tap(find.text('AI suggestion'));
     await tester.pumpAndSettle();
 
-    expect(
-      manualAddRouteExtra,
-      InventoryManualAddInitialAction.aiSuggestion,
-    );
+    final args = hubRouteExtra! as ProductSearchHubRouteArgs;
+    expect(args.mode, ProductSearchHubMode.inventory);
+    expect(args.initialIntent, ProductSearchHubInitialIntent.ai);
   });
 
   testWidgets('inventory shell fab starts upload flow', (tester) async {

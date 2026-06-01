@@ -49,9 +49,14 @@ import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_page.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
-import 'package:yamt/features/product_search/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'models/product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_search_page.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/'
@@ -193,15 +198,17 @@ Raw<GoRouter> appRouter(Ref ref) {
         },
       ),
       GoRoute(
-        path: AppRoutes.homeInventoryManualAdd,
+        path: AppRoutes.homeProductSearchHub,
         builder: (context, state) {
-          final args = resolveInventoryManualAddRouteArgs(state.extra);
-          return InventoryManualAddPage(
-            initialAction: args.initialAction,
-            quickEatOnly: args.quickEatOnly,
-            preselectedMealType: args.preselectedMealType,
-            preselectedLoggedAt: args.preselectedLoggedAt,
-          );
+          final args = resolveProductSearchHubRouteArgs(state.extra);
+          return ProductSearchHubPage(args: args);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.homeProductSearchHubSearch,
+        builder: (context, state) {
+          final args = resolveProductSearchHubRouteArgs(state.extra);
+          return ProductSearchHubSearchPage(args: args);
         },
       ),
       GoRoute(
@@ -300,19 +307,6 @@ Raw<GoRouter> appRouter(Ref ref) {
   );
   ref.onDispose(router.dispose);
   return router;
-}
-
-/// Resolves manual-add route extras while preserving legacy enum extras.
-@visibleForTesting
-InventoryManualAddRouteArgs resolveInventoryManualAddRouteArgs(Object? extra) {
-  if (extra is InventoryManualAddRouteArgs) {
-    return extra;
-  }
-  return InventoryManualAddRouteArgs(
-    initialAction: extra is InventoryManualAddInitialAction
-        ? extra
-        : InventoryManualAddInitialAction.launcher,
-  );
 }
 
 String? _redirectForState(Ref ref, GoRouterState state) {

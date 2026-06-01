@@ -9,7 +9,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/auth/application/'
@@ -44,12 +43,14 @@ import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
-import 'package:yamt/features/product_search/presentation/'
-    'inventory_manual_add_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'product_ai_search_page/product_ai_search_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_search_page.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 
@@ -119,6 +120,9 @@ ProviderContainer _createContainerWithAuth(
       calorieSettingsRepositoryProvider.overrideWithValue(
         calorieSettingsRepository,
       ),
+      inventoryItemRepositoryProvider.overrideWithValue(
+        const _FakeInventoryItemRepository(),
+      ),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
     ],
   );
@@ -176,7 +180,6 @@ const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
 
 @Dependencies([
   appRouter,
-  inventoryItemRepository,
   inventoryBackedCalorieEntrySaveFlow,
   inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
@@ -789,7 +792,40 @@ void main() {
     },
   );
 
-  testWidgets('inventory manual add route is registered on app router', (
+  testWidgets('product search hub route renders shell page', (tester) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final router = container.read(appRouterProvider);
+    final routes = router.configuration.routes.whereType<GoRoute>().toList();
+    final hubRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.homeProductSearchHub,
+    );
+
+    expect(hubRoute.path, AppRoutes.homeProductSearchHub);
+
+    router.go(AppRoutes.homeProductSearchHub);
+    await _pumpRouterTransition(tester);
+
+    expect(find.byType(ProductSearchHubPage), findsOneWidget);
+    expect(find.text('Add to inventory'), findsOneWidget);
+    expect(
+      find.byKey(
+        const Key('product_search_hub_recently_selected_empty_state'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('product search hub search route renders focused page', (
     tester,
   ) async {
     final container = _createContainerWithAuth(
@@ -803,17 +839,22 @@ void main() {
     );
     await _pumpRouterTransition(tester);
 
-    final routes = container
-        .read(appRouterProvider)
-        .configuration
-        .routes
-        .whereType<GoRoute>()
-        .toList();
-    final manualAddRoute = routes.firstWhere(
-      (route) => route.path == AppRoutes.homeInventoryManualAdd,
+    final router = container.read(appRouterProvider);
+    final routes = router.configuration.routes.whereType<GoRoute>().toList();
+    final searchRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.homeProductSearchHubSearch,
     );
 
-    expect(manualAddRoute.path, AppRoutes.homeInventoryManualAdd);
+    expect(searchRoute.path, AppRoutes.homeProductSearchHubSearch);
+
+    router.go(AppRoutes.homeProductSearchHubSearch);
+    await _pumpRouterTransition(tester);
+
+    expect(find.byType(ProductSearchHubSearchPage), findsOneWidget);
+    expect(
+      find.byKey(const Key('product_search_hub_search_field')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('product search child flow route renders route args page', (
@@ -867,7 +908,7 @@ void main() {
   });
 
   testWidgets(
-    'restored product search child flow without args redirects to manual add',
+    'restored product search child flow without args redirects to hub',
     (tester) async {
       final container = _createContainerWithAuth(
         Stream<User?>.value(_authenticatedUser()),
@@ -889,8 +930,8 @@ void main() {
       await _pumpRouterTransition(tester);
 
       expect(tester.takeException(), isNull);
-      expect(router.state.uri.path, AppRoutes.homeInventoryManualAdd);
-      expect(find.byType(InventoryManualAddPage), findsOneWidget);
+      expect(router.state.uri.path, AppRoutes.homeProductSearchHub);
+      expect(find.byType(ProductSearchHubPage), findsOneWidget);
     },
   );
 
@@ -945,39 +986,35 @@ void main() {
 
     expect(kitchenUtensilsRoute.path, AppRoutes.homeKitchenUtensils);
   });
+}
 
-  test(
-    'inventory manual add route args support new, legacy, and bad extras',
-    () {
-      final loggedAt = DateTime(2026, 5, 9, 12, 30);
-      final routeArgs = InventoryManualAddRouteArgs(
-        initialAction: InventoryManualAddInitialAction.barcodeScan,
-        quickEatOnly: true,
-        preselectedMealType: MealType.dinner,
-        preselectedLoggedAt: loggedAt,
-      );
+class _FakeInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
+  const _FakeInventoryItemRepository();
 
-      expect(resolveInventoryManualAddRouteArgs(routeArgs), same(routeArgs));
+  @override
+  bool get supportsLimitedRecentManualReads => true;
 
-      final legacyArgs = resolveInventoryManualAddRouteArgs(
-        InventoryManualAddInitialAction.aiSuggestion,
-      );
-      expect(
-        legacyArgs.initialAction,
-        InventoryManualAddInitialAction.aiSuggestion,
-      );
-      expect(legacyArgs.quickEatOnly, isFalse);
-      expect(legacyArgs.preselectedMealType, isNull);
-      expect(legacyArgs.preselectedLoggedAt, isNull);
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
 
-      for (final badExtra in <Object?>[null, 'unexpected']) {
-        final fallbackArgs = resolveInventoryManualAddRouteArgs(badExtra);
-        expect(
-          fallbackArgs.initialAction,
-          InventoryManualAddInitialAction.launcher,
-        );
-        expect(fallbackArgs.quickEatOnly, isFalse);
-      }
-    },
-  );
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async => true;
+
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield const <InventoryItem>[];
+  }
 }

@@ -16,8 +16,8 @@ shared receipt intents, and the receipt review flow.
 
 - Inventory item storage and global food catalog persistence. Scanner delegates
   those writes to inventory repositories and services.
-- Manual product search internals. Scanner launches product-search public
-  routes for user-driven product lookup.
+- Product search internals. Scanner launches the product-search hub public
+  route for user-driven product lookup.
 - Calorie diary editing UI. Scanner only writes product nutrition handoff data
   needed by calorie flows.
 
@@ -50,8 +50,8 @@ Scanner currently has explicit dependencies on:
 - `inventory` for `InventoryItem`, `OffProductSearchResult`, global food
   matching, inventory persistence, receipt alias persistence, manual product
   result models, and inventory-owned receipt correction sheets.
-- `product_search` for the public manual product search route used during
-  receipt review fallback and product correction.
+- `product_search_hub` for the public selection route used during receipt
+  review fallback and product correction.
 - `calories` for product nutrition cache handoff after reviewed receipt items
   are saved.
 

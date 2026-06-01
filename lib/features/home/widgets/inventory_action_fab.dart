@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
-import 'package:yamt/features/home/widgets/inventory_action_sheet_flow.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_action_sheet.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_menu_action.dart';
+import 'package:yamt/features/home/widgets/inventory_expanded_fab_actions.dart';
+import 'package:yamt/features/home/widgets/inventory_expanded_fab_menu.dart';
+import 'package:yamt/features/home/widgets/inventory_fab_action_sheet_launcher.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_main_fab_button.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
@@ -57,10 +57,7 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
     if (observer == _subscribedObserver && route == _subscribedRoute) {
       return;
     }
-    final previousObserver = _subscribedObserver;
-    if (previousObserver != null) {
-      previousObserver.unsubscribe(this);
-    }
+    _subscribedObserver?.unsubscribe(this);
     if (route != null) {
       observer.subscribe(this, route);
     }
@@ -181,10 +178,12 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
               targetAnchor: Alignment.bottomRight,
               followerAnchor: Alignment.bottomRight,
               child: InventoryExpandedFabMenu(
-                actions: _buildActions(
+                actions: buildInventoryExpandedFabActions(
                   context: context,
+                  ref: ref,
                   l10n: l10n,
                   isCameraEnabled: isCameraEnabled,
+                  runAction: _runAction,
                 ),
                 closeButton: InventoryMainFabButton(
                   buttonKey: const Key('inventory_action_fab_close_button'),
@@ -227,82 +226,6 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
     entry.dispose();
   }
 
-  List<Widget> _buildActions({
-    required BuildContext context,
-    required AppLocalizations l10n,
-    required bool isCameraEnabled,
-  }) {
-    return [
-      InventoryFabMenuAction(
-        key: const Key('inventory_action_manual_search_fab'),
-        heroTag: 'inventory_action_manual_search_fab',
-        icon: Icons.search_rounded,
-        label: l10n.inventoryActionManualSearch,
-        onPressed: () => _runAction(
-          () => InventoryActionSheetFlow.openManualSearch(
-            context: context,
-            l10n: l10n,
-          ),
-        ),
-      ),
-      InventoryFabMenuAction(
-        key: const Key('inventory_action_barcode_fab'),
-        heroTag: 'inventory_action_barcode_fab',
-        icon: Icons.qr_code_scanner_rounded,
-        label: l10n.diaryQuickEatSourceBarcode,
-        onPressed: () => _runAction(
-          () => InventoryActionSheetFlow.openBarcodeScanner(
-            context: context,
-            l10n: l10n,
-          ),
-        ),
-      ),
-      InventoryFabMenuAction(
-        key: const Key('inventory_action_ai_suggestion_fab'),
-        heroTag: 'inventory_action_ai_suggestion_fab',
-        icon: Icons.auto_awesome_rounded,
-        label: l10n.inventoryActionAiSuggestion,
-        onPressed: () => _runAction(
-          () => InventoryActionSheetFlow.openAiSuggestion(
-            context: context,
-            l10n: l10n,
-          ),
-        ),
-      ),
-      InventoryFabMenuAction(
-        key: const Key('inventory_action_upload_image_pdf_fab'),
-        heroTag: 'inventory_action_upload_image_pdf_fab',
-        icon: Icons.upload_file_rounded,
-        label: l10n.inventoryActionUploadImagePdf,
-        onPressed: () => _runAction(
-          () => InventoryActionSheetFlow.uploadFile(
-            context: context,
-            ref: ref,
-            l10n: l10n,
-          ),
-        ),
-      ),
-      InventoryFabMenuAction(
-        key: const Key('inventory_action_camera_fab'),
-        heroTag: 'inventory_action_camera_fab',
-        icon: Icons.photo_camera_rounded,
-        label: l10n.inventoryActionCamera,
-        tooltip: isCameraEnabled
-            ? l10n.inventoryActionCamera
-            : l10n.inventoryActionCameraUnsupported,
-        onPressed: isCameraEnabled
-            ? () => _runAction(
-                () => InventoryActionSheetFlow.scanCamera(
-                  context: context,
-                  ref: ref,
-                  l10n: l10n,
-                ),
-              )
-            : null,
-      ),
-    ];
-  }
-
   void _showActionsSheet({
     required BuildContext context,
     required AppLocalizations l10n,
@@ -315,53 +238,11 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
       _isSheetOpen = true;
     });
     unawaited(
-      showModalBottomSheet<void>(
+      showInventoryFabActionSheet(
         context: context,
-        useRootNavigator: true,
-        useSafeArea: true,
-        sheetAnimationStyle: AnimationStyle.noAnimation,
-        builder: (sheetContext) {
-          return InventoryFabActionSheet(
-            isCameraEnabled: isCameraEnabled,
-            onManualSearch: () => _closeAndRun(
-              sheetContext,
-              () => InventoryActionSheetFlow.openManualSearch(
-                context: context,
-                l10n: l10n,
-              ),
-            ),
-            onBarcodeScan: () => _closeAndRun(
-              sheetContext,
-              () => InventoryActionSheetFlow.openBarcodeScanner(
-                context: context,
-                l10n: l10n,
-              ),
-            ),
-            onAiSuggestion: () => _closeAndRun(
-              sheetContext,
-              () => InventoryActionSheetFlow.openAiSuggestion(
-                context: context,
-                l10n: l10n,
-              ),
-            ),
-            onUploadFile: () => _closeAndRun(
-              sheetContext,
-              () => InventoryActionSheetFlow.uploadFile(
-                context: context,
-                ref: ref,
-                l10n: l10n,
-              ),
-            ),
-            onScanCamera: () => _closeAndRun(
-              sheetContext,
-              () => InventoryActionSheetFlow.scanCamera(
-                context: context,
-                ref: ref,
-                l10n: l10n,
-              ),
-            ),
-          );
-        },
+        ref: ref,
+        l10n: l10n,
+        isCameraEnabled: isCameraEnabled,
       ).whenComplete(() {
         if (mounted) {
           setState(() {
@@ -369,63 +250,6 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
           });
         }
       }),
-    );
-  }
-
-  void _closeAndRun(
-    BuildContext sheetContext,
-    Future<void> Function() action,
-  ) {
-    Navigator.of(sheetContext).pop();
-    unawaited(action());
-  }
-}
-
-/// Animated expanded inventory FAB menu.
-class InventoryExpandedFabMenu extends StatelessWidget {
-  /// Creates expanded inventory FAB menu.
-  const InventoryExpandedFabMenu({
-    required this.actions,
-    required this.closeButton,
-    super.key,
-  });
-
-  /// Action buttons shown above the close button.
-  final List<Widget> actions;
-
-  /// Button used to close the expanded menu.
-  final Widget closeButton;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-        tween: Tween<double>(begin: 0, end: 1),
-        builder: (context, progress, child) {
-          return Opacity(
-            opacity: progress,
-            child: Transform.scale(
-              alignment: Alignment.bottomRight,
-              scale: 0.94 + (progress * 0.06),
-              child: child,
-            ),
-          );
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            for (final action in actions) ...[
-              action,
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            closeButton,
-          ],
-        ),
-      ),
     );
   }
 }

@@ -16,7 +16,7 @@ or more saved prepared-meal containers.
 - Inventory item or prepared-meal persistence.
 - Shopping-list persistence.
 - Kitchen utensil management.
-- Product-search/manual-add flows.
+- Product-search-hub flows.
 - Recipe ingredient parsing.
 
 ## Public Edge
@@ -57,8 +57,8 @@ Main providers:
 - `features/shoppinglist` for shopping-list item operations during intro
   shortage handling.
 - `features/kitchen_utensils` for tare selection and utensil cover imagery.
-- `features/product_search` for the manual-add route used when summary additions
-  need a new inventory item.
+- `features/product_search_hub` for the route used when summary additions need
+  a new inventory item.
 
 Keep these dependencies at the page/controller boundary. Other features should
 open `CookingFlowPage` or watch the session snapshot instead of wiring cookflow

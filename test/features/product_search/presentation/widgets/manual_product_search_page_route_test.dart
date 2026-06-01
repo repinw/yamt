@@ -189,7 +189,6 @@ Widget _wrapChild(Widget child) {
 }
 
 @Dependencies([
-  inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
 ])
 GoRouter _buildManualProductRouteTestRouter({

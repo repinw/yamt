@@ -14,7 +14,8 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_summary_page.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/product_search/presentation/inventory_manual_add_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 
 /// Resolves an add-ingredient source into a summary ingredient draft.
 @Dependencies([InventoryItemsController])
@@ -102,9 +103,9 @@ Future<CookingFlowSummaryIngredientDraft?> _openSummaryManualAddSource({
   }
 
   await context.push<void>(
-    AppRoutes.homeInventoryManualAdd,
-    extra: InventoryManualAddRouteArgs(
-      initialAction: _manualAddActionForSummarySource(source),
+    AppRoutes.homeProductSearchHub,
+    extra: ProductSearchHubRouteArgs.inventory(
+      initialIntent: _hubInitialIntentForSummarySource(source),
     ),
   );
   if (!context.mounted) {
@@ -251,17 +252,17 @@ String _nextSummaryIngredientKey({
   return '$baseKey:$suffix';
 }
 
-InventoryManualAddInitialAction _manualAddActionForSummarySource(
+ProductSearchHubInitialIntent _hubInitialIntentForSummarySource(
   CookingFlowSummaryIngredientAddSource source,
 ) {
   return switch (source) {
     CookingFlowSummaryIngredientAddSource.inventory =>
-      InventoryManualAddInitialAction.launcher,
+      ProductSearchHubInitialIntent.launcher,
     CookingFlowSummaryIngredientAddSource.barcode =>
-      InventoryManualAddInitialAction.barcodeScan,
+      ProductSearchHubInitialIntent.barcode,
     CookingFlowSummaryIngredientAddSource.manualSearch =>
-      InventoryManualAddInitialAction.manualSearch,
+      ProductSearchHubInitialIntent.search,
     CookingFlowSummaryIngredientAddSource.ai =>
-      InventoryManualAddInitialAction.aiSuggestion,
+      ProductSearchHubInitialIntent.ai,
   };
 }

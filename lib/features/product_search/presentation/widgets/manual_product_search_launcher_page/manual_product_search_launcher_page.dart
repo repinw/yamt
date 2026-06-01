@@ -185,6 +185,7 @@ class _InventoryReceiptManualProductLauncherPageState
             item: widget.config.item,
             initialPrompt: _searchController.text,
             showEatImmediatelyOption: widget.showEatImmediatelyOption,
+            quickEatConfig: quickEatConfig,
             initialAction: quickEatConfig.quickEatOnly
                 ? InventoryReceiptManualProductAction.eatNow
                 : InventoryReceiptManualProductAction.addToInventory,
@@ -262,6 +263,7 @@ class _InventoryReceiptManualProductLauncherPageState
         InventoryReceiptManualProductAction.addToInventory,
     bool showActionSelector = true,
   }) async {
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     final config = InventoryReceiptManualProductConfig(
       item: itemOverride ?? widget.config.item,
       selectedProduct: selectedProduct,
@@ -280,6 +282,7 @@ class _InventoryReceiptManualProductLauncherPageState
             showActionSelector: showActionSelector,
             autofocusSearch: autofocusSearch,
             initialStartVoiceSearch: initialStartVoiceSearch,
+            quickEatConfig: quickEatConfig,
             initialRecentItem: initialRecentItem,
             initialInfoMessage: initialInfoMessage,
             onSaved: keepEditorOpenOnSave ? _handleNestedEditorSaved : null,

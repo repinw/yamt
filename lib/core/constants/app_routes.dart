@@ -21,8 +21,11 @@ abstract final class AppRoutes {
   /// Inventory home route.
   static const homeInventory = '/home/inventory';
 
-  /// Manual inventory add route.
-  static const homeInventoryManualAdd = '/home/inventory/manual-add';
+  /// Product search hub route.
+  static const homeProductSearchHub = '/home/product-search-hub';
+
+  /// Focused product search route for the product search hub.
+  static const homeProductSearchHubSearch = '/home/product-search-hub/search';
 
   /// Product-search child flow route.
   static const productSearchChildFlow = '/product-search/child-flow/:flow';

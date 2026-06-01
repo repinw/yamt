@@ -198,7 +198,6 @@ Future<void> _cancelLoggedAtDateChange(
 }
 
 @Dependencies([
-  inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
 ])
 GoRouter _buildAiPageRouter({

@@ -24,8 +24,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_calorie_entry_delete_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_search_launcher.dart';
-import 'package:yamt/features/product_search/presentation/'
-    'manual_product_search_launcher.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_launcher.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 
@@ -67,7 +67,7 @@ Future<void> main() async {
           return inventoryController.discardPendingConsumption;
         }),
         inventoryManualProductSearchLauncherProvider.overrideWith(
-          (ref) => buildProductSearchManualProductSearchLauncher(),
+          (ref) => buildProductSearchHubManualProductSearchLauncher(),
         ),
       ],
       child: const YAMT(),

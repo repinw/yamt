@@ -8,8 +8,8 @@ import 'package:yamt/features/home/widgets/'
     'inventory_action_sheet_flow.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_manual_add_initial_action.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -78,7 +78,7 @@ class _ActionSheetFlowHost extends ConsumerWidget {
 Widget _buildHarness({
   required _ActionSheetFlowTestAction action,
   bool isCameraSupported = true,
-  ValueChanged<Object?>? onManualAddRouteExtra,
+  ValueChanged<Object?>? onHubRouteExtra,
 }) {
   final router = GoRouter(
     routes: [
@@ -91,15 +91,15 @@ Widget _buildHarness({
         },
       ),
       GoRoute(
-        path: AppRoutes.homeInventoryManualAdd,
+        path: AppRoutes.homeProductSearchHub,
         builder: (context, state) {
-          onManualAddRouteExtra?.call(state.extra);
+          onHubRouteExtra?.call(state.extra);
           return Scaffold(
             body: Center(
               child: ElevatedButton(
-                key: const Key('finish_manual_add_route'),
-                onPressed: () => context.pop(true),
-                child: const Text('finish'),
+                key: const Key('finish_product_search_hub_route'),
+                onPressed: () => context.pop(),
+                child: const Text('finish hub'),
               ),
             ),
           );
@@ -129,7 +129,7 @@ Widget _buildHarness({
 ])
 void main() {
   group('InventoryActionSheetFlow', () {
-    testWidgets('manual search pushes route and shows saved feedback', (
+    testWidgets('manual search opens hub search intent', (
       tester,
     ) async {
       Object? routeExtra;
@@ -137,7 +137,7 @@ void main() {
       await tester.pumpWidget(
         _buildHarness(
           action: _ActionSheetFlowTestAction.manualSearch,
-          onManualAddRouteExtra: (extra) => routeExtra = extra,
+          onHubRouteExtra: (extra) => routeExtra = extra,
         ),
       );
 
@@ -146,29 +146,26 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(routeExtra, InventoryManualAddInitialAction.manualSearch);
-
-      await tester.tap(find.byKey(const Key('finish_manual_add_route')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Product added to inventory.'), findsOneWidget);
+      final args = routeExtra! as ProductSearchHubRouteArgs;
+      expect(args.mode, ProductSearchHubMode.inventory);
+      expect(args.initialIntent, ProductSearchHubInitialIntent.search);
     });
 
-    testWidgets('AI suggestion and barcode scan pass route extras', (
+    testWidgets('AI suggestion and barcode scan open hub intents', (
       tester,
     ) async {
       for (final entry in {
         _ActionSheetFlowTestAction.aiSuggestion:
-            InventoryManualAddInitialAction.aiSuggestion,
+            ProductSearchHubInitialIntent.ai,
         _ActionSheetFlowTestAction.barcodeScan:
-            InventoryManualAddInitialAction.barcodeScan,
+            ProductSearchHubInitialIntent.barcode,
       }.entries) {
         Object? routeExtra;
 
         await tester.pumpWidget(
           _buildHarness(
             action: entry.key,
-            onManualAddRouteExtra: (extra) => routeExtra = extra,
+            onHubRouteExtra: (extra) => routeExtra = extra,
           ),
         );
 
@@ -177,10 +174,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(routeExtra, entry.value);
-
-        await tester.tap(find.byKey(const Key('finish_manual_add_route')));
-        await tester.pumpAndSettle();
+        final args = routeExtra! as ProductSearchHubRouteArgs;
+        expect(args.mode, ProductSearchHubMode.inventory);
+        expect(args.initialIntent, entry.value);
       }
     });
 
@@ -193,7 +189,7 @@ void main() {
         _buildHarness(
           action: _ActionSheetFlowTestAction.actionSheet,
           isCameraSupported: false,
-          onManualAddRouteExtra: (extra) => routeExtra = extra,
+          onHubRouteExtra: (extra) => routeExtra = extra,
         ),
       );
 
@@ -213,7 +209,9 @@ void main() {
       await tester.tap(find.text('Add food manually'));
       await tester.pumpAndSettle();
 
-      expect(routeExtra, InventoryManualAddInitialAction.launcher);
+      final args = routeExtra! as ProductSearchHubRouteArgs;
+      expect(args.mode, ProductSearchHubMode.inventory);
+      expect(args.initialIntent, ProductSearchHubInitialIntent.launcher);
     });
   });
 }

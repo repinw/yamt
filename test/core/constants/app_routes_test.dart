@@ -10,7 +10,11 @@ void main() {
     expect(AppRoutes.calorieGoalSetup, '/welcome/calorie-goal');
     expect(AppRoutes.home, '/home');
     expect(AppRoutes.homeInventory, '/home/inventory');
-    expect(AppRoutes.homeInventoryManualAdd, '/home/inventory/manual-add');
+    expect(AppRoutes.homeProductSearchHub, '/home/product-search-hub');
+    expect(
+      AppRoutes.homeProductSearchHubSearch,
+      '/home/product-search-hub/search',
+    );
     expect(
       AppRoutes.productSearchChildFlow,
       '/product-search/child-flow/:flow',

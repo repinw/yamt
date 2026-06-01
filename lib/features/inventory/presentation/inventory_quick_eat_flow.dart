@@ -19,6 +19,7 @@ abstract final class InventoryQuickEatFlow {
     required InventoryItem item,
     required int maxAmount,
     required String invalidAmountMessage,
+    int? initialInventoryAmount,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
   }) {
@@ -27,6 +28,7 @@ abstract final class InventoryQuickEatFlow {
       item: item,
       maxAmount: maxAmount,
       invalidAmountMessage: invalidAmountMessage,
+      initialInventoryAmount: initialInventoryAmount,
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
     );

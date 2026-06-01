@@ -444,6 +444,7 @@ class _InventoryReceiptManualProductEditorPageState
     required bool showActionSelector,
     String? initialInfoMessage,
   }) async {
+    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
     final config = InventoryReceiptManualProductConfig(
       item: widget.config.item,
       selectedProduct: product,
@@ -460,6 +461,7 @@ class _InventoryReceiptManualProductEditorPageState
             closeCurrentEditorOnSave: true,
             showActionSelector: showActionSelector,
             initialInfoMessage: initialInfoMessage,
+            quickEatConfig: quickEatConfig,
           ),
         );
     if (!mounted || result == null) {
@@ -650,6 +652,7 @@ class _InventoryReceiptManualProductEditorPageState
             initialPrompt: _searchController.text,
             showEatImmediatelyOption: widget.showEatImmediatelyOption,
             initialAction: _selectedAction,
+            quickEatConfig: ref.read(inventoryManualAddQuickEatConfigProvider),
           ),
         );
     if (!mounted || result == null) {
