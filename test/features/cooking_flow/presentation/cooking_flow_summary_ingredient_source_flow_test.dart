@@ -24,11 +24,23 @@ void main() {
     tester,
   ) async {
     final inventoryController = _MutableInventoryItemsController();
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemsControllerProvider.overrideWith(
+          () => inventoryController,
+        ),
+      ],
+    );
+    final inventorySubscription = container.listen(
+      inventoryItemsControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
     Object? routeExtra;
     CookingFlowSummaryIngredientDraft? draft;
 
     final router = _buildRouter(
-      inventoryController: inventoryController,
+      container: container,
       onHubArgs: (extra) {
         routeExtra = extra;
       },
@@ -36,15 +48,13 @@ void main() {
         draft = value;
       },
     );
+    addTearDown(inventorySubscription.close);
+    addTearDown(container.dispose);
     addTearDown(router.dispose);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          inventoryItemsControllerProvider.overrideWith(
-            () => inventoryController,
-          ),
-        ],
+      UncontrolledProviderScope(
+        container: container,
         child: MaterialApp.router(routerConfig: router),
       ),
     );
@@ -66,7 +76,7 @@ void main() {
 
 @Dependencies([InventoryItemsController])
 GoRouter _buildRouter({
-  required _MutableInventoryItemsController inventoryController,
+  required ProviderContainer container,
   required ValueChanged<Object?> onHubArgs,
   required ValueChanged<CookingFlowSummaryIngredientDraft?> onDraft,
 }) {
@@ -107,7 +117,9 @@ GoRouter _buildRouter({
             body: FilledButton(
               key: const Key('finish_product_search_hub'),
               onPressed: () {
-                inventoryController.setItems([_inventoryItem()]);
+                (container.read(inventoryItemsControllerProvider.notifier)
+                        as _MutableInventoryItemsController)
+                    .setItems([_inventoryItem()]);
                 context.pop();
               },
               child: const Text('finish'),

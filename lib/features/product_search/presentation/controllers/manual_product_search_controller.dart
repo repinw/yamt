@@ -464,20 +464,19 @@ class InventoryReceiptManualProductController
           servingQuantityUnit:
               matchedProduct?.servingQuantityUnit ??
               _config.item.servingQuantityUnit,
-          nutrition: hasNutrition
-              ? GlobalFoodNutrition(
-                  qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
-                  per100Kcal: kcal,
-                  per100SaturatedFat: saturatedFat,
-                  per100PolyunsaturatedFat: polyunsaturatedFat,
-                  per100Protein: protein,
-                  per100Carbs: carbs,
-                  per100Sugar: sugar,
-                  per100Fiber: fiber,
-                  per100Fat: fat,
-                  per100Salt: salt,
-                )
-              : selectedProduct?.nutrition ?? _config.item.nutrition,
+          nutrition: _resolvedSaveNutrition(
+            hasNutrition: hasNutrition,
+            selectedProduct: selectedProduct,
+            kcal: kcal,
+            saturatedFat: saturatedFat,
+            polyunsaturatedFat: polyunsaturatedFat,
+            protein: protein,
+            carbs: carbs,
+            sugar: sugar,
+            fiber: fiber,
+            fat: fat,
+            salt: salt,
+          ),
         )
         .withResolvedAmount(
           weight: inventoryWeight,
@@ -503,6 +502,44 @@ class InventoryReceiptManualProductController
       ),
       globalPackageWeight: globalPackageWeight,
     );
+  }
+
+  GlobalFoodNutrition? _resolvedSaveNutrition({
+    required bool hasNutrition,
+    required InventoryReceiptManualProductSelection? selectedProduct,
+    required double? kcal,
+    required double? saturatedFat,
+    required double? polyunsaturatedFat,
+    required double? protein,
+    required double? carbs,
+    required double? sugar,
+    required double? fiber,
+    required double? fat,
+    required double? salt,
+  }) {
+    final sourceNutrition =
+        selectedProduct?.nutrition ?? _config.item.nutrition;
+    if (!hasNutrition) {
+      return sourceNutrition;
+    }
+
+    final nutrition = GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+      per100Kcal: kcal,
+      per100SaturatedFat: saturatedFat,
+      per100PolyunsaturatedFat: polyunsaturatedFat,
+      per100Protein: protein,
+      per100Carbs: carbs,
+      per100Sugar: sugar,
+      per100Fiber: fiber,
+      per100Fat: fat,
+      per100Salt: salt,
+    );
+    if (sourceNutrition == null ||
+        !_hasSameNutritionValues(nutrition, sourceNutrition)) {
+      return nutrition;
+    }
+    return nutrition.copyWith(qualityStatus: sourceNutrition.qualityStatus);
   }
 
   /// Builds a direct search-result payload without mutating page state.
@@ -777,6 +814,21 @@ class InventoryReceiptManualProductController
       return true;
     }
     return editKind == GlobalFoodItemEditKind.patchExisting;
+  }
+
+  bool _hasSameNutritionValues(
+    GlobalFoodNutrition left,
+    GlobalFoodNutrition right,
+  ) {
+    return left.per100Kcal == right.per100Kcal &&
+        left.per100Protein == right.per100Protein &&
+        left.per100Carbs == right.per100Carbs &&
+        left.per100Fat == right.per100Fat &&
+        left.per100Salt == right.per100Salt &&
+        left.per100SaturatedFat == right.per100SaturatedFat &&
+        left.per100PolyunsaturatedFat == right.per100PolyunsaturatedFat &&
+        left.per100Sugar == right.per100Sugar &&
+        left.per100Fiber == right.per100Fiber;
   }
 
   GlobalFoodItem _globalFoodItemFromSelection(

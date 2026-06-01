@@ -101,15 +101,15 @@ class InventoryActionSheetFlow {
         return InventoryReceiptActionsSheet(
           isCameraEnabled: isCameraEnabled,
           onManualAddTap: () {
-            Navigator.of(sheetContext).pop();
+            sheetContext.pop();
             unawaited(_openProductSearchHub(context));
           },
           onScanCameraTap: () {
-            Navigator.of(sheetContext).pop();
+            sheetContext.pop();
             unawaited(_runFlow(context, ref, l10n, ReceiptInputSource.camera));
           },
           onUploadFileTap: () {
-            Navigator.of(sheetContext).pop();
+            sheetContext.pop();
             unawaited(_runBatchFlow(context, ref, l10n));
           },
         );

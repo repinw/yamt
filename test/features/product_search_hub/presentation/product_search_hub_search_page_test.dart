@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -17,24 +19,29 @@ Widget _buildHarness({
   ProductSearchHubRouteArgs args = const ProductSearchHubRouteArgs.inventory(),
   ProductSearchHubSearchLookup? lookupProducts,
 }) {
-  return MaterialApp(
-    locale: const Locale('en'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: ProductSearchHubSearchPage(
-      args: args,
-      lookupProducts:
-          lookupProducts ??
-          ({
-            required query,
-            required limit,
-            store,
-            weight,
-          }) async {
-            return ProductSearchHubSearchLookupResult.success(
-              List<OffProductSearchResult>.from(searchResults.take(limit)),
-            );
-          },
+  return ProviderScope(
+    overrides: [
+      voiceSearchServiceProvider.overrideWithValue(_FakeVoiceSearchService()),
+    ],
+    child: MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: ProductSearchHubSearchPage(
+        args: args,
+        lookupProducts:
+            lookupProducts ??
+            ({
+              required query,
+              required limit,
+              store,
+              weight,
+            }) async {
+              return ProductSearchHubSearchLookupResult.success(
+                List<OffProductSearchResult>.from(searchResults.take(limit)),
+              );
+            },
+      ),
     ),
   );
 }
@@ -263,4 +270,24 @@ InventoryItem _item({
     weight: weight,
     brand: brand,
   );
+}
+
+class _FakeVoiceSearchService implements VoiceSearchService {
+  @override
+  bool get isListening => false;
+
+  @override
+  Future<void> cancelListening() async {}
+
+  @override
+  Future<VoiceSearchFailure?> startListening({
+    required ValueChanged<VoiceSearchRecognition> onResult,
+    required ValueChanged<bool> onListeningStateChanged,
+    required ValueChanged<VoiceSearchFailure> onError,
+  }) async {
+    return VoiceSearchFailure.unavailable;
+  }
+
+  @override
+  Future<void> stopListening() async {}
 }

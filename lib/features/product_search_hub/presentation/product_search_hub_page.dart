@@ -26,6 +26,8 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_entry_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_navigation.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_selection_state.dart';
@@ -70,9 +72,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _openInitialIntent();
-      }
+      if (mounted) _openInitialIntent();
     });
   }
 
@@ -95,17 +95,17 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     );
   }
 
-  void _openProductSearch() {
+  void _runWhenIdle(Future<void> Function() action) {
     if (!_isMutatingSelection) {
-      unawaited(_openProductSearchRoute());
+      unawaited(action());
     }
   }
 
-  void _openProductVoiceSearch() {
-    if (!_isMutatingSelection) {
-      unawaited(_openProductSearchRoute(startVoiceSearchOnMount: true));
-    }
-  }
+  void _openProductSearch() => _runWhenIdle(_openProductSearchRoute);
+
+  void _openProductVoiceSearch() => _runWhenIdle(
+    () => _openProductSearchRoute(startVoiceSearchOnMount: true),
+  );
 
   Future<void> _openProductSearchRoute({
     bool startVoiceSearchOnMount = false,
@@ -169,17 +169,15 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   }
 
   void _openBarcodeScan() =>
-      unawaited(_openEntry(openProductSearchHubBarcodeEntry));
+      _runWhenIdle(() => _openEntry(openProductSearchHubBarcodeEntry));
 
-  void _openAiProduct() => unawaited(_openEntry(openProductSearchHubAiEntry));
+  void _openAiProduct() =>
+      _runWhenIdle(() => _openEntry(openProductSearchHubAiEntry));
 
   void _openCustomProduct() =>
-      unawaited(_openEntry(openProductSearchHubCustomEntry));
+      _runWhenIdle(() => _openEntry(openProductSearchHubCustomEntry));
 
   Future<void> _openEntry(ProductSearchHubEntryOpener openEntry) async {
-    if (_isMutatingSelection) {
-      return;
-    }
     final l10n = AppLocalizations.of(context)!;
     final result = await openEntry(
       context: context,
@@ -233,9 +231,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     final l10n = AppLocalizations.of(context)!;
     final container = ProviderScope.containerOf(context, listen: false);
 
-    setState(() {
-      _isMutatingSelection = true;
-    });
+    setState(() => _isMutatingSelection = true);
 
     final selection = await completeProductSearchHubResult(
       context: context,
@@ -262,9 +258,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     if (_isMutatingSelection) {
       return;
     }
-    setState(() {
-      _isMutatingSelection = true;
-    });
+    setState(() => _isMutatingSelection = true);
     final container = ProviderScope.containerOf(context, listen: false);
     final deleted = await removeProductSearchHubSelection(
       container: container,
@@ -280,31 +274,27 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       }
     });
     if (!deleted) {
-      _showSnackBar(AppLocalizations.of(context)!.inventoryItemActionFailed);
+      showProductSearchHubSnackBar(
+        context,
+        AppLocalizations.of(context)!.inventoryItemActionFailed,
+      );
     }
   }
 
-  void _openSelectedProductsSheet() {
-    unawaited(
-      showProductSearchHubSelectionSheet(
-        context: context,
-        selections: () => _selectionState.selections,
-        isSaving: () => _isMutatingSelection,
-        onRemoveSelection: _removeSavedSelection,
-      ),
-    );
-  }
+  void _openSelectedProductsSheet() => unawaited(
+    showProductSearchHubSelectionSheet(
+      context: context,
+      selections: () => _selectionState.selections,
+      isSaving: () => _isMutatingSelection,
+      onRemoveSelection: _removeSavedSelection,
+    ),
+  );
 
   void _closeHub([Object? result]) {
-    final router = GoRouter.maybeOf(context);
-    if (!_isMutatingSelection && router != null && router.canPop()) {
-      router.pop<Object?>(result);
-    }
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    popProductSearchHubRoute(
+      context: context,
+      isBlocked: _isMutatingSelection,
+      result: result,
+    );
   }
 }

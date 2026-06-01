@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
@@ -12,6 +11,8 @@ import 'package:yamt/features/product_search/domain/'
     'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_navigation.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -92,13 +93,13 @@ class _ProductSearchHubSearchPageState
   }
 
   void _handleSearchFocusChanged() {
-    if (_searchFocusNode.hasFocus ||
+    final shouldIgnoreFocusChange =
+        _searchFocusNode.hasFocus ||
         _isOpeningEntry ||
         _isClosing ||
         !mounted ||
-        !_showFocusedSearchField) {
-      return;
-    }
+        !_showFocusedSearchField;
+    if (shouldIgnoreFocusChange) return;
     if (_searchController.text.trim().isEmpty) {
       _closeSearchPage();
       return;
@@ -111,9 +112,7 @@ class _ProductSearchHubSearchPageState
     if (!mounted || _isClosing) {
       return;
     }
-    setState(() {
-      _showFocusedSearchField = true;
-    });
+    setState(() => _showFocusedSearchField = true);
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _requestSearchKeyboard(),
     );
@@ -122,9 +121,7 @@ class _ProductSearchHubSearchPageState
   }
 
   void _requestSearchKeyboard() {
-    if (!mounted || _isClosing || !_showFocusedSearchField) {
-      return;
-    }
+    if (!mounted || _isClosing || !_showFocusedSearchField) return;
     FocusScope.of(context).requestFocus(_searchFocusNode);
     unawaited(SystemChannels.textInput.invokeMethod<void>('TextInput.show'));
   }
@@ -136,18 +133,16 @@ class _ProductSearchHubSearchPageState
   }
 
   void _closeSearchPage([Object? result]) {
-    final router = GoRouter.maybeOf(context);
-    if (_isClosing || router == null || !router.canPop()) {
-      return;
-    }
-    _isClosing = true;
-    _hideSearchKeyboard();
-    setState(() => _showFocusedSearchField = false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && router.canPop()) {
-        router.pop<Object?>(result);
-      }
-    });
+    popProductSearchHubDeferredRoute(
+      context: context,
+      isBlocked: _isClosing,
+      result: result,
+      prepareClose: () {
+        _isClosing = true;
+        _hideSearchKeyboard();
+        setState(() => _showFocusedSearchField = false);
+      },
+    );
   }
 
   void _handleSearchChanged(String value) {
@@ -266,44 +261,38 @@ class _ProductSearchHubSearchPageState
     );
   }
 
-  void _handleAiPressed() => unawaited(
-    _openEditedEntry(
-      (l10n) => openProductSearchHubSearchAiEntry(
-        context: context,
-        l10n: l10n,
-        args: widget.args,
-        initialPrompt: _searchController.text,
-      ),
-    ),
-  );
-
-  void _handleCreateOwnPressed() => unawaited(
-    _openEditedEntry(
-      (l10n) => openProductSearchHubSearchCustomEntry(
-        context: context,
-        l10n: l10n,
-        args: widget.args,
-        initialName: _searchController.text,
-      ),
-    ),
-  );
-
-  Future<void> _openEditedEntry(
-    ProductSearchHubSearchEditedEntryOpener openEntry,
-  ) {
-    return openProductSearchHubSearchEditedEntry(
+  void _handleAiPressed() => _openEditedEntry(
+    (l10n) => openProductSearchHubSearchAiEntry(
       context: context,
-      isOpeningEntry: _isOpeningEntry,
-      isClosing: _isClosing,
-      setOpeningEntry: _setOpeningEntry,
-      hideKeyboard: _hideSearchKeyboard,
-      requestKeyboard: _requestSearchKeyboard,
-      closeSearchPage: _closeSearchPage,
-      openEntry: openEntry,
+      l10n: l10n,
+      args: widget.args,
+      initialPrompt: _searchController.text,
+    ),
+  );
+
+  void _handleCreateOwnPressed() => _openEditedEntry(
+    (l10n) => openProductSearchHubSearchCustomEntry(
+      context: context,
+      l10n: l10n,
+      args: widget.args,
+      initialName: _searchController.text,
+    ),
+  );
+
+  void _openEditedEntry(ProductSearchHubSearchEditedEntryOpener openEntry) {
+    unawaited(
+      openProductSearchHubSearchEditedEntry(
+        context: context,
+        isOpeningEntry: _isOpeningEntry,
+        isClosing: _isClosing,
+        setOpeningEntry: _setOpeningEntry,
+        hideKeyboard: _hideSearchKeyboard,
+        requestKeyboard: _requestSearchKeyboard,
+        closeSearchPage: _closeSearchPage,
+        openEntry: openEntry,
+      ),
     );
   }
 
-  void _setOpeningEntry(bool value) {
-    setState(() => _isOpeningEntry = value);
-  }
+  void _setOpeningEntry(bool value) => setState(() => _isOpeningEntry = value);
 }

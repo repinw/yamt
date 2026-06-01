@@ -4,6 +4,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _productSearchHubSearchActionHeight = 58.0;
 const _productSearchHubSearchActionIconSize = 18.0;
+const _productSearchHubSearchActionColumnCount = 2;
+const _productSearchHubSearchActionMinWidth = 96.0;
 
 /// Quick actions shown below the focused product search field.
 class ProductSearchHubSearchActions extends StatelessWidget {
@@ -26,10 +28,14 @@ class ProductSearchHubSearchActions extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        const columnCount = 2;
         final itemWidth =
-            (constraints.maxWidth - (AppSpacing.sm * (columnCount - 1))) /
-            columnCount;
+            (constraints.maxWidth -
+                (AppSpacing.sm *
+                    (_productSearchHubSearchActionColumnCount - 1))) /
+            _productSearchHubSearchActionColumnCount;
+        final actionWidth = itemWidth < _productSearchHubSearchActionMinWidth
+            ? _productSearchHubSearchActionMinWidth
+            : itemWidth;
 
         return Focus(
           canRequestFocus: false,
@@ -42,14 +48,14 @@ class ProductSearchHubSearchActions extends StatelessWidget {
                 key: const Key('product_search_hub_search_ai_action'),
                 icon: Icons.auto_awesome_rounded,
                 label: l10n.productSearchHubAiAction,
-                width: itemWidth,
+                width: actionWidth,
                 onPressed: onAiPressed,
               ),
               _ProductSearchHubSearchActionButton(
                 key: const Key('product_search_hub_search_create_own_action'),
                 icon: Icons.edit_note_rounded,
                 label: l10n.productSearchHubCreateOwnAction,
-                width: itemWidth,
+                width: actionWidth,
                 onPressed: onCreateOwnPressed,
               ),
             ],

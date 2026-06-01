@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -42,7 +43,7 @@ Future<void> showProductSearchHubSelectionSheet({
               }
               setSheetState(() {});
               if (selections().isEmpty) {
-                Navigator.of(sheetContext).pop();
+                sheetContext.pop();
               }
             },
           );

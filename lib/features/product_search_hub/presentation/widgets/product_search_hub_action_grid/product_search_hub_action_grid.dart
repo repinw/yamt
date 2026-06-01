@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _productSearchHubActionColumnCount = 3;
+const _productSearchHubActionMinWidth = 72.0;
+const _productSearchHubActionHeight = 88.0;
+
 /// Quick actions shown above product search.
 class ProductSearchHubActionGrid extends StatelessWidget {
   /// Creates product search hub quick actions.
@@ -43,10 +47,13 @@ class ProductSearchHubActionGrid extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        const columnCount = 3;
         final itemWidth =
-            (constraints.maxWidth - (AppSpacing.md * (columnCount - 1))) /
-            columnCount;
+            (constraints.maxWidth -
+                (AppSpacing.md * (_productSearchHubActionColumnCount - 1))) /
+            _productSearchHubActionColumnCount;
+        final actionWidth = itemWidth < _productSearchHubActionMinWidth
+            ? _productSearchHubActionMinWidth
+            : itemWidth;
 
         return Wrap(
           spacing: AppSpacing.md,
@@ -56,14 +63,14 @@ class ProductSearchHubActionGrid extends StatelessWidget {
               key: const Key('product_search_hub_barcode_action'),
               icon: Icons.qr_code_scanner_rounded,
               label: l10n.productSearchHubBarcodeAction,
-              width: itemWidth,
+              width: actionWidth,
               onPressed: onBarcodePressed,
             ),
             _ProductSearchHubActionButton(
               key: const Key('product_search_hub_ai_action'),
               icon: Icons.auto_awesome_rounded,
               label: l10n.productSearchHubAiAction,
-              width: itemWidth,
+              width: actionWidth,
               onPressed: onAiPressed,
             ),
             if (showDiarySourceActions) ...[
@@ -71,21 +78,21 @@ class ProductSearchHubActionGrid extends StatelessWidget {
                 key: const Key('product_search_hub_receipt_action'),
                 icon: Icons.receipt_long_rounded,
                 label: l10n.productSearchHubReceiptAction,
-                width: itemWidth,
+                width: actionWidth,
                 onPressed: onReceiptPressed,
               ),
               _ProductSearchHubActionButton(
                 key: const Key('product_search_hub_inventory_action'),
                 icon: Icons.inventory_2_rounded,
                 label: l10n.productSearchHubInventoryAction,
-                width: itemWidth,
+                width: actionWidth,
                 onPressed: onInventoryPressed,
               ),
               _ProductSearchHubActionButton(
                 key: const Key('product_search_hub_meal_action'),
                 icon: Icons.restaurant_menu_rounded,
                 label: l10n.productSearchHubMealAction,
-                width: itemWidth,
+                width: actionWidth,
                 onPressed: onMealPressed,
               ),
             ],
@@ -93,7 +100,7 @@ class ProductSearchHubActionGrid extends StatelessWidget {
               key: const Key('product_search_hub_create_own_action'),
               icon: Icons.edit_note_rounded,
               label: l10n.productSearchHubCreateOwnAction,
-              width: itemWidth,
+              width: actionWidth,
               onPressed: onCreateOwnPressed,
             ),
           ],
@@ -121,7 +128,7 @@ class _ProductSearchHubActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      height: 88,
+      height: _productSearchHubActionHeight,
       child: OutlinedButton(
         onPressed: onPressed,
         child: Column(
