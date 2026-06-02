@@ -7,7 +7,7 @@ void main() {
   const builder = AiChefInventoryInputBuilder();
 
   test('build formats active inventory with useful prompt details', () {
-    final result = builder.build([
+    final items = [
       _inventoryItem(
         id: 'tomato',
         name: ' Tomato ',
@@ -25,13 +25,16 @@ void main() {
         amountUnit: InventoryAmountUnit.milliliter,
       ),
       _inventoryItem(id: 'carrot', name: 'Carrot', quantity: 3),
-    ]);
+    ];
+
+    final result = builder.build(items);
 
     expect(result, <String>[
       'Tomato (available: 2 x 500 g, brand: Garden, category: Vegetable)',
       'Milk (available: 750 ml)',
       'Carrot (available: 3 x)',
     ]);
+    expect(builder.buildNames(items), <String>['Tomato', 'Milk', 'Carrot']);
   });
 
   test('build skips empty consumed and review-only items', () {

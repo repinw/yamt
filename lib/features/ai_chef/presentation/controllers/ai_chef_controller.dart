@@ -2,20 +2,18 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/ai_chef/application/'
-    'ai_chef_inventory_input_builder.dart';
 import 'package:yamt/features/ai_chef/data/'
     'ai_chef_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
 
 part 'ai_chef_controller.g.dart';
 
+/// Loads already-formatted inventory prompt entries.
+typedef AiChefInventoryIngredientsLoader = Future<List<String>> Function();
+
 /// Controller for generating a random recipe with AI.
-@Riverpod(dependencies: [InventoryItemsController])
+@riverpod
 class AiChefController extends _$AiChefController {
-  static const _inventoryInputBuilder = AiChefInventoryInputBuilder();
   final _random = Random();
 
   @override
@@ -28,6 +26,8 @@ class AiChefController extends _$AiChefController {
     required bool isGerman,
     required bool includeInventory,
     String wishes = '',
+    AiChefInventoryIngredientsLoader inventoryIngredientsLoader =
+        _emptyInventoryIngredients,
   }) async {
     state = const AsyncLoading();
     final nextState = await AsyncValue.guard(() async {
@@ -39,9 +39,9 @@ class AiChefController extends _$AiChefController {
         wishes: wishes,
         isGerman: isGerman,
       );
-      final inventoryIngredients = await _inventoryIngredientsForAi(
-        includeInventory: includeInventory,
-      );
+      final inventoryIngredients = includeInventory
+          ? await inventoryIngredientsLoader()
+          : const <String>[];
       if (!ref.mounted) {
         return null;
       }
@@ -66,21 +66,6 @@ class AiChefController extends _$AiChefController {
       return;
     }
     state = nextState;
-  }
-
-  Future<List<String>> _inventoryIngredientsForAi({
-    required bool includeInventory,
-  }) async {
-    if (!includeInventory) {
-      return const <String>[];
-    }
-
-    final items = await ref.read(inventoryItemsControllerProvider.future);
-    if (!ref.mounted) {
-      return const <String>[];
-    }
-
-    return _inventoryInputBuilder.build(items);
   }
 
   String _buildSeed({
@@ -129,4 +114,8 @@ class AiChefController extends _$AiChefController {
     'avocado',
     'breakfast',
   ];
+}
+
+Future<List<String>> _emptyInventoryIngredients() async {
+  return const <String>[];
 }

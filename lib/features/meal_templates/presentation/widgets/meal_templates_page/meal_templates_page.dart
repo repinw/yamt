@@ -7,8 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
-import 'package:yamt/features/ai_chef/presentation/controllers/'
-    'ai_chef_controller.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
     'ai_chef_button/ai_chef_button.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -33,7 +31,7 @@ import 'package:yamt/features/meal_templates/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines meal templates page.
-@Dependencies([AiChefController, InventoryItemsController])
+@Dependencies([InventoryItemsController])
 class MealTemplatesPage extends ConsumerWidget {
   /// The meal templates page.
   const MealTemplatesPage({super.key, this.includeAppBar = true});

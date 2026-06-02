@@ -2,15 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/ai_chef/data/'
     'ai_chef_repository.dart';
 import 'package:yamt/features/ai_chef/presentation/controllers/'
     'ai_chef_controller.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
 
 class _RecordingAiChefRepository extends FirebaseAiChefRepository {
   _RecordingAiChefRepository({this.recipe});
@@ -33,79 +29,40 @@ class _RecordingAiChefRepository extends FirebaseAiChefRepository {
   }
 }
 
-class _StaticInventoryItemsController extends InventoryItemsController {
-  _StaticInventoryItemsController(this.items);
-
-  final List<InventoryItem> items;
-
-  @override
-  FutureOr<List<InventoryItem>> build() {
-    return items;
-  }
-}
-
-class _PendingInventoryItemsController extends InventoryItemsController {
-  _PendingInventoryItemsController(this.itemsCompleter);
-
-  final Completer<List<InventoryItem>> itemsCompleter;
-
-  @override
-  FutureOr<List<InventoryItem>> build() {
-    return itemsCompleter.future;
-  }
-}
-
-@Dependencies([AiChefController])
 void main() {
-  test('generateRecipe passes active inventory ingredients to repo', () async {
-    final repository = _RecordingAiChefRepository(
-      recipe: _recipe(name: 'Tomato Pasta'),
-    );
-    final inventoryController = _StaticInventoryItemsController([
-      _inventoryItem(
-        id: 'tomato',
-        name: 'Tomato',
-        quantity: 2,
-        weight: '500 g',
-        brand: 'Garden',
-      ),
-      _inventoryItem(
-        id: 'milk',
-        name: 'Milk',
-        quantity: 1,
-        initialAmount: 1000,
-        currentAmount: 750,
-        amountUnit: InventoryAmountUnit.milliliter,
-      ),
-      _inventoryItem(id: 'empty-rice', name: 'Rice', quantity: 0),
-    ]);
-    final container = ProviderContainer(
-      overrides: [
-        aiChefRepositoryProvider.overrideWithValue(repository),
-        inventoryItemsControllerProvider.overrideWith(
-          () => inventoryController,
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
+  test(
+    'generateRecipe passes supplied inventory ingredients to repo',
+    () async {
+      final repository = _RecordingAiChefRepository(
+        recipe: _recipe(name: 'Tomato Pasta'),
+      );
+      final inventoryIngredients = <String>[
+        'Tomato (available: 2 x 500 g, brand: Garden)',
+        'Milk (available: 750 ml)',
+      ];
+      final container = ProviderContainer(
+        overrides: [
+          aiChefRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    await container
-        .read(aiChefControllerProvider.notifier)
-        .generateRecipe(
-          isGerman: false,
-          includeInventory: true,
-          wishes: 'quick dinner',
-        );
+      await container
+          .read(aiChefControllerProvider.notifier)
+          .generateRecipe(
+            isGerman: false,
+            includeInventory: true,
+            wishes: 'quick dinner',
+            inventoryIngredientsLoader: () async => inventoryIngredients,
+          );
 
-    final state = container.read(aiChefControllerProvider);
-    expect(state.value?.name, 'Tomato Pasta');
-    expect(repository.languageCode, 'en');
-    expect(repository.seed, contains('Wishes: quick dinner'));
-    expect(repository.inventoryIngredients, <String>[
-      'Tomato (available: 2 x 500 g, brand: Garden)',
-      'Milk (available: 750 ml)',
-    ]);
-  });
+      final state = container.read(aiChefControllerProvider);
+      expect(state.value?.name, 'Tomato Pasta');
+      expect(repository.languageCode, 'en');
+      expect(repository.seed, contains('Wishes: quick dinner'));
+      expect(repository.inventoryIngredients, inventoryIngredients);
+    },
+  );
 
   test(
     'generateRecipe waits for loading inventory before calling repo',
@@ -113,13 +70,10 @@ void main() {
       final repository = _RecordingAiChefRepository(
         recipe: _recipe(name: 'Pantry Soup'),
       );
-      final itemsCompleter = Completer<List<InventoryItem>>();
+      final ingredientsCompleter = Completer<List<String>>();
       final container = ProviderContainer(
         overrides: [
           aiChefRepositoryProvider.overrideWithValue(repository),
-          inventoryItemsControllerProvider.overrideWith(
-            () => _PendingInventoryItemsController(itemsCompleter),
-          ),
         ],
       );
       addTearDown(container.dispose);
@@ -131,14 +85,16 @@ void main() {
 
       final generateFuture = container
           .read(aiChefControllerProvider.notifier)
-          .generateRecipe(isGerman: false, includeInventory: true);
+          .generateRecipe(
+            isGerman: false,
+            includeInventory: true,
+            inventoryIngredientsLoader: () => ingredientsCompleter.future,
+          );
       await pumpEventQueue();
 
       expect(repository.inventoryIngredients, isNull);
 
-      itemsCompleter.complete([
-        _inventoryItem(id: 'carrot', name: 'Carrot', quantity: 3),
-      ]);
+      ingredientsCompleter.complete(['Carrot (available: 3 x)']);
       await generateFuture;
 
       expect(repository.inventoryIngredients, <String>[
@@ -154,14 +110,10 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         aiChefRepositoryProvider.overrideWithValue(repository),
-        inventoryItemsControllerProvider.overrideWith(
-          () => _StaticInventoryItemsController([
-            _inventoryItem(id: 'tomato', name: 'Tomato', quantity: 2),
-          ]),
-        ),
       ],
     );
     addTearDown(container.dispose);
+    var didLoadInventory = false;
 
     await container
         .read(aiChefControllerProvider.notifier)
@@ -169,11 +121,16 @@ void main() {
           isGerman: true,
           includeInventory: false,
           wishes: 'ohne Fleisch',
+          inventoryIngredientsLoader: () async {
+            didLoadInventory = true;
+            return const <String>['Tomato'];
+          },
         );
 
     expect(repository.languageCode, 'de');
     expect(repository.seed, contains('Wünsche: ohne Fleisch'));
     expect(repository.inventoryIngredients, isEmpty);
+    expect(didLoadInventory, isFalse);
   });
 
   test('generateRecipe stores error when repository returns null', () async {
@@ -181,9 +138,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         aiChefRepositoryProvider.overrideWithValue(repository),
-        inventoryItemsControllerProvider.overrideWith(
-          () => _StaticInventoryItemsController(const <InventoryItem>[]),
-        ),
       ],
     );
     addTearDown(container.dispose);
@@ -196,31 +150,6 @@ void main() {
     expect(state.hasError, isTrue);
     expect(repository.languageCode, 'de');
   });
-}
-
-InventoryItem _inventoryItem({
-  required String id,
-  required String name,
-  required int quantity,
-  String? weight,
-  String? brand,
-  int initialAmount = 0,
-  int currentAmount = 0,
-  InventoryAmountUnit? amountUnit,
-}) {
-  return InventoryItem.create(
-    id: id,
-    name: name,
-    entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
-    storeName: 'Store',
-    quantity: quantity,
-    initialQuantity: 2,
-    weight: weight,
-    brand: brand,
-    initialAmount: initialAmount,
-    currentAmount: currentAmount,
-    amountUnit: amountUnit,
-  );
 }
 
 PreparedMeal _recipe({required String name}) {

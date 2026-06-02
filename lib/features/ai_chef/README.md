@@ -10,7 +10,8 @@ wishes, generate a recipe, and save it as a prepared meal template.
 - Modal setup/result dialog (`AiChefDialog`).
 - Loading screen with culinary quotes and rotating star icon (`AiChefLoadingView`).
 - Recipe result view (`AiChefResultView`).
-- Inventory prompt input formatting (`AiChefInventoryInputBuilder`).
+- Inventory prompt input formatting and UI match names
+  (`AiChefInventoryInputBuilder`).
 - AI template response parsing (`AiChefRecipeResponseParser`).
 - Generated cover image upload (`AiChefImageGenerator`).
 - `aiChefControllerProvider`, which manages generation state.
@@ -38,5 +39,6 @@ Other features may consume these public entry points:
 ## Accepted Dependencies
 
 - `core` for layout tokens, typography, and styling.
-- `inventory` for `PreparedMeal`, `InventoryItem`, active pantry state via
-  `InventoryItemsController`, and saving via `PreparedMealTemplatesController`.
+- `inventory` for `PreparedMeal`, `InventoryItem`, inventory loading at the
+  button boundary via `InventoryItemsController`, and saving via
+  `PreparedMealTemplatesController`.

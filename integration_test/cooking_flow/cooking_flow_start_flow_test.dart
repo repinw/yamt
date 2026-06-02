@@ -8,8 +8,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
-import 'package:yamt/features/ai_chef/presentation/controllers/'
-    'ai_chef_controller.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
@@ -140,7 +138,6 @@ class _StaticKitchenUtensilsController extends KitchenUtensilsController {
   CookingFlowController,
   CookingFlowWizardController,
   InventoryItemsController,
-  AiChefController,
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
@@ -435,7 +432,6 @@ Future<void> _assignInventoryIngredient({
   CookingFlowController,
   CookingFlowWizardController,
   InventoryItemsController,
-  AiChefController,
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,

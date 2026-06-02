@@ -10,8 +10,6 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
-import 'package:yamt/features/ai_chef/presentation/controllers/'
-    'ai_chef_controller.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
@@ -149,7 +147,7 @@ PreparedMeal _recipeTemplate({required String id, required String name}) {
   );
 }
 
-@Dependencies([AiChefController, InventoryItemsController])
+@Dependencies([InventoryItemsController])
 Widget _buildHarness({
   required PreparedMealTemplateRepository repository,
   required PreparedMealRecipeImporter importer,
@@ -194,7 +192,7 @@ Widget _buildHarness({
   );
 }
 
-@Dependencies([AiChefController, InventoryItemsController])
+@Dependencies([InventoryItemsController])
 void main() {
   testWidgets('renders home chrome actions when embedded in home shell', (
     tester,

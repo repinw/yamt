@@ -22,6 +22,13 @@ const _templateId = 'ai-chef-template';
 const _location = 'global';
 const _timeout = Duration(seconds: 30);
 
+/// Calls the Firebase AI Chef template model.
+typedef AiChefTemplateModelClient =
+    Future<String?> Function({
+      required String templateId,
+      required Map<String, Object?> inputs,
+    });
+
 /// Firebase AI Chef repository provider.
 @riverpod
 FirebaseAiChefRepository aiChefRepository(Ref ref) {
@@ -38,12 +45,16 @@ class FirebaseAiChefRepository {
     FirebaseAuth? auth,
     AiChefRecipeResponseParser parser = const AiChefRecipeResponseParser(),
     AiChefImageGenerator? imageGenerator,
+    AiChefTemplateModelClient? templateModelClient,
   }) : _parser = parser,
        _imageGenerator =
-           imageGenerator ?? AiChefImageGenerator(storage: storage, auth: auth);
+           imageGenerator ?? AiChefImageGenerator(storage: storage, auth: auth),
+       _templateModelClient =
+           templateModelClient ?? _firebaseAiChefTemplateClient;
 
   final AiChefRecipeResponseParser _parser;
   final AiChefImageGenerator _imageGenerator;
+  final AiChefTemplateModelClient _templateModelClient;
   static const _uuid = Uuid();
 
   /// Generates a recipe using the configured Firebase Vertex AI template.
@@ -63,22 +74,14 @@ class FirebaseAiChefRepository {
         name: _logName,
       );
 
-      final model = FirebaseAI.vertexAI(
-        location: _location,
-      ).templateGenerativeModel();
-
-      final response = await model
-          .generateContent(
-            _templateId,
-            inputs: <String, Object?>{
-              'language': languageCode,
-              'seed': seed,
-              'inventory': inventoryString,
-            },
-          )
-          .timeout(_timeout);
-
-      final rawText = response.text;
+      final rawText = await _templateModelClient(
+        templateId: _templateId,
+        inputs: <String, Object?>{
+          'language': languageCode,
+          'seed': seed,
+          'inventory': inventoryString,
+        },
+      ).timeout(_timeout);
       log('Raw AI Response received: $rawText', name: _logName);
 
       if (rawText == null || rawText.trim().isEmpty) {
@@ -130,4 +133,15 @@ class FirebaseAiChefRepository {
       imageUrl: imageUrl,
     );
   }
+}
+
+Future<String?> _firebaseAiChefTemplateClient({
+  required String templateId,
+  required Map<String, Object?> inputs,
+}) async {
+  final model = FirebaseAI.vertexAI(
+    location: _location,
+  ).templateGenerativeModel();
+  final response = await model.generateContent(templateId, inputs: inputs);
+  return response.text;
 }

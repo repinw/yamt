@@ -148,7 +148,6 @@ final class AppRouterProvider
           manualProductRecentItemsServiceProvider,
           preparedMealImagePickerProvider,
           inventoryActivityEventsProvider,
-          aiChefControllerProvider,
           receiptCaptureFlowControllerProvider,
           receiptBatchFlowControllerProvider,
           receiptCameraSupportedProvider,
@@ -175,7 +174,6 @@ final class AppRouterProvider
           AppRouterProvider.$allTransitiveDependencies18,
           AppRouterProvider.$allTransitiveDependencies19,
           AppRouterProvider.$allTransitiveDependencies20,
-          AppRouterProvider.$allTransitiveDependencies21,
         },
       );
 
@@ -207,14 +205,13 @@ final class AppRouterProvider
       manualProductRecentItemsServiceProvider;
   static final $allTransitiveDependencies15 = preparedMealImagePickerProvider;
   static final $allTransitiveDependencies16 = inventoryActivityEventsProvider;
-  static final $allTransitiveDependencies17 = aiChefControllerProvider;
-  static final $allTransitiveDependencies18 =
+  static final $allTransitiveDependencies17 =
       receiptCaptureFlowControllerProvider;
-  static final $allTransitiveDependencies19 =
+  static final $allTransitiveDependencies18 =
       ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies20 =
+  static final $allTransitiveDependencies19 =
       ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies2;
-  static final $allTransitiveDependencies21 =
+  static final $allTransitiveDependencies20 =
       receiptBatchFlowControllerProvider;
 
   @override
@@ -239,4 +236,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'69e7f5d838d007ef144f18fa842189f39b8a7dc4';
+String _$appRouterHash() => r'd64c3db0515db4cb1a6850ff8b366c10baa9e357';

@@ -24,22 +24,9 @@ final class AiChefControllerProvider
         retry: null,
         name: r'aiChefControllerProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[inventoryItemsControllerProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          AiChefControllerProvider.$allTransitiveDependencies0,
-          AiChefControllerProvider.$allTransitiveDependencies1,
-          AiChefControllerProvider.$allTransitiveDependencies2,
-          AiChefControllerProvider.$allTransitiveDependencies3,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies2;
 
   @override
   String debugGetCreateSourceHash() => _$aiChefControllerHash();
@@ -49,7 +36,7 @@ final class AiChefControllerProvider
   AiChefController create() => AiChefController();
 }
 
-String _$aiChefControllerHash() => r'67df9c8389f0694fb8c823e2d6c9d1af55a1b83e';
+String _$aiChefControllerHash() => r'f4a367f5b00aed6134e32eeb4f5db230f652ed2f';
 
 /// Controller for generating a random recipe with AI.
 

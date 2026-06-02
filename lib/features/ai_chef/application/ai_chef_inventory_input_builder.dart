@@ -17,6 +17,15 @@ class AiChefInventoryInputBuilder {
         .toList(growable: false);
   }
 
+  /// Returns active inventory names used for UI ingredient matches.
+  List<String> buildNames(List<InventoryItem> items) {
+    return items
+        .where(_canUseInventoryItem)
+        .map((item) => item.name.trim())
+        .take(_maxInventoryIngredients)
+        .toList(growable: false);
+  }
+
   bool _canUseInventoryItem(InventoryItem item) {
     return item.canBeSavedToInventory &&
         !item.isFullyConsumed &&
