@@ -110,9 +110,7 @@ class BurnWeekRunState {
 
   /// Whether [day] can spend a heart in the current active run week.
   bool canUseHeartForDay(DateTime day, {DateTime? today}) {
-    if (runWeekNumber <= burnWeekLearningRunWeekNumber ||
-        heartCount <= 0 ||
-        isHeartDay(day)) {
+    if (heartCount <= 0 || isHeartDay(day)) {
       return false;
     }
     final weekStartDate = _parseBurnWeekDayKey(currentWeekStartDayKey);

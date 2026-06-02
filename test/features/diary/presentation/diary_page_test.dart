@@ -48,6 +48,8 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_weekly_balance_summary.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_heart_counter_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -167,6 +169,29 @@ void main() {
     expect(inventoryBuildCount, 0);
     expect(preparedMealsBuildCount, 0);
     expect(providerObserver.calorieEntryDeleteFlowAddCount, 0);
+  });
+
+  testWidgets('shows heart button while diary dashboard refreshes', (
+    tester,
+  ) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      burnWeekRunState: const BurnWeekRunState.initial().copyWith(
+        runWeekNumber: 2,
+        heartCount: 1,
+      ),
+      dashboardState: const DiaryDayDashboardState(
+        data: null,
+        isFromCache: false,
+        isRefreshing: true,
+        error: null,
+      ),
+      includeHomeShellChrome: true,
+    );
+
+    expect(find.byType(DiaryHeartCounterButton), findsOneWidget);
+    expect(find.text('x 1'), findsOneWidget);
   });
 
   test('diary warmup follows today without warming heavy providers', () async {

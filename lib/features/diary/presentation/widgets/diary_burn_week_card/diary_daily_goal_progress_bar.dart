@@ -6,10 +6,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
-
-const Duration _progressAnimationDuration = Duration(milliseconds: 1000);
-const Curve _progressAnimationCurve = Curves.easeOut;
+import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_goal_progress_track.dart';
 
 /// Daily kcal progress bar with an activity extension segment.
 class DiaryDailyGoalProgressBar extends StatelessWidget {
@@ -67,6 +64,14 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
     final activitySegmentRatio = activityReference <= 0
         ? 0.0
         : (activitySegment / activityReference).clamp(0.0, 1.0);
+    final activitySegmentStartRatio = math.max<double>(
+      0,
+      1 - activitySegmentRatio,
+    );
+    final activityFillRatio = math.min<double>(
+      activitySegmentRatio,
+      math.max<double>(0, eatenRatio - activitySegmentStartRatio),
+    );
     final targetLabel = formatDiaryKcal(numberFormat, target, unit);
     final activitySegmentLabel = formatDiarySignedKcal(
       activitySegment,
@@ -117,86 +122,16 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
         ],
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            return ClipRRect(
-              key: DiaryBalanceCardKeys.dailyProgressTrack,
-              borderRadius: BorderRadius.circular(999),
-              child: SizedBox(
-                height: barHeight,
-                child: Stack(
-                  children: [
-                    Positioned.fill(child: ColoredBox(color: trackColor)),
-                    TweenAnimationBuilder<double>(
-                      duration: _progressAnimationDuration,
-                      curve: _progressAnimationCurve,
-                      tween: Tween<double>(begin: 0, end: eatenRatio),
-                      builder: (context, value, child) {
-                        return Positioned(
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: width * value,
-                          child: child!,
-                        );
-                      },
-                      child: DecoratedBox(
-                        key: DiaryBalanceCardKeys.dailyProgressEatenFill,
-                        decoration: BoxDecoration(
-                          color: primary,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                    ),
-                    TweenAnimationBuilder<double>(
-                      duration: _progressAnimationDuration,
-                      curve: _progressAnimationCurve,
-                      tween: Tween<double>(begin: 0, end: activitySegmentRatio),
-                      builder: (context, value, child) {
-                        if (value <= 0) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Positioned(
-                          right: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: width * value,
-                          child: child!,
-                        );
-                      },
-                      child: ColoredBox(
-                        key: DiaryBalanceCardKeys.dailyProgressActivityFill,
-                        color: activityColor,
-                      ),
-                    ),
-                    TweenAnimationBuilder<double>(
-                      duration: _progressAnimationDuration,
-                      curve: _progressAnimationCurve,
-                      tween: Tween<double>(begin: 0, end: activitySegmentRatio),
-                      builder: (context, value, child) {
-                        if (value <= 0) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Positioned(
-                          right: width * value,
-                          top: 0,
-                          bottom: 0,
-                          width: 1,
-                          child: child!,
-                        );
-                      },
-                      child: ColoredBox(
-                        color: AppEditorialSurfaces.liftedCard(colors),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
+        DiaryDailyGoalProgressTrack(
+          height: barHeight,
+          trackColor: trackColor,
+          eatenColor: primary,
+          activityColor: activityColor,
+          eatenRatio: eatenRatio,
+          activitySegmentRatio: activitySegmentRatio,
+          activityFillRatio: activityFillRatio,
+          activitySegmentStartRatio: activitySegmentStartRatio,
+          dividerColor: AppEditorialSurfaces.liftedCard(colors),
         ),
       ],
     );

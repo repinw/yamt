@@ -123,6 +123,9 @@ abstract final class AppOpacities {
   /// Disabled home top bar icon foreground opacity.
   static const double homeTopBarDisabledForeground = 0.48;
 
+  /// Diary activity kcal preview segment opacity.
+  static const double diaryActivityPreviewSegment = 0.3;
+
   /// Inventory filter divider opacity.
   static const double inventoryFilterDivider = 0.45;
 

@@ -227,38 +227,53 @@ void main() {
     );
   });
 
-  testWidgets('daily progress shows activity as an end extension', (
-    tester,
-  ) async {
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
+  testWidgets(
+    'daily progress shows activity extension as transparent yellow',
+    (
       tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: '2026-4-27',
-      ),
-      activityBonusKcal: 200,
-    );
+    ) async {
+      final selectedDay = DateTime(2026, 4, 27);
 
-    final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-    );
-    final eatenRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
-    );
-    final activityRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-    );
+      await _pumpBalanceCard(
+        tester,
+        selectedDay: selectedDay,
+        weekStartDate: selectedDay,
+        dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+        runState: const BurnWeekRunState.initial().copyWith(
+          currentWeekStartDayKey: '2026-4-27',
+        ),
+        activityBonusKcal: 200,
+      );
 
-    expect(eatenRect.width / trackRect.width, closeTo(1000 / 2200, 0.02));
-    expect(activityRect.width / trackRect.width, closeTo(200 / 2200, 0.02));
-    expect(activityRect.right, closeTo(trackRect.right, 0.5));
-  });
+      final trackRect = tester.getRect(
+        find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
+      );
+      final eatenRect = tester.getRect(
+        find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
+      );
+      final previewRect = tester.getRect(
+        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+      );
+      final activityRect = tester.getRect(
+        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+      );
+      final previewBox = tester.widget<ColoredBox>(
+        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+      );
 
-  testWidgets('daily progress animates eaten and activity segments', (
+      expect(eatenRect.width / trackRect.width, closeTo(1000 / 2200, 0.02));
+      expect(previewRect.width / trackRect.width, closeTo(200 / 2200, 0.02));
+      expect(previewRect.right, closeTo(trackRect.right, 0.5));
+      expect(previewBox.color.a, closeTo(0.3, 0.01));
+      expect(activityRect.width, 0);
+      expect(
+        (activityRect.left - trackRect.left) / trackRect.width,
+        closeTo(2000 / 2200, 0.02),
+      );
+    },
+  );
+
+  testWidgets('daily progress animates eaten and filled activity segments', (
     tester,
   ) async {
     await _pumpDailyProgressBar(
@@ -270,7 +285,7 @@ void main() {
 
     await _pumpDailyProgressBar(
       tester,
-      eatenKcal: 600,
+      eatenKcal: 1200,
       targetKcal: 1200,
       activitySegmentKcal: 300,
     );
@@ -287,7 +302,7 @@ void main() {
     );
 
     expect(midEatenRect.width, greaterThan(0));
-    expect(midEatenRect.width, lessThan(midTrackRect.width * 0.5));
+    expect(midEatenRect.width, lessThan(midTrackRect.width));
     expect(midActivityRect.width, greaterThan(0));
     expect(midActivityRect.width, lessThan(midTrackRect.width * 0.25));
 
@@ -305,7 +320,7 @@ void main() {
 
     expect(
       settledEatenRect.width / settledTrackRect.width,
-      closeTo(0.5, 0.02),
+      closeTo(1, 0.02),
     );
     expect(
       settledActivityRect.width / settledTrackRect.width,
@@ -863,7 +878,7 @@ void main() {
     expect(find.byType(DiaryBalanceLoading), findsNothing);
   });
 
-  testWidgets('daily progress shows corrected 899 kcal activity visibly', (
+  testWidgets('daily progress previews corrected 899 kcal activity', (
     tester,
   ) async {
     final selectedDay = DateTime(2026, 4, 27);
@@ -885,18 +900,26 @@ void main() {
     final trackRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
     );
+    final previewRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+    );
     final activityRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
     );
 
     expect(
-      activityRect.width / trackRect.width,
+      previewRect.width / trackRect.width,
       closeTo(674.25 / 2774.25, 0.02),
     );
-    expect(activityRect.right, closeTo(trackRect.right, 0.5));
+    expect(previewRect.right, closeTo(trackRect.right, 0.5));
+    expect(activityRect.width, 0);
+    expect(
+      (activityRect.left - trackRect.left) / trackRect.width,
+      closeTo(1 - (674.25 / 2774.25), 0.02),
+    );
   });
 
-  testWidgets('daily progress keeps activity visible with carryover', (
+  testWidgets('daily progress previews activity with carryover', (
     tester,
   ) async {
     final selectedDay = DateTime(2026, 4, 27);
@@ -918,18 +941,26 @@ void main() {
     final trackRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
     );
+    final previewRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+    );
     final activityRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
     );
 
     expect(
-      activityRect.width / trackRect.width,
+      previewRect.width / trackRect.width,
       closeTo(674.25 / 2774.25, 0.02),
     );
-    expect(activityRect.right, closeTo(trackRect.right, 0.5));
+    expect(previewRect.right, closeTo(trackRect.right, 0.5));
+    expect(activityRect.width, 0);
+    expect(
+      (activityRect.left - trackRect.left) / trackRect.width,
+      closeTo(1 - (674.25 / 2774.25), 0.02),
+    );
   });
 
-  testWidgets('daily progress keeps activity visible with negative carryover', (
+  testWidgets('daily progress fills eaten activity with negative carryover', (
     tester,
   ) async {
     await _pumpDailyProgressBar(
@@ -944,15 +975,25 @@ void main() {
     final trackRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
     );
+    final previewRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+    );
     final activityRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
     );
+    final eatenRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
+    );
 
     expect(
-      activityRect.width / trackRect.width,
+      previewRect.width / trackRect.width,
       closeTo(674.25 / 1471, 0.02),
     );
-    expect(activityRect.right, closeTo(trackRect.right, 0.5));
+    expect(
+      activityRect.width / trackRect.width,
+      closeTo((1358 + 674.25 - 1471) / 1471, 0.02),
+    );
+    expect(activityRect.right, closeTo(eatenRect.right, 0.5));
   });
 
   testWidgets('shows retry content when week overview fails', (tester) async {
