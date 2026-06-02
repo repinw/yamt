@@ -389,7 +389,6 @@ class _SheetHeader extends StatelessWidget {
                 title,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
                   color: colors.onSurface,
                 ),
               ),

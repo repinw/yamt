@@ -62,8 +62,7 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en'),
+    Locale('en')
   ];
 
   /// No description provided for @homeInventory.
@@ -127,6 +124,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get homeSettings;
+
+  /// No description provided for @aiChefTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the AI suggest a random recipe'**
+  String get aiChefTooltip;
+
+  /// No description provided for @aiChefSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What should the AI cook?'**
+  String get aiChefSetupTitle;
+
+  /// No description provided for @aiChefSetupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether your inventory matters and add any wishes.'**
+  String get aiChefSetupSubtitle;
+
+  /// No description provided for @aiChefUseInventoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use inventory'**
+  String get aiChefUseInventoryTitle;
+
+  /// No description provided for @aiChefUseInventorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer ingredients that are currently in stock.'**
+  String get aiChefUseInventorySubtitle;
+
+  /// No description provided for @aiChefWishesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Wishes'**
+  String get aiChefWishesLabel;
+
+  /// No description provided for @aiChefWishesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. vegetarian, quick, high protein, no rice'**
+  String get aiChefWishesHint;
+
+  /// No description provided for @aiChefGenerateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate recipe'**
+  String get aiChefGenerateAction;
+
+  /// No description provided for @aiChefGeneratingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is cooking...'**
+  String get aiChefGeneratingTitle;
+
+  /// No description provided for @aiChefGeneratingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal AI is assembling a delicious recipe...'**
+  String get aiChefGeneratingSubtitle;
+
+  /// No description provided for @aiChefSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Cookbook'**
+  String get aiChefSaveAction;
+
+  /// No description provided for @aiChefCloseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get aiChefCloseAction;
+
+  /// No description provided for @aiChefSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe successfully saved to Cookbook!'**
+  String get aiChefSaveSuccess;
+
+  /// No description provided for @aiChefSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save recipe.'**
+  String get aiChefSaveError;
+
+  /// No description provided for @aiChefFromInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'From your stock'**
+  String get aiChefFromInventory;
+
+  /// No description provided for @aiChefQuoteLoveGarlic.
+  ///
+  /// In en, this message translates to:
+  /// **'The secret ingredient is always love. And garlic.'**
+  String get aiChefQuoteLoveGarlic;
+
+  /// No description provided for @aiChefQuoteCookingMagic.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking is like magic, except you can eat the results.'**
+  String get aiChefQuoteCookingMagic;
+
+  /// No description provided for @aiChefQuoteGoodFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good food brings good mood.'**
+  String get aiChefQuoteGoodFood;
+
+  /// No description provided for @aiChefQuoteKitchenTalks.
+  ///
+  /// In en, this message translates to:
+  /// **'The best conversations always happen in the kitchen.'**
+  String get aiChefQuoteKitchenTalks;
+
+  /// No description provided for @aiChefQuoteVirtualOven.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is preheating the virtual oven...'**
+  String get aiChefQuoteVirtualOven;
+
+  /// No description provided for @aiChefPortionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{portions, plural, =1{1 portion} other{{portions} portions}}'**
+  String aiChefPortionsLabel(int portions);
+
+  /// No description provided for @aiChefCaloriesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal'**
+  String aiChefCaloriesLabel(int kcal);
+
+  /// No description provided for @aiChefProteinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein: {grams} g'**
+  String aiChefProteinLabel(int grams);
+
+  /// No description provided for @aiChefCarbsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs: {grams} g'**
+  String aiChefCarbsLabel(int grams);
+
+  /// No description provided for @aiChefFatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat: {grams} g'**
+  String aiChefFatLabel(int grams);
 
   /// No description provided for @homeQuickActionTooltip.
   ///
@@ -888,21 +1035,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{actor} ate {amount} of {item}.'**
-  String inventoryActivityItemConsumed(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemConsumed(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemDiscarded.
   ///
   /// In en, this message translates to:
   /// **'{actor} discarded {amount} of {item}.'**
-  String inventoryActivityItemDiscarded(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemDiscarded(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemDeleted.
   ///
@@ -914,31 +1053,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{actor} restored {amount} of {item}.'**
-  String inventoryActivityItemRestored(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemRestored(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemUsedInPreparedMeal.
   ///
   /// In en, this message translates to:
   /// **'{actor} used {amount} of {item} for a prepared meal.'**
-  String inventoryActivityItemUsedInPreparedMeal(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemUsedInPreparedMeal(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemReturnedFromPreparedMeal.
   ///
   /// In en, this message translates to:
   /// **'{actor} returned {amount} of {item} from a prepared meal.'**
-  String inventoryActivityItemReturnedFromPreparedMeal(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemReturnedFromPreparedMeal(String actor, String item, String amount);
 
   /// No description provided for @inventorySearchLabel.
   ///
@@ -6308,19 +6435,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Not enough in inventory: Only {availableAmount} available. {missingAmount} missing.'**
-  String cookflowInventoryConflictMessage(
-    Object availableAmount,
-    Object missingAmount,
-  );
+  String cookflowInventoryConflictMessage(Object availableAmount, Object missingAmount);
 
   /// No description provided for @cookflowInventoryUsagePreview.
   ///
   /// In en, this message translates to:
   /// **'Subtract {usedAmount} · left {remainingAmount}'**
-  String cookflowInventoryUsagePreview(
-    Object usedAmount,
-    Object remainingAmount,
-  );
+  String cookflowInventoryUsagePreview(Object usedAmount, Object remainingAmount);
 
   /// No description provided for @cookflowBuyRemainingButton.
   ///
@@ -6338,10 +6459,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Unit conflict: recipe uses \"{recipeUnit}\". Inventory has \"{inventoryUnit}\".'**
-  String cookflowInventoryUnitConflictMessage(
-    Object recipeUnit,
-    Object inventoryUnit,
-  );
+  String cookflowInventoryUnitConflictMessage(Object recipeUnit, Object inventoryUnit);
 
   /// No description provided for @cookflowInventoryUnitConversionPrefix.
   ///
@@ -6800,8 +6918,7 @@ abstract class AppLocalizations {
   String get cookflowResumeLabel;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -6810,26 +6927,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de':
-      return AppLocalizationsDe();
-    case 'en':
-      return AppLocalizationsEn();
+    case 'de': return AppLocalizationsDe();
+    case 'en': return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

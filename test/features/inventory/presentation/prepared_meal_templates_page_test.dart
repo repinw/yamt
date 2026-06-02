@@ -5,16 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/features/ai_chef/presentation/controllers/'
+    'ai_chef_controller.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_import_review_page.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
@@ -144,6 +149,7 @@ PreparedMeal _recipeTemplate({required String id, required String name}) {
   );
 }
 
+@Dependencies([AiChefController, InventoryItemsController])
 Widget _buildHarness({
   required PreparedMealTemplateRepository repository,
   required PreparedMealRecipeImporter importer,
@@ -188,6 +194,7 @@ Widget _buildHarness({
   );
 }
 
+@Dependencies([AiChefController, InventoryItemsController])
 void main() {
   testWidgets('renders home chrome actions when embedded in home shell', (
     tester,

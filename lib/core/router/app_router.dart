@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
+import 'package:yamt/features/ai_chef/presentation/controllers/'
+    'ai_chef_controller.dart';
 import 'package:yamt/features/auth/application/'
     'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -109,6 +111,7 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     manualProductRecentItemsService,
     preparedMealImagePicker,
     inventoryActivityEvents,
+    AiChefController,
     ReceiptCaptureFlowController,
     ReceiptBatchFlowController,
     receiptCameraSupported,

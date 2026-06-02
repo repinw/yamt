@@ -661,7 +661,13 @@ void main() {
     await tester.tap(find.byIcon(Icons.shopping_cart_rounded).hitTestable());
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeShopping);
-    expect(find.text('Shopping'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Shopping'),
+      ),
+      findsOneWidget,
+    );
     expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.arrow_back_rounded).hitTestable());

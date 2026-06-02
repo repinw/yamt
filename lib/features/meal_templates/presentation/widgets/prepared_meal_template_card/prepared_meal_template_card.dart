@@ -106,7 +106,6 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w900,
-                          letterSpacing: -0.2,
                           height: 1.25,
                         ),
                       ),
@@ -284,7 +283,6 @@ class _ResumeCookflowButton extends StatelessWidget {
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
-                letterSpacing: -0.2,
               ),
             ),
           ],

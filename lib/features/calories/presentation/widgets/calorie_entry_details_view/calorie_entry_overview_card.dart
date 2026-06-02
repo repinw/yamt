@@ -101,7 +101,7 @@ class CalorieEntryOverviewCard extends ConsumerWidget {
                           ?.copyWith(
                             fontWeight: FontWeight.w800,
                             height: 1.05,
-                            letterSpacing: -0.3,
+                            letterSpacing: 0,
                           ),
                     ),
                     const SizedBox(height: AppSpacing.sm),

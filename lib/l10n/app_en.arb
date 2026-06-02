@@ -5,6 +5,66 @@
   "homeCalories": "Diary",
   "homeCookbook": "Cookbook",
   "homeSettings": "Settings",
+  "aiChefTooltip": "Let the AI suggest a random recipe",
+  "aiChefSetupTitle": "What should the AI cook?",
+  "aiChefSetupSubtitle": "Choose whether your inventory matters and add any wishes.",
+  "aiChefUseInventoryTitle": "Use inventory",
+  "aiChefUseInventorySubtitle": "Prefer ingredients that are currently in stock.",
+  "aiChefWishesLabel": "Wishes",
+  "aiChefWishesHint": "e.g. vegetarian, quick, high protein, no rice",
+  "aiChefGenerateAction": "Generate recipe",
+  "aiChefGeneratingTitle": "AI is cooking...",
+  "aiChefGeneratingSubtitle": "Your personal AI is assembling a delicious recipe...",
+  "aiChefSaveAction": "Save to Cookbook",
+  "aiChefCloseAction": "Close",
+  "aiChefSaveSuccess": "Recipe successfully saved to Cookbook!",
+  "aiChefSaveError": "Failed to save recipe.",
+  "aiChefFromInventory": "From your stock",
+  "aiChefQuoteLoveGarlic": "The secret ingredient is always love. And garlic.",
+  "aiChefQuoteCookingMagic": "Cooking is like magic, except you can eat the results.",
+  "aiChefQuoteGoodFood": "Good food brings good mood.",
+  "aiChefQuoteKitchenTalks": "The best conversations always happen in the kitchen.",
+  "aiChefQuoteVirtualOven": "AI is preheating the virtual oven...",
+  "aiChefPortionsLabel": "{portions, plural, =1{1 portion} other{{portions} portions}}",
+  "@aiChefPortionsLabel": {
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChefCaloriesLabel": "{kcal} kcal",
+  "@aiChefCaloriesLabel": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChefProteinLabel": "Protein: {grams} g",
+  "@aiChefProteinLabel": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChefCarbsLabel": "Carbs: {grams} g",
+  "@aiChefCarbsLabel": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChefFatLabel": "Fat: {grams} g",
+  "@aiChefFatLabel": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
   "homeQuickActionTooltip": "Quick action",
   "homeHeartCounterUseTooltip": "Use heart for {day}",
   "@homeHeartCounterUseTooltip": {

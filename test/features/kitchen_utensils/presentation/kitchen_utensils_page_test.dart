@@ -7,11 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/ai_chef/presentation/controllers/'
+    'ai_chef_controller.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -168,6 +172,8 @@ Widget _buildKitchenHarness({
 }
 
 @Dependencies([
+  AiChefController,
+  InventoryItemsController,
   preparedMealImagePicker,
 ])
 Widget _buildCookbookHarness({
@@ -214,7 +220,11 @@ Widget _buildCookbookHarness({
   );
 }
 
-@Dependencies([preparedMealImagePicker])
+@Dependencies([
+  AiChefController,
+  InventoryItemsController,
+  preparedMealImagePicker,
+])
 void main() {
   testWidgets('utensil sheet opens on root navigator by default', (
     tester,

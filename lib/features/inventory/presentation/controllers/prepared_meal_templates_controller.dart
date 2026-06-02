@@ -148,6 +148,57 @@ class PreparedMealTemplatesController
         .whenComplete(keepAliveLink.close);
   }
 
+  /// Save recipe template.
+  Future<PreparedMealTemplateSaveResult> saveRecipeTemplate(
+    PreparedMeal template,
+  ) {
+    if (template.name.trim().isEmpty || template.totalPortions < 1) {
+      return Future<PreparedMealTemplateSaveResult>.value(
+        const PreparedMealTemplateSaveResult.failure(
+          PreparedMealTemplateSaveFailureReason.invalidInput,
+        ),
+      );
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _mutationQueue
+        .run<PreparedMealTemplateSaveResult>(
+          operation: () async {
+            final currentTemplates = await _currentTemplates();
+            final now = DateTime.now();
+            final newTemplate = template.copyWith(
+              id: _uuid.v4(),
+              createdAt: now,
+              updatedAt: now,
+            );
+            final nextTemplates = List<PreparedMeal>.from(currentTemplates)
+              ..add(newTemplate);
+            final saved = await _saveTemplates(
+              previousTemplates: currentTemplates,
+              nextTemplates: nextTemplates,
+            );
+            if (!saved) {
+              return const PreparedMealTemplateSaveResult.failure(
+                PreparedMealTemplateSaveFailureReason.saveFailed,
+              );
+            }
+            return PreparedMealTemplateSaveResult.success(newTemplate.id);
+          },
+          fallbackValue: const PreparedMealTemplateSaveResult.failure(
+            PreparedMealTemplateSaveFailureReason.saveFailed,
+          ),
+          onError: (error, stackTrace) {
+            log(
+              'Unexpected recipe template save error.',
+              name: _preparedMealTemplatesControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
+        )
+        .whenComplete(keepAliveLink.close);
+  }
+
   /// Create template from recipe.
   Future<PreparedMealTemplateSaveResult> createTemplateFromRecipe({
     required String recipeUrl,

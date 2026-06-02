@@ -109,7 +109,7 @@ class MacroProgressCard extends StatelessWidget {
                           ?.copyWith(
                             color: currentValueColor,
                             fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
+                            letterSpacing: 0,
                             height: 1,
                           ),
                     ),

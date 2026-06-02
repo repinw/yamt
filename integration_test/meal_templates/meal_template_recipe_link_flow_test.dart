@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/ai_chef/presentation/controllers/'
+    'ai_chef_controller.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
@@ -160,6 +162,7 @@ class _NoopPreparedMealsController extends PreparedMealsController {
 
 @Dependencies([
   InventoryItemsController,
+  AiChefController,
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
@@ -323,6 +326,7 @@ Future<void> _tapBottomSheetButton(
 
 @Dependencies([
   InventoryItemsController,
+  AiChefController,
   PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,

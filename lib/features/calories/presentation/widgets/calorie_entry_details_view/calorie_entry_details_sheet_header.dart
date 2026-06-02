@@ -53,7 +53,7 @@ class CalorieEntryDetailsSheetHeader extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
-                    letterSpacing: -0.2,
+                    letterSpacing: 0,
                   ),
                 ),
               ),
