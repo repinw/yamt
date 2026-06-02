@@ -42,7 +42,15 @@ class InventoryBackedCalorieEntrySaveFlow {
     );
     final effectiveInventoryController =
         inventoryController ??
-        _ref.read(inventoryItemsControllerProvider.notifier)!;
+        _ref.read(inventoryItemsControllerProvider.notifier);
+    if (effectiveInventoryController == null) {
+      log(
+        'Inventory items controller was not available for calorie entry '
+        '${entry.id}.',
+        name: _flowLogName,
+      );
+      return false;
+    }
     final effectivePendingConsumption =
         pendingConsumption ??
         effectiveInventoryController.pendingConsumptionById(
