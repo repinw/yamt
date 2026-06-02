@@ -160,6 +160,31 @@ PreparedMeal _templateMeal({required String id, required String name}) {
   );
 }
 
+PreparedMeal _recipeTemplate({required String id, required String name}) {
+  return PreparedMeal(
+    id: id,
+    name: name,
+    imageUrl: 'https://example.com/$id.jpg',
+    totalPortions: 2,
+    remainingPortions: 2,
+    totalKcal: 640,
+    totalProtein: 30,
+    totalCarbs: 80,
+    totalFat: 18,
+    createdAt: DateTime.parse('2026-04-02T12:00:00Z'),
+    updatedAt: DateTime.parse('2026-04-02T12:00:00Z'),
+    components: const <PreparedMealComponent>[],
+    recipeIngredients: const <String>[
+      '200 g pasta',
+      '150 g tomatoes',
+    ],
+    recipeInstructions: const <String>[
+      'Cook pasta.',
+      'Toss with tomatoes.',
+    ],
+  );
+}
+
 ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepControllerAlive(
   ProviderContainer container,
 ) {
@@ -249,6 +274,48 @@ void main() {
     expect(repository.savedTemplates.single.imageAssetId, 'asset-meal-1');
     expect(repository.savedTemplates.single.remainingPortions, 4);
     expect(repository.savedTemplates.single.id, isNot('meal-1'));
+  });
+
+  test('saveRecipeTemplate stores recipe-only generated template', () async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: const <PreparedMeal>[],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(null),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    final recipe = _recipeTemplate(id: 'generated-1', name: 'Tomato Pasta');
+
+    await container.read(preparedMealTemplatesControllerProvider.future);
+    final saved = await container
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .saveRecipeTemplate(recipe);
+
+    expect(saved.isSuccess, isTrue);
+    expect(repository.savedTemplates, hasLength(1));
+    expect(repository.savedTemplates.single.id, isNot('generated-1'));
+    expect(repository.savedTemplates.single.name, 'Tomato Pasta');
+    expect(repository.savedTemplates.single.imageUrl, recipe.imageUrl);
+    expect(repository.savedTemplates.single.components, isEmpty);
+    expect(
+      repository.savedTemplates.single.recipeIngredients,
+      recipe.recipeIngredients,
+    );
+    expect(
+      repository.savedTemplates.single.recipeInstructions,
+      recipe.recipeInstructions,
+    );
+    expect(repository.savedTemplates.single.totalKcal, recipe.totalKcal);
   });
 
   test('deleteTemplate removes the selected template', () async {

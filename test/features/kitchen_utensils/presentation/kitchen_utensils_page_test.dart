@@ -12,6 +12,8 @@ import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -168,6 +170,7 @@ Widget _buildKitchenHarness({
 }
 
 @Dependencies([
+  InventoryItemsController,
   preparedMealImagePicker,
 ])
 Widget _buildCookbookHarness({
@@ -214,7 +217,10 @@ Widget _buildCookbookHarness({
   );
 }
 
-@Dependencies([preparedMealImagePicker])
+@Dependencies([
+  InventoryItemsController,
+  preparedMealImagePicker,
+])
 void main() {
   testWidgets('utensil sheet opens on root navigator by default', (
     tester,

@@ -4,9 +4,14 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/features/ai_chef/presentation/widgets/'
+    'ai_chef_button/ai_chef_button.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
@@ -26,6 +31,7 @@ import 'package:yamt/features/meal_templates/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines meal templates page.
+@Dependencies([InventoryItemsController])
 class MealTemplatesPage extends ConsumerWidget {
   /// The meal templates page.
   const MealTemplatesPage({super.key, this.includeAppBar = true});
@@ -49,6 +55,7 @@ class MealTemplatesPage extends ConsumerWidget {
             HomeShellTabTopChrome(
               title: l10n.homeCookbook,
               actions: const [
+                AiChefButton(),
                 KitchenUtensilsButton(),
                 MealTemplateRecipeImportButton(),
               ],
@@ -73,12 +80,12 @@ class MealTemplatesPage extends ConsumerWidget {
           ),
           onEdit: (template) => _editTemplate(
             context: context,
-            ref: ref,
+            templatesController: templatesController,
             template: template,
           ),
           onDelete: (templateId) => _deleteTemplate(
             context: context,
-            ref: ref,
+            templatesController: templatesController,
             templateId: templateId,
           ),
         );
@@ -101,6 +108,7 @@ class MealTemplatesPage extends ConsumerWidget {
           ? AppBar(
               title: Text(l10n.preparedMealTemplatesPageTitle),
               actions: const [
+                AiChefButton(),
                 KitchenUtensilsButton(),
                 MealTemplateRecipeImportButton(),
               ],
@@ -150,12 +158,10 @@ class MealTemplatesPage extends ConsumerWidget {
 
   Future<bool> _deleteTemplate({
     required BuildContext context,
-    required WidgetRef ref,
+    required PreparedMealTemplatesController templatesController,
     required String templateId,
   }) async {
-    final deleted = await ref
-        .read(preparedMealTemplatesControllerProvider.notifier)
-        .deleteTemplate(templateId);
+    final deleted = await templatesController.deleteTemplate(templateId);
     if (!context.mounted) {
       return deleted;
     }
@@ -172,7 +178,7 @@ class MealTemplatesPage extends ConsumerWidget {
 
   Future<bool> _editTemplate({
     required BuildContext context,
-    required WidgetRef ref,
+    required PreparedMealTemplatesController templatesController,
     required PreparedMeal template,
   }) async {
     final l10n = AppLocalizations.of(context)!;
@@ -190,15 +196,13 @@ class MealTemplatesPage extends ConsumerWidget {
       return false;
     }
 
-    final result = await ref
-        .read(preparedMealTemplatesControllerProvider.notifier)
-        .updateRecipeTemplate(
-          templateId: template.id,
-          recipeUrl: draft.recipeUrl,
-          name: draft.name,
-          totalPortions: draft.totalPortions,
-          localeName: l10n.localeName,
-        );
+    final result = await templatesController.updateRecipeTemplate(
+      templateId: template.id,
+      recipeUrl: draft.recipeUrl,
+      name: draft.name,
+      totalPortions: draft.totalPortions,
+      localeName: l10n.localeName,
+    );
     if (!context.mounted) {
       return result.isSuccess;
     }

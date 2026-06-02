@@ -47,7 +47,6 @@ class MealTemplatesEmptyState extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),

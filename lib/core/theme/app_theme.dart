@@ -125,24 +125,24 @@ abstract final class AppTheme {
       displaySmall: baseTextTheme.displaySmall?.copyWith(
         fontSize: AppFontSizes.displaySmall,
         fontWeight: FontWeight.w800,
-        letterSpacing: -1.8,
+        letterSpacing: 0,
         height: 0.92,
       ),
       headlineSmall: baseTextTheme.headlineSmall?.copyWith(
         fontSize: AppFontSizes.headlineSmall,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.8,
+        letterSpacing: 0,
         height: 1.02,
       ),
       titleLarge: baseTextTheme.titleLarge?.copyWith(
         fontSize: AppFontSizes.titleLarge,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
+        letterSpacing: 0,
       ),
       titleMedium: baseTextTheme.titleMedium?.copyWith(
         fontSize: AppFontSizes.titleMedium,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.2,
+        letterSpacing: 0,
       ),
       bodyMedium: baseTextTheme.bodyMedium?.copyWith(
         fontSize: AppFontSizes.bodyMedium,

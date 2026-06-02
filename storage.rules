@@ -51,5 +51,19 @@ service firebase.storage {
       allow create, update: if canAccessHouseholdOwnedData(uid)
         && isKitchenUtensilImage();
     }
+
+    function isRecipeImage() {
+      return request.resource == null
+        || (
+          request.resource.size < 5 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        );
+    }
+
+    match /users/{uid}/recipes/{mealId}/images/{imageId} {
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create, update: if canAccessHouseholdOwnedData(uid)
+        && isRecipeImage();
+    }
   }
 }
