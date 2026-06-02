@@ -18,6 +18,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -32,6 +33,7 @@ import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_f
 @Dependencies([
   appRouter,
   InventoryItemsController,
+  PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
 ])

@@ -171,8 +171,12 @@ class InventoryItemEatSheetFooterData {
   const InventoryItemEatSheetFooterData({
     required this.confirmActionText,
     required this.onConfirm,
+    required this.addMoreActionText,
+    required this.onAddMore,
   });
 
   final String confirmActionText;
   final VoidCallback onConfirm;
+  final String? addMoreActionText;
+  final VoidCallback? onAddMore;
 }

@@ -135,10 +135,9 @@ void main() {
         anchorEntry: settings.goalHistory.first,
       );
 
-      final expectedBaseTdee =
-          CalorieGoalCalculator.calculate(
-            const CalorieCalculatorProfile.defaults(),
-          ).tdeeKcal;
+      final expectedBaseTdee = CalorieGoalCalculator.calculate(
+        const CalorieCalculatorProfile.defaults(),
+      ).tdeeKcal;
 
       expect(seed.previousLearnedTdeeKcal, expectedBaseTdee);
     },

@@ -8,7 +8,10 @@ import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 
@@ -22,7 +25,6 @@ const _readyHealthStatus = HealthConnectionStatus(
 );
 
 @Dependencies([
-  InventoryItemsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
 ])
@@ -51,6 +53,12 @@ void main() {
           healthConnectionServiceProvider.overrideWith(
             (ref) => FakeHealthConnectionService(_readyHealthStatus),
           ),
+          inventoryItemsControllerProvider.overrideWith(
+            _EmptyInventoryItemsController.new,
+          ),
+          preparedMealsControllerProvider.overrideWith(
+            _EmptyPreparedMealsController.new,
+          ),
         ],
         child: const YAMT(),
       ),
@@ -72,4 +80,18 @@ void main() {
       isNotNull,
     );
   });
+}
+
+class _EmptyInventoryItemsController extends InventoryItemsController {
+  @override
+  Future<List<InventoryItem>> build() async {
+    return const <InventoryItem>[];
+  }
+}
+
+class _EmptyPreparedMealsController extends PreparedMealsController {
+  @override
+  Future<List<PreparedMeal>> build() async {
+    return const <PreparedMeal>[];
+  }
 }

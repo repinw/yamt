@@ -150,6 +150,7 @@ class _DiaryBalanceCardState extends ConsumerState<DiaryBalanceCard>
         _stopTicker();
         return;
       }
+      _retryBalance(normalizeDiaryDay(widget.selectedDay));
       setState(() {});
     });
   }

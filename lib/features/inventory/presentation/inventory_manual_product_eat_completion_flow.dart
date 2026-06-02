@@ -14,13 +14,13 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_dialogs.dart';
-import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_quick_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -29,10 +29,7 @@ const _inventoryManualProductEatFlowLogName =
     'InventoryManualProductEatCompletionFlow';
 
 /// Saves a manual product result and continues into the eat flow.
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
+@Dependencies([InventoryItemsController, inventoryBackedCalorieEntrySaveFlow])
 Future<InventoryManualProductSaveOutcome> saveManualProductResultForEatFlow({
   required BuildContext context,
   required ProviderContainer container,
@@ -40,6 +37,7 @@ Future<InventoryManualProductSaveOutcome> saveManualProductResultForEatFlow({
   required InventoryReceiptManualProductResult result,
   MealType? preselectedMealType,
   DateTime? preselectedLoggedAt,
+  bool continueBatchOnConfirm = false,
 }) async {
   try {
     return await _saveManualProductResultForEatFlow(
@@ -49,6 +47,7 @@ Future<InventoryManualProductSaveOutcome> saveManualProductResultForEatFlow({
       result: result,
       preselectedMealType: preselectedMealType,
       preselectedLoggedAt: preselectedLoggedAt,
+      continueBatchOnConfirm: continueBatchOnConfirm,
     );
   } on Object catch (error, stackTrace) {
     log(
@@ -72,82 +71,122 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
   required InventoryReceiptManualProductResult result,
   required MealType? preselectedMealType,
   required DateTime? preselectedLoggedAt,
+  required bool continueBatchOnConfirm,
 }) async {
-  final itemToSave = await _resolveEatItem(context, result.item);
-  if (!context.mounted || itemToSave == null) {
-    return const InventoryManualProductSaveOutcome.canceled();
-  }
-
-  final saveOutcome = await saveManualProductResultToInventory(
-    context: context,
-    container: container,
-    l10n: l10n,
-    result: _resultWithItem(result, itemToSave),
+  final inventorySubscription = container.listen(
+    inventoryItemsControllerProvider,
+    (_, _) {},
+    fireImmediately: true,
   );
-  final savedItem = saveOutcome.item;
-  if (!context.mounted ||
-      saveOutcome.status != InventoryManualProductSaveStatus.saved ||
-      savedItem == null) {
-    return saveOutcome;
+  try {
+    final saveOutcome = await saveManualProductResultToInventory(
+      context: context,
+      container: container,
+      l10n: l10n,
+      result: result,
+    );
+    final savedItem = saveOutcome.item;
+    if (saveOutcome.status != InventoryManualProductSaveStatus.saved ||
+        savedItem == null) {
+      return saveOutcome;
+    }
+    if (!context.mounted) {
+      return saveOutcome;
+    }
+    return await _completeSavedManualProductEat(
+      context: context,
+      container: container,
+      l10n: l10n,
+      result: result,
+      item: savedItem,
+      preselectedMealType: preselectedMealType,
+      preselectedLoggedAt: preselectedLoggedAt,
+      continueBatchOnConfirm: continueBatchOnConfirm,
+    );
+  } finally {
+    inventorySubscription.close();
   }
+}
 
-  final request =
-      inventoryManualAddEatRequestFromSelection(
-        result.eatSelection,
-      ) ??
-      await _showEatSheet(
-        context: context,
-        l10n: l10n,
-        item: savedItem,
-        preselectedMealType: preselectedMealType,
-        preselectedLoggedAt: preselectedLoggedAt,
-      );
-  if (!context.mounted || request == null) {
-    await _deleteSavedItem(container, savedItem);
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
+Future<InventoryManualProductSaveOutcome> _completeSavedManualProductEat({
+  required BuildContext context,
+  required ProviderContainer container,
+  required AppLocalizations l10n,
+  required InventoryReceiptManualProductResult result,
+  required InventoryItem item,
+  required MealType? preselectedMealType,
+  required DateTime? preselectedLoggedAt,
+  required bool continueBatchOnConfirm,
+}) async {
+  String? savedCalorieEntryId;
+  final eatResult = await _resolveEatResult(
+    context: context,
+    l10n: l10n,
+    result: result,
+    item: item,
+    preselectedMealType: preselectedMealType,
+    preselectedLoggedAt: preselectedLoggedAt,
+    continueBatchOnConfirm: continueBatchOnConfirm,
+  );
+  if (!context.mounted || eatResult == null) {
+    await _deleteSavedItem(container, item);
     return const InventoryManualProductSaveOutcome.canceled();
   }
 
   final completedEatFlow = await _completeEatFlow(
     context: context,
-    item: savedItem,
-    request: request,
+    item: item,
+    request: eatResult.request,
+    onDirectCalorieEntrySaved: (entryId) => savedCalorieEntryId = entryId,
   );
   if (!completedEatFlow) {
-    await _deleteSavedItem(container, savedItem);
+    await _deleteSavedItem(container, item);
     return const InventoryManualProductSaveOutcome.canceled();
   }
-  return saveOutcome;
+  return InventoryManualProductSaveOutcome.saved(
+    item,
+    calorieEntryId: savedCalorieEntryId,
+    addMoreRequested: eatResult.addMoreRequested,
+  );
 }
 
-Future<InventoryItem?> _resolveEatItem(
-  BuildContext context,
-  InventoryItem item,
-) async {
-  if (!requiresInventoryManualAddConsumedAmountPrompt(item)) {
-    return item;
+Future<InventoryItemEatSheetResult?> _resolveEatResult({
+  required BuildContext context,
+  required AppLocalizations l10n,
+  required InventoryReceiptManualProductResult result,
+  required InventoryItem item,
+  required MealType? preselectedMealType,
+  required DateTime? preselectedLoggedAt,
+  required bool continueBatchOnConfirm,
+}) {
+  final selectedRequest = inventoryManualAddEatRequestFromSelection(
+    result.eatSelection,
+  );
+  final confirmIntent = _confirmIntent(continueBatchOnConfirm);
+  if (selectedRequest != null) {
+    return Future.value(selectedRequest.asSheetResult(confirmIntent));
   }
-
-  final eatAmount = await showInventoryManualAddEatAmountDialog(
+  return _showEatSheet(
     context: context,
-    initialUnit: defaultInventoryManualAddConsumedAmountUnit(item),
-  );
-  if (!context.mounted || eatAmount == null) {
-    return null;
-  }
-
-  return resolveInventoryManualAddItemAmount(
+    l10n: l10n,
     item: item,
-    amount: eatAmount.amount,
-    unit: eatAmount.unit,
+    preselectedMealType: preselectedMealType,
+    preselectedLoggedAt: preselectedLoggedAt,
+    continueBatchOnConfirm: continueBatchOnConfirm,
   );
 }
 
-Future<InventoryItemEatRequest?> _showEatSheet({
+Future<InventoryItemEatSheetResult?> _showEatSheet({
   required BuildContext context,
   required AppLocalizations l10n,
   required InventoryItem item,
   required MealType? preselectedMealType,
   required DateTime? preselectedLoggedAt,
+  required bool continueBatchOnConfirm,
 }) async {
   final maxAmount = resolveInventoryManualAddConsumableAmount(item);
   if (maxAmount == null) {
@@ -158,28 +197,47 @@ Future<InventoryItemEatRequest?> _showEatSheet({
     return null;
   }
 
-  return InventoryQuickEatFlow.showItemSheet(
+  return InventoryQuickEatFlow.showItemSheetResult(
     context: context,
     item: item,
     maxAmount: maxAmount,
     invalidAmountMessage: l10n.inventoryReceiptReviewInvalidNumber,
+    confirmIntent: _confirmIntent(continueBatchOnConfirm),
     initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
       item: item,
       rawWeight: item.weight,
     ),
     initialLoggedAt: preselectedLoggedAt,
     initialMealType: preselectedMealType,
+    addMoreActionText: continueBatchOnConfirm
+        ? null
+        : l10n.inventoryItemEatSheetAddMoreAction,
   );
 }
 
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
+InventoryItemEatSheetIntent _confirmIntent(bool continueBatchOnConfirm) {
+  return continueBatchOnConfirm
+      ? InventoryItemEatSheetIntent.addMore
+      : InventoryItemEatSheetIntent.logOnly;
+}
+
+extension on InventoryItemEatRequest {
+  InventoryItemEatSheetResult asSheetResult(
+    InventoryItemEatSheetIntent intent,
+  ) {
+    return InventoryItemEatSheetResult(
+      request: this,
+      intent: intent,
+    );
+  }
+}
+
+@Dependencies([InventoryItemsController, inventoryBackedCalorieEntrySaveFlow])
 Future<bool> _completeEatFlow({
   required BuildContext context,
   required InventoryItem item,
   required InventoryItemEatRequest request,
+  required void Function(String calorieEntryId) onDirectCalorieEntrySaved,
 }) async {
   final resizedItem = resizeInventoryManualAddItemToConsumedAmount(
     item: item,
@@ -198,6 +256,7 @@ Future<bool> _completeEatFlow({
     context: context,
     item: itemForConsumption,
     request: request,
+    onDirectCalorieEntrySaved: onDirectCalorieEntrySaved,
   );
 }
 
@@ -236,20 +295,4 @@ Future<void> _deleteSavedItem(
   return container
       .read(inventoryItemsControllerProvider.notifier)
       .deleteItem(savedItem.id);
-}
-
-InventoryReceiptManualProductResult _resultWithItem(
-  InventoryReceiptManualProductResult result,
-  InventoryItem item,
-) {
-  return InventoryReceiptManualProductResult(
-    item: item,
-    action: InventoryReceiptManualProductAction.eatNow,
-    selectedProduct: result.selectedProduct,
-    selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
-    requiresGlobalPersistence: result.requiresGlobalPersistence,
-    globalPackageWeight: result.globalPackageWeight,
-    skipMissingBarcodePrompt: result.skipMissingBarcodePrompt,
-    eatSelection: result.eatSelection,
-  );
 }

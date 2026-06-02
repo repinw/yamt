@@ -171,4 +171,124 @@ void main() {
       );
     },
   );
+
+  test('save flow uses updated commit store dependency', () async {
+    var commitStoreIndex = 0;
+    final commitStoreIndexProvider = Provider<int>((ref) => commitStoreIndex);
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[_inventoryItem()],
+    );
+    final firstCommitStore = _RecordingCommitStore();
+    final secondCommitStore = _RecordingCommitStore();
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWith((ref) {
+          final index = ref.watch(commitStoreIndexProvider);
+          return index == 0 ? firstCommitStore : secondCommitStore;
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+    final inventorySubscription = _keepInventoryAlive(container);
+    addTearDown(inventorySubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    container.read(inventoryBackedCalorieEntrySaveFlowProvider);
+    commitStoreIndex = 1;
+    container.invalidate(commitStoreIndexProvider);
+
+    final pendingConsumption = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .stagePendingConsumption('inventory-1', 2);
+    final saved = await container
+        .read(inventoryBackedCalorieEntrySaveFlowProvider)
+        .saveEntry(
+          entry: _entry(),
+          pendingConsumptionId: pendingConsumption!.id,
+        );
+
+    expect(saved, isTrue);
+    expect(firstCommitStore.entry, isNull);
+    expect(secondCommitStore.entry?.id, 'entry-1');
+  });
+
+  test('save flow reads live inventory controller when committing', () async {
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[_inventoryItem()],
+    );
+    final commitStore = _RecordingCommitStore();
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+          commitStore,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final inventorySubscription = _keepInventoryAlive(container);
+    addTearDown(inventorySubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final flow = container.read(inventoryBackedCalorieEntrySaveFlowProvider);
+
+    container.invalidate(inventoryItemsControllerProvider);
+    await container.read(inventoryItemsControllerProvider.future);
+
+    final pendingConsumption = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .stagePendingConsumption('inventory-1', 2);
+    final saved = await flow.saveEntry(
+      entry: _entry(),
+      pendingConsumptionId: pendingConsumption!.id,
+    );
+
+    expect(saved, isTrue);
+    expect(commitStore.pendingConsumption?.id, pendingConsumption.id);
+  });
+
+  test(
+    'save flow commits supplied pending consumption without lookup',
+    () async {
+      final repository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[_inventoryItem()],
+      );
+      final commitStore = _RecordingCommitStore();
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+            commitStore,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final inventorySubscription = _keepInventoryAlive(container);
+      addTearDown(inventorySubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      const suppliedPendingConsumption = PendingInventoryConsumption(
+        id: 'pending-from-caller',
+        itemId: 'inventory-1',
+        amount: 2,
+      );
+      final saved = await container
+          .read(inventoryBackedCalorieEntrySaveFlowProvider)
+          .saveEntry(
+            entry: _entry(),
+            pendingConsumptionId: suppliedPendingConsumption.id,
+            pendingConsumption: suppliedPendingConsumption,
+          );
+
+      expect(saved, isTrue);
+      expect(commitStore.pendingConsumption?.id, 'pending-from-caller');
+    },
+  );
 }

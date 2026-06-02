@@ -29,9 +29,13 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -123,6 +127,9 @@ ProviderContainer _createContainerWithAuth(
       inventoryItemRepositoryProvider.overrideWithValue(
         const _FakeInventoryItemRepository(),
       ),
+      preparedMealRepositoryProvider.overrideWithValue(
+        const _FakePreparedMealRepository(),
+      ),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
     ],
   );
@@ -180,10 +187,11 @@ const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
 
 @Dependencies([
   appRouter,
-  inventoryBackedCalorieEntrySaveFlow,
   inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
   InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+  PreparedMealsController,
   ReceiptBatchFlowController,
   ReceiptCaptureFlowController,
 ])
@@ -1016,5 +1024,22 @@ class _FakeInventoryItemRepository
   @override
   Stream<List<InventoryItem>> watchAll() async* {
     yield const <InventoryItem>[];
+  }
+}
+
+class _FakePreparedMealRepository implements PreparedMealRepository {
+  const _FakePreparedMealRepository();
+
+  @override
+  Future<List<PreparedMeal>> readAll() async {
+    return const <PreparedMeal>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> meals) async => true;
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() async* {
+    yield const <PreparedMeal>[];
   }
 }

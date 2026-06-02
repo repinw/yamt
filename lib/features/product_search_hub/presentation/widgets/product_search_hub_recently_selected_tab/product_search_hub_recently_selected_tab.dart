@@ -10,6 +10,8 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_recent_item_key.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _productSearchHubRecentlySelectedLogName =
@@ -242,13 +244,4 @@ class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
       },
     );
   }
-}
-
-/// Selection key for a recently selected item.
-String productSearchHubRecentItemSelectionKey(InventoryItem item) {
-  final normalizedBarcode = item.barcode?.trim();
-  if (normalizedBarcode != null && normalizedBarcode.isNotEmpty) {
-    return normalizedBarcode;
-  }
-  return 'recent-item-${item.id}';
 }

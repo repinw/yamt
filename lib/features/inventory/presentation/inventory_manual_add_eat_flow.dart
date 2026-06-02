@@ -25,6 +25,7 @@ Future<bool> completeInventoryManualAddEatFlow({
   required BuildContext context,
   required InventoryItem item,
   required InventoryItemEatRequest request,
+  void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final maxAmount = resolveInventoryManualAddConsumableAmount(item);
@@ -83,6 +84,9 @@ Future<bool> completeInventoryManualAddEatFlow({
       itemBeforeMutation: item,
       request: request,
       pendingConsumptionId: pendingConsumption.id,
+      pendingConsumption: pendingConsumption,
+      inventoryController: inventoryController,
+      onDirectCalorieEntrySaved: onDirectCalorieEntrySaved,
     );
   } on Object catch (error, stackTrace) {
     log(

@@ -17,37 +17,42 @@ Future<DiaryActivityWeightData> diaryActivityWeightData(
   Ref ref,
   DateTime day,
 ) async {
-  final selectedDay = normalizeDiaryDay(day);
-  final goalState = ref.watch(calorieGoalControllerProvider);
-  final statusFuture = ref.watch(healthConnectionControllerProvider.future);
-  final manualEntriesFuture = ref.watch(
-    manualHealthWeightEntriesControllerProvider.future,
-  );
-  final service = ref.watch(diaryActivityWeightServiceProvider);
-  final diaryHealthService = ref.watch(diaryHealthServiceProvider);
-  final healthWeightService = ref.watch(healthWeightServiceProvider);
-  final status = await statusFuture;
-  if (!ref.mounted) {
-    throw StateError('Diary activity weight provider disposed.');
-  }
-  final manualEntries = await manualEntriesFuture;
-  if (!ref.mounted) {
-    throw StateError('Diary activity weight provider disposed.');
-  }
-  final calculatorProfile = goalState.value?.calculatorProfile;
+  final keepAliveLink = ref.keepAlive();
+  try {
+    final selectedDay = normalizeDiaryDay(day);
+    final goalState = ref.watch(calorieGoalControllerProvider);
+    final statusFuture = ref.watch(healthConnectionControllerProvider.future);
+    final manualEntriesFuture = ref.watch(
+      manualHealthWeightEntriesControllerProvider.future,
+    );
+    final service = ref.watch(diaryActivityWeightServiceProvider);
+    final diaryHealthService = ref.watch(diaryHealthServiceProvider);
+    final healthWeightService = ref.watch(healthWeightServiceProvider);
+    final status = await statusFuture;
+    if (!ref.mounted) {
+      throw StateError('Diary activity weight provider disposed.');
+    }
+    final manualEntries = await manualEntriesFuture;
+    if (!ref.mounted) {
+      throw StateError('Diary activity weight provider disposed.');
+    }
+    final calculatorProfile = goalState.value?.calculatorProfile;
 
-  return service.load(
-    day: selectedDay,
-    profile: calculatorProfile == null
-        ? null
-        : DiaryActivityWeightProfile(
-            weightKg: calculatorProfile.weightKg,
-            heightCm: calculatorProfile.heightCm,
-          ),
-    healthStatus: status,
-    manualEntries: manualEntries,
-    diaryHealthService: diaryHealthService,
-    healthWeightService: healthWeightService,
-    isCancelled: () => !ref.mounted,
-  );
+    return service.load(
+      day: selectedDay,
+      profile: calculatorProfile == null
+          ? null
+          : DiaryActivityWeightProfile(
+              weightKg: calculatorProfile.weightKg,
+              heightCm: calculatorProfile.heightCm,
+            ),
+      healthStatus: status,
+      manualEntries: manualEntries,
+      diaryHealthService: diaryHealthService,
+      healthWeightService: healthWeightService,
+      isCancelled: () => !ref.mounted,
+    );
+  } finally {
+    keepAliveLink.close();
+  }
 }

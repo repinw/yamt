@@ -22,6 +22,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _activityWeightStartupDelay = Duration(milliseconds: 700);
 const _activityWeightDayChangeDebounce = Duration(milliseconds: 400);
+const _activityWeightRefreshPeriod = Duration(minutes: 1);
 
 /// Activity and weight section for the diary page.
 class DiaryActivityWeightSection extends ConsumerStatefulWidget {
@@ -39,17 +40,18 @@ class DiaryActivityWeightSection extends ConsumerStatefulWidget {
   final Widget? header;
 
   @override
-  ConsumerState<DiaryActivityWeightSection> createState() {
-    return _DiaryActivityWeightSectionState();
-  }
+  ConsumerState<DiaryActivityWeightSection> createState() =>
+      _DiaryActivityWeightSectionState();
 }
 
 class _DiaryActivityWeightSectionState
-    extends ConsumerState<DiaryActivityWeightSection> {
+    extends ConsumerState<DiaryActivityWeightSection>
+    with WidgetsBindingObserver {
   DiaryActivityWeightData? _lastData;
   DateTime? _lastDataDay;
   DateTime? _dataDay;
   Timer? _dataLoadTimer;
+  Timer? _refreshTimer;
   var _isStepsExpanded = false;
   var _isActivityExpanded = false;
   var _isWeightExpanded = false;
@@ -57,6 +59,8 @@ class _DiaryActivityWeightSectionState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _startRefreshTimer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
@@ -82,8 +86,21 @@ class _DiaryActivityWeightSectionState
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _dataLoadTimer?.cancel();
+    _refreshTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startRefreshTimer();
+      _refreshDataDay();
+      return;
+    }
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
   }
 
   @override
@@ -105,8 +122,11 @@ class _DiaryActivityWeightSectionState
       _lastData = loadedData;
       _lastDataDay = dataDay;
     }
+    final lastDataDay = _lastDataDay;
     final canUseLastData =
-        hasCurrentDataDay && _isSameNullableLocalDay(_lastDataDay, dataDay);
+        hasCurrentDataDay &&
+        lastDataDay != null &&
+        isSameLocalDay(lastDataDay, normalizedDay);
     final data = canUseLastData ? loadedData ?? _lastData : null;
     final currentStepsState = hasCurrentDataDay
         ? stepsState
@@ -261,7 +281,20 @@ class _DiaryActivityWeightSectionState
     });
   }
 
-  bool _isSameNullableLocalDay(DateTime? left, DateTime? right) {
-    return left != null && right != null && isSameLocalDay(left, right);
+  void _startRefreshTimer() {
+    _refreshTimer ??= Timer.periodic(
+      _activityWeightRefreshPeriod,
+      (_) => _refreshDataDay(),
+    );
+  }
+
+  void _refreshDataDay() {
+    final dataDay = _dataDay;
+    if (!mounted || dataDay == null) {
+      return;
+    }
+    ref
+      ..invalidate(diaryActivityWeightDataProvider(dataDay))
+      ..invalidate(diaryStepsSummaryProvider(dataDay));
   }
 }

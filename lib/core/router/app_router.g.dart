@@ -139,12 +139,12 @@ final class AppRouterProvider
           inventoryManualAddQuickEatConfigProvider,
           diaryQuickEatInventoryProvider,
           diaryQuickEatInventoryActionsProvider,
-          inventoryBackedCalorieEntrySaveFlowProvider,
           cookingFlowControllerProvider,
           cookingFlowWizardControllerProvider,
           cookingInstructionStepsProvider,
           inventoryItemsControllerProvider,
           preparedMealsControllerProvider,
+          inventoryBackedCalorieEntrySaveFlowProvider,
           manualProductRecentItemsServiceProvider,
           preparedMealImagePickerProvider,
           inventoryActivityEventsProvider,
@@ -195,12 +195,12 @@ final class AppRouterProvider
       DiaryQuickEatInventoryProvider.$allTransitiveDependencies6;
   static final $allTransitiveDependencies9 =
       diaryQuickEatInventoryActionsProvider;
-  static final $allTransitiveDependencies10 =
-      inventoryBackedCalorieEntrySaveFlowProvider;
-  static final $allTransitiveDependencies11 = cookingFlowControllerProvider;
-  static final $allTransitiveDependencies12 =
+  static final $allTransitiveDependencies10 = cookingFlowControllerProvider;
+  static final $allTransitiveDependencies11 =
       cookingFlowWizardControllerProvider;
-  static final $allTransitiveDependencies13 = cookingInstructionStepsProvider;
+  static final $allTransitiveDependencies12 = cookingInstructionStepsProvider;
+  static final $allTransitiveDependencies13 =
+      inventoryBackedCalorieEntrySaveFlowProvider;
   static final $allTransitiveDependencies14 =
       manualProductRecentItemsServiceProvider;
   static final $allTransitiveDependencies15 = preparedMealImagePickerProvider;
@@ -236,4 +236,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'c85dde12af6bcb43e6ddf19c994e4e594b176eda';
+String _$appRouterHash() => r'd64c3db0515db4cb1a6850ff8b366c10baa9e357';

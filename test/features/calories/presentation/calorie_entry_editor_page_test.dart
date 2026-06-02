@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
@@ -29,6 +30,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
@@ -75,6 +77,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   Future<void> dispose() => _controller.close();
 }
 
+@Dependencies([InventoryItemsController])
 class _RecordingInventorySaveFlow
     implements InventoryBackedCalorieEntrySaveFlow {
   CalorieEntry? entry;
@@ -84,6 +87,8 @@ class _RecordingInventorySaveFlow
   Future<bool> saveEntry({
     required CalorieEntry entry,
     required String pendingConsumptionId,
+    PendingInventoryConsumption? pendingConsumption,
+    InventoryItemsController? inventoryController,
   }) async {
     this.entry = entry;
     this.pendingConsumptionId = pendingConsumptionId;
@@ -425,6 +430,7 @@ Widget _buildDirectEditorHarness({
   );
 }
 
+@Dependencies([InventoryItemsController])
 void main() {
   testWidgets('create editor refreshes draft when create context changes', (
     tester,

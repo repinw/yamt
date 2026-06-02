@@ -39,13 +39,21 @@ class InventoryManualProductSaveOutcome {
   const InventoryManualProductSaveOutcome._({
     required this.status,
     this.item,
+    this.calorieEntryId,
+    this.addMoreRequested = false,
   });
 
   /// Saved outcome.
-  factory InventoryManualProductSaveOutcome.saved(InventoryItem item) {
+  factory InventoryManualProductSaveOutcome.saved(
+    InventoryItem item, {
+    String? calorieEntryId,
+    bool addMoreRequested = false,
+  }) {
     return InventoryManualProductSaveOutcome._(
       status: InventoryManualProductSaveStatus.saved,
       item: item,
+      calorieEntryId: calorieEntryId,
+      addMoreRequested: addMoreRequested,
     );
   }
 
@@ -62,6 +70,12 @@ class InventoryManualProductSaveOutcome {
 
   /// Saved inventory item.
   final InventoryItem? item;
+
+  /// Calorie entry id created by an immediate diary eat flow.
+  final String? calorieEntryId;
+
+  /// Whether user asked to add another food after this save.
+  final bool addMoreRequested;
 }
 
 /// Saves edited manual product result using inventory persistence rules.
@@ -112,9 +126,40 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
   }
 
   final now = DateTime.now();
-  final inventoryItemsController = container.read(
-    inventoryItemsControllerProvider.notifier,
+  final inventorySubscription = container.listen(
+    inventoryItemsControllerProvider,
+    (_, _) {},
+    fireImmediately: true,
   );
+  try {
+    final inventoryItemsController = container.read(
+      inventoryItemsControllerProvider.notifier,
+    );
+    await container.read(inventoryItemsControllerProvider.future);
+    if (!context.mounted) {
+      return const InventoryManualProductSaveOutcome.canceled();
+    }
+    return await _saveManualProductWithReadyInventory(
+      container: container,
+      l10n: l10n,
+      result: result,
+      promptResult: promptResult,
+      now: now,
+      inventoryItemsController: inventoryItemsController,
+    );
+  } finally {
+    inventorySubscription.close();
+  }
+}
+
+Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
+  required ProviderContainer container,
+  required AppLocalizations l10n,
+  required InventoryReceiptManualProductResult result,
+  required _ManualBarcodePromptResult promptResult,
+  required DateTime now,
+  required InventoryItemsController inventoryItemsController,
+}) async {
   final globalProduct = buildInventoryManualAddGlobalFoodItem(
     item: promptResult.item,
     barcode: promptResult.barcode,

@@ -10,6 +10,7 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -42,6 +43,9 @@ class InventoryItemEatFlow {
     required InventoryItem itemBeforeMutation,
     required InventoryItemEatRequest request,
     required String pendingConsumptionId,
+    PendingInventoryConsumption? pendingConsumption,
+    InventoryItemsController? inventoryController,
+    void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
   }) async {
     try {
       final l10n = AppLocalizations.of(context)!;
@@ -81,6 +85,9 @@ class InventoryItemEatFlow {
           scannedSourceRef: scannedSourceRef,
           loggedAt: request.loggedAt,
           mealType: request.mealType,
+          pendingConsumption: pendingConsumption,
+          inventoryController: inventoryController,
+          onDirectCalorieEntrySaved: onDirectCalorieEntrySaved,
         );
         if (saved) {
           if (context.mounted) {

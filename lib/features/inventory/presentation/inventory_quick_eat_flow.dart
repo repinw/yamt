@@ -4,6 +4,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart'
     as inventory_item_eat_sheet;
@@ -31,6 +33,32 @@ abstract final class InventoryQuickEatFlow {
       initialInventoryAmount: initialInventoryAmount,
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
+    );
+  }
+
+  /// Shows the item eat sheet with continuation intent.
+  static Future<InventoryItemEatSheetResult?> showItemSheetResult({
+    required BuildContext context,
+    required InventoryItem item,
+    required int maxAmount,
+    required String invalidAmountMessage,
+    InventoryItemEatSheetIntent confirmIntent =
+        InventoryItemEatSheetIntent.logOnly,
+    int? initialInventoryAmount,
+    DateTime? initialLoggedAt,
+    MealType? initialMealType,
+    String? addMoreActionText,
+  }) {
+    return inventory_item_eat_sheet.showInventoryItemEatSheetResult(
+      context: context,
+      item: item,
+      maxAmount: maxAmount,
+      invalidAmountMessage: invalidAmountMessage,
+      confirmIntent: confirmIntent,
+      initialInventoryAmount: initialInventoryAmount,
+      initialLoggedAt: initialLoggedAt,
+      initialMealType: initialMealType,
+      addMoreActionText: addMoreActionText,
     );
   }
 

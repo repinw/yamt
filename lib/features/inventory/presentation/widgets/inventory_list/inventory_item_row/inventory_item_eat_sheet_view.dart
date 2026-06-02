@@ -45,6 +45,11 @@ class InventoryItemEatSheetView extends StatelessWidget {
         'inventory_item_amount_dialog_confirm_button',
       ),
       onConfirm: data.footer.onConfirm,
+      secondaryActionText: data.footer.addMoreActionText,
+      secondaryButtonKey: const Key(
+        'inventory_item_amount_dialog_add_more_button',
+      ),
+      onSecondaryConfirm: data.footer.onAddMore,
       children: [
         if (data.nutritionMetrics.isNotEmpty) ...[
           NutritionMetricsStrip(
