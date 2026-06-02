@@ -340,6 +340,33 @@ void main() {
 
     expect(find.textContaining('Prepared meal action failed'), findsOneWidget);
   });
+
+  testWidgets('prepared meal consume success refreshes diary dashboard', (
+    tester,
+  ) async {
+    var dashboardRetryCount = 0;
+    await _pumpInventoryFlowHarness(
+      tester,
+      inventoryItems: const <InventoryItem>[],
+      preparedMeals: [
+        _preparedMeal(id: 'meal-1', name: 'Refresh Meal'),
+      ],
+      onDashboardRetry: (_) {
+        dashboardRetryCount += 1;
+        return null;
+      },
+    );
+
+    await tester.tap(find.byKey(_openInventoryFlowButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Refresh Meal'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(dashboardRetryCount, greaterThanOrEqualTo(1));
+  });
 }
 
 const _openFlowButtonKey = Key('open_quick_eat_flow');
@@ -419,7 +446,7 @@ class _RouteHarness extends StatelessWidget {
   diaryQuickEatInventory,
   inventoryBackedCalorieEntrySaveFlow,
 ])
-class _QuickEatRouteLauncher extends ConsumerWidget {
+class _QuickEatRouteLauncher extends StatelessWidget {
   const _QuickEatRouteLauncher({
     required this.source,
     required this.selectedDay,
@@ -429,7 +456,7 @@ class _QuickEatRouteLauncher extends ConsumerWidget {
   final DateTime selectedDay;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       body: TextButton(
         key: _openFlowButtonKey,
@@ -437,7 +464,6 @@ class _QuickEatRouteLauncher extends ConsumerWidget {
           unawaited(
             DiaryQuickEatFlow.openSource(
               context: context,
-              ref: ref,
               source: source,
               mealType: MealType.lunch,
               selectedDay: selectedDay,
@@ -475,11 +501,15 @@ Future<void> _pumpInventoryFlowHarness(
   required List<PreparedMeal> preparedMeals,
   bool failInventoryStage = false,
   bool failPreparedMealConsume = false,
+  DiaryDayDashboardState? Function(int retryCount)? onDashboardRetry,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        _dashboardOverrideFor(_inventoryFlowDay),
+        _dashboardOverrideFor(
+          _inventoryFlowDay,
+          onRetry: onDashboardRetry,
+        ),
         inventoryItemsControllerProvider.overrideWith(
           () => _TestInventoryItemsController(
             inventoryItems,
@@ -541,15 +571,15 @@ Future<void> _pumpDelayedInventoryFlowHarness(
 
 @Dependencies([
   InventoryItemsController,
-  diaryQuickEatInventory,
   PreparedMealsController,
+  diaryQuickEatInventory,
   inventoryBackedCalorieEntrySaveFlow,
 ])
-class _InventoryFlowHarness extends ConsumerWidget {
+class _InventoryFlowHarness extends StatelessWidget {
   const _InventoryFlowHarness();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       body: TextButton(
         key: _openInventoryFlowButtonKey,
@@ -557,7 +587,6 @@ class _InventoryFlowHarness extends ConsumerWidget {
           unawaited(
             DiaryQuickEatFlow.openSource(
               context: context,
-              ref: ref,
               source: DiaryQuickEatSource.inventory,
               mealType: MealType.lunch,
               selectedDay: _inventoryFlowDay,
@@ -570,11 +599,15 @@ class _InventoryFlowHarness extends ConsumerWidget {
   }
 }
 
-Override _dashboardOverrideFor(DateTime day) {
+Override _dashboardOverrideFor(
+  DateTime day, {
+  DiaryDayDashboardState? Function(int retryCount)? onRetry,
+}) {
   final normalizedDay = normalizeDiaryDay(day);
   return diaryDayDashboardControllerProvider(normalizedDay).overrideWith(
     () => FakeDiaryDayDashboardController(
       diaryDashboardLoadedStateForTest(selectedDay: normalizedDay),
+      onRetry: onRetry,
     ),
   );
 }

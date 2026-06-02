@@ -54,4 +54,4 @@ final class CalorieHealthActivityCacheWarmupProvider
 }
 
 String _$calorieHealthActivityCacheWarmupHash() =>
-    r'b5db599b8b00dcfa440b5423a8ea3742e4eafc93';
+    r'00660747aa61f2fa7e371b34cec9a39a3d864f07';

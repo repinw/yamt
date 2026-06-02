@@ -1,11 +1,9 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
@@ -13,15 +11,16 @@ import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
-import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
-import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
 part 'diary_day_dashboard_controller.g.dart';
 
 const _keepError = Object();
+const _mutationRefreshSettlingDelay = Duration(milliseconds: 650);
 
 /// State for one diary day dashboard.
 class DiaryDayDashboardState {
@@ -68,6 +67,9 @@ class DiaryDayDashboardState {
 @riverpod
 class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   Future<void>? _refreshInFlight;
+  Timer? _settledMutationRefreshTimer;
+  int _refreshGeneration = 0;
+  var _refreshQueued = false;
 
   @override
   DiaryDayDashboardState build(DateTime selectedDay) {
@@ -77,6 +79,9 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         ref.watch(firebaseAuthProvider).currentUser?.uid;
     final preferences = ref.watch(appPreferencesProvider);
     final cacheStore = ref.watch(diaryDayDashboardCacheStoreProvider);
+    ref.onDispose(() {
+      _settledMutationRefreshTimer?.cancel();
+    });
     final cachedData = userId == null
         ? null
         : cacheStore.readSync(
@@ -89,14 +94,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       if (previous == null || previous == next) {
         return;
       }
-      unawaited(
-        _refresh(
-          normalizedDay: normalizedDay,
-          userId: userId,
-          preferences: preferences,
-          cacheStore: cacheStore,
-        ),
-      );
+      refreshAfterMutation();
     });
 
     unawaited(
@@ -120,8 +118,29 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
 
   /// Refreshes this dashboard from live providers.
   Future<void> retry() {
-    final normalizedDay = normalizeDiaryDay(selectedDay);
+    return _refreshSelectedDay(queueIfInFlight: true);
+  }
 
+  /// Refreshes after a calorie mutation that may need backend settling time.
+  void refreshAfterMutation() {
+    unawaited(_refreshSelectedDay(forceRefresh: true));
+    _settledMutationRefreshTimer?.cancel();
+    _settledMutationRefreshTimer = Timer(
+      _mutationRefreshSettlingDelay,
+      () {
+        if (!ref.mounted) {
+          return;
+        }
+        unawaited(_refreshSelectedDay(forceRefresh: true));
+      },
+    );
+  }
+
+  Future<void> _refreshSelectedDay({
+    bool queueIfInFlight = false,
+    bool forceRefresh = false,
+  }) {
+    final normalizedDay = normalizeDiaryDay(selectedDay);
     return _refresh(
       normalizedDay: normalizedDay,
       userId:
@@ -129,6 +148,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           ref.read(firebaseAuthProvider).currentUser?.uid,
       preferences: ref.read(appPreferencesProvider),
       cacheStore: ref.read(diaryDayDashboardCacheStoreProvider),
+      queueIfInFlight: queueIfInFlight,
+      forceRefresh: forceRefresh,
     );
   }
 
@@ -137,26 +158,36 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     required String? userId,
     required AppPreferences preferences,
     required DiaryDayDashboardCacheStore cacheStore,
+    bool queueIfInFlight = false,
+    bool forceRefresh = false,
   }) async {
     final inFlight = _refreshInFlight;
-    if (inFlight != null) {
+    if (inFlight != null && !forceRefresh) {
+      if (queueIfInFlight) {
+        _refreshQueued = true;
+      }
       return inFlight;
     }
 
-    final refresh = _runRefresh(
-      normalizedDay: normalizedDay,
-      userId: userId,
-      preferences: preferences,
-      cacheStore: cacheStore,
-    );
-    _refreshInFlight = refresh;
-    try {
-      await refresh;
-    } finally {
-      if (identical(_refreshInFlight, refresh)) {
-        _refreshInFlight = null;
+    do {
+      _refreshQueued = false;
+      final generation = ++_refreshGeneration;
+      final refresh = _runRefresh(
+        normalizedDay: normalizedDay,
+        userId: userId,
+        preferences: preferences,
+        cacheStore: cacheStore,
+        generation: generation,
+      );
+      _refreshInFlight = refresh;
+      try {
+        await refresh;
+      } finally {
+        if (identical(_refreshInFlight, refresh)) {
+          _refreshInFlight = null;
+        }
       }
-    }
+    } while (_refreshQueued && ref.mounted);
   }
 
   Future<void> _runRefresh({
@@ -164,6 +195,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     required String? userId,
     required AppPreferences preferences,
     required DiaryDayDashboardCacheStore cacheStore,
+    required int generation,
   }) async {
     state = state.copyWith(isRefreshing: true, error: null);
     _invalidateDashboardInputs(normalizedDay);
@@ -172,7 +204,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       final liveData = await ref.read(
         diaryDayDashboardLiveDataProvider(normalizedDay).future,
       );
-      if (!ref.mounted) {
+      if (!_isCurrentRefresh(generation)) {
         return;
       }
       final selectedDayEntries = liveData.selectedDayEntries;
@@ -183,8 +215,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         weekOverview: liveData.weekOverview,
         selectedDayEntries: selectedDayEntries,
         runState: liveData.runState,
-        mealSections: _mealSectionsFrom(selectedDayEntries),
-        nutritionBars: _nutritionBarsFrom(
+        mealSections: buildDiaryDashboardMealSections(selectedDayEntries),
+        nutritionBars: buildDiaryDashboardNutritionBars(
           selectedDayEntries,
           liveData.selectedDayOverview.goalKcal,
         ),
@@ -203,11 +235,11 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           data: data,
         );
       }
-      if (ref.mounted) {
+      if (_isCurrentRefresh(generation)) {
         ref.read(burnWeekLiveSyncProvider);
       }
     } on Object catch (error) {
-      if (!ref.mounted) {
+      if (!_isCurrentRefresh(generation)) {
         return;
       }
       if (_isDisposedDuringProviderLoad(error)) {
@@ -216,6 +248,10 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       }
       state = state.copyWith(isRefreshing: false, error: error);
     }
+  }
+
+  bool _isCurrentRefresh(int generation) {
+    return ref.mounted && generation == _refreshGeneration;
   }
 
   void _invalidateDashboardInputs(DateTime normalizedDay) {
@@ -233,66 +269,4 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
 
 bool _isDisposedDuringProviderLoad(Object error) {
   return error is StateError && error.message.contains('disposed');
-}
-
-List<DiaryMealSection> _mealSectionsFrom(List<CalorieEntry> entries) {
-  final sectionEntries = <MealType, List<DiaryMealEntry>>{
-    for (final mealType in MealType.sectionOrder) mealType: <DiaryMealEntry>[],
-  };
-  final sectionKcal = <MealType, double>{
-    for (final mealType in MealType.sectionOrder) mealType: 0,
-  };
-
-  for (final entry in entries) {
-    sectionEntries[entry.mealType]?.add(_mealEntryFrom(entry));
-    sectionKcal[entry.mealType] =
-        (sectionKcal[entry.mealType] ?? 0) + entry.totalKcal;
-  }
-
-  return MealType.sectionOrder
-      .map((mealType) {
-        return DiaryMealSection(
-          mealType: mealType,
-          entries: List<DiaryMealEntry>.unmodifiable(
-            sectionEntries[mealType] ?? const <DiaryMealEntry>[],
-          ),
-          totalKcal: sectionKcal[mealType] ?? 0,
-        );
-      })
-      .toList(growable: false);
-}
-
-DiaryMealEntry _mealEntryFrom(CalorieEntry entry) {
-  return DiaryMealEntry(
-    id: entry.id,
-    mealType: entry.mealType,
-    name: entry.name,
-    imageUrl: entry.imageUrl,
-    imageAssetId: entry.imageAssetId,
-    totalKcal: entry.totalKcal,
-    totalProtein: entry.totalProtein,
-    totalCarbs: entry.totalCarbs,
-    totalFat: entry.totalFat,
-  );
-}
-
-DiaryNutritionBarsData _nutritionBarsFrom(
-  List<CalorieEntry> entries,
-  double goalKcal,
-) {
-  var carbs = 0.0;
-  var protein = 0.0;
-  var fat = 0.0;
-  for (final entry in entries) {
-    carbs += entry.totalCarbs;
-    protein += entry.totalProtein;
-    fat += entry.totalFat;
-  }
-
-  return DiaryNutritionBarsData(
-    carbs: carbs,
-    protein: protein,
-    fat: fat,
-    goals: DiaryMacroTargets.fromGoalKcal(goalKcal),
-  );
 }

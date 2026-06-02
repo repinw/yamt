@@ -55,9 +55,9 @@ enum _InventoryPageView { stock, history }
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,
-  inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
   inventoryActivityEvents,
+  inventoryBackedCalorieEntrySaveFlow,
 ])
 class InventoryPage extends ConsumerStatefulWidget {
   /// The inventory page.
@@ -530,6 +530,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         itemBeforeMutation: selectedItem,
         request: request,
         pendingConsumptionId: pendingConsumption.id,
+        pendingConsumption: pendingConsumption,
+        inventoryController: inventoryController,
       );
       return true;
     }
@@ -541,6 +543,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         itemBeforeMutation: selectedItem,
         request: request,
         pendingConsumptionId: pendingConsumption.id,
+        pendingConsumption: pendingConsumption,
+        inventoryController: inventoryController,
       ),
     );
     return true;

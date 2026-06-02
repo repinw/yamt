@@ -104,7 +104,6 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
                 onQuickAdd: (source) => unawaited(
                   DiaryQuickEatFlow.openSource(
                     context: context,
-                    ref: ref,
                     source: source,
                     mealType: section.mealType,
                     selectedDay: normalizedDay,

@@ -24,9 +24,42 @@ productSearchHubDirectBarcodeProductResult({
   required OffProductSearchResult product,
   required manual_product_models.InventoryReceiptManualProductAction action,
 }) {
-  if (!_canUseDirectBarcodeEatResult(args: args, action: action)) {
+  if (!_canUseDirectEatResult(args: args, action: action)) {
     return null;
   }
+  return productSearchHubDirectProductResult(
+    container: container,
+    draftItem: draftItem,
+    product: product,
+    action: action,
+  );
+}
+
+/// Builds a direct diary eat result for selected OFF products.
+inventory_models.InventoryReceiptManualProductResult?
+productSearchHubDirectDiaryProductResult({
+  required ProviderContainer container,
+  required InventoryItem draftItem,
+  required ProductSearchHubRouteArgs args,
+  required OffProductSearchResult product,
+}) {
+  return productSearchHubDirectBarcodeProductResult(
+    container: container,
+    draftItem: draftItem,
+    args: args,
+    product: product,
+    action: manual_product_models.InventoryReceiptManualProductAction.eatNow,
+  );
+}
+
+/// Builds a direct result for selected OFF products.
+inventory_models.InventoryReceiptManualProductResult?
+productSearchHubDirectProductResult({
+  required ProviderContainer container,
+  required InventoryItem draftItem,
+  required OffProductSearchResult product,
+  required manual_product_models.InventoryReceiptManualProductAction action,
+}) {
   final config = manual_product_models.InventoryReceiptManualProductConfig(
     item: draftItem,
     selectedProduct: product,
@@ -60,20 +93,56 @@ productSearchHubDirectBarcodeInventoryItemResult({
   required String? selectedGlobalFoodItemId,
   required String? globalPackageWeight,
 }) {
-  if (!_canUseDirectBarcodeEatResult(args: args, action: action) ||
+  if (!_canUseDirectEatResult(args: args, action: action) ||
       !hasRequiredEatNowNutrition(item.nutrition)) {
     return null;
   }
+  return productSearchHubDirectInventoryItemResult(
+    item: item,
+    action: action,
+    selectedGlobalFoodItemId: selectedGlobalFoodItemId,
+    globalPackageWeight: globalPackageWeight,
+  );
+}
+
+/// Builds a direct diary eat result for inventory-backed items.
+inventory_models.InventoryReceiptManualProductResult?
+productSearchHubDirectDiaryInventoryItemResult({
+  required ProductSearchHubRouteArgs args,
+  required InventoryItem item,
+  required String? selectedGlobalFoodItemId,
+  required String? globalPackageWeight,
+}) {
+  return productSearchHubDirectBarcodeInventoryItemResult(
+    args: args,
+    item: item,
+    action: manual_product_models.InventoryReceiptManualProductAction.eatNow,
+    selectedGlobalFoodItemId: selectedGlobalFoodItemId,
+    globalPackageWeight: globalPackageWeight,
+  );
+}
+
+/// Builds a direct result for inventory-backed items.
+inventory_models.InventoryReceiptManualProductResult?
+productSearchHubDirectInventoryItemResult({
+  required InventoryItem item,
+  required manual_product_models.InventoryReceiptManualProductAction action,
+  required String? selectedGlobalFoodItemId,
+  required String? globalPackageWeight,
+}) {
   return inventory_models.InventoryReceiptManualProductResult(
     item: item,
     action: action,
     selectedGlobalFoodItemId: selectedGlobalFoodItemId,
     requiresGlobalPersistence: false,
     globalPackageWeight: globalPackageWeight,
+    skipMissingBarcodePrompt:
+        action ==
+        manual_product_models.InventoryReceiptManualProductAction.eatNow,
   );
 }
 
-bool _canUseDirectBarcodeEatResult({
+bool _canUseDirectEatResult({
   required ProductSearchHubRouteArgs args,
   required manual_product_models.InventoryReceiptManualProductAction action,
 }) {

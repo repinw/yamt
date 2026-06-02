@@ -396,8 +396,8 @@ ShoppingListItem _shoppingItem(
   receiptCameraSupported,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
-  inventoryBackedCalorieEntrySaveFlow,
   inventoryActivityEvents,
+  inventoryBackedCalorieEntrySaveFlow,
 ])
 Widget _buildTestApp(
   InventoryItemRepository repository, {
@@ -511,9 +511,9 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   receiptCameraSupported,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
-  inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
   inventoryActivityEvents,
+  inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {

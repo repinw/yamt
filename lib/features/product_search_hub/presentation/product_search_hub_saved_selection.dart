@@ -6,6 +6,7 @@ class ProductSearchHubSavedSelection {
   const ProductSearchHubSavedSelection({
     required this.item,
     required this.sourceKey,
+    this.calorieEntryId,
   });
 
   /// Saved inventory item.
@@ -13,4 +14,7 @@ class ProductSearchHubSavedSelection {
 
   /// Stable source key used to show selected indicators.
   final String sourceKey;
+
+  /// Diary entry id created by an immediate eat flow.
+  final String? calorieEntryId;
 }

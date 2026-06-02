@@ -7,8 +7,6 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
-import 'package:yamt/features/inventory/data/'
-    'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
@@ -22,18 +20,15 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_editor_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_entry_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_navigation.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_result_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_selection_state.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_search_hub_recently_selected_tab/'
-    'product_search_hub_recently_selected_tab.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_scaffold/product_search_hub_scaffold.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -116,44 +111,30 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
           ? widget.args.withVoiceSearchOnMount()
           : widget.args,
     );
-    if (!context.mounted || result == null) {
+    if (!mounted || result == null) {
       return;
     }
-    if (result is OffProductSearchResult) {
-      await _editAndSaveSelectedProduct(result);
-      return;
-    }
-    if (result is ProductSearchHubEditedResult) {
-      await _completeEditedResult(
-        sourceKey: result.sourceKey,
-        result: result.result,
-      );
-    }
+    await handleProductSearchHubSearchResult(
+      context: context,
+      args: widget.args,
+      result: result,
+      isSourceBlocked: _isSourceBlocked,
+      completeResult: _completeEditedResult,
+    );
   }
-
-  Future<void> _editAndSaveSelectedProduct(OffProductSearchResult product) =>
-      _editAndSave(
-        sourceKey: product.code,
-        openEditor: (draftItem) => openProductSearchHubSelectedProductEditor(
-          context: context,
-          draftItem: draftItem,
-          product: product,
-          args: widget.args,
-        ),
-      );
 
   void _addRecentlySelectedProduct(InventoryItem item) =>
       unawaited(_editAndSaveRecentItem(item));
 
-  Future<void> _editAndSaveRecentItem(InventoryItem item) => _editAndSave(
-    sourceKey: productSearchHubRecentItemSelectionKey(item),
-    openEditor: (draftItem) => openProductSearchHubRecentItemEditor(
+  Future<void> _editAndSaveRecentItem(InventoryItem item) {
+    return editAndSaveProductSearchHubRecentItem(
       context: context,
-      draftItem: draftItem,
-      recentItem: item,
       args: widget.args,
-    ),
-  );
+      item: item,
+      isSourceBlocked: _isSourceBlocked,
+      completeResult: _completeEditedResult,
+    );
+  }
 
   void _openInitialIntent() {
     switch (widget.args.initialIntent) {
@@ -193,35 +174,15 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     );
   }
 
-  Future<void> _editAndSave({
-    required String sourceKey,
-    required Future<inventory_models.InventoryReceiptManualProductResult?>
-    Function(
-      InventoryItem draftItem,
-    )
-    openEditor,
-  }) async {
-    if (_selectionState.containsSourceKey(sourceKey) || _isMutatingSelection) {
-      return;
-    }
-
-    final l10n = AppLocalizations.of(context)!;
-    final draftItem = buildProductSearchHubDraftItem(
-      l10n: l10n,
-      sourceItem: widget.args.item,
-    );
-    final result = await openEditor(draftItem);
-    if (!context.mounted || result == null) {
-      return;
-    }
-    await _completeEditedResult(sourceKey: sourceKey, result: result);
+  bool _isSourceBlocked(String sourceKey) {
+    return _selectionState.containsSourceKey(sourceKey) || _isMutatingSelection;
   }
 
   Future<void> _completeEditedResult({
     required String sourceKey,
     required inventory_models.InventoryReceiptManualProductResult result,
   }) async {
-    if (_selectionState.containsSourceKey(sourceKey) || _isMutatingSelection) {
+    if (_isSourceBlocked(sourceKey)) {
       return;
     }
     if (widget.args.mode == ProductSearchHubMode.selection) {
@@ -233,23 +194,31 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
 
     setState(() => _isMutatingSelection = true);
 
-    final selection = await completeProductSearchHubResult(
+    final completion = await completeProductSearchHubResult(
       context: context,
       container: container,
       l10n: l10n,
       args: widget.args,
       sourceKey: sourceKey,
       result: result,
+      continueDiaryBatch: _selectionState.selections.isNotEmpty,
     );
     if (!context.mounted) {
       return;
     }
+    final shouldContinueBatch =
+        completion.shouldCloseHub && _selectionState.selections.isNotEmpty;
     setState(() {
       _isMutatingSelection = false;
-      if (selection != null) {
+      final selection = completion.selection;
+      if (selection != null &&
+          (!completion.shouldCloseHub || shouldContinueBatch)) {
         _selectionState = _selectionState.add(selection);
       }
     });
+    if (completion.shouldCloseHub && !shouldContinueBatch) {
+      _closeHub(true);
+    }
   }
 
   Future<void> _removeSavedSelection(
@@ -262,7 +231,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     final container = ProviderScope.containerOf(context, listen: false);
     final deleted = await removeProductSearchHubSelection(
       container: container,
-      item: selection.item,
+      selection: selection,
     );
     if (!mounted) {
       return;

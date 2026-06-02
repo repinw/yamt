@@ -154,11 +154,100 @@ void main() {
     },
   );
 
-  test('coalesces overlapping live refreshes', () async {
+  test(
+    'queues one follow-up refresh when retry overlaps live refresh',
+    () async {
+      final preferences = MemoryAppPreferences();
+      final logRepository = FakeCalorieLogRepository();
+      final weekOverviewCompleter = Completer<CalorieWeekOverview>();
+      final observer = _RecordingProviderObserver();
+      var weekOverviewReadCount = 0;
+      addTearDown(logRepository.dispose);
+
+      final container = _dashboardContainer(
+        preferences: preferences,
+        logRepository: logRepository,
+        selectedDay: selectedDay,
+        observers: [observer],
+        weekOverviewBuilder: () {
+          weekOverviewReadCount += 1;
+          return weekOverviewCompleter.future;
+        },
+      );
+      addTearDown(container.dispose);
+
+      final provider = diaryDayDashboardControllerProvider(selectedDay);
+      final subscription = container.listen(
+        provider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+      await Future<void>.delayed(Duration.zero);
+
+      final retryFuture = container.read(provider.notifier).retry();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(weekOverviewReadCount, 1);
+
+      weekOverviewCompleter.complete(
+        diaryWeekOverviewForTest(selectedDay: selectedDay),
+      );
+      await retryFuture;
+      final refreshed = await _waitForDashboardRefresh(container, selectedDay);
+
+      expect(refreshed.isRefreshing, isFalse);
+      expect(refreshed.error, isNull);
+      expect(observer.failures, isEmpty);
+      expect(weekOverviewReadCount, 2);
+    },
+  );
+
+  test('mutation refresh performs settled follow-up refresh', () async {
     final preferences = MemoryAppPreferences();
     final logRepository = FakeCalorieLogRepository();
-    final weekOverviewCompleter = Completer<CalorieWeekOverview>();
-    final observer = _RecordingProviderObserver();
+    var entryReadCount = 0;
+    logRepository.onReadEntriesForDay = (day) async {
+      entryReadCount += 1;
+      if (entryReadCount < 3) {
+        return const <CalorieEntry>[];
+      }
+      return [_entry(selectedDay, name: 'Settled oats')];
+    };
+    addTearDown(logRepository.dispose);
+
+    final container = _dashboardContainer(
+      preferences: preferences,
+      logRepository: logRepository,
+      selectedDay: selectedDay,
+    );
+    addTearDown(container.dispose);
+
+    final provider = diaryDayDashboardControllerProvider(selectedDay);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    final initial = await _waitForDashboardRefresh(container, selectedDay);
+    expect(initial.data?.selectedDayEntries, isEmpty);
+
+    container.read(provider.notifier).refreshAfterMutation();
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+
+    final refreshed = container.read(provider);
+    expect(entryReadCount, greaterThanOrEqualTo(3));
+    expect(refreshed.data?.selectedDayEntries.single.name, 'Settled oats');
+  });
+
+  test('mutation refresh bypasses blocked initial refresh', () async {
+    final preferences = MemoryAppPreferences();
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: [_entry(selectedDay, name: 'Mutation oats')],
+    );
+    final initialWeekOverviewCompleter = Completer<CalorieWeekOverview>();
     var weekOverviewReadCount = 0;
     addTearDown(logRepository.dispose);
 
@@ -166,10 +255,15 @@ void main() {
       preferences: preferences,
       logRepository: logRepository,
       selectedDay: selectedDay,
-      observers: [observer],
       weekOverviewBuilder: () {
         weekOverviewReadCount += 1;
-        return weekOverviewCompleter.future;
+        if (weekOverviewReadCount == 1) {
+          return initialWeekOverviewCompleter.future;
+        }
+        return diaryWeekOverviewForTest(
+          selectedDay: selectedDay,
+          dayTotals: const <double>[0, 0, 0, 0, 0, 0, 240],
+        );
       },
     );
     addTearDown(container.dispose);
@@ -183,21 +277,24 @@ void main() {
     addTearDown(subscription.close);
     await Future<void>.delayed(Duration.zero);
 
-    final retryFuture = container.read(provider.notifier).retry();
-    await Future<void>.delayed(Duration.zero);
-
+    expect(container.read(provider).isRefreshing, isTrue);
     expect(weekOverviewReadCount, 1);
 
-    weekOverviewCompleter.complete(
-      diaryWeekOverviewForTest(selectedDay: selectedDay),
-    );
-    await retryFuture;
+    container.read(provider.notifier).refreshAfterMutation();
     final refreshed = await _waitForDashboardRefresh(container, selectedDay);
 
-    expect(refreshed.isRefreshing, isFalse);
-    expect(refreshed.error, isNull);
-    expect(observer.failures, isEmpty);
-    expect(weekOverviewReadCount, 1);
+    expect(weekOverviewReadCount, 2);
+    expect(refreshed.data?.selectedDayEntries.single.name, 'Mutation oats');
+
+    initialWeekOverviewCompleter.complete(
+      diaryWeekOverviewForTest(selectedDay: selectedDay),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(
+      container.read(provider).data?.selectedDayEntries.single.name,
+      'Mutation oats',
+    );
   });
 }
 

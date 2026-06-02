@@ -1,9 +1,11 @@
 import 'dart:developer' show log;
 
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
 part 'inventory_backed_calorie_entry_save_flow.g.dart';
@@ -15,40 +17,38 @@ const _flowLogName = 'InventoryBackedCalorieEntrySaveFlow';
 InventoryBackedCalorieEntrySaveFlow inventoryBackedCalorieEntrySaveFlow(
   Ref ref,
 ) {
-  return InventoryBackedCalorieEntrySaveFlow(
-    inventoryController: ref.read(
-      inventoryItemsControllerProvider.notifier,
-    ),
-    commitStore: ref.read(inventoryCalorieEntryCommitStoreProvider),
-  );
+  return InventoryBackedCalorieEntrySaveFlow(ref: ref);
 }
 
 /// Defines inventory backed calorie entry save flow.
+@Dependencies([InventoryItemsController])
 class InventoryBackedCalorieEntrySaveFlow {
   /// The inventory backed calorie entry save flow.
-  const InventoryBackedCalorieEntrySaveFlow({
-    required InventoryItemsController inventoryController,
-    required InventoryCalorieEntryCommitStore commitStore,
-  }) : _inventoryController = inventoryController,
-       _commitStore = commitStore;
+  const InventoryBackedCalorieEntrySaveFlow({required Ref ref}) : _ref = ref;
 
-  final InventoryItemsController _inventoryController;
-  final InventoryCalorieEntryCommitStore _commitStore;
+  final Ref _ref;
 
   /// Save entry.
   Future<bool> saveEntry({
     required CalorieEntry entry,
     required String pendingConsumptionId,
+    PendingInventoryConsumption? pendingConsumption,
+    InventoryItemsController? inventoryController,
   }) async {
     log(
       'Starting inventory-backed calorie save for ${entry.id} '
       '(pendingConsumptionId=$pendingConsumptionId).',
       name: _flowLogName,
     );
-    final pendingConsumption = _inventoryController.pendingConsumptionById(
-      pendingConsumptionId,
-    );
-    if (pendingConsumption == null) {
+    final effectiveInventoryController =
+        inventoryController ??
+        _ref.read(inventoryItemsControllerProvider.notifier)!;
+    final effectivePendingConsumption =
+        pendingConsumption ??
+        effectiveInventoryController.pendingConsumptionById(
+          pendingConsumptionId,
+        );
+    if (effectivePendingConsumption == null) {
       log(
         'Pending consumption $pendingConsumptionId was not found for '
         'calorie entry ${entry.id}.',
@@ -59,14 +59,15 @@ class InventoryBackedCalorieEntrySaveFlow {
 
     log(
       'Found pending consumption $pendingConsumptionId '
-      '(itemId=${pendingConsumption.itemId}, '
-      'amount=${pendingConsumption.amount}).',
+      '(itemId=${effectivePendingConsumption.itemId}, '
+      'amount=${effectivePendingConsumption.amount}).',
       name: _flowLogName,
     );
 
-    final commitResult = await _commitStore.commitEntryAndInventory(
+    final commitStore = _ref.read(inventoryCalorieEntryCommitStoreProvider);
+    final commitResult = await commitStore.commitEntryAndInventory(
       entry: entry,
-      pendingConsumption: pendingConsumption,
+      pendingConsumption: effectivePendingConsumption,
     );
     if (commitResult == null) {
       log(
@@ -85,7 +86,7 @@ class InventoryBackedCalorieEntrySaveFlow {
       name: _flowLogName,
     );
 
-    final finalized = await _inventoryController
+    final finalized = await effectiveInventoryController
         .finalizeCommittedPendingConsumption(
           draftId: pendingConsumptionId,
           itemId: commitResult.itemId,
@@ -107,7 +108,7 @@ class InventoryBackedCalorieEntrySaveFlow {
       'persisting calorie entry ${entry.id}. Refreshing inventory controller.',
       name: _flowLogName,
     );
-    await _inventoryController.refresh();
+    await effectiveInventoryController.refresh();
     log(
       'Inventory controller refreshed after finalize failure for '
       'calorie entry ${entry.id}.',

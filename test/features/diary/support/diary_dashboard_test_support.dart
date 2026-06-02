@@ -120,6 +120,15 @@ class FakeDiaryDayDashboardController extends DiaryDayDashboardController {
     }
   }
 
+  @override
+  void refreshAfterMutation() {
+    _retryCount += 1;
+    final nextState = onRetry?.call(_retryCount);
+    if (nextState != null) {
+      state = nextState;
+    }
+  }
+
   // Test fake must mutate inherited Notifier state without exposing a setter.
   // ignore: use_setters_to_change_properties
   void _replaceState(DiaryDayDashboardState nextState) {

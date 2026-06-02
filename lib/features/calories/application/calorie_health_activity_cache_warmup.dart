@@ -5,6 +5,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -71,6 +73,7 @@ void calorieHealthActivityCacheWarmup(Ref ref) {
         return;
       }
       lastCompletedKey = warmupKey;
+      ref.read(calorieOverviewRevisionProvider.notifier).markChanged();
     } on Object catch (error, stackTrace) {
       log(
         'Failed to warm Health activity cache. '

@@ -80,4 +80,4 @@ final class InventoryBackedCalorieEntrySaveFlowProvider
 }
 
 String _$inventoryBackedCalorieEntrySaveFlowHash() =>
-    r'7278d5221432f8ab38d14d9566666bd73aee677e';
+    r'2f827413b8b0f64782cc3ae75a2d540e310766ae';

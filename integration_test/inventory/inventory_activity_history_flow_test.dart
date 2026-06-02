@@ -113,9 +113,9 @@ const _sam = InventoryActivityActor(userId: 'sam', displayName: 'Sam');
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,
-  inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
   inventoryActivityEvents,
+  inventoryBackedCalorieEntrySaveFlow,
 ])
 _InventoryActivityHistoryHarness _buildHarness() {
   final stockItem = _inventoryItem(id: 'milk', name: 'Milk');
@@ -227,9 +227,9 @@ Future<void> _pumpUntilFound(
   InventoryItemsController,
   PreparedMealsController,
   preparedMealImagePicker,
-  inventoryBackedCalorieEntrySaveFlow,
   manualProductRecentItemsService,
   inventoryActivityEvents,
+  inventoryBackedCalorieEntrySaveFlow,
 ])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =

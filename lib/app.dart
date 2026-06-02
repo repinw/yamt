@@ -13,7 +13,10 @@ import 'package:yamt/features/calories/application/'
     'calorie_health_activity_cache_warmup.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_health_connection_sync.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/presentation/shared_receipt_listener.dart';
@@ -25,6 +28,7 @@ const _calorieHealthSyncStartupDelay = Duration(seconds: 2);
 @Dependencies([
   appRouter,
   InventoryItemsController,
+  PreparedMealsController,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
 ])
@@ -39,6 +43,10 @@ class YAMT extends ConsumerStatefulWidget {
 class _YAMTState extends ConsumerState<YAMT> {
   ProviderSubscription<void>? _calorieActivityCacheWarmupSubscription;
   ProviderSubscription<void>? _calorieHealthSyncSubscription;
+  ProviderSubscription<AsyncValue<List<InventoryItem>>>?
+  _inventoryWarmupSubscription;
+  ProviderSubscription<AsyncValue<List<PreparedMeal>>>?
+  _preparedMealsWarmupSubscription;
   Timer? _calorieHealthSyncTimer;
 
   @override
@@ -48,6 +56,7 @@ class _YAMTState extends ConsumerState<YAMT> {
       if (!mounted) {
         return;
       }
+      _startInventoryWarmup();
       _calorieHealthSyncTimer ??= Timer(
         _calorieHealthSyncStartupDelay,
         _startCalorieHealthSync,
@@ -59,6 +68,8 @@ class _YAMTState extends ConsumerState<YAMT> {
   void dispose() {
     _calorieActivityCacheWarmupSubscription?.close();
     _calorieHealthSyncSubscription?.close();
+    _inventoryWarmupSubscription?.close();
+    _preparedMealsWarmupSubscription?.close();
     _calorieHealthSyncTimer?.cancel();
     super.dispose();
   }
@@ -102,4 +113,21 @@ class _YAMTState extends ConsumerState<YAMT> {
       fireImmediately: true,
     );
   }
+
+  void _startInventoryWarmup() {
+    _inventoryWarmupSubscription ??= ref
+        .listenManual<AsyncValue<List<InventoryItem>>>(
+          inventoryItemsControllerProvider,
+          _keepProviderWarm,
+          fireImmediately: true,
+        );
+    _preparedMealsWarmupSubscription ??= ref
+        .listenManual<AsyncValue<List<PreparedMeal>>>(
+          preparedMealsControllerProvider,
+          _keepProviderWarm,
+          fireImmediately: true,
+        );
+  }
+
+  void _keepProviderWarm<T>(T? previous, T next) {}
 }

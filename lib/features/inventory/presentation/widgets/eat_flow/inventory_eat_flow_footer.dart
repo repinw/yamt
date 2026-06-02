@@ -9,6 +9,9 @@ class InventoryEatFlowFooter extends StatelessWidget {
     required this.confirmActionText,
     required this.confirmButtonKey,
     required this.onConfirm,
+    this.secondaryActionText,
+    this.secondaryButtonKey,
+    this.onSecondaryConfirm,
     super.key,
   });
 
@@ -20,6 +23,15 @@ class InventoryEatFlowFooter extends StatelessWidget {
 
   /// Confirm callback.
   final VoidCallback onConfirm;
+
+  /// Optional secondary action text.
+  final String? secondaryActionText;
+
+  /// Optional secondary button key.
+  final Key? secondaryButtonKey;
+
+  /// Optional secondary callback.
+  final VoidCallback? onSecondaryConfirm;
 
   @override
   Widget build(BuildContext context) {
@@ -41,26 +53,101 @@ class InventoryEatFlowFooter extends StatelessWidget {
           AppSpacing.xl,
           AppSpacing.xl,
         ),
-        child: SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            key: confirmButtonKey,
-            onPressed: onConfirm,
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: secondaryActionText == null
+            ? _ConfirmButton(
+                buttonKey: confirmButtonKey,
+                text: confirmActionText,
+                colors: colors,
+                onPressed: onConfirm,
+              )
+            : Row(
+                children: [
+                  Expanded(
+                    child: _SecondaryButton(
+                      buttonKey: secondaryButtonKey,
+                      text: secondaryActionText!,
+                      onPressed: onSecondaryConfirm,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _ConfirmButton(
+                      buttonKey: confirmButtonKey,
+                      text: confirmActionText,
+                      colors: colors,
+                      onPressed: onConfirm,
+                    ),
+                  ),
+                ],
               ),
-              backgroundColor: colors.primary,
-            ),
-            child: Text(
-              confirmActionText,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: colors.onPrimary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+      ),
+    );
+  }
+}
+
+class _SecondaryButton extends StatelessWidget {
+  const _SecondaryButton({
+    required this.buttonKey,
+    required this.text,
+    required this.onPressed,
+  });
+
+  final Key? buttonKey;
+  final String text;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      key: buttonKey,
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+        ),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _ConfirmButton extends StatelessWidget {
+  const _ConfirmButton({
+    required this.buttonKey,
+    required this.text,
+    required this.colors,
+    required this.onPressed,
+  });
+
+  final Key buttonKey;
+  final String text;
+  final ColorScheme colors;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton(
+      key: buttonKey,
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+        ),
+        backgroundColor: colors.primary,
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: colors.onPrimary,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );

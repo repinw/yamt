@@ -13,6 +13,9 @@ class InventoryEatFlowSheetScaffold extends StatelessWidget {
     required this.confirmActionText,
     required this.confirmButtonKey,
     required this.onConfirm,
+    this.secondaryActionText,
+    this.secondaryButtonKey,
+    this.onSecondaryConfirm,
     super.key,
   });
 
@@ -33,6 +36,15 @@ class InventoryEatFlowSheetScaffold extends StatelessWidget {
 
   /// Confirm callback.
   final VoidCallback onConfirm;
+
+  /// Optional secondary action text.
+  final String? secondaryActionText;
+
+  /// Optional secondary button key.
+  final Key? secondaryButtonKey;
+
+  /// Optional secondary callback.
+  final VoidCallback? onSecondaryConfirm;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +103,9 @@ class InventoryEatFlowSheetScaffold extends StatelessWidget {
                       confirmActionText: confirmActionText,
                       confirmButtonKey: confirmButtonKey,
                       onConfirm: onConfirm,
+                      secondaryActionText: secondaryActionText,
+                      secondaryButtonKey: secondaryButtonKey,
+                      onSecondaryConfirm: onSecondaryConfirm,
                     ),
                   ],
                 ),

@@ -16,6 +16,8 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_eat_sheet_models.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -35,8 +37,33 @@ Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
   int? initialInventoryAmount,
   DateTime? initialLoggedAt,
   MealType? initialMealType,
+}) async {
+  final result = await showInventoryItemEatSheetResult(
+    context: context,
+    item: item,
+    maxAmount: maxAmount,
+    invalidAmountMessage: invalidAmountMessage,
+    initialInventoryAmount: initialInventoryAmount,
+    initialLoggedAt: initialLoggedAt,
+    initialMealType: initialMealType,
+  );
+  return result?.request;
+}
+
+/// Show inventory item eat sheet with continuation intent.
+Future<InventoryItemEatSheetResult?> showInventoryItemEatSheetResult({
+  required BuildContext context,
+  required InventoryItem item,
+  required int maxAmount,
+  required String invalidAmountMessage,
+  InventoryItemEatSheetIntent confirmIntent =
+      InventoryItemEatSheetIntent.logOnly,
+  int? initialInventoryAmount,
+  DateTime? initialLoggedAt,
+  MealType? initialMealType,
+  String? addMoreActionText,
 }) {
-  return showModalBottomSheet<InventoryItemEatRequest>(
+  return showModalBottomSheet<InventoryItemEatSheetResult>(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
@@ -46,9 +73,11 @@ Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
         item: item,
         maxAmount: maxAmount,
         invalidAmountMessage: invalidAmountMessage,
+        confirmIntent: confirmIntent,
         initialInventoryAmount: initialInventoryAmount,
         initialLoggedAt: initialLoggedAt,
         initialMealType: initialMealType,
+        addMoreActionText: addMoreActionText,
       );
     },
   );
@@ -59,17 +88,21 @@ class _InventoryItemEatSheet extends ConsumerStatefulWidget {
     required this.item,
     required this.maxAmount,
     required this.invalidAmountMessage,
+    required this.confirmIntent,
     this.initialInventoryAmount,
     this.initialLoggedAt,
     this.initialMealType,
+    this.addMoreActionText,
   });
 
   final InventoryItem item;
   final int maxAmount;
   final String invalidAmountMessage;
+  final InventoryItemEatSheetIntent confirmIntent;
   final int? initialInventoryAmount;
   final DateTime? initialLoggedAt;
   final MealType? initialMealType;
+  final String? addMoreActionText;
 
   @override
   ConsumerState<_InventoryItemEatSheet> createState() =>
@@ -301,6 +334,8 @@ class _InventoryItemEatSheetState
       footer: InventoryItemEatSheetFooterData(
         confirmActionText: l10n.inventoryItemEatSheetConfirmAction,
         onConfirm: _submit,
+        addMoreActionText: widget.addMoreActionText,
+        onAddMore: widget.addMoreActionText == null ? null : _submitAndAddMore,
       ),
     );
 
@@ -940,6 +975,14 @@ class _InventoryItemEatSheetState
   }
 
   void _submit() {
+    _submitWithIntent(widget.confirmIntent);
+  }
+
+  void _submitAndAddMore() {
+    _submitWithIntent(InventoryItemEatSheetIntent.addMore);
+  }
+
+  void _submitWithIntent(InventoryItemEatSheetIntent intent) {
     final draft = _eatController.buildSubmissionDraft(
       usesPortionMode: _usesPortionMode,
       inventoryAmountText: _inventoryAmountController.text,
@@ -961,24 +1004,27 @@ class _InventoryItemEatSheetState
 
     final confirmedInventoryAmount = draft.inventoryAmount!;
     Navigator.of(context).pop(
-      InventoryItemEatRequest(
-        inventoryAmount: confirmedInventoryAmount,
-        loggedAt: _selectedLoggedAt,
-        mealType: _selectedMealType,
-        calorieAmount: _requiresManualCaloriePortion
-            ? draft.portionTotalAmount!
-            : draft.fixedUnitCalorieAmount,
-        calorieUnit: _requiresManualCaloriePortion
-            ? _selectedPortionUnit
-            : draft.fixedUnitCalorieAmount == null
-            ? null
-            : _eatController.fixedCalorieUnit,
-        portionBaseAmount: _usesPortionMode ? draft.portionBaseAmount! : null,
-        portionBaseUnit: _usesPortionMode ? _selectedPortionUnit : null,
-        portionCount: _usesPortionMode ? draft.portionCount! : null,
-        portionLabel: _usesPortionMode
-            ? _normalizedPortionLabel(AppLocalizations.of(context)!)
-            : null,
+      InventoryItemEatSheetResult(
+        intent: intent,
+        request: InventoryItemEatRequest(
+          inventoryAmount: confirmedInventoryAmount,
+          loggedAt: _selectedLoggedAt,
+          mealType: _selectedMealType,
+          calorieAmount: _requiresManualCaloriePortion
+              ? draft.portionTotalAmount!
+              : draft.fixedUnitCalorieAmount,
+          calorieUnit: _requiresManualCaloriePortion
+              ? _selectedPortionUnit
+              : draft.fixedUnitCalorieAmount == null
+              ? null
+              : _eatController.fixedCalorieUnit,
+          portionBaseAmount: _usesPortionMode ? draft.portionBaseAmount! : null,
+          portionBaseUnit: _usesPortionMode ? _selectedPortionUnit : null,
+          portionCount: _usesPortionMode ? draft.portionCount! : null,
+          portionLabel: _usesPortionMode
+              ? _normalizedPortionLabel(AppLocalizations.of(context)!)
+              : null,
+        ),
       ),
     );
   }

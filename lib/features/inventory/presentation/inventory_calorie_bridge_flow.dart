@@ -11,7 +11,9 @@ import 'package:yamt/features/calories/provider/calorie_entries_controller.dart'
 import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
 
@@ -122,6 +124,9 @@ class InventoryCalorieBridgeFlow {
     required CalorieScannedSourceRef? scannedSourceRef,
     required DateTime loggedAt,
     required MealType mealType,
+    PendingInventoryConsumption? pendingConsumption,
+    InventoryItemsController? inventoryController,
+    void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
   }) async {
     final user = container.read(firebaseAuthProvider).currentUser;
     if (user == null) {
@@ -149,7 +154,7 @@ class InventoryCalorieBridgeFlow {
       updatedAt: now,
     );
 
-    return container
+    final saved = await container
         .read(calorieEntriesControllerProvider.notifier)
         .saveEntry(
           entry,
@@ -161,8 +166,14 @@ class InventoryCalorieBridgeFlow {
                 .saveEntry(
                   entry: entry,
                   pendingConsumptionId: inventoryContext.pendingConsumptionId,
+                  pendingConsumption: pendingConsumption,
+                  inventoryController: inventoryController,
                 );
           },
         );
+    if (saved) {
+      onDirectCalorieEntrySaved?.call(entry.id);
+    }
+    return saved;
   }
 }
