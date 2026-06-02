@@ -46,7 +46,7 @@ final class CookingFlowShoppingControllerProvider
 }
 
 String _$cookingFlowShoppingControllerHash() =>
-    r'333d32201e57af99bce8714c9dee4ec7fe76aea9';
+    r'c0eca966381ef7b33b73b6813c5d7c07828a29d8';
 
 /// Coordinates cookflow shopping-list side effects.
 

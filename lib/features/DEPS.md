@@ -38,8 +38,6 @@ kitchen_utensils-->inventory;
 meal_templates-->cooking_flow;
 meal_templates-->inventory;
 meal_templates-->kitchen_utensils;
-meal_templates-->recipes;
-meal_templates-->shoppinglist;
 onboarding-->auth;
 onboarding-->calories;
 product_search-->inventory;

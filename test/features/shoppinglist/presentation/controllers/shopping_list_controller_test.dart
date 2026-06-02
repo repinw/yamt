@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/data/'
+    'shopping_list_repository_contract.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import '../../support/fake_shopping_list_repository.dart';
@@ -120,6 +122,27 @@ void main() {
     expect(state.error, same(error));
   });
 
+  test(
+    'build resolves empty when repository stream closes without items',
+    () async {
+      final repository = _EmptyStreamShoppingListRepository();
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepAlive(container);
+      addTearDown(subscription.close);
+
+      final items = await container
+          .read(shoppingListControllerProvider.future)
+          .timeout(const Duration(seconds: 1));
+
+      expect(items, isEmpty);
+    },
+  );
+
   test('addItem merges duplicate items by normalized name and brand', () async {
     final repository = FakeShoppingListRepository();
     final container = await _createContainer(repository);
@@ -137,6 +160,22 @@ void main() {
     expect(secondAdded, isTrue);
     expect(items, hasLength(1));
     expect(items?.single.quantity, 2);
+  });
+
+  test('addItemsByNames saves multiple labels in one mutation', () async {
+    final repository = FakeShoppingListRepository();
+    final container = await _createContainer(repository);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    final added = await controller.addItemsByNames(<String>['Mehl', 'Milch']);
+
+    final items = container.read(shoppingListControllerProvider).asData?.value;
+    expect(added, isTrue);
+    expect(items?.map((item) => item.name), <String>['Mehl', 'Milch']);
+    expect(repository.savedItems.map((item) => item.name), <String>[
+      'Mehl',
+      'Milch',
+    ]);
   });
 
   test('addItem keeps separate rows for different brands', () async {
@@ -349,4 +388,21 @@ void main() {
     expect(items, hasLength(1));
     expect(items?.single.quantity, 1);
   });
+}
+
+class _EmptyStreamShoppingListRepository implements ShoppingListRepository {
+  @override
+  Future<List<ShoppingListItem>> readAll() async {
+    return const <ShoppingListItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<ShoppingListItem> items) async {
+    return false;
+  }
+
+  @override
+  Stream<List<ShoppingListItem>> watchAll() {
+    return const Stream<List<ShoppingListItem>>.empty();
+  }
 }

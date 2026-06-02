@@ -1492,163 +1492,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get preparedMealTemplateDetailTitle => 'Rezept';
-
-  @override
-  String preparedMealTemplateDetailMatchTitle(String name) {
-    return 'Zutaten-Abgleich: $name';
-  }
-
-  @override
-  String get preparedMealTemplateDetailNotFound => 'Rezept nicht gefunden.';
-
-  @override
-  String get preparedMealTemplateDetailLoadFailed =>
-      'Rezept konnte nicht geladen werden.';
-
-  @override
-  String preparedMealTemplateDetailBasePortions(int count) {
-    return 'Basis: $count Portionen';
-  }
-
-  @override
-  String get preparedMealTemplateDetailScaleHint =>
-      'Zutaten werden auf diese Portionszahl skaliert.';
-
-  @override
-  String get preparedMealTemplateDetailNoIngredients =>
-      'Noch keine Zutaten vorhanden.';
-
-  @override
-  String get preparedMealTemplateDetailSaveAction => 'Rezept anpassen';
-
-  @override
-  String get preparedMealTemplateDetailSavingAction => 'Speichert...';
-
-  @override
-  String get preparedMealTemplateDetailIngredientsToShoppingListAction =>
-      'Zutaten auf Einkaufsliste';
-
-  @override
-  String get preparedMealTemplateDetailCreateMealHint =>
-      'Dieses Rezept braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.';
-
-  @override
-  String get preparedMealTemplateDetailAssignAction => 'Zuordnen';
-
-  @override
-  String get preparedMealTemplateDetailChangeAssignmentAction =>
-      'Zuordnung ändern';
-
-  @override
-  String get preparedMealTemplateDetailAssignedFromInventoryTitle =>
-      'Aus dem Inventar belegt';
-
-  @override
-  String get preparedMealTemplateDetailMatchingInventoryItemsTitle =>
-      'Passende Inventarartikel';
-
-  @override
-  String preparedMealTemplateDetailMissingAssignedItems(int count) {
-    return '$count belegte Artikel sind nicht mehr im Inventar.';
-  }
-
-  @override
-  String preparedMealTemplateDetailIgnoredAmount(String amount) {
-    return 'Ignoriert • $amount';
-  }
-
-  @override
-  String preparedMealTemplateDetailAssignedCount(int count) {
-    return '$count Artikel belegt';
-  }
-
-  @override
-  String get preparedMealTemplateDetailSelectionTitle =>
-      'Inventarartikel wählen';
-
-  @override
-  String get preparedMealTemplateDetailSelectionEmpty =>
-      'Keine Inventarartikel vorhanden.';
-
-  @override
-  String preparedMealTemplateDetailSelectionConversionLabel(
-    String sourceUnit,
-    String unit,
-  ) {
-    return 'Menge pro $sourceUnit ($unit)';
-  }
-
-  @override
-  String preparedMealTemplateDetailSelectionConversionHint(
-    String sourceUnit,
-    String unit,
-    String ingredient,
-  ) {
-    return 'Wie viel $unit entspricht 1 $sourceUnit von \"$ingredient\"?';
-  }
-
-  @override
-  String get preparedMealTemplateDetailSelectionConversionError =>
-      'Bitte gib eine Menge größer als 0 ein.';
-
-  @override
-  String preparedMealTemplateDetailConversionSummary(
-    String sourceUnit,
-    int amount,
-    String unit,
-  ) {
-    return '1 $sourceUnit = $amount $unit';
-  }
-
-  @override
-  String get preparedMealTemplateDetailListAction => 'Liste';
-
-  @override
-  String get preparedMealTemplateDetailSearchAction => 'Suchen';
-
-  @override
-  String get preparedMealTemplateDetailSwapAction => 'Tauschen';
-
-  @override
-  String get preparedMealTemplateDetailRestoreAction => 'Wiederherstellen';
-
-  @override
-  String get preparedMealTemplateDetailAddToShoppingListAction =>
-      'Zur Einkaufsliste';
-
-  @override
-  String get preparedMealTemplateDetailIgnoreAction => 'Ignorieren';
-
-  @override
-  String get preparedMealTemplateDetailUnignoreAction => 'Nicht ignorieren';
-
-  @override
-  String get preparedMealTemplateDetailAddIngredientShoppingFailed =>
-      'Zutat konnte nicht zur Einkaufsliste hinzugefügt werden.';
-
-  @override
-  String get preparedMealTemplateDetailAddIngredientsShoppingFailed =>
-      'Zutaten konnten nicht zur Einkaufsliste hinzugefügt werden.';
-
-  @override
-  String preparedMealTemplateDetailAddIngredientsShoppingSucceeded(int count) {
-    return '$count Zutaten wurden zur Einkaufsliste hinzugefügt.';
-  }
-
-  @override
-  String get preparedMealTemplateDetailIgnoreSaveFailed =>
-      'Zutatenstatus konnte nicht gespeichert werden.';
-
-  @override
-  String get preparedMealTemplateDetailInvalidMealMessage =>
-      'Das Rezept braucht mindestens eine gültige Zutat.';
-
-  @override
-  String get preparedMealTemplateDetailSaveFailedMessage =>
-      'Rezept konnte nicht angepasst werden.';
-
-  @override
   String get shoppingListStatsEntries => 'Positionen';
 
   @override
@@ -3621,6 +3464,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get cookflowShoppingListContinueButton =>
       'Zur Einkaufsliste hinzufügen und später fortsetzen';
+
+  @override
+  String get cookflowShoppingListAddSucceeded =>
+      'Zutaten zur Einkaufsliste hinzugefügt.';
 
   @override
   String get cookflowShoppingListAddFailed =>

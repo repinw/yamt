@@ -65,6 +65,35 @@ class ShoppingListController extends _$ShoppingListController {
     });
   }
 
+  /// Adds multiple name-only items in one persisted mutation.
+  Future<bool> addItemsByNames(Iterable<String> names) {
+    final inputs = names
+        .map(
+          (name) => _parseAddItemInput(
+            name: name,
+            quantity: 1,
+            estimatedUnitPrice: 0,
+          ),
+        )
+        .whereType<_AddShoppingListItemInput>()
+        .toList(growable: false);
+    if (inputs.isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    return _runListMutation((previousItems) {
+      var nextItems = previousItems;
+      for (final input in inputs) {
+        nextItems = _mergeAddedItem(
+          previousItems: nextItems,
+          input: input,
+          generatedId: _nextId(),
+        );
+      }
+      return nextItems;
+    });
+  }
+
   /// Remove item.
   Future<bool> removeItem(String itemId) {
     return _runListMutation((previousItems) {
@@ -243,6 +272,11 @@ class ShoppingListController extends _$ShoppingListController {
           return;
         }
         _onRealtimeError(error, stackTrace);
+      },
+      onDone: () {
+        if (!initialItems.isCompleted) {
+          initialItems.complete(const <ShoppingListItem>[]);
+        }
       },
     );
     _cancelItemsSubscription = subscription.cancel;

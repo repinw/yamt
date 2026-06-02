@@ -117,8 +117,8 @@ class CookingFlowPageBottomNavigation extends StatelessWidget {
     if (!introAllItemsSelected) {
       return null;
     }
-    if (introHasShoppingSelections && !introShoppingHandled) {
-      return onIntroShoppingPressed;
+    if (introHasShoppingSelections) {
+      return introShoppingHandled ? null : onIntroShoppingPressed;
     }
     return onOpenPreparationPressed;
   }

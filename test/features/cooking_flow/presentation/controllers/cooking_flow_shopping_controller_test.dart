@@ -26,10 +26,9 @@ void main() {
   });
 
   test(
-    'partial add failure returns failed and retry skips existing labels',
+    'add failure returns failed and retry saves all labels',
     () async {
       final repository = FakeShoppingListRepository()
-        ..enqueueSaveResult(result: true)
         ..enqueueSaveResult(result: false)
         ..enqueueSaveResult(result: true);
       final container = _container(repository);

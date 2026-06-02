@@ -285,10 +285,8 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
       _showSnackBar(_l10n.cookflowShoppingListAddFailed);
       return;
     }
-    final saved = await _saveSession();
-    if (!mounted || !saved) {
-      return;
-    }
+    _showSnackBar(_l10n.cookflowShoppingListAddSucceeded);
+    _persistSessionSilently();
     await context.push(AppRoutes.homeShopping);
   }
 
