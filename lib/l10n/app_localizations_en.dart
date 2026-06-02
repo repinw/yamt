@@ -1466,163 +1466,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get preparedMealTemplateDetailTitle => 'Template';
-
-  @override
-  String preparedMealTemplateDetailMatchTitle(String name) {
-    return 'Ingredient Matching: $name';
-  }
-
-  @override
-  String get preparedMealTemplateDetailNotFound => 'Template not found.';
-
-  @override
-  String get preparedMealTemplateDetailLoadFailed =>
-      'Template could not be loaded.';
-
-  @override
-  String preparedMealTemplateDetailBasePortions(int count) {
-    return 'Base: $count portions';
-  }
-
-  @override
-  String get preparedMealTemplateDetailScaleHint =>
-      'Ingredients are scaled to this number of portions.';
-
-  @override
-  String get preparedMealTemplateDetailNoIngredients =>
-      'No ingredients available yet.';
-
-  @override
-  String get preparedMealTemplateDetailSaveAction => 'Update template';
-
-  @override
-  String get preparedMealTemplateDetailSavingAction => 'Saving...';
-
-  @override
-  String get preparedMealTemplateDetailIngredientsToShoppingListAction =>
-      'Ingredients to shopping list';
-
-  @override
-  String get preparedMealTemplateDetailCreateMealHint =>
-      'This template needs at least one ingredient before you can create a meal.';
-
-  @override
-  String get preparedMealTemplateDetailAssignAction => 'Assign';
-
-  @override
-  String get preparedMealTemplateDetailChangeAssignmentAction =>
-      'Change assignment';
-
-  @override
-  String get preparedMealTemplateDetailAssignedFromInventoryTitle =>
-      'Covered from inventory';
-
-  @override
-  String get preparedMealTemplateDetailMatchingInventoryItemsTitle =>
-      'Matching inventory items';
-
-  @override
-  String preparedMealTemplateDetailMissingAssignedItems(int count) {
-    return '$count assigned items are no longer in inventory.';
-  }
-
-  @override
-  String preparedMealTemplateDetailIgnoredAmount(String amount) {
-    return 'Ignored • $amount';
-  }
-
-  @override
-  String preparedMealTemplateDetailAssignedCount(int count) {
-    return '$count items assigned';
-  }
-
-  @override
-  String get preparedMealTemplateDetailSelectionTitle =>
-      'Choose inventory items';
-
-  @override
-  String get preparedMealTemplateDetailSelectionEmpty =>
-      'No inventory items available.';
-
-  @override
-  String preparedMealTemplateDetailSelectionConversionLabel(
-    String sourceUnit,
-    String unit,
-  ) {
-    return 'Amount per $sourceUnit ($unit)';
-  }
-
-  @override
-  String preparedMealTemplateDetailSelectionConversionHint(
-    String sourceUnit,
-    String unit,
-    String ingredient,
-  ) {
-    return 'How much $unit does 1 $sourceUnit of \"$ingredient\" use?';
-  }
-
-  @override
-  String get preparedMealTemplateDetailSelectionConversionError =>
-      'Please enter an amount greater than 0.';
-
-  @override
-  String preparedMealTemplateDetailConversionSummary(
-    String sourceUnit,
-    int amount,
-    String unit,
-  ) {
-    return '1 $sourceUnit = $amount $unit';
-  }
-
-  @override
-  String get preparedMealTemplateDetailListAction => 'List';
-
-  @override
-  String get preparedMealTemplateDetailSearchAction => 'Search';
-
-  @override
-  String get preparedMealTemplateDetailSwapAction => 'Swap';
-
-  @override
-  String get preparedMealTemplateDetailRestoreAction => 'Restore';
-
-  @override
-  String get preparedMealTemplateDetailAddToShoppingListAction =>
-      'Add to shopping list';
-
-  @override
-  String get preparedMealTemplateDetailIgnoreAction => 'Ignore';
-
-  @override
-  String get preparedMealTemplateDetailUnignoreAction => 'Do not ignore';
-
-  @override
-  String get preparedMealTemplateDetailAddIngredientShoppingFailed =>
-      'Ingredient could not be added to the shopping list.';
-
-  @override
-  String get preparedMealTemplateDetailAddIngredientsShoppingFailed =>
-      'Ingredients could not be added to the shopping list.';
-
-  @override
-  String preparedMealTemplateDetailAddIngredientsShoppingSucceeded(int count) {
-    return '$count ingredients were added to the shopping list.';
-  }
-
-  @override
-  String get preparedMealTemplateDetailIgnoreSaveFailed =>
-      'Ingredient status could not be saved.';
-
-  @override
-  String get preparedMealTemplateDetailInvalidMealMessage =>
-      'The template needs at least one valid ingredient.';
-
-  @override
-  String get preparedMealTemplateDetailSaveFailedMessage =>
-      'Template could not be updated.';
-
-  @override
   String get shoppingListStatsEntries => 'Entries';
 
   @override
@@ -3557,6 +3400,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cookflowShoppingListContinueButton =>
       'Add to shopping list and continue later';
+
+  @override
+  String get cookflowShoppingListAddSucceeded =>
+      'Ingredients added to shopping list.';
 
   @override
   String get cookflowShoppingListAddFailed =>

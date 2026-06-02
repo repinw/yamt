@@ -13,12 +13,27 @@ part 'cooking_flow_shopping_controller.g.dart';
 @riverpod
 class CookingFlowShoppingController extends _$CookingFlowShoppingController {
   @override
-  void build() {
-    ref.watch(shoppingListControllerProvider);
-  }
+  void build() {}
 
   /// Adds labels to shopping list.
   Future<CookingFlowShoppingListActionResult> addLabels(
+    List<String> labels,
+  ) async {
+    final keepAlive = ref.keepAlive();
+    final subscription = ref.listen(
+      shoppingListControllerProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    try {
+      return await _addLabels(labels);
+    } finally {
+      subscription.close();
+      keepAlive.close();
+    }
+  }
+
+  Future<CookingFlowShoppingListActionResult> _addLabels(
     List<String> labels,
   ) async {
     final controller = ref.read(shoppingListControllerProvider.notifier);
@@ -30,25 +45,43 @@ class CookingFlowShoppingController extends _$CookingFlowShoppingController {
       return CookingFlowShoppingListActionResult.disposed;
     }
 
+    final labelsToAdd = <String>[];
     for (final label in labels) {
       final normalizedLabel = normalizeShoppingListValue(label);
       if (normalizedLabel.isEmpty || knownLabels.contains(normalizedLabel)) {
         continue;
       }
-      final added = await controller.addItem(name: label);
-      if (!ref.mounted) {
-        return CookingFlowShoppingListActionResult.disposed;
-      }
-      if (!added) {
-        return CookingFlowShoppingListActionResult.failed;
-      }
+      labelsToAdd.add(label);
       knownLabels.add(normalizedLabel);
+    }
+    if (labelsToAdd.isEmpty) {
+      return CookingFlowShoppingListActionResult.success;
+    }
+
+    final added = await controller.addItemsByNames(labelsToAdd);
+    if (!added) {
+      return CookingFlowShoppingListActionResult.failed;
     }
     return CookingFlowShoppingListActionResult.success;
   }
 
   /// Resolves matching shopping-list labels.
   Future<void> resolveLabels(List<String> labels) async {
+    final keepAlive = ref.keepAlive();
+    final subscription = ref.listen(
+      shoppingListControllerProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    try {
+      await _resolveLabels(labels);
+    } finally {
+      subscription.close();
+      keepAlive.close();
+    }
+  }
+
+  Future<void> _resolveLabels(List<String> labels) async {
     if (labels.isEmpty) {
       return;
     }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
@@ -17,6 +19,7 @@ import 'package:yamt/features/cooking_flow/presentation/controllers/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 import '../../../shoppinglist/support/fake_shopping_list_repository.dart';
 
@@ -198,6 +201,42 @@ void main() {
     expect(state.introShoppingHandled, isTrue);
     expect(state.introShoppingRedirectInProgress, isFalse);
     expect(state.introShoppingBaselineInventoryItemIds, <String>['flour']);
+  });
+
+  test('keeps shopping add alive while initial list is loading', () async {
+    final initialItems = Completer<List<ShoppingListItem>>();
+    final shoppingRepository = FakeShoppingListRepository(
+      onReadAll: () => initialItems.future,
+    );
+    final container = _container(shoppingRepository: shoppingRepository);
+    addTearDown(shoppingRepository.dispose);
+    final subscription = container.listen(
+      cookingFlowWizardControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    final controller = container.read(
+      cookingFlowWizardControllerProvider.notifier,
+    );
+
+    final resultFuture =
+        (controller..updateIntroSelectionState(
+              const CookingFlowIntroSelectionState(
+                allItemsSelected: true,
+                hasShoppingSelections: true,
+                hasUnresolvedConflicts: false,
+                shoppingListLabels: <String>['Mehl'],
+                draft: CookingFlowIntroDraft(),
+              ),
+            ))
+            .addIntroShoppingItems(inventoryItems: const <InventoryItem>[]);
+    await container.pump();
+    initialItems.complete(const <ShoppingListItem>[]);
+
+    final result = await resultFuture.timeout(const Duration(seconds: 1));
+
+    expect(result, CookingFlowShoppingListActionResult.success);
+    expect(shoppingRepository.savedItems.single.name, 'Mehl');
   });
 
   test('goBackOneStep walks backward through wizard states', () {

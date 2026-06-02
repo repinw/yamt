@@ -40,7 +40,7 @@ class _UnavailableShoppingListRepository implements ShoppingListRepository {
 
   @override
   Stream<List<ShoppingListItem>> watchAll() {
-    return const Stream<List<ShoppingListItem>>.empty();
+    return Stream<List<ShoppingListItem>>.value(const <ShoppingListItem>[]);
   }
 
   @override

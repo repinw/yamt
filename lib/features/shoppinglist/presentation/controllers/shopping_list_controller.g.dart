@@ -38,7 +38,7 @@ final class ShoppingListControllerProvider
 }
 
 String _$shoppingListControllerHash() =>
-    r'fd04c18d460d40b330dd22dc99f7935a22abc59a';
+    r'951da16403adcc567363fde03cf7922e40ab7dd2';
 
 /// Defines shopping list controller.
 

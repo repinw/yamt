@@ -29,17 +29,22 @@ import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
     'kitchen_utensils_controller.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _FakeCookingFlowSessionLocalStore
     implements CookingFlowSessionLocalStore {
   _FakeCookingFlowSessionLocalStore({
     this.initialSession,
     this.saveSucceeds = true,
+    this.onSave,
   });
 
   CookingFlowSession? initialSession;
   final bool saveSucceeds;
+  final Future<bool> Function(CookingFlowSession session)? onSave;
   CookingFlowSession? savedSession;
   int saveCallCount = 0;
   int clearCallCount = 0;
@@ -52,6 +57,9 @@ class _FakeCookingFlowSessionLocalStore
   @override
   Future<bool> save(CookingFlowSession session) async {
     saveCallCount += 1;
+    if (onSave != null) {
+      return onSave!(session);
+    }
     if (!saveSucceeds) {
       return false;
     }
@@ -352,6 +360,7 @@ Widget _buildRouterHarness({
   required _FakeCookingFlowSessionLocalStore sessionStore,
   required List<PreparedMeal> templates,
   List<KitchenUtensil> kitchenUtensils = const <KitchenUtensil>[],
+  FakeShoppingListRepository? shoppingListRepository,
 }) {
   final container = ProviderContainer(
     overrides: [
@@ -376,9 +385,16 @@ Widget _buildRouterHarness({
       kitchenUtensilsControllerProvider.overrideWith(
         () => _StaticKitchenUtensilsController(kitchenUtensils),
       ),
+      if (shoppingListRepository != null)
+        shoppingListRepositoryProvider.overrideWithValue(
+          shoppingListRepository,
+        ),
     ],
   );
   addTearDown(container.dispose);
+  if (shoppingListRepository != null) {
+    addTearDown(shoppingListRepository.dispose);
+  }
 
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplateDetailPath(
@@ -397,6 +413,12 @@ Widget _buildRouterHarness({
         path: AppRoutes.homeInventoryTemplates,
         builder: (context, state) => const Scaffold(
           body: Center(child: Text('Template list route')),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.homeShopping,
+        builder: (context, state) => const Scaffold(
+          body: Center(child: Text('Shopping list route')),
         ),
       ),
       GoRoute(
@@ -490,6 +512,100 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Später'), findsOneWidget);
+  });
+
+  testWidgets('adds all selected intro shopping ingredients', (tester) async {
+    final shoppingListRepository = FakeShoppingListRepository();
+
+    await tester.pumpWidget(
+      _buildRouterHarness(
+        sessionStore: _FakeCookingFlowSessionLocalStore(),
+        shoppingListRepository: shoppingListRepository,
+        templates: <PreparedMeal>[
+          _template(
+            id: 'template-1',
+            recipeIngredients: const <String>[
+              '300g Linsen',
+              '150g Reis',
+            ],
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final firstCartAction = find.byTooltip('Einkaufswagen').at(0);
+    await tester.ensureVisible(firstCartAction);
+    await tester.tap(firstCartAction);
+    await tester.pump();
+    final secondCartAction = find.byTooltip('Einkaufswagen').at(1);
+    await tester.ensureVisible(secondCartAction);
+    await tester.tap(secondCartAction);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.text('Zur Einkaufsliste hinzufügen und später fortsetzen'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(shoppingListRepository.savedItems.map((item) => item.name), [
+      '300 g Linsen',
+      '150 g Reis',
+    ]);
+    expect(
+      find.text('Zutaten zur Einkaufsliste hinzugefügt.'),
+      findsOneWidget,
+    );
+    expect(find.text('Shopping list route'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Flow starten'), findsOneWidget);
+
+    await tester.tap(find.text('Flow starten'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1. Vorbereitung'), findsNothing);
+    expect(find.text('Kochsession starten'), findsOneWidget);
+  });
+
+  testWidgets('shopping redirect does not wait for session save', (
+    tester,
+  ) async {
+    final sessionSave = Completer<bool>();
+    final sessionStore = _FakeCookingFlowSessionLocalStore(
+      onSave: (_) => sessionSave.future,
+    );
+    final shoppingListRepository = FakeShoppingListRepository();
+
+    await tester.pumpWidget(
+      _buildRouterHarness(
+        sessionStore: sessionStore,
+        shoppingListRepository: shoppingListRepository,
+        templates: <PreparedMeal>[_template(id: 'template-1')],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final cartAction = find.byTooltip('Einkaufswagen').at(0);
+    await tester.ensureVisible(cartAction);
+    await tester.tap(cartAction);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.text('Zur Einkaufsliste hinzufügen und später fortsetzen'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(shoppingListRepository.savedItems.single.name, '300 g Linsen');
+    expect(sessionStore.saveCallCount, greaterThanOrEqualTo(1));
+    expect(sessionSave.isCompleted, isFalse);
+    expect(
+      find.text('Zutaten zur Einkaufsliste hinzugefügt.'),
+      findsOneWidget,
+    );
+    expect(find.text('Shopping list route'), findsOneWidget);
   });
 
   testWidgets('restores preparation step from saved session', (tester) async {
