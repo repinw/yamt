@@ -34,6 +34,38 @@ void main() {
     expect(opened, [checkInData]);
   });
 
+  test('syncs learned cache before auto-opening eligible dialog', () {
+    final postFrameCallbacks = <VoidCallback>[];
+    final scheduler = DiaryWeeklyCheckInDialogScheduler(
+      schedulePostFrame: postFrameCallbacks.add,
+    );
+    addTearDown(scheduler.dispose);
+    final synced = <DiaryWeeklyCheckInData>[];
+    final opened = <DiaryWeeklyCheckInData>[];
+    final checkInData = _checkInData(DateTime(2026, 4, 20));
+
+    scheduler.cacheAndSchedule(
+      checkInData: checkInData,
+      isMounted: () => true,
+      syncLearnedTdeeCache: (checkInData) {
+        synced.add(checkInData);
+        return Future<void>.value();
+      },
+      openDialog: (checkInData) {
+        opened.add(checkInData);
+        return Future<void>.value();
+      },
+    );
+
+    expect(synced, [checkInData]);
+    expect(opened, isEmpty);
+    expect(postFrameCallbacks, hasLength(1));
+
+    postFrameCallbacks.removeAt(0)();
+
+    expect(opened, [checkInData]);
+  });
+
   test('defers second dialog while one is open', () {
     final postFrameCallbacks = <VoidCallback>[];
     final scheduler = DiaryWeeklyCheckInDialogScheduler(

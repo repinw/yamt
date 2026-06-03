@@ -4,7 +4,10 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_run_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/'
+    'diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -108,6 +111,12 @@ class DiaryHeartCounterButton extends ConsumerWidget {
       return;
     }
     await actions.useHeartForDay(selectedDay);
+    if (!context.mounted) {
+      return;
+    }
+    ProviderScope.containerOf(context, listen: false).invalidate(
+      diaryDayDashboardControllerProvider(normalizeDiaryDay(selectedDay)),
+    );
   }
 }
 

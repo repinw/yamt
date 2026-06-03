@@ -39,12 +39,7 @@ class DiaryWeeklyCheckInDialogScheduler {
     }
 
     lastCheckInData = checkInData;
-    final pending = checkInData.pendingWeeklyCheckIn;
-    final willAutoOpen =
-        pending != null &&
-        checkInData.shouldAutoOpen &&
-        _autoOpenedWindowKey != pending.windowKey;
-    if (!willAutoOpen && !_isDialogOpen) {
+    if (!_isDialogOpen) {
       unawaited(syncLearnedTdeeCache(checkInData));
     }
     schedule(

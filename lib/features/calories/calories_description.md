@@ -21,7 +21,8 @@ almost all of the data and widgets from this feature. In practice,
 - Calculates goals from BMR, TDEE, activity level, goal mode, and goal speed.
 - Reads health activity and weight data, combines it with manual weight entries,
   and refreshes calorie-owned state after weight changes.
-- Grants part of above-baseline activity as extra eatable calories.
+- Splits Total-TDEE into Base-TDEE for Health users and grants 75% of tracked
+  activity as extra eatable calories.
 - Creates, blocks, dismisses, or applies weekly check-ins that learn TDEE from
   intake, weight trend, and activity.
 - Reuses learned TDEE day by day until newer data or a new weekly boundary can
@@ -82,7 +83,8 @@ Contains pure feature logic with no UI:
   `calorie_weekly_window_resolver.dart`: Calculate measured TDEE from intake
   and weight trend, smooth it with EMA, and cap target movement.
 - `DiaryActivitySummary` and `calorie_activity_adjustment.dart`: Normalize
-  health data and credit above-baseline activity.
+  health data, remove expected activity from Total-TDEE targets, and credit
+  tracked activity.
 - `BurnWeekRunState` and `burn_week_mock_logic.dart`: Model Burn Week, hearts,
   stars, safe zones, and game-loop decisions.
 - `CalorieProductProfile` and `CalorieScannedSourceRef`: Product data from
@@ -203,12 +205,13 @@ Generated Riverpod and JSON files. They should not be edited manually.
    active calories.
 3. Check-ins are blocked when too much intake is missing, weight points are
    missing, or data is unstable.
-4. `CalorieWeeklyCheckInCalculator` calculates weight trend, average intake,
+4. Heart days stay in the 7-day learning window as goal-kcal days.
+5. `CalorieWeeklyCheckInCalculator` calculates weight trend, average intake,
    measured TDEE, smoothed TDEE, and the new target.
-5. `CalorieWeeklyCheckInController` stores snapshots as
+6. `CalorieWeeklyCheckInController` stores snapshots as
    `CalorieGoalWeeklyCheckInSnapshot`, dismisses pending check-ins, and refills
    Burn Week hearts.
-6. Later diary edits invalidate snapshots through `inputHash` / `invalidatedAt`
+7. Later diary edits invalidate snapshots through `inputHash` / `invalidatedAt`
    so stale learning is not silently reused.
 
 ### Burn Week

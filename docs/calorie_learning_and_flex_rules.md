@@ -118,13 +118,15 @@ expectedActivityKcal = BMR * (PAL - 1)
 Rules:
 
 - Non-tracking users keep the normal PAL-based target.
-- Tracking users compare tracked activity against expected activity.
+- Tracking users split the calculator target into Base-TDEE plus tracked
+  activity credit.
 - Today should never feel punished for tracking a workout.
-- User-facing activity adjustment is positive-only:
+- Expected activity and tracked activity use the same tracker correction:
 
 ```text
-rawExtraActivity = max(0, trackedActivityKcal - expectedActivityKcal)
-activityBonus = rawExtraActivity * 0.5
+baseTarget = totalTarget - expectedActivityKcal * 0.75
+activityBonus = trackedActivityKcal * 0.75
+dynamicTargetToday = baseTarget + activityBonus
 ```
 
 - If tracking starts mid-run, days before tracking are unknown, not zero.
@@ -142,14 +144,15 @@ activityBonus = rawExtraActivity * 0.5
 Reason:
 
 - The onboarding activity level already raises the base target.
-- Adding all burned calories on top would double dip for active users.
+- Removing expected activity before adding tracked activity avoids double
+  dipping for active users.
 
 Suggested product behavior:
 
 - Base target still comes from TDEE and chosen activity level.
-- Activity tracking can add extra allowance above the expected baseline.
-- Tracker calories are noisy, so only 50% of above-baseline activity becomes
-  eatable calories.
+- Health-off users see the normal Total-TDEE target.
+- Health-on users earn back 75% of tracked activity after expected activity is
+  removed from the Total-TDEE target.
 - If the user does not eat all of that bonus, normal carryover can still move
   it forward.
 - Classic can hide today's activity bonus, but the canonical Balance ledger
@@ -189,14 +192,15 @@ Historical edits:
 After each weekly boundary:
 
 - calculate average burned/active calories across the learning window
-- store that average as the expected activity baseline
-- keep learned TDEE as the learned base target input
+- count heart days as perfect days by substituting that day's goal kcal
+- subtract the average credited activity from measured Total-TDEE
+- keep learned Base-TDEE as the learned base target input
 - learn maintenance TDEE separately from the user's target mode and speed
 
 Important:
 
-- Average burned calories are not added on top of learned TDEE again.
-- Learned TDEE already includes the user's average activity pattern.
+- Average credited activity is removed from learned Base-TDEE, then today's
+  credited activity can be added back.
 - The weekly check-in must smooth maintenance TDEE, not target calories.
 - Lose/gain/maintain is applied after smoothing the learned maintenance TDEE.
 - Daily activity and carryover can still change the display target, but the
@@ -206,7 +210,8 @@ Weekly boundary logic:
 
 ```text
 measuredTdee = avgIntake - weightChangePerDay * 7000
-smoothedTdee = blend(oldLearnedTdee, measuredTdee)
+measuredBaseTdee = measuredTdee - averageTrackedActivity * 0.75
+smoothedTdee = blend(oldLearnedBaseTdee, measuredBaseTdee)
 baseTarget = smoothedTdee +/- deficit_or_surplus
 weeklyBaseTarget = clamp_change_from_previous_week(baseTarget)
 ```
@@ -214,8 +219,7 @@ weeklyBaseTarget = clamp_change_from_previous_week(baseTarget)
 Daily display logic after a learned weekly target exists:
 
 ```text
-rawExtraActivity = max(0, todayBurned - avgBurned)
-activityBonus = rawExtraActivity * 0.5
+activityBonus = todayBurned * 0.75
 dynamicTargetToday = weeklyBaseTarget + activityBonus
 flexTargetToday = dynamicTargetToday + carryover
 ```
@@ -223,8 +227,8 @@ flexTargetToday = dynamicTargetToday + carryover
 Agreed UX behavior:
 
 - Normal training day should not feel punished.
-- Rest day should not lower the target.
-- Extra activity above normal can raise the target.
+- Rest day uses the learned Base-TDEE target.
+- Tracked activity can raise the target.
 - If the user becomes less active over time, the next weekly TDEE update can
   lower the learned baseline naturally.
 

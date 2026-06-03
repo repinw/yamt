@@ -58,6 +58,19 @@ double calculateActivityCreditKcal({
   ).creditedActivityKcal;
 }
 
+/// Removes expected activity credit from a Total-TDEE based goal.
+double calculateActivityAdjustedBaseGoalKcal({
+  required double totalGoalKcal,
+  required double? expectedActivityKcal,
+  required bool isActivityTrackingActive,
+}) {
+  if (!isActivityTrackingActive || expectedActivityKcal == null) {
+    return totalGoalKcal;
+  }
+  return totalGoalKcal -
+      calculateActivityCreditKcal(rawActivityKcal: expectedActivityKcal);
+}
+
 /// Solves Base-TDEE after subtracting corrected activity.
 double calculateMeasuredBaseTdeeKcal({
   required double measuredTotalTdeeKcal,

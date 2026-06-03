@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/'
+    'diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_dialog_scheduler.dart';
@@ -161,7 +164,9 @@ class _DiaryWeeklyCheckInSectionState
     _dialogs.cacheAndSchedule(
       checkInData: checkInData,
       isMounted: () => mounted,
-      syncLearnedTdeeCache: actions.syncLearnedTdeeCache,
+      syncLearnedTdeeCache: (checkInData) {
+        return _syncLearnedTdeeCache(actions, checkInData);
+      },
       openDialog: _openDialog,
     );
     _openReopenedDialogIfReady(checkInData);
@@ -216,7 +221,7 @@ class _DiaryWeeklyCheckInSectionState
         }
       case DiaryWeeklyCheckInDialogAction.later:
       case null:
-        await actions.syncLearnedTdeeCache(checkInData);
+        await _syncLearnedTdeeCache(actions, checkInData);
     }
   }
 
@@ -227,7 +232,11 @@ class _DiaryWeeklyCheckInSectionState
   ) async {
     _hide(pending);
     final saved = await actions.applyWeeklyCheckIn(checkInData);
-    if (!mounted || saved) {
+    if (!mounted) {
+      return;
+    }
+    if (saved) {
+      _refreshDashboard();
       return;
     }
     _showAgain(pending);
@@ -235,6 +244,22 @@ class _DiaryWeeklyCheckInSectionState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.caloriesWeeklyCheckInApplyFailed)),
     );
+  }
+
+  Future<void> _syncLearnedTdeeCache(
+    DiaryWeeklyCheckInActions actions,
+    DiaryWeeklyCheckInData checkInData,
+  ) async {
+    await actions.syncLearnedTdeeCache(checkInData);
+    if (!mounted) {
+      return;
+    }
+    _refreshDashboard();
+  }
+
+  void _refreshDashboard() {
+    final normalizedDay = normalizeDiaryDay(widget.selectedDay);
+    ref.invalidate(diaryDayDashboardControllerProvider(normalizedDay));
   }
 
   void _hide(PendingCalorieGoalWeeklyCheckIn pending) {

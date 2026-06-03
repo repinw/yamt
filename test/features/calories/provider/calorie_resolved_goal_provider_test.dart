@@ -234,12 +234,12 @@ void main() {
     expect(firstGoal!.day, normalizeDiaryDay(firstDay));
     expect(firstGoal.todayActiveKcal, 400);
     expect(firstGoal.activityComparisonKcal, 300);
-    expect(firstGoal.goalKcal, 2400);
+    expect(firstGoal.goalKcal, 2025);
     expect(secondGoal, isNotNull);
     expect(secondGoal!.day, normalizeDiaryDay(secondDay));
     expect(secondGoal.todayActiveKcal, 800);
     expect(secondGoal.activityComparisonKcal, 600);
-    expect(secondGoal.goalKcal, 2700);
+    expect(secondGoal.goalKcal, 2325);
   });
 
   test(
@@ -288,11 +288,11 @@ void main() {
       );
 
       expect(resolvedGoal.day, normalizeDiaryDay(selectedDay));
-      expect(resolvedGoal.storedGoalKcal, 2100);
-      expect(resolvedGoal.goalKcal, 2550);
+      expect(resolvedGoal.storedGoalKcal, 1725);
+      expect(resolvedGoal.goalKcal, 2175);
       expect(resolvedGoal.activityDeltaKcal, 450);
       expect(resolvedGoal.activityComparisonKcal, 450);
-      expect(resolvedGoal.expectedActivityKcal, 2100);
+      expect(resolvedGoal.expectedActivityKcal, 500);
       expect(resolvedGoal.todayActiveKcal, 600);
       expect(resolvedGoal.isActivityTrackingActive, isTrue);
       expect(resolvedGoal.usedLearnedTdee, isFalse);
@@ -365,12 +365,12 @@ void main() {
       expect(resolvedGoal.todayActiveKcal, 600);
       expect(resolvedGoal.activityDeltaKcal, 450);
       expect(resolvedGoal.activityComparisonKcal, 450);
-      expect(resolvedGoal.goalKcal, 2550);
+      expect(resolvedGoal.goalKcal, 2175);
     },
   );
 
   test(
-    'adds positive activity delta before learned TDEE on a full day',
+    'uses expected activity base before learned TDEE on a full day',
     () async {
       final today = DateTime(2026, 4, 15);
       final settings = const CalorieGoalSettings.empty()
@@ -412,11 +412,11 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.storedGoalKcal, 2100);
+      expect(resolvedGoal.storedGoalKcal, 1725);
       expect(resolvedGoal.activityDeltaKcal, 450);
       expect(resolvedGoal.activityComparisonKcal, 450);
-      expect(resolvedGoal.expectedActivityKcal, 2100);
-      expect(resolvedGoal.goalKcal, 2550);
+      expect(resolvedGoal.expectedActivityKcal, 500);
+      expect(resolvedGoal.goalKcal, 2175);
       expect(resolvedGoal.todayActiveKcal, 600);
       expect(resolvedGoal.isActivityTrackingActive, isTrue);
       expect(resolvedGoal.usedLearnedTdee, isFalse);
@@ -467,7 +467,7 @@ void main() {
       expect(resolvedGoal.todayActiveKcal, 899);
       expect(resolvedGoal.activityComparisonKcal, 674.25);
       expect(resolvedGoal.activityDeltaKcal, 674.25);
-      expect(resolvedGoal.goalKcal, 2774.25);
+      expect(resolvedGoal.goalKcal, 2624.25);
     },
   );
 
@@ -516,11 +516,11 @@ void main() {
       expect(resolvedGoal.todayActiveKcal, 300);
       expect(resolvedGoal.activityComparisonKcal, 225);
       expect(resolvedGoal.activityDeltaKcal, 225);
-      expect(resolvedGoal.goalKcal, 2325);
+      expect(resolvedGoal.goalKcal, 2175);
     },
   );
 
-  test('does not add activity delta without an expected baseline', () async {
+  test('keeps total goal as base when expected activity is missing', () async {
     final today = DateTime(2026, 4, 15, 18);
     final settings = const CalorieGoalSettings.empty()
         .applyGoalChange(
@@ -562,7 +562,7 @@ void main() {
     expect(resolvedGoal.goalKcal, 2475);
     expect(resolvedGoal.activityDeltaKcal, 375);
     expect(resolvedGoal.activityComparisonKcal, 375);
-    expect(resolvedGoal.expectedActivityKcal, 2100);
+    expect(resolvedGoal.expectedActivityKcal, 0);
     expect(resolvedGoal.todayActiveKcal, 500);
     expect(resolvedGoal.isActivityTrackingActive, isTrue);
     expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
@@ -642,10 +642,10 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.goalKcal, 2437.5);
+      expect(resolvedGoal.goalKcal, 2212.5);
       expect(resolvedGoal.activityDeltaKcal, 337.5);
       expect(resolvedGoal.activityComparisonKcal, 337.5);
-      expect(resolvedGoal.expectedActivityKcal, 2100);
+      expect(resolvedGoal.expectedActivityKcal, 300);
       expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
     },
   );
@@ -714,6 +714,81 @@ void main() {
       expect(resolvedGoal.goalKcal, 2175);
       expect(resolvedGoal.usedLearnedTdee, isTrue);
       expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
+    },
+  );
+
+  test(
+    'uses saved check-in base target before adding today activity',
+    () async {
+      final sourceStart = DateTime(2026, 5, 27);
+      final today = DateTime(2026, 6, 3);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            id: 'source',
+            loggedAt: sourceStart.add(const Duration(hours: 8)),
+            totalKcal: 2443.83,
+          ),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: sourceStart,
+            dailyKcalGoal: 1483.81,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: today,
+            dailyKcalGoal: 1283.81,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: sourceStart,
+              windowEndDate: DateTime(2026, 6, 2),
+              trendWeightChangePerDay: 0.26316,
+              measuredTotalTdeeKcal: 601.73,
+              measuredBaseTdeeKcal: 147.55,
+              calculatedBaseTdeeKcal: 1395.59,
+              averageCreditedActivityKcal: 454.18,
+              baseGoalKcal: 1283.81,
+              lowConfidence: false,
+              inputHash: 'trusted-window',
+            ),
+          )
+          .copyWith(activityTrackingStartDate: today);
+
+      final container = _createContainer(
+        today: today,
+        settings: settings,
+        diaryHealthService: FakeDiaryHealthService(
+          <String, DiaryHealthDayData>{
+            diaryDayKey(today): _healthDayWithWorkout(
+              day: today,
+              totalCalories: 21,
+            ),
+          },
+        ),
+        logRepository: logRepository,
+        healthWeightService: FakeHealthWeightService(
+          const <HealthWeightSample>[],
+        ),
+        manualWeightRepository: FakeManualHealthWeightRepository(
+          <ManualHealthWeightEntry>[],
+        ),
+      );
+      addTearDown(container.dispose);
+
+      final resolvedGoal = await container.read(
+        resolvedCalorieGoalForDayProvider(today).future,
+      );
+
+      expect(resolvedGoal.storedGoalKcal, closeTo(1283.81, 0.01));
+      expect(resolvedGoal.activityDeltaKcal, closeTo(15.75, 0.01));
+      expect(resolvedGoal.goalKcal, closeTo(1299.56, 0.01));
+      expect(resolvedGoal.expectedActivityKcal, closeTo(1395.59, 0.01));
+      expect(resolvedGoal.lastWeekAverageActiveKcal, closeTo(454.18, 0.01));
+      expect(resolvedGoal.usedLearnedTdee, isTrue);
     },
   );
 

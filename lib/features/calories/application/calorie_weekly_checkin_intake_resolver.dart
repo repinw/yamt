@@ -73,6 +73,9 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
 }
 
 /// Resolves learning intake, including skipped-day interpolation.
+///
+/// Heart days count as perfect days: learning uses the target kcal for that
+/// day and ignores any logged intake.
 CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
   required List<DateTime> days,
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
@@ -83,11 +86,12 @@ CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
   final missingIntakeDays = <DateTime>[];
 
   for (final day in days) {
-    if (heartDayKeys.contains(diaryDayKey(day))) {
+    final dayKey = diaryDayKey(day);
+    if (heartDayKeys.contains(dayKey)) {
+      loggedVals.add(settings.goalKcalForDay(day));
       continue;
     }
-    final dayEntries =
-        calorieEntriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
+    final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
     if (dayEntries.isNotEmpty) {
       loggedVals.add(sumCalorieEntryKcal(dayEntries));
     } else {
@@ -115,11 +119,12 @@ CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
   final intakeKcalByDay = <double>[];
 
   for (final day in days) {
-    if (heartDayKeys.contains(diaryDayKey(day))) {
+    final dayKey = diaryDayKey(day);
+    if (heartDayKeys.contains(dayKey)) {
+      intakeKcalByDay.add(settings.goalKcalForDay(day));
       continue;
     }
-    final dayEntries =
-        calorieEntriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
+    final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
     if (dayEntries.isNotEmpty) {
       intakeKcalByDay.add(sumCalorieEntryKcal(dayEntries));
     } else {

@@ -59,7 +59,7 @@ final class DiaryBurnWeekRunStateProvider
 }
 
 String _$diaryBurnWeekRunStateHash() =>
-    r'ae53931d0a3eb324b17aa00d4ba950e389b4468a';
+    r'44e6a5b2bbec88f7a03511a6990474810b1bfd03';
 
 /// Actions needed by diary Burn Week presentation widgets.
 

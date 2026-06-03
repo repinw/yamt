@@ -36,4 +36,14 @@ void main() {
 
     expect(measuredBaseTdee, closeTo(2275, 0.01));
   });
+
+  test('removes expected activity credit from total goal when tracking', () {
+    final baseGoal = calculateActivityAdjustedBaseGoalKcal(
+      totalGoalKcal: 2100,
+      expectedActivityKcal: 500,
+      isActivityTrackingActive: true,
+    );
+
+    expect(baseGoal, 1725);
+  });
 }
