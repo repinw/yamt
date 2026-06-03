@@ -9,7 +9,7 @@ import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 part 'diary_day_dashboard_cache_store.g.dart';
 
 const _cacheLogName = 'DiaryDayDashboardCacheStore';
-const _cacheVersion = 1;
+const _cacheVersion = 2;
 
 /// Stores last good diary dashboard snapshots for instant startup.
 class DiaryDayDashboardCacheStore {

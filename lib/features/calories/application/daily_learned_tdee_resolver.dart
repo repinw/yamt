@@ -139,7 +139,16 @@ abstract final class DailyLearnedTdeeResolver {
     required Map<String, double> manualWeightByDay,
     required Map<String, double> representativeWeightByDay,
     required Map<String, int> activeKcalByDay,
+    required Set<String> heartDayKeys,
   }) {
+    final savedGoal = savedLearnedGoalForDay(
+      settings: settings,
+      day: context.day,
+    );
+    if (savedGoal != null) {
+      return savedGoal;
+    }
+
     final contextLearningDays = buildCalorieCarryoverDateRange(
       startInclusive: context.firstLearningStartDate,
       endExclusive: nextDiaryDay(context.lastWindow.windowEndDate),
@@ -151,11 +160,28 @@ abstract final class DailyLearnedTdeeResolver {
       return null;
     }
 
-    var previousGoalKcal = settings.goalKcalForDay(
-      previousDiaryDay(context.windows.first.windowStartDate),
+    final firstWindowStartDate = context.windows.first.windowStartDate;
+    var previousGoalKcal = calculateActivityAdjustedBaseGoalKcal(
+      totalGoalKcal: settings.goalKcalForDay(
+        previousDiaryDay(firstWindowStartDate),
+      ),
+      expectedActivityKcal: settings.expectedActivityKcalForDay(
+        previousDiaryDay(firstWindowStartDate),
+      ),
+      isActivityTrackingActive: settings.isActivityTrackingActiveForDay(
+        firstWindowStartDate,
+      ),
     );
     if (previousGoalKcal <= 0) {
-      previousGoalKcal = context.storedGoalKcal;
+      previousGoalKcal = calculateActivityAdjustedBaseGoalKcal(
+        totalGoalKcal: context.storedGoalKcal,
+        expectedActivityKcal: settings.expectedActivityKcalForDay(
+          firstWindowStartDate,
+        ),
+        isActivityTrackingActive: settings.isActivityTrackingActiveForDay(
+          firstWindowStartDate,
+        ),
+      );
     }
     var previousLearnedTdeeKcal = learnedTdeeSeed(
       settings: settings,
@@ -173,6 +199,7 @@ abstract final class DailyLearnedTdeeResolver {
         days: learningDays,
         entriesByDay: entriesByDay,
         settings: settings,
+        heartDayKeys: heartDayKeys,
       );
       if (intakeKcalByDay == null) {
         return latest;
@@ -221,6 +248,36 @@ abstract final class DailyLearnedTdeeResolver {
     }
 
     return latest;
+  }
+
+  /// Resolves learned daily goal from a trusted saved weekly check-in.
+  static DailyLearnedTdeeGoalData? savedLearnedGoalForDay({
+    required CalorieGoalSettings settings,
+    required DateTime day,
+  }) {
+    final entry = settings.learnedTdeeEntryForDay(day);
+    final snapshot = entry?.learnedTdeeSnapshot;
+    if (snapshot == null ||
+        !snapshot.isInputTrusted ||
+        snapshot.baseGoalKcal <= 0) {
+      return null;
+    }
+    if (!snapshot.windowEndDate.isBefore(normalizeDiaryDay(day))) {
+      return null;
+    }
+
+    return DailyLearnedTdeeGoalData(
+      measured: CalorieMeasuredTdeeCalculation(
+        trendWeightChangePerDay: snapshot.trendWeightChangePerDay,
+        averageIntakeKcal: 0,
+        measuredTotalTdeeKcal: snapshot.measuredTotalTdeeKcal,
+        measuredBaseTdeeKcal: snapshot.measuredBaseTdeeKcal,
+        averageCreditedActivityKcal: snapshot.averageCreditedActivityKcal,
+      ),
+      calculatedBaseTdeeKcal: snapshot.calculatedBaseTdeeKcal,
+      newBaseGoalKcal: snapshot.baseGoalKcal,
+      averageCreditedActivityKcal: snapshot.averageCreditedActivityKcal,
+    );
   }
 
   /// Finds earliest day in a collection.
@@ -350,13 +407,18 @@ abstract final class DailyLearnedTdeeResolver {
     required List<DateTime> days,
     required Map<String, List<CalorieEntry>> entriesByDay,
     required CalorieGoalSettings settings,
+    required Set<String> heartDayKeys,
   }) {
     final loggedVals = <double>[];
     final missingDays = <DateTime>[];
 
     for (final day in days) {
-      final dayEntries =
-          entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
+      final dayKey = diaryDayKey(day);
+      if (heartDayKeys.contains(dayKey)) {
+        loggedVals.add(settings.goalKcalForDay(day));
+        continue;
+      }
+      final dayEntries = entriesByDay[dayKey] ?? const <CalorieEntry>[];
       if (dayEntries.isNotEmpty) {
         loggedVals.add(
           dayEntries.fold<double>(
@@ -379,8 +441,12 @@ abstract final class DailyLearnedTdeeResolver {
     final intakeKcalByDay = <double>[];
 
     for (final day in days) {
-      final dayEntries =
-          entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
+      final dayKey = diaryDayKey(day);
+      if (heartDayKeys.contains(dayKey)) {
+        intakeKcalByDay.add(settings.goalKcalForDay(day));
+        continue;
+      }
+      final dayEntries = entriesByDay[dayKey] ?? const <CalorieEntry>[];
       if (dayEntries.isNotEmpty) {
         intakeKcalByDay.add(
           dayEntries.fold<double>(

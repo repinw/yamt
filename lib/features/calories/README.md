@@ -58,6 +58,64 @@ Main application providers:
 - `application/calorie_entry_delete_flow.dart`
 - `application/calorie_inventory_entry_save_handler.dart`
 
+## TDEE Learning
+
+Calories starts with a classic calculator target. The calculator profile
+produces Total-TDEE from height, weight, age, sex, and selected activity level.
+Goal mode and speed then apply deficit or surplus to create the initial daily
+target.
+
+When Health activity tracking is connected, the target is split into a base
+goal and tracked activity credit:
+
+```text
+baseGoal = totalTdeeGoal - expectedActivityKcal * 0.75
+dailyGoal = baseGoal + trackedActivityTodayKcal * 0.75
+```
+
+Without Health activity tracking, users see the normal Total-TDEE-based goal.
+
+Weekly learned TDEE uses an expanding window first, then a rolling 28-day
+window:
+
+```text
+week 1: days 1-7
+week 2: days 1-14
+week 3: days 1-21
+week 4: days 1-28
+week 5+: latest 28 days only
+```
+
+The measured learning signal is calculated from intake, weight trend, and
+tracked activity in the same learning window:
+
+```text
+measuredTotalTdee = averageIntake - weightTrendKgPerDay * 7000
+measuredBaseTdee = measuredTotalTdee - averageTrackedActivityKcal * 0.75
+newLearnedBaseTdee = oldLearnedBaseTdee * 0.70 + measuredBaseTdee * 0.30
+```
+
+The learned value is a base target without tracked activity credit. Daily UI
+adds today's tracked activity back with the same 75% correction.
+
+Heart days count as perfect days for learning. The backend substitutes that
+day's goal kcal and ignores raw logged intake for the heart day. This keeps the
+7-day balance intact without letting one marked day distort TDEE learning.
+
+Missing intake blocks learning when at least three intake days are missing.
+Skipped intake days are interpolated from logged-day average. Weight learning
+requires enough boundary data to form at least two weight points; two-point
+calculations are allowed but marked low confidence.
+
+Weight handling uses median filtering plus a trendline:
+
+```text
+health samples per day -> median
+manual weight overrides health median
+weight points -> local median-of-three smoothing
+linear regression slope -> kg/day trend
+```
+
 ## Accepted Dependencies
 
 - `core` for routing, theme tokens, shared widgets, and local day helpers.

@@ -2,8 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/daily_learned_tdee_models.dart';
+import 'package:yamt/features/calories/data/'
+    'burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -22,6 +25,18 @@ import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
 import '../support/fake_calories_repositories.dart';
+
+class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
+  const _FakeBurnWeekRunStateRepository(this.state);
+
+  final BurnWeekRunState state;
+
+  @override
+  Future<BurnWeekRunState> readState() async => state;
+
+  @override
+  Future<bool> saveState(BurnWeekRunState state) async => true;
+}
 
 const _readyStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,
@@ -123,6 +138,7 @@ class _DailyLearnedHarness {
     List<ManualHealthWeightEntry> manualWeights =
         const <ManualHealthWeightEntry>[],
     FakeDiaryHealthService? diaryHealthService,
+    BurnWeekRunState burnWeekRunState = const BurnWeekRunState.initial(),
   }) {
     logRepository = FakeCalorieLogRepository(initialEntries: entries);
     settingsRepository = FakeCalorieSettingsRepository(
@@ -133,6 +149,9 @@ class _DailyLearnedHarness {
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        burnWeekRunStateRepositoryProvider.overrideWithValue(
+          _FakeBurnWeekRunStateRepository(burnWeekRunState),
+        ),
         healthConnectionServiceProvider.overrideWith(
           (ref) => FakeHealthConnectionService(_readyStatus),
         ),
@@ -633,6 +652,57 @@ void main() {
   });
 
   test(
+    'uses trusted saved check-in base goal for the next week',
+    () async {
+      final startDay = DateTime(2026, 5, 27);
+      final windowEndDate = DateTime(2026, 6, 2);
+      final today = DateTime(2026, 6, 3);
+      final settings =
+          _baseSettings(
+            startDay: startDay,
+            dailyGoalKcal: 1483.81,
+          ).applyGoalChange(
+            changedAt: today,
+            dailyKcalGoal: 1283.81,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: startDay,
+              windowEndDate: windowEndDate,
+              trendWeightChangePerDay: 0.26316,
+              measuredTotalTdeeKcal: 601.73,
+              measuredBaseTdeeKcal: 147.55,
+              calculatedBaseTdeeKcal: 1395.59,
+              averageCreditedActivityKcal: 454.18,
+              baseGoalKcal: 1283.81,
+              lowConfidence: false,
+              inputHash: 'trusted-window',
+            ),
+          );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: <CalorieEntry>[
+          _entry('source', startDay.add(const Duration(hours: 8)), 2443.83),
+        ],
+        healthWeights: const <HealthWeightSample>[],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(
+        harness.container,
+        today: today,
+        storedGoalKcal: 1483.81,
+      );
+
+      expect(result, isNotNull);
+      expect(result!.calculatedBaseTdeeKcal, closeTo(1395.59, 0.01));
+      expect(result.newGoalKcal, closeTo(1283.81, 0.01));
+      expect(result.averageCreditedActivityKcal, closeTo(454.18, 0.01));
+      expect(result.measured.measuredTotalTdeeKcal, closeTo(601.73, 0.01));
+    },
+  );
+
+  test(
     'ignores stale learned snapshot when source intake is invalid',
     () async {
       final startDay = DateTime(2026, 4, 8);
@@ -942,6 +1012,40 @@ void main() {
       expect(result!.measured.averageIntakeKcal, closeTo(2416.67, 0.01));
       expect(result.calculatedTrueTdeeKcal, closeTo(2405.0, 0.01));
       expect(result.newGoalKcal, closeTo(2405.0, 0.01));
+    },
+  );
+
+  test(
+    'substitutes heart days with goal kcal in daily learned replay',
+    () async {
+      final startDay = DateTime(2026, 4);
+      final today = startDay.add(const Duration(days: 9));
+      final heartDay = startDay.add(const Duration(days: 2));
+      final settings = _learnedSettings(
+        startDay: startDay,
+        windowEndDate: startDay.add(const Duration(days: 6)),
+      );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: _dailyEntries(
+          startDay: startDay,
+          count: 7,
+          kcalForIndex: (index) => index == 2 ? 8000 : 2100,
+        ),
+        healthWeights: _stableBoundaryWeights(
+          startDay: startDay,
+          boundaryCount: 1,
+        ),
+        burnWeekRunState: const BurnWeekRunState.initial().copyWith(
+          heartDayKeys: <String>[diaryDayKey(heartDay)],
+        ),
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNotNull);
+      expect(result!.measured.averageIntakeKcal, closeTo(2142.86, 0.01));
     },
   );
 }

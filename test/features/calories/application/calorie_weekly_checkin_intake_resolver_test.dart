@@ -110,7 +110,7 @@ void main() {
     expect(data.days[0].hasEntries, isFalse);
   });
 
-  test('learning intake ignores heart days', () {
+  test('learning intake substitutes heart days with the goal', () {
     final start = DateTime(2026, 4, 2);
     final heartDay = nextDiaryDay(start);
     final thirdDay = nextDiaryDay(heartDay);
@@ -119,6 +119,7 @@ void main() {
       days: [start, heartDay, thirdDay],
       calorieEntriesByDay: {
         diaryDayKey(start): [_entry('a', start, 1000)],
+        diaryDayKey(heartDay): [_entry('b', heartDay, 8000)],
         diaryDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
       },
       settings: _settings(start),
@@ -126,7 +127,7 @@ void main() {
     );
 
     expect(data.blockedReason, isNull);
-    expect(data.intakeKcalByDay, [1000, 2000]);
+    expect(data.intakeKcalByDay, [1000, 2000, 2000]);
     expect(data.missingIntakeDays, isEmpty);
   });
 }

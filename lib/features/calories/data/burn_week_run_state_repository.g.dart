@@ -60,4 +60,4 @@ final class BurnWeekRunStateRepositoryProvider
 }
 
 String _$burnWeekRunStateRepositoryHash() =>
-    r'36c4cc0e3f9aab7efe6f5520463987f1d7347c21';
+    r'e7e7822d9c7ec19204ce2cfa9b5be777ccf2ed53';

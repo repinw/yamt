@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
@@ -39,6 +40,7 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
   try {
     final repository = ref.watch(calorieLogRepositoryProvider);
     final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
+    final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
     final healthStatusFuture = ref.watch(
       healthConnectionControllerProvider.future,
     );
@@ -47,11 +49,13 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
     );
     final healthWeightService = ref.watch(healthWeightServiceProvider);
     final diaryHealthService = ref.watch(diaryHealthServiceProvider);
+    final result = <String, DailyLearnedTdeeGoalData?>{
+      for (final dayRequest in request.days) diaryDayKey(dayRequest.day): null,
+    };
 
     final settings = await settingsFuture;
-    if (!ref.mounted) {
-      throw StateError('Weekly learned TDEE disposed.');
-    }
+    final runState = await runStateFuture;
+    final heartDayKeys = runState.heartDayKeys.toSet();
 
     final contexts = [
       for (final dayRequest in request.days)
@@ -61,9 +65,6 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
           today: request.today,
         ),
     ].whereType<DailyLearnedTdeeDayContext>().toList(growable: false);
-    final result = <String, DailyLearnedTdeeGoalData?>{
-      for (final dayRequest in request.days) diaryDayKey(dayRequest.day): null,
-    };
     if (contexts.isEmpty) {
       return Map<String, DailyLearnedTdeeGoalData?>.unmodifiable(result);
     }
@@ -80,21 +81,12 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
       startInclusive: firstLearningStartDate,
       endExclusive: lastLearningEndExclusive,
     );
-    if (!ref.mounted) {
-      throw StateError('Weekly learned TDEE disposed.');
-    }
     if (entries.isEmpty) {
       return Map<String, DailyLearnedTdeeGoalData?>.unmodifiable(result);
     }
 
     final healthStatus = await healthStatusFuture;
-    if (!ref.mounted) {
-      throw StateError('Weekly learned TDEE disposed.');
-    }
     final manualEntries = await manualEntriesFuture;
-    if (!ref.mounted) {
-      throw StateError('Weekly learned TDEE disposed.');
-    }
     final healthWeights = await _loadHealthWeights(
       healthWeightService: healthWeightService,
       healthStatus: healthStatus,
@@ -107,19 +99,12 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
         ),
       ),
     );
-    if (!ref.mounted) {
-      throw StateError('Weekly learned TDEE disposed.');
-    }
     final activeKcalByDay = await _loadActiveKcalByDay(
       diaryHealthService: diaryHealthService,
       settings: settings,
       healthStatus: healthStatus,
       windows: DailyLearnedTdeeResolver.uniqueWindows(contexts),
     );
-    if (!ref.mounted) {
-      throw StateError('Weekly learned TDEE disposed.');
-    }
-
     final entriesByDay = entries.groupByDiaryDayKey();
     final manualWeightByDay = DailyLearnedTdeeResolver.manualWeightByDay(
       manualEntries,
@@ -138,6 +123,7 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
         manualWeightByDay: manualWeightByDay,
         representativeWeightByDay: representativeWeightByDay,
         activeKcalByDay: activeKcalByDay,
+        heartDayKeys: heartDayKeys,
       );
     }
 
@@ -159,6 +145,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
   ref.watch(calorieOverviewRevisionProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
+  final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
   final healthStatusFuture = ref.watch(
     healthConnectionControllerProvider.future,
   );
@@ -175,9 +162,8 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
       : normalizedDay;
 
   final settings = await settingsFuture;
-  if (!ref.mounted) {
-    throw StateError('Weekly learned TDEE disposed.');
-  }
+  final runState = await runStateFuture;
+  final heartDayKeys = runState.heartDayKeys.toSet();
   final anchorEntry = settings.cycleAnchorEntryForDay(normalizedDay);
   if (anchorEntry == null) {
     return null;
@@ -201,21 +187,12 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     startInclusive: firstLearningStartDate,
     endExclusive: nextDiaryDay(lastWindow.windowEndDate),
   );
-  if (!ref.mounted) {
-    throw StateError('Weekly learned TDEE disposed.');
-  }
   if (entries.isEmpty) {
     return null;
   }
 
   final healthStatus = await healthStatusFuture;
-  if (!ref.mounted) {
-    throw StateError('Weekly learned TDEE disposed.');
-  }
   final manualEntries = await manualEntriesFuture;
-  if (!ref.mounted) {
-    throw StateError('Weekly learned TDEE disposed.');
-  }
   final healthWeights = await _loadHealthWeights(
     healthWeightService: healthWeightService,
     healthStatus: healthStatus,
@@ -225,19 +202,12 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     ),
     endDateExclusive: nextDiaryDay(lastWindow.nextBoundaryDay),
   );
-  if (!ref.mounted) {
-    throw StateError('Weekly learned TDEE disposed.');
-  }
   final activeKcalByDay = await _loadActiveKcalByDay(
     diaryHealthService: diaryHealthService,
     settings: settings,
     healthStatus: healthStatus,
     windows: windows,
   );
-  if (!ref.mounted) {
-    throw StateError('Weekly learned TDEE disposed.');
-  }
-
   final entriesByDay = entries.groupByDiaryDayKey();
   final manualWeightByDay = DailyLearnedTdeeResolver.manualWeightByDay(
     manualEntries,
@@ -263,6 +233,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     manualWeightByDay: manualWeightByDay,
     representativeWeightByDay: representativeWeightByDay,
     activeKcalByDay: activeKcalByDay,
+    heartDayKeys: heartDayKeys,
   );
 }
 

@@ -246,7 +246,7 @@ void main() {
   });
 
   test(
-    'heart day stays in check-in window and excludes logged intake',
+    'heart day stays in check-in window and substitutes goal intake',
     () async {
       final today = DateTime(2026, 4, 16);
       final goalStart = DateTime(2026, 4, 8);
@@ -313,7 +313,10 @@ void main() {
       expect(heartWindowDay.hasEntries, isFalse);
       expect(heartWindowDay.loggedIntakeKcal, 8000);
       expect(heartWindowDay.resolvedIntakeKcal, isNull);
-      expect(checkInData.calculation?.averageIntakeKcal, closeTo(2100, 0.01));
+      expect(
+        checkInData.calculation?.averageIntakeKcal,
+        closeTo(2142.86, 0.01),
+      );
     },
   );
 

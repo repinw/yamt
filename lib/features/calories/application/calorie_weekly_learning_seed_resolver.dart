@@ -133,12 +133,31 @@ CalorieWeeklyLearningSeed baseLearningSeedForWindow({
   required CalorieGoalHistoryEntry? anchorEntry,
 }) {
   return CalorieWeeklyLearningSeed(
-    previousGoalKcal: settings.goalKcalForDay(windowEndDate),
+    previousGoalKcal: previousBaseGoalKcalBeforeWindow(
+      settings: settings,
+      windowStartDate: windowStartDate,
+      windowEndDate: windowEndDate,
+    ),
     previousLearnedTdeeKcal: previousLearnedTdeeKcalBeforeDay(
       settings: settings,
       day: windowStartDate,
       fallbackDay: windowEndDate,
       anchorEntry: anchorEntry,
+    ),
+  );
+}
+
+/// Base goal seed before [windowStartDate].
+double previousBaseGoalKcalBeforeWindow({
+  required CalorieGoalSettings settings,
+  required DateTime windowStartDate,
+  required DateTime windowEndDate,
+}) {
+  return calculateActivityAdjustedBaseGoalKcal(
+    totalGoalKcal: settings.goalKcalForDay(windowEndDate),
+    expectedActivityKcal: settings.expectedActivityKcalForDay(windowEndDate),
+    isActivityTrackingActive: settings.isActivityTrackingActiveForDay(
+      windowStartDate,
     ),
   );
 }

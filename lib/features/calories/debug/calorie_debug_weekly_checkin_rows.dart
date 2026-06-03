@@ -12,6 +12,7 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_window_resolver.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_dump_formatting.dart';
+import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
     show CalorieGoalMode;
 import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
@@ -65,7 +66,15 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
   final usesHealthActivity =
       healthStatus.accessState == HealthDataAccessState.ready;
 
-  var previousGoalKcal = settings.goalKcalForDay(windows.first.windowEndDate);
+  var previousGoalKcal = calculateActivityAdjustedBaseGoalKcal(
+    totalGoalKcal: settings.goalKcalForDay(windows.first.windowEndDate),
+    expectedActivityKcal: settings.expectedActivityKcalForDay(
+      windows.first.windowEndDate,
+    ),
+    isActivityTrackingActive: settings.isActivityTrackingActiveForDay(
+      windows.first.windowStartDate,
+    ),
+  );
   var previousLearnedTdeeKcal = _previousLearnedTdeeKcalBeforeDay(
     settings: settings,
     day: windows.first.windowStartDate,
@@ -777,7 +786,15 @@ double _previousLearnedTdeeKcalBeforeDay({
     day: fallbackDay,
   );
   if (calculatorProfile != null) {
-    return CalorieGoalCalculator.calculate(calculatorProfile).tdeeKcal;
+    final result = CalorieGoalCalculator.calculate(calculatorProfile);
+    if (settings.isActivityTrackingActiveForDay(day)) {
+      return calculateActivityAdjustedBaseGoalKcal(
+        totalGoalKcal: result.tdeeKcal,
+        expectedActivityKcal: result.expectedActivityKcal,
+        isActivityTrackingActive: true,
+      );
+    }
+    return result.tdeeKcal;
   }
   return settings.goalKcalForDay(fallbackDay);
 }

@@ -123,14 +123,14 @@ class FirestoreBurnWeekRunStateRepository
 @riverpod
 BurnWeekRunStateRepository burnWeekRunStateRepository(Ref ref) {
   ref.keepAlive();
-  final authState = ref.watch(authStateChangesProvider);
-  final currentUserId =
-      authState.asData?.value?.uid ??
-      ref.watch(firebaseAuthProvider).currentUser?.uid;
   final firestore = ref.watch(firebaseFirestoreProvider);
   if (firestore == null) {
     return const _UnavailableBurnWeekRunStateRepository();
   }
+  final authState = ref.watch(authStateChangesProvider);
+  final currentUserId =
+      authState.asData?.value?.uid ??
+      ref.watch(firebaseAuthProvider).currentUser?.uid;
   return FirestoreBurnWeekRunStateRepository(
     firestore: firestore,
     currentUserId: currentUserId,

@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 
@@ -7,6 +8,7 @@ part 'diary_burn_week_run_provider.g.dart';
 /// Diary-facing Burn Week run state adapter.
 @riverpod
 AsyncValue<BurnWeekRunState> diaryBurnWeekRunState(Ref ref) {
+  ref.watch(burnWeekLiveSyncProvider);
   return ref.watch(burnWeekRunControllerProvider);
 }
 
