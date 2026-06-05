@@ -1,5 +1,5 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 
 /// Whether two inventory items have the same candidate lookup input.

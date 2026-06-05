@@ -7,7 +7,7 @@ import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_batch_flow_controller.g.dart';
 

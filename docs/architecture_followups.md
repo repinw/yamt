@@ -108,13 +108,14 @@ Decision needed:
 - Either document `app_router.dart` as the app composition-root exception, or
   move route assembly out of `core`.
 
-### Completed: Remove scanner receipt draft compatibility re-export
+### Completed: Keep scanner receipt draft owned by Scanner
 
 - `lib/features/scanner/domain/receipt_review_item_draft.dart`
 
 Result:
 
-- Deleted the handwritten re-export.
-- Updated scanner imports to use
-  `lib/features/inventory/domain/receipt_review_item_draft.dart` directly.
-- Moved the `ReceiptReviewItemDraft` domain test under inventory ownership.
+- Restored `ReceiptReviewItemDraft` as a real scanner-domain model because it
+  carries scanner-review state such as OCR names, receipt timing, candidate
+  review flags, and receipt-alias persistence intent.
+- Removed inventory UI dependency on `ReceiptReviewItemDraft` by introducing a
+  smaller inventory-side picker data object for candidate selection.

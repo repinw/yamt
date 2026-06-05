@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_capture_flow_models.freezed.dart';
 

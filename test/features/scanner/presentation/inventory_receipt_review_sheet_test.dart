@@ -41,7 +41,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_page.dart';
-import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';

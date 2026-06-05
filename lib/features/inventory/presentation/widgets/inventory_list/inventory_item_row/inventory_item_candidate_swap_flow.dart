@@ -7,8 +7,6 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'receipt_review_item_draft.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_search_launcher.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -52,12 +50,11 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
     return null;
   }
 
-  final draft = ReceiptReviewItemDraft(
-    item: item,
+  final pickerData = InventoryCandidatePickerData(
+    sourceName: item.name,
     candidates: candidates,
     selectedGlobalFoodItemId: matcher.defaultSelectionFor(candidates),
-    selectionNeedsReview: matcher.defaultSelectionNeedsReviewFor(candidates),
-    ocrName: item.ocrName,
+    readAsName: item.ocrName,
   );
   final selection = await showModalBottomSheet<ReceiptCandidatePickerSelection>(
     context: context,
@@ -66,7 +63,7 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
     useSafeArea: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) {
-      return InventoryReceiptCandidatePickerSheet(draft: draft);
+      return InventoryReceiptCandidatePickerSheet(data: pickerData);
     },
   );
   if (!context.mounted || selection == null) {
@@ -76,7 +73,7 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   return switch (selection.kind) {
     ReceiptCandidatePickerSelectionKind.candidate =>
       buildInventoryItemCandidateSwapRequestFromCandidate(
-        draft: draft,
+        candidates: candidates,
         candidateId: selection.candidateId,
         sourceItem: item,
       ),
@@ -92,7 +89,7 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
 /// Builds a swap request from a selected candidate id.
 InventoryItemCandidateSwapRequest?
 buildInventoryItemCandidateSwapRequestFromCandidate({
-  required ReceiptReviewItemDraft draft,
+  required List<GlobalFoodMatchCandidate> candidates,
   required String? candidateId,
   required InventoryItem sourceItem,
 }) {
@@ -100,7 +97,7 @@ buildInventoryItemCandidateSwapRequestFromCandidate({
     return null;
   }
 
-  final candidate = _candidateById(draft.candidates, candidateId);
+  final candidate = _candidateById(candidates, candidateId);
   if (candidate == null) {
     return null;
   }

@@ -1,4 +1,4 @@
-import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 /// Defines receipt review price summary.
 class ReceiptReviewPriceSummary {

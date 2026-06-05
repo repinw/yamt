@@ -6,7 +6,7 @@ import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 class _FakeReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   _FakeReceiptAnalysisRepository({required this.onAnalyzeSelection});

@@ -5,8 +5,6 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'receipt_review_item_draft.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_candidate_swap_flow.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'
@@ -19,20 +17,17 @@ void main() {
     test('returns selected candidate and preserves source item weight', () {
       final sourceItem = _item(weight: '500 g');
       final candidateItem = _globalFoodItem(id: 'candidate-1');
-      final draft = ReceiptReviewItemDraft(
-        item: sourceItem,
-        candidates: <GlobalFoodMatchCandidate>[
-          GlobalFoodMatchCandidate(
-            item: candidateItem,
-            score: 10,
-            reason: GlobalFoodMatchReason.nameExact,
-            requiresPersistence: true,
-          ),
-        ],
-      );
+      final candidates = <GlobalFoodMatchCandidate>[
+        GlobalFoodMatchCandidate(
+          item: candidateItem,
+          score: 10,
+          reason: GlobalFoodMatchReason.nameExact,
+          requiresPersistence: true,
+        ),
+      ];
 
       final request = buildInventoryItemCandidateSwapRequestFromCandidate(
-        draft: draft,
+        candidates: candidates,
         candidateId: 'candidate-1',
         sourceItem: sourceItem,
       );
@@ -50,19 +45,16 @@ void main() {
           id: 'candidate-1',
           packageWeight: '750 ml',
         );
-        final draft = ReceiptReviewItemDraft(
-          item: sourceItem,
-          candidates: <GlobalFoodMatchCandidate>[
-            GlobalFoodMatchCandidate(
-              item: candidateItem,
-              score: 10,
-              reason: GlobalFoodMatchReason.nameExact,
-            ),
-          ],
-        );
+        final candidates = <GlobalFoodMatchCandidate>[
+          GlobalFoodMatchCandidate(
+            item: candidateItem,
+            score: 10,
+            reason: GlobalFoodMatchReason.nameExact,
+          ),
+        ];
 
         final request = buildInventoryItemCandidateSwapRequestFromCandidate(
-          draft: draft,
+          candidates: candidates,
           candidateId: 'candidate-1',
           sourceItem: sourceItem,
         );
@@ -73,20 +65,17 @@ void main() {
 
     test('returns null for empty or unknown candidate ids', () {
       final sourceItem = _item();
-      final draft = ReceiptReviewItemDraft(
-        item: sourceItem,
-        candidates: <GlobalFoodMatchCandidate>[
-          GlobalFoodMatchCandidate(
-            item: _globalFoodItem(id: 'candidate-1'),
-            score: 10,
-            reason: GlobalFoodMatchReason.nameExact,
-          ),
-        ],
-      );
+      final candidates = <GlobalFoodMatchCandidate>[
+        GlobalFoodMatchCandidate(
+          item: _globalFoodItem(id: 'candidate-1'),
+          score: 10,
+          reason: GlobalFoodMatchReason.nameExact,
+        ),
+      ];
 
       expect(
         buildInventoryItemCandidateSwapRequestFromCandidate(
-          draft: draft,
+          candidates: candidates,
           candidateId: null,
           sourceItem: sourceItem,
         ),
@@ -94,7 +83,7 @@ void main() {
       );
       expect(
         buildInventoryItemCandidateSwapRequestFromCandidate(
-          draft: draft,
+          candidates: candidates,
           candidateId: 'missing',
           sourceItem: sourceItem,
         ),

@@ -21,7 +21,7 @@ import 'package:yamt/features/scanner/application/'
     'receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 void main() {
   test(

@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
-import 'package:yamt/features/inventory/domain/'
-    'receipt_review_item_draft.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_receipt_product_selection_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -43,16 +41,39 @@ class ReceiptCandidatePickerSelection {
   final String? candidateId;
 }
 
+/// Data needed to choose a matching global food item for an inventory item.
+class InventoryCandidatePickerData {
+  /// The inventory candidate picker data.
+  const InventoryCandidatePickerData({
+    required this.sourceName,
+    required this.candidates,
+    this.selectedGlobalFoodItemId,
+    this.readAsName,
+  });
+
+  /// The source inventory item name.
+  final String sourceName;
+
+  /// The source name read by an upstream recognizer, if available.
+  final String? readAsName;
+
+  /// The global food candidates.
+  final List<GlobalFoodMatchCandidate> candidates;
+
+  /// The selected global food item id.
+  final String? selectedGlobalFoodItemId;
+}
+
 /// Defines inventory receipt candidate picker sheet.
 class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
   /// The inventory receipt candidate picker sheet.
   const InventoryReceiptCandidatePickerSheet({
-    required this.draft,
+    required this.data,
     super.key,
   });
 
-  /// The draft.
-  final ReceiptReviewItemDraft draft;
+  /// The picker data.
+  final InventoryCandidatePickerData data;
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +91,7 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _CandidatePickerHeader(draft: draft),
+            _CandidatePickerHeader(data: data),
             const SizedBox(height: 24),
             ConstrainedBox(
               constraints: BoxConstraints(
@@ -79,11 +100,11 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
               child: ListView(
                 shrinkWrap: true,
                 children: [
-                  for (final candidate in draft.candidates) ...[
+                  for (final candidate in data.candidates) ...[
                     _CandidatePickerTile(
                       candidate: candidate,
                       isSelected:
-                          draft.selectedGlobalFoodItemId == candidate.item.id,
+                          data.selectedGlobalFoodItemId == candidate.item.id,
                       onTap: () => context.pop(
                         ReceiptCandidatePickerSelection.candidate(
                           candidate.item.id,
@@ -95,7 +116,7 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   _FallbackSelectionTile(
                     icon: Icons.edit_note,
-                    isSelected: draft.selectedGlobalFoodItemId == null,
+                    isSelected: data.selectedGlobalFoodItemId == null,
                     onTap: () {
                       context.pop(
                         const ReceiptCandidatePickerSelection.manualEntry(),
@@ -115,9 +136,9 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
 }
 
 class _CandidatePickerHeader extends StatelessWidget {
-  const _CandidatePickerHeader({required this.draft});
+  const _CandidatePickerHeader({required this.data});
 
-  final ReceiptReviewItemDraft draft;
+  final InventoryCandidatePickerData data;
 
   @override
   Widget build(BuildContext context) {
@@ -159,11 +180,11 @@ class _CandidatePickerHeader extends StatelessWidget {
   }
 
   String _sourceLabel(AppLocalizations l10n) {
-    final ocrName = draft.ocrName?.trim();
+    final ocrName = data.readAsName?.trim();
     if (ocrName != null && ocrName.isNotEmpty) {
       return '${l10n.inventoryReceiptReviewReadAsPrefix}: "$ocrName"';
     }
-    return draft.item.name;
+    return data.sourceName;
   }
 }
 

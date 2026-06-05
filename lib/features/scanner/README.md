@@ -8,7 +8,7 @@ shared receipt intents, and the receipt review flow.
 - Receipt input selection for camera, gallery, files, and shared intents.
 - Receipt analysis repositories, parser contracts, and AI request preparation.
 - Receipt review draft mapping, candidate-resolution orchestration, and
-  persistence coordination for inventory-owned review drafts.
+  persistence coordination for reviewed receipt items.
 - Receipt review pages, widgets, flow runners, and scanner-specific UI state.
 - Batch receipt processing and review state for multiple receipt inputs.
 
@@ -29,8 +29,8 @@ Other features may consume these scanner entry points:
 - `ReceiptCaptureFlowController`
 - `ReceiptBatchFlowController`
 - `SharedReceiptFlowRunner`
-- Receipt domain models such as `ReceiptInputSelection` and
-  `ReceiptAnalysisExtraction`
+- Receipt domain models such as `ReceiptInputSelection`,
+  `ReceiptAnalysisExtraction`, and `ReceiptReviewItemDraft`
 
 Callers should not assemble scanner internal review widgets directly unless the
 widget is documented as a reusable scanner surface.
@@ -48,9 +48,8 @@ widget is documented as a reusable scanner surface.
 Scanner currently has explicit dependencies on:
 
 - `inventory` for `InventoryItem`, `OffProductSearchResult`, global food
-  matching, inventory-owned review drafts, inventory persistence, receipt alias
-  persistence, manual product result models, and inventory-owned receipt
-  correction sheets.
+  matching, inventory persistence, receipt alias persistence, manual product
+  result models, and inventory-owned receipt correction sheets.
 - `product_search_hub` for the public selection route used during receipt
   review fallback and product correction.
 - `calories` for product nutrition cache handoff after reviewed receipt items

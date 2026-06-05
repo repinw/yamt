@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/application/'
     'receipt_review_candidate_resolution_service.dart';
-import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 void main() {
   test(
