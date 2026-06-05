@@ -183,7 +183,10 @@ DiaryBalanceActions diaryBalanceActions(Ref ref) {
         ..invalidate(resolvedCalorieGoalForDayProvider(normalizedSelectedDay))
         ..invalidate(
           resolvedCalorieGoalsForDaysProvider(
-            ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
+            ResolvedCalorieGoalDaysRequest.fromDays(
+              visibleDays,
+              forceDetailedActivity: true,
+            ),
           ),
         )
         ..invalidate(

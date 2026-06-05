@@ -100,8 +100,9 @@ class ResolvedCalorieGoalData {
 class ResolvedCalorieGoalDaysRequest {
   /// Creates request from diary days.
   factory ResolvedCalorieGoalDaysRequest.fromDays(
-    Iterable<DateTime> days,
-  ) {
+    Iterable<DateTime> days, {
+    bool forceDetailedActivity = false,
+  }) {
     final daysByKey = <String, DateTime>{};
     for (final day in days) {
       final normalizedDay = normalizeDiaryDay(day);
@@ -110,13 +111,21 @@ class ResolvedCalorieGoalDaysRequest {
     return ResolvedCalorieGoalDaysRequest._(
       List<DateTime>.unmodifiable(daysByKey.values),
       List<String>.unmodifiable(daysByKey.keys),
+      forceDetailedActivity,
     );
   }
 
-  const ResolvedCalorieGoalDaysRequest._(this.days, this._dayKeys);
+  const ResolvedCalorieGoalDaysRequest._(
+    this.days,
+    this._dayKeys,
+    this.forceDetailedActivity,
+  );
 
   /// Normalized days to resolve.
   final List<DateTime> days;
+
+  /// Whether to bypass aggregate Health activity for requested days.
+  final bool forceDetailedActivity;
 
   final List<String> _dayKeys;
 
@@ -126,11 +135,17 @@ class ResolvedCalorieGoalDaysRequest {
       return true;
     }
     return other is ResolvedCalorieGoalDaysRequest &&
-        _dayKeyListEquality.equals(_dayKeys, other._dayKeys);
+        _dayKeyListEquality.equals(_dayKeys, other._dayKeys) &&
+        forceDetailedActivity == other.forceDetailedActivity;
   }
 
   @override
-  int get hashCode => _dayKeyListEquality.hash(_dayKeys);
+  int get hashCode {
+    return Object.hash(
+      _dayKeyListEquality.hash(_dayKeys),
+      forceDetailedActivity,
+    );
+  }
 }
 
 /// Resolved calorie goals keyed by diary day key.
@@ -196,6 +211,10 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
     final selectedDayKey = request.days.isEmpty
         ? null
         : diaryDayKey(request.days.last);
+    final detailedActivityDayKeys = <String>{
+      for (final learnedRequest in learnedRequests)
+        if (request.forceDetailedActivity) diaryDayKey(learnedRequest.day),
+    };
     final forceRefreshDayKeys = <String>{
       for (final learnedRequest in learnedRequests)
         if (diaryDayKey(learnedRequest.day) == selectedDayKey ||
@@ -208,6 +227,7 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
       settings: settings,
       healthStatus: healthStatus,
       userHeightCm: settings.calculatorProfile?.heightCm,
+      detailedActivityDayKeys: detailedActivityDayKeys,
       forceRefreshDayKeys: forceRefreshDayKeys,
     );
     final learnedGoals = await learnedGoalsFuture;
@@ -571,6 +591,7 @@ Future<Map<String, _ResolvedDayActivityData>> _loadActivityDataByDay({
   required CalorieGoalSettings settings,
   required HealthConnectionStatus healthStatus,
   double? userHeightCm,
+  Set<String> detailedActivityDayKeys = const <String>{},
   Set<String> forceRefreshDayKeys = const <String>{},
 }) async {
   final normalizedDaysByKey = <String, DateTime>{
@@ -601,6 +622,7 @@ Future<Map<String, _ResolvedDayActivityData>> _loadActivityDataByDay({
     logName: _resolvedGoalLogName,
     aggregateFailureMessage: 'Failed to load aggregate activity for goals.',
     userHeightCm: userHeightCm,
+    detailedActivityDayKeys: detailedActivityDayKeys,
     forceRefreshDayKeys: forceRefreshDayKeys,
   );
   for (final day in activeDays) {

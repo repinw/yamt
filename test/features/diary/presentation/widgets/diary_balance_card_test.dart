@@ -208,6 +208,18 @@ void main() {
     expect(dividerPositions, hasLength(6));
   });
 
+  testWidgets('weekly compact day dividers stay visible in dark mode', (
+    tester,
+  ) async {
+    await _pumpWeeklyBalanceCard(tester, themeMode: ThemeMode.dark);
+    await tester.pumpAndSettle();
+
+    final colors = ThemeData.dark().colorScheme;
+    final dividerColor = _weeklyDividerColors(tester).first;
+
+    expect(dividerColor, colors.onSurface.withValues(alpha: 0.52));
+  });
+
   testWidgets('weekly compact progress shows time-based target marker', (
     tester,
   ) async {
@@ -1179,12 +1191,18 @@ Future<void> _pumpWeeklyProgressBar(
   );
 }
 
-Future<void> _pumpWeeklyBalanceCard(WidgetTester tester) async {
+Future<void> _pumpWeeklyBalanceCard(
+  WidgetTester tester, {
+  ThemeMode themeMode = ThemeMode.light,
+}) async {
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: themeMode,
       home: Scaffold(
         body: Center(
           child: SizedBox(
@@ -1200,6 +1218,17 @@ Future<void> _pumpWeeklyBalanceCard(WidgetTester tester) async {
       ),
     ),
   );
+}
+
+List<Color> _weeklyDividerColors(WidgetTester tester) {
+  final track = find.byKey(DiaryBalanceCardKeys.progressTrack);
+  return tester
+      .widgetList<Positioned>(
+        find.descendant(of: track, matching: find.byType(Positioned)),
+      )
+      .where((widget) => widget.width == 1)
+      .map((widget) => (widget.child as ColoredBox).color)
+      .toList(growable: false);
 }
 
 Future<void> _pumpDailyProgressBar(

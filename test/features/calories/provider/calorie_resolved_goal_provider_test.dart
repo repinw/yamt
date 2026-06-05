@@ -171,11 +171,16 @@ void main() {
     final reversedRequest = ResolvedCalorieGoalDaysRequest.fromDays(
       <DateTime>[otherDay, day],
     );
+    final detailedActivityRequest = ResolvedCalorieGoalDaysRequest.fromDays(
+      <DateTime>[day, otherDay],
+      forceDetailedActivity: true,
+    );
 
     expect(request, sameRequest);
     expect(request.hashCode, sameRequest.hashCode);
     expect(request, duplicateRequest);
     expect(request == reversedRequest, isFalse);
+    expect(request == detailedActivityRequest, isFalse);
   });
 
   test('resolves batch goals by day key without swapping day data', () async {
@@ -463,7 +468,12 @@ void main() {
       );
 
       expect(diaryHealthService.loadDayDataCallCount, 1);
-      expect(diaryHealthService.trendRequests, isEmpty);
+      expect(diaryHealthService.trendRequests, [
+        (
+          startInclusive: today,
+          endExclusive: nextDiaryDay(today),
+        ),
+      ]);
       expect(resolvedGoal.todayActiveKcal, 899);
       expect(resolvedGoal.activityComparisonKcal, 674.25);
       expect(resolvedGoal.activityDeltaKcal, 674.25);

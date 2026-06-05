@@ -112,7 +112,8 @@ Future<int?> loadAggregateHealthActivityKcalForDay({
 
 /// Loads imported activity kcal for days, preferring aggregate range reads.
 ///
-/// [forceRefreshDayKeys] are loaded from detailed day data so selected/today
+/// [detailedActivityDayKeys] prefer detailed day data over aggregate data.
+/// [forceRefreshDayKeys] additionally bypass the day cache, so selected/today
 /// views can use workout details that may be fresher than aggregate cache.
 Future<Map<String, int>> loadHealthActivityKcalByDay({
   required DiaryHealthService diaryHealthService,
@@ -120,6 +121,7 @@ Future<Map<String, int>> loadHealthActivityKcalByDay({
   required String logName,
   required String aggregateFailureMessage,
   double? userHeightCm,
+  Set<String> detailedActivityDayKeys = const <String>{},
   Set<String> forceRefreshDayKeys = const <String>{},
 }) async {
   final normalizedDaysByKey = <String, DateTime>{
@@ -129,12 +131,24 @@ Future<Map<String, int>> loadHealthActivityKcalByDay({
   final activeKcalByDay = <String, int>{
     for (final dayKey in normalizedDaysByKey.keys) dayKey: 0,
   };
-  final detailedDays = normalizedDaysByKey.values
+  final allDetailedDayKeys = <String>{
+    ...detailedActivityDayKeys,
+    ...forceRefreshDayKeys,
+  };
+  final cachedDetailedDays = normalizedDaysByKey.values
+      .where((day) {
+        final dayKey = diaryDayKey(day);
+        return detailedActivityDayKeys.contains(dayKey) &&
+            !forceRefreshDayKeys.contains(dayKey);
+      })
+      .toList(growable: false);
+  final refreshedDetailedDays = normalizedDaysByKey.values
       .where((day) => forceRefreshDayKeys.contains(diaryDayKey(day)))
       .toList(growable: false);
-  final aggregateDays = normalizedDaysByKey.values
-      .where((day) => !forceRefreshDayKeys.contains(diaryDayKey(day)))
+  final nonDetailedDays = normalizedDaysByKey.values
+      .where((day) => !allDetailedDayKeys.contains(diaryDayKey(day)))
       .toList(growable: false);
+  final aggregateDays = normalizedDaysByKey.values.toList(growable: false);
 
   if (aggregateDays.isNotEmpty) {
     final aggregateActiveKcalByDay = await loadAggregateHealthActivityKcalByDay(
@@ -147,7 +161,7 @@ Future<Map<String, int>> loadHealthActivityKcalByDay({
       await _loadDetailedActivityKcalByDay(
         activeKcalByDay: activeKcalByDay,
         diaryHealthService: diaryHealthService,
-        days: aggregateDays,
+        days: nonDetailedDays,
         userHeightCm: userHeightCm,
       );
     } else {
@@ -155,12 +169,22 @@ Future<Map<String, int>> loadHealthActivityKcalByDay({
     }
   }
 
-  await _loadDetailedActivityKcalByDay(
+  await _overlayDetailedActivityKcalByDay(
     activeKcalByDay: activeKcalByDay,
     diaryHealthService: diaryHealthService,
-    days: detailedDays,
+    days: cachedDetailedDays,
+    userHeightCm: userHeightCm,
+    logName: logName,
+    failureMessage: 'Failed to load detailed activity.',
+  );
+  await _overlayDetailedActivityKcalByDay(
+    activeKcalByDay: activeKcalByDay,
+    diaryHealthService: diaryHealthService,
+    days: refreshedDetailedDays,
     userHeightCm: userHeightCm,
     forceRefresh: true,
+    logName: logName,
+    failureMessage: 'Failed to refresh detailed activity.',
   );
   return activeKcalByDay;
 }
@@ -179,6 +203,34 @@ Future<void> _loadDetailedActivityKcalByDay({
       userHeightCm: userHeightCm,
       forceRefresh: forceRefresh,
     );
+  }
+}
+
+Future<void> _overlayDetailedActivityKcalByDay({
+  required Map<String, int> activeKcalByDay,
+  required DiaryHealthService diaryHealthService,
+  required Iterable<DateTime> days,
+  required String logName,
+  required String failureMessage,
+  double? userHeightCm,
+  bool forceRefresh = false,
+}) async {
+  for (final day in days) {
+    try {
+      activeKcalByDay[diaryDayKey(day)] = await _loadDetailedActivityKcal(
+        diaryHealthService: diaryHealthService,
+        day: day,
+        userHeightCm: userHeightCm,
+        forceRefresh: forceRefresh,
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        failureMessage,
+        name: logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }
 
