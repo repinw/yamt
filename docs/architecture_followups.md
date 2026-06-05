@@ -108,18 +108,13 @@ Decision needed:
 - Either document `app_router.dart` as the app composition-root exception, or
   move route assembly out of `core`.
 
-### Remove compatibility re-export if strict cleanup desired
+### Completed: Remove scanner receipt draft compatibility re-export
 
 - `lib/features/scanner/domain/receipt_review_item_draft.dart`
 
-Problem:
+Result:
 
-- Handwritten export points to Inventory-owned draft.
-- Useful compatibility edge, but strict rules say avoid hand-written barrel or
-  re-export files.
-
-Likely fix:
-
-- Update scanner imports to use
-  `lib/features/inventory/domain/receipt_review_item_draft.dart` directly, then
-  delete compatibility re-export.
+- Deleted the handwritten re-export.
+- Updated scanner imports to use
+  `lib/features/inventory/domain/receipt_review_item_draft.dart` directly.
+- Moved the `ReceiptReviewItemDraft` domain test under inventory ownership.

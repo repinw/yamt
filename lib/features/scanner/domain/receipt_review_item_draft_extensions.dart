@@ -1,7 +1,7 @@
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_review_weight_confirmation.dart';
 

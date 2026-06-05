@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/controllers/'
     'receipt_review_sheet_controller.dart';
 import 'package:yamt/features/scanner/presentation/'

@@ -36,6 +36,7 @@ Other features may consume these public Inventory entry points:
 - `InventoryActivityEvent` and `InventoryActivityEventRepository`
 - Inventory domain types such as `InventoryItem`, `PreparedMeal`, and
   `InventoryItemEatRequest`
+- `ReceiptReviewItemDraft` for scanner receipt-review orchestration.
 - Repository providers from `data/` when tests or app composition need explicit
   overrides
 - `InventoryReceiptItemEditorSheet` and `InventoryReceiptCandidatePickerSheet`

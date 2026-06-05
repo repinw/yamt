@@ -1,5 +1,5 @@
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
 
 const _amountParser = InventoryAmountParser();
 

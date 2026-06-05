@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/application/'
     'receipt_review_candidate_resolution_service.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_candidate_lookup.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_review_item_draft_extensions.dart';
 import 'package:yamt/features/scanner/domain/'

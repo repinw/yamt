@@ -4,7 +4,7 @@ import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_candidate_lookup.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 
 const _nutrition = GlobalFoodNutrition(

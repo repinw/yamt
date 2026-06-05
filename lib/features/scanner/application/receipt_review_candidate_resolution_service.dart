@@ -4,7 +4,7 @@ import 'package:yamt/features/inventory/application/global_food_item_matcher.dar
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/inventory/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft_extensions.dart';
 
 part 'receipt_review_candidate_resolution_service.g.dart';
