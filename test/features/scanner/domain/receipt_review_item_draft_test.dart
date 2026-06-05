@@ -37,6 +37,46 @@ GlobalFoodItem _product({
 }
 
 void main() {
+  test('copyWith clears nullable fields when null is passed explicitly', () {
+    final draft = ReceiptReviewItemDraft(
+      item: _item(id: 'draft-1', name: 'Milk'),
+      selectedGlobalFoodItemId: 'global-1',
+      initialSelectedGlobalFoodItemId: 'global-1',
+      ocrName: 'OCR Milk',
+      receiptTimeText: '12:30',
+    );
+
+    final updated = draft.copyWith(
+      selectedGlobalFoodItemId: null,
+      initialSelectedGlobalFoodItemId: null,
+      ocrName: null,
+      receiptTimeText: null,
+    );
+
+    expect(updated.selectedGlobalFoodItemId, isNull);
+    expect(updated.initialSelectedGlobalFoodItemId, isNull);
+    expect(updated.ocrName, isNull);
+    expect(updated.receiptTimeText, isNull);
+  });
+
+  test('copyWith keeps nullable fields when omitted', () {
+    final draft = ReceiptReviewItemDraft(
+      item: _item(id: 'draft-1', name: 'Milk'),
+      selectedGlobalFoodItemId: 'global-1',
+      initialSelectedGlobalFoodItemId: 'global-1',
+      ocrName: 'OCR Milk',
+      receiptTimeText: '12:30',
+    );
+
+    final updated = draft.copyWith(isConfirmed: true);
+
+    expect(updated.selectedGlobalFoodItemId, 'global-1');
+    expect(updated.initialSelectedGlobalFoodItemId, 'global-1');
+    expect(updated.ocrName, 'OCR Milk');
+    expect(updated.receiptTimeText, '12:30');
+    expect(updated.isConfirmed, isTrue);
+  });
+
   test('differsFromSelectedCandidate stays false for OFF candidates '
       'that still need persistence', () {
     final draft = ReceiptReviewItemDraft(
