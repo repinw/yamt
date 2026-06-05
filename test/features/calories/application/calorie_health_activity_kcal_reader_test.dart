@@ -89,7 +89,7 @@ void main() {
     expect(activeKcal, 899);
   });
 
-  test('loads detailed activity for forced days only', () async {
+  test('overlays detailed activity on aggregate fallback', () async {
     final aggregateDay = DateTime(2026, 4, 8);
     final detailedDay = DateTime(2026, 4, 9);
     final service = FakeTrendDiaryHealthService(
@@ -128,7 +128,48 @@ void main() {
     expect(service.trendRequests, [
       (
         startInclusive: aggregateDay,
-        endExclusive: nextDiaryDay(aggregateDay),
+        endExclusive: nextDiaryDay(detailedDay),
+      ),
+    ]);
+    expect(service.loadDayDataCallCount, 1);
+  });
+
+  test('keeps aggregate activity when detailed activity fails', () async {
+    final aggregateDay = DateTime(2026, 4, 8);
+    final detailedDay = DateTime(2026, 4, 9);
+    final service = _ThrowingDayTrendDiaryHealthService(
+      const <String, DiaryHealthDayData>{},
+      trendDays: [
+        DiaryHealthActivityTrendDay(
+          day: aggregateDay,
+          totalSteps: 0,
+          activeEnergyKcal: 250,
+        ),
+        DiaryHealthActivityTrendDay(
+          day: detailedDay,
+          totalSteps: 0,
+          activeEnergyKcal: 999,
+        ),
+      ],
+      throwingDayKeys: {diaryDayKey(detailedDay)},
+    );
+
+    final activeKcalByDay = await loadHealthActivityKcalByDay(
+      diaryHealthService: service,
+      days: [aggregateDay, detailedDay],
+      logName: 'test',
+      aggregateFailureMessage: 'failed',
+      detailedActivityDayKeys: {diaryDayKey(detailedDay)},
+    );
+
+    expect(activeKcalByDay, {
+      diaryDayKey(aggregateDay): 250,
+      diaryDayKey(detailedDay): 999,
+    });
+    expect(service.trendRequests, [
+      (
+        startInclusive: aggregateDay,
+        endExclusive: nextDiaryDay(detailedDay),
       ),
     ]);
     expect(service.loadDayDataCallCount, 1);
@@ -260,5 +301,27 @@ class _RefreshTrendDiaryHealthService
   }) async {
     refreshCallCount += 1;
     return refreshedTrendDays;
+  }
+}
+
+class _ThrowingDayTrendDiaryHealthService extends FakeTrendDiaryHealthService {
+  _ThrowingDayTrendDiaryHealthService(
+    super.dataByDay, {
+    required super.trendDays,
+    required this.throwingDayKeys,
+  });
+
+  final Set<String> throwingDayKeys;
+
+  @override
+  Future<DiaryHealthDayData> loadDayData({
+    required DateTime day,
+    double? userHeightCm,
+  }) async {
+    if (throwingDayKeys.contains(diaryDayKey(day))) {
+      loadDayDataCallCount += 1;
+      throw StateError('day failed');
+    }
+    return super.loadDayData(day: day, userHeightCm: userHeightCm);
   }
 }

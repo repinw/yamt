@@ -263,7 +263,10 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
     final resolvedGoalsFuture = ref.watch(
       resolvedCalorieGoalsForDaysProvider(
-        ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
+        ResolvedCalorieGoalDaysRequest.fromDays(
+          visibleDays,
+          forceDetailedActivity: true,
+        ),
       ).future,
     );
 
