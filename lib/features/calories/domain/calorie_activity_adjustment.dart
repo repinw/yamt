@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 /// Fraction of imported activity calories trusted by calorie math.
-const importedActivityCorrectionFactor = 0.75;
+const importedActivityCorrectionFactor = 1.0;
 
 /// Corrected activity calories for one day.
 class CalorieActivityCreditBreakdown {
@@ -58,17 +58,31 @@ double calculateActivityCreditKcal({
   ).creditedActivityKcal;
 }
 
-/// Removes expected activity credit from a Total-TDEE based goal.
+/// Calculates extra eatable activity kcal exceeding expected activity baseline.
+double calculateActivityBonusKcal({
+  required num rawActivityKcal,
+  required num? expectedActivityKcal,
+  required bool isActivityTrackingActive,
+}) {
+  if (!isActivityTrackingActive) {
+    return 0;
+  }
+  final creditedActivityKcal = calculateActivityCreditKcal(
+    rawActivityKcal: rawActivityKcal,
+  );
+  final expectedCreditedKcal = expectedActivityKcal == null
+      ? 0.0
+      : calculateActivityCreditKcal(rawActivityKcal: expectedActivityKcal);
+  return math.max<double>(0, creditedActivityKcal - expectedCreditedKcal);
+}
+
+/// Returns the base goal kcal without upfront activity reduction.
 double calculateActivityAdjustedBaseGoalKcal({
   required double totalGoalKcal,
   required double? expectedActivityKcal,
   required bool isActivityTrackingActive,
 }) {
-  if (!isActivityTrackingActive || expectedActivityKcal == null) {
-    return totalGoalKcal;
-  }
-  return totalGoalKcal -
-      calculateActivityCreditKcal(rawActivityKcal: expectedActivityKcal);
+  return totalGoalKcal;
 }
 
 /// Solves Base-TDEE after subtracting corrected activity.

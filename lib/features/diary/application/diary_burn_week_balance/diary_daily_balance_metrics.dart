@@ -13,6 +13,9 @@ class DiaryDailyBalanceMetrics {
     required this.targetKcal,
     required this.activitySegmentKcal,
     required this.activitySegmentReferenceKcal,
+    this.todayActiveKcal = 0,
+    this.expectedActivityKcal = 0,
+    this.isActivityTrackingActive = false,
   });
 
   /// Calorie adjustment from active heart credit.
@@ -41,6 +44,15 @@ class DiaryDailyBalanceMetrics {
 
   /// Target basis used to size the activity segment visually.
   final double activitySegmentReferenceKcal;
+
+  /// Active energy tracked on this day.
+  final int todayActiveKcal;
+
+  /// Expected baseline active calories for this day.
+  final double expectedActivityKcal;
+
+  /// Whether activity tracking is active for this day.
+  final bool isActivityTrackingActive;
 }
 
 /// Resolves daily target and heart-adjusted display values from scalar inputs.
@@ -53,6 +65,9 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
   required double bufferAdjustmentKcal,
   required double heartCreditKcal,
   required bool isHeartDay,
+  int todayActiveKcal = 0,
+  double expectedActivityKcal = 0,
+  bool isActivityTrackingActive = false,
 }) {
   final realEatenKcal = totalKcal;
   final eatenKcal = math.max<double>(0, realEatenKcal + bufferAdjustmentKcal);
@@ -82,6 +97,9 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     targetKcal: targetKcal,
     activitySegmentKcal: positiveActivitySegmentKcal,
     activitySegmentReferenceKcal: activitySegmentReferenceKcal,
+    todayActiveKcal: todayActiveKcal,
+    expectedActivityKcal: expectedActivityKcal,
+    isActivityTrackingActive: isActivityTrackingActive,
   );
 }
 

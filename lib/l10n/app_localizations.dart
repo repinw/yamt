@@ -4649,6 +4649,30 @@ abstract class AppLocalizations {
   /// **'Revert heart day'**
   String get diaryBalanceRevertHeartDayAction;
 
+  /// No description provided for @diaryBalanceActivityIncludedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} activity included in daily goal'**
+  String diaryBalanceActivityIncludedLabel(String kcal);
+
+  /// No description provided for @diaryBalanceActivityBonusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} extra sport bonus'**
+  String diaryBalanceActivityBonusLabel(String kcal);
+
+  /// No description provided for @diaryWorkoutsBaselineProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {target} kcal baseline activity • {remaining} kcal to bonus'**
+  String diaryWorkoutsBaselineProgress(String current, String target, String remaining);
+
+  /// No description provided for @diaryWorkoutsBonusEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'+{bonus} kcal extra sport bonus credited to daily goal!'**
+  String diaryWorkoutsBonusEarned(String bonus);
+
   /// No description provided for @diaryIntroBackAction.
   ///
   /// In en, this message translates to:

@@ -17,6 +17,7 @@ class DiaryDailyBalanceData {
     this.bufferAdjustmentLabel,
     this.eatenSubtitle,
     this.leftSubtitle,
+    this.activityStatusLabel,
   });
 
   /// Builds daily render data from raw metrics and localization dependencies.
@@ -63,6 +64,31 @@ class DiaryDailyBalanceData {
             ),
           )}';
 
+    final String? activityStatusLabel;
+    if (!isHeartDay &&
+        metrics.isActivityTrackingActive &&
+        metrics.todayActiveKcal > 0) {
+      if (metrics.activitySegmentKcal > 0) {
+        activityStatusLabel = l10n.diaryBalanceActivityBonusLabel(
+          formatDiaryKcal(
+            numberFormat,
+            metrics.activitySegmentKcal,
+            l10n.caloriesUnitKcal,
+          ),
+        );
+      } else {
+        activityStatusLabel = l10n.diaryBalanceActivityIncludedLabel(
+          formatDiaryKcal(
+            numberFormat,
+            metrics.todayActiveKcal.toDouble(),
+            l10n.caloriesUnitKcal,
+          ),
+        );
+      }
+    } else {
+      activityStatusLabel = null;
+    }
+
     return DiaryDailyBalanceData(
       selectedDay: selectedDay,
       metrics: metrics,
@@ -86,6 +112,7 @@ class DiaryDailyBalanceData {
       leftSubtitle: isHeartDay
           ? l10n.diaryBalanceHeartDaySubtitle
           : leftSubtitle,
+      activityStatusLabel: activityStatusLabel,
     );
   }
 
@@ -118,4 +145,7 @@ class DiaryDailyBalanceData {
 
   /// Optional left subtitle.
   final String? leftSubtitle;
+
+  /// Optional activity baseline / bonus status label.
+  final String? activityStatusLabel;
 }

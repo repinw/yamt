@@ -67,6 +67,9 @@ class CalorieWeekDayOverview {
     required this.entryCount,
     double? baseGoalKcal,
     this.activityBonusKcal = 0,
+    this.todayActiveKcal = 0,
+    this.expectedActivityKcal = 0,
+    this.isActivityTrackingActive = false,
     this.isHeartDay = false,
   }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
 
@@ -84,6 +87,15 @@ class CalorieWeekDayOverview {
 
   /// Eatable activity kcal counted toward the day.
   final double activityBonusKcal;
+
+  /// Active energy tracked on this day.
+  final int todayActiveKcal;
+
+  /// Expected baseline active calories for this day.
+  final double expectedActivityKcal;
+
+  /// Whether activity tracking is active for this day.
+  final bool isActivityTrackingActive;
 
   /// The entry count.
   final int entryCount;
@@ -284,19 +296,22 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
         .asMap()
         .entries
         .map(
-          (entry) => CalorieWeekDayOverview(
-            date: entry.value.date,
-            totalKcal: entry.value.totalKcal,
-            goalKcal:
-                resolvedGoalsByDay[diaryDayKey(entry.value.date)]!.goalKcal,
-            baseGoalKcal: resolvedGoalsByDay[diaryDayKey(entry.value.date)]!
-                .storedGoalKcal,
-            activityBonusKcal:
-                resolvedGoalsByDay[diaryDayKey(entry.value.date)]!
-                    .activityDeltaKcal,
-            entryCount: entry.value.entryCount,
-            isHeartDay: runState?.isHeartDay(entry.value.date) ?? false,
-          ),
+          (entry) {
+            final goal =
+                resolvedGoalsByDay[diaryDayKey(entry.value.date)]!;
+            return CalorieWeekDayOverview(
+              date: entry.value.date,
+              totalKcal: entry.value.totalKcal,
+              goalKcal: goal.goalKcal,
+              baseGoalKcal: goal.storedGoalKcal,
+              activityBonusKcal: goal.activityDeltaKcal,
+              todayActiveKcal: goal.todayActiveKcal,
+              expectedActivityKcal: goal.expectedActivityKcal,
+              isActivityTrackingActive: goal.isActivityTrackingActive,
+              entryCount: entry.value.entryCount,
+              isHeartDay: runState?.isHeartDay(entry.value.date) ?? false,
+            );
+          },
         )
         .toList(growable: false);
     final today = snapshot.days.last.date;
@@ -355,6 +370,9 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
             goalKcal: overview.goalKcal,
             baseGoalKcal: overview.baseGoalKcal,
             activityBonusKcal: overview.activityBonusKcal,
+            todayActiveKcal: overview.todayActiveKcal,
+            expectedActivityKcal: overview.expectedActivityKcal,
+            isActivityTrackingActive: overview.isActivityTrackingActive,
             entryCount: overview.entryCount,
             isHeartDay: overview.isHeartDay,
           ),
@@ -439,6 +457,9 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
       goalKcal: resolvedGoal.goalKcal,
       baseGoalKcal: resolvedGoal.storedGoalKcal,
       activityBonusKcal: resolvedGoal.activityDeltaKcal,
+      todayActiveKcal: resolvedGoal.todayActiveKcal,
+      expectedActivityKcal: resolvedGoal.expectedActivityKcal,
+      isActivityTrackingActive: resolvedGoal.isActivityTrackingActive,
       entryCount: entries.length,
       isHeartDay: runState?.isHeartDay(normalizedDay) ?? false,
     );

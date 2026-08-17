@@ -4,6 +4,7 @@ import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_window_resolver.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_learning_seed_resolver.dart';
+import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
@@ -49,8 +50,9 @@ void main() {
     final profileResult = CalorieGoalCalculator.calculate(
       const CalorieCalculatorProfile.defaults(),
     );
-    final previousLearnedTdee =
-        profileResult.tdeeKcal - (profileResult.expectedActivityKcal * 0.75);
+    final previousLearnedTdee = profileResult.tdeeKcal -
+        (profileResult.expectedActivityKcal *
+            importedActivityCorrectionFactor);
     final expected = CalorieWeeklyCheckInCalculator.calculateLearnedGoal(
       previousGoalKcal: 2000,
       previousLearnedTdeeKcal: previousLearnedTdee,
@@ -99,8 +101,9 @@ void main() {
     final profileResult = CalorieGoalCalculator.calculate(
       const CalorieCalculatorProfile.defaults(),
     );
-    final expectedPreviousBaseTdee =
-        profileResult.tdeeKcal - (profileResult.expectedActivityKcal * 0.75);
+    final expectedPreviousBaseTdee = profileResult.tdeeKcal -
+        (profileResult.expectedActivityKcal *
+            importedActivityCorrectionFactor);
 
     final seed = resolveCascadedPreviousLearningSeedForWindow(
       settings: settings,

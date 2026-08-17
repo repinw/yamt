@@ -395,7 +395,12 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
             creditedActivityKcal: 0,
             wasCapped: false,
           );
-    final activityDeltaKcal = activityCredit.creditedActivityKcal;
+    final activityDeltaKcal = dayActivity.isTrackingActive
+        ? math.max<double>(
+            0,
+            activityCredit.creditedActivityKcal - averageCreditedActivityKcal,
+          )
+        : 0.0;
     final goalBreakdown = CalorieBudgetCalculator.resolveDailyGoal(
       storedGoalKcal: learnedGoal.newGoalKcal,
       activityDeltaKcal: activityDeltaKcal,
@@ -423,7 +428,8 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
       storedGoalKcal: learnedGoal.newGoalKcal,
       goalKcal: goalBreakdown.goalKcal,
       activityDeltaKcal: activityDeltaKcal,
-      activityComparisonKcal: activityDeltaKcal,
+      activityComparisonKcal: activityCredit.creditedActivityKcal -
+          averageCreditedActivityKcal,
       correctedActivityKcal: activityCredit.correctedActivityKcal,
       activityCapKcal: activityCredit.activityCapKcal,
       wasActivityCapped: activityCredit.wasCapped,
@@ -490,12 +496,16 @@ ResolvedCalorieGoalData _resolvePreLearningGoalData({
           wasCapped: false,
         );
   final expectedActivityKcal = settings.expectedActivityKcalForDay(day);
-  final baseGoalKcal = calculateActivityAdjustedBaseGoalKcal(
-    totalGoalKcal: storedGoalKcal,
-    expectedActivityKcal: expectedActivityKcal,
-    isActivityTrackingActive: dayActivity.isTrackingActive,
-  );
-  final activityDeltaKcal = activityCredit.creditedActivityKcal;
+  final expectedCreditedActivityKcal = expectedActivityKcal == null
+      ? 0.0
+      : calculateActivityCreditKcal(rawActivityKcal: expectedActivityKcal);
+  final activityDeltaKcal = dayActivity.isTrackingActive
+      ? math.max<double>(
+          0,
+          activityCredit.creditedActivityKcal - expectedCreditedActivityKcal,
+        )
+      : 0.0;
+  final baseGoalKcal = storedGoalKcal;
   final goalBeforeMinimumKcal = baseGoalKcal + activityDeltaKcal;
   final goalKcal = math.max<double>(
     minimumDailyCalorieBudgetKcal,
@@ -507,7 +517,8 @@ ResolvedCalorieGoalData _resolvePreLearningGoalData({
     storedGoalKcal: baseGoalKcal,
     goalKcal: goalKcal,
     activityDeltaKcal: activityDeltaKcal,
-    activityComparisonKcal: activityDeltaKcal,
+    activityComparisonKcal: activityCredit.creditedActivityKcal -
+        expectedCreditedActivityKcal,
     correctedActivityKcal: activityCredit.correctedActivityKcal,
     activityCapKcal: activityCredit.activityCapKcal,
     wasActivityCapped: activityCredit.wasCapped,
@@ -515,7 +526,7 @@ ResolvedCalorieGoalData _resolvePreLearningGoalData({
     lastWeekAverageActiveKcal: 0,
     todayActiveKcal: dayActivity.todayActiveKcal,
     usedLearnedTdee: false,
-    usesPreLearningActivityBonus: false,
+    usesPreLearningActivityBonus: activityDeltaKcal > 0,
     isActivityTrackingActive: dayActivity.isTrackingActive,
     wasClampedToMinimum: goalKcal != goalBeforeMinimumKcal,
   );
@@ -550,7 +561,12 @@ ResolvedCalorieGoalData _resolveGoalDataFromLoadedInputs({
           creditedActivityKcal: 0,
           wasCapped: false,
         );
-  final activityDeltaKcal = activityCredit.creditedActivityKcal;
+  final activityDeltaKcal = dayActivity.isTrackingActive
+      ? math.max<double>(
+          0,
+          activityCredit.creditedActivityKcal - averageCreditedActivityKcal,
+        )
+      : 0.0;
   final goalBreakdown = CalorieBudgetCalculator.resolveDailyGoal(
     storedGoalKcal: learnedGoal.newGoalKcal,
     activityDeltaKcal: activityDeltaKcal,
@@ -561,7 +577,8 @@ ResolvedCalorieGoalData _resolveGoalDataFromLoadedInputs({
     storedGoalKcal: learnedGoal.newGoalKcal,
     goalKcal: goalBreakdown.goalKcal,
     activityDeltaKcal: activityDeltaKcal,
-    activityComparisonKcal: activityDeltaKcal,
+    activityComparisonKcal: activityCredit.creditedActivityKcal -
+        averageCreditedActivityKcal,
     correctedActivityKcal: activityCredit.correctedActivityKcal,
     activityCapKcal: activityCredit.activityCapKcal,
     wasActivityCapped: activityCredit.wasCapped,

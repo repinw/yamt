@@ -241,7 +241,7 @@ void main() {
       checkInData.days.map((day) => day.activeKcal),
       <int>[100, 110, 120, 130, 140, 150, 160],
     );
-    expect(checkInData.calculation?.lastWeekAverageActiveKcal, 97.5);
+    expect(checkInData.calculation?.lastWeekAverageActiveKcal, 130.0);
     expect(checkInData.calculation?.todayActiveKcal, 250);
   });
 

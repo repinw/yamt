@@ -52,6 +52,13 @@ class DiaryDailyBalanceCard extends StatelessWidget {
             unit: l10n.caloriesUnitKcal,
             compact: true,
           ),
+          if (data.activityStatusLabel != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            _ActivityStatusText(
+              label: data.activityStatusLabel!,
+              isBonus: data.metrics.activitySegmentKcal > 0,
+            ),
+          ],
           if (data.bufferAdjustmentLabel != null) ...[
             const SizedBox(height: AppSpacing.sm),
             DiaryBalanceBufferBadge(
@@ -134,6 +141,53 @@ class _DailyBalanceSummary extends StatelessWidget {
             alignment: CrossAxisAlignment.end,
             textAlign: TextAlign.end,
             splitUnit: !isHeartDay,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActivityStatusText extends StatelessWidget {
+  const _ActivityStatusText({
+    required this.label,
+    required this.isBonus,
+  });
+
+  final String label;
+  final bool isBonus;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final accents = MetricAccentColors.of(context);
+    final color = isBonus
+        ? accents.activityFor(colors.brightness)
+        : colors.onSurfaceVariant;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Icon(
+          isBonus
+              ? Icons.directions_run_rounded
+              : Icons.info_outline_rounded,
+          size: 13,
+          color: color,
+        ),
+        const SizedBox(width: AppSpacing.xxs),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0,
+            ),
           ),
         ),
       ],

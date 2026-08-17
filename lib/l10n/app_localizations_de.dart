@@ -2412,6 +2412,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBalanceRevertHeartDayAction => 'Herztag zurücknehmen';
 
   @override
+  String diaryBalanceActivityIncludedLabel(String kcal) {
+    return '$kcal Aktivität im Tagesziel enthalten';
+  }
+
+  @override
+  String diaryBalanceActivityBonusLabel(String kcal) {
+    return '$kcal Extra-Sport';
+  }
+
+  @override
+  String diaryWorkoutsBaselineProgress(String current, String target, String remaining) {
+    return '$current / $target kcal Basis-Aktivität • Noch $remaining kcal bis zum Bonus';
+  }
+
+  @override
+  String diaryWorkoutsBonusEarned(String bonus) {
+    return '+$bonus kcal Extra-Sport wurden deinem Tagesziel gutgeschrieben!';
+  }
+
+  @override
   String get diaryIntroBackAction => 'Zurück';
 
   @override

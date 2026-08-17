@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/features/activity/application/diary_steps_summary_provider.dart';
 import 'package:yamt/features/activity/presentation/widgets/diary_workouts_card.dart';
+import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/health/domain/diary_activity_summary.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
@@ -80,6 +81,102 @@ void main() {
     expect(find.text('Workouts could not be loaded'), findsNothing);
     expect(find.text('Cycling'), findsOneWidget);
   });
+
+  testWidgets(
+    'renders baseline progress banner when activity is below baseline',
+    (tester) async {
+      await _pumpDiaryWidget(
+        tester,
+        DiaryWorkoutsCard(selectedDay: selectedDay),
+        overrides: [
+          diaryStepsSummaryProvider(
+            selectedDay,
+          ).overrideWith((ref) async => _summary(selectedDay, [
+                _workout(
+                  selectedDay,
+                  activityLabel: 'Running',
+                  durationMinutes: 30,
+                  totalCalories: 200,
+                  sourceName: 'Health Connect',
+                ),
+              ])),
+          resolvedCalorieGoalForDayProvider(selectedDay).overrideWith(
+            (ref) async => ResolvedCalorieGoalData(
+              day: selectedDay,
+              storedGoalKcal: 2000,
+              goalKcal: 2000,
+              activityDeltaKcal: 0,
+              activityComparisonKcal: -150,
+              correctedActivityKcal: 200,
+              activityCapKcal: 200,
+              todayActiveKcal: 200,
+              expectedActivityKcal: 400,
+              lastWeekAverageActiveKcal: 300,
+              usedLearnedTdee: false,
+              usesPreLearningActivityBonus: false,
+              wasClampedToMinimum: false,
+              isActivityTrackingActive: true,
+            ),
+          ),
+        ],
+      );
+
+      expect(
+        find.text(
+          '200 / 400 kcal baseline activity • 200 kcal to bonus',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'renders extra sport bonus banner when activity exceeds baseline',
+    (tester) async {
+      await _pumpDiaryWidget(
+        tester,
+        DiaryWorkoutsCard(selectedDay: selectedDay),
+        overrides: [
+          diaryStepsSummaryProvider(
+            selectedDay,
+          ).overrideWith((ref) async => _summary(selectedDay, [
+                _workout(
+                  selectedDay,
+                  activityLabel: 'Running',
+                  durationMinutes: 60,
+                  totalCalories: 600,
+                  sourceName: 'Health Connect',
+                ),
+              ])),
+          resolvedCalorieGoalForDayProvider(selectedDay).overrideWith(
+            (ref) async => ResolvedCalorieGoalData(
+              day: selectedDay,
+              storedGoalKcal: 2000,
+              goalKcal: 2200,
+              activityDeltaKcal: 200,
+              activityComparisonKcal: 200,
+              correctedActivityKcal: 600,
+              activityCapKcal: 600,
+              todayActiveKcal: 600,
+              expectedActivityKcal: 400,
+              lastWeekAverageActiveKcal: 300,
+              usedLearnedTdee: false,
+              usesPreLearningActivityBonus: true,
+              wasClampedToMinimum: false,
+              isActivityTrackingActive: true,
+            ),
+          ),
+        ],
+      );
+
+      expect(
+        find.text(
+          '+200 kcal extra sport bonus credited to daily goal!',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 }
 
 Future<void> _pumpWorkoutsCard(

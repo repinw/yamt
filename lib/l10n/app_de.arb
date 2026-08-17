@@ -1352,6 +1352,44 @@
   "diaryBalanceHeartDayValue": "Herztag",
   "diaryBalanceHeartDaySubtitle": "Für Lernen ignoriert",
   "diaryBalanceRevertHeartDayAction": "Herztag zurücknehmen",
+  "diaryBalanceActivityIncludedLabel": "{kcal} Aktivität im Tagesziel enthalten",
+  "@diaryBalanceActivityIncludedLabel": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBalanceActivityBonusLabel": "{kcal} Extra-Sport",
+  "@diaryBalanceActivityBonusLabel": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryWorkoutsBaselineProgress": "{current} / {target} kcal Basis-Aktivität • Noch {remaining} kcal bis zum Bonus",
+  "@diaryWorkoutsBaselineProgress": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryWorkoutsBonusEarned": "+{bonus} kcal Extra-Sport wurden deinem Tagesziel gutgeschrieben!",
+  "@diaryWorkoutsBonusEarned": {
+    "placeholders": {
+      "bonus": {
+        "type": "String"
+      }
+    }
+  },
   "diaryIntroBackAction": "Zurück",
   "diaryIntroNextAction": "Weiter",
   "diaryIntroDoneAction": "Loslegen",

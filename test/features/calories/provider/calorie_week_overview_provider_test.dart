@@ -336,8 +336,8 @@ void main() {
       addTearDown(subscription.close);
       final overview = await _readWeekOverviewForWindow(container, today);
 
-      expect(overview.carryoverBeforeTodayKcal, closeTo(208.333, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(2208.333, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, closeTo(250.0, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(2250.0, 0.001));
     },
   );
 
@@ -418,8 +418,8 @@ void main() {
       final trainingOverview = overview.days.firstWhere(
         (day) => day.date == trainingDay,
       );
-      expect(trainingOverview.activityBonusKcal, closeTo(780.75, 0.001));
-      expect(trainingOverview.goalKcal, closeTo(2780.75, 0.001));
+      expect(trainingOverview.activityBonusKcal, closeTo(1041.0, 0.001));
+      expect(trainingOverview.goalKcal, closeTo(3041.0, 0.001));
       expect(diaryHealthService.trendRequests, [
         (
           startInclusive: firstVisibleDay,

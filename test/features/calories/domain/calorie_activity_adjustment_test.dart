@@ -6,9 +6,9 @@ void main() {
     final credit = calculateActivityCredit(rawActivityKcal: 899);
 
     expect(credit.rawActivityKcal, 899);
-    expect(credit.correctedActivityKcal, closeTo(674.25, 0.01));
-    expect(credit.activityCapKcal, closeTo(674.25, 0.01));
-    expect(credit.creditedActivityKcal, closeTo(674.25, 0.01));
+    expect(credit.correctedActivityKcal, 899);
+    expect(credit.activityCapKcal, 899);
+    expect(credit.creditedActivityKcal, 899);
     expect(credit.wasCapped, isFalse);
   });
 
@@ -25,7 +25,7 @@ void main() {
       rawActivityKcalByDay: const <int>[0, 100, 300],
     );
 
-    expect(average, closeTo(100, 0.01));
+    expect(average, closeTo(133.33, 0.01));
   });
 
   test('subtracts average credited activity from measured total tdee', () {
@@ -34,16 +34,44 @@ void main() {
       rawActivityKcalByDay: const <int>[200, 400],
     );
 
-    expect(measuredBaseTdee, closeTo(2275, 0.01));
+    expect(measuredBaseTdee, closeTo(2200, 0.01));
   });
 
-  test('removes expected activity credit from total goal when tracking', () {
-    final baseGoal = calculateActivityAdjustedBaseGoalKcal(
-      totalGoalKcal: 2100,
-      expectedActivityKcal: 500,
-      isActivityTrackingActive: true,
-    );
+  test(
+    'keeps base goal unchanged without upfront deduction when tracking',
+    () {
+      final baseGoal = calculateActivityAdjustedBaseGoalKcal(
+        totalGoalKcal: 2100,
+        expectedActivityKcal: 500,
+        isActivityTrackingActive: true,
+      );
 
-    expect(baseGoal, 1725);
-  });
+      expect(baseGoal, 2100);
+    },
+  );
+
+  test(
+    'calculates activity bonus only when activity exceeds baseline',
+    () {
+      final noBonus = calculateActivityBonusKcal(
+        rawActivityKcal: 400, // 400 <= 500
+        expectedActivityKcal: 500,
+        isActivityTrackingActive: true,
+      );
+      final surplusBonus = calculateActivityBonusKcal(
+        rawActivityKcal: 800, // 800 > 500 -> +300
+        expectedActivityKcal: 500,
+        isActivityTrackingActive: true,
+      );
+      final inactiveBonus = calculateActivityBonusKcal(
+        rawActivityKcal: 800,
+        expectedActivityKcal: 500,
+        isActivityTrackingActive: false,
+      );
+
+      expect(noBonus, 0);
+      expect(surplusBonus, closeTo(300, 0.01));
+      expect(inactiveBonus, 0);
+    },
+  );
 }

@@ -81,6 +81,9 @@ DiaryBalanceLoadedMetrics resolveDiaryBalanceLoadedMetrics({
     bufferAdjustmentKcal: bufferAdjustmentKcal,
     heartCreditKcal: runState.heartCreditKcal,
     isHeartDay: loadedState.isHeartDay,
+    todayActiveKcal: selectedDayOverview.todayActiveKcal,
+    expectedActivityKcal: selectedDayOverview.expectedActivityKcal,
+    isActivityTrackingActive: selectedDayOverview.isActivityTrackingActive,
   );
   final weeklyMetrics = resolveDiaryWeeklyBalanceMetrics(
     weekOverview: weekOverview,

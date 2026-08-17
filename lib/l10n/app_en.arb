@@ -1316,6 +1316,44 @@
   "diaryBalanceHeartDayValue": "Heart day",
   "diaryBalanceHeartDaySubtitle": "Ignored for learning",
   "diaryBalanceRevertHeartDayAction": "Revert heart day",
+  "diaryBalanceActivityIncludedLabel": "{kcal} activity included in daily goal",
+  "@diaryBalanceActivityIncludedLabel": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBalanceActivityBonusLabel": "{kcal} extra sport bonus",
+  "@diaryBalanceActivityBonusLabel": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryWorkoutsBaselineProgress": "{current} / {target} kcal baseline activity • {remaining} kcal to bonus",
+  "@diaryWorkoutsBaselineProgress": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryWorkoutsBonusEarned": "+{bonus} kcal extra sport bonus credited to daily goal!",
+  "@diaryWorkoutsBonusEarned": {
+    "placeholders": {
+      "bonus": {
+        "type": "String"
+      }
+    }
+  },
   "diaryIntroBackAction": "Back",
   "diaryIntroNextAction": "Next",
   "diaryIntroDoneAction": "Start tracking",

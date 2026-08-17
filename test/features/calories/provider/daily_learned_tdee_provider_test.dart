@@ -396,7 +396,7 @@ void main() {
 
     expect(diaryHealthService.loadDayDataCallCount, 0);
     expect(result, isNotNull);
-    expect(result!.averageActiveKcal, 26.25);
+    expect(result!.averageActiveKcal, 35.0);
   });
 
   test('ignores aggregate activity before activity tracking start', () async {
@@ -438,7 +438,7 @@ void main() {
     final result = await _readDailyLearned(harness.container, today: today);
 
     expect(result, isNotNull);
-    expect(result!.averageActiveKcal, 15);
+    expect(result!.averageActiveKcal, 20.0);
     expect(diaryHealthService.trendRequests, [
       (
         startInclusive: trackingStartDate,
@@ -926,8 +926,8 @@ void main() {
     );
 
     expect(result, isNotNull);
-    expect(result!.calculatedTrueTdeeKcal, closeTo(2732.94, 0.01));
-    expect(result.newGoalKcal, closeTo(2732.94, 0.01));
+    expect(result!.calculatedTrueTdeeKcal, closeTo(2379.75, 0.01));
+    expect(result.newGoalKcal, closeTo(2500.0, 0.01));
   });
 
   test('uses real starter-day weight before calculator fallback', () async {
