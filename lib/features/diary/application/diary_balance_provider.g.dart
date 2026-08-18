@@ -146,4 +146,4 @@ final class DiaryBalanceActionsProvider
 }
 
 String _$diaryBalanceActionsHash() =>
-    r'c0a6ce8dfde236cae1ffb6267cac76a1d5cfe47c';
+    r'df956ff529d1afc8021edf8e8872c86d4572b8d3';

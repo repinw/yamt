@@ -111,6 +111,28 @@ class CalorieEntryEditorDraft {
     return true;
   }
 
+  /// Updates date component of loggedAt.
+  void updateDate(DateTime date) {
+    loggedAt = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      loggedAt.hour,
+      loggedAt.minute,
+    );
+  }
+
+  /// Updates time component of loggedAt.
+  void updateTime(TimeOfDay time) {
+    loggedAt = DateTime(
+      loggedAt.year,
+      loggedAt.month,
+      loggedAt.day,
+      time.hour,
+      time.minute,
+    );
+  }
+
   /// Whether details draft changed compared with existing entry.
   bool hasPendingChangesForEntry(CalorieEntry entry) {
     return mealType != entry.mealType || loggedAt != entry.loggedAt;
@@ -167,13 +189,59 @@ class CalorieEntryEditorDraft {
     );
   }
 
-  double? _parseDouble(String? rawValue) {
-    if (rawValue == null) {
-      return null;
+  /// Builds a new or updated CalorieEntry from parsed draft.
+  CalorieEntry buildEntry({
+    required String id,
+    required String userId,
+    required CalorieEntryEditorParsedDraft parsedDraft,
+    String? imageUrl,
+    String? sourceInventoryItemId,
+    int? sourceInventoryAmountToRestore,
+    CalorieEntry? initialEntry,
+  }) {
+    final now = DateTime.now();
+    if (initialEntry == null) {
+      return CalorieEntry.create(
+        id: id,
+        userId: userId,
+        name: parsedDraft.name,
+        brand: parsedDraft.brand,
+        imageUrl: imageUrl,
+        mealType: parsedDraft.mealType,
+        consumedAmount: parsedDraft.amount,
+        consumedUnit: parsedDraft.consumedUnit,
+        per100Kcal: parsedDraft.per100Kcal,
+        per100Protein: parsedDraft.per100Protein,
+        per100Carbs: parsedDraft.per100Carbs,
+        per100Fat: parsedDraft.per100Fat,
+        sourceInventoryItemId: sourceInventoryItemId,
+        sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
+        loggedAt: parsedDraft.loggedAt,
+        createdAt: now,
+        updatedAt: now,
+      );
     }
 
-    final normalized = rawValue.trim().replaceAll(',', '.');
-    return double.tryParse(normalized);
+    return initialEntry
+        .copyWith(
+          name: parsedDraft.name,
+          brand: parsedDraft.brand,
+          mealType: parsedDraft.mealType,
+          consumedAmount: parsedDraft.amount,
+          consumedUnit: parsedDraft.consumedUnit,
+          per100Kcal: parsedDraft.per100Kcal,
+          per100Protein: parsedDraft.per100Protein,
+          per100Carbs: parsedDraft.per100Carbs,
+          per100Fat: parsedDraft.per100Fat,
+          loggedAt: parsedDraft.loggedAt,
+          updatedAt: now,
+        )
+        .recalculateTotals(updatedAt: now);
+  }
+
+  double? _parseDouble(String? rawValue) {
+    final normalized = rawValue?.trim().replaceAll(',', '.');
+    return normalized == null ? null : double.tryParse(normalized);
   }
 
   String _formatDouble(double value) {
