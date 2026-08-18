@@ -27,6 +27,10 @@ String? productSearchHubSearchWeight(ProductSearchHubRouteArgs args) {
 
 /// Initial text query shown when search is opened from an existing item.
 String? productSearchHubInitialSearchQuery(ProductSearchHubRouteArgs args) {
+  final initialQuery = args.initialQuery?.trim();
+  if (initialQuery != null && initialQuery.isNotEmpty) {
+    return initialQuery;
+  }
   final item = args.item;
   if (item == null) {
     return null;

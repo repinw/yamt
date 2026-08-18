@@ -614,6 +614,21 @@ void main() {
     expect(childArgs?.flow, ManualProductSearchChildFlow.aiSearch);
     expect(childArgs?.showEatImmediatelyOption, isFalse);
   });
+
+  testWidgets('barcode initial intent opens barcode scanner sheet', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildRouteHarness(
+        args: const ProductSearchHubRouteArgs.inventory(
+          initialIntent: ProductSearchHubInitialIntent.barcode,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Scan barcode'), findsOneWidget);
+  });
 }
 
 void _expectOutlinedActionEnabled(

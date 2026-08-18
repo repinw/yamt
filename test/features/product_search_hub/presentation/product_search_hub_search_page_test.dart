@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -251,6 +252,10 @@ void main() {
     await _pumpFocusedSearchReady(tester);
 
     expect(
+      find.byKey(const Key('product_search_hub_search_barcode_action')),
+      findsOneWidget,
+    );
+    expect(
       find.byKey(const Key('product_search_hub_search_ai_action')),
       findsOneWidget,
     );
@@ -258,9 +263,9 @@ void main() {
       find.byKey(const Key('product_search_hub_search_create_own_action')),
       findsOneWidget,
     );
-    expect(
-      find.byKey(const Key('product_search_hub_barcode_action')),
-      findsNothing,
+    _expectOutlinedActionEnabled(
+      tester,
+      const Key('product_search_hub_search_barcode_action'),
     );
     _expectOutlinedActionEnabled(
       tester,
@@ -271,6 +276,37 @@ void main() {
       const Key('product_search_hub_search_create_own_action'),
     );
   });
+
+  testWidgets(
+    'focused search searches initial barcode query and renders result',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildHarness(
+          args: const ProductSearchHubRouteArgs.inventory(
+            initialQuery: '4008400404127',
+            autofocusSearchField: false,
+          ),
+          searchResults: const [
+            OffProductSearchResult(
+              code: '4008400840127',
+              name: 'Kinder Chocolate',
+              brand: 'Ferrero',
+              score: 1,
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      await _pumpFocusedSearchReady(tester);
+
+      expect(find.text('4008400404127'), findsWidgets);
+      final searchBar = tester.widget<TextVoiceSearchBar>(
+        find.byType(TextVoiceSearchBar).last,
+      );
+      expect(searchBar.focusNode?.hasFocus, isFalse);
+    },
+  );
 
   testWidgets('empty search create button invokes create action', (
     tester,

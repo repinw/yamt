@@ -34,11 +34,13 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
     required this.onBackPressed,
     required this.onSearchChanged,
     required this.onClear,
+    required this.onBarcodePressed,
     required this.onAiPressed,
     required this.onCreateOwnPressed,
     required this.onBlankTap,
     required this.onRetry,
     required this.onResultSelected,
+    this.autofocusSearchField = true,
     super.key,
   });
 
@@ -75,6 +77,9 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Search results.
   final List<OffProductSearchResult> searchResults;
 
+  /// Whether search field should autofocus.
+  final bool autofocusSearchField;
+
   /// Whether search failed.
   final bool hasSearchFailed;
 
@@ -86,6 +91,9 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
 
   /// Clear callback.
   final VoidCallback onClear;
+
+  /// Barcode callback.
+  final VoidCallback onBarcodePressed;
 
   /// AI callback.
   final VoidCallback onAiPressed;
@@ -122,12 +130,14 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
                 voiceSearchController: voiceSearchController,
                 startVoiceSearchOnMount: startVoiceSearchOnMount,
                 showFocusedSearchField: showFocusedSearchField,
+                autofocusSearchField: autofocusSearchField,
                 isClosing: isClosing,
                 onSearchChanged: onSearchChanged,
                 onClear: onClear,
               ),
               _ProductSearchHubSearchActionSection(
                 isVisible: showFocusedSearchField && !isClosing,
+                onBarcodePressed: onBarcodePressed,
                 onAiPressed: onAiPressed,
                 onCreateOwnPressed: onCreateOwnPressed,
               ),
@@ -164,6 +174,7 @@ class _ProductSearchHubSearchFieldStack extends StatelessWidget {
     required this.voiceSearchController,
     required this.startVoiceSearchOnMount,
     required this.showFocusedSearchField,
+    required this.autofocusSearchField,
     required this.isClosing,
     required this.onSearchChanged,
     required this.onClear,
@@ -176,6 +187,7 @@ class _ProductSearchHubSearchFieldStack extends StatelessWidget {
   final TextVoiceSearchController voiceSearchController;
   final bool startVoiceSearchOnMount;
   final bool showFocusedSearchField;
+  final bool autofocusSearchField;
   final bool isClosing;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onClear;
@@ -198,7 +210,7 @@ class _ProductSearchHubSearchFieldStack extends StatelessWidget {
             voiceSearchService: voiceSearchService,
             voiceSearchController: voiceSearchController,
             startVoiceSearchOnMount: startVoiceSearchOnMount,
-            autofocus: true,
+            autofocus: autofocusSearchField,
             onChanged: onSearchChanged,
             onClear: onClear,
           ),
@@ -210,11 +222,13 @@ class _ProductSearchHubSearchFieldStack extends StatelessWidget {
 class _ProductSearchHubSearchActionSection extends StatelessWidget {
   const _ProductSearchHubSearchActionSection({
     required this.isVisible,
+    required this.onBarcodePressed,
     required this.onAiPressed,
     required this.onCreateOwnPressed,
   });
 
   final bool isVisible;
+  final VoidCallback onBarcodePressed;
   final VoidCallback onAiPressed;
   final VoidCallback onCreateOwnPressed;
 
@@ -235,6 +249,7 @@ class _ProductSearchHubSearchActionSection extends StatelessWidget {
               children: [
                 const SizedBox(height: AppSpacing.md),
                 ProductSearchHubSearchActions(
+                  onBarcodePressed: onBarcodePressed,
                   onAiPressed: onAiPressed,
                   onCreateOwnPressed: onCreateOwnPressed,
                 ),

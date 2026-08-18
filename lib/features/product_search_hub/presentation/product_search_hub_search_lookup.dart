@@ -1,5 +1,6 @@
 import 'dart:developer' show log;
 
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -63,6 +64,22 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubProducts({
       store: store,
       weight: weight,
     );
+    if (results.isNotEmpty) {
+      return ProductSearchHubSearchLookupResult.success(
+        collapseDominatedOffProductSearchResults(results),
+      );
+    }
+    final normalized = normalizeBarcode(query);
+    if (normalized.isNotEmpty && isSupportedBarcode(normalized)) {
+      final barcodeResults = await repository.lookupCandidatesByBarcode(
+        barcode: normalized,
+      );
+      if (barcodeResults.isNotEmpty) {
+        return ProductSearchHubSearchLookupResult.success(
+          collapseDominatedOffProductSearchResults(barcodeResults),
+        );
+      }
+    }
     return ProductSearchHubSearchLookupResult.success(
       collapseDominatedOffProductSearchResults(results),
     );

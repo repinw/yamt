@@ -12,6 +12,8 @@ import 'package:yamt/features/product_search/domain/'
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_barcode_scanner.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_navigation.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_config.dart';
@@ -114,6 +116,9 @@ class _ProductSearchHubSearchPageState
       return;
     }
     setState(() => _showFocusedSearchField = true);
+    if (!widget.args.autofocusSearchField) {
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _requestSearchKeyboard(),
     );
@@ -252,6 +257,7 @@ class _ProductSearchHubSearchPageState
         voiceSearchController: _voiceSearchController,
         startVoiceSearchOnMount: widget.args.startVoiceSearchOnMount,
         showFocusedSearchField: _showFocusedSearchField,
+        autofocusSearchField: widget.args.autofocusSearchField,
         isClosing: _isClosing,
         hasSearchQuery:
             _searchQuery.trim().length >= productSearchHubSearchMinQueryLength,
@@ -260,6 +266,7 @@ class _ProductSearchHubSearchPageState
         onBackPressed: _closeSearchPage,
         onSearchChanged: _handleSearchChanged,
         onClear: _clearSearch,
+        onBarcodePressed: _handleBarcodePressed,
         onAiPressed: _handleAiPressed,
         onCreateOwnPressed: _handleCreateOwnPressed,
         onBlankTap: _searchFocusNode.unfocus,
@@ -267,6 +274,28 @@ class _ProductSearchHubSearchPageState
         onResultSelected: _closeSearchPage,
       ),
     );
+  }
+
+  void _handleBarcodePressed() {
+    unawaited(_scanBarcodeIntoSearch());
+  }
+
+  Future<void> _scanBarcodeIntoSearch() async {
+    _hideSearchKeyboard();
+    final scannedBarcode = await openProductSearchHubBarcodeScanner(
+      context: context,
+      args: widget.args,
+    );
+    if (!mounted || _isClosing) {
+      return;
+    }
+    if (scannedBarcode == null || scannedBarcode.trim().isEmpty) {
+      _requestSearchKeyboard();
+      return;
+    }
+    final barcode = scannedBarcode.trim();
+    _searchController.text = barcode;
+    _handleSearchChanged(barcode);
   }
 
   void _handleAiPressed() => _openEditedEntry(

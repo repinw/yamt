@@ -54,6 +54,19 @@ void main() {
 
     expect(productSearchHubInitialSearchQuery(args), 'Dairy Co Aldi Nord');
   });
+
+  test('prioritizes explicit initialQuery even if item exists', () {
+    final args = ProductSearchHubRouteArgs.inventory(
+      initialQuery: '4006381333931',
+      item: _item(
+        brand: 'Dairy Co',
+        storeName: 'Aldi Nord',
+        weight: '500 g',
+      ),
+    );
+
+    expect(productSearchHubInitialSearchQuery(args), '4006381333931');
+  });
 }
 
 InventoryItem _item({

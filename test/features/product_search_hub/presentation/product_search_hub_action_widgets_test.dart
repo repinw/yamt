@@ -39,6 +39,7 @@ void main() {
         child: SizedBox(
           width: 4,
           child: ProductSearchHubSearchActions(
+            onBarcodePressed: () {},
             onAiPressed: () {},
             onCreateOwnPressed: () {},
           ),

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_barcode_scan_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -45,14 +43,13 @@ ProductSearchHubBarcodeScannerOptions productSearchHubBarcodeOptionsForArgs(
   };
 }
 
-/// Opens hub barcode scanner and returns the scanner result.
-Future<ManualBarcodeScanResult?> openProductSearchHubBarcodeScanner({
+/// Opens hub barcode scanner and returns the scanned barcode string.
+Future<String?> openProductSearchHubBarcodeScanner({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  final options = productSearchHubBarcodeOptionsForArgs(args);
-  return showModalBottomSheet<ManualBarcodeScanResult>(
+  return showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
@@ -62,28 +59,8 @@ Future<ManualBarcodeScanResult?> openProductSearchHubBarcodeScanner({
         heightFactor: 1,
         child: InventoryBarcodeScannerPage(
           title: l10n.inventoryManualAddScanBarcodeAction,
-          showActionButtons: options.showActionButtons,
-          eatOnly: options.eatOnly,
-          onProductSelected: (candidate, scannedBarcode, action) async {
-            sheetContext.pop(
-              ManualBarcodeScanResult.selected(
-                candidate: candidate,
-                scannedBarcode: scannedBarcode,
-                action: action,
-              ),
-            );
-            return true;
-          },
-          onProductNotFound: (scannedBarcode) async {
-            sheetContext.pop(
-              ManualBarcodeScanResult.notFound(scannedBarcode: scannedBarcode),
-            );
-            return true;
-          },
-          onCreateManualProduct: (scannedBarcode) async {
-            sheetContext.pop(
-              ManualBarcodeScanResult.manual(scannedBarcode: scannedBarcode),
-            );
+          onBarcodeScanned: (scannedBarcode) async {
+            sheetContext.pop(scannedBarcode);
             return true;
           },
         ),

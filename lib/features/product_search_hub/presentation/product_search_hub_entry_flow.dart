@@ -7,8 +7,6 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_ai_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_barcode_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_editor_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -33,29 +31,6 @@ class ProductSearchHubEditedResult {
 
   /// Edited product result.
   final inventory_models.InventoryReceiptManualProductResult result;
-}
-
-/// Opens barcode entry flow.
-Future<ProductSearchHubEditedResult?> openProductSearchHubBarcodeEntry({
-  required BuildContext context,
-  required AppLocalizations l10n,
-  required ProductSearchHubRouteArgs args,
-}) async {
-  final result = await openProductSearchHubBarcodeFlow(
-    context: context,
-    draftItem: buildProductSearchHubDraftItem(
-      l10n: l10n,
-      sourceItem: args.item,
-    ),
-    args: args,
-  );
-  if (result == null) {
-    return null;
-  }
-  return ProductSearchHubEditedResult(
-    sourceKey: result.sourceKey,
-    result: result.result,
-  );
 }
 
 /// Opens AI entry flow.

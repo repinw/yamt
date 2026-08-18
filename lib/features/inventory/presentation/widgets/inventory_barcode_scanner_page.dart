@@ -29,6 +29,7 @@ export 'package:yamt/features/inventory/presentation/widgets/'
         InventoryBarcodeLookupCandidateSource,
         InventoryBarcodeNotFoundCallback,
         InventoryBarcodeProductSelectionCallback,
+        InventoryBarcodeScanCallback,
         inventoryBarcodeCandidateDedupeKey,
         inventoryBarcodeCandidateWidgetKeySuffix,
         mergeInventoryBarcodeCandidates;
@@ -40,19 +41,26 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
   /// The inventory barcode scanner page.
   const InventoryBarcodeScannerPage({
     required this.title,
-    required this.onProductSelected,
     super.key,
+    this.onBarcodeScanned,
+    this.onProductSelected,
     this.onProductNotFound,
     this.onCreateManualProduct,
     this.showActionButtons = true,
     this.eatOnly = false,
-  });
+  }) : assert(
+         onBarcodeScanned != null || onProductSelected != null,
+         'Either onBarcodeScanned or onProductSelected must be provided.',
+       );
 
   /// The title.
   final String title;
 
+  /// Direct raw barcode scanned callback.
+  final InventoryBarcodeScanCallback? onBarcodeScanned;
+
   /// The on product selected.
-  final InventoryBarcodeProductSelectionCallback onProductSelected;
+  final InventoryBarcodeProductSelectionCallback? onProductSelected;
 
   /// The on product not found.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
@@ -71,6 +79,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: InventoryBarcodeScannerView(
+        onBarcodeScanned: onBarcodeScanned,
         onProductSelected: onProductSelected,
         onProductNotFound: onProductNotFound,
         onCreateManualProduct: onCreateManualProduct,
@@ -85,16 +94,23 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
 class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
   /// The inventory barcode scanner view.
   const InventoryBarcodeScannerView({
-    required this.onProductSelected,
     super.key,
+    this.onBarcodeScanned,
+    this.onProductSelected,
     this.onProductNotFound,
     this.onCreateManualProduct,
     this.showActionButtons = true,
     this.eatOnly = false,
-  });
+  }) : assert(
+         onBarcodeScanned != null || onProductSelected != null,
+         'Either onBarcodeScanned or onProductSelected must be provided.',
+       );
+
+  /// Direct raw barcode scanned callback.
+  final InventoryBarcodeScanCallback? onBarcodeScanned;
 
   /// The on product selected.
-  final InventoryBarcodeProductSelectionCallback onProductSelected;
+  final InventoryBarcodeProductSelectionCallback? onProductSelected;
 
   /// The on product not found.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
@@ -190,6 +206,22 @@ class _InventoryBarcodeScannerViewState
       _showSnackBar(
         AppLocalizations.of(context)!.inventoryManualAddLookupFailed,
       );
+      return;
+    }
+
+    final onBarcodeScanned = widget.onBarcodeScanned;
+    if (onBarcodeScanned != null) {
+      await _stopScanner();
+      final handled = await onBarcodeScanned(barcode);
+      if (!mounted) {
+        return;
+      }
+      if (!handled) {
+        _showSnackBar(
+          AppLocalizations.of(context)!.inventoryManualAddLookupFailed,
+        );
+        await _startScanner();
+      }
       return;
     }
 
@@ -295,11 +327,13 @@ class _InventoryBarcodeScannerViewState
       return _handleCreateManualProduct(scannedBarcode);
     }
 
-    final handled = await widget.onProductSelected(
-      selection.candidate!,
-      scannedBarcode,
-      selection.action!,
-    );
+    final handled =
+        await widget.onProductSelected?.call(
+          selection.candidate!,
+          scannedBarcode,
+          selection.action!,
+        ) ??
+        false;
     return !handled;
   }
 

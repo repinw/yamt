@@ -11,8 +11,6 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_barcode_direct_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_barcode_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_barcode_scanner.dart';
 
 void main() {

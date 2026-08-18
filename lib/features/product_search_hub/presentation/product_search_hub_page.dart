@@ -18,6 +18,8 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_barcode_scanner.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_entry_flow.dart';
@@ -103,13 +105,23 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   );
 
   Future<void> _openProductSearchRoute({
+    String? initialQuery,
     bool startVoiceSearchOnMount = false,
+    bool autofocusSearchField = true,
   }) async {
+    var routeArgs = widget.args;
+    if (initialQuery != null) {
+      routeArgs = routeArgs.withInitialQuery(
+        initialQuery,
+        autofocusSearchField: autofocusSearchField,
+      );
+    }
+    if (startVoiceSearchOnMount) {
+      routeArgs = routeArgs.withVoiceSearchOnMount();
+    }
     final result = await context.push<Object?>(
       AppRoutes.homeProductSearchHubSearch,
-      extra: startVoiceSearchOnMount
-          ? widget.args.withVoiceSearchOnMount()
-          : widget.args,
+      extra: routeArgs,
     );
     if (!mounted || result == null) {
       return;
@@ -150,7 +162,21 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   }
 
   void _openBarcodeScan() =>
-      _runWhenIdle(() => _openEntry(openProductSearchHubBarcodeEntry));
+      _runWhenIdle(_openBarcodeScanFlow);
+
+  Future<void> _openBarcodeScanFlow() async {
+    final scannedBarcode = await openProductSearchHubBarcodeScanner(
+      context: context,
+      args: widget.args,
+    );
+    if (!mounted || scannedBarcode == null || scannedBarcode.trim().isEmpty) {
+      return;
+    }
+    await _openProductSearchRoute(
+      initialQuery: scannedBarcode.trim(),
+      autofocusSearchField: false,
+    );
+  }
 
   void _openAiProduct() =>
       _runWhenIdle(() => _openEntry(openProductSearchHubAiEntry));

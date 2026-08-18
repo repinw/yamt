@@ -36,11 +36,13 @@ class ProductSearchHubRouteArgs {
     this.mode = ProductSearchHubMode.inventory,
     this.initialIntent = ProductSearchHubInitialIntent.launcher,
     this.item,
+    this.initialQuery,
     this.includeStoreInSearch = true,
     this.includeWeightInSearch = true,
     this.preselectedMealType,
     this.preselectedLoggedAt,
     this.startVoiceSearchOnMount = false,
+    this.autofocusSearchField = true,
   });
 
   /// Inventory add route args.
@@ -48,16 +50,20 @@ class ProductSearchHubRouteArgs {
     ProductSearchHubInitialIntent initialIntent =
         ProductSearchHubInitialIntent.launcher,
     InventoryItem? item,
+    String? initialQuery,
     bool includeStoreInSearch = true,
     bool includeWeightInSearch = true,
     bool startVoiceSearchOnMount = false,
+    bool autofocusSearchField = true,
   }) : this(
          mode: ProductSearchHubMode.inventory,
          initialIntent: initialIntent,
          item: item,
+         initialQuery: initialQuery,
          includeStoreInSearch: includeStoreInSearch,
          includeWeightInSearch: includeWeightInSearch,
          startVoiceSearchOnMount: startVoiceSearchOnMount,
+         autofocusSearchField: autofocusSearchField,
        );
 
   /// Diary eat route args.
@@ -65,20 +71,24 @@ class ProductSearchHubRouteArgs {
     ProductSearchHubInitialIntent initialIntent =
         ProductSearchHubInitialIntent.launcher,
     InventoryItem? item,
+    String? initialQuery,
     bool includeStoreInSearch = true,
     bool includeWeightInSearch = true,
     MealType? preselectedMealType,
     DateTime? preselectedLoggedAt,
     bool startVoiceSearchOnMount = false,
+    bool autofocusSearchField = true,
   }) : this(
          mode: ProductSearchHubMode.diary,
          initialIntent: initialIntent,
          item: item,
+         initialQuery: initialQuery,
          includeStoreInSearch: includeStoreInSearch,
          includeWeightInSearch: includeWeightInSearch,
          preselectedMealType: preselectedMealType,
          preselectedLoggedAt: preselectedLoggedAt,
          startVoiceSearchOnMount: startVoiceSearchOnMount,
+         autofocusSearchField: autofocusSearchField,
        );
 
   /// Selection route args.
@@ -86,16 +96,20 @@ class ProductSearchHubRouteArgs {
     required InventoryItem item,
     ProductSearchHubInitialIntent initialIntent =
         ProductSearchHubInitialIntent.launcher,
+    String? initialQuery,
     bool includeStoreInSearch = true,
     bool includeWeightInSearch = true,
     bool startVoiceSearchOnMount = false,
+    bool autofocusSearchField = true,
   }) : this(
          mode: ProductSearchHubMode.selection,
          initialIntent: initialIntent,
          item: item,
+         initialQuery: initialQuery,
          includeStoreInSearch: includeStoreInSearch,
          includeWeightInSearch: includeWeightInSearch,
          startVoiceSearchOnMount: startVoiceSearchOnMount,
+         autofocusSearchField: autofocusSearchField,
        );
 
   /// Launch mode.
@@ -106,6 +120,9 @@ class ProductSearchHubRouteArgs {
 
   /// Optional base item used when hub replaces old product-search routes.
   final InventoryItem? item;
+
+  /// Optional initial search query text or scanned barcode.
+  final String? initialQuery;
 
   /// Whether store should be sent to product search.
   final bool includeStoreInSearch;
@@ -121,6 +138,9 @@ class ProductSearchHubRouteArgs {
 
   /// Whether focused search should start voice search on mount.
   final bool startVoiceSearchOnMount;
+
+  /// Whether focused search should autofocus search text field on mount.
+  final bool autofocusSearchField;
 
   /// Whether diary source buttons should be shown.
   bool get showsDiarySourceActions => mode == ProductSearchHubMode.diary;
@@ -140,11 +160,32 @@ class ProductSearchHubRouteArgs {
       mode: mode,
       initialIntent: initialIntent,
       item: item,
+      initialQuery: initialQuery,
       includeStoreInSearch: includeStoreInSearch,
       includeWeightInSearch: includeWeightInSearch,
       preselectedMealType: preselectedMealType,
       preselectedLoggedAt: preselectedLoggedAt,
       startVoiceSearchOnMount: true,
+      autofocusSearchField: autofocusSearchField,
+    );
+  }
+
+  /// Returns route args with a specific initial query.
+  ProductSearchHubRouteArgs withInitialQuery(
+    String query, {
+    bool autofocusSearchField = true,
+  }) {
+    return ProductSearchHubRouteArgs(
+      mode: mode,
+      initialIntent: initialIntent,
+      item: item,
+      initialQuery: query,
+      includeStoreInSearch: includeStoreInSearch,
+      includeWeightInSearch: includeWeightInSearch,
+      preselectedMealType: preselectedMealType,
+      preselectedLoggedAt: preselectedLoggedAt,
+      startVoiceSearchOnMount: startVoiceSearchOnMount,
+      autofocusSearchField: autofocusSearchField,
     );
   }
 }

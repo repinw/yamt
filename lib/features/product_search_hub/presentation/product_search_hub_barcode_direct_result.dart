@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart'
@@ -14,6 +15,15 @@ import 'package:yamt/features/product_search/presentation/controllers/'
     as manual_product_models;
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
+
+/// Whether barcode editor should explain missing nutrition for diary eat flow.
+bool productSearchHubBarcodeNeedsEatNutritionMessage({
+  required ProductSearchHubRouteArgs args,
+  required GlobalFoodNutrition? nutrition,
+}) {
+  return args.mode == ProductSearchHubMode.diary &&
+      !hasRequiredEatNowNutrition(nutrition);
+}
 
 /// Builds old barcode direct-eat result for selected OFF products.
 inventory_models.InventoryReceiptManualProductResult?

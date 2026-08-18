@@ -1533,6 +1533,13 @@ void main() {
 
     _fakeScannerPlatform().emitBarcode('4006381333931');
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
+    );
+    await tester.pumpAndSettle();
 
     await tester.enterText(
       find.byKey(const Key('receipt_review_manual_kcal_field')),
@@ -1885,6 +1892,13 @@ void main() {
       await tester.pumpAndSettle();
 
       _fakeScannerPlatform().emitBarcode('4006381333931');
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const Key('product_search_hub_search_create_own_action')),
+      );
       await tester.pumpAndSettle();
 
       final ocrButtonAfter = tester.widget<OutlinedButton>(ocrButtonFinder);

@@ -4,17 +4,21 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _productSearchHubSearchActionHeight = 58.0;
 const _productSearchHubSearchActionIconSize = 18.0;
-const _productSearchHubSearchActionColumnCount = 2;
-const _productSearchHubSearchActionMinWidth = 96.0;
+const _productSearchHubSearchActionColumnCount = 3;
+const _productSearchHubSearchActionMinWidth = 72.0;
 
 /// Quick actions shown below the focused product search field.
 class ProductSearchHubSearchActions extends StatelessWidget {
   /// Creates focused search quick actions.
   const ProductSearchHubSearchActions({
+    required this.onBarcodePressed,
     required this.onAiPressed,
     required this.onCreateOwnPressed,
     super.key,
   });
+
+  /// Barcode action callback.
+  final VoidCallback onBarcodePressed;
 
   /// AI action callback.
   final VoidCallback onAiPressed;
@@ -44,6 +48,13 @@ class ProductSearchHubSearchActions extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
+              _ProductSearchHubSearchActionButton(
+                key: const Key('product_search_hub_search_barcode_action'),
+                icon: Icons.qr_code_scanner_rounded,
+                label: l10n.productSearchHubBarcodeAction,
+                width: actionWidth,
+                onPressed: onBarcodePressed,
+              ),
               _ProductSearchHubSearchActionButton(
                 key: const Key('product_search_hub_search_ai_action'),
                 icon: Icons.auto_awesome_rounded,

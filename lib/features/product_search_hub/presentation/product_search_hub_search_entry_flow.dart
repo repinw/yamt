@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -37,6 +38,8 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubSearchCustomEntry({
   required ProductSearchHubRouteArgs args,
   String initialName = '',
 }) async {
+  final normalized = normalizeBarcode(initialName);
+  final isBarcode = normalized.isNotEmpty && isSupportedBarcode(normalized);
   final result = await openProductSearchHubCustomProductEditor(
     context: context,
     draftItem: buildProductSearchHubDraftItem(
@@ -44,7 +47,8 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubSearchCustomEntry({
       sourceItem: args.item,
     ),
     args: args,
-    initialName: initialName,
+    scannedBarcode: isBarcode ? normalized : null,
+    initialName: isBarcode ? '' : initialName,
   );
   return _editedResult(result);
 }
