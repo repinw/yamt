@@ -46,6 +46,50 @@ OffProductNutritionGrade gradeOffProductNutrition(
   return OffProductNutritionGrade.complete;
 }
 
+/// Calculates a composite quality score for ranking/preferring product results.
+int scoreSearchResultQuality(OffProductSearchResult result) {
+  var score =
+      _nutritionGradeRank(gradeOffProductNutrition(result.nutrition)) * 100;
+  score += _knownNutritionValueCount(result.nutrition) * 10;
+  if (result.imageUrl != null && result.imageUrl!.trim().isNotEmpty) {
+    score += 15;
+  }
+  if (result.packageWeight != null && result.packageWeight!.trim().isNotEmpty) {
+    score += 5;
+  }
+  if (result.servingSize != null || result.servingQuantity != null) {
+    score += 5;
+  }
+  if (result.globalFoodItemId != null) {
+    score += 20;
+  }
+  return score;
+}
+
+/// Merges secondary search result attributes into preferred result without
+/// overwriting.
+OffProductSearchResult mergeMatchingSearchResults({
+  required OffProductSearchResult preferred,
+  required OffProductSearchResult secondary,
+}) {
+  return OffProductSearchResult(
+    code: preferred.code,
+    name: preferred.name.trim().isNotEmpty ? preferred.name : secondary.name,
+    score: math.max(preferred.score, secondary.score),
+    brand: preferred.brand ?? secondary.brand,
+    imageUrl: (preferred.imageUrl?.trim().isNotEmpty ?? false)
+        ? preferred.imageUrl
+        : secondary.imageUrl,
+    packageWeight: preferred.packageWeight ?? secondary.packageWeight,
+    servingSize: preferred.servingSize ?? secondary.servingSize,
+    servingQuantity: preferred.servingQuantity ?? secondary.servingQuantity,
+    servingQuantityUnit:
+        preferred.servingQuantityUnit ?? secondary.servingQuantityUnit,
+    nutrition: preferred.nutrition ?? secondary.nutrition,
+    globalFoodItemId: preferred.globalFoodItemId ?? secondary.globalFoodItemId,
+  );
+}
+
 /// Collapses duplicate OFF rows only when a better same-barcode row is safe.
 ///
 /// A row can hide another row when they share a barcode, package sizes do not
@@ -80,44 +124,32 @@ bool _mergeIntoKeptResults(
     if (barcode != normalizeBarcode(existing.code)) {
       continue;
     }
-    if (_canSafelyReplace(candidate: result, existing: existing)) {
-      kept[index] = result;
-      return true;
+    if (_hasPackageWeightConflict(result, existing)) {
+      continue;
     }
-    if (_canSafelyReplace(candidate: existing, existing: result)) {
+    if (_hasNutritionConflict(result.nutrition, existing.nutrition)) {
+      continue;
+    }
+
+    final candidateScore = scoreSearchResultQuality(result);
+    final existingScore = scoreSearchResultQuality(existing);
+
+    if (candidateScore >= existingScore) {
+      kept[index] = mergeMatchingSearchResults(
+        preferred: result,
+        secondary: existing,
+      );
+      return true;
+    } else {
+      kept[index] = mergeMatchingSearchResults(
+        preferred: existing,
+        secondary: result,
+      );
       return true;
     }
   }
 
   return false;
-}
-
-bool _canSafelyReplace({
-  required OffProductSearchResult candidate,
-  required OffProductSearchResult existing,
-}) {
-  if (_hasPackageWeightConflict(candidate, existing)) {
-    return false;
-  }
-  if (_hasNutritionConflict(candidate.nutrition, existing.nutrition)) {
-    return false;
-  }
-
-  final candidateRank = _nutritionGradeRank(
-    gradeOffProductNutrition(candidate.nutrition),
-  );
-  final existingRank = _nutritionGradeRank(
-    gradeOffProductNutrition(existing.nutrition),
-  );
-  final candidateKnownValues = _knownNutritionValueCount(candidate.nutrition);
-  final existingKnownValues = _knownNutritionValueCount(existing.nutrition);
-  if (candidateRank < existingRank) {
-    return false;
-  }
-  if (candidateRank == existingRank) {
-    return candidateKnownValues > existingKnownValues;
-  }
-  return candidateKnownValues >= existingKnownValues;
 }
 
 bool _hasPackageWeightConflict(

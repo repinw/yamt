@@ -166,6 +166,7 @@ class InventoryReceiptManualProductSelection {
       servingQuantityUnit: result.servingQuantityUnit,
       nutrition: result.nutrition,
       externalProduct: result,
+      globalFoodItemId: result.globalFoodItemId,
     );
   }
 

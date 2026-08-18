@@ -257,7 +257,7 @@ void main() {
         find.byKey(const Key('inventory_item_amount_dialog_field')),
         findsOneWidget,
       );
-      expect(inventoryController.addedItems, hasLength(1));
+      expect(inventoryController.addedItems, isEmpty);
     },
   );
 

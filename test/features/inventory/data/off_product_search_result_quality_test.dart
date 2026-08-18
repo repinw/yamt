@@ -184,4 +184,39 @@ void main() {
 
     expect(results, hasLength(2));
   });
+
+  test(
+    'collapseDominatedOffProductSearchResults prefers Firebase item with image '
+    'and merges fields',
+    () {
+      final results = collapseDominatedOffProductSearchResults(
+        const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk OFF',
+            brand: 'Acme OFF',
+            packageWeight: '1 l',
+            score: 100,
+            nutrition: _completeNutrition,
+          ),
+          OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk Firebase',
+            brand: 'Acme Firebase',
+            imageUrl: 'https://example.com/milk.jpg',
+            packageWeight: '1000 ml',
+            score: 90,
+            nutrition: _completeNutrition,
+            globalFoodItemId: 'item-123',
+          ),
+        ],
+      );
+
+      expect(results, hasLength(1));
+      final item = results.single;
+      expect(item.name, 'Milk Firebase');
+      expect(item.imageUrl, 'https://example.com/milk.jpg');
+      expect(item.globalFoodItemId, 'item-123');
+    },
+  );
 }

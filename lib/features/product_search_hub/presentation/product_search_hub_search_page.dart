@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
+    'global_food_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/product_search/domain/'
     'manual_product_search_value_utils.dart';
@@ -218,6 +220,7 @@ class _ProductSearchHubSearchPageState
 
     final lookupResult = await lookupProductSearchHubRouteProducts(
       repository: ref.read(offProductSearchRepositoryProvider),
+      globalFoodItemRepository: ref.read(globalFoodItemRepositoryProvider),
       lookupProducts: widget.lookupProducts,
       args: widget.args,
       query: query,

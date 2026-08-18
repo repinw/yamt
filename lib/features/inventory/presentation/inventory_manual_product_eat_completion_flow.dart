@@ -73,6 +73,19 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
   required DateTime? preselectedLoggedAt,
   required bool continueBatchOnConfirm,
 }) async {
+  final eatResult = await _resolveEatResult(
+    context: context,
+    l10n: l10n,
+    result: result,
+    item: result.item,
+    preselectedMealType: preselectedMealType,
+    preselectedLoggedAt: preselectedLoggedAt,
+    continueBatchOnConfirm: continueBatchOnConfirm,
+  );
+  if (!context.mounted || eatResult == null) {
+    return const InventoryManualProductSaveOutcome.canceled();
+  }
+
   final inventorySubscription = container.listen(
     inventoryItemsControllerProvider,
     (_, _) {},
@@ -93,65 +106,26 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
     if (!context.mounted) {
       return saveOutcome;
     }
-    return await _completeSavedManualProductEat(
+
+    String? savedCalorieEntryId;
+    final completedEatFlow = await _completeEatFlow(
       context: context,
-      container: container,
-      l10n: l10n,
-      result: result,
       item: savedItem,
-      preselectedMealType: preselectedMealType,
-      preselectedLoggedAt: preselectedLoggedAt,
-      continueBatchOnConfirm: continueBatchOnConfirm,
+      request: eatResult.request,
+      onDirectCalorieEntrySaved: (entryId) => savedCalorieEntryId = entryId,
+    );
+    if (!completedEatFlow) {
+      await _deleteSavedItem(container, savedItem);
+      return const InventoryManualProductSaveOutcome.canceled();
+    }
+    return InventoryManualProductSaveOutcome.saved(
+      savedItem,
+      calorieEntryId: savedCalorieEntryId,
+      addMoreRequested: eatResult.addMoreRequested,
     );
   } finally {
     inventorySubscription.close();
   }
-}
-
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
-Future<InventoryManualProductSaveOutcome> _completeSavedManualProductEat({
-  required BuildContext context,
-  required ProviderContainer container,
-  required AppLocalizations l10n,
-  required InventoryReceiptManualProductResult result,
-  required InventoryItem item,
-  required MealType? preselectedMealType,
-  required DateTime? preselectedLoggedAt,
-  required bool continueBatchOnConfirm,
-}) async {
-  String? savedCalorieEntryId;
-  final eatResult = await _resolveEatResult(
-    context: context,
-    l10n: l10n,
-    result: result,
-    item: item,
-    preselectedMealType: preselectedMealType,
-    preselectedLoggedAt: preselectedLoggedAt,
-    continueBatchOnConfirm: continueBatchOnConfirm,
-  );
-  if (!context.mounted || eatResult == null) {
-    await _deleteSavedItem(container, item);
-    return const InventoryManualProductSaveOutcome.canceled();
-  }
-
-  final completedEatFlow = await _completeEatFlow(
-    context: context,
-    item: item,
-    request: eatResult.request,
-    onDirectCalorieEntrySaved: (entryId) => savedCalorieEntryId = entryId,
-  );
-  if (!completedEatFlow) {
-    await _deleteSavedItem(container, item);
-    return const InventoryManualProductSaveOutcome.canceled();
-  }
-  return InventoryManualProductSaveOutcome.saved(
-    item,
-    calorieEntryId: savedCalorieEntryId,
-    addMoreRequested: eatResult.addMoreRequested,
-  );
 }
 
 Future<InventoryItemEatSheetResult?> _resolveEatResult({

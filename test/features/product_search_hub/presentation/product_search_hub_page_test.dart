@@ -375,7 +375,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(childArgs, isNull);
-    expect(inventoryController.addedItems, hasLength(1));
+    expect(inventoryController.addedItems, isEmpty);
     expect(
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       findsOneWidget,
