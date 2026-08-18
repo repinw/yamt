@@ -2899,6 +2899,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdJoinOwnCode => 'Du kannst deinem eigenen Haushalt nicht beitreten.';
 
   @override
+  String get householdJoinNameDialogTitle => 'Name angeben';
+
+  @override
+  String get householdJoinNameDialogMessage => 'Bitte gib deinen Namen ein, damit andere Haushaltsmitglieder dich erkennen können.';
+
+  @override
+  String get householdJoinNameDialogFieldLabel => 'Dein Name';
+
+  @override
+  String get householdJoinNameDialogRequiredError => 'Bitte gib einen Namen ein.';
+
+  @override
+  String get householdJoinNameDialogAction => 'Speichern & Beitreten';
+
+  @override
   String get householdInviteTitle => 'Mitglieder einladen';
 
   @override

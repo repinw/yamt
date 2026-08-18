@@ -37,7 +37,7 @@ final class GuestAuthControllerProvider
 }
 
 String _$guestAuthControllerHash() =>
-    r'97708a7dd87340de256bd6de496ad09dcc850341';
+    r'016221f4750f17e253348808c7de84f920e36ae3';
 
 /// Defines guest auth controller.
 

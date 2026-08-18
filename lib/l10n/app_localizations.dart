@@ -5567,6 +5567,36 @@ abstract class AppLocalizations {
   /// **'You cannot join your own household.'**
   String get householdJoinOwnCode;
 
+  /// No description provided for @householdJoinNameDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name'**
+  String get householdJoinNameDialogTitle;
+
+  /// No description provided for @householdJoinNameDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name so other household members can recognize you.'**
+  String get householdJoinNameDialogMessage;
+
+  /// No description provided for @householdJoinNameDialogFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name'**
+  String get householdJoinNameDialogFieldLabel;
+
+  /// No description provided for @householdJoinNameDialogRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a name.'**
+  String get householdJoinNameDialogRequiredError;
+
+  /// No description provided for @householdJoinNameDialogAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save & Join'**
+  String get householdJoinNameDialogAction;
+
   /// No description provided for @householdInviteTitle.
   ///
   /// In en, this message translates to:

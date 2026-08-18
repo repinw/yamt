@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
 import 'package:yamt/features/household/presentation/household_error_message.dart';
+import 'package:yamt/features/household/presentation/widgets/'
+    'household_join_name_dialog/household_join_name_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines household join section.
@@ -89,10 +92,30 @@ class _HouseholdJoinSectionState extends ConsumerState<HouseholdJoinSection> {
     AppLocalizations l10n,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
+    final profile = ref.read(userProfileProvider).asData?.value;
+    final currentUser = ref.read(authStateChangesProvider).asData?.value;
+    final currentName = (profile?.displayName ?? currentUser?.displayName)
+        ?.trim();
+    String? nameToSet;
+
+    if (currentName == null || currentName.isEmpty) {
+      nameToSet = await showHouseholdJoinNameDialog(
+        context: context,
+        l10n: l10n,
+      );
+      if (nameToSet == null || nameToSet.trim().isEmpty) {
+        return;
+      }
+    }
+
+    if (!mounted) {
+      return;
+    }
+
     try {
       await ref
           .read(householdMembershipControllerProvider.notifier)
-          .joinHousehold(_codeController.text);
+          .joinHousehold(_codeController.text, displayName: nameToSet);
       if (!mounted) {
         return;
       }

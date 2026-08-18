@@ -26,12 +26,23 @@ class _FakeHouseholdInviteCodeController extends HouseholdInviteCodeController {
 }
 
 class _FakeHouseholdMembershipController extends HouseholdMembershipController {
-  _FakeHouseholdMembershipController({this.onRemoveMember});
+  _FakeHouseholdMembershipController({
+    this.onRemoveMember,
+    this.onJoinHousehold,
+  });
 
   final Future<void> Function(String userId)? onRemoveMember;
+  final Future<void> Function(String code, String? displayName)?
+  onJoinHousehold;
 
   @override
   FutureOr<void> build() {}
+
+  @override
+  Future<void> joinHousehold(String code, {String? displayName}) async {
+    await onJoinHousehold?.call(code, displayName);
+    state = const AsyncData<void>(null);
+  }
 
   @override
   Future<void> removeMember(String userId) async {
@@ -227,4 +238,130 @@ void main() {
     );
     expect(find.textContaining('member query failed'), findsOneWidget);
   });
+
+  testWidgets(
+    'user without name entering code and clicking join sees name prompt '
+    'dialog and joins with entered name',
+    (tester) async {
+      final user = buildUser(uid: 'guest-1', isAnonymous: true);
+      const profile = UserProfile(
+        uid: 'guest-1',
+        isAnonymous: true,
+      );
+      String? joinedCode;
+      String? joinedDisplayName;
+
+      await tester.pumpWidget(
+        buildApp(
+          user: user,
+          profile: profile,
+          members: [profile],
+          membershipController: _FakeHouseholdMembershipController(
+            onJoinHousehold: (code, displayName) async {
+              joinedCode = code;
+              joinedDisplayName = displayName;
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), '123456');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Join'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Enter your name'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextFormField), 'Sam');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save & Join'));
+      await tester.pumpAndSettle();
+
+      expect(joinedCode, '123456');
+      expect(joinedDisplayName, 'Sam');
+      expect(find.text('Household joined.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'user with existing name joining household does not see name prompt',
+    (tester) async {
+      final user = buildUser(uid: 'user-1', isAnonymous: false);
+      const profile = UserProfile(
+        uid: 'user-1',
+        displayName: 'Existing User',
+      );
+      String? joinedCode;
+      String? joinedDisplayName;
+
+      await tester.pumpWidget(
+        buildApp(
+          user: user,
+          profile: profile,
+          members: [profile],
+          membershipController: _FakeHouseholdMembershipController(
+            onJoinHousehold: (code, displayName) async {
+              joinedCode = code;
+              joinedDisplayName = displayName;
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), '654321');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Join'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Enter your name'), findsNothing);
+      expect(joinedCode, '654321');
+      expect(joinedDisplayName, isNull);
+      expect(find.text('Household joined.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'user canceling name prompt does not join household',
+    (tester) async {
+      final user = buildUser(uid: 'guest-1', isAnonymous: true);
+      const profile = UserProfile(
+        uid: 'guest-1',
+        isAnonymous: true,
+      );
+      var joinCalled = false;
+
+      await tester.pumpWidget(
+        buildApp(
+          user: user,
+          profile: profile,
+          members: [profile],
+          membershipController: _FakeHouseholdMembershipController(
+            onJoinHousehold: (code, displayName) async {
+              joinCalled = true;
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), '123456');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Join'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Enter your name'), findsOneWidget);
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Enter your name'), findsNothing);
+      expect(joinCalled, isFalse);
+    },
+  );
 }
