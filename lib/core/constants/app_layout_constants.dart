@@ -72,6 +72,12 @@ abstract final class AppInsets {
 
 /// Shared corner radii.
 abstract final class AppRadius {
+  /// Extra-small radius.
+  static const double xs = 4;
+
+  /// Small radius.
+  static const double sm = 8;
+
   /// Medium radius.
   static const double md = 14;
 

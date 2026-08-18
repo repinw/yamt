@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
@@ -88,6 +92,11 @@ class _CalorieOnboardingWizardState
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
+  }
+
+  void _handleLogin() {
+    _dismissKeyboard();
+    unawaited(context.push(AppRoutes.welcome));
   }
 
   Future<void> _handleFinish(
@@ -191,33 +200,39 @@ class _CalorieOnboardingWizardState
       canPop: _wizardController.allowRouteExit,
       child: Scaffold(
         backgroundColor: Theme.of(context).canvasColor,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: CalorieOnboardingStepPages(
-                  pageController: _pageController,
-                  formState: formState,
-                  formNotifier: formNotifier,
-                  showErrors: _wizardController.showErrors,
-                  startDateController: _startDateController,
-                  isSaving: _wizardController.isSaving || formState.isSaving,
-                  onNext: _handleNext,
-                  onStartNowChanged: _handleStartNowChanged,
-                  onTodayModeChanged: _handleTodayTrackingChanged,
-                  onCatchUpEstimateChanged: _handleCatchUpEstimateChanged,
-                  onFutureGoalStartChangeRequested: _pickFutureGoalStartDate,
-                  onFinish: () => _handleFinish(formState, finishFlow),
+        body: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: _dismissKeyboard,
+          child: SafeArea(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CalorieOnboardingStepPages(
+                    pageController: _pageController,
+                    formState: formState,
+                    formNotifier: formNotifier,
+                    showErrors: _wizardController.showErrors,
+                    startDateController: _startDateController,
+                    isSaving: _wizardController.isSaving || formState.isSaving,
+                    onNext: _handleNext,
+                    onLogin: _handleLogin,
+                    onStartNowChanged: _handleStartNowChanged,
+                    onTodayModeChanged: _handleTodayTrackingChanged,
+                    onCatchUpEstimateChanged: _handleCatchUpEstimateChanged,
+                    onFutureGoalStartChangeRequested:
+                        _pickFutureGoalStartDate,
+                    onFinish: () => _handleFinish(formState, finishFlow),
+                  ),
                 ),
-              ),
-              if (_wizardController.showsStepChrome)
-                CalorieOnboardingWizardChrome(
-                  progress: _wizardController.progress,
-                  nextLabel: nextLabel,
-                  onBack: _handleBack,
-                  onNext: _handleNext,
-                ),
-            ],
+                if (_wizardController.showsStepChrome)
+                  CalorieOnboardingWizardChrome(
+                    progress: _wizardController.progress,
+                    nextLabel: nextLabel,
+                    onBack: _handleBack,
+                    onNext: _handleNext,
+                  ),
+              ],
+            ),
           ),
         ),
       ),

@@ -85,6 +85,18 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     final mediaQuery = MediaQuery.of(context);
 
     return Scaffold(
+      appBar: Navigator.of(context).canPop()
+          ? AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip:
+                    MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            )
+          : null,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 960;

@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,8 @@ import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/widgets/app_background.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/presentation/controllers/guest_auth_controller.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_health_activity_cache_warmup.dart';
 import 'package:yamt/features/calories/application/'
@@ -41,6 +45,7 @@ class YAMT extends ConsumerStatefulWidget {
 }
 
 class _YAMTState extends ConsumerState<YAMT> {
+  ProviderSubscription<AsyncValue<User?>>? _initialAuthSubscription;
   ProviderSubscription<void>? _calorieActivityCacheWarmupSubscription;
   ProviderSubscription<void>? _calorieHealthSyncSubscription;
   ProviderSubscription<AsyncValue<List<InventoryItem>>>?
@@ -52,20 +57,17 @@ class _YAMTState extends ConsumerState<YAMT> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      _startInventoryWarmup();
-      _calorieHealthSyncTimer ??= Timer(
-        _calorieHealthSyncStartupDelay,
-        _startCalorieHealthSync,
-      );
-    });
+    _ensureInitialGuestAuth();
+    _startInventoryWarmup();
+    _calorieHealthSyncTimer = Timer(
+      _calorieHealthSyncStartupDelay,
+      _startCalorieHealthSync,
+    );
   }
 
   @override
   void dispose() {
+    _initialAuthSubscription?.close();
     _calorieActivityCacheWarmupSubscription?.close();
     _calorieHealthSyncSubscription?.close();
     _inventoryWarmupSubscription?.close();
@@ -76,15 +78,17 @@ class _YAMTState extends ConsumerState<YAMT> {
 
   @override
   Widget build(BuildContext context) {
-    final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeControllerProvider);
     final seedColor = ref.watch(seedColorControllerProvider);
+    final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      routerConfig: router,
+      title: 'YAMT',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light(seedColor: seedColor),
       darkTheme: AppTheme.dark(seedColor: seedColor),
       themeMode: themeMode,
+      routerConfig: router,
       builder: (context, child) => SharedReceiptListener(
         child: AppBackground(child: child),
       ),
@@ -95,6 +99,34 @@ class _YAMTState extends ConsumerState<YAMT> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
+    );
+  }
+
+  void _ensureInitialGuestAuth() {
+    _initialAuthSubscription ??= ref.listenManual<AsyncValue<User?>>(
+      authStateChangesProvider,
+      (previous, next) {
+        final user = next.asData?.value;
+        if (!next.isLoading && user == null) {
+          unawaited(
+            Future<void>(() async {
+              try {
+                await ref
+                    .read(guestAuthControllerProvider.notifier)
+                    .signInAnonymously();
+              } on Object catch (e, st) {
+                log(
+                  'Initial guest auth skipped or failed: $e',
+                  name: 'YAMT',
+                  error: e,
+                  stackTrace: st,
+                );
+              }
+            }),
+          );
+        }
+      },
+      fireImmediately: true,
     );
   }
 

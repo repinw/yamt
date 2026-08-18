@@ -5993,6 +5993,36 @@ abstract class AppLocalizations {
   /// **'Let\'s start'**
   String get onboardingWelcomeAction;
 
+  /// No description provided for @onboardingWelcomeAlreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already registered?'**
+  String get onboardingWelcomeAlreadyHaveAccount;
+
+  /// No description provided for @onboardingWelcomeLoginAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in here'**
+  String get onboardingWelcomeLoginAction;
+
+  /// No description provided for @onboardingAgeYearsUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'years'**
+  String get onboardingAgeYearsUnit;
+
+  /// No description provided for @onboardingHeightCmUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get onboardingHeightCmUnit;
+
+  /// No description provided for @onboardingDoneAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get onboardingDoneAction;
+
   /// No description provided for @onboardingNextAction.
   ///
   /// In en, this message translates to:

@@ -9,6 +9,8 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/'
+    'horizontal_dial_wheel.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/'
     'onboarding_selectable_card.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/'
     'step_0_welcome.dart';
@@ -42,6 +44,110 @@ void main() {
     await tester.pump();
 
     expect(didContinue, isTrue);
+  });
+
+  testWidgets('welcome step renders login action and calls onLogin', (
+    tester,
+  ) async {
+    var didLogin = false;
+    await _pumpLocalized(
+      tester,
+      Step0Welcome(
+        onNext: () {},
+        onLogin: () => didLogin = true,
+      ),
+    );
+
+    expect(find.textContaining('Already registered?'), findsOneWidget);
+    expect(find.textContaining('Log in here'), findsOneWidget);
+
+    await tester.tap(find.textContaining('Log in here'));
+    await tester.pump();
+
+    expect(didLogin, isTrue);
+  });
+
+  testWidgets('personal-info steppers increment and decrement values', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final formProvider = calorieGoalCalculatorFormControllerProvider(
+      null,
+      useEmptyDefaults: true,
+    );
+
+    await _pumpLocalized(
+      tester,
+      ProviderScope(
+        child: Consumer(
+          builder: (context, ref, _) {
+            return Step1PersonalInfo(
+              state: ref.watch(formProvider),
+              notifier: ref.read(formProvider.notifier),
+            );
+          },
+        ),
+      ),
+    );
+
+    final context = tester.element(find.byType(Step1PersonalInfo));
+    final container = ProviderScope.containerOf(context, listen: false);
+
+    // Tap plus on Age (first plus button)
+    await tester.tap(find.byTooltip('Plus').first);
+    await tester.pumpAndSettle();
+
+    expect(container.read(formProvider).ageYearsText, '26');
+
+    // Tap minus on Age (first minus button)
+    await tester.tap(find.byTooltip('Minus').first);
+    await tester.pumpAndSettle();
+
+    expect(container.read(formProvider).ageYearsText, '25');
+
+    // Tap plus on Height (second plus button)
+    await tester.tap(find.byTooltip('Plus').at(1));
+    await tester.pumpAndSettle();
+
+    expect(container.read(formProvider).heightCmText, '176');
+  });
+
+  testWidgets('personal-info slider updates value on drag', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final formProvider = calorieGoalCalculatorFormControllerProvider(
+      null,
+      useEmptyDefaults: true,
+    );
+
+    await _pumpLocalized(
+      tester,
+      ProviderScope(
+        child: Consumer(
+          builder: (context, ref, _) {
+            return Step1PersonalInfo(
+              state: ref.watch(formProvider),
+              notifier: ref.read(formProvider.notifier),
+            );
+          },
+        ),
+      ),
+    );
+
+    final context = tester.element(find.byType(Step1PersonalInfo));
+    final container = ProviderScope.containerOf(context, listen: false);
+
+    expect(find.text('-- years'), findsOneWidget);
+    expect(find.text('-- cm'), findsOneWidget);
+
+    final ageDial = find.byType(HorizontalDialWheel).first;
+    await tester.drag(ageDial, const Offset(-50, 0));
+    await tester.pumpAndSettle();
+
+    expect(container.read(formProvider).ageYearsText.isNotEmpty, isTrue);
   });
 
   testWidgets('personal-info step updates sex and shows invalid errors', (
@@ -78,91 +184,9 @@ void main() {
     expect(find.text('Please enter your height.'), findsOneWidget);
 
     await tester.tap(find.text('Male'));
-    await tester.enterText(find.byType(TextFormField).at(0), 'abc');
-    await tester.enterText(find.byType(TextFormField).at(1), '0');
     await tester.pumpAndSettle();
 
     expect(container.read(formProvider).sex, CalorieCalculatorSex.male);
-    expect(find.text('Please enter a valid age.'), findsOneWidget);
-    expect(find.text('Please enter a valid height.'), findsOneWidget);
-  });
-
-  testWidgets('personal-info number field done action hides keyboard focus', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(800, 1000));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final formProvider = calorieGoalCalculatorFormControllerProvider(
-      null,
-      useEmptyDefaults: true,
-    );
-
-    await _pumpLocalized(
-      tester,
-      ProviderScope(
-        child: Consumer(
-          builder: (context, ref, _) {
-            return Step1PersonalInfo(
-              state: ref.watch(formProvider),
-              notifier: ref.read(formProvider.notifier),
-            );
-          },
-        ),
-      ),
-    );
-
-    await tester.tap(find.byType(TextFormField).first);
-    await tester.pump();
-
-    final fieldFocusNode = tester
-        .widget<EditableText>(find.byType(EditableText).first)
-        .focusNode;
-    expect(fieldFocusNode.hasFocus, isTrue);
-
-    await tester.testTextInput.receiveAction(TextInputAction.done);
-    await tester.pump();
-
-    expect(fieldFocusNode.hasFocus, isFalse);
-  });
-
-  testWidgets('personal-info number field tap outside hides keyboard focus', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(800, 1000));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final formProvider = calorieGoalCalculatorFormControllerProvider(
-      null,
-      useEmptyDefaults: true,
-    );
-
-    await _pumpLocalized(
-      tester,
-      ProviderScope(
-        child: Consumer(
-          builder: (context, ref, _) {
-            return Step1PersonalInfo(
-              state: ref.watch(formProvider),
-              notifier: ref.read(formProvider.notifier),
-            );
-          },
-        ),
-      ),
-    );
-
-    await tester.tap(find.byType(TextFormField).first);
-    await tester.pump();
-
-    final fieldFocusNode = tester
-        .widget<EditableText>(find.byType(EditableText).first)
-        .focusNode;
-    expect(fieldFocusNode.hasFocus, isTrue);
-
-    await tester.tapAt(const Offset(20, 20));
-    await tester.pump();
-
-    expect(fieldFocusNode.hasFocus, isFalse);
   });
 
   testWidgets('activity step updates the calculator activity option', (

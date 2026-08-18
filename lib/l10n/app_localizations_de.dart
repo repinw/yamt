@@ -3114,6 +3114,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onboardingWelcomeAction => 'Lass uns starten';
 
   @override
+  String get onboardingWelcomeAlreadyHaveAccount => 'Bereits registriert?';
+
+  @override
+  String get onboardingWelcomeLoginAction => 'Hier einloggen';
+
+  @override
+  String get onboardingAgeYearsUnit => 'Jahre';
+
+  @override
+  String get onboardingHeightCmUnit => 'cm';
+
+  @override
+  String get onboardingDoneAction => 'Fertig';
+
+  @override
   String get onboardingNextAction => 'Weiter';
 
   @override

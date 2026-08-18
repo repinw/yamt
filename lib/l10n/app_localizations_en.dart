@@ -3114,6 +3114,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingWelcomeAction => 'Let\'s start';
 
   @override
+  String get onboardingWelcomeAlreadyHaveAccount => 'Already registered?';
+
+  @override
+  String get onboardingWelcomeLoginAction => 'Log in here';
+
+  @override
+  String get onboardingAgeYearsUnit => 'years';
+
+  @override
+  String get onboardingHeightCmUnit => 'cm';
+
+  @override
+  String get onboardingDoneAction => 'Done';
+
+  @override
   String get onboardingNextAction => 'Next';
 
   @override

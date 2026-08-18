@@ -314,11 +314,15 @@ String? _redirectForState(Ref ref, GoRouterState state) {
   final isAuthLoading = authState.isLoading;
   final currentUser = authState.asData?.value;
   final isAuthenticated = currentUser != null;
-  final hasCompletedProfileSetup = ref.read(authProfileSetupCompletedProvider);
-  final needsGuestNameSetup = isAuthenticated && !hasCompletedProfileSetup;
-  final calorieGoalOnboardingState = isAuthenticated && hasCompletedProfileSetup
-      ? ref.read(calorieGoalOnboardingCompletedProvider)
-      : const AsyncData<bool>(false);
+  final isAnonymous = currentUser?.isAnonymous ?? false;
+  final hasCompletedProfileSetup =
+      isAnonymous || ref.read(authProfileSetupCompletedProvider);
+  final needsGuestNameSetup =
+      isAuthenticated && !isAnonymous && !hasCompletedProfileSetup;
+  final calorieGoalOnboardingState =
+      isAuthenticated && hasCompletedProfileSetup
+          ? ref.read(calorieGoalOnboardingCompletedProvider)
+          : const AsyncData<bool>(false);
   final isCalorieGoalOnboardingLoading =
       isAuthenticated &&
       hasCompletedProfileSetup &&
@@ -339,6 +343,13 @@ String? _redirectForState(Ref ref, GoRouterState state) {
 
   if (!isAuthenticated) {
     return path == AppRoutes.welcome ? null : AppRoutes.welcome;
+  }
+
+  if (path == AppRoutes.welcome) {
+    if (!hasCompletedCalorieGoalOnboarding) {
+      return null;
+    }
+    return AppRoutes.homeDiary;
   }
 
   if (needsGuestNameSetup) {
@@ -365,7 +376,7 @@ String? _redirectForState(Ref ref, GoRouterState state) {
     return AppRoutes.homeDiary;
   }
 
-  if (path == AppRoutes.welcome || isStartupRoute) {
+  if (isStartupRoute) {
     return AppRoutes.homeDiary;
   }
 

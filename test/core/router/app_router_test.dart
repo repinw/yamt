@@ -303,42 +303,45 @@ void main() {
     );
   });
 
-  testWidgets('redirects anonymous user without name to guest setup', (
-    tester,
-  ) async {
-    final container = _createContainerWithAuth(
-      Stream<User?>.value(_guestUser()),
-    );
+  testWidgets(
+    'redirects anonymous user without calorie onboarding to calorie setup',
+    (tester) async {
+      final container = _createContainerWithAuth(
+        Stream<User?>.value(_guestUser()),
+      );
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await _pumpRouterTransition(tester);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await _pumpRouterTransition(tester);
+      await _pumpRouterTransition(tester);
 
-    expect(
-      container.read(appRouterProvider).state.uri.path,
-      AppRoutes.guestNameSetup,
-    );
-    expect(find.text('Set your guest name'), findsOneWidget);
-  });
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
+      expect(find.text('Glad you are here!'), findsOneWidget);
+    },
+  );
 
-  testWidgets('named anonymous user without setup marker stays in setup', (
-    tester,
-  ) async {
-    final container = _createContainerWithAuth(
-      Stream<User?>.value(_guestUser(displayName: 'Guest Name')),
-    );
+  testWidgets(
+    'named anonymous user without calorie onboarding goes to calorie setup',
+    (tester) async {
+      final container = _createContainerWithAuth(
+        Stream<User?>.value(_guestUser(displayName: 'Guest Name')),
+      );
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await _pumpRouterTransition(tester);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await _pumpRouterTransition(tester);
 
-    expect(
-      container.read(appRouterProvider).state.uri.path,
-      AppRoutes.guestNameSetup,
-    );
-  });
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
+    },
+  );
 
   testWidgets('named anonymous user with setup marker is routed to home', (
     tester,
@@ -453,8 +456,12 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Female'));
-    await tester.enterText(find.byType(TextFormField).at(0), '30');
-    await tester.enterText(find.byType(TextFormField).at(1), '170');
+    final firstPlus = find.byTooltip('Plus').first;
+    await tester.ensureVisible(firstPlus);
+    await tester.tap(firstPlus);
+    final secondPlus = find.byTooltip('Plus').at(1);
+    await tester.ensureVisible(secondPlus);
+    await tester.tap(secondPlus);
     await _tapCalorieOnboardingNext(tester);
 
     await _tapCalorieOnboardingNext(tester);
@@ -541,38 +548,39 @@ void main() {
     );
   });
 
-  testWidgets('stays on guest setup after name update without setup marker', (
-    tester,
-  ) async {
-    final authController = StreamController<User?>();
-    final container = _createContainerWithAuth(authController.stream);
-    addTearDown(() {
-      unawaited(authController.close());
-    });
+  testWidgets(
+    'stays on calorie setup after guest name update without onboarding',
+    (tester) async {
+      final authController = StreamController<User?>();
+      final container = _createContainerWithAuth(authController.stream);
+      addTearDown(() {
+        unawaited(authController.close());
+      });
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await tester.pump();
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await tester.pump();
 
-    authController.add(_guestUser());
-    await tester.pump();
-    await _pumpRouterTransition(tester);
+      authController.add(_guestUser());
+      await tester.pump();
+      await _pumpRouterTransition(tester);
 
-    expect(
-      container.read(appRouterProvider).state.uri.path,
-      AppRoutes.guestNameSetup,
-    );
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
 
-    authController.add(_guestUser(displayName: 'Guest Name'));
-    await tester.pump();
-    await _pumpRouterTransition(tester);
+      authController.add(_guestUser(displayName: 'Guest Name'));
+      await tester.pump();
+      await _pumpRouterTransition(tester);
 
-    expect(
-      container.read(appRouterProvider).state.uri.path,
-      AppRoutes.guestNameSetup,
-    );
-  });
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
+    },
+  );
 
   testWidgets(
     'moves from guest setup to calorie setup and then home via markers',
@@ -999,6 +1007,52 @@ void main() {
     );
 
     expect(kitchenUtensilsRoute.path, AppRoutes.homeKitchenUtensils);
+  });
+
+  testWidgets('allows navigating from onboarding to welcome and signs in', (
+    tester,
+  ) async {
+    final authController = StreamController<User?>();
+    final container = _createContainerWithAuth(
+      authController.stream,
+      completedProfileSetupUserIds: {'uid-existing'},
+      completedCalorieGoalOnboardingUserIds: {'uid-existing'},
+    );
+    addTearDown(() {
+      unawaited(authController.close());
+    });
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pump();
+
+    authController.add(_guestUser());
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+
+    await tester.tap(find.textContaining('Log in here'));
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.welcome,
+    );
+
+    authController.add(_authenticatedUser(uid: 'uid-existing'));
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeCalories,
+    );
   });
 }
 

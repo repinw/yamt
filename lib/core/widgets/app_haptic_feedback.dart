@@ -9,6 +9,11 @@ abstract final class AppHapticFeedback {
     unawaited(HapticFeedback.lightImpact());
   }
 
+  /// Sends a rotary tick selection haptic pulse without awaiting.
+  static void selectionClick() {
+    unawaited(HapticFeedback.selectionClick());
+  }
+
   /// Wraps a callback with a small haptic pulse.
   static VoidCallback? wrap(VoidCallback? callback) {
     if (callback == null) {

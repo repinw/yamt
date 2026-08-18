@@ -26,8 +26,6 @@ class CalorieOnboardingWizardChrome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
-
     return Positioned.fill(
       child: Stack(
         children: [
@@ -36,7 +34,6 @@ class CalorieOnboardingWizardChrome extends StatelessWidget {
             onBack: onBack,
           ),
           _BottomChrome(
-            bottomInset: keyboardInset,
             nextLabel: nextLabel,
             onNext: onNext,
           ),
@@ -102,12 +99,10 @@ class _TopChrome extends StatelessWidget {
 
 class _BottomChrome extends StatelessWidget {
   const _BottomChrome({
-    required this.bottomInset,
     required this.nextLabel,
     required this.onNext,
   });
 
-  final double bottomInset;
   final String nextLabel;
   final VoidCallback onNext;
 
@@ -116,7 +111,7 @@ class _BottomChrome extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Positioned(
-      bottom: bottomInset,
+      bottom: 0,
       left: 0,
       right: 0,
       child: Container(

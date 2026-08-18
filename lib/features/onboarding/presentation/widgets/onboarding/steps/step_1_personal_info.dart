@@ -3,8 +3,9 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/onboarding_labeled_text_field.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/onboarding_step_content.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/personal_info_gender_card.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/personal_info_slider_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Onboarding step for sex, age, and height.
@@ -30,6 +31,7 @@ class Step1PersonalInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final hasSexError = showErrors && state.sexError != null;
 
     return OnboardingStepContent(
       title: l10n.onboardingPersonalInfoTitle,
@@ -37,117 +39,66 @@ class Step1PersonalInfo extends StatelessWidget {
       children: [
         const SizedBox(height: AppSpacing.xl),
 
-        // Gender
+        // Gender Label
         Text(
           l10n.caloriesCalculatorSexLabel,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: AppFontSizes.bodyMedium,
             fontWeight: FontWeight.w600,
-            color: showErrors && state.sexError != null
+            color: hasSexError
                 ? theme.colorScheme.error
-                : Theme.of(context).colorScheme.onSurface,
+                : theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
+
+        // Gender Options
         Row(
           children: [
-            _buildGenderButton(
-              context: context,
+            PersonalInfoGenderCard(
               label: l10n.caloriesCalculatorSexFemale,
+              icon: Icons.female,
               isSelected: state.sex == CalorieCalculatorSex.female,
-              hasError: showErrors && state.sexError != null,
+              hasError: hasSexError,
               onTap: () => notifier.updateSex(CalorieCalculatorSex.female),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            _buildGenderButton(
-              context: context,
+            const SizedBox(width: AppSpacing.md),
+            PersonalInfoGenderCard(
               label: l10n.caloriesCalculatorSexMale,
+              icon: Icons.male,
               isSelected: state.sex == CalorieCalculatorSex.male,
-              hasError: showErrors && state.sexError != null,
+              hasError: hasSexError,
               onTap: () => notifier.updateSex(CalorieCalculatorSex.male),
             ),
           ],
         ),
         const SizedBox(height: AppSpacing.lg),
 
-        // Age and Height
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: OnboardingLabeledTextField(
-                label: l10n.caloriesCalculatorAgeLabel,
-                hintText: l10n.caloriesCalculatorAgeLabel,
-                initialValue: state.ageYearsText,
-                keyboardType: TextInputType.number,
-                errorText: _getAgeError(state.ageError, l10n),
-                onChanged: notifier.updateAgeYears,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: OnboardingLabeledTextField(
-                label: l10n.caloriesCalculatorHeightLabel,
-                hintText: 'cm',
-                initialValue: state.heightCmText,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                errorText: _getHeightError(state.heightError, l10n),
-                onChanged: notifier.updateHeightCm,
-              ),
-            ),
-          ],
+        // Age Card
+        PersonalInfoSliderCard(
+          label: l10n.caloriesCalculatorAgeLabel,
+          unit: l10n.onboardingAgeYearsUnit,
+          icon: Icons.cake_outlined,
+          valueText: state.ageYearsText,
+          errorText: _getAgeError(state.ageError, l10n),
+          onChanged: notifier.updateAgeYears,
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        // Height Card
+        PersonalInfoSliderCard(
+          label: l10n.caloriesCalculatorHeightLabel,
+          unit: l10n.onboardingHeightCmUnit,
+          icon: Icons.straighten_outlined,
+          valueText: state.heightCmText,
+          errorText: _getHeightError(state.heightError, l10n),
+          onChanged: notifier.updateHeightCm,
+          minValue: 120,
+          maxValue: 230,
+          defaultValue: 175,
+          majorInterval: 10,
         ),
       ],
-    );
-  }
-
-  Widget _buildGenderButton({
-    required BuildContext context,
-    required String label,
-    required bool isSelected,
-    required bool hasError,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? primary.withValues(alpha: 0.1)
-                : theme.colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected
-                  ? primary
-                  : (hasError
-                        ? theme.colorScheme.error
-                        : Theme.of(context).colorScheme.surfaceContainer),
-              width: 2,
-            ),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: isSelected
-                  ? primary
-                  : (hasError
-                        ? theme.colorScheme.error
-                        : Theme.of(context).colorScheme.onSurfaceVariant),
-            ),
-          ),
-        ),
-      ),
     );
   }
 

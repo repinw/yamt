@@ -190,6 +190,8 @@ void main() {
 
     await _pumpOnboarding(tester);
     await _startWizard(tester);
+    await _completePersonalInfo(tester);
+    await _tapNext(tester);
 
     await tester.tap(find.byType(TextFormField).first);
     tester.view.viewInsets = const FakeViewPadding(
@@ -310,8 +312,12 @@ Future<void> _completePersonalInfo(
   String height = '170',
 }) async {
   await tester.tap(find.text('Female'));
-  await tester.enterText(find.byType(TextFormField).at(0), age);
-  await tester.enterText(find.byType(TextFormField).at(1), height);
+  final firstPlus = find.byTooltip('Plus').first;
+  await tester.ensureVisible(firstPlus);
+  await tester.tap(firstPlus);
+  final secondPlus = find.byTooltip('Plus').at(1);
+  await tester.ensureVisible(secondPlus);
+  await tester.tap(secondPlus);
   await _tapNext(tester);
 }
 

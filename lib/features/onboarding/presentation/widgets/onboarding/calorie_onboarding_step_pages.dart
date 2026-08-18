@@ -29,6 +29,7 @@ class CalorieOnboardingStepPages extends StatelessWidget {
     required this.onCatchUpEstimateChanged,
     required this.onFutureGoalStartChangeRequested,
     required this.onFinish,
+    this.onLogin,
     super.key,
   });
 
@@ -53,6 +54,9 @@ class CalorieOnboardingStepPages extends StatelessWidget {
   /// Advances the wizard.
   final VoidCallback onNext;
 
+  /// Called when existing user wants to log in from welcome step.
+  final VoidCallback? onLogin;
+
   /// Updates the start-now choice.
   final ValueChanged<bool> onStartNowChanged;
 
@@ -75,7 +79,10 @@ class CalorieOnboardingStepPages extends StatelessWidget {
       controller: pageController,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        Step0Welcome(onNext: onNext),
+        Step0Welcome(
+          onNext: onNext,
+          onLogin: onLogin,
+        ),
         Step1PersonalInfo(
           state: formState,
           notifier: formNotifier,
