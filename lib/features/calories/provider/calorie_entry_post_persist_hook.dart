@@ -15,9 +15,8 @@ typedef CalorieEntryPostPersistHook =
     });
 
 /// The calorie entry post persist hook provider.
-@riverpod
+@Riverpod(keepAlive: true)
 CalorieEntryPostPersistHook calorieEntryPostPersistHook(Ref ref) {
-  ref.keepAlive();
   return ({
     required CalorieEntry entry,
     CalorieInventoryCreateContext? inventoryContext,

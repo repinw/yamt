@@ -51,19 +51,19 @@ Future<void> main() async {
       overrides: [
         appPreferencesProvider.overrideWithValue(appPreferences),
         calorieEntryPostPersistHookProvider.overrideWith(
-          (ref) => ref.read(inventoryCalorieEntryPostPersistHookProvider),
+          (ref) => ref.watch(inventoryCalorieEntryPostPersistHookProvider),
         ),
         calorieEntryDeleteFlowProvider.overrideWith(
           (ref) => ref.watch(inventoryCalorieEntryDeleteFlowProvider),
         ),
         calorieInventoryEntrySaveHandlerProvider.overrideWith((ref) {
-          final saveFlow = ref.read(
+          final saveFlow = ref.watch(
             inventoryBackedCalorieEntrySaveFlowProvider,
           );
           return saveFlow.saveEntry;
         }),
         calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((ref) {
-          final inventoryController = ref.read(
+          final inventoryController = ref.watch(
             inventoryItemsControllerProvider.notifier,
           );
           return inventoryController.discardPendingConsumption;

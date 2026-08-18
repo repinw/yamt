@@ -1192,6 +1192,14 @@
     }
   },
   "caloriesDeleteEntryConfirmAction": "Löschen",
+  "caloriesRemoveEntryAction": "Eintrag entfernen",
+  "caloriesRemoveEntryDialogTitle": "Eintrag entfernen",
+  "caloriesRemoveEntryDialogMessage":
+      "Möchtest du das Nahrungsmittel wieder in den Vorrat zurücklegen?",
+  "caloriesRemoveEntryPreparedMealMessage":
+      "Möchtest du die Mahlzeit wieder in den Vorrat zurücklegen?",
+  "caloriesRemoveEntryOnlyAction": "Nur aus Tagebuch löschen",
+  "caloriesRemoveAndRestoreAction": "In den Vorrat zurücklegen",
   "caloriesReturnPreparedMealDialogTitle":
       "Mahlzeit zurück in den Vorrat legen?",
   "caloriesReturnPreparedMealDialogMessage":

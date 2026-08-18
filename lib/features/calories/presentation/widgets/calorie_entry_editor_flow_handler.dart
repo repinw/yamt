@@ -31,29 +31,41 @@ abstract final class CalorieEntryEditorFlowHandler {
       return;
     }
 
-    final bool? confirmed;
     if (sourceCanBeRestored) {
-      confirmed = await showCalorieEntryReturnToInventoryDialog(
+      final restoreDecision =
+          await showCalorieEntryReturnToInventoryDialog(
+            context,
+            entry: entry,
+          );
+      if (restoreDecision == null || !context.mounted) {
+        return;
+      }
+
+      await deleteEntryFromDetails(
         context,
         entry: entry,
+        controller: controller,
+        restoreToInventory: restoreDecision,
+        onDeleted: onDeleted,
       );
     } else {
-      confirmed = await showCalorieEntryMissingInventorySourceDialog(
+      final confirmed =
+          await showCalorieEntryMissingInventorySourceDialog(
+            context,
+            entry: entry,
+          );
+      if (confirmed != true || !context.mounted) {
+        return;
+      }
+
+      await deleteEntryFromDetails(
         context,
         entry: entry,
+        controller: controller,
+        restoreToInventory: false,
+        onDeleted: onDeleted,
       );
     }
-    if (confirmed != true || !context.mounted) {
-      return;
-    }
-
-    await deleteEntryFromDetails(
-      context,
-      entry: entry,
-      controller: controller,
-      restoreToInventory: sourceCanBeRestored,
-      onDeleted: onDeleted,
-    );
   }
 
   /// Executes delete and handles fallback prompts or snackbar errors.

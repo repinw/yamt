@@ -4121,6 +4121,42 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get caloriesDeleteEntryConfirmAction;
 
+  /// No description provided for @caloriesRemoveEntryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove entry'**
+  String get caloriesRemoveEntryAction;
+
+  /// No description provided for @caloriesRemoveEntryDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove entry'**
+  String get caloriesRemoveEntryDialogTitle;
+
+  /// No description provided for @caloriesRemoveEntryDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Would you like to return this food to the inventory?'**
+  String get caloriesRemoveEntryDialogMessage;
+
+  /// No description provided for @caloriesRemoveEntryPreparedMealMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Would you like to return this meal to the inventory?'**
+  String get caloriesRemoveEntryPreparedMealMessage;
+
+  /// No description provided for @caloriesRemoveEntryOnlyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete from diary only'**
+  String get caloriesRemoveEntryOnlyAction;
+
+  /// No description provided for @caloriesRemoveAndRestoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to inventory'**
+  String get caloriesRemoveAndRestoreAction;
+
   /// No description provided for @caloriesReturnPreparedMealDialogTitle.
   ///
   /// In en, this message translates to:

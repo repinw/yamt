@@ -1159,6 +1159,14 @@
     }
   },
   "caloriesDeleteEntryConfirmAction": "Delete",
+  "caloriesRemoveEntryAction": "Remove entry",
+  "caloriesRemoveEntryDialogTitle": "Remove entry",
+  "caloriesRemoveEntryDialogMessage":
+      "Would you like to return this food to the inventory?",
+  "caloriesRemoveEntryPreparedMealMessage":
+      "Would you like to return this meal to the inventory?",
+  "caloriesRemoveEntryOnlyAction": "Delete from diary only",
+  "caloriesRemoveAndRestoreAction": "Return to inventory",
   "caloriesReturnPreparedMealDialogTitle": "Return meal to inventory?",
   "caloriesReturnPreparedMealDialogMessage":
       "Return \"{name}\" to inventory and remove it from the diary?",

@@ -17,6 +17,7 @@ const _flowLogName = 'InventoryBackedCalorieEntrySaveFlow';
 InventoryBackedCalorieEntrySaveFlow inventoryBackedCalorieEntrySaveFlow(
   Ref ref,
 ) {
+  ref.keepAlive();
   return InventoryBackedCalorieEntrySaveFlow(ref: ref);
 }
 

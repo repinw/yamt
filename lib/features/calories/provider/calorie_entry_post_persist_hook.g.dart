@@ -31,7 +31,7 @@ final class CalorieEntryPostPersistHookProvider
         argument: null,
         retry: null,
         name: r'calorieEntryPostPersistHookProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -60,4 +60,4 @@ final class CalorieEntryPostPersistHookProvider
 }
 
 String _$calorieEntryPostPersistHookHash() =>
-    r'b50c21d19df9622990630ff6077ab1ca40127a86';
+    r'e09e8409d3c02762dc84bd2ce27aaa1172601ed6';

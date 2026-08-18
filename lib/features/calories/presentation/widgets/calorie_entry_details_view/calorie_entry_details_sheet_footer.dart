@@ -71,13 +71,13 @@ class CalorieEntryDetailsSheetFooter extends StatelessWidget {
                     TextButton.icon(
                       key: CalorieEntryDetailKeys.returnToInventoryButton,
                       onPressed: isSaving ? null : onReturnToInventory,
-                      icon: const Icon(Icons.undo_rounded, size: 16),
+                      icon: const Icon(Icons.delete_outline_rounded, size: 16),
                       style: TextButton.styleFrom(
                         visualDensity: VisualDensity.compact,
                         foregroundColor: colors.onSurfaceVariant,
                       ),
                       label: Text(
-                        l10n.caloriesReturnPreparedMealConfirmAction,
+                        l10n.caloriesRemoveEntryAction,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),

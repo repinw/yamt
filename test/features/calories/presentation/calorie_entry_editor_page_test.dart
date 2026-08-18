@@ -844,6 +844,63 @@ void main() {
   );
 
   testWidgets(
+    'details flow deletes diary entry without restore when chosen in dialog',
+    (tester) async {
+      final existing = _entry(
+        'entry-delete-only',
+        sourceInventoryItemId: 'inventory-1',
+        sourceInventoryAmountToRestore: 2,
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[existing],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      bool? capturedRestoreToInventory;
+      final testDeleteFlow = _calorieEntryDeleteFlow(
+        deleteEntryById: logRepository.deleteEntry,
+        restoreConsumedItem: (id, amount) async {
+          capturedRestoreToInventory = true;
+          return true;
+        },
+      );
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          initialLocation: AppRoutes.homeCaloriesEntryDetailsPath(
+            'entry-delete-only',
+          ),
+          additionalOverrides: [
+            calorieEntryDeleteFlowProvider.overrideWithValue(testDeleteFlow),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Remove entry'), findsNWidgets(2));
+      expect(
+        find.text('Would you like to return this food to the inventory?'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Delete from diary only'));
+      await tester.pumpAndSettle();
+
+      expect(logRepository.entries, isEmpty);
+      expect(capturedRestoreToInventory, isNull);
+    },
+  );
+
+  testWidgets(
     'details flow deletes diary entry only when inventory source is gone',
     (tester) async {
       final existing = _entry(

@@ -25,6 +25,7 @@ const _inventoryDeleteFlowLogName = 'InventoryCalorieEntryDeleteFlow';
   ],
 )
 CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
+  ref.keepAlive();
   final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
   final calorieSettingsRepository = ref.read(calorieSettingsRepositoryProvider);
   final inventoryItemRepository = ref.read(inventoryItemRepositoryProvider);

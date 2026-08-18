@@ -2128,6 +2128,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesDeleteEntryConfirmAction => 'Löschen';
 
   @override
+  String get caloriesRemoveEntryAction => 'Eintrag entfernen';
+
+  @override
+  String get caloriesRemoveEntryDialogTitle => 'Eintrag entfernen';
+
+  @override
+  String get caloriesRemoveEntryDialogMessage => 'Möchtest du das Nahrungsmittel wieder in den Vorrat zurücklegen?';
+
+  @override
+  String get caloriesRemoveEntryPreparedMealMessage => 'Möchtest du die Mahlzeit wieder in den Vorrat zurücklegen?';
+
+  @override
+  String get caloriesRemoveEntryOnlyAction => 'Nur aus Tagebuch löschen';
+
+  @override
+  String get caloriesRemoveAndRestoreAction => 'In den Vorrat zurücklegen';
+
+  @override
   String get caloriesReturnPreparedMealDialogTitle => 'Mahlzeit zurück in den Vorrat legen?';
 
   @override

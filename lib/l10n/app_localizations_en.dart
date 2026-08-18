@@ -2128,6 +2128,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesDeleteEntryConfirmAction => 'Delete';
 
   @override
+  String get caloriesRemoveEntryAction => 'Remove entry';
+
+  @override
+  String get caloriesRemoveEntryDialogTitle => 'Remove entry';
+
+  @override
+  String get caloriesRemoveEntryDialogMessage => 'Would you like to return this food to the inventory?';
+
+  @override
+  String get caloriesRemoveEntryPreparedMealMessage => 'Would you like to return this meal to the inventory?';
+
+  @override
+  String get caloriesRemoveEntryOnlyAction => 'Delete from diary only';
+
+  @override
+  String get caloriesRemoveAndRestoreAction => 'Return to inventory';
+
+  @override
   String get caloriesReturnPreparedMealDialogTitle => 'Return meal to inventory?';
 
   @override

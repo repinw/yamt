@@ -659,4 +659,57 @@ void main() {
       expect(harness.preparedMealRemainingPortions, 1);
     },
   );
+
+  test(
+    'transient read of overridden calorieEntryDeleteFlowProvider succeeds '
+    'without disposed Ref error',
+    () async {
+      final entry = _entry(
+        id: 'entry-1',
+        sourceInventoryItemId: 'inventory-1',
+        sourceInventoryAmountToRestore: 250,
+      );
+      final calorieRepository = FakeCalorieLogRepository(
+        initialEntries: [entry],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [_inventoryItem()],
+      );
+
+      addTearDown(calorieRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+      addTearDown(inventoryRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(calorieRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          calorieEntryDeleteFlowProvider.overrideWith(
+            (ref) => ref.watch(inventoryCalorieEntryDeleteFlowProvider),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final deleteFlow = container.read(calorieEntryDeleteFlowProvider);
+      final result = await deleteFlow.deleteEntry(
+        entry: entry,
+        restoreToInventory: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.restoredToInventory, isTrue);
+      expect(calorieRepository.entries, isEmpty);
+      final items = await container.read(
+        inventoryItemsControllerProvider.future,
+      );
+      expect(items.single.currentAmount, 1000);
+    },
+  );
 }

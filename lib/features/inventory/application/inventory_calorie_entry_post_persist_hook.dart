@@ -13,6 +13,7 @@ part 'inventory_calorie_entry_post_persist_hook.g.dart';
 /// The inventory calorie entry post persist hook provider.
 @riverpod
 CalorieEntryPostPersistHook inventoryCalorieEntryPostPersistHook(Ref ref) {
+  ref.keepAlive();
   final service = ref.read(inventoryServingSuggestionServiceProvider);
 
   return ({

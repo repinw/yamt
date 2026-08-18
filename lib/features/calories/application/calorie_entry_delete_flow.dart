@@ -55,6 +55,7 @@ class CalorieEntryDeleteResult {
 /// The calorie entry delete flow provider.
 @riverpod
 CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
+  ref.keepAlive();
   final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
   final calorieSettingsRepository = ref.read(calorieSettingsRepositoryProvider);
   final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);

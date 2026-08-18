@@ -27,7 +27,7 @@ Future<bool?> showCalorieEntryDiscardChangesDialog(BuildContext context) {
   );
 }
 
-/// Show restore-to-inventory confirmation dialog for calorie entry.
+/// Show remove / restore-to-inventory confirmation dialog for calorie entry.
 Future<bool?> showCalorieEntryReturnToInventoryDialog(
   BuildContext context, {
   required CalorieEntry entry,
@@ -38,24 +38,24 @@ Future<bool?> showCalorieEntryReturnToInventoryDialog(
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        title: Text(
-          entry.canReturnPreparedMealToInventory
-              ? l10n.caloriesReturnPreparedMealDialogTitle
-              : l10n.caloriesReturnPreparedMealConfirmAction,
-        ),
+        title: Text(l10n.caloriesRemoveEntryDialogTitle),
         content: Text(
           entry.canReturnPreparedMealToInventory
-              ? l10n.caloriesReturnPreparedMealDialogMessage(entry.name)
-              : l10n.caloriesDeleteRestoreInventoryQuestion,
+              ? l10n.caloriesRemoveEntryPreparedMealMessage
+              : l10n.caloriesRemoveEntryDialogMessage,
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(l10n.inventoryReceiptReviewCancelAction),
           ),
           TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.caloriesRemoveEntryOnlyAction),
+          ),
+          FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.caloriesReturnPreparedMealConfirmAction),
+            child: Text(l10n.caloriesRemoveAndRestoreAction),
           ),
         ],
       );

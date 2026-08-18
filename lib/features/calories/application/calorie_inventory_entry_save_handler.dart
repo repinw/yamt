@@ -17,6 +17,7 @@ typedef CalorieInventoryPendingConsumptionDiscarder =
 /// Provides inventory-backed calorie entry persistence when inventory is wired.
 @riverpod
 CalorieInventoryEntrySaveHandler? calorieInventoryEntrySaveHandler(Ref ref) {
+  ref.keepAlive();
   return null;
 }
 
@@ -24,5 +25,6 @@ CalorieInventoryEntrySaveHandler? calorieInventoryEntrySaveHandler(Ref ref) {
 @riverpod
 CalorieInventoryPendingConsumptionDiscarder?
 calorieInventoryPendingConsumptionDiscarder(Ref ref) {
+  ref.keepAlive();
   return null;
 }

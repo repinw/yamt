@@ -68,7 +68,7 @@ final class ReceiptReviewSheetControllerProvider
 }
 
 String _$receiptReviewSheetControllerHash() =>
-    r'034f9b0af24b66f79f8d064eb00ebfcc1b87939c';
+    r'6eec7cf7d2d181bba4695f36bc40de37e805e511';
 
 /// Controls receipt review sheet state and candidate resolution.
 

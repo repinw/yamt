@@ -61,4 +61,4 @@ final class InventoryCalorieEntryPostPersistHookProvider
 }
 
 String _$inventoryCalorieEntryPostPersistHookHash() =>
-    r'8632351675057a6a7bce1eb22feff980b33c74c6';
+    r'e22870bfedf97201257812776e26826cc5194351';

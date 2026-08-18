@@ -85,4 +85,4 @@ final class InventoryCalorieEntryDeleteFlowProvider
 }
 
 String _$inventoryCalorieEntryDeleteFlowHash() =>
-    r'3a1f48aa90d5825f8301c30b6ea28b080bbdea36';
+    r'caf64c55dc7702c3a81f750dd5a058efb44977f7';

@@ -62,7 +62,7 @@ final class CalorieInventoryEntrySaveHandlerProvider
 }
 
 String _$calorieInventoryEntrySaveHandlerHash() =>
-    r'e9ed9d3b5380228f210a6ac722b8f436779ef521';
+    r'5682cc2dd126bda52c99fe8dee1c8927750969b6';
 
 /// Provides cleanup for pending inventory consumption when inventory is wired.
 
@@ -122,4 +122,4 @@ final class CalorieInventoryPendingConsumptionDiscarderProvider
 }
 
 String _$calorieInventoryPendingConsumptionDiscarderHash() =>
-    r'cfe7bb55b8c818f0dabf99872a1e030c53183ccd';
+    r'45260b2a245ad46625141a560d6b9c4351596b12';
