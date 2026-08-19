@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer' show log;
+import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
@@ -331,12 +332,19 @@ class InventoryReceiptManualProductController
       return InventoryReceiptManualProductNutritionScanOutcome.missingBarcode;
     }
 
-    state = state.copyWith(isRunningNutritionOcr: true, error: null);
+    state = state.copyWith(
+      isRunningNutritionOcr: true,
+      nutritionOcrImageBytes: null,
+      error: null,
+    );
 
     try {
       final result = await ref
           .read(nutritionLabelOcrRepositoryProvider)
-          .scanNutritionLabel(barcode: barcode);
+          .scanNutritionLabel(
+            barcode: barcode,
+            onImageCaptured: _showNutritionOcrImage,
+          );
       if (!ref.mounted) {
         return InventoryReceiptManualProductNutritionScanOutcome.canceled;
       }
@@ -361,9 +369,19 @@ class InventoryReceiptManualProductController
       }
     } finally {
       if (ref.mounted) {
-        state = state.copyWith(isRunningNutritionOcr: false);
+        state = state.copyWith(
+          isRunningNutritionOcr: false,
+          nutritionOcrImageBytes: null,
+        );
       }
     }
+  }
+
+  void _showNutritionOcrImage(Uint8List imageBytes) {
+    if (!ref.mounted) {
+      return;
+    }
+    state = state.copyWith(nutritionOcrImageBytes: imageBytes);
   }
 
   int _activeSearchRequestId = 0;
@@ -699,8 +717,12 @@ class InventoryReceiptManualProductController
       draft.quantityLabel,
       fallbackUnit: state.selectedWeightUnit,
     );
+    final ocrName = normalizeManualProductText(draft.name ?? '');
+    final ocrBrand = normalizeManualProductText(draft.brand ?? '');
     state = state.copyWith(
       ocrDraft: draft,
+      nameText: ocrName ?? state.nameText,
+      brandText: ocrBrand ?? state.brandText,
       weightAmount: ocrWeightInput?.amount ?? state.weightAmount,
       selectedWeightUnit: ocrWeightInput?.unit ?? state.selectedWeightUnit,
       kcalText: formatManualProductDouble(draft.per100Kcal),

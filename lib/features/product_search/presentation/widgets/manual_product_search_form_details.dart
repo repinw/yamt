@@ -2,6 +2,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -24,6 +25,8 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form/manual_product_search_input.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form/manual_product_search_results.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'nutrition_label_scan_indicator/nutrition_label_scan_indicator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class ManualProductDetailsForm extends StatefulWidget {
@@ -87,6 +90,7 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.onCancel,
     required this.onSave,
     super.key,
+    this.nutritionOcrImageBytes,
     this.onActionChanged,
   });
 
@@ -125,6 +129,8 @@ class ManualProductDetailsForm extends StatefulWidget {
   selectedAction;
   final bool canSave;
   final bool isRunningNutritionOcr;
+
+  final Uint8List? nutritionOcrImageBytes;
   final ValueChanged<OffProductSearchResult> onSearchResultSelected;
   final ValueChanged<OffProductSearchResult>? onSearchResultStoreSelected;
   final ValueChanged<OffProductSearchResult>? onSearchResultEatSelected;
@@ -376,6 +382,15 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
                 label: Text(l10n.caloriesBarcodeNotFoundOcrAction),
               ),
             ),
+            if (widget.isRunningNutritionOcr &&
+                widget.nutritionOcrImageBytes != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              NutritionLabelScanIndicator(
+                imageBytes: widget.nutritionOcrImageBytes!,
+                statusLabel: l10n.caloriesOcrScanning,
+                semanticLabel: l10n.caloriesOcrScanningSemantics,
+              ),
+            ],
             const SizedBox(height: AppSpacing.md),
             ManualProductTextField(
               name: ManualProductSearchFormFieldName.kcal,

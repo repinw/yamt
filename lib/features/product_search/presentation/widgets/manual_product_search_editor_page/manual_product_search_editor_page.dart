@@ -222,6 +222,7 @@ class _InventoryReceiptManualProductEditorPageState
         isSearching: state.isSearching,
         canSave: canSave,
         isRunningNutritionOcr: state.isRunningNutritionOcr,
+        nutritionOcrImageBytes: state.nutritionOcrImageBytes,
         autofocusSearch: widget.autofocusSearch,
         showDetails: state.showDetails,
         searchResults: state.searchResults,

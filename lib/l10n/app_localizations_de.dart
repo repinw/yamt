@@ -1538,6 +1538,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesBarcodeNotFoundOcrAction => 'Nährwertetikett scannen';
 
   @override
+  String get caloriesOcrScanning => 'Nährwertetikett wird gelesen…';
+
+  @override
+  String get caloriesOcrScanningSemantics => 'Das aufgenommene Nährwertetikett wird gescannt';
+
+  @override
   String get caloriesOcrFailed => 'Nährwertetikett konnte nicht erkannt werden.';
 
   @override

@@ -529,6 +529,7 @@ class FakeNutritionLabelOcrRepository implements NutritionLabelOcrRepository {
   @override
   Future<NutritionLabelOcrResult> scanNutritionLabel({
     required String barcode,
+    NutritionLabelImageCaptured? onImageCaptured,
   }) {
     return onScanNutritionLabel(barcode);
   }

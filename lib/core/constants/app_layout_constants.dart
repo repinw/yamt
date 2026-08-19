@@ -95,6 +95,9 @@ abstract final class AppRadius {
 abstract final class AppDurations {
   /// Expansion duration for compact metric controls.
   static const Duration compactMetricExpansion = Duration(milliseconds: 220);
+
+  /// Duration for one nutrition-label scan sweep.
+  static const Duration scanSweep = Duration(milliseconds: 1200);
 }
 
 /// Shared opacity values.
@@ -200,6 +203,12 @@ abstract final class AppSizes {
 
   /// Stroke width for progress indicators.
   static const double progressStrokeWidth = 2;
+
+  /// Height of captured-image scan previews.
+  static const double scanPreviewHeight = 220;
+
+  /// Height of animated scan lines.
+  static const double scanLineHeight = 3;
 
   /// Standard one-physical-line divider height.
   static const double dividerThickness = 1;

@@ -2993,6 +2993,18 @@ abstract class AppLocalizations {
   /// **'Scan nutrition label'**
   String get caloriesBarcodeNotFoundOcrAction;
 
+  /// No description provided for @caloriesOcrScanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading nutrition label…'**
+  String get caloriesOcrScanning;
+
+  /// No description provided for @caloriesOcrScanningSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Captured nutrition label is being scanned'**
+  String get caloriesOcrScanningSemantics;
+
   /// No description provided for @caloriesOcrFailed.
   ///
   /// In en, this message translates to:

@@ -844,6 +844,9 @@
       "Für diesen Barcode wurde kein Produkt gefunden.",
   "caloriesBarcodeNotFoundManualAction": "Manueller Eintrag",
   "caloriesBarcodeNotFoundOcrAction": "Nährwertetikett scannen",
+  "caloriesOcrScanning": "Nährwertetikett wird gelesen…",
+  "caloriesOcrScanningSemantics":
+      "Das aufgenommene Nährwertetikett wird gescannt",
   "caloriesOcrFailed":
       "Nährwertetikett konnte nicht erkannt werden.",
   "caloriesOcrAppCheckThrottled":

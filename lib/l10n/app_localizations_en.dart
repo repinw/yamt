@@ -1538,6 +1538,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesBarcodeNotFoundOcrAction => 'Scan nutrition label';
 
   @override
+  String get caloriesOcrScanning => 'Reading nutrition label…';
+
+  @override
+  String get caloriesOcrScanningSemantics => 'Captured nutrition label is being scanned';
+
+  @override
   String get caloriesOcrFailed => 'Nutrition label scan failed. Please try again.';
 
   @override

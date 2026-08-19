@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -39,6 +41,7 @@ class InventoryReceiptManualProductState {
     this.selectedProduct,
     this.ocrDraft,
     this.isRunningNutritionOcr = false,
+    this.nutritionOcrImageBytes,
     this.error,
   });
 
@@ -122,6 +125,9 @@ class InventoryReceiptManualProductState {
 
   /// Whether running nutrition ocr.
   final bool isRunningNutritionOcr;
+
+  /// Captured image shown while nutrition OCR is running.
+  final Uint8List? nutritionOcrImageBytes;
 
   /// The error.
   final InventoryReceiptManualProductError? error;
@@ -242,6 +248,7 @@ class InventoryReceiptManualProductState {
     Object? selectedProduct = _keepValue,
     Object? ocrDraft = _keepValue,
     bool? isRunningNutritionOcr,
+    Object? nutritionOcrImageBytes = _keepValue,
     Object? error = _keepValue,
   }) {
     return InventoryReceiptManualProductState(
@@ -283,6 +290,9 @@ class InventoryReceiptManualProductState {
           : ocrDraft as NutritionLabelOcrDraft?,
       isRunningNutritionOcr:
           isRunningNutritionOcr ?? this.isRunningNutritionOcr,
+      nutritionOcrImageBytes: nutritionOcrImageBytes == _keepValue
+          ? this.nutritionOcrImageBytes
+          : nutritionOcrImageBytes as Uint8List?,
       error: error == _keepValue
           ? this.error
           : error as InventoryReceiptManualProductError?,

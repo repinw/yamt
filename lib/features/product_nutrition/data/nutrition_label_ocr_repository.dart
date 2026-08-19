@@ -48,6 +48,9 @@ typedef NutritionLabelTemplateModelClient =
       required Map<String, Object?> inputs,
     });
 
+/// Receives captured nutrition label image bytes before model processing.
+typedef NutritionLabelImageCaptured = void Function(Uint8List imageBytes);
+
 /// Nutrition label OCR repository.
 @riverpod
 NutritionLabelOcrRepository nutritionLabelOcrRepository(Ref ref) {
@@ -104,6 +107,7 @@ class NutritionLabelOcrRepository {
   /// Scan nutrition label.
   Future<NutritionLabelOcrResult> scanNutritionLabel({
     required String barcode,
+    NutritionLabelImageCaptured? onImageCaptured,
   }) async {
     log(
       'Starting nutrition label OCR for barcode $barcode.',
@@ -127,6 +131,7 @@ class NutritionLabelOcrRepository {
       }
 
       final bytes = await image.readAsBytes();
+      onImageCaptured?.call(bytes);
       final mimeType = _detectMimeType(fileName: image.name, bytes: bytes);
       log(
         'Captured nutrition label image. '
@@ -149,6 +154,12 @@ class NutritionLabelOcrRepository {
           'imageData': base64Encode(bytes),
         },
       );
+      if (kDebugMode) {
+        log(
+          'Raw nutrition label OCR response:\n${responseText ?? '<null>'}',
+          name: _ocrLogName,
+        );
+      }
       final draft = _parseDraft(responseText, barcode: barcode);
       if (draft == null) {
         log(

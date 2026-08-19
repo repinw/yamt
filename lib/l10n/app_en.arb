@@ -832,6 +832,9 @@
       "No product was found for this barcode.",
   "caloriesBarcodeNotFoundManualAction": "Manual entry",
   "caloriesBarcodeNotFoundOcrAction": "Scan nutrition label",
+  "caloriesOcrScanning": "Reading nutrition label…",
+  "caloriesOcrScanningSemantics":
+      "Captured nutrition label is being scanned",
   "caloriesOcrFailed":
       "Nutrition label scan failed. Please try again.",
   "caloriesOcrAppCheckThrottled":

@@ -206,12 +206,17 @@ void main() {
       ),
       modelClient: modelClient.generateContent,
     );
+    Uint8List? capturedBytes;
 
     final result = await repository.scanNutritionLabel(
       barcode: '4006381333931',
+      onImageCaptured: (value) {
+        capturedBytes = value;
+      },
     );
 
     expect(result.status, NutritionLabelOcrStatus.succeeded);
+    expect(capturedBytes, bytes);
     expect(modelClient.lastTemplateId, 'template-123');
     expect(modelClient.lastInputs, <String, Object?>{
       'mimeType': 'image/jpeg',

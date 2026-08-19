@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
@@ -165,6 +167,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onSave,
     super.key,
     this.autofocusSearch = false,
+    this.nutritionOcrImageBytes,
     this.onSearchChanged,
     this.voiceSearchService,
     this.voiceSearchController,
@@ -188,6 +191,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// Whether running nutrition ocr.
   final bool isRunningNutritionOcr;
+
+  /// Captured nutrition-label image shown while OCR runs.
+  final Uint8List? nutritionOcrImageBytes;
 
   /// The autofocus search.
   final bool autofocusSearch;
@@ -439,6 +445,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
         selectedAction: selectedAction,
         canSave: canSave,
         isRunningNutritionOcr: isRunningNutritionOcr,
+        nutritionOcrImageBytes: nutritionOcrImageBytes,
         onSearchResultSelected: onSearchResultSelected,
         onSearchResultStoreSelected: onSearchResultStoreSelected,
         onSearchResultEatSelected: onSearchResultEatSelected,

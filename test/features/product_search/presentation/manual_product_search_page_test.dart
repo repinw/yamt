@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -42,6 +44,10 @@ import 'package:yamt/features/product_search/presentation/widgets/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _testScanImageBase64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk'
+    '+A8AAQUBAScY42YAAAAASUVORK5CYII=';
 
 @Dependencies([inventoryManualAddQuickEatConfig])
 Widget _wrapPage({
@@ -303,15 +309,24 @@ class _ThrowingOffProductSearchRepository
 }
 
 class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
-  _FakeNutritionOcrRepository({required this.onScanNutritionLabel});
+  _FakeNutritionOcrRepository({
+    required this.onScanNutritionLabel,
+    this.imageBytes,
+  });
 
   final Future<NutritionLabelOcrResult> Function(String barcode)
   onScanNutritionLabel;
+  final Uint8List? imageBytes;
 
   @override
   Future<NutritionLabelOcrResult> scanNutritionLabel({
     required String barcode,
+    NutritionLabelImageCaptured? onImageCaptured,
   }) {
+    final capturedBytes = imageBytes;
+    if (capturedBytes != null) {
+      onImageCaptured?.call(capturedBytes);
+    }
     return onScanNutritionLabel(barcode);
   }
 }
@@ -2124,6 +2139,7 @@ void main() {
         ),
         ocrRepository: _FakeNutritionOcrRepository(
           onScanNutritionLabel: (_) => ocrCompleter.future,
+          imageBytes: base64Decode(_testScanImageBase64),
         ),
       ),
     );
@@ -2141,11 +2157,29 @@ void main() {
     await tester.pump();
 
     expect(saveButton().onPressed, isNull);
+    expect(
+      find.byKey(const Key('nutrition_label_scan_image')),
+      findsOneWidget,
+    );
+    final context = tester.element(
+      find.byType(InventoryReceiptManualProductPage),
+    );
+    final l10n = AppLocalizations.of(context)!;
+    expect(find.text(l10n.caloriesOcrScanning), findsOneWidget);
+
+    final scanLine = find.byKey(const Key('nutrition_label_scan_line'));
+    final initialScanLineY = tester.getTopLeft(scanLine).dy;
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(tester.getTopLeft(scanLine).dy, isNot(initialScanLineY));
 
     ocrCompleter.complete(const NutritionLabelOcrResult.canceled());
     await tester.pumpAndSettle();
 
     expect(saveButton().onPressed, isNotNull);
+    expect(
+      find.byKey(const Key('nutrition_label_scan_image')),
+      findsNothing,
+    );
   });
 
   testWidgets('save stays disabled until package size is entered', (
@@ -2421,6 +2455,8 @@ void main() {
               return NutritionLabelOcrResult.succeeded(
                 draft: NutritionLabelOcrDraft(
                   barcode: barcode,
+                  name: 'Speisequark Magerstufe',
+                  brand: 'GUTES Land',
                   quantityLabel: '500 ml',
                   per100Kcal: 11,
                   per100Carbs: 2,
@@ -2442,6 +2478,20 @@ void main() {
         find.byKey(const Key('receipt_review_manual_save_button')),
       );
 
+      expect(
+        _manualFormFieldText(
+          tester,
+          const Key('receipt_review_manual_name_field'),
+        ),
+        'Speisequark Magerstufe',
+      );
+      expect(
+        _manualFormFieldText(
+          tester,
+          const Key('receipt_review_manual_brand_field'),
+        ),
+        'GUTES Land',
+      );
       expect(
         _manualFormFieldText(
           tester,
@@ -2520,8 +2570,8 @@ void main() {
         ),
         '500',
       );
-      expect(find.text('Booster Absolute Zero'), findsWidgets);
-      expect(find.text('Booster'), findsWidgets);
+      expect(find.text('Speisequark Magerstufe'), findsWidgets);
+      expect(find.text('GUTES Land'), findsWidgets);
       expect(saveButton().onPressed, isNotNull);
 
       final addOptionalNutritionButton = find.byKey(
