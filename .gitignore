@@ -30,11 +30,10 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
-macos/Flutter/GeneratedPluginRegistrant.swift
-macos/Flutter/ephemeral/
 /linux/
-windows/flutter/generated_plugin_registrant.cc
-windows/flutter/generated_plugins.cmake
+/macos/
+/web/
+/windows/
 
 # Node / Firebase Functions
 node_modules/
@@ -60,6 +59,39 @@ app.*.map.json
 # Local ideas backlog (private)
 IDEAS.md
 
+# Local documentation and prompts
+/docs/
+/prompts/
+/promts/
+
+# Local planning and review artifacts
+/archi_check.md
+**/feature_description/
+**/features_description/
+**/feature_desciption/
+**/features_desciption/
+**/*_description.md
+**/*_desciption.md
+**/*_followups.md
+**/*_plan.md
+/flutter_*.png
+/tool/*_mcp_server.sh
+
+# Generated Markdown artifacts
+**/DEPS.md
+/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md
+
+# Local AI and agent tooling
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/.agents/
+/.claude/
+/.codeboarding/
+/.codex/
+/.cortex/
+/.gemini/
+/skills-lock.json
+
 # Golden test failure artifacts
 test/**/failures/
-.agents/skills/jscpd/*

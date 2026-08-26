@@ -8,8 +8,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - Auth-gated startup flow with splash, welcome, guest setup, and calorie-goal
   onboarding redirects.
-- Home shell with bottom tabs for Inventory, Diary, Cookbook, Statistics, and
-  Settings.
+- Home shell with bottom tabs for Inventory, Diary, Cookbook, and Settings.
 - Responsive page layouts for mobile and wider screens.
 - English and German localization.
 
@@ -150,6 +149,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   ingredients are missing.
 - Template edit, delete, and update flows.
 
+## AI Chef
+
+- Inventory-aware recipe generation with optional free-form preferences.
+- Firebase AI-backed structured recipe and cover-image generation.
+- Generated recipe review before saving as an editable meal template.
+
 ## Cooking Flow
 
 - Prepflow route from meal template detail.
@@ -191,21 +196,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Invite-code expiry and validation handling.
 - Household members list with leader and current-user badges.
 - Remove member, leave household, and leader-only action handling.
-- Shared household scope for inventory, shopping list, utensils, calories, and
-  related data owners.
-
-## Statistics
-
-- Statistics page with household and personal context filters.
-- Timeframe filters for 7 days, month, year, and all time.
-- Spending tab with tracked spending, price trend, top stores, spending by
-  receipt date, and most expensive items.
-- Food waste tab with discard event counts, ratio, money loss, reasons, and
-  often-discarded items.
-- Calories tab with tracked days, entries, goal streak, weekly balance, daily
-  view, and macro split.
-- Health trends page with 7-day chart for weight, burned calories, and intake.
-- Manual weight add/edit/clear override from health trends.
+- Shared household scope for inventory, shopping lists, utensils, prepared
+  meals, and related household-owned data.
 
 ## Settings
 
