@@ -136,9 +136,9 @@ class CalorieEntryEditorController extends _$CalorieEntryEditorController {
       return null;
     }
     return (entry) => saveHandler(
-          entry: entry,
-          pendingConsumptionId: pendingConsumptionId,
-        );
+      entry: entry,
+      pendingConsumptionId: pendingConsumptionId,
+    );
   }
 
   void _logSaveStart({

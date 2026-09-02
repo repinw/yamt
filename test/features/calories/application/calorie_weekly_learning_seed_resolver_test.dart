@@ -50,9 +50,9 @@ void main() {
     final profileResult = CalorieGoalCalculator.calculate(
       const CalorieCalculatorProfile.defaults(),
     );
-    final previousLearnedTdee = profileResult.tdeeKcal -
-        (profileResult.expectedActivityKcal *
-            importedActivityCorrectionFactor);
+    final previousLearnedTdee =
+        profileResult.tdeeKcal -
+        (profileResult.expectedActivityKcal * importedActivityCorrectionFactor);
     final expected = CalorieWeeklyCheckInCalculator.calculateLearnedGoal(
       previousGoalKcal: 2000,
       previousLearnedTdeeKcal: previousLearnedTdee,
@@ -101,9 +101,9 @@ void main() {
     final profileResult = CalorieGoalCalculator.calculate(
       const CalorieCalculatorProfile.defaults(),
     );
-    final expectedPreviousBaseTdee = profileResult.tdeeKcal -
-        (profileResult.expectedActivityKcal *
-            importedActivityCorrectionFactor);
+    final expectedPreviousBaseTdee =
+        profileResult.tdeeKcal -
+        (profileResult.expectedActivityKcal * importedActivityCorrectionFactor);
 
     final seed = resolveCascadedPreviousLearningSeedForWindow(
       settings: settings,

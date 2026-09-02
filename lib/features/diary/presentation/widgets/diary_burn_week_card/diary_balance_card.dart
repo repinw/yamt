@@ -86,9 +86,7 @@ class DiaryBalanceCard extends ConsumerWidget {
           retryLabel: l10n.caloriesRetryAction,
           retryButtonKey: DiaryBalanceCardKeys.retryButton,
           onRetry: () => unawaited(
-            ref
-                .read(diaryDayDashboardControllerProvider(day).notifier)
-                .retry(),
+            ref.read(diaryDayDashboardControllerProvider(day).notifier).retry(),
           ),
         ),
       );

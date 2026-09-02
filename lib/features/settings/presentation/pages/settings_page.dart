@@ -21,6 +21,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_profile_card/settings_profile_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -74,6 +75,7 @@ class SettingsPage extends ConsumerWidget {
                             SettingsHealthConnectTile(),
                             _CalorieGoalStartTile(),
                             _CalorieGoalCalculatorTile(),
+                            _MacroGoalsTile(),
                           ],
                         ),
                         SettingsSection(
@@ -209,6 +211,23 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
                 initialSettings: settings,
               ),
             ),
+    );
+  }
+}
+
+class _MacroGoalsTile extends ConsumerWidget {
+  const _MacroGoalsTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return SettingsTile(
+      key: SettingsPageKeys.macroGoalsTile,
+      icon: Icons.pie_chart_outline_rounded,
+      title: l10n.settingsMacroGoalsTitle,
+      subtitle: l10n.settingsMacroGoalsSubtitle,
+      onTap: () => unawaited(showSettingsMacroGoalsSheet(context)),
     );
   }
 }

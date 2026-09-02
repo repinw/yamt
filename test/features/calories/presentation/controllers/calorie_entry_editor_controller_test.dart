@@ -14,13 +14,15 @@ class _FakeCalorieEntriesController extends CalorieEntriesController {
     Future<bool> Function(
       CalorieEntry entry,
       Future<bool> Function(CalorieEntry)? persistEntry,
-    )? onSaveEntry,
+    )?
+    onSaveEntry,
   }) : _onSaveEntry = onSaveEntry;
 
   final Future<bool> Function(
     CalorieEntry entry,
     Future<bool> Function(CalorieEntry)? persistEntry,
-  )? _onSaveEntry;
+  )?
+  _onSaveEntry;
 
   @override
   Future<List<CalorieEntry>> build() async => const [];

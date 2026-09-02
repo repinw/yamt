@@ -13,6 +13,7 @@ import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_mappers.dart';
+import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
 import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
@@ -208,6 +209,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         return;
       }
       final selectedDayEntries = liveData.selectedDayEntries;
+      final goalKcal = liveData.selectedDayOverview.goalKcal;
+      final macroTargets = resolveDiaryMacroTargets(ref, goalKcal: goalKcal);
 
       final data = DiaryDayDashboardData(
         selectedDay: normalizedDay,
@@ -218,7 +221,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         mealSections: buildDiaryDashboardMealSections(selectedDayEntries),
         nutritionBars: buildDiaryDashboardNutritionBars(
           selectedDayEntries,
-          liveData.selectedDayOverview.goalKcal,
+          goalKcal,
+          macroTargets: macroTargets,
         ),
       );
       state = DiaryDayDashboardState(

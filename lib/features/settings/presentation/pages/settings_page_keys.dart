@@ -26,6 +26,9 @@ abstract final class SettingsPageKeys {
     'settings-calorie-goal-calculator-tile',
   );
 
+  /// Macro goals distribution row.
+  static const macroGoalsTile = ValueKey<String>('settings-macro-goals-tile');
+
   /// Theme mode row.
   static const themeTile = ValueKey<String>('settings-theme-tile');
 
