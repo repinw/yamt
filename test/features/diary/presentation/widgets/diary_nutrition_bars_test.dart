@@ -119,6 +119,52 @@ void main() {
     );
     expect(find.textContaining('18 / 90g', findRichText: true), findsOneWidget);
     expect(find.textContaining('9 / 45g', findRichText: true), findsOneWidget);
+    expect(find.text('Protein'), findsOneWidget);
+    expect(find.text('Carbs'), findsOneWidget);
+    expect(find.text('Fat'), findsOneWidget);
+    expect(
+      find.textContaining('72g left', findRichText: true),
+      findsOneWidget,
+    ); // 90 - 18 = 72g protein left
+    expect(
+      find.textContaining('96g left', findRichText: true),
+      findsOneWidget,
+    ); // 120 - 24 = 96g carbs left
+    expect(
+      find.textContaining('36g left', findRichText: true),
+      findsOneWidget,
+    ); // 45 - 9 = 36g fat left
+  });
+
+  testWidgets('renders over-target macro with plus indicator', (
+    tester,
+  ) async {
+    await _pumpNutritionBars(
+      tester,
+      selectedDay: selectedDay,
+      embedded: true,
+      data: const DiaryNutritionBarsData(
+        carbs: 135,
+        protein: 90,
+        fat: 40,
+        goals: DiaryMacroTargets(carbs: 120, protein: 90, fat: 45),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('+15g', findRichText: true),
+      findsOneWidget,
+    ); // 135 - 120 = +15g carbs
+    expect(
+      find.textContaining('0g left', findRichText: true),
+      findsOneWidget,
+    ); // exactly at protein target
+    expect(
+      find.textContaining('5g left', findRichText: true),
+      findsOneWidget,
+    ); // 45 - 40 = 5g fat left
   });
 
   test(

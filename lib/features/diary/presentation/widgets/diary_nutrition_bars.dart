@@ -1,4 +1,5 @@
 import 'dart:async' show unawaited;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -134,39 +135,36 @@ class _NutritionBarsContent extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
         ],
-        Row(
+        Column(
           children: [
-            Expanded(
-              child: _NutritionMacroColumn(
-                label: l10n.caloriesCarbsLabel,
-                current: data.carbs,
-                target: data.goals.carbs,
-                color: accentColors.carbs,
-                numberFormat: numberFormat,
-                unit: l10n.caloriesUnitGram,
-              ),
+            _NutritionMacroRow(
+              label: l10n.caloriesProteinLabel,
+              current: data.protein,
+              target: data.goals.protein,
+              color: accentColors.protein,
+              numberFormat: numberFormat,
+              unit: l10n.caloriesUnitGram,
+              leftLabel: l10n.diaryBalanceLeftLabel.toLowerCase(),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _NutritionMacroColumn(
-                label: l10n.caloriesProteinLabel,
-                current: data.protein,
-                target: data.goals.protein,
-                color: accentColors.protein,
-                numberFormat: numberFormat,
-                unit: l10n.caloriesUnitGram,
-              ),
+            const SizedBox(height: AppSpacing.xs),
+            _NutritionMacroRow(
+              label: l10n.caloriesCarbsLabel,
+              current: data.carbs,
+              target: data.goals.carbs,
+              color: accentColors.carbs,
+              numberFormat: numberFormat,
+              unit: l10n.caloriesUnitGram,
+              leftLabel: l10n.diaryBalanceLeftLabel.toLowerCase(),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _NutritionMacroColumn(
-                label: l10n.caloriesFatLabel,
-                current: data.fat,
-                target: data.goals.fat,
-                color: accentColors.fat,
-                numberFormat: numberFormat,
-                unit: l10n.caloriesUnitGram,
-              ),
+            const SizedBox(height: AppSpacing.xs),
+            _NutritionMacroRow(
+              label: l10n.caloriesFatLabel,
+              current: data.fat,
+              target: data.goals.fat,
+              color: accentColors.fat,
+              numberFormat: numberFormat,
+              unit: l10n.caloriesUnitGram,
+              leftLabel: l10n.diaryBalanceLeftLabel.toLowerCase(),
             ),
           ],
         ),
@@ -175,14 +173,15 @@ class _NutritionBarsContent extends StatelessWidget {
   }
 }
 
-class _NutritionMacroColumn extends StatelessWidget {
-  const _NutritionMacroColumn({
+class _NutritionMacroRow extends StatelessWidget {
+  const _NutritionMacroRow({
     required this.label,
     required this.current,
     required this.target,
     required this.color,
     required this.numberFormat,
     required this.unit,
+    required this.leftLabel,
   });
 
   final String label;
@@ -191,87 +190,132 @@ class _NutritionMacroColumn extends StatelessWidget {
   final Color color;
   final NumberFormat numberFormat;
   final String unit;
+  final String leftLabel;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final progress = target <= 0 ? 0.0 : (current / target).clamp(0.0, 1.0);
     final isDark = colors.brightness == Brightness.dark;
+    final progress = target <= 0 ? 0.0 : (current / target).clamp(0.0, 1.0);
+    final remaining = target - current;
+    final isOverTarget = remaining < -0.5;
+    final roundedRemaining = remaining.round();
+    final rowBg = color.withValues(alpha: isDark ? 0.08 : 0.04);
+    final rowBorder = color.withValues(alpha: isDark ? 0.22 : 0.14);
     final trackColor = AppEditorialSurfaces.appBackground(colors);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: colors.onSurface,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          height: 6,
-          decoration: BoxDecoration(
-            color: trackColor,
-            borderRadius: BorderRadius.circular(999),
-            boxShadow: [
-              BoxShadow(
-                color: colors.shadow.withValues(alpha: 0.08),
-                blurRadius: 3,
-                offset: const Offset(0, 1),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: rowBg,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: rowBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.1,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: isOverTarget
+                          ? '+${numberFormat.format(-roundedRemaining)}$unit '
+                          : '${numberFormat.format(
+                              math.max(0, roundedRemaining),
+                            )}$unit ',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    TextSpan(
+                      text: isOverTarget ? '' : leftLabel,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: numberFormat.format(current.round()),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' / ${numberFormat.format(target.round())}$unit',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          alignment: Alignment.centerLeft,
-          child: TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 1000),
-            curve: Curves.easeOut,
-            tween: Tween<double>(begin: 0, end: progress),
-            builder: (context, value, child) {
-              return FractionallySizedBox(widthFactor: value, child: child);
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(999),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: isDark ? 0.35 : 0.42),
-                    blurRadius: 5,
-                  ),
-                ],
+          const SizedBox(height: 6),
+          Container(
+            height: 6,
+            decoration: BoxDecoration(
+              color: trackColor,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            alignment: Alignment.centerLeft,
+            child: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.easeOut,
+              tween: Tween<double>(begin: 0, end: progress),
+              builder: (context, value, child) {
+                return FractionallySizedBox(widthFactor: value, child: child);
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: isDark ? 0.35 : 0.42),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 6),
-        RichText(
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: numberFormat.format(current.round()),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              TextSpan(
-                text: ' / ${numberFormat.format(target.round())}$unit',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -295,36 +339,50 @@ class _NutritionBarsSkeleton extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
         ],
-        Row(
-          children: [
-            for (var index = 0; index < 3; index += 1) ...[
-              if (index > 0) const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        for (var index = 0; index < 3; index += 1) ...[
+          if (index > 0) const SizedBox(height: AppSpacing.xs),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerHighest.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
                   children: [
                     MetricSkeletonBlock(
-                      width: 74,
+                      width: 60,
                       height: 12,
                       color: colors.surfaceContainerHighest,
                     ),
-                    const SizedBox(height: AppSpacing.xs),
+                    const SizedBox(width: AppSpacing.xs),
                     MetricSkeletonBlock(
-                      height: 8,
+                      width: 50,
+                      height: 12,
                       color: colors.surfaceContainerHighest,
                     ),
-                    const SizedBox(height: AppSpacing.xs),
+                    const Spacer(),
                     MetricSkeletonBlock(
-                      width: 58,
-                      height: 14,
+                      width: 55,
+                      height: 12,
                       color: colors.surfaceContainerHighest,
                     ),
                   ],
                 ),
-              ),
-            ],
-          ],
-        ),
+                const SizedBox(height: 6),
+                MetricSkeletonBlock(
+                  height: 6,
+                  color: colors.surfaceContainerHighest,
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
