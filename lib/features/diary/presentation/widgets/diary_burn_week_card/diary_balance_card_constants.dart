@@ -33,6 +33,3 @@ const diaryBalanceCounterBadgeHeight = 22.0;
 
 /// Counter badge icon size.
 const diaryBalanceCounterIconSize = 14.0;
-
-/// Default ticker period for minute-sensitive Burn Week UI updates.
-const diaryBalanceTickerPeriod = Duration(minutes: 1);

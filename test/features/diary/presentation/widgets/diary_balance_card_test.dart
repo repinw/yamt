@@ -784,112 +784,6 @@ void main() {
     expect(_findTextContaining('-838 kcal'), findsOneWidget);
   });
 
-  testWidgets('pauses and resumes ticker with app lifecycle', (tester) async {
-    final selectedDay = normalizeDiaryDay(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
-    var tickerTickCount = 0;
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
-      ),
-      tickerPeriod: const Duration(milliseconds: 30),
-      settle: false,
-      onBalanceTickerTick: () {
-        tickerTickCount += 1;
-      },
-    );
-    await tester.pump();
-    final initialTickCount = tickerTickCount;
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump(const Duration(milliseconds: 120));
-    expect(tickerTickCount, initialTickCount);
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pump(const Duration(milliseconds: 40));
-    expect(tickerTickCount, greaterThan(initialTickCount));
-  });
-
-  testWidgets('refreshes balance when app resumes', (tester) async {
-    final selectedDay = normalizeDiaryDay(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
-    var weekOverviewReadCount = 0;
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
-      ),
-      onWeekOverviewRead: () {
-        weekOverviewReadCount += 1;
-      },
-    );
-    final initialReadCount = weekOverviewReadCount;
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump();
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pumpAndSettle();
-
-    expect(weekOverviewReadCount, greaterThan(initialReadCount));
-  });
-
-  testWidgets('keeps loading dashboard refresh alive on resume', (
-    tester,
-  ) async {
-    final selectedDay = normalizeDiaryDay(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
-    final observer = _RecordingProviderObserver();
-    final weekOverviewCompleter = Completer<CalorieWeekOverview>();
-    var weekOverviewReadCount = 0;
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
-      ),
-      observers: [observer],
-      weekOverviewBuilder: () {
-        weekOverviewReadCount += 1;
-        return weekOverviewCompleter.future;
-      },
-      settle: false,
-    );
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump();
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pump();
-
-    expect(weekOverviewReadCount, 1);
-
-    weekOverviewCompleter.complete(
-      _weekOverview(
-        selectedDay: selectedDay,
-        weekStartDate: selectedDay,
-        dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(observer.failures, isEmpty);
-    expect(find.byType(DiaryBalanceLoading), findsNothing);
-  });
-
   testWidgets('daily progress previews corrected 899 kcal activity', (
     tester,
   ) async {
@@ -1041,9 +935,7 @@ Future<void> _pumpBalanceCard(
   VoidCallback? onBurnWeekLiveSyncWatch,
   VoidCallback? onWeekOverviewRead,
   FutureOr<CalorieWeekOverview> Function()? weekOverviewBuilder,
-  VoidCallback? onBalanceTickerTick,
   List<ProviderObserver> observers = const <ProviderObserver>[],
-  Duration? tickerPeriod,
   bool settle = true,
   double goalKcal = 2000,
   double? baseGoalKcal,
@@ -1107,12 +999,6 @@ Future<void> _pumpBalanceCard(
             ),
           ),
         ),
-        if (tickerPeriod != null)
-          diaryBalanceTickerDurationProvider.overrideWithValue(tickerPeriod),
-        if (onBalanceTickerTick != null)
-          diaryBalanceTickerObserverProvider.overrideWithValue(
-            onBalanceTickerTick,
-          ),
         calorieWeekOverviewForWindowProvider(
           normalizedSelectedDay,
         ).overrideWith((ref) {
