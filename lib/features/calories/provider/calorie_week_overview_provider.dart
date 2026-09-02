@@ -297,8 +297,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
         .entries
         .map(
           (entry) {
-            final goal =
-                resolvedGoalsByDay[diaryDayKey(entry.value.date)]!;
+            final goal = resolvedGoalsByDay[diaryDayKey(entry.value.date)]!;
             return CalorieWeekDayOverview(
               date: entry.value.date,
               totalKcal: entry.value.totalKcal,

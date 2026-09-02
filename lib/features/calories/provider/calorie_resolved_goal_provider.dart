@@ -428,8 +428,8 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
       storedGoalKcal: learnedGoal.newGoalKcal,
       goalKcal: goalBreakdown.goalKcal,
       activityDeltaKcal: activityDeltaKcal,
-      activityComparisonKcal: activityCredit.creditedActivityKcal -
-          averageCreditedActivityKcal,
+      activityComparisonKcal:
+          activityCredit.creditedActivityKcal - averageCreditedActivityKcal,
       correctedActivityKcal: activityCredit.correctedActivityKcal,
       activityCapKcal: activityCredit.activityCapKcal,
       wasActivityCapped: activityCredit.wasCapped,
@@ -517,8 +517,8 @@ ResolvedCalorieGoalData _resolvePreLearningGoalData({
     storedGoalKcal: baseGoalKcal,
     goalKcal: goalKcal,
     activityDeltaKcal: activityDeltaKcal,
-    activityComparisonKcal: activityCredit.creditedActivityKcal -
-        expectedCreditedActivityKcal,
+    activityComparisonKcal:
+        activityCredit.creditedActivityKcal - expectedCreditedActivityKcal,
     correctedActivityKcal: activityCredit.correctedActivityKcal,
     activityCapKcal: activityCredit.activityCapKcal,
     wasActivityCapped: activityCredit.wasCapped,
@@ -577,8 +577,8 @@ ResolvedCalorieGoalData _resolveGoalDataFromLoadedInputs({
     storedGoalKcal: learnedGoal.newGoalKcal,
     goalKcal: goalBreakdown.goalKcal,
     activityDeltaKcal: activityDeltaKcal,
-    activityComparisonKcal: activityCredit.creditedActivityKcal -
-        averageCreditedActivityKcal,
+    activityComparisonKcal:
+        activityCredit.creditedActivityKcal - averageCreditedActivityKcal,
     correctedActivityKcal: activityCredit.correctedActivityKcal,
     activityCapKcal: activityCredit.activityCapKcal,
     wasActivityCapped: activityCredit.wasCapped,

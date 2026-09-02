@@ -1265,19 +1265,6 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
-final class _RecordingProviderObserver extends ProviderObserver {
-  final failures = <Object>[];
-
-  @override
-  void providerDidFail(
-    ProviderObserverContext context,
-    Object error,
-    StackTrace stackTrace,
-  ) {
-    failures.add(error);
-  }
-}
-
 extension on Offset {
   double dxRatioWithin(Rect rect) {
     return (dx - rect.left) / rect.width;

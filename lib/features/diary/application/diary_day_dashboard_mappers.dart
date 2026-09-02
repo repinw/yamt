@@ -37,8 +37,9 @@ List<DiaryMealSection> buildDiaryDashboardMealSections(
 /// Builds diary nutrition bars from calorie entries.
 DiaryNutritionBarsData buildDiaryDashboardNutritionBars(
   List<CalorieEntry> entries,
-  double goalKcal,
-) {
+  double goalKcal, {
+  DiaryMacroTargets? macroTargets,
+}) {
   var carbs = 0.0;
   var protein = 0.0;
   var fat = 0.0;
@@ -52,7 +53,7 @@ DiaryNutritionBarsData buildDiaryDashboardNutritionBars(
     carbs: carbs,
     protein: protein,
     fat: fat,
-    goals: DiaryMacroTargets.fromGoalKcal(goalKcal),
+    goals: macroTargets ?? DiaryMacroTargets.fromGoalKcal(goalKcal),
   );
 }
 

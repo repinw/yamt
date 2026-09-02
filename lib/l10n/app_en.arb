@@ -1138,6 +1138,7 @@
   },
   "caloriesProteinLabel": "Protein",
   "caloriesCarbsLabel": "Carbs",
+  "caloriesCarbsShortLabel": "Carbs",
   "caloriesFatLabel": "Fat",
   "diaryWeightDialogTitle": "Set weight for {date}",
   "@diaryWeightDialogTitle": {
@@ -1510,6 +1511,26 @@
   "settingsProfileGuestSubtitle": "Guest mode",
   "settingsAccountHouseholdSectionTitle": "Household",
   "settingsHealthGoalsSectionTitle": "Health & Goals",
+  "settingsMacroGoalsTitle": "Macro Goals",
+  "settingsMacroGoalsSubtitle": "Protein, fat & carbohydrate distribution",
+  "settingsMacroGoalsSheetTitle": "Macro Distribution",
+  "settingsMacroGoalsSportActiveLabel": "Sport & workouts active",
+  "settingsMacroGoalsSportActiveSubtitle": "Adjusts recommendations for training",
+  "settingsMacroGoalsProteinLabel": "Protein multiplier",
+  "settingsMacroGoalsFatLabel": "Fat multiplier",
+  "settingsMacroGoalsCarbsAutoLabel": "Carbohydrates are filled with remaining calories",
+  "settingsMacroGoalsPreviewTitle": "Daily target preview",
+  "settingsMacroGoalsResetButton": "Reset to recommendations",
+  "settingsMacroGoalsSaveButton": "Save",
+  "settingsMacroGoalsGramPerKg": "{value} g/kg",
+  "@settingsMacroGoalsGramPerKg": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMacroGoalsWarningBudgetExceeded": "Protein and fat exceed the daily calorie goal",
   "settingsAppearanceSectionTitle": "Appearance",
   "settingsAppSectionTitle": "App",
   "settingsLanguageTitle": "Language",

@@ -6,7 +6,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_metric_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_goal_progress_bar.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Daily calories, macros, and heart adjustment content.
@@ -114,18 +114,6 @@ class _DailyBalanceSummary extends StatelessWidget {
       children: [
         Expanded(
           child: DiaryBalanceMetricTile.daily(
-            label: eatenLabel,
-            value: eatenValue,
-            subtitle: eatenSubtitle,
-            labelColor: colors.onSurfaceVariant,
-            valueColor: colors.onSurface,
-            unitColor: colors.onSurfaceVariant,
-            alignment: CrossAxisAlignment.start,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.xl),
-        Expanded(
-          child: DiaryBalanceMetricTile.daily(
             label: leftLabel,
             value: leftValue,
             subtitle: leftSubtitle,
@@ -138,9 +126,21 @@ class _DailyBalanceSummary extends StatelessWidget {
             unitColor: isHeartDay
                 ? accents.heartFor(colors.brightness).withValues(alpha: 0.78)
                 : primary.withValues(alpha: 0.78),
+            alignment: CrossAxisAlignment.start,
+            splitUnit: !isHeartDay,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xl),
+        Expanded(
+          child: DiaryBalanceMetricTile.daily(
+            label: eatenLabel,
+            value: eatenValue,
+            subtitle: eatenSubtitle,
+            labelColor: colors.onSurfaceVariant,
+            valueColor: colors.onSurface,
+            unitColor: colors.onSurfaceVariant,
             alignment: CrossAxisAlignment.end,
             textAlign: TextAlign.end,
-            splitUnit: !isHeartDay,
           ),
         ),
       ],
@@ -169,9 +169,7 @@ class _ActivityStatusText extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Icon(
-          isBonus
-              ? Icons.directions_run_rounded
-              : Icons.info_outline_rounded,
+          isBonus ? Icons.directions_run_rounded : Icons.info_outline_rounded,
           size: 13,
           color: color,
         ),

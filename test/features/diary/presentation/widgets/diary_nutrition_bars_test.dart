@@ -8,7 +8,7 @@ import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.d
 import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
@@ -122,18 +122,9 @@ void main() {
     expect(find.text('Protein'), findsOneWidget);
     expect(find.text('Carbs'), findsOneWidget);
     expect(find.text('Fat'), findsOneWidget);
-    expect(
-      find.textContaining('72g left', findRichText: true),
-      findsOneWidget,
-    ); // 90 - 18 = 72g protein left
-    expect(
-      find.textContaining('96g left', findRichText: true),
-      findsOneWidget,
-    ); // 120 - 24 = 96g carbs left
-    expect(
-      find.textContaining('36g left', findRichText: true),
-      findsOneWidget,
-    ); // 45 - 9 = 36g fat left
+    expect(find.text('72g'), findsOneWidget); // 90 - 18 = 72g protein left
+    expect(find.text('96g'), findsOneWidget); // 120 - 24 = 96g carbs left
+    expect(find.text('36g'), findsOneWidget); // 45 - 9 = 36g fat left
   });
 
   testWidgets('renders over-target macro with plus indicator', (
@@ -153,18 +144,9 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(
-      find.textContaining('+15g', findRichText: true),
-      findsOneWidget,
-    ); // 135 - 120 = +15g carbs
-    expect(
-      find.textContaining('0g left', findRichText: true),
-      findsOneWidget,
-    ); // exactly at protein target
-    expect(
-      find.textContaining('5g left', findRichText: true),
-      findsOneWidget,
-    ); // 45 - 40 = 5g fat left
+    expect(find.text('+15g'), findsOneWidget); // 135 - 120 = +15g carbs
+    expect(find.text('0g'), findsOneWidget); // exactly at protein target
+    expect(find.text('5g'), findsOneWidget); // 45 - 40 = 5g fat left
   });
 
   test(

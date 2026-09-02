@@ -32,11 +32,10 @@ abstract final class CalorieEntryEditorFlowHandler {
     }
 
     if (sourceCanBeRestored) {
-      final restoreDecision =
-          await showCalorieEntryReturnToInventoryDialog(
-            context,
-            entry: entry,
-          );
+      final restoreDecision = await showCalorieEntryReturnToInventoryDialog(
+        context,
+        entry: entry,
+      );
       if (restoreDecision == null || !context.mounted) {
         return;
       }
@@ -49,11 +48,10 @@ abstract final class CalorieEntryEditorFlowHandler {
         onDeleted: onDeleted,
       );
     } else {
-      final confirmed =
-          await showCalorieEntryMissingInventorySourceDialog(
-            context,
-            entry: entry,
-          );
+      final confirmed = await showCalorieEntryMissingInventorySourceDialog(
+        context,
+        entry: entry,
+      );
       if (confirmed != true || !context.mounted) {
         return;
       }
@@ -164,8 +162,9 @@ abstract final class CalorieEntryEditorFlowHandler {
       return;
     }
 
-    final fallbackCloseRoute =
-        !isEditing ? AppRoutes.homeInventory : AppRoutes.homeCalories;
+    final fallbackCloseRoute = !isEditing
+        ? AppRoutes.homeInventory
+        : AppRoutes.homeCalories;
     GoRouter.of(context).go(fallbackCloseRoute);
   }
 
@@ -282,8 +281,7 @@ abstract final class CalorieEntryEditorFlowHandler {
     required CalorieEntry entry,
     required CalorieEntryEditorController controller,
   }) async {
-    if (draft.mealType == entry.mealType &&
-        draft.loggedAt == entry.loggedAt) {
+    if (draft.mealType == entry.mealType && draft.loggedAt == entry.loggedAt) {
       return;
     }
 
