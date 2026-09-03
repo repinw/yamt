@@ -243,7 +243,7 @@ Endpunkt und Timeout lassen sich beim Build über `OFF_PRODUCT_SEARCH_URL` und
 - Health Connect und Apple Health
 - Kamera, Galerie, Dateiauswahl, PDF und systemweite Teilen-Funktion
 - mobiler Barcode-Scan und Spracheingabe für die Suche
-- Chefkoch-Rezeptimport über `recipe_scraper`
+- Chefkoch- und Online-Rezeptimport via Schema.org / JSON-LD
 - Produktbilder von Open Food Facts
 
 ## Tests

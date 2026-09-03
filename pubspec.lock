@@ -744,7 +744,7 @@ packages:
     source: hosted
     version: "1.0.3"
   html:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: html
       sha256: "6d1264f2dffa1b1101c25a91dff0dc2daee4c18e87cd8538729773c073dbf602"
@@ -1252,14 +1252,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
-  recipe_scraper:
-    dependency: "direct main"
-    description:
-      name: recipe_scraper
-      sha256: "5757b8ad5d40adbe7bdc05d60997fe54e34a2a1629ce4df15ce1b0acebc4f923"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   record_use:
     dependency: transitive
     description:

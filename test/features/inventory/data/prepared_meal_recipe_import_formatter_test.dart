@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:recipe_scraper/recipe_scraper.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_recipe_import_formatter.dart';
 
@@ -37,7 +36,7 @@ void main() {
 
   group('formatIngredientLine', () {
     test('builds a full ingredient line', () {
-      final ingredient = Ingredient(
+      const ingredient = Ingredient(
         name: 'Spaghetti',
         quantity: 1.5,
         unit: 'kg',
@@ -49,7 +48,7 @@ void main() {
     });
 
     test('omits missing unit and empty names', () {
-      final ingredient = Ingredient(name: '  ', quantity: 2, unit: null);
+      const ingredient = Ingredient(name: '  ', quantity: 2);
 
       expect(formatter.formatIngredientLine(ingredient), '2');
     });

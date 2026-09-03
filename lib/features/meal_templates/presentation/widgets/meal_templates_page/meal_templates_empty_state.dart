@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,10 +99,20 @@ class MealTemplatesEmptyState extends ConsumerWidget {
     }
 
     final l10n = AppLocalizations.of(context)!;
-    final importedRecipe = await importer.importRecipe(
-      draft.recipeUrl,
-      localeName: localeName,
-    );
+    PreparedMealRecipeImport? importedRecipe;
+    try {
+      importedRecipe = await importer.importRecipe(
+        draft.recipeUrl,
+        localeName: localeName,
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to import recipe from ${draft.recipeUrl}',
+        name: 'MealTemplatesEmptyState',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     if (!context.mounted) {
       return;
     }

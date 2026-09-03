@@ -32,6 +32,7 @@ dependencies:
   go_router: ^17.2.3
   google_sign_in: ^7.2.0
   health: ^13.3.1
+  html: ^0.15.6
   http: ^1.5.0
   image: ^4.5.4
   image_picker: ^1.2.2
@@ -43,7 +44,6 @@ dependencies:
   package_info_plus: ^9.0.1
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
-  recipe_scraper: ^1.0.1
   riverpod: ^3.2.1
   riverpod_annotation: ^4.0.2
   shared_preferences: ^2.5.5
