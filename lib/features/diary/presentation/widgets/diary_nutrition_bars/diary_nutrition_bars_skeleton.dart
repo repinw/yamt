@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
 /// Skeleton loader for diary nutrition bars matching the 4-column layout.
 class DiaryNutritionBarsSkeleton extends StatelessWidget {
@@ -47,19 +48,9 @@ class DiaryNutritionBarsSkeleton extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Row(
-                    children: List.generate(
-                      4,
-                      (i) => Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(right: i < 3 ? 3.0 : 0.0),
-                          child: MetricSkeletonBlock(
-                            height: 6,
-                            color: colors.surfaceContainerHighest,
-                          ),
-                        ),
-                      ),
-                    ),
+                  child: DiarySegmentedSkeletonBar(
+                    segmentCount: 4,
+                    color: colors.surfaceContainerHighest,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),

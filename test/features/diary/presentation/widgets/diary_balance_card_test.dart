@@ -192,51 +192,44 @@ void main() {
     expect(tester.getRect(valueLabel).right, closeTo(trackRect.right, 1));
   });
 
-  testWidgets('weekly compact progress keeps day divider lines', (
+  testWidgets('weekly compact progress renders 7 mini-bar segments', (
     tester,
   ) async {
     await _pumpWeeklyBalanceCard(tester);
     await tester.pumpAndSettle();
 
     final track = find.byKey(DiaryBalanceCardKeys.progressTrack);
-    final dividerPositions = tester
-        .widgetList<Positioned>(
-          find.descendant(of: track, matching: find.byType(Positioned)),
-        )
-        .where((widget) => widget.width == 1);
+    final segments = tester.widgetList<Expanded>(
+      find.descendant(of: track, matching: find.byType(Expanded)),
+    );
 
-    expect(dividerPositions, hasLength(6));
+    expect(segments, hasLength(7));
   });
 
-  testWidgets('weekly compact day dividers stay visible in dark mode', (
-    tester,
-  ) async {
-    await _pumpWeeklyBalanceCard(tester, themeMode: ThemeMode.dark);
-    await tester.pumpAndSettle();
-
-    final colors = ThemeData.dark().colorScheme;
-    final dividerColor = _weeklyDividerColors(tester).first;
-
-    expect(dividerColor, colors.onSurface.withValues(alpha: 0.52));
-  });
-
-  testWidgets('weekly compact progress shows time-based target marker', (
+  testWidgets('weekly compact progress fills segments proportionally', (
     tester,
   ) async {
     await _pumpWeeklyBalanceCard(tester);
     await tester.pumpAndSettle();
 
-    final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.progressTrack),
-    );
-    final targetRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.targetMarker),
-    );
+    final track = find.byKey(DiaryBalanceCardKeys.progressTrack);
+    final fractionallySizedBoxes = tester
+        .widgetList<FractionallySizedBox>(
+          find.descendant(
+            of: track,
+            matching: find.byType(FractionallySizedBox),
+          ),
+        )
+        .toList();
 
-    expect(
-      targetRect.center.dxRatioWithin(trackRect),
-      closeTo(6 / 7, 0.02),
-    );
+    expect(fractionallySizedBoxes, hasLength(7));
+    // First 6 segments should be completely full (progress is 15,726 / 17,755 ~ 88.5% > 6/7)
+    for (var i = 0; i < 6; i++) {
+      expect(fractionallySizedBoxes[i].widthFactor, 1.0);
+    }
+    // 7th segment should be partially filled
+    expect(fractionallySizedBoxes[6].widthFactor, greaterThan(0.0));
+    expect(fractionallySizedBoxes[6].widthFactor, lessThan(1.0));
   });
 
   testWidgets(
@@ -1134,17 +1127,6 @@ Future<void> _pumpWeeklyBalanceCard(
       ),
     ),
   );
-}
-
-List<Color> _weeklyDividerColors(WidgetTester tester) {
-  final track = find.byKey(DiaryBalanceCardKeys.progressTrack);
-  return tester
-      .widgetList<Positioned>(
-        find.descendant(of: track, matching: find.byType(Positioned)),
-      )
-      .where((widget) => widget.width == 1)
-      .map((widget) => (widget.child as ColoredBox).color)
-      .toList(growable: false);
 }
 
 Future<void> _pumpDailyProgressBar(
