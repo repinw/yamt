@@ -2532,6 +2532,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String diaryBudgetDetailsMacroAdjustment(String protein, String carbs, String fat) {
+    return 'Macro impact: Protein $protein · Carbs $carbs · Fat $fat';
+  }
+
+  @override
+  String get diaryBudgetDetailsSafetyCapActive => 'Safety limit active: Daily reduction was capped to prevent extreme restriction.';
+
+  @override
   String get diaryBudgetDetailsNoPreviousDays => 'This is the first day of your active run. There is no carryover yet.';
 
   @override

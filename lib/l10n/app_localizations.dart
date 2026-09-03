@@ -4865,6 +4865,18 @@ abstract class AppLocalizations {
   /// **'{total} spread across {days} remaining days = {daily} / day'**
   String diaryBudgetDetailsDistributionFormula(String total, int days, String daily);
 
+  /// No description provided for @diaryBudgetDetailsMacroAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Macro impact: Protein {protein} · Carbs {carbs} · Fat {fat}'**
+  String diaryBudgetDetailsMacroAdjustment(String protein, String carbs, String fat);
+
+  /// No description provided for @diaryBudgetDetailsSafetyCapActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety limit active: Daily reduction was capped to prevent extreme restriction.'**
+  String get diaryBudgetDetailsSafetyCapActive;
+
   /// No description provided for @diaryBudgetDetailsNoPreviousDays.
   ///
   /// In en, this message translates to:

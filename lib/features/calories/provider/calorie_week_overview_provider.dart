@@ -395,6 +395,9 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
         : nextGoalStartDate == null
         ? null
         : settings.goalKcalForDay(nextGoalStartDate);
+    final todayBaseGoalKcal = adjustedOverviews.last.baseGoalKcal > 0
+        ? adjustedOverviews.last.baseGoalKcal
+        : adjustedOverviews.last.goalKcal;
     final carryoverBeforeTodayKcal =
         CalorieBudgetCalculator.distributeCarryover(
           carryoverKcal: cycleTotals.carryoverBeforeTodayKcal,
@@ -402,6 +405,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
             settings: settings,
             day: today,
           ),
+          baseGoalKcal: todayBaseGoalKcal,
         );
     final todayFlexibleGoalKcal =
         adjustedOverviews.last.goalKcal + carryoverBeforeTodayKcal;

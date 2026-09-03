@@ -1439,6 +1439,21 @@
       }
     }
   },
+  "diaryBudgetDetailsMacroAdjustment": "Makro-Anpassung: Protein {protein} · Carbs {carbs} · Fett {fat}",
+  "@diaryBudgetDetailsMacroAdjustment": {
+    "placeholders": {
+      "protein": {
+        "type": "String"
+      },
+      "carbs": {
+        "type": "String"
+      },
+      "fat": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetDetailsSafetyCapActive": "Schutzregel aktiv: Tageskürzung wurde begrenzt, um Heißhunger zu verhindern.",
   "diaryBudgetDetailsNoPreviousDays": "Dies ist der erste Tag deines aktuellen Laufs. Es gibt noch keinen Übertrag.",
   "diaryWorkoutsBaselineProgress": "{current} / {target} kcal Basis-Aktivität • Noch {remaining} kcal bis zum Bonus",
   "@diaryWorkoutsBaselineProgress": {

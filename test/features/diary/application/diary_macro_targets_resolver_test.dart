@@ -174,6 +174,70 @@ void main() {
       expect(targets.fat, 80.0);
       expect(targets.carbs, 210.0); // (2200 - 640 - 720) / 4 = 840 / 4 = 210g
     });
+
+    test('applies positive carryover (75% carbs / 25% fat split, protein untouched)', () {
+      final preferences = MemoryAppPreferences();
+      final container = ProviderContainer(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(preferences),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final targets = container
+          .listen(
+            Provider(
+              (ref) => resolveDiaryMacroTargets(
+                ref,
+                goalKcal: 2400,
+                carryoverKcal: 100,
+              ),
+            ),
+            (_, _) {},
+          )
+          .read();
+
+      // Base: 80kg male: 160g protein, 80g fat, 260g carbs.
+      // Carryover +100 kcal:
+      // Protein: unchanged (160.0)
+      // Carbs: 260 + (75 / 4.1) = 278.29g
+      // Fat: 80 + (25 / 9.3) = 82.69g
+      expect(targets.protein, 160.0);
+      expect(targets.carbs, closeTo(260.0 + (75.0 / 4.1), 0.01));
+      expect(targets.fat, closeTo(80.0 + (25.0 / 9.3), 0.01));
+    });
+
+    test('applies negative carryover (Schutzregeln A & B)', () {
+      final preferences = MemoryAppPreferences();
+      final container = ProviderContainer(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(preferences),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final targets = container
+          .listen(
+            Provider(
+              (ref) => resolveDiaryMacroTargets(
+                ref,
+                goalKcal: 2000,
+                carryoverKcal: -200,
+              ),
+            ),
+            (_, _) {},
+          )
+          .read();
+
+      // Base: 80kg male, 2000 kcal: 160g protein, 80g fat, 160g carbs.
+      // Carryover -200 kcal:
+      // Protein: unchanged (160.0)
+      // Fat: 80 - (50 / 9.3) = 74.62g
+      // Carbs: 160 - (150 / 4.1) = 123.41g
+      expect(targets.protein, 160.0);
+      expect(targets.fat, closeTo(80.0 - (50.0 / 9.3), 0.01));
+      expect(targets.carbs, closeTo(160.0 - (150.0 / 4.1), 0.01));
+    });
   });
 }
 

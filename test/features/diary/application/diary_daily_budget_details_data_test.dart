@@ -250,5 +250,60 @@ void main() {
       expect(data.totalCarryoverBeforeTodayKcal, 0);
       expect(data.remainingRunDays, 7);
     });
+
+    test('computes carryover macro deltas and detects active safety cap', () {
+      final tuesday = DateTime(2026, 4, 14);
+
+      // Overate on Monday by 1000 kcal with 2 remaining days ->
+      // raw reduction is 500 kcal, capped at 350 kcal.
+      final cappedData = DiaryDailyBudgetDetailsData(
+        selectedDay: tuesday,
+        baseGoalKcal: 2000,
+        carryoverKcal: -350,
+        activityBonusKcal: 0,
+        targetKcal: 1650,
+        eatenKcal: 0,
+        dayLeftKcal: 1650,
+        isHeartDay: false,
+        totalCarryoverBeforeTodayKcal: -1000,
+        remainingRunDays: 2,
+        previousDays: const [],
+      );
+
+      expect(cappedData.wasSafetyCapActive, isTrue);
+      expect(
+        cappedData.carryoverCarbsDeltaGrams,
+        closeTo(-(350 * 0.75) / 4.1, 0.01),
+      );
+      expect(
+        cappedData.carryoverFatDeltaGrams,
+        closeTo(-(350 * 0.25) / 9.3, 0.01),
+      );
+
+      // Positive carryover +100 kcal: cap is false, positive macro deltas
+      final positiveData = DiaryDailyBudgetDetailsData(
+        selectedDay: tuesday,
+        baseGoalKcal: 2000,
+        carryoverKcal: 100,
+        activityBonusKcal: 0,
+        targetKcal: 2100,
+        eatenKcal: 0,
+        dayLeftKcal: 2100,
+        isHeartDay: false,
+        totalCarryoverBeforeTodayKcal: 300,
+        remainingRunDays: 3,
+        previousDays: const [],
+      );
+
+      expect(positiveData.wasSafetyCapActive, isFalse);
+      expect(
+        positiveData.carryoverCarbsDeltaGrams,
+        closeTo((100 * 0.75) / 4.1, 0.01),
+      );
+      expect(
+        positiveData.carryoverFatDeltaGrams,
+        closeTo((100 * 0.25) / 9.3, 0.01),
+      );
+    });
   });
 }

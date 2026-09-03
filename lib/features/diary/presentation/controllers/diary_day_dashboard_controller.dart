@@ -210,7 +210,16 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       }
       final selectedDayEntries = liveData.selectedDayEntries;
       final goalKcal = liveData.selectedDayOverview.goalKcal;
-      final macroTargets = resolveDiaryMacroTargets(ref, goalKcal: goalKcal);
+      final today = normalizeDiaryDay(DateTime.now());
+      final isPastDay = normalizedDay.isBefore(today);
+      final carryoverKcal = isPastDay
+          ? 0.0
+          : liveData.weekOverview.carryoverBeforeTodayKcal;
+      final macroTargets = resolveDiaryMacroTargets(
+        ref,
+        goalKcal: goalKcal,
+        carryoverKcal: carryoverKcal,
+      );
 
       final data = DiaryDayDashboardData(
         selectedDay: normalizedDay,

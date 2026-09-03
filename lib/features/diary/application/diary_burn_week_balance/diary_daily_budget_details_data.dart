@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 /// One previous day's contribution to the carryover calculation.
 class DiaryCarryoverDayDetail {
@@ -157,4 +158,31 @@ class DiaryDailyBudgetDetailsData {
 
   /// Whether the user exceeded the expected activity through sports.
   bool get hasExceededActivity => extraSportKcal.round() > 0;
+
+  /// Whether Schutzregel C capped the daily carryover reduction.
+  bool get wasSafetyCapActive {
+    if (totalCarryoverBeforeTodayKcal >= 0 || remainingRunDays <= 0) {
+      return false;
+    }
+    final rawDailyKcal = totalCarryoverBeforeTodayKcal / remainingRunDays;
+    return rawDailyKcal.abs() > carryoverKcal.abs() + 0.5;
+  }
+
+  /// Carbs delta in grams from the carryover (75% / 4.1).
+  double get carryoverCarbsDeltaGrams {
+    if (carryoverKcal == 0) return 0;
+    return carryoverKcal > 0
+        ? (carryoverKcal * carryoverCarbFraction) / carbEnergyDensityKcalPerGram
+        : -((carryoverKcal.abs() * carryoverCarbFraction) /
+            carbEnergyDensityKcalPerGram);
+  }
+
+  /// Fat delta in grams from the carryover (25% / 9.3).
+  double get carryoverFatDeltaGrams {
+    if (carryoverKcal == 0) return 0;
+    return carryoverKcal > 0
+        ? (carryoverKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram
+        : -((carryoverKcal.abs() * carryoverFatFraction) /
+            fatEnergyDensityKcalPerGram);
+  }
 }

@@ -2532,6 +2532,14 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String diaryBudgetDetailsMacroAdjustment(String protein, String carbs, String fat) {
+    return 'Makro-Anpassung: Protein $protein · Carbs $carbs · Fett $fat';
+  }
+
+  @override
+  String get diaryBudgetDetailsSafetyCapActive => 'Schutzregel aktiv: Tageskürzung wurde begrenzt, um Heißhunger zu verhindern.';
+
+  @override
   String get diaryBudgetDetailsNoPreviousDays => 'Dies ist der erste Tag deines aktuellen Laufs. Es gibt noch keinen Übertrag.';
 
   @override

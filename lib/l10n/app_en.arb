@@ -1403,6 +1403,21 @@
       }
     }
   },
+  "diaryBudgetDetailsMacroAdjustment": "Macro impact: Protein {protein} · Carbs {carbs} · Fat {fat}",
+  "@diaryBudgetDetailsMacroAdjustment": {
+    "placeholders": {
+      "protein": {
+        "type": "String"
+      },
+      "carbs": {
+        "type": "String"
+      },
+      "fat": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetDetailsSafetyCapActive": "Safety limit active: Daily reduction was capped to prevent extreme restriction.",
   "diaryBudgetDetailsNoPreviousDays": "This is the first day of your active run. There is no carryover yet.",
   "diaryWorkoutsBaselineProgress": "{current} / {target} kcal baseline activity • {remaining} kcal to bonus",
   "@diaryWorkoutsBaselineProgress": {
