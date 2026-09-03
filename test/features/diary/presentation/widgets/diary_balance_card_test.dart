@@ -718,8 +718,10 @@ void main() {
       ),
     );
 
-    expect(find.text('EATEN'), findsOneWidget);
-    expect(find.text('LEFT TODAY'), findsOneWidget);
+    expect(find.text('BASE'), findsOneWidget);
+    expect(find.text('PLANNED WITH CARRYOVER'), findsOneWidget);
+    expect(find.text('EATEN'), findsNothing);
+    expect(find.text('LEFT TODAY'), findsNothing);
     expect(find.text('Day 7 of 7'), findsNothing);
     expect(find.byIcon(Icons.stars_rounded), findsNothing);
     expect(find.byIcon(Icons.favorite_rounded), findsNothing);
@@ -923,6 +925,34 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(DiaryBalanceCardKeys.retryButton), findsOneWidget);
+  });
+
+  testWidgets('tapping budget details button opens budget details sheet', (
+    tester,
+  ) async {
+    final selectedDay = normalizeDiaryDay(DateTime.now());
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 800],
+      runState: const BurnWeekRunState.initial(),
+    );
+
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+      findsOneWidget,
+    );
+    expect(find.text('Daily budget details'), findsOneWidget);
   });
 }
 

@@ -1321,6 +1321,8 @@
   "diaryBalanceEatenLabel": "Gegessen",
   "diaryBalanceLeftLabel": "Übrig",
   "diaryBalanceLeftTodayLabel": "Übrig heute",
+  "diaryBalanceBaseLabel": "Basis",
+  "diaryBalancePlannedWithCarryoverLabel": "Mit Übertrag geplant",
   "diaryBalanceWeekLabel": "Woche {week}",
   "@diaryBalanceWeekLabel": {
     "placeholders": {
@@ -1380,6 +1382,64 @@
       }
     }
   },
+  "diaryBalanceBaseGoalShort": "Basis {value}",
+  "@diaryBalanceBaseGoalShort": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBalanceCarryoverShort": "Übertrag {value}",
+  "@diaryBalanceCarryoverShort": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBalanceSportShort": "Sport {value}",
+  "@diaryBalanceSportShort": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetDetailsTitle": "Tagesbudget-Details",
+  "diaryBudgetDetailsButtonLabel": "Details",
+  "diaryBudgetDetailsTodaySectionTitle": "Heutige Rechnung",
+  "diaryBudgetDetailsBaseGoalLabel": "Basis-Tagesziel",
+  "diaryBudgetDetailsBaseGoalWithoutActivityLabel": "Basis-Tagesziel (ohne Aktivität)",
+  "diaryBudgetDetailsExpectedActivityLabel": "Vermutete Aktivität",
+  "diaryBudgetDetailsExtraSportLabel": "Zusätzlicher Sport",
+  "diaryBudgetDetailsCarryoverLabel": "Übertrag aus Vortagen",
+  "diaryBudgetDetailsActivityBonusLabel": "Aktivitätsbonus",
+  "diaryBudgetDetailsEffectiveGoalLabel": "Effektives Tagesziel",
+  "diaryBudgetDetailsEatenLabel": "Bisher gegessen",
+  "diaryBudgetDetailsLeftLabel": "Noch übrig heute",
+  "diaryBudgetDetailsCarryoverSectionTitle": "Übertrag aus den Vortagen",
+  "diaryBudgetDetailsCarryoverExplanation": "Der Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die verbleibenden Tage dieses 7-Tage-Runs.",
+  "diaryBudgetDetailsDaySavedLabel": "eingespart",
+  "diaryBudgetDetailsDayOverLabel": "überzogen",
+  "diaryBudgetDetailsDayExactLabel": "Ziel erreicht",
+  "diaryBudgetDetailsHeartDayLabel": "Durch Herz geschützt",
+  "diaryBudgetDetailsTotalCarryoverLabel": "Gesamtbilanz Vortage",
+  "diaryBudgetDetailsDistributionFormula": "{total} aufgeteilt auf {days} verbleibende Tage = {daily} / Tag",
+  "@diaryBudgetDetailsDistributionFormula": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      },
+      "daily": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetDetailsNoPreviousDays": "Dies ist der erste Tag deines aktuellen Laufs. Es gibt noch keinen Übertrag.",
   "diaryWorkoutsBaselineProgress": "{current} / {target} kcal Basis-Aktivität • Noch {remaining} kcal bis zum Bonus",
   "@diaryWorkoutsBaselineProgress": {
     "placeholders": {

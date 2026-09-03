@@ -1285,6 +1285,8 @@
   "diaryBalanceEatenLabel": "Eaten",
   "diaryBalanceLeftLabel": "Left",
   "diaryBalanceLeftTodayLabel": "Left today",
+  "diaryBalanceBaseLabel": "Base",
+  "diaryBalancePlannedWithCarryoverLabel": "Planned with carryover",
   "diaryBalanceWeekLabel": "Week {week}",
   "@diaryBalanceWeekLabel": {
     "placeholders": {
@@ -1344,6 +1346,64 @@
       }
     }
   },
+  "diaryBalanceBaseGoalShort": "Base {value}",
+  "@diaryBalanceBaseGoalShort": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBalanceCarryoverShort": "Carryover {value}",
+  "@diaryBalanceCarryoverShort": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBalanceSportShort": "Sport {value}",
+  "@diaryBalanceSportShort": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetDetailsTitle": "Daily budget details",
+  "diaryBudgetDetailsButtonLabel": "Details",
+  "diaryBudgetDetailsTodaySectionTitle": "Today's calculation",
+  "diaryBudgetDetailsBaseGoalLabel": "Base daily goal",
+  "diaryBudgetDetailsBaseGoalWithoutActivityLabel": "Base daily goal (without activity)",
+  "diaryBudgetDetailsExpectedActivityLabel": "Expected activity",
+  "diaryBudgetDetailsExtraSportLabel": "Extra activity / workouts",
+  "diaryBudgetDetailsCarryoverLabel": "Carryover from previous days",
+  "diaryBudgetDetailsActivityBonusLabel": "Activity bonus",
+  "diaryBudgetDetailsEffectiveGoalLabel": "Effective daily goal",
+  "diaryBudgetDetailsEatenLabel": "Food eaten so far",
+  "diaryBudgetDetailsLeftLabel": "Left today",
+  "diaryBudgetDetailsCarryoverSectionTitle": "Carryover origin",
+  "diaryBudgetDetailsCarryoverExplanation": "Carryover is the balance of completed days spread across the remaining days in this 7-day run.",
+  "diaryBudgetDetailsDaySavedLabel": "saved",
+  "diaryBudgetDetailsDayOverLabel": "over",
+  "diaryBudgetDetailsDayExactLabel": "on target",
+  "diaryBudgetDetailsHeartDayLabel": "Protected by heart",
+  "diaryBudgetDetailsTotalCarryoverLabel": "Total previous-day balance",
+  "diaryBudgetDetailsDistributionFormula": "{total} spread across {days} remaining days = {daily} / day",
+  "@diaryBudgetDetailsDistributionFormula": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      },
+      "daily": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetDetailsNoPreviousDays": "This is the first day of your active run. There is no carryover yet.",
   "diaryWorkoutsBaselineProgress": "{current} / {target} kcal baseline activity • {remaining} kcal to bonus",
   "@diaryWorkoutsBaselineProgress": {
     "placeholders": {

@@ -22,9 +22,6 @@ const diaryBalanceTargetMarkerOverflowTop = 18.0;
 /// Width reserved for the target marker label.
 const diaryBalanceTargetLabelWidth = 54.0;
 
-/// Fixed stat tile height.
-const diaryBalanceStatTileHeight = 104.0;
-
 /// Burn Week game header height.
 const diaryBalanceGameHeaderHeight = 24.0;
 

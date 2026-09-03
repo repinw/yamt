@@ -37,4 +37,20 @@ abstract final class DiaryBalanceCardKeys {
 
   /// Retry button key.
   static const retryButton = ValueKey<String>('diary-balance-retry-button');
+
+  /// Daily budget details button key.
+  static const dailyBudgetDetailsButton = ValueKey<String>(
+    'diary-balance-daily-budget-details-button',
+  );
+
+  /// Daily progress bar tap button key.
+  @Deprecated('Use dailyBudgetDetailsButton instead')
+  static const dailyProgressBarButton = ValueKey<String>(
+    'diary-balance-daily-progress-bar-button',
+  );
+
+  /// Daily budget details sheet key.
+  static const dailyBudgetDetailsSheet = ValueKey<String>(
+    'diary-balance-daily-budget-details-sheet',
+  );
 }

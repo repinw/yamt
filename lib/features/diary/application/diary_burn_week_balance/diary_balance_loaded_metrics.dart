@@ -3,6 +3,7 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
+import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_weekly_balance_metrics.dart';
 
 /// Derived values needed to render the loaded Burn Week balance card.
@@ -13,6 +14,7 @@ class DiaryBalanceLoadedMetrics {
     required this.daily,
     required this.weekly,
     required this.state,
+    this.budgetDetails,
   });
 
   /// Date represented by the selected-day overview.
@@ -26,6 +28,9 @@ class DiaryBalanceLoadedMetrics {
 
   /// Loaded card display state.
   final DiaryBalanceLoadedState state;
+
+  /// Detailed budget and carryover breakdown for the selected day.
+  final DiaryDailyBudgetDetailsData? budgetDetails;
 }
 
 /// Loaded card display state that is not specific to daily or weekly metrics.
@@ -93,12 +98,19 @@ DiaryBalanceLoadedMetrics resolveDiaryBalanceLoadedMetrics({
     runState: runState,
     now: now,
   );
+  final budgetDetails = DiaryDailyBudgetDetailsData.from(
+    weekOverview: weekOverview,
+    selectedDayOverview: selectedDayOverview,
+    metrics: dailyMetrics,
+    isHeartDay: loadedState.isHeartDay,
+  );
 
   return DiaryBalanceLoadedMetrics(
     selectedDay: selectedDayOverview.date,
     daily: dailyMetrics,
     weekly: weeklyMetrics,
     state: loadedState,
+    budgetDetails: budgetDetails,
   );
 }
 

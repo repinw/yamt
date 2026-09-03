@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
+import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -17,7 +19,10 @@ class DiaryDailyBalanceData {
     this.bufferAdjustmentLabel,
     this.eatenSubtitle,
     this.leftSubtitle,
-    this.activityStatusLabel,
+    this.budgetDetails,
+    this.isFutureDay = false,
+    this.baseValue = '',
+    this.plannedWithCarryoverValue = '',
   });
 
   /// Builds daily render data from raw metrics and localization dependencies.
@@ -28,6 +33,8 @@ class DiaryDailyBalanceData {
     required bool canRevertHeartDay,
     required NumberFormat numberFormat,
     required AppLocalizations l10n,
+    DiaryDailyBudgetDetailsData? budgetDetails,
+    DateTime? now,
   }) {
     final adjustmentLabel = metrics.bufferAdjustmentKcal.round() == 0
         ? null
@@ -48,46 +55,27 @@ class DiaryDailyBalanceData {
               l10n.caloriesUnitKcal,
             ),
           )} · $adjustmentLabel';
-    final leftSubtitle = metrics.heartAdjustmentKcal.round() == 0
-        ? null
-        : '${l10n.diaryBalanceRealLeftLabel(
-            formatDiaryKcal(
-              numberFormat,
-              metrics.realDayLeftKcal,
-              l10n.caloriesUnitKcal,
-            ),
-          )} · ${l10n.diaryBalanceHeartAdjustmentLabel(
-            formatDiarySignedKcal(
-              metrics.heartAdjustmentKcal,
-              numberFormat,
-              l10n.caloriesUnitKcal,
-            ),
-          )}';
 
-    final String? activityStatusLabel;
-    if (!isHeartDay &&
-        metrics.isActivityTrackingActive &&
-        metrics.todayActiveKcal > 0) {
-      if (metrics.activitySegmentKcal > 0) {
-        activityStatusLabel = l10n.diaryBalanceActivityBonusLabel(
-          formatDiaryKcal(
-            numberFormat,
-            metrics.activitySegmentKcal,
-            l10n.caloriesUnitKcal,
-          ),
-        );
-      } else {
-        activityStatusLabel = l10n.diaryBalanceActivityIncludedLabel(
-          formatDiaryKcal(
-            numberFormat,
-            metrics.todayActiveKcal.toDouble(),
-            l10n.caloriesUnitKcal,
-          ),
-        );
-      }
-    } else {
-      activityStatusLabel = null;
-    }
+    final today = normalizeDiaryDay(now ?? DateTime.now());
+    final isFutureDay = normalizeDiaryDay(selectedDay).isAfter(today);
+    final leftSubtitle = _resolveLeftSubtitle(
+      isFutureDay: isFutureDay,
+      isHeartDay: isHeartDay,
+      metrics: metrics,
+      numberFormat: numberFormat,
+      l10n: l10n,
+    );
+
+    final baseValue = formatDiaryKcal(
+      numberFormat,
+      metrics.baseGoalKcal,
+      l10n.caloriesUnitKcal,
+    );
+    final plannedWithCarryoverValue = formatDiaryKcal(
+      numberFormat,
+      metrics.targetKcal,
+      l10n.caloriesUnitKcal,
+    );
 
     return DiaryDailyBalanceData(
       selectedDay: selectedDay,
@@ -109,10 +97,11 @@ class DiaryDailyBalanceData {
       numberFormat: numberFormat,
       bufferAdjustmentLabel: bufferAdjustmentLabel,
       eatenSubtitle: eatenSubtitle,
-      leftSubtitle: isHeartDay
-          ? l10n.diaryBalanceHeartDaySubtitle
-          : leftSubtitle,
-      activityStatusLabel: activityStatusLabel,
+      leftSubtitle: leftSubtitle,
+      budgetDetails: budgetDetails,
+      isFutureDay: isFutureDay,
+      baseValue: baseValue,
+      plannedWithCarryoverValue: plannedWithCarryoverValue,
     );
   }
 
@@ -127,6 +116,15 @@ class DiaryDailyBalanceData {
 
   /// Left value label.
   final String leftValue;
+
+  /// Whether this card represents a future day.
+  final bool isFutureDay;
+
+  /// Base goal value string.
+  final String baseValue;
+
+  /// Target value including carryover.
+  final String plannedWithCarryoverValue;
 
   /// Whether the selected day is currently marked as a heart day.
   final bool isHeartDay;
@@ -146,6 +144,82 @@ class DiaryDailyBalanceData {
   /// Optional left subtitle.
   final String? leftSubtitle;
 
-  /// Optional activity baseline / bonus status label.
-  final String? activityStatusLabel;
+  /// Detailed budget and carryover breakdown.
+  final DiaryDailyBudgetDetailsData? budgetDetails;
+}
+
+String? _resolveLeftSubtitle({
+  required bool isFutureDay,
+  required bool isHeartDay,
+  required DiaryDailyBalanceMetrics metrics,
+  required NumberFormat numberFormat,
+  required AppLocalizations l10n,
+}) {
+  if (isFutureDay) {
+    if (metrics.carryoverKcal.round() != 0) {
+      return l10n.diaryBalanceCarryoverShort(
+        formatDiarySignedKcal(
+          metrics.carryoverKcal,
+          numberFormat,
+          l10n.caloriesUnitKcal,
+        ),
+      );
+    }
+    return null;
+  }
+  if (isHeartDay) {
+    return l10n.diaryBalanceHeartDaySubtitle;
+  }
+  if (metrics.heartAdjustmentKcal.round() != 0) {
+    return '${l10n.diaryBalanceRealLeftLabel(
+      formatDiaryKcal(
+        numberFormat,
+        metrics.realDayLeftKcal,
+        l10n.caloriesUnitKcal,
+      ),
+    )} · ${l10n.diaryBalanceHeartAdjustmentLabel(
+      formatDiarySignedKcal(
+        metrics.heartAdjustmentKcal,
+        numberFormat,
+        l10n.caloriesUnitKcal,
+      ),
+    )}';
+  }
+  final parts = <String>[];
+  if (metrics.baseGoalKcal.round() > 0) {
+    final hasOtherAdjustments =
+        metrics.carryoverKcal.round() != 0 ||
+        metrics.activitySegmentKcal.round() > 0;
+    final baseValue = hasOtherAdjustments
+        ? numberFormat.format(metrics.baseGoalKcal.round())
+        : formatDiaryKcal(
+            numberFormat,
+            metrics.baseGoalKcal,
+            l10n.caloriesUnitKcal,
+          );
+    parts.add(l10n.diaryBalanceBaseGoalShort(baseValue));
+  }
+  if (metrics.carryoverKcal.round() != 0) {
+    parts.add(
+      l10n.diaryBalanceCarryoverShort(
+        formatDiarySignedKcal(
+          metrics.carryoverKcal,
+          numberFormat,
+          '',
+        ).trim(),
+      ),
+    );
+  }
+  if (metrics.activitySegmentKcal.round() > 0) {
+    parts.add(
+      l10n.diaryBalanceSportShort(
+        formatDiarySignedKcal(
+          metrics.activitySegmentKcal,
+          numberFormat,
+          '',
+        ).trim(),
+      ),
+    );
+  }
+  return parts.isEmpty ? null : parts.join(' · ');
 }

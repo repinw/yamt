@@ -13,6 +13,8 @@ class DiaryDailyBalanceMetrics {
     required this.targetKcal,
     required this.activitySegmentKcal,
     required this.activitySegmentReferenceKcal,
+    this.baseGoalKcal = 0,
+    this.carryoverKcal = 0,
     this.todayActiveKcal = 0,
     this.expectedActivityKcal = 0,
     this.isActivityTrackingActive = false,
@@ -45,6 +47,12 @@ class DiaryDailyBalanceMetrics {
   /// Target basis used to size the activity segment visually.
   final double activitySegmentReferenceKcal;
 
+  /// Stored base goal kcal before activity and carryover.
+  final double baseGoalKcal;
+
+  /// Carryover kcal adjustment distributed to today from previous days.
+  final double carryoverKcal;
+
   /// Active energy tracked on this day.
   final int todayActiveKcal;
 
@@ -65,6 +73,7 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
   required double bufferAdjustmentKcal,
   required double heartCreditKcal,
   required bool isHeartDay,
+  double? carryoverKcal,
   int todayActiveKcal = 0,
   double expectedActivityKcal = 0,
   bool isActivityTrackingActive = false,
@@ -86,6 +95,7 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
   );
   final realDayLeftKcal = targetKcal - realEatenKcal;
   final dayLeftKcal = isHeartDay ? 0.0 : realDayLeftKcal + heartAdjustmentKcal;
+  final resolvedCarryoverKcal = carryoverKcal ?? (flexibleGoalKcal - goalKcal);
 
   return DiaryDailyBalanceMetrics(
     bufferAdjustmentKcal: bufferAdjustmentKcal,
@@ -97,6 +107,8 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     targetKcal: targetKcal,
     activitySegmentKcal: positiveActivitySegmentKcal,
     activitySegmentReferenceKcal: activitySegmentReferenceKcal,
+    baseGoalKcal: baseGoalKcal,
+    carryoverKcal: resolvedCarryoverKcal,
     todayActiveKcal: todayActiveKcal,
     expectedActivityKcal: expectedActivityKcal,
     isActivityTrackingActive: isActivityTrackingActive,

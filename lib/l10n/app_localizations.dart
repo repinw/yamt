@@ -62,8 +62,7 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en'),
+    Locale('en')
   ];
 
   /// No description provided for @homeInventory.
@@ -1038,21 +1035,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{actor} ate {amount} of {item}.'**
-  String inventoryActivityItemConsumed(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemConsumed(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemDiscarded.
   ///
   /// In en, this message translates to:
   /// **'{actor} discarded {amount} of {item}.'**
-  String inventoryActivityItemDiscarded(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemDiscarded(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemDeleted.
   ///
@@ -1064,31 +1053,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{actor} restored {amount} of {item}.'**
-  String inventoryActivityItemRestored(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemRestored(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemUsedInPreparedMeal.
   ///
   /// In en, this message translates to:
   /// **'{actor} used {amount} of {item} for a prepared meal.'**
-  String inventoryActivityItemUsedInPreparedMeal(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemUsedInPreparedMeal(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemReturnedFromPreparedMeal.
   ///
   /// In en, this message translates to:
   /// **'{actor} returned {amount} of {item} from a prepared meal.'**
-  String inventoryActivityItemReturnedFromPreparedMeal(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemReturnedFromPreparedMeal(String actor, String item, String amount);
 
   /// No description provided for @inventorySearchLabel.
   ///
@@ -4654,6 +4631,18 @@ abstract class AppLocalizations {
   /// **'Left today'**
   String get diaryBalanceLeftTodayLabel;
 
+  /// No description provided for @diaryBalanceBaseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Base'**
+  String get diaryBalanceBaseLabel;
+
+  /// No description provided for @diaryBalancePlannedWithCarryoverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned with carryover'**
+  String get diaryBalancePlannedWithCarryoverLabel;
+
   /// No description provided for @diaryBalanceWeekLabel.
   ///
   /// In en, this message translates to:
@@ -4738,15 +4727,155 @@ abstract class AppLocalizations {
   /// **'{kcal} extra sport bonus'**
   String diaryBalanceActivityBonusLabel(String kcal);
 
+  /// No description provided for @diaryBalanceBaseGoalShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Base {value}'**
+  String diaryBalanceBaseGoalShort(String value);
+
+  /// No description provided for @diaryBalanceCarryoverShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover {value}'**
+  String diaryBalanceCarryoverShort(String value);
+
+  /// No description provided for @diaryBalanceSportShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sport {value}'**
+  String diaryBalanceSportShort(String value);
+
+  /// No description provided for @diaryBudgetDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily budget details'**
+  String get diaryBudgetDetailsTitle;
+
+  /// No description provided for @diaryBudgetDetailsButtonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get diaryBudgetDetailsButtonLabel;
+
+  /// No description provided for @diaryBudgetDetailsTodaySectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s calculation'**
+  String get diaryBudgetDetailsTodaySectionTitle;
+
+  /// No description provided for @diaryBudgetDetailsBaseGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Base daily goal'**
+  String get diaryBudgetDetailsBaseGoalLabel;
+
+  /// No description provided for @diaryBudgetDetailsBaseGoalWithoutActivityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Base daily goal (without activity)'**
+  String get diaryBudgetDetailsBaseGoalWithoutActivityLabel;
+
+  /// No description provided for @diaryBudgetDetailsExpectedActivityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected activity'**
+  String get diaryBudgetDetailsExpectedActivityLabel;
+
+  /// No description provided for @diaryBudgetDetailsExtraSportLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra activity / workouts'**
+  String get diaryBudgetDetailsExtraSportLabel;
+
+  /// No description provided for @diaryBudgetDetailsCarryoverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover from previous days'**
+  String get diaryBudgetDetailsCarryoverLabel;
+
+  /// No description provided for @diaryBudgetDetailsActivityBonusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity bonus'**
+  String get diaryBudgetDetailsActivityBonusLabel;
+
+  /// No description provided for @diaryBudgetDetailsEffectiveGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Effective daily goal'**
+  String get diaryBudgetDetailsEffectiveGoalLabel;
+
+  /// No description provided for @diaryBudgetDetailsEatenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Food eaten so far'**
+  String get diaryBudgetDetailsEatenLabel;
+
+  /// No description provided for @diaryBudgetDetailsLeftLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Left today'**
+  String get diaryBudgetDetailsLeftLabel;
+
+  /// No description provided for @diaryBudgetDetailsCarryoverSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover origin'**
+  String get diaryBudgetDetailsCarryoverSectionTitle;
+
+  /// No description provided for @diaryBudgetDetailsCarryoverExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover is the balance of completed days spread across the remaining days in this 7-day run.'**
+  String get diaryBudgetDetailsCarryoverExplanation;
+
+  /// No description provided for @diaryBudgetDetailsDaySavedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'saved'**
+  String get diaryBudgetDetailsDaySavedLabel;
+
+  /// No description provided for @diaryBudgetDetailsDayOverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'over'**
+  String get diaryBudgetDetailsDayOverLabel;
+
+  /// No description provided for @diaryBudgetDetailsDayExactLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'on target'**
+  String get diaryBudgetDetailsDayExactLabel;
+
+  /// No description provided for @diaryBudgetDetailsHeartDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Protected by heart'**
+  String get diaryBudgetDetailsHeartDayLabel;
+
+  /// No description provided for @diaryBudgetDetailsTotalCarryoverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total previous-day balance'**
+  String get diaryBudgetDetailsTotalCarryoverLabel;
+
+  /// No description provided for @diaryBudgetDetailsDistributionFormula.
+  ///
+  /// In en, this message translates to:
+  /// **'{total} spread across {days} remaining days = {daily} / day'**
+  String diaryBudgetDetailsDistributionFormula(String total, int days, String daily);
+
+  /// No description provided for @diaryBudgetDetailsNoPreviousDays.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the first day of your active run. There is no carryover yet.'**
+  String get diaryBudgetDetailsNoPreviousDays;
+
   /// No description provided for @diaryWorkoutsBaselineProgress.
   ///
   /// In en, this message translates to:
   /// **'{current} / {target} kcal baseline activity • {remaining} kcal to bonus'**
-  String diaryWorkoutsBaselineProgress(
-    String current,
-    String target,
-    String remaining,
-  );
+  String diaryWorkoutsBaselineProgress(String current, String target, String remaining);
 
   /// No description provided for @diaryWorkoutsBonusEarned.
   ///
@@ -6678,19 +6807,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Not enough in inventory: Only {availableAmount} available. {missingAmount} missing.'**
-  String cookflowInventoryConflictMessage(
-    Object availableAmount,
-    Object missingAmount,
-  );
+  String cookflowInventoryConflictMessage(Object availableAmount, Object missingAmount);
 
   /// No description provided for @cookflowInventoryUsagePreview.
   ///
   /// In en, this message translates to:
   /// **'Subtract {usedAmount} · left {remainingAmount}'**
-  String cookflowInventoryUsagePreview(
-    Object usedAmount,
-    Object remainingAmount,
-  );
+  String cookflowInventoryUsagePreview(Object usedAmount, Object remainingAmount);
 
   /// No description provided for @cookflowBuyRemainingButton.
   ///
@@ -6708,10 +6831,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Unit conflict: recipe uses \"{recipeUnit}\". Inventory has \"{inventoryUnit}\".'**
-  String cookflowInventoryUnitConflictMessage(
-    Object recipeUnit,
-    Object inventoryUnit,
-  );
+  String cookflowInventoryUnitConflictMessage(Object recipeUnit, Object inventoryUnit);
 
   /// No description provided for @cookflowInventoryUnitConversionPrefix.
   ///
@@ -7170,8 +7290,7 @@ abstract class AppLocalizations {
   String get cookflowResumeLabel;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -7180,26 +7299,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de':
-      return AppLocalizationsDe();
-    case 'en':
-      return AppLocalizationsEn();
+    case 'de': return AppLocalizationsDe();
+    case 'en': return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

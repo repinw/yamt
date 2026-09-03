@@ -68,6 +68,7 @@ class DiaryBalanceCard extends ConsumerWidget {
         canRevertHeartDay: data.loadedMetrics!.state.canRevertHeartDay,
         numberFormat: numberFormat,
         l10n: l10n,
+        budgetDetails: data.loadedMetrics!.budgetDetails,
       );
 
       return DiaryDailyBalanceCard(
