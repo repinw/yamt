@@ -989,10 +989,10 @@ void main() {
     );
 
     expect(find.byKey(DiaryIntroDialogKeys.dialog), findsNothing);
-    expect(find.byKey(DiaryIntroDialogKeys.replayButton), findsNothing);
+    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsNothing);
   });
 
-  testWidgets('shows intro replay button during first diary week', (
+  testWidgets('shows intro banner card during first diary week', (
     tester,
   ) async {
     await _pumpDiaryPage(
@@ -1014,16 +1014,16 @@ void main() {
     );
 
     await tester.scrollUntilVisible(
-      find.byKey(DiaryIntroDialogKeys.replayButton),
+      find.byKey(DiaryIntroDialogKeys.bannerCard),
       240,
       scrollable: find.byType(Scrollable).first,
     );
 
-    expect(find.byKey(DiaryIntroDialogKeys.replayButton), findsOneWidget);
+    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsOneWidget);
 
     await _tapDiaryCardAction(
       tester,
-      find.byKey(DiaryIntroDialogKeys.replayButton),
+      find.byKey(DiaryIntroDialogKeys.bannerActionButton),
     );
     await _pumpFrames(tester);
 
@@ -1031,7 +1031,47 @@ void main() {
     expect(find.text('Your starting point'), findsOneWidget);
   });
 
-  testWidgets('hides intro replay button after first diary week', (
+  testWidgets('dismisses intro banner card when close icon is tapped', (
+    tester,
+  ) async {
+    final preferences = MemoryAppPreferences(
+      initialStrings: DiaryIntroPreferences.initialSeenStrings(),
+    );
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      appPreferences: preferences,
+      settingsRepository: FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 1200,
+          calculatorProfile: const CalorieCalculatorProfile.defaults(),
+          effectiveDate: selectedDay,
+        ),
+      ),
+      overrides: [
+        burnWeekLiveSyncProvider.overrideWith((ref) => null),
+      ],
+    );
+
+    await tester.scrollUntilVisible(
+      find.byKey(DiaryIntroDialogKeys.bannerCard),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsOneWidget);
+
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryIntroDialogKeys.bannerDismissButton),
+    );
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsNothing);
+    expect(DiaryIntroPreferences.isBannerDismissed(preferences), isTrue);
+  });
+
+  testWidgets('hides intro banner card after first diary week', (
     tester,
   ) async {
     await _pumpDiaryPage(
@@ -1054,7 +1094,30 @@ void main() {
       ),
     );
 
-    expect(find.byKey(DiaryIntroDialogKeys.replayButton), findsNothing);
+    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsNothing);
+  });
+
+  testWidgets('hides intro banner card when previously dismissed', (
+    tester,
+  ) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      appPreferences: MemoryAppPreferences(
+        initialStrings: DiaryIntroPreferences.initialSeenStrings(
+          bannerDismissed: true,
+        ),
+      ),
+      settingsRepository: FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 1200,
+          calculatorProfile: const CalorieCalculatorProfile.defaults(),
+          effectiveDate: selectedDay,
+        ),
+      ),
+    );
+
+    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsNothing);
   });
 
   testWidgets('refreshes calendar today when the app resumes', (tester) async {

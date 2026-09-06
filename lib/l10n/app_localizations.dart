@@ -4919,6 +4919,30 @@ abstract class AppLocalizations {
   /// **'Show intro'**
   String get diaryIntroReplayAction;
 
+  /// No description provided for @diaryIntroBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New to YAMT?'**
+  String get diaryIntroBannerTitle;
+
+  /// No description provided for @diaryIntroBannerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn how your calorie target is calculated and how your metabolism adapts over time.'**
+  String get diaryIntroBannerBody;
+
+  /// No description provided for @diaryIntroBannerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'View intro'**
+  String get diaryIntroBannerAction;
+
+  /// No description provided for @diaryIntroBannerDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss intro banner'**
+  String get diaryIntroBannerDismiss;
+
   /// No description provided for @diaryIntroStartTitle.
   ///
   /// In en, this message translates to:
@@ -5272,6 +5296,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Health & Goals'**
   String get settingsHealthGoalsSectionTitle;
+
+  /// No description provided for @settingsCalorieGoalIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie goal intro'**
+  String get settingsCalorieGoalIntroTitle;
+
+  /// No description provided for @settingsCalorieGoalIntroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review starting target, learning phase, and activity'**
+  String get settingsCalorieGoalIntroSubtitle;
 
   /// No description provided for @settingsMacroGoalsTitle.
   ///

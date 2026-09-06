@@ -2565,6 +2565,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryIntroReplayAction => 'Show intro';
 
   @override
+  String get diaryIntroBannerTitle => 'New to YAMT?';
+
+  @override
+  String get diaryIntroBannerBody => 'Learn how your calorie target is calculated and how your metabolism adapts over time.';
+
+  @override
+  String get diaryIntroBannerAction => 'View intro';
+
+  @override
+  String get diaryIntroBannerDismiss => 'Dismiss intro banner';
+
+  @override
   String get diaryIntroStartTitle => 'Your starting point';
 
   @override
@@ -2760,6 +2772,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsHealthGoalsSectionTitle => 'Health & Goals';
+
+  @override
+  String get settingsCalorieGoalIntroTitle => 'Calorie goal intro';
+
+  @override
+  String get settingsCalorieGoalIntroSubtitle => 'Review starting target, learning phase, and activity';
 
   @override
   String get settingsMacroGoalsTitle => 'Macro Goals';

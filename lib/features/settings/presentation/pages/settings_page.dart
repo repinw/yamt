@@ -19,6 +19,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/diary/domain/diary_intro_data.dart';
+import 'package:yamt/features/diary/presentation/diary_page_intro_coordinator.dart';
+import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart';
@@ -76,6 +79,7 @@ class SettingsPage extends ConsumerWidget {
                             _CalorieGoalStartTile(),
                             _CalorieGoalCalculatorTile(),
                             _MacroGoalsTile(),
+                            _CalorieGoalIntroTile(),
                           ],
                         ),
                         SettingsSection(
@@ -228,6 +232,42 @@ class _MacroGoalsTile extends ConsumerWidget {
       title: l10n.settingsMacroGoalsTitle,
       subtitle: l10n.settingsMacroGoalsSubtitle,
       onTap: () => unawaited(showSettingsMacroGoalsSheet(context)),
+    );
+  }
+}
+
+class _CalorieGoalIntroTile extends ConsumerWidget {
+  const _CalorieGoalIntroTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final settingsState = ref.watch(calorieGoalControllerProvider);
+    final settings = settingsState.asData?.value;
+    final canShowIntro =
+        settings != null && DiaryIntroData.canBuildFrom(settings);
+
+    return SettingsTile(
+      key: SettingsPageKeys.calorieGoalIntroTile,
+      icon: Icons.auto_stories_outlined,
+      title: l10n.settingsCalorieGoalIntroTitle,
+      subtitle: l10n.settingsCalorieGoalIntroSubtitle,
+      enabled: canShowIntro && !settingsState.isLoading,
+      onTap: !canShowIntro || settingsState.isLoading
+          ? null
+          : () {
+              final introData = DiaryIntroData.fromSettings(settings);
+              final healthStatus =
+                  ref.read(healthConnectionControllerProvider).value;
+              unawaited(
+                runDiaryIntroFlow(
+                  context: context,
+                  ref: ref,
+                  introData: introData,
+                  healthStatus: healthStatus,
+                ),
+              );
+            },
     );
   }
 }

@@ -3,13 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 /// Resolves the health permission callback action for diary intro dialogs.
 DiaryIntroHealthAction? resolveDiaryIntroHealthAction(
@@ -62,51 +60,4 @@ Future<void> runDiaryIntroFlow({
   }
   final preferences = ref.read(appPreferencesProvider);
   await DiaryIntroPreferences.markSeen(preferences);
-}
-
-/// Replay button for the week 1 learning intro.
-class DiaryIntroReplayButton extends ConsumerWidget {
-  /// Creates the replay button.
-  const DiaryIntroReplayButton({
-    required this.goalSettings,
-    required this.healthStatus,
-    super.key,
-  });
-
-  /// Current calorie goal settings.
-  final CalorieGoalSettings goalSettings;
-
-  /// Current health connection status.
-  final HealthConnectionStatus? healthStatus;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton.icon(
-        key: DiaryIntroDialogKeys.replayButton,
-        style: TextButton.styleFrom(
-          visualDensity: VisualDensity.compact,
-        ),
-        onPressed: () {
-          final introData = DiaryIntroData.fromSettings(goalSettings);
-          unawaited(
-            runDiaryIntroFlow(
-              context: context,
-              ref: ref,
-              introData: introData,
-              healthStatus: healthStatus,
-            ),
-          );
-        },
-        icon: const Icon(
-          Icons.help_outline_rounded,
-          size: 18,
-        ),
-        label: Text(
-          AppLocalizations.of(context)!.diaryIntroReplayAction,
-        ),
-      ),
-    );
-  }
 }
