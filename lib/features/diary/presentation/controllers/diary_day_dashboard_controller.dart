@@ -14,60 +14,20 @@ import 'package:yamt/features/diary/application/'
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
-import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_state.dart';
+
+export 'diary_day_dashboard_state.dart';
 
 part 'diary_day_dashboard_controller.g.dart';
 
-const _keepError = Object();
 const _mutationRefreshSettlingDelay = Duration(milliseconds: 650);
-
-/// State for one diary day dashboard.
-class DiaryDayDashboardState {
-  /// Creates diary day dashboard state.
-  const DiaryDayDashboardState({
-    required this.data,
-    required this.isFromCache,
-    required this.isRefreshing,
-    required this.error,
-  });
-
-  /// Current dashboard data.
-  final DiaryDayDashboardData? data;
-
-  /// Whether [data] came from persisted cache.
-  final bool isFromCache;
-
-  /// Whether fresh data is currently loading.
-  final bool isRefreshing;
-
-  /// Latest refresh error, when any.
-  final Object? error;
-
-  /// Whether an error should be shown in the UI.
-  bool get showError => data == null && error != null;
-
-  /// Returns a copy with selected overrides.
-  DiaryDayDashboardState copyWith({
-    DiaryDayDashboardData? data,
-    bool? isFromCache,
-    bool? isRefreshing,
-    Object? error = _keepError,
-  }) {
-    return DiaryDayDashboardState(
-      data: data ?? this.data,
-      isFromCache: isFromCache ?? this.isFromCache,
-      isRefreshing: isRefreshing ?? this.isRefreshing,
-      error: identical(error, _keepError) ? this.error : error,
-    );
-  }
-}
 
 /// Loads and caches the render-ready diary dashboard for one day.
 @riverpod
 class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   Future<void>? _refreshInFlight;
+  Future<void>? _mutationRefreshInFlight;
   Timer? _settledMutationRefreshTimer;
   int _refreshGeneration = 0;
   var _refreshQueued = false;
@@ -82,6 +42,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     final cacheStore = ref.watch(diaryDayDashboardCacheStoreProvider);
     ref.onDispose(() {
       _settledMutationRefreshTimer?.cancel();
+      _mutationRefreshInFlight = null;
     });
     final cachedData = userId == null
         ? null
@@ -95,7 +56,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       if (previous == null || previous == next) {
         return;
       }
-      refreshAfterMutation();
+      unawaited(refreshAfterMutation());
     });
 
     unawaited(
@@ -123,8 +84,19 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   }
 
   /// Refreshes after a calorie mutation that may need backend settling time.
-  void refreshAfterMutation() {
-    unawaited(_refreshSelectedDay(forceRefresh: true));
+  Future<DiaryDayDashboardState> refreshAfterMutation() async {
+    final Future<void> refresh;
+    if (_mutationRefreshInFlight != null) {
+      refresh = _mutationRefreshInFlight!;
+    } else {
+      final inFlight = _refreshSelectedDay(forceRefresh: true);
+      _mutationRefreshInFlight = inFlight;
+      refresh = inFlight.whenComplete(() {
+        if (identical(_mutationRefreshInFlight, inFlight)) {
+          _mutationRefreshInFlight = null;
+        }
+      });
+    }
     _settledMutationRefreshTimer?.cancel();
     _settledMutationRefreshTimer = Timer(
       _mutationRefreshSettlingDelay,
@@ -135,6 +107,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         unawaited(_refreshSelectedDay(forceRefresh: true));
       },
     );
+    await refresh;
+    return state;
   }
 
   Future<void> _refreshSelectedDay({
@@ -269,14 +243,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
 
   void _invalidateDashboardInputs(DateTime normalizedDay) {
     ref.read(diaryBalanceActionsProvider).refreshBalance(normalizedDay);
-    ref
-        .read(diaryNutritionBarsActionsProvider)
-        .refreshNutritionBars(
-          normalizedDay,
-        );
-    ref
-      ..invalidate(diaryMealSectionsProvider(normalizedDay))
-      ..invalidate(diaryDayDashboardLiveDataProvider(normalizedDay));
+    ref.invalidate(diaryDayDashboardLiveDataProvider(normalizedDay));
   }
 }
 

@@ -1,4 +1,7 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+
+part 'burn_week_run_state.g.dart';
 
 /// Number of days in one Burn Week.
 const int burnWeekDaysPerWeek = 7;
@@ -13,6 +16,7 @@ const int burnWeekInitialHeartCount = 1;
 const int burnWeekRunStateSchemaVersion = 1;
 
 /// Persistent Burn Week run state for real users.
+@JsonSerializable(fieldRename: FieldRename.snake)
 class BurnWeekRunState {
   /// Creates Burn Week run state.
   const BurnWeekRunState({
@@ -48,26 +52,7 @@ class BurnWeekRunState {
     if (!hasCurrentBurnWeekRunStateSchema(json)) {
       return const BurnWeekRunState.initial();
     }
-    return BurnWeekRunState(
-      currentWeekStartDayKey: json['current_week_start_day_key'] as String?,
-      lastActiveDayKey: json['last_active_day_key'] as String?,
-      runWeekNumber:
-          (json['run_week_number'] as num?)?.toInt() ??
-          burnWeekLearningRunWeekNumber,
-      starCount: (json['star_count'] as num?)?.toInt() ?? 0,
-      heartCount:
-          (json['heart_count'] as num?)?.toInt() ?? burnWeekInitialHeartCount,
-      heartCreditKcal: (json['heart_credit_kcal'] as num?)?.toDouble() ?? 0,
-      starBrokeThisWeek: json['star_broke_this_week'] as bool? ?? false,
-      missedTrackingThisWeek:
-          json['missed_tracking_this_week'] as bool? ?? false,
-      heartDayKeys: _decodeHeartDayKeys(json['heart_day_keys']),
-      heartStarBreakDayKeys: _decodeHeartDayKeys(
-        json['heart_star_break_day_keys'],
-      ),
-      runLimitWarningThisWeek:
-          json['run_limit_warning_this_week'] as bool? ?? false,
-    );
+    return _$BurnWeekRunStateFromJson(json);
   }
 
   /// Current persisted week start day key.
@@ -77,27 +62,35 @@ class BurnWeekRunState {
   final String? lastActiveDayKey;
 
   /// Current run week number.
+  @JsonKey(defaultValue: burnWeekLearningRunWeekNumber)
   final int runWeekNumber;
 
   /// Earned permanent stars.
+  @JsonKey(defaultValue: 0)
   final int starCount;
 
   /// Current hearts.
+  @JsonKey(defaultValue: burnWeekInitialHeartCount)
   final int heartCount;
 
   /// Heart kcal applied this week.
+  @JsonKey(defaultValue: 0)
   final double heartCreditKcal;
 
   /// Whether a star already broke this week.
+  @JsonKey(defaultValue: false)
   final bool starBrokeThisWeek;
 
   /// Whether tracking miss already killed perfect week.
+  @JsonKey(defaultValue: false)
   final bool missedTrackingThisWeek;
 
   /// Diary days protected by a spent heart.
+  @JsonKey(fromJson: _decodeHeartDayKeys)
   final List<String> heartDayKeys;
 
   /// Heart days that spent the last heart and broke one star.
+  @JsonKey(fromJson: _decodeHeartDayKeys)
   final List<String> heartStarBreakDayKeys;
 
   /// Whether user chose to continue an unrecoverable limit week.
@@ -143,22 +136,10 @@ class BurnWeekRunState {
   }
 
   /// Encodes to persisted json.
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'schema_version': burnWeekRunStateSchemaVersion,
-      'current_week_start_day_key': currentWeekStartDayKey,
-      'last_active_day_key': lastActiveDayKey,
-      'run_week_number': runWeekNumber,
-      'star_count': starCount,
-      'heart_count': heartCount,
-      'heart_credit_kcal': heartCreditKcal,
-      'star_broke_this_week': starBrokeThisWeek,
-      'missed_tracking_this_week': missedTrackingThisWeek,
-      'heart_day_keys': heartDayKeys,
-      'heart_star_break_day_keys': heartStarBreakDayKeys,
-      'run_limit_warning_this_week': runLimitWarningThisWeek,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'schema_version': burnWeekRunStateSchemaVersion,
+    ..._$BurnWeekRunStateToJson(this),
+  };
 
   /// Copies current state with overrides.
   BurnWeekRunState copyWith({

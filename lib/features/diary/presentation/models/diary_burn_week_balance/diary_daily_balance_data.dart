@@ -3,7 +3,27 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
+import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_subtitle_resolver.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+/// Discriminator for balance subtitle parts.
+enum DiaryDailyBalanceSubtitleType {
+  /// Base goal calorie target.
+  base,
+
+  /// Carryover adjustment from previous days.
+  carryover,
+
+  /// Extra sport / activity calorie adjustment.
+  sport,
+}
+
+/// A localized text component of the daily balance subtitle.
+typedef DiaryDailyBalanceSubtitlePart = ({
+  String label,
+  String value,
+  DiaryDailyBalanceSubtitleType type,
+});
 
 /// Render-ready data for the daily Burn Week balance card.
 class DiaryDailyBalanceData {
@@ -16,9 +36,15 @@ class DiaryDailyBalanceData {
     required this.isHeartDay,
     required this.canRevertHeartDay,
     required this.numberFormat,
+    this.leftUnit,
+    this.targetAddition,
+    this.baseNumber = '',
+    this.plannedWithCarryoverNumber = '',
+    this.caloriesUnit = '',
     this.bufferAdjustmentLabel,
     this.eatenSubtitle,
     this.leftSubtitle,
+    this.leftSubtitleParts = const [],
     this.budgetDetails,
     this.isFutureDay = false,
     this.baseValue = '',
@@ -58,13 +84,24 @@ class DiaryDailyBalanceData {
 
     final today = normalizeDiaryDay(now ?? DateTime.now());
     final isFutureDay = normalizeDiaryDay(selectedDay).isAfter(today);
-    final leftSubtitle = _resolveLeftSubtitle(
+    final resolvedSubtitle = resolveDiaryDailyBalanceSubtitle(
       isFutureDay: isFutureDay,
       isHeartDay: isHeartDay,
       metrics: metrics,
       numberFormat: numberFormat,
       l10n: l10n,
     );
+
+    final baseNumber = numberFormat.format(metrics.baseGoalKcal.round());
+    final plannedWithCarryoverNumber =
+        numberFormat.format(metrics.targetKcal.round());
+    final eatenNumber = numberFormat.format(metrics.eatenKcal.round());
+    final targetNumber = numberFormat.format(metrics.targetKcal.round());
+    final leftNumber = isHeartDay
+        ? l10n.diaryBalanceHeartDayValue
+        : numberFormat.format(metrics.dayLeftKcal.round());
+    final leftUnit = isHeartDay ? null : l10n.caloriesUnitKcal;
+    final targetAddition = '/ $targetNumber';
 
     final baseValue = formatDiaryKcal(
       numberFormat,
@@ -80,24 +117,20 @@ class DiaryDailyBalanceData {
     return DiaryDailyBalanceData(
       selectedDay: selectedDay,
       metrics: metrics,
-      eatenValue: formatDiaryKcal(
-        numberFormat,
-        metrics.eatenKcal,
-        l10n.caloriesUnitKcal,
-      ),
-      leftValue: isHeartDay
-          ? l10n.diaryBalanceHeartDayValue
-          : formatDiaryKcal(
-              numberFormat,
-              metrics.dayLeftKcal,
-              l10n.caloriesUnitKcal,
-            ),
+      eatenValue: eatenNumber,
+      targetAddition: targetAddition,
+      leftValue: leftNumber,
+      leftUnit: leftUnit,
+      baseNumber: baseNumber,
+      plannedWithCarryoverNumber: plannedWithCarryoverNumber,
+      caloriesUnit: l10n.caloriesUnitKcal,
       isHeartDay: isHeartDay,
       canRevertHeartDay: canRevertHeartDay,
       numberFormat: numberFormat,
       bufferAdjustmentLabel: bufferAdjustmentLabel,
       eatenSubtitle: eatenSubtitle,
-      leftSubtitle: leftSubtitle,
+      leftSubtitle: resolvedSubtitle.text,
+      leftSubtitleParts: resolvedSubtitle.parts,
       budgetDetails: budgetDetails,
       isFutureDay: isFutureDay,
       baseValue: baseValue,
@@ -111,20 +144,35 @@ class DiaryDailyBalanceData {
   /// Derived metrics for the daily card.
   final DiaryDailyBalanceMetrics metrics;
 
-  /// Eaten value label.
+  /// Eaten numeric value (e.g. '800').
   final String eatenValue;
 
-  /// Left value label.
+  /// Target supplement for the eaten metric (e.g. '/ 2,000').
+  final String? targetAddition;
+
+  /// Left numeric value or heart day label (e.g. '1,000').
   final String leftValue;
+
+  /// Unit for the left value (e.g. 'kcal', or null on heart day).
+  final String? leftUnit;
 
   /// Whether this card represents a future day.
   final bool isFutureDay;
 
-  /// Base goal value string.
+  /// Base goal value string including unit (e.g. '2,000 kcal').
   final String baseValue;
 
-  /// Target value including carryover.
+  /// Base goal number without unit (e.g. '2,000').
+  final String baseNumber;
+
+  /// Target value including carryover and unit (e.g. '2,150 kcal').
   final String plannedWithCarryoverValue;
+
+  /// Planned with carryover number without unit (e.g. '2,150').
+  final String plannedWithCarryoverNumber;
+
+  /// Localized calorie unit (e.g. 'kcal').
+  final String caloriesUnit;
 
   /// Whether the selected day is currently marked as a heart day.
   final bool isHeartDay;
@@ -144,82 +192,9 @@ class DiaryDailyBalanceData {
   /// Optional left subtitle.
   final String? leftSubtitle;
 
+  /// Subtitle components for the daily card (e.g. base, carryover, sport).
+  final List<DiaryDailyBalanceSubtitlePart> leftSubtitleParts;
+
   /// Detailed budget and carryover breakdown.
   final DiaryDailyBudgetDetailsData? budgetDetails;
-}
-
-String? _resolveLeftSubtitle({
-  required bool isFutureDay,
-  required bool isHeartDay,
-  required DiaryDailyBalanceMetrics metrics,
-  required NumberFormat numberFormat,
-  required AppLocalizations l10n,
-}) {
-  if (isFutureDay) {
-    if (metrics.carryoverKcal.round() != 0) {
-      return l10n.diaryBalanceCarryoverShort(
-        formatDiarySignedKcal(
-          metrics.carryoverKcal,
-          numberFormat,
-          l10n.caloriesUnitKcal,
-        ),
-      );
-    }
-    return null;
-  }
-  if (isHeartDay) {
-    return l10n.diaryBalanceHeartDaySubtitle;
-  }
-  if (metrics.heartAdjustmentKcal.round() != 0) {
-    return '${l10n.diaryBalanceRealLeftLabel(
-      formatDiaryKcal(
-        numberFormat,
-        metrics.realDayLeftKcal,
-        l10n.caloriesUnitKcal,
-      ),
-    )} · ${l10n.diaryBalanceHeartAdjustmentLabel(
-      formatDiarySignedKcal(
-        metrics.heartAdjustmentKcal,
-        numberFormat,
-        l10n.caloriesUnitKcal,
-      ),
-    )}';
-  }
-  final parts = <String>[];
-  if (metrics.baseGoalKcal.round() > 0) {
-    final hasOtherAdjustments =
-        metrics.carryoverKcal.round() != 0 ||
-        metrics.activitySegmentKcal.round() > 0;
-    final baseValue = hasOtherAdjustments
-        ? numberFormat.format(metrics.baseGoalKcal.round())
-        : formatDiaryKcal(
-            numberFormat,
-            metrics.baseGoalKcal,
-            l10n.caloriesUnitKcal,
-          );
-    parts.add(l10n.diaryBalanceBaseGoalShort(baseValue));
-  }
-  if (metrics.carryoverKcal.round() != 0) {
-    parts.add(
-      l10n.diaryBalanceCarryoverShort(
-        formatDiarySignedKcal(
-          metrics.carryoverKcal,
-          numberFormat,
-          '',
-        ).trim(),
-      ),
-    );
-  }
-  if (metrics.activitySegmentKcal.round() > 0) {
-    parts.add(
-      l10n.diaryBalanceSportShort(
-        formatDiarySignedKcal(
-          metrics.activitySegmentKcal,
-          numberFormat,
-          '',
-        ).trim(),
-      ),
-    );
-  }
-  return parts.isEmpty ? null : parts.join(' · ');
 }

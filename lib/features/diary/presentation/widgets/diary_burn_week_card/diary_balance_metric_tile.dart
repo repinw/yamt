@@ -13,10 +13,10 @@ class DiaryBalanceMetricTile extends StatelessWidget {
     required this.alignment,
     required this.numberFontSize,
     required this.unitFontSize,
+    this.unit,
     this.subtitle,
     this.icon,
     this.textAlign,
-    this.splitUnit = true,
     this.labelFontSize = 10,
     this.labelFontWeight = FontWeight.w800,
     this.labelValueSpacing = AppSpacing.xs,
@@ -31,24 +31,25 @@ class DiaryBalanceMetricTile extends StatelessWidget {
     required Color valueColor,
     required Color unitColor,
     required CrossAxisAlignment alignment,
+    String? unit,
+    double unitFontSize = 13,
     String? subtitle,
     IconData? icon,
     TextAlign? textAlign,
-    bool splitUnit = true,
     Key? key,
   }) : this._(
          label: label,
          value: value,
+         unit: unit,
          labelColor: labelColor,
          valueColor: valueColor,
          unitColor: unitColor,
          alignment: alignment,
          numberFontSize: 30,
-         unitFontSize: 13,
+         unitFontSize: unitFontSize,
          subtitle: subtitle,
          icon: icon,
          textAlign: textAlign,
-         splitUnit: splitUnit,
          labelFontWeight: FontWeight.w900,
          key: key,
        );
@@ -61,11 +62,13 @@ class DiaryBalanceMetricTile extends StatelessWidget {
     required Color valueColor,
     required Color unitColor,
     required CrossAxisAlignment alignment,
+    String? unit,
     TextAlign? textAlign,
     Key? key,
   }) : this._(
          label: label,
          value: value,
+         unit: unit,
          labelColor: labelColor,
          valueColor: valueColor,
          unitColor: unitColor,
@@ -82,6 +85,9 @@ class DiaryBalanceMetricTile extends StatelessWidget {
 
   /// Formatted metric value.
   final String value;
+
+  /// Optional unit or target supplement displayed after the value.
+  final String? unit;
 
   /// Optional subtitle below the value.
   final String? subtitle;
@@ -103,9 +109,6 @@ class DiaryBalanceMetricTile extends StatelessWidget {
 
   /// Optional label/value text alignment.
   final TextAlign? textAlign;
-
-  /// Whether the last space-separated token should be styled as a unit.
-  final bool splitUnit;
 
   /// Number font size.
   final double numberFontSize;
@@ -138,7 +141,11 @@ class DiaryBalanceMetricTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, color: labelColor, size: 14),
+              Icon(
+                icon,
+                color: labelColor,
+                size: icon == Icons.circle ? 7 : 14,
+              ),
               const SizedBox(width: AppSpacing.xxs),
             ],
             Flexible(
@@ -165,11 +172,11 @@ class DiaryBalanceMetricTile extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: DiaryBalanceMetricValueText(
               value: value,
+              unit: unit,
               valueColor: valueColor,
               unitColor: unitColor,
               numberFontSize: numberFontSize,
               unitFontSize: unitFontSize,
-              splitUnit: splitUnit,
             ),
           ),
         ),

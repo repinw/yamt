@@ -8,7 +8,8 @@ import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_meal_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_meal_card/diary_meal_cards_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -186,21 +187,21 @@ void main() {
       ],
     );
 
-    expect(find.text('12g'), findsNothing);
+    expect(find.text('C 12g'), findsNothing);
 
     await tester.tap(find.text('Breakfast'));
     await tester.pumpAndSettle();
 
-    expect(find.text('12g'), findsOneWidget);
-    expect(find.text('2g'), findsOneWidget);
-    expect(find.text('5g'), findsOneWidget);
+    expect(find.text('C 12g'), findsOneWidget);
+    expect(find.text('P 2g'), findsOneWidget);
+    expect(find.text('F 5g'), findsOneWidget);
 
     await tester.tap(find.text('Breakfast'));
     await tester.pumpAndSettle();
 
-    expect(find.text('12g'), findsNothing);
-    expect(find.text('2g'), findsNothing);
-    expect(find.text('5g'), findsNothing);
+    expect(find.text('C 12g'), findsNothing);
+    expect(find.text('P 2g'), findsNothing);
+    expect(find.text('F 5g'), findsNothing);
   });
 
   testWidgets('shows retry and reloads after meals load error', (
@@ -300,12 +301,7 @@ void main() {
 
     replaceFakeDiaryDashboardState(
       controller,
-      const DiaryDayDashboardState(
-        data: null,
-        isFromCache: false,
-        isRefreshing: true,
-        error: null,
-      ),
+      controller.state.copyWith(isRefreshing: true),
     );
     await tester.pump();
 

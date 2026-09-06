@@ -2,62 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
+import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
+import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../../../calories/support/fake_calories_repositories.dart';
 import '../../support/diary_dashboard_test_support.dart';
 
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
-  test('provider totals macros from entries', () async {
-    final repository = FakeCalorieLogRepository(
-      initialEntries: [
-        _entry(
-          id: 'breakfast',
-          day: selectedDay,
-          mealType: MealType.breakfast,
-          carbs: 30,
-          protein: 12,
-          fat: 8,
-        ),
-        _entry(
-          id: 'lunch',
-          day: selectedDay,
-          mealType: MealType.lunch,
-          carbs: 42,
-          protein: 28,
-          fat: 14,
-        ),
-      ],
-    );
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(repository),
-        resolvedCalorieGoalForDayProvider(
-          selectedDay,
-        ).overrideWith((ref) => _resolvedGoal(selectedDay, goalKcal: 2400)),
-      ],
-    );
-    addTearDown(repository.dispose);
-    addTearDown(container.dispose);
-
-    final subscription = container.listen(
-      diaryNutritionBarsDataProvider(selectedDay),
-      (_, _) {},
-    );
-    addTearDown(subscription.close);
-
-    final data = await container.read(
-      diaryNutritionBarsDataProvider(selectedDay).future,
-    );
+  test('mapper totals macros from entries', () {
+    final data = buildDiaryDashboardNutritionBars([
+      _entry(
+        id: 'breakfast',
+        day: selectedDay,
+        mealType: MealType.breakfast,
+        carbs: 30,
+        protein: 12,
+        fat: 8,
+      ),
+      _entry(
+        id: 'lunch',
+        day: selectedDay,
+        mealType: MealType.lunch,
+        carbs: 42,
+        protein: 28,
+        fat: 14,
+      ),
+    ], 2400);
 
     expect(data.carbs, 72);
     expect(data.protein, 40);
@@ -149,36 +125,13 @@ void main() {
     expect(find.text('5g'), findsOneWidget); // 45 - 40 = 5g fat left
   });
 
-  test(
-    'provider clamps negative calorie goals to zero macro targets',
-    () async {
-      final repository = FakeCalorieLogRepository();
-      final container = ProviderContainer(
-        overrides: [
-          calorieLogRepositoryProvider.overrideWithValue(repository),
-          resolvedCalorieGoalForDayProvider(
-            selectedDay,
-          ).overrideWith((ref) => _resolvedGoal(selectedDay, goalKcal: -838)),
-        ],
-      );
-      addTearDown(repository.dispose);
-      addTearDown(container.dispose);
+  test('mapper clamps negative calorie goals to zero macro targets', () {
+    final data = buildDiaryDashboardNutritionBars(const [], -838);
 
-      final subscription = container.listen(
-        diaryNutritionBarsDataProvider(selectedDay),
-        (_, _) {},
-      );
-      addTearDown(subscription.close);
-
-      final data = await container.read(
-        diaryNutritionBarsDataProvider(selectedDay).future,
-      );
-
-      expect(data.goals.carbs, 0);
-      expect(data.goals.protein, 0);
-      expect(data.goals.fat, 0);
-    },
-  );
+    expect(data.goals.carbs, 0);
+    expect(data.goals.protein, 0);
+    expect(data.goals.fat, 0);
+  });
 
   testWidgets('shows retry and reloads after nutrition load error', (
     tester,
@@ -280,12 +233,7 @@ void main() {
 
     replaceFakeDiaryDashboardState(
       controller,
-      const DiaryDayDashboardState(
-        data: null,
-        isFromCache: false,
-        isRefreshing: true,
-        error: null,
-      ),
+      controller.state.copyWith(isRefreshing: true),
     );
     await tester.pump();
 
@@ -357,22 +305,6 @@ Future<void> _pumpNutritionBarsWithContainer(
   await tester.pumpAndSettle();
 }
 
-ResolvedCalorieGoalData _resolvedGoal(
-  DateTime day, {
-  required double goalKcal,
-}) {
-  return ResolvedCalorieGoalData(
-    day: day,
-    storedGoalKcal: goalKcal,
-    goalKcal: goalKcal,
-    activityDeltaKcal: 0,
-    lastWeekAverageActiveKcal: 0,
-    todayActiveKcal: 0,
-    usedLearnedTdee: false,
-    usesPreLearningActivityBonus: false,
-    wasClampedToMinimum: false,
-  );
-}
 
 CalorieEntry _entry({
   required String id,

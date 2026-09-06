@@ -17,8 +17,6 @@ import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/'
     'diary_weekly_balance_metrics.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
-import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -355,7 +353,7 @@ void main() {
         find.byKey(const ValueKey<String>('diary-balance-consumed-marker')),
         findsNothing,
       );
-      expect(find.text('3,000 kcal', findRichText: true), findsOneWidget);
+      expect(find.text('3,000 / 2,000', findRichText: true), findsOneWidget);
       expect(find.text('-1,000 kcal', findRichText: true), findsOneWidget);
       expect(
         find.text(
@@ -381,7 +379,7 @@ void main() {
       ),
     );
 
-    expect(_findTextContaining('3,000 kcal'), findsOneWidget);
+    expect(_findTextContaining('3,000 / 2,000'), findsOneWidget);
     expect(
       find.text('Real 1,000 kcal · Buffer +2,000 kcal'),
       findsOneWidget,
@@ -947,6 +945,24 @@ void main() {
     );
     expect(find.text('Daily budget details'), findsOneWidget);
   });
+
+  testWidgets('renders daily balance subtitle segments with loop', (
+    tester,
+  ) async {
+    final selectedDay = normalizeDiaryDay(DateTime.now());
+
+    await _pumpBalanceCard(
+      tester,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 800],
+      runState: const BurnWeekRunState.initial(),
+      baseGoalKcal: 2000,
+      activityBonusKcal: 200,
+    );
+
+    expect(_findTextContaining('Base 2,000 · Sport +200'), findsOneWidget);
+  });
 }
 
 Future<void> _pumpBalanceCard(
@@ -1008,20 +1024,6 @@ Future<void> _pumpBalanceCard(
           onBurnWeekLiveSyncWatch?.call();
           return null;
         }),
-        diaryNutritionBarsDataProvider(
-          normalizedSelectedDay,
-        ).overrideWith(
-          (ref) async => const DiaryNutritionBarsData(
-            carbs: 36,
-            protein: 89,
-            fat: 81,
-            goals: DiaryMacroTargets(
-              carbs: 285,
-              protein: 159,
-              fat: 85,
-            ),
-          ),
-        ),
         calorieWeekOverviewForWindowProvider(
           normalizedSelectedDay,
         ).overrideWith((ref) {

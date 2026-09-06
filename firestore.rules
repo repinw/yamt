@@ -143,6 +143,7 @@ service cloud.firestore {
     function isValidGlobalFoodNutrition(data) {
       return data.keys().hasOnly([
           'quality_status',
+          'origin',
           'per_100_kcal',
           'per_100_protein',
           'per_100_carbs',
@@ -156,6 +157,7 @@ service cloud.firestore {
         && data.keys().hasAll(['quality_status'])
         && data.quality_status is string
         && isAllowedNutritionQualityStatus(data.quality_status)
+        && (!('origin' in data) || data.origin in ['reported', 'estimated', 'unknown'])
         && isOptionalNumber(data, 'per_100_kcal')
         && isOptionalNumber(data, 'per_100_protein')
         && isOptionalNumber(data, 'per_100_carbs')
@@ -195,6 +197,7 @@ service cloud.firestore {
           && isValidGlobalFoodNutrition(next)
           && changed.hasOnly([
             'quality_status',
+            'origin',
             'per_100_kcal',
             'per_100_protein',
             'per_100_carbs',

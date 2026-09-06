@@ -37,11 +37,10 @@ Diary application providers directly.
 - Diary does not use a feature-level `provider/` folder.
 - Providers are generated with `@riverpod`; there are no new manual providers.
 
-Main application adapters:
+Main application adapters and mappers:
 
 - `application/diary_entries_provider.dart`
-- `application/diary_meal_sections_provider.dart`
-- `application/diary_nutrition_bars_provider.dart`
+- `application/diary_day_dashboard_mappers.dart`
 - `application/diary_balance_provider.dart`
 - `application/diary_weekly_checkin_provider.dart`
 - `application/diary_intro_trigger_provider.dart`

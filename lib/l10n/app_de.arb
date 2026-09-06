@@ -2043,5 +2043,67 @@
   "cookflowSuccessSubtitle": "Deine Mahlzeit wurde gespeichert und ist jetzt im Inventar verfügbar.",
   "cookflowSuccessHeadline": "Mahlzeit gespeichert",
   "cookflowToInventoryButton": "Zum Inventar",
-  "cookflowResumeLabel": "Fortsetzen"
+  "cookflowResumeLabel": "Fortsetzen",
+  "diaryMacroProteinEmphasis": "Eiweißbetont",
+  "diaryMacroCarbsEmphasis": "Kohlenhydratbetont",
+  "diaryMacroFatEmphasis": "Fettbetont",
+  "diaryMacroMixedEmphasis": "Gemischtes Makroprofil",
+  "diaryMacroProfileExplanation": "Die Anteile beziehen sich auf die Energie aus Eiweiß (4 kcal/g), Kohlenhydraten (4 kcal/g) und Fett (9 kcal/g). Liegt der größte Anteil mindestens zehn Prozentpunkte vor dem zweitgrößten, bestimmt er den Schwerpunkt. Sonst zeigen wir ein gemischtes Makroprofil. Das beschreibt die Zusammensetzung, keine gesundheitliche Bewertung.",
+  "diaryMacroDailyContribution": "{percent} % deines Tagesziels",
+  "@diaryMacroDailyContribution": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMacroCurrentTarget": "{current} von {target} {unit}",
+  "@diaryMacroCurrentTarget": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMacroRemaining": "Noch {amount} {unit}",
+  "@diaryMacroRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMacroOverTarget": "{amount} {unit} über dem Ziel",
+  "@diaryMacroOverTarget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryFoodLogged": "Eingetragen",
+  "diaryFoodsLoggedCount": "{count} Lebensmittel eingetragen",
+  "@diaryFoodsLoggedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryFoodFeedbackClose": "Nährwertrückmeldung schließen",
+  "caloriesProteinShortLetter": "P",
+  "caloriesCarbsShortLetter": "K",
+  "caloriesFatShortLetter": "F"
 }

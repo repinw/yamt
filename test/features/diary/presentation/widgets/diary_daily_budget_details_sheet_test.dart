@@ -40,8 +40,9 @@ void main() {
   }
 
   group('DiaryDailyBudgetDetailsSheet', () {
-    testWidgets('renders all calculation rows and previous days breakdown',
-        (tester) async {
+    testWidgets('renders all calculation rows and previous days breakdown', (
+      tester,
+    ) async {
       final monday = DateTime(2026, 4, 13);
       final tuesday = DateTime(2026, 4, 14);
       final wednesday = DateTime(2026, 4, 15);
@@ -80,8 +81,10 @@ void main() {
       await tester.tap(find.text('Open Sheet'));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
-          findsOneWidget);
+      expect(
+        find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+        findsOneWidget,
+      );
       expect(find.text('Daily budget details'), findsOneWidget);
       expect(find.text("Today's calculation"), findsOneWidget);
 
@@ -114,12 +117,15 @@ void main() {
       await tester.tap(find.byIcon(Icons.close_rounded));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
-          findsNothing);
+      expect(
+        find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+        findsNothing,
+      );
     });
 
-    testWidgets('renders empty state when there are no previous days',
-        (tester) async {
+    testWidgets('renders empty state when there are no previous days', (
+      tester,
+    ) async {
       final monday = DateTime(2026, 4, 13);
 
       final data = DiaryDailyBudgetDetailsData(
@@ -140,8 +146,10 @@ void main() {
       await tester.tap(find.text('Open Sheet'));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
-          findsOneWidget);
+      expect(
+        find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+        findsOneWidget,
+      );
       expect(
         find.text(
           'This is the first day of your active run. '

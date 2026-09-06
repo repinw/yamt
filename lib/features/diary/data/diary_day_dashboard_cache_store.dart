@@ -42,7 +42,8 @@ class DiaryDayDashboardCacheStore {
       final data = DiaryDayDashboardData.fromJson(
         Map<String, dynamic>.from(json['data'] as Map? ?? const {}),
       );
-      if (diaryDayKey(data.selectedDay) != dayKey) {
+      if (diaryDayKey(data.selectedDay) != dayKey ||
+          data.weekOverview.days.isEmpty) {
         return null;
       }
       return data;

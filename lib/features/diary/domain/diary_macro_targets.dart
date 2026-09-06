@@ -1,6 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'diary_macro_targets.g.dart';
 
 /// Conversion factor: Carbs kcal per gram (sports nutrition standard).
 const carbEnergyDensityKcalPerGram = 4.1;
@@ -56,6 +59,7 @@ class DiaryMacroCarryoverDelta {
 
 /// Macro targets derived for one diary day.
 @immutable
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMacroTargets {
   /// Creates resolved diary macro targets.
   const DiaryMacroTargets({
@@ -99,6 +103,13 @@ class DiaryMacroTargets {
       fat: fatGrams,
     );
   }
+
+  /// Creates data from persisted JSON.
+  factory DiaryMacroTargets.fromJson(Map<String, dynamic> json) =>
+      _$DiaryMacroTargetsFromJson(json);
+
+  /// Converts data to persisted JSON.
+  Map<String, dynamic> toJson() => _$DiaryMacroTargetsToJson(this);
 
   /// Carb goal in grams.
   final double carbs;
@@ -153,62 +164,102 @@ class DiaryMacroTargets {
         fatGrams: 0,
       );
     }
-
     if (carryoverKcal > 0) {
-      return DiaryMacroCarryoverDelta(
-        proteinGrams: 0,
-        carbsGrams: (carryoverKcal * carryoverCarbFraction) /
-            carbEnergyDensityKcalPerGram,
-        fatGrams: (carryoverKcal * carryoverFatFraction) /
-            fatEnergyDensityKcalPerGram,
-      );
+      return _positiveCarryoverDelta(carryoverKcal);
     }
+    return _negativeCarryoverDelta(
+      baseTargets: baseTargets,
+      carryoverKcal: carryoverKcal,
+      weightKg: weightKg,
+      baseGoalKcal: baseGoalKcal,
+    );
+  }
 
+  static DiaryMacroCarryoverDelta _positiveCarryoverDelta(
+    double carryoverKcal,
+  ) {
+    return DiaryMacroCarryoverDelta(
+      proteinGrams: 0,
+      carbsGrams:
+          (carryoverKcal * carryoverCarbFraction) /
+          carbEnergyDensityKcalPerGram,
+      fatGrams:
+          (carryoverKcal * carryoverFatFraction) /
+          fatEnergyDensityKcalPerGram,
+    );
+  }
+
+  static DiaryMacroCarryoverDelta _negativeCarryoverDelta({
+    required DiaryMacroTargets baseTargets,
+    required double carryoverKcal,
+    required double weightKg,
+    double? baseGoalKcal,
+  }) {
     final reductionKcal = carryoverKcal.abs();
     final fatFloor = _calculateFatFloor(
       weightKg: weightKg,
       reductionKcal: reductionKcal,
       baseGoalKcal: baseGoalKcal,
     );
-    final plannedFatReduction = (reductionKcal * carryoverFatFraction) /
-        fatEnergyDensityKcalPerGram;
-
-    double actualFatDelta;
-    double carbsReductionKcal;
-
-    if (baseTargets.fat - plannedFatReduction >= fatFloor) {
-      actualFatDelta = -plannedFatReduction;
-      carbsReductionKcal = reductionKcal * carryoverCarbFraction;
-    } else {
-      final newFat = math.max<double>(
-        fatFloor,
-        math.min<double>(baseTargets.fat, fatFloor),
-      );
-      actualFatDelta = newFat - baseTargets.fat;
-      final savedFatKcal = actualFatDelta.abs() * fatEnergyDensityKcalPerGram;
-      carbsReductionKcal = math.max<double>(0, reductionKcal - savedFatKcal);
-    }
-
-    final carbsReductionGrams =
-        carbsReductionKcal / carbEnergyDensityKcalPerGram;
-    final minCarbs = math.min<double>(
-      baseTargets.carbs,
-      minimumCarbsFloorGrams,
+    final fatResult = _calculateFatReduction(
+      baseFat: baseTargets.fat,
+      reductionKcal: reductionKcal,
+      fatFloor: fatFloor,
     );
-    final newCarbs = math.max<double>(
-      minCarbs,
-      baseTargets.carbs - carbsReductionGrams,
+    final carbsResult = _calculateCarbsReduction(
+      baseCarbs: baseTargets.carbs,
+      carbsReductionKcal: fatResult.remainingReductionKcal,
     );
-    final actualCarbsDelta = newCarbs - baseTargets.carbs;
 
     return DiaryMacroCarryoverDelta(
       proteinGrams: 0,
-      carbsGrams: actualCarbsDelta,
-      fatGrams: actualFatDelta,
-      wasFatFloorApplied: baseTargets.fat - plannedFatReduction < fatFloor,
-      wasCarbsFloorApplied: newCarbs == minimumCarbsFloorGrams ||
-          (baseTargets.carbs < minimumCarbsFloorGrams && actualCarbsDelta == 0),
+      carbsGrams: carbsResult.delta,
+      fatGrams: fatResult.delta,
+      wasFatFloorApplied: fatResult.wasFloorApplied,
+      wasCarbsFloorApplied: carbsResult.wasFloorApplied,
     );
+  }
+
+  static ({double delta, double remainingReductionKcal, bool wasFloorApplied})
+  _calculateFatReduction({
+    required double baseFat,
+    required double reductionKcal,
+    required double fatFloor,
+  }) {
+    final plannedReduction =
+        (reductionKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram;
+    if (baseFat - plannedReduction >= fatFloor) {
+      return (
+        delta: -plannedReduction,
+        remainingReductionKcal: reductionKcal * carryoverCarbFraction,
+        wasFloorApplied: false,
+      );
+    }
+    final newFat = math.max<double>(
+      fatFloor,
+      math.min<double>(baseFat, fatFloor),
+    );
+    final actualDelta = newFat - baseFat;
+    final savedKcal = actualDelta.abs() * fatEnergyDensityKcalPerGram;
+    return (
+      delta: actualDelta,
+      remainingReductionKcal: math.max<double>(0, reductionKcal - savedKcal),
+      wasFloorApplied: true,
+    );
+  }
+
+  static ({double delta, bool wasFloorApplied}) _calculateCarbsReduction({
+    required double baseCarbs,
+    required double carbsReductionKcal,
+  }) {
+    final reductionGrams = carbsReductionKcal / carbEnergyDensityKcalPerGram;
+    final minCarbs = math.min<double>(baseCarbs, minimumCarbsFloorGrams);
+    final newCarbs = math.max<double>(minCarbs, baseCarbs - reductionGrams);
+    final delta = newCarbs - baseCarbs;
+    final wasFloorApplied =
+        newCarbs == minimumCarbsFloorGrams ||
+        (baseCarbs < minimumCarbsFloorGrams && delta == 0);
+    return (delta: delta, wasFloorApplied: wasFloorApplied);
   }
 
   @override
@@ -241,7 +292,7 @@ double _calculateFatFloor({
   final fatFloorByWeight = safeWeight * minimumFatFloorGramsPerKg;
   final fatFloorByCalories = effectiveDayKcal > 0
       ? (effectiveDayKcal * minimumFatCalorieFraction) /
-          fatEnergyDensityKcalPerGram
+            fatEnergyDensityKcalPerGram
       : 0.toDouble();
   return math.max<double>(fatFloorByWeight, fatFloorByCalories);
 }

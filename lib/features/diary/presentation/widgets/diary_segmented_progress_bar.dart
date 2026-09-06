@@ -10,6 +10,8 @@ class DiarySegmentedProgressBar extends StatelessWidget {
     required this.color,
     required this.trackColor,
     required this.isDark,
+    this.highlightStart,
+    this.highlightOpacity = 0,
     this.segmentCount = 4,
     this.height = 6.0,
     this.spacing = 3.0,
@@ -27,6 +29,12 @@ class DiarySegmentedProgressBar extends StatelessWidget {
 
   /// Whether the current theme is dark mode.
   final bool isDark;
+
+  /// Previous fill used to highlight only the newly added interval.
+  final double? highlightStart;
+
+  /// Opacity of the brief addition highlight.
+  final double highlightOpacity;
 
   /// Number of segments in the bar.
   final int segmentCount;
@@ -50,6 +58,14 @@ class DiarySegmentedProgressBar extends StatelessWidget {
               0.0,
               1.0,
             );
+
+        final previousFill = highlightStart == null
+            ? segmentFill
+            : ((highlightStart! - segmentStart) / (segmentEnd - segmentStart))
+                  .clamp(0.0, 1.0);
+        final highlightFraction = segmentFill <= 0
+            ? 0.0
+            : ((segmentFill - previousFill) / segmentFill).clamp(0.0, 1.0);
 
         return Expanded(
           child: Padding(
@@ -80,6 +96,26 @@ class DiarySegmentedProgressBar extends StatelessWidget {
                           ]
                         : null,
                   ),
+                  child: highlightOpacity > 0 && highlightFraction > 0
+                      ? Align(
+                          alignment: Alignment.centerRight,
+                          child: FractionallySizedBox(
+                            widthFactor: highlightFraction,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(
+                                  alpha:
+                                      0.65 * highlightOpacity.clamp(0.0, 1.0),
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.pill,
+                                ),
+                              ),
+                              child: const SizedBox.expand(),
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
               ),
             ),

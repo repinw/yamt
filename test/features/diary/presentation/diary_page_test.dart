@@ -29,7 +29,8 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
-import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
+import 'package:yamt/features/diary/application/'
+    'diary_day_dashboard_live_data_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
@@ -202,9 +203,9 @@ void main() {
     var firstBalanceBuilds = 0;
     var secondBalanceBuilds = 0;
     var selectedBalanceBuilds = 0;
-    var firstMealsBuilds = 0;
-    var secondMealsBuilds = 0;
-    var selectedMealsBuilds = 0;
+    var firstDashboardBuilds = 0;
+    var secondDashboardBuilds = 0;
+    var selectedDashboardBuilds = 0;
 
     final logRepository = FakeCalorieLogRepository();
     final settingsRepository = FakeCalorieSettingsRepository(
@@ -241,17 +242,17 @@ void main() {
           selectedBalanceBuilds += 1;
           return Completer<DiaryBalanceSource>().future;
         }),
-        diaryMealSectionsProvider(firstDay).overrideWith((ref) {
-          firstMealsBuilds += 1;
-          return const [];
+        diaryDayDashboardLiveDataProvider(firstDay).overrideWith((ref) {
+          firstDashboardBuilds += 1;
+          return Completer<DiaryDayDashboardLiveData>().future;
         }),
-        diaryMealSectionsProvider(secondDay).overrideWith((ref) {
-          secondMealsBuilds += 1;
-          return const [];
+        diaryDayDashboardLiveDataProvider(secondDay).overrideWith((ref) {
+          secondDashboardBuilds += 1;
+          return Completer<DiaryDayDashboardLiveData>().future;
         }),
-        diaryMealSectionsProvider(selectedDay).overrideWith((ref) {
-          selectedMealsBuilds += 1;
-          return const [];
+        diaryDayDashboardLiveDataProvider(selectedDay).overrideWith((ref) {
+          selectedDashboardBuilds += 1;
+          return Completer<DiaryDayDashboardLiveData>().future;
         }),
       ],
     );
@@ -269,9 +270,9 @@ void main() {
     addTearDown(subscription.close);
 
     expect(firstBalanceBuilds, 0);
-    expect(firstMealsBuilds, 0);
+    expect(firstDashboardBuilds, 0);
     expect(selectedBalanceBuilds, 0);
-    expect(selectedMealsBuilds, 0);
+    expect(selectedDashboardBuilds, 0);
 
     container
         .read(diaryCalendarControllerProvider.notifier)
@@ -279,14 +280,14 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(selectedBalanceBuilds, 0);
-    expect(selectedMealsBuilds, 0);
+    expect(selectedDashboardBuilds, 0);
 
     now = secondDay;
     container.read(diaryCalendarControllerProvider.notifier).refreshToday();
     await Future<void>.delayed(Duration.zero);
 
     expect(secondBalanceBuilds, 0);
-    expect(secondMealsBuilds, 0);
+    expect(secondDashboardBuilds, 0);
   });
 
   testWidgets('loads weekly check-in section data immediately on first paint', (

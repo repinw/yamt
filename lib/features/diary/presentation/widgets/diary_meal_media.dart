@@ -6,47 +6,20 @@ import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
-/// Compact thumbnail used for collapsed meal entry previews.
-class CollapsedMealThumb extends ConsumerWidget {
-  /// Creates a compact meal thumbnail.
-  const CollapsedMealThumb({required this.entry, super.key});
-
-  /// Entry whose media should be rendered.
-  final DiaryMealEntry entry;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final imageRef = maybeLocalImageAssetRef(entry.imageAssetId);
-    final storedImageBytes = imageRef == null
-        ? null
-        : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
-      child: SizedBox.square(
-        dimension: 22,
-        child: storedImageBytes != null
-            ? Image.memory(storedImageBytes, fit: BoxFit.cover)
-            : entry.imageUrl == null
-            ? MealThumbFallback(label: entry.name, compact: true)
-            : AppCachedNetworkImage(
-                imageUrl: entry.imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) =>
-                    MealThumbFallback(label: entry.name, compact: true),
-              ),
-      ),
-    );
-  }
-}
-
-/// Thumbnail used in expanded meal entry rows.
+/// Thumbnail used for meal entry previews and rows.
 class MealThumb extends ConsumerWidget {
   /// Creates a meal thumbnail.
-  const MealThumb({required this.entry, super.key});
+  const MealThumb({
+    required this.entry,
+    this.compact = false,
+    super.key,
+  });
 
   /// Entry whose media should be rendered.
   final DiaryMealEntry entry;
+
+  /// Whether to render a compact thumbnail for collapsed entries.
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,18 +29,21 @@ class MealThumb extends ConsumerWidget {
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.md),
+      borderRadius: BorderRadius.circular(
+        compact ? AppRadius.sm : AppRadius.md,
+      ),
       child: SizedBox.square(
-        dimension: 48,
+        dimension: compact ? 34 : 54,
         child: storedImageBytes != null
             ? Image.memory(storedImageBytes, fit: BoxFit.cover)
             : entry.imageUrl == null
-            ? MealThumbFallback(label: entry.name)
+            ? MealThumbFallback(label: entry.name, compact: compact)
             : AppCachedNetworkImage(
                 imageUrl: entry.imageUrl!,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => MealThumbFallback(
                   label: entry.name,
+                  compact: compact,
                 ),
               ),
       ),
@@ -104,7 +80,7 @@ class MealThumbFallback extends StatelessWidget {
           initial.toUpperCase(),
           style:
               (compact
-                      ? Theme.of(context).textTheme.labelSmall
+                      ? Theme.of(context).textTheme.labelMedium
                       : Theme.of(context).textTheme.titleLarge)
                   ?.copyWith(
                     color: colors.primary,

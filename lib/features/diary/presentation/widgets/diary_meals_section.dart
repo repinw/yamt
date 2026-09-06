@@ -11,10 +11,11 @@ import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
-import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_meal_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_card/diary_meal_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_meal_card/diary_meal_cards_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
@@ -43,7 +44,6 @@ class DiaryMealsSection extends ConsumerStatefulWidget {
 
 class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
   MealType? _expandedMealType;
-  List<DiaryMealSection>? _lastSections;
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +51,7 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
     final dashboardState = ref.watch(
       diaryDayDashboardControllerProvider(normalizedDay),
     );
-    final loadedSections = dashboardState.data?.mealSections;
-    if (loadedSections != null) {
-      _lastSections = loadedSections;
-    }
-    final sections = loadedSections ?? _lastSections;
+    final sections = dashboardState.data?.mealSections;
     final l10n = AppLocalizations.of(context)!;
     final showError = sections == null && dashboardState.showError;
 
@@ -90,6 +86,7 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
               child: DiaryMealCard(
                 key: DiaryMealsSectionKeys.mealCard(section.mealType),
                 section: section,
+                macroTargets: dashboardState.data?.nutritionBars.goals,
                 isExpanded: isExpanded,
                 onToggle: () {
                   setState(() {

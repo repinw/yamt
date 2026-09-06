@@ -136,8 +136,9 @@ class DiaryDailyBudgetCarryoverFormulaBox extends StatelessWidget {
                   .withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color:
-                    accents.heartFor(colors.brightness).withValues(alpha: 0.25),
+                color: accents
+                    .heartFor(colors.brightness)
+                    .withValues(alpha: 0.25),
               ),
             ),
             padding: const EdgeInsets.symmetric(

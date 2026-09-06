@@ -1372,8 +1372,8 @@ void main() {
       expect(overview.totalConsumedKcal, 9238);
       expect(overview.totalGoalKcal, 8400);
       expect(overview.remainingKcal, -838);
-      expect(overview.carryoverBeforeTodayKcal, -2038);
-      expect(overview.todayFlexibleGoalKcal, -838);
+      expect(overview.carryoverBeforeTodayKcal, -240.0);
+      expect(overview.todayFlexibleGoalKcal, 960.0);
     },
   );
 }

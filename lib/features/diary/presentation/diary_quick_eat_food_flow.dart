@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
@@ -129,9 +130,11 @@ void refreshDiaryAfterQuickEat(
   DateTime loggedAt,
 ) {
   final day = normalizeDiaryDay(loggedAt);
-  container
-      .read(diaryDayDashboardControllerProvider(day).notifier)
-      .refreshAfterMutation();
+  unawaited(
+    container
+        .read(diaryDayDashboardControllerProvider(day).notifier)
+        .refreshAfterMutation(),
+  );
 }
 
 @Dependencies([

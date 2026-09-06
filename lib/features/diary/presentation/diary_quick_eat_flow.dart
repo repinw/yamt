@@ -5,8 +5,11 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/calorie_entry_mutations.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
+import 'package:yamt/features/diary/domain/diary_food_log_session.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_food_log_feedback_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_food_flow.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -50,37 +53,52 @@ class DiaryQuickEatFlow {
   }) async {
     final container = ProviderScope.containerOf(context, listen: false);
     final loggedAt = _resolveLoggedAt(selectedDay);
-    switch (source) {
-      case DiaryQuickEatSource.inventory:
-        await _openInventoryPicker(
-          context: context,
-          mealType: mealType,
-          loggedAt: loggedAt,
-        );
-      case DiaryQuickEatSource.barcode:
-        await _openProductSearchHub(
-          context: context,
-          initialIntent: ProductSearchHubInitialIntent.barcode,
-          mealType: mealType,
-          loggedAt: loggedAt,
-        );
-      case DiaryQuickEatSource.manualSearch:
-        await _openProductSearchHub(
-          context: context,
-          initialIntent: ProductSearchHubInitialIntent.search,
-          mealType: mealType,
-          loggedAt: loggedAt,
-        );
-      case DiaryQuickEatSource.ai:
-        await _openProductSearchHub(
-          context: context,
-          initialIntent: ProductSearchHubInitialIntent.ai,
-          mealType: mealType,
-          loggedAt: loggedAt,
-        );
+    final session = DiaryFoodLogSession();
+    final subscription = container
+        .read(calorieEntryMutationsProvider)
+        .events
+        .listen(session.record);
+    try {
+      switch (source) {
+        case DiaryQuickEatSource.inventory:
+          await _openInventoryPicker(
+            context: context,
+            mealType: mealType,
+            loggedAt: loggedAt,
+          );
+        case DiaryQuickEatSource.barcode:
+          await _openProductSearchHub(
+            context: context,
+            initialIntent: ProductSearchHubInitialIntent.barcode,
+            mealType: mealType,
+            loggedAt: loggedAt,
+          );
+        case DiaryQuickEatSource.manualSearch:
+          await _openProductSearchHub(
+            context: context,
+            initialIntent: ProductSearchHubInitialIntent.search,
+            mealType: mealType,
+            loggedAt: loggedAt,
+          );
+        case DiaryQuickEatSource.ai:
+          await _openProductSearchHub(
+            context: context,
+            initialIntent: ProductSearchHubInitialIntent.ai,
+            mealType: mealType,
+            loggedAt: loggedAt,
+          );
+      }
+    } finally {
+      await subscription.cancel();
     }
     if (context.mounted) {
-      refreshDiaryAfterQuickEat(container, loggedAt);
+      final groups = session.dayGroups;
+      if (groups.isNotEmpty) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        await container
+            .read(diaryFoodLogFeedbackControllerProvider.notifier)
+            .enqueue(groups);
+      }
     }
   }
 

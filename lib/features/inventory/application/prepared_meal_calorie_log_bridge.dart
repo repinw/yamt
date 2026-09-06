@@ -32,12 +32,14 @@ PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
     calorieEntriesControllerProvider.notifier,
   );
   return PreparedMealCalorieLogBridge(
-    saveEntry: calorieEntriesController.saveEntry,
+    saveEntry: (entry) =>
+        calorieEntriesController.saveEntry(entry, isNewEntry: true),
     saveEntryAtomically: commitStore == null
         ? null
         : (entry) {
             return calorieEntriesController.saveEntry(
               entry,
+              isNewEntry: true,
               persistEntry: (persistedEntry) {
                 return commitStore.commitEntryAndPreparedMeal(
                   entry: persistedEntry,

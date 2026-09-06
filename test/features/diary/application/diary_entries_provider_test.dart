@@ -4,13 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
+import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
-import 'package:yamt/features/diary/application/diary_meal_sections_provider.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
+import '../support/diary_dashboard_test_support.dart';
 
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
@@ -27,9 +29,14 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(repository),
-        resolvedCalorieGoalForDayProvider(
+        calorieWeekOverviewForWindowProvider(
           selectedDay,
-        ).overrideWith((ref) => _resolvedGoal(selectedDay)),
+        ).overrideWith(
+          (ref) => diaryWeekOverviewForTest(selectedDay: selectedDay),
+        ),
+        burnWeekRunControllerProvider.overrideWith(
+          _FakeBurnWeekRunController.new,
+        ),
       ],
     );
     addTearDown(repository.dispose);
@@ -39,17 +46,17 @@ void main() {
       diaryEntriesForDayProvider(selectedDay),
       (_, _) {},
     );
-    final mealsSubscription = container.listen(
-      diaryMealSectionsProvider(selectedDay),
+    final balanceSubscription = container.listen(
+      diaryBalanceSourceProvider(selectedDay),
       (_, _) {},
     );
-    final nutritionSubscription = container.listen(
-      diaryNutritionBarsDataProvider(selectedDay),
+    final secondEntriesSubscription = container.listen(
+      diaryEntriesForDayProvider(selectedDay),
       (_, _) {},
     );
     addTearDown(entriesSubscription.close);
-    addTearDown(mealsSubscription.close);
-    addTearDown(nutritionSubscription.close);
+    addTearDown(balanceSubscription.close);
+    addTearDown(secondEntriesSubscription.close);
 
     await container.pump();
     expect(readCount, 1);
@@ -61,16 +68,12 @@ void main() {
     final entries = await container.read(
       diaryEntriesForDayProvider(selectedDay).future,
     );
-    final sections = await container.read(
-      diaryMealSectionsProvider(selectedDay).future,
-    );
-    final nutrition = await container.read(
-      diaryNutritionBarsDataProvider(selectedDay).future,
+    final balance = await container.read(
+      diaryBalanceSourceProvider(selectedDay).future,
     );
 
     expect(entries, hasLength(1));
-    expect(sections.first.totalKcal, 100);
-    expect(nutrition.carbs, 10);
+    expect(balance.selectedDayEntries, hasLength(1));
     expect(readCount, 1);
   });
 
@@ -102,18 +105,9 @@ void main() {
   });
 }
 
-ResolvedCalorieGoalData _resolvedGoal(DateTime day) {
-  return ResolvedCalorieGoalData(
-    day: day,
-    storedGoalKcal: 2400,
-    goalKcal: 2400,
-    activityDeltaKcal: 0,
-    lastWeekAverageActiveKcal: 0,
-    todayActiveKcal: 0,
-    usedLearnedTdee: false,
-    usesPreLearningActivityBonus: false,
-    wasClampedToMinimum: false,
-  );
+class _FakeBurnWeekRunController extends BurnWeekRunController {
+  @override
+  Future<BurnWeekRunState> build() async => const BurnWeekRunState.initial();
 }
 
 CalorieEntry _entry({

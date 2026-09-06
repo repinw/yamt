@@ -1,6 +1,6 @@
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
+import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
@@ -68,5 +68,9 @@ DiaryMealEntry _mealEntryFrom(CalorieEntry entry) {
     totalProtein: entry.totalProtein,
     totalCarbs: entry.totalCarbs,
     totalFat: entry.totalFat,
+    consumedAmount: entry.consumedAmount,
+    consumedUnit: entry.consumedUnit,
+    bundleConsumedPortions: entry.bundleConsumedPortions,
+    bundleTotalPortions: entry.bundleTotalPortions,
   );
 }

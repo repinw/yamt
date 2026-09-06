@@ -63,19 +63,19 @@ class DiaryDailyBudgetPreviousDayRow extends StatelessWidget {
     final diff = day.differenceKcal.round();
     final (diffText, diffColor) = switch (diff) {
       > 0 => (
-          '+${numberFormat.format(diff)} $unit '
-              '${l10n.diaryBudgetDetailsDaySavedLabel}',
-          accents.today,
-        ),
+        '+${numberFormat.format(diff)} $unit '
+            '${l10n.diaryBudgetDetailsDaySavedLabel}',
+        accents.today,
+      ),
       < 0 => (
-          '${numberFormat.format(diff)} $unit '
-              '${l10n.diaryBudgetDetailsDayOverLabel}',
-          accents.activityFor(colors.brightness),
-        ),
+        '${numberFormat.format(diff)} $unit '
+            '${l10n.diaryBudgetDetailsDayOverLabel}',
+        accents.activityFor(colors.brightness),
+      ),
       _ => (
-          '±0 $unit (${l10n.diaryBudgetDetailsDayExactLabel})',
-          colors.onSurfaceVariant,
-        ),
+        '±0 $unit (${l10n.diaryBudgetDetailsDayExactLabel})',
+        colors.onSurfaceVariant,
+      ),
     };
 
     return Row(

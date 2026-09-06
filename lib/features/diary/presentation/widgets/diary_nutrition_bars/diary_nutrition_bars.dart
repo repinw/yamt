@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_food_log_feedback_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars_content.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars_skeleton.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -19,7 +19,7 @@ abstract final class DiaryNutritionBarsKeys {
 }
 
 /// Macro nutrition bars for the diary page.
-class DiaryNutritionBars extends ConsumerStatefulWidget {
+class DiaryNutritionBars extends ConsumerWidget {
   /// Creates standalone diary nutrition bars.
   const DiaryNutritionBars({
     required this.selectedDay,
@@ -44,29 +44,15 @@ class DiaryNutritionBars extends ConsumerStatefulWidget {
   final bool _showTitle;
 
   @override
-  ConsumerState<DiaryNutritionBars> createState() => _DiaryNutritionBarsState();
-}
-
-class _DiaryNutritionBarsState extends ConsumerState<DiaryNutritionBars>
-    with AutomaticKeepAliveClientMixin<DiaryNutritionBars> {
-  DiaryNutritionBarsData? _lastData;
-
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-
-    final normalizedDay = normalizeDiaryDay(widget.selectedDay);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final normalizedDay = normalizeDiaryDay(selectedDay);
     final dashboardState = ref.watch(
       diaryDayDashboardControllerProvider(normalizedDay),
     );
-    final loadedData = dashboardState.data?.nutritionBars;
-    if (loadedData != null) {
-      _lastData = loadedData;
-    }
-    final data = loadedData ?? _lastData;
+    final activeFeedback = ref
+        .watch(diaryFoodLogFeedbackControllerProvider)
+        .firstOrNull;
+    final data = dashboardState.data?.nutritionBars;
     final l10n = AppLocalizations.of(context)!;
     final showError = data == null && dashboardState.showError;
 
@@ -77,24 +63,32 @@ class _DiaryNutritionBarsState extends ConsumerState<DiaryNutritionBars>
               message: l10n.diaryNutritionLoadFailed,
               retryLabel: l10n.caloriesRetryAction,
               retryButtonKey: DiaryNutritionBarsKeys.retryButton,
-              onRetry: () => _retryNutritionBars(normalizedDay),
+              onRetry: () => _retryNutritionBars(ref, normalizedDay),
             )
           : data == null
-          ? DiaryNutritionBarsSkeleton(showTitle: widget._showTitle)
+          ? DiaryNutritionBarsSkeleton(showTitle: _showTitle)
           : DiaryNutritionBarsContent(
               data: data,
-              showTitle: widget._showTitle,
+              feedback:
+                  activeFeedback?.day == normalizedDay &&
+                      activeFeedback?.after?.protein == data.protein &&
+                      activeFeedback?.after?.carbs == data.carbs &&
+                      activeFeedback?.after?.fat == data.fat &&
+                      activeFeedback?.after?.goals == data.goals
+                  ? activeFeedback
+                  : null,
+              showTitle: _showTitle,
             ),
     );
 
-    if (!widget._framed) {
+    if (!_framed) {
       return content;
     }
 
     return MetricDetailCardShell(child: content);
   }
 
-  void _retryNutritionBars(DateTime normalizedDay) {
+  void _retryNutritionBars(WidgetRef ref, DateTime normalizedDay) {
     unawaited(
       ref
           .read(diaryDayDashboardControllerProvider(normalizedDay).notifier)

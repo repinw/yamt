@@ -7,9 +7,11 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_mutation.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_entry_mutations.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
@@ -336,6 +338,71 @@ Future<void> _waitForCondition({
 }
 
 void main() {
+  test(
+    'emits only successful local commits, with explicit creation intent',
+    () async {
+      final repository = _FakeCalorieLogRepository()
+        ..saveBlocker = Completer<void>();
+      final settings = _FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: DateTime(2026, 9, 5),
+        ),
+      );
+      addTearDown(repository.dispose);
+      addTearDown(settings.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(repository),
+          calorieSettingsRepositoryProvider.overrideWithValue(settings),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(_keepEntriesAlive(container).close);
+      addTearDown(_keepGoalAlive(container).close);
+      container
+          .read(calorieDayControllerProvider.notifier)
+          .setDay(DateTime(2026, 9, 5));
+      await container.read(calorieEntriesControllerProvider.future);
+      await container.read(calorieGoalControllerProvider.future);
+      final events = <CalorieEntryMutation>[];
+      final subscription = container
+          .read(calorieEntryMutationsProvider)
+          .events
+          .listen(events.add);
+      addTearDown(subscription.cancel);
+      final controller = container.read(
+        calorieEntriesControllerProvider.notifier,
+      );
+      final food = _entry(
+        'new',
+        loggedAt: DateTime(2026, 9, 6),
+        mealType: MealType.lunch,
+      );
+      final saving = controller.saveEntry(food, isNewEntry: true);
+      await _waitForCondition(condition: () => repository.saveStarted);
+      expect(events, isEmpty);
+      repository.saveBlocker!.complete();
+      expect(await saving, isTrue);
+      expect(events.single.kind, CalorieEntryMutationKind.created);
+      expect(events.single.entry!.loggedAt.day, 6);
+      await controller.refresh();
+      expect(events, hasLength(1));
+      await controller.saveEntry(food.copyWith(totalProtein: 20));
+      expect(events.last.kind, CalorieEntryMutationKind.updated);
+      repository.saveShouldFail = true;
+      expect(await controller.saveEntry(food, isNewEntry: true), isFalse);
+      expect(events, hasLength(2));
+      repository.deleteShouldFail = true;
+      expect(await controller.deleteEntry(food.id), isFalse);
+      expect(events, hasLength(2));
+      repository.deleteShouldFail = false;
+      expect(await controller.deleteEntry(food.id), isTrue);
+      expect(events.last.kind, CalorieEntryMutationKind.deleted);
+    },
+  );
+
   test('day controller normalizes and navigates date state', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

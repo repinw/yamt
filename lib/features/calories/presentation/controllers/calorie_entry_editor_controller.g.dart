@@ -49,7 +49,7 @@ final class CalorieEntryEditorControllerProvider
 }
 
 String _$calorieEntryEditorControllerHash() =>
-    r'4bdcbe8885e57130261392c92c6d9b972b5a4071';
+    r'80e8dfb9bf6034af8a44aafff3ec9c0406254045';
 
 /// Controller managing save, delete, and pending inventory cleanup for
 /// calorie entry editor.

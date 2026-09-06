@@ -3796,4 +3796,59 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cookflowResumeLabel => 'Fortsetzen';
+
+  @override
+  String get diaryMacroProteinEmphasis => 'Eiweißbetont';
+
+  @override
+  String get diaryMacroCarbsEmphasis => 'Kohlenhydratbetont';
+
+  @override
+  String get diaryMacroFatEmphasis => 'Fettbetont';
+
+  @override
+  String get diaryMacroMixedEmphasis => 'Gemischtes Makroprofil';
+
+  @override
+  String get diaryMacroProfileExplanation => 'Die Anteile beziehen sich auf die Energie aus Eiweiß (4 kcal/g), Kohlenhydraten (4 kcal/g) und Fett (9 kcal/g). Liegt der größte Anteil mindestens zehn Prozentpunkte vor dem zweitgrößten, bestimmt er den Schwerpunkt. Sonst zeigen wir ein gemischtes Makroprofil. Das beschreibt die Zusammensetzung, keine gesundheitliche Bewertung.';
+
+  @override
+  String diaryMacroDailyContribution(String percent) {
+    return '$percent % deines Tagesziels';
+  }
+
+  @override
+  String diaryMacroCurrentTarget(String current, String target, String unit) {
+    return '$current von $target $unit';
+  }
+
+  @override
+  String diaryMacroRemaining(String amount, String unit) {
+    return 'Noch $amount $unit';
+  }
+
+  @override
+  String diaryMacroOverTarget(String amount, String unit) {
+    return '$amount $unit über dem Ziel';
+  }
+
+  @override
+  String get diaryFoodLogged => 'Eingetragen';
+
+  @override
+  String diaryFoodsLoggedCount(int count) {
+    return '$count Lebensmittel eingetragen';
+  }
+
+  @override
+  String get diaryFoodFeedbackClose => 'Nährwertrückmeldung schließen';
+
+  @override
+  String get caloriesProteinShortLetter => 'P';
+
+  @override
+  String get caloriesCarbsShortLetter => 'K';
+
+  @override
+  String get caloriesFatShortLetter => 'F';
 }

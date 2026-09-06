@@ -158,6 +158,7 @@ class InventoryCalorieBridgeFlow {
         .read(calorieEntriesControllerProvider.notifier)
         .saveEntry(
           entry,
+          isNewEntry: true,
           inventoryContext: inventoryContext,
           scannedSourceRef: scannedSourceRef,
           persistEntry: (entry) {

@@ -55,6 +55,7 @@ class CalorieEntryEditorController extends _$CalorieEntryEditorController {
       final notifier = ref.read(calorieEntriesControllerProvider.notifier);
       final saved = await notifier.saveEntry(
         entry,
+        isNewEntry: !isEditing,
         inventoryContext: inventoryContext,
         scannedSourceRef: !isEditing ? scannedSourceRef : null,
         persistEntry: persistCallback,

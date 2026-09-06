@@ -7,11 +7,13 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_mutation.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_entry_mutations.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -131,6 +133,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   /// Save entry.
   Future<bool> saveEntry(
     CalorieEntry entry, {
+    bool isNewEntry = false,
     CalorieInventoryCreateContext? inventoryContext,
     CalorieScannedSourceRef? scannedSourceRef,
     Future<bool> Function(CalorieEntry entry)? persistEntry,
@@ -190,6 +193,17 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       },
       failureLogMessage: 'Failed to persist calorie entry ${entry.id}.',
       onPersisted: (previousEntries, _) {
+        ref
+            .read(calorieEntryMutationsProvider)
+            .record(
+              CalorieEntryMutation(
+                kind: isNewEntry
+                    ? CalorieEntryMutationKind.created
+                    : CalorieEntryMutationKind.updated,
+                entryId: entry.id,
+                entry: entry,
+              ),
+            );
         return _runPostPersistCallbacks([
           ...postPersistCallbacks,
           () => _invalidateSnapshotsForSavedEntry(
@@ -219,6 +233,14 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           ref.read(calorieLogRepositoryProvider).deleteEntry(entryId),
       failureLogMessage: 'Failed to delete calorie entry $entryId.',
       onPersisted: (previousEntries, _) {
+        ref
+            .read(calorieEntryMutationsProvider)
+            .record(
+              CalorieEntryMutation(
+                kind: CalorieEntryMutationKind.deleted,
+                entryId: entryId,
+              ),
+            );
         return _invalidateSnapshotsForDeletedEntry(
           entryId: entryId,
           previousEntries: previousEntries,

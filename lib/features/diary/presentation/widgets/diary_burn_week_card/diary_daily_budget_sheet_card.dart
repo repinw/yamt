@@ -65,10 +65,12 @@ class DiaryDailyBudgetRow extends StatelessWidget {
     final labelStyle = isHighlight
         ? theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800)
         : (isBold
-            ? theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)
-            : theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ));
+              ? theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                )
+              : theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ));
 
     final valueStyle = isHighlight
         ? theme.textTheme.titleMedium?.copyWith(
@@ -76,14 +78,14 @@ class DiaryDailyBudgetRow extends StatelessWidget {
             color: valueColor ?? colors.onSurface,
           )
         : (isBold
-            ? theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: valueColor ?? colors.onSurface,
-              )
-            : theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: valueColor ?? colors.onSurface,
-              ));
+              ? theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: valueColor ?? colors.onSurface,
+                )
+              : theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: valueColor ?? colors.onSurface,
+                ));
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),

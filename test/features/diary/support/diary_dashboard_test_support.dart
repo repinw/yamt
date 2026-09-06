@@ -3,7 +3,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
+import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -121,12 +121,13 @@ class FakeDiaryDayDashboardController extends DiaryDayDashboardController {
   }
 
   @override
-  void refreshAfterMutation() {
+  Future<DiaryDayDashboardState> refreshAfterMutation() async {
     _retryCount += 1;
     final nextState = onRetry?.call(_retryCount);
     if (nextState != null) {
       state = nextState;
     }
+    return state;
   }
 
   // Test fake must mutate inherited Notifier state without exposing a setter.

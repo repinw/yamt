@@ -72,7 +72,7 @@ final class InventoryReceiptManualProductControllerProvider
 }
 
 String _$inventoryReceiptManualProductControllerHash() =>
-    r'6c1ed3a0dec439ac1e3e2ecec7e9cd8b95ea2be7';
+    r'2729d7ae4dabf43614292a108343606cfd508447';
 
 /// Defines inventory receipt manual product controller.
 

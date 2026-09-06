@@ -2013,5 +2013,67 @@
   "cookflowSuccessSubtitle": "Your meal was saved and is now available in inventory.",
   "cookflowSuccessHeadline": "Meal saved",
   "cookflowToInventoryButton": "Go to inventory",
-  "cookflowResumeLabel": "Resume"
+  "cookflowResumeLabel": "Resume",
+  "diaryMacroProteinEmphasis": "Protein emphasis",
+  "diaryMacroCarbsEmphasis": "Carbohydrate emphasis",
+  "diaryMacroFatEmphasis": "Fat emphasis",
+  "diaryMacroMixedEmphasis": "Mixed macro profile",
+  "diaryMacroProfileExplanation": "Shares refer to energy from protein (4 kcal/g), carbohydrates (4 kcal/g), and fat (9 kcal/g). The largest share determines the emphasis if it leads the next by at least ten percentage points. Otherwise, we show a mixed macro profile. This describes composition, not a health rating.",
+  "diaryMacroDailyContribution": "{percent}% of your daily target",
+  "@diaryMacroDailyContribution": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMacroCurrentTarget": "{current} of {target} {unit}",
+  "@diaryMacroCurrentTarget": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMacroRemaining": "{amount} {unit} remaining",
+  "@diaryMacroRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMacroOverTarget": "{amount} {unit} above target",
+  "@diaryMacroOverTarget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryFoodLogged": "Food logged",
+  "diaryFoodsLoggedCount": "{count} foods logged",
+  "@diaryFoodsLoggedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryFoodFeedbackClose": "Close nutrition feedback",
+  "caloriesProteinShortLetter": "P",
+  "caloriesCarbsShortLetter": "C",
+  "caloriesFatShortLetter": "F"
 }

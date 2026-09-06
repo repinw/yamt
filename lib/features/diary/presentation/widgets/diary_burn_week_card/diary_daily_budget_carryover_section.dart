@@ -98,8 +98,8 @@ class DiaryDailyBudgetCarryoverSection extends StatelessWidget {
                   valueColor: data.totalCarryoverBeforeTodayKcal > 0
                       ? primary
                       : (data.totalCarryoverBeforeTodayKcal < 0
-                          ? accents.activityFor(colors.brightness)
-                          : colors.onSurface),
+                            ? accents.activityFor(colors.brightness)
+                            : colors.onSurface),
                 ),
               ],
             ),

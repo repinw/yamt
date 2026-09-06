@@ -9,12 +9,15 @@ class DiaryBalanceMetricValueText extends StatelessWidget {
     required this.unitColor,
     required this.numberFontSize,
     required this.unitFontSize,
-    this.splitUnit = true,
+    this.unit,
     super.key,
   });
 
-  /// Formatted value, optionally ending in a unit separated by a space.
+  /// Formatted numeric part or label.
   final String value;
+
+  /// Optional unit or target supplement (e.g. 'kcal' or '/ 2,000').
+  final String? unit;
 
   /// Color for the numeric part.
   final Color valueColor;
@@ -28,13 +31,10 @@ class DiaryBalanceMetricValueText extends StatelessWidget {
   /// Font size for the unit part.
   final double unitFontSize;
 
-  /// Whether to split the last space-separated token as a unit.
-  final bool splitUnit;
-
   @override
   Widget build(BuildContext context) {
-    final split = splitUnit ? _splitValueAndUnit(value) : null;
-    if (split == null) {
+    final effectiveUnit = unit?.trim();
+    if (effectiveUnit == null || effectiveUnit.isEmpty) {
       return Text(
         value,
         maxLines: 1,
@@ -52,7 +52,7 @@ class DiaryBalanceMetricValueText extends StatelessWidget {
       text: TextSpan(
         children: [
           TextSpan(
-            text: split.value,
+            text: value,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: valueColor,
               fontSize: numberFontSize,
@@ -61,7 +61,7 @@ class DiaryBalanceMetricValueText extends StatelessWidget {
             ),
           ),
           TextSpan(
-            text: ' ${split.unit}',
+            text: ' $effectiveUnit',
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: unitColor,
               fontSize: unitFontSize,
@@ -73,12 +73,4 @@ class DiaryBalanceMetricValueText extends StatelessWidget {
       ),
     );
   }
-}
-
-({String value, String unit})? _splitValueAndUnit(String text) {
-  final index = text.lastIndexOf(' ');
-  if (index <= 0 || index == text.length - 1) {
-    return null;
-  }
-  return (value: text.substring(0, index), unit: text.substring(index + 1));
 }

@@ -4,9 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_provider.dart';
+import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
@@ -38,7 +39,59 @@ void main() {
     expect(cached!.selectedDay, day);
     expect(cached.selectedDayEntries.single.name, 'Oats');
     expect(cached.mealSections.single.entries.single.name, 'Oats');
+    expect(cached.mealSections.single.entries.single.consumedAmount, 60);
+    expect(
+      cached.mealSections.single.entries.single.consumedUnit,
+      ConsumedUnit.grams,
+    );
     expect(cached.nutritionBars.carbs, 30);
+    expect(cached.nutritionBars.goals, data.nutritionBars.goals);
+    expect(
+      cached.selectedDayEntries.single.loggedAt,
+      data.selectedDayEntries.single.loggedAt,
+    );
+    expect(cached.weekOverview.days.last.todayActiveKcal, 350);
+    expect(cached.weekOverview.days.last.expectedActivityKcal, 200);
+    expect(cached.weekOverview.days.last.isActivityTrackingActive, isTrue);
+    expect(cached.runState.toJson(), data.runState.toJson());
+  });
+
+  test('reads older snapshots without activity fields', () async {
+    final preferences = MemoryAppPreferences();
+    const store = DiaryDayDashboardCacheStore();
+    await store.save(
+      preferences: preferences,
+      userId: userId,
+      data: _dashboardData(day),
+    );
+    final json =
+        jsonDecode(preferences.getStringSync(_cacheKey(userId, day))!)
+            as Map<String, dynamic>;
+    final data = json['data'] as Map<String, dynamic>;
+    final overview = data['week_overview'] as Map<String, dynamic>;
+    for (final item in overview['days'] as List<dynamic>) {
+      (item as Map<String, dynamic>)
+        ..remove('today_active_kcal')
+        ..remove('expected_activity_kcal')
+        ..remove('is_activity_tracking_active');
+    }
+    await preferences.setString(_cacheKey(userId, day), jsonEncode(json));
+    final cached = store.readSync(
+      preferences: preferences,
+      userId: userId,
+      day: day,
+    );
+    expect(cached, isNotNull);
+    expect(cached!.weekOverview.days.last.todayActiveKcal, 0);
+    expect(cached.weekOverview.days.last.expectedActivityKcal, 0);
+    expect(cached.weekOverview.days.last.isActivityTrackingActive, isFalse);
+
+    overview['days'] = <dynamic>[];
+    await preferences.setString(_cacheKey(userId, day), jsonEncode(json));
+    expect(
+      store.readSync(preferences: preferences, userId: userId, day: day),
+      isNull,
+    );
   });
 
   test('ignores cache for another user or day', () async {
@@ -143,6 +196,8 @@ DiaryDayDashboardData _dashboardData(DateTime day) {
             totalProtein: 10,
             totalCarbs: 30,
             totalFat: 4,
+            consumedAmount: 60,
+            consumedUnit: ConsumedUnit.grams,
           ),
         ],
         totalKcal: 120,
@@ -165,6 +220,9 @@ CalorieWeekOverview _weekOverview(DateTime day) {
         totalKcal: offset == 0 ? 120 : 0,
         goalKcal: 2000,
         entryCount: offset == 0 ? 1 : 0,
+        todayActiveKcal: 350,
+        expectedActivityKcal: 200,
+        isActivityTrackingActive: true,
       ),
   ];
 
@@ -183,11 +241,7 @@ CalorieWeekOverview _weekOverview(DateTime day) {
 }
 
 String _cacheKey(String userId, DateTime day) {
-  return 'diary_day_dashboard_v1:$userId:${_dayKey(day)}';
+  return 'diary_day_dashboard_v2:$userId:${_dayKey(day)}';
 }
 
-String _dayKey(DateTime day) {
-  return '${day.year.toString().padLeft(4, '0')}-'
-      '${day.month.toString().padLeft(2, '0')}-'
-      '${day.day.toString().padLeft(2, '0')}';
-}
+String _dayKey(DateTime day) => diaryDayKey(day);

@@ -174,7 +174,7 @@ class DiaryDailyBudgetDetailsData {
     return carryoverKcal > 0
         ? (carryoverKcal * carryoverCarbFraction) / carbEnergyDensityKcalPerGram
         : -((carryoverKcal.abs() * carryoverCarbFraction) /
-            carbEnergyDensityKcalPerGram);
+              carbEnergyDensityKcalPerGram);
   }
 
   /// Fat delta in grams from the carryover (25% / 9.3).
@@ -183,6 +183,6 @@ class DiaryDailyBudgetDetailsData {
     return carryoverKcal > 0
         ? (carryoverKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram
         : -((carryoverKcal.abs() * carryoverFatFraction) /
-            fatEnergyDensityKcalPerGram);
+              fatEnergyDensityKcalPerGram);
   }
 }

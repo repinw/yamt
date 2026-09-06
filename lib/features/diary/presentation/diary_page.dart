@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
@@ -15,27 +14,26 @@ import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
-import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_page_intro_coordinator.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_weekly_balance_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_strip.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_food_log_feedback/diary_food_log_feedback_host.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 /// Diary content.
 @Dependencies([
@@ -117,111 +115,95 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         ? ref.watch(healthConnectionControllerProvider).value
         : null;
 
-    return ColoredBox(
-      color: AppQuietSurfaces.pageBackground(colors),
-      child: CustomScrollView(
-        key: DiaryPage.pageKey,
-        cacheExtent: 0,
-        slivers: [
-          if (widget.includeHomeShellChrome) const DiaryHomeShellTopChrome(),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPagePadding,
-              AppSpacing.md,
-              horizontalPagePadding,
-              0,
-            ),
-            sliver: SliverList.list(
-              children: [
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: AppSizes.narrowContentMaxWidth,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        DiaryCalendarStrip(
-                          today: calendarState.today,
-                          selectedDay: calendarState.selectedDay,
-                          todayRequest: calendarState.todayRequest,
-                          heartDayKeys:
-                              runState?.heartDayKeys.toSet() ??
-                              const <String>{},
-                          onSelectDay: calendarController.selectDay,
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        DiaryBalanceCard(
-                          selectedDay: calendarState.selectedDay,
-                        ),
-                        if (showIntroReplayButton) ...[
+    return DiaryFoodLogFeedbackHost(
+      child: ColoredBox(
+        color: AppQuietSurfaces.pageBackground(colors),
+        child: CustomScrollView(
+          key: DiaryPage.pageKey,
+          cacheExtent: 0,
+          slivers: [
+            if (widget.includeHomeShellChrome) const DiaryHomeShellTopChrome(),
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPagePadding,
+                AppSpacing.md,
+                horizontalPagePadding,
+                0,
+              ),
+              sliver: SliverList.list(
+                children: [
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: AppSizes.narrowContentMaxWidth,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          DiaryCalendarStrip(
+                            today: calendarState.today,
+                            selectedDay: calendarState.selectedDay,
+                            todayRequest: calendarState.todayRequest,
+                            heartDayKeys:
+                                runState?.heartDayKeys.toSet() ??
+                                const <String>{},
+                            onSelectDay: calendarController.selectDay,
+                          ),
                           const SizedBox(height: AppSpacing.xs),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton.icon(
-                              key: DiaryIntroDialogKeys.replayButton,
-                              style: TextButton.styleFrom(
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              onPressed: () => _openDiaryIntroReplay(
-                                goalSettings: goalSettings,
-                                healthStatus: healthStatus,
-                              ),
-                              icon: const Icon(
-                                Icons.help_outline_rounded,
-                                size: 18,
-                              ),
-                              label: Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!.diaryIntroReplayAction,
-                              ),
+                          DiaryBalanceCard(
+                            selectedDay: calendarState.selectedDay,
+                          ),
+                          if (showIntroReplayButton) ...[
+                            const SizedBox(height: AppSpacing.xs),
+                            DiaryIntroReplayButton(
+                              goalSettings: goalSettings,
+                              healthStatus: healthStatus,
+                            ),
+                          ],
+                          if (dashboardState.data != null)
+                            DiaryWeeklyCheckInSection(
+                              selectedDay: calendarState.selectedDay,
+                            ),
+                          const SizedBox(height: AppSpacing.xl),
+                          DiaryActivityWeightSection(
+                            selectedDay: calendarState.selectedDay,
+                            header: DiaryWeeklyBalanceSummary(
+                              selectedDay: calendarState.selectedDay,
                             ),
                           ),
+                          const SizedBox(height: AppSpacing.xxl),
                         ],
-                        if (dashboardState.data != null)
-                          DiaryWeeklyCheckInSection(
-                            selectedDay: calendarState.selectedDay,
-                          ),
-                        const SizedBox(height: AppSpacing.xl),
-                        DiaryActivityWeightSection(
-                          selectedDay: calendarState.selectedDay,
-                          header: DiaryWeeklyBalanceSummary(
-                            selectedDay: calendarState.selectedDay,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxl),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPagePadding,
-              0,
-              horizontalPagePadding,
-              bottomPagePadding,
-            ),
-            sliver: SliverList.builder(
-              itemCount: 1,
-              itemBuilder: (context, index) {
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: AppSizes.narrowContentMaxWidth,
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPagePadding,
+                0,
+                horizontalPagePadding,
+                bottomPagePadding,
+              ),
+              sliver: SliverList.builder(
+                itemCount: 1,
+                itemBuilder: (context, index) {
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: AppSizes.narrowContentMaxWidth,
+                      ),
+                      child: DiaryMealsSection(
+                        selectedDay: calendarState.selectedDay,
+                      ),
                     ),
-                    child: DiaryMealsSection(
-                      selectedDay: calendarState.selectedDay,
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -272,69 +254,13 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         return;
       }
       unawaited(
-        _showDiaryIntro(
-          next.preferences,
-          next.introData,
-          _resolveDiaryIntroHealthAction(next.healthStatus),
+        runDiaryIntroFlow(
+          context: context,
+          ref: ref,
+          introData: next.introData,
+          healthStatus: next.healthStatus,
         ),
       );
     });
-  }
-
-  Future<void> _showDiaryIntro(
-    AppPreferences preferences,
-    DiaryIntroData introData,
-    DiaryIntroHealthAction? healthAction,
-  ) async {
-    final completed = await showDiaryIntroDialog(
-      context: context,
-      data: introData,
-      healthAction: healthAction,
-    );
-    if (!mounted || completed != true) {
-      return;
-    }
-    await DiaryIntroPreferences.markSeen(preferences);
-  }
-
-  void _openDiaryIntroReplay({
-    required CalorieGoalSettings goalSettings,
-    required HealthConnectionStatus? healthStatus,
-  }) {
-    final introData = DiaryIntroData.fromSettings(goalSettings);
-    final healthAction = _resolveDiaryIntroHealthAction(healthStatus);
-    final preferences = ref.read(appPreferencesProvider);
-    unawaited(_showDiaryIntro(preferences, introData, healthAction));
-  }
-
-  DiaryIntroHealthAction? _resolveDiaryIntroHealthAction(
-    HealthConnectionStatus? status,
-  ) {
-    if (status == null) {
-      return null;
-    }
-    final hasConnectionError = status.errorMessage != null;
-    final needsAppPermissionSettings =
-        status.errorMessage == healthActivityRecognitionPermissionErrorMessage;
-    final controller = ref.read(healthConnectionControllerProvider.notifier);
-    final action = switch (status.accessState) {
-      HealthDataAccessState.permissionRequired ||
-      HealthDataAccessState.historyRequired =>
-        hasConnectionError
-            ? needsAppPermissionSettings
-                  ? controller.openAppPermissionSettings
-                  : controller.openHealthPermissionSettings
-            : controller.connect,
-      HealthDataAccessState.installRequired => controller.installHealthConnect,
-      HealthDataAccessState.ready || HealthDataAccessState.unsupported => null,
-    };
-    if (action == null) {
-      return null;
-    }
-    return DiaryIntroHealthAction(
-      accessState: status.accessState,
-      hasConnectionError: hasConnectionError,
-      onPressed: () => unawaited(action()),
-    );
   }
 }

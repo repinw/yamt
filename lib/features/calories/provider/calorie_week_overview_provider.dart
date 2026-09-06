@@ -1,5 +1,6 @@
 import 'dart:developer' show log;
 
+import 'package:json_annotation/json_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
@@ -58,6 +59,7 @@ class CalorieWeekConsumptionSnapshot {
 }
 
 /// Aggregate data for one visible day in the diary week strip.
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieWeekDayOverview {
   /// The calorie week day overview.
   const CalorieWeekDayOverview({
@@ -72,6 +74,13 @@ class CalorieWeekDayOverview {
     this.isActivityTrackingActive = false,
     this.isHeartDay = false,
   }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
+
+  /// Creates data from persisted JSON.
+  factory CalorieWeekDayOverview.fromJson(Map<String, dynamic> json) =>
+      _$CalorieWeekDayOverviewFromJson(json);
+
+  /// Converts data to persisted JSON.
+  Map<String, dynamic> toJson() => _$CalorieWeekDayOverviewToJson(this);
 
   /// The date.
   final DateTime date;
@@ -120,6 +129,7 @@ class CalorieWeekDayOverview {
 }
 
 /// Overview for the rolling 7-day diary strip ending at the visible window end.
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieWeekOverview {
   /// The calorie week overview.
   const CalorieWeekOverview({
@@ -134,6 +144,13 @@ class CalorieWeekOverview {
     required this.nextGoalStartDate,
     required this.futureGoalKcal,
   });
+
+  /// Creates data from persisted JSON.
+  factory CalorieWeekOverview.fromJson(Map<String, dynamic> json) =>
+      _$CalorieWeekOverviewFromJson(json);
+
+  /// Converts data to persisted JSON.
+  Map<String, dynamic> toJson() => _$CalorieWeekOverviewToJson(this);
 
   /// The days.
   final List<CalorieWeekDayOverview> days;

@@ -54,11 +54,12 @@ class DiaryDailyBudgetTodayCard extends StatelessWidget {
             ),
             DiaryDailyBudgetRow(
               label: l10n.diaryBudgetDetailsExpectedActivityLabel,
-              value: '+${formatDiaryKcal(
-                numberFormat,
-                data.expectedActivityKcal,
-                unit,
-              )}',
+              value:
+                  '+${formatDiaryKcal(
+                    numberFormat,
+                    data.expectedActivityKcal,
+                    unit,
+                  )}',
               valueColor: accents.activityFor(colors.brightness),
             ),
           ] else ...[

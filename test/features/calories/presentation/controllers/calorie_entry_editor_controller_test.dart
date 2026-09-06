@@ -30,6 +30,7 @@ class _FakeCalorieEntriesController extends CalorieEntriesController {
   @override
   Future<bool> saveEntry(
     CalorieEntry entry, {
+    bool isNewEntry = false,
     dynamic inventoryContext,
     dynamic scannedSourceRef,
     Future<bool> Function(CalorieEntry)? persistEntry,
