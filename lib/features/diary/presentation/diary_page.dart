@@ -15,6 +15,7 @@ import 'package:yamt/features/diary/application/'
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_intro_banner_dismissal_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page_intro_coordinator.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -26,6 +27,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_food_log_feedback/diary_food_log_feedback_host.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_intro_banner_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
@@ -106,14 +108,15 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         ? null
         : ref.watch(diaryCalorieGoalSettingsProvider).value;
     final runState = dashboardState.data?.runState;
-    final showIntroReplayButton =
+    final isIntroBannerDismissed = ref.watch(
+      diaryIntroBannerDismissalControllerProvider,
+    );
+    final showIntroBanner =
+        !isIntroBannerDismissed &&
         runState?.runWeekNumber == burnWeekLearningRunWeekNumber &&
         goalSettings != null &&
         !goalSettings.hasLearnedTdee &&
         DiaryIntroData.canBuildFrom(goalSettings);
-    final healthStatus = showIntroReplayButton
-        ? ref.watch(healthConnectionControllerProvider).value
-        : null;
 
     return DiaryFoodLogFeedbackHost(
       child: ColoredBox(
@@ -153,11 +156,32 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                           DiaryBalanceCard(
                             selectedDay: calendarState.selectedDay,
                           ),
-                          if (showIntroReplayButton) ...[
-                            const SizedBox(height: AppSpacing.xs),
-                            DiaryIntroReplayButton(
-                              goalSettings: goalSettings,
-                              healthStatus: healthStatus,
+                          if (showIntroBanner) ...[
+                            const SizedBox(height: AppSpacing.sm),
+                            DiaryIntroBannerCard(
+                              onOpenIntro: () {
+                                final introData = DiaryIntroData.fromSettings(
+                                  goalSettings,
+                                );
+                                final healthStatus = ref
+                                    .read(healthConnectionControllerProvider)
+                                    .value;
+                                unawaited(
+                                  runDiaryIntroFlow(
+                                    context: context,
+                                    ref: ref,
+                                    introData: introData,
+                                    healthStatus: healthStatus,
+                                  ),
+                                );
+                              },
+                              onDismiss: () {
+                                final notifier = ref.read(
+                                  diaryIntroBannerDismissalControllerProvider
+                                      .notifier,
+                                );
+                                unawaited(notifier.dismiss());
+                              },
                             ),
                           ],
                           if (dashboardState.data != null)

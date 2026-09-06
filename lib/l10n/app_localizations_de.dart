@@ -2565,6 +2565,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryIntroReplayAction => 'Intro nochmal';
 
   @override
+  String get diaryIntroBannerTitle => 'Neu bei YAMT?';
+
+  @override
+  String get diaryIntroBannerBody => 'Erfahre, wie dein Ziel berechnet wird und wie sich dein Stoffwechsel mit der Zeit anpasst.';
+
+  @override
+  String get diaryIntroBannerAction => 'Intro ansehen';
+
+  @override
+  String get diaryIntroBannerDismiss => 'Intro-Hinweis ausblenden';
+
+  @override
   String get diaryIntroStartTitle => 'Dein Startwert';
 
   @override
@@ -2760,6 +2772,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsHealthGoalsSectionTitle => 'Health & Ziele';
+
+  @override
+  String get settingsCalorieGoalIntroTitle => 'Intro zum Kalorienziel';
+
+  @override
+  String get settingsCalorieGoalIntroSubtitle => 'Startwert, Lernphase und Aktivitäten ansehen';
 
   @override
   String get settingsMacroGoalsTitle => 'Makronährstoff-Ziele';

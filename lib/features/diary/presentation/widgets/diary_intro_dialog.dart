@@ -33,6 +33,19 @@ abstract final class DiaryIntroDialogKeys {
   /// Button that opens the intro again from the first diary week.
   static const replayButton = ValueKey<String>('diary-intro-replay');
 
+  /// Banner card in week 1.
+  static const bannerCard = ValueKey<String>('diary-intro-banner-card');
+
+  /// Dismiss button for week 1 banner card.
+  static const bannerDismissButton = ValueKey<String>(
+    'diary-intro-banner-dismiss',
+  );
+
+  /// Action button on week 1 banner card.
+  static const bannerActionButton = ValueKey<String>(
+    'diary-intro-banner-action',
+  );
+
   /// Dot for one intro page.
   static ValueKey<String> dot(int index) {
     return ValueKey<String>('diary-intro-dot-$index');
