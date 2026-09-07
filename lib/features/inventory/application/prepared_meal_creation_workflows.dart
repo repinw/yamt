@@ -108,7 +108,6 @@ class PreparedMealCreationWorkflows {
           ? creationResult.preparedMeal
           : creationResult.preparedMeal.copyWith(
               finalNetWeight: finalNetWeight,
-              remainingNetWeight: finalNetWeight,
             );
       return _persistCreatedMeal(
         inventoryRepository: inventoryRepository,
@@ -381,7 +380,6 @@ class PreparedMealCreationWorkflows {
           totalPortions: container.totalPortions,
           remainingPortions: container.totalPortions,
           finalNetWeight: container.finalNetWeight,
-          remainingNetWeight: container.finalNetWeight,
           totalKcal: nutritionTotals.totalKcal,
           totalProtein: nutritionTotals.totalProtein,
           totalCarbs: nutritionTotals.totalCarbs,

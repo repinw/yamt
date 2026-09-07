@@ -289,7 +289,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
   }
 
   List<PreparedMealQuickOption> _buildGramQuickOptions(AppLocalizations l10n) {
-    final remainingGrams = _remainingGramAmount(widget.meal);
+    final remainingGrams = widget.meal.remainingNetWeight;
     if (remainingGrams == null || remainingGrams <= 0) {
       return const <PreparedMealQuickOption>[];
     }
@@ -330,7 +330,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
 
   String _remainingAmountLabel(AppLocalizations l10n) {
     if (_selectedAmountMode == PreparedMealEatAmountMode.grams) {
-      final remainingGrams = _remainingGramAmount(widget.meal) ?? 0;
+      final remainingGrams = widget.meal.remainingNetWeight ?? 0;
       final totalGrams = widget.meal.finalNetWeight ?? 0;
       return '${_formatGrams(remainingGrams)} / ${_formatGrams(totalGrams)}';
     }
@@ -478,7 +478,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       PreparedMealEatAmountMode.portions =>
         amount <= widget.meal.remainingPortions,
       PreparedMealEatAmountMode.grams =>
-        amount <= (_remainingGramAmount(widget.meal) ?? 0),
+        amount <= (widget.meal.remainingNetWeight ?? 0),
     };
   }
 
@@ -488,6 +488,10 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
         finalNetWeight <= 0 ||
         widget.meal.totalPortions < 1) {
       return null;
+    }
+    final remainingGrams = widget.meal.remainingNetWeight;
+    if (remainingGrams != null && grams >= remainingGrams) {
+      return widget.meal.remainingPortions;
     }
     return grams * widget.meal.totalPortions / finalNetWeight;
   }
@@ -535,22 +539,6 @@ num? _parsePortions(String value) {
 bool _canUseGramAmountMode(PreparedMeal meal) {
   final finalNetWeight = meal.finalNetWeight;
   return finalNetWeight != null && finalNetWeight > 0 && meal.totalPortions > 0;
-}
-
-int? _remainingGramAmount(PreparedMeal meal) {
-  final remainingNetWeight = meal.remainingNetWeight;
-  if (remainingNetWeight != null) {
-    return remainingNetWeight < 0 ? 0 : remainingNetWeight;
-  }
-  final finalNetWeight = meal.finalNetWeight;
-  if (finalNetWeight == null ||
-      finalNetWeight < 1 ||
-      meal.totalPortions < 1 ||
-      meal.remainingPortions <= 0) {
-    return null;
-  }
-  return ((finalNetWeight * meal.remainingPortions) / meal.totalPortions)
-      .round();
 }
 
 String _formatGrams(num grams) {

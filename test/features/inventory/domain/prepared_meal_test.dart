@@ -302,4 +302,39 @@ void main() {
     expect(meal.perHundredAmountBasis, isNull);
     expect(meal.totalPrice, 0);
   });
+
+  group('PreparedMeal remainingNetWeight', () {
+    test('returns null when finalNetWeight is null or non-positive', () {
+      expect(_meal().remainingNetWeight, isNull);
+      expect(_meal().copyWith(finalNetWeight: 0).remainingNetWeight, isNull);
+    });
+
+    test('returns 0 when remainingPortions <= 0', () {
+      final meal = _meal().copyWith(
+        finalNetWeight: 2253,
+        totalPortions: 4,
+        remainingPortions: 0,
+      );
+      expect(meal.remainingNetWeight, 0);
+    });
+
+    test('calculates proportional remaining net weight dynamically', () {
+      final meal = _meal().copyWith(
+        finalNetWeight: 2253,
+        totalPortions: 4,
+        remainingPortions: 0.005,
+      );
+      // (2253 * 0.005) / 4 = 2.81625 -> rounds to 3
+      expect(meal.remainingNetWeight, 3);
+    });
+
+    test('returns full finalNetWeight when all portions remain', () {
+      final meal = _meal().copyWith(
+        finalNetWeight: 2253,
+        totalPortions: 4,
+        remainingPortions: 4,
+      );
+      expect(meal.remainingNetWeight, 2253);
+    });
+  });
 }

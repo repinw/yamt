@@ -269,16 +269,8 @@ String _formatPreparedMealGramAmount(num amount) {
 
 String? _preparedMealGramProgressLabel(PreparedMeal meal) {
   final finalNetWeight = meal.finalNetWeight;
-  if (finalNetWeight == null || finalNetWeight < 1) {
-    return null;
-  }
-  final remainingNetWeight =
-      meal.remainingNetWeight ??
-      (meal.totalPortions < 1
-          ? null
-          : ((finalNetWeight * meal.remainingPortions) / meal.totalPortions)
-                .round());
-  if (remainingNetWeight == null) {
+  final remainingNetWeight = meal.remainingNetWeight;
+  if (finalNetWeight == null || remainingNetWeight == null) {
     return null;
   }
   return '${_formatPreparedMealGramAmount(

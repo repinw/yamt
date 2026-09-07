@@ -86,7 +86,6 @@ class PreparedMeal {
         const <String, RecipeIngredientAmountConversion>{},
     this.pendingRecipeIngredients = const <String>[],
     this.finalNetWeight,
-    this.remainingNetWeight,
   });
 
   /// Creates a [PreparedMeal] for from json.
@@ -143,8 +142,19 @@ class PreparedMeal {
   final int? finalNetWeight;
 
   /// Remaining cooked net weight in g/ml.
-  @JsonKey(fromJson: _readNullableInt)
-  final int? remainingNetWeight;
+  ///
+  /// Always calculated dynamically from the cooked net weight and remaining
+  /// portion ratio to prevent stale or desynchronized stored values.
+  int? get remainingNetWeight {
+    final netWeight = finalNetWeight;
+    if (netWeight == null || netWeight < 1) {
+      return null;
+    }
+    if (totalPortions < 1 || remainingPortions <= 0) {
+      return 0;
+    }
+    return ((netWeight * remainingPortions) / totalPortions).round();
+  }
 
   /// The total portions.
   @JsonKey(fromJson: _readIntOrZero)
@@ -200,7 +210,6 @@ class PreparedMeal {
     recipeIngredientAmountConversions,
     List<String>? pendingRecipeIngredients,
     Object? finalNetWeight = _keepValue,
-    Object? remainingNetWeight = _keepValue,
     int? totalPortions,
     num? remainingPortions,
     double? totalKcal,
@@ -235,9 +244,6 @@ class PreparedMeal {
       finalNetWeight: finalNetWeight == _keepValue
           ? this.finalNetWeight
           : finalNetWeight as int?,
-      remainingNetWeight: remainingNetWeight == _keepValue
-          ? this.remainingNetWeight
-          : remainingNetWeight as int?,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,

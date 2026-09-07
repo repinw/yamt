@@ -131,16 +131,24 @@ class FirestorePreparedMealCalorieEntryCommitStore
         final committedAt = normalizedEntry.updatedAt;
         final nextRemainingPortions =
             currentMeal.remainingPortions - consumedPortions;
+        final nextMeal = currentMeal.copyWith(
+          remainingPortions: nextRemainingPortions,
+        );
+
+        final mealUpdates = <String, dynamic>{
+          'remaining_portions': nextRemainingPortions,
+          'updated_at': committedAt.toIso8601String(),
+        };
+        if (nextMeal.remainingNetWeight != null) {
+          mealUpdates['remaining_net_weight'] = nextMeal.remainingNetWeight;
+        }
 
         transaction
           ..set(
             _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
             normalizedEntry.toJson(),
           )
-          ..update(mealRef, <String, dynamic>{
-            'remaining_portions': nextRemainingPortions,
-            'updated_at': committedAt.toIso8601String(),
-          });
+          ..update(mealRef, mealUpdates);
         return true;
       });
     } on Object catch (error, stackTrace) {

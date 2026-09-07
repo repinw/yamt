@@ -141,6 +141,42 @@ void main() {
     },
   );
 
+  test(
+    'commitEntryAndPreparedMeal updates remaining_net_weight for weighed meals',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await _preparedMealCollection(firestore: firestore)
+          .doc('meal-1')
+          .set(
+            _meal()
+                .copyWith(
+                  finalNetWeight: 2253,
+                  totalPortions: 4,
+                  remainingPortions: 4,
+                )
+                .toJson(),
+          );
+
+      final store = FirestorePreparedMealCalorieEntryCommitStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+        preparedMealOwnerUserId: 'user-1',
+      );
+
+      final saved = await store.commitEntryAndPreparedMeal(
+        entry: _entry(),
+      );
+
+      expect(saved, isTrue);
+
+      final savedMeal = await _preparedMealCollection(
+        firestore: firestore,
+      ).doc('meal-1').get();
+      expect(savedMeal.data()?['remaining_portions'], 2);
+      expect(savedMeal.data()?['remaining_net_weight'], 1127);
+    },
+  );
+
   test('commitEntryAndPreparedMeal leaves meal untouched when portions '
       'exceed remaining stock', () async {
     final firestore = FakeFirebaseFirestore();

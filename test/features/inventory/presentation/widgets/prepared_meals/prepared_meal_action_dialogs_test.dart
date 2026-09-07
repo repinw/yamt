@@ -290,7 +290,6 @@ void main() {
             totalPortions: 4,
             remainingPortions: 4,
             finalNetWeight: 3000,
-            remainingNetWeight: 3000,
           ),
         ),
       ),
@@ -315,6 +314,53 @@ void main() {
     expect(find.textContaining('eat:1.0:'), findsOneWidget);
     expect(find.textContaining(':$today'), findsOneWidget);
   });
+
+  testWidgets(
+    'eat dialog uses dynamic remaining grams with stale stored weight',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: _ActionDialogsHarness(
+            meal: PreparedMeal.fromJson({
+              ..._meal()
+                  .copyWith(
+                    totalPortions: 4,
+                    remainingPortions: 0.005,
+                    finalNetWeight: 2253,
+                  )
+                  .toJson(),
+              'remaining_net_weight': 2253,
+            }),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open eat'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const Key('prepared_meal_amount_mode_dropdown')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gram').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('3g / 2253g'), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('prepared_meal_portions_field')),
+        '3',
+      );
+      await tester.tap(
+        find.byKey(const Key('prepared_meal_eat_confirm_button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('eat:0.005:'), findsOneWidget);
+    },
+  );
 
   testWidgets('eat dialog defaults to fractional remaining portions', (
     tester,
