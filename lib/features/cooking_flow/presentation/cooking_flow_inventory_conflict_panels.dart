@@ -251,10 +251,10 @@ class CookingFlowInventoryUnitConflictPanel extends StatefulWidget {
 
   @override
   State<CookingFlowInventoryUnitConflictPanel> createState() =>
-      CookingFlowInventoryUnitConflictPanelState();
+      _CookingFlowInventoryUnitConflictPanelState();
 }
 
-class CookingFlowInventoryUnitConflictPanelState
+class _CookingFlowInventoryUnitConflictPanelState
     extends State<CookingFlowInventoryUnitConflictPanel> {
   late final TextEditingController _amountController;
 

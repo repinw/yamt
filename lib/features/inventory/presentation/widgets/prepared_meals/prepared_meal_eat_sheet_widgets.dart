@@ -1,16 +1,11 @@
 // Internal split file. Public names are imported only by sibling widgets.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_amount_card.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
-    'inventory_eat_flow_hero.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_quick_chip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
@@ -24,54 +19,6 @@ class PreparedMealQuickOption {
 
   final String label;
   final num value;
-}
-
-class PreparedMealEatHero extends StatelessWidget {
-  const PreparedMealEatHero({required this.meal, required this.imageBytes});
-
-  final PreparedMeal meal;
-  final Uint8List? imageBytes;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return InventoryEatFlowHero(
-      title: meal.name,
-      eyebrow: l10n.preparedMealEatTitle,
-      imageUrl: meal.imageUrl,
-      imageBytes: imageBytes,
-      imageKey: const Key('prepared_meal_eat_sheet_hero_cover'),
-      cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
-      fallback: PreparedMealEatHeroFallback(label: meal.name),
-    );
-  }
-}
-
-class PreparedMealEatHeroFallback extends StatelessWidget {
-  const PreparedMealEatHeroFallback({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final trimmed = label.trim();
-    final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1);
-    final colors = Theme.of(context).colorScheme;
-
-    return ColoredBox(
-      color: colors.surfaceContainerHigh,
-      child: Center(
-        child: Text(
-          initial.toUpperCase(),
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: colors.primary,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class PreparedMealEatPortionsSection extends StatelessWidget {

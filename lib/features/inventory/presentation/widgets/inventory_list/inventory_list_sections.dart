@@ -5,23 +5,7 @@ import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_segmented_button_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Defines inventory mode toolbar.
-class InventoryModeToolbar extends StatelessWidget {
-  /// The inventory mode toolbar.
-  const InventoryModeToolbar({required this.modeToggle, super.key});
-
-  /// The mode toggle.
-  final Widget modeToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return InventorySegmentedButtonFrame(child: modeToggle);
-  }
-}
 
 /// Defines inventory section header.
 class InventorySectionHeader extends StatelessWidget {

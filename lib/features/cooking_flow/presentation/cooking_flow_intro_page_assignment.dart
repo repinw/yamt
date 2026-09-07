@@ -201,10 +201,10 @@ class CookingFlowInventoryAssignmentBottomSheet extends StatefulWidget {
 
   @override
   State<CookingFlowInventoryAssignmentBottomSheet> createState() =>
-      CookingFlowInventoryAssignmentBottomSheetState();
+      _CookingFlowInventoryAssignmentBottomSheetState();
 }
 
-class CookingFlowInventoryAssignmentBottomSheetState
+class _CookingFlowInventoryAssignmentBottomSheetState
     extends State<CookingFlowInventoryAssignmentBottomSheet> {
   late final Set<String> _selectedItemIds;
   late final List<CookingFlowInventoryAssignmentSelection> _manualSelections;

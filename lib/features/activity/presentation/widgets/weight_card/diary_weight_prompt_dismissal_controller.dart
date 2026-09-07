@@ -18,11 +18,6 @@ class DiaryWeightPromptDismissalController
     return ref.read(appPreferencesProvider).getStringSync(_preferenceKey);
   }
 
-  /// Whether the prompt has already been dismissed for [day].
-  bool isDismissedForDay(DateTime day) {
-    return state == diaryDayKey(day);
-  }
-
   /// Dismiss prompt for [day].
   Future<void> dismissForDay(DateTime day) async {
     final dayKey = diaryDayKey(day);

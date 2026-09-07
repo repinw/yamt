@@ -175,9 +175,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productSearchHubCreateOwnAction => 'Erstellen';
 
   @override
-  String get productSearchHubSearchLabel => 'Produkt suchen';
-
-  @override
   String get productSearchHubSearchHint => 'Name, Marke...';
 
   @override
@@ -443,9 +440,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewManualDataAction => 'Produkt suchen oder Barcode scannen';
 
   @override
-  String get inventoryReceiptReviewManualDataTitle => 'Produkt suchen oder Barcode scannen';
-
-  @override
   String get inventoryReceiptReviewManualDataHint => 'Produkt suchen oder Barcode scannen. Nährwerte später ergänzen.';
 
   @override
@@ -606,25 +600,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryNutritionCarbsShortLabel => 'KH';
 
   @override
-  String get inventoryFilterConsumed => 'Verbraucht';
-
-  @override
-  String get inventoryFilterNotConsumed => 'Nicht verbraucht';
-
-  @override
   String get inventoryHideConsumedFilterTitle => 'Verbrauchte ausblenden';
 
   @override
   String get inventoryHideConsumedFilterSubtitle => 'Komplett leere Artikel verbergen';
-
-  @override
-  String get inventoryHideFullyConsumedItemsToggle => 'Komplett verbrauchte Artikel ausblenden';
-
-  @override
-  String get preparedMealFilterAction => 'Filtern';
-
-  @override
-  String get preparedMealFiltersTitle => 'Ansicht anpassen';
 
   @override
   String get preparedMealFiltersSubtitle => 'Sortiere und filtere deine Mahlzeiten';
@@ -651,9 +630,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptGroupItems => 'Artikel';
 
   @override
-  String get inventoryItemDeleteAction => 'Löschen';
-
-  @override
   String get inventoryItemDeletedMessage => 'Artikel gelöscht.';
 
   @override
@@ -666,11 +642,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatSheetEyebrow => 'Essen loggen';
 
   @override
-  String inventoryItemEatSheetTitle(String name) {
-    return 'Essen: $name';
-  }
-
-  @override
   String get inventoryItemEatSheetAmountLabel => 'Menge eingeben';
 
   @override
@@ -679,25 +650,13 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get inventoryItemEatSheetQuickSelectLabel => 'Schnellwahl';
-
-  @override
   String get inventoryItemEatSheetAllAction => 'Alles';
 
   @override
   String get inventoryAmountDialogAllRemainingAction => 'Alles/Rest';
 
   @override
-  String get inventoryItemEatSheetPortionModeTitle => 'Portionen';
-
-  @override
-  String get inventoryItemEatSheetUsePortionsToggle => 'Portionsanzahl verwenden';
-
-  @override
   String get inventoryItemEatSheetPortionLabelFieldLabel => 'Portionsname';
-
-  @override
-  String get inventoryItemEatSheetPortionCountFieldLabel => 'Anzahl';
 
   @override
   String get inventoryItemEatSheetPortionAmountFieldLabel => 'Menge pro Portion';
@@ -747,15 +706,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatSheetInedibleAmountError => 'Der Abzug muss kleiner als die verzehrte Menge sein.';
 
   @override
-  String get inventoryItemEatSheetWhenLabel => 'Wann?';
-
-  @override
-  String get inventoryItemEatSheetNowValue => 'Heute';
-
-  @override
-  String get inventoryItemEatSheetNutritionLabel => 'Nährwerte';
-
-  @override
   String get inventoryItemEatSheetConfirmAction => 'Hinzufügen';
 
   @override
@@ -769,9 +719,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryItemAddToShoppingListAction => 'Zur Einkaufsliste hinzufügen';
-
-  @override
-  String get inventoryItemBuyAgainAction => 'Erneut kaufen';
 
   @override
   String get inventoryItemBuyAgainSucceeded => 'Artikel zur Einkaufsliste hinzugefügt.';
@@ -830,9 +777,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryBarcodeScanUnsupported => 'Barcode-Scan wird aktuell auf Android und iOS unterstützt.';
 
   @override
-  String get inventoryManualAddTitle => 'Lebensmittel manuell hinzufügen';
-
-  @override
   String get inventoryManualAddHint => 'Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.';
 
   @override
@@ -854,9 +798,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddCandidateSourceOff => 'OFF';
 
   @override
-  String get inventoryManualAddUnknownBrand => 'Unbekannte Marke';
-
-  @override
   String get inventoryManualAddNotFound => 'Zu diesem Barcode wurde kein passendes Produkt gefunden.';
 
   @override
@@ -864,9 +805,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryManualAddSaveFailed => 'Das Produkt konnte nicht zum Inventar hinzugefügt werden.';
-
-  @override
-  String get inventoryManualAddSaved => 'Produkt zum Inventar hinzugefügt.';
 
   @override
   String get inventoryManualAddEatSucceeded => 'Ins Tagebuch eingetragen';
@@ -900,12 +838,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryManualAddCreateOwnAction => 'Manuell erstellen';
-
-  @override
-  String get inventoryManualAddEatNowOption => 'Sofort essen';
-
-  @override
-  String get inventoryManualAddEatNowSizeLabel => 'Sofort essen Menge';
 
   @override
   String get inventoryManualAddEatNowRequiresNutrition => 'Nur verfügbar, wenn Nährwerte vorhanden sind.';
@@ -975,9 +907,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryManualAddAiSearchTotalLabel => 'Gesamt';
-
-  @override
-  String get inventoryManualAddAiSearchPer100Title => 'Gespeichert pro 100 g';
 
   @override
   String get inventoryManualAddAiSearchPer100CardTitle => 'PRO 100 G';
@@ -1276,19 +1205,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateRecipeSheetSubtitle => 'Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.';
 
   @override
-  String get preparedMealTemplateRecipeGreetingTitle => 'Lass uns ein Rezept zaubern! 🍳';
-
-  @override
   String get preparedMealTemplateRecipeGreetingSubtitle => 'Kopiere die Web-Adresse deines Lieblingsrezepts und wir lesen alle Zutaten automatisch für dich aus.';
-
-  @override
-  String get preparedMealTemplateStepCopy => '1. 🔗 Kopieren';
-
-  @override
-  String get preparedMealTemplateStepPaste => '2. 📝 Einfügen';
-
-  @override
-  String get preparedMealTemplateStepCreate => '3. ✨ Starten';
 
   @override
   String get preparedMealTemplateClipboardTitle => 'Aus Zwischenablage einfügen ✨';
@@ -1327,15 +1244,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get preparedMealTemplatePortionsHelper => 'Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.';
-
-  @override
-  String get preparedMealTemplateRecipePlaceholder => 'Rezept-Link';
-
-  @override
-  String get preparedMealTemplateNoIngredientsYet => 'Noch keine Zutaten verknüpft.';
-
-  @override
-  String get preparedMealTemplateOpenAction => 'Rezept öffnen';
 
   @override
   String get preparedMealTemplateUpdatedMessage => 'Rezept aktualisiert.';
@@ -1433,11 +1341,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateImportReviewSavingAction => 'Speichert...';
 
   @override
-  String preparedMealTemplateRecipeSource(String host) {
-    return 'Rezept: $host';
-  }
-
-  @override
   String preparedMealTemplatePortions(int count) {
     return '$count Portionen';
   }
@@ -1499,42 +1402,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shoppingListClearCrossedOffConfirmAction => 'Löschen';
 
   @override
-  String get caloriesAddOptionManual => 'Manueller Eintrag';
-
-  @override
-  String get caloriesAddOptionBarcode => 'Barcode scannen';
-
-  @override
-  String get caloriesFabTooltip => 'Kalorien-Eintrag hinzufügen';
-
-  @override
-  String get caloriesBarcodeScannerTitle => 'Barcode scannen';
-
-  @override
-  String get caloriesBarcodeResolving => 'Produkt wird gesucht...';
-
-  @override
-  String get caloriesBarcodeLookupFailed => 'Barcode-Suche fehlgeschlagen. Bitte erneut versuchen.';
-
-  @override
-  String get caloriesBarcodeCandidateTitle => 'Produkt auswählen';
-
-  @override
-  String get caloriesBarcodeCandidateSubtitle => 'Für diesen Barcode wurden mehrere Produkte gefunden.';
-
-  @override
-  String get caloriesBarcodeUnknownBrand => 'Unbekannte Marke';
-
-  @override
-  String get caloriesBarcodeNotFoundTitle => 'Produkt nicht gefunden';
-
-  @override
-  String get caloriesBarcodeNotFoundMessage => 'Für diesen Barcode wurde kein Produkt gefunden.';
-
-  @override
-  String get caloriesBarcodeNotFoundManualAction => 'Manueller Eintrag';
-
-  @override
   String get caloriesBarcodeNotFoundOcrAction => 'Nährwertetikett scannen';
 
   @override
@@ -1562,34 +1429,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesTodayAction => 'Heute';
 
   @override
-  String get caloriesSetGoalAction => 'Ziel manuell setzen';
-
-  @override
   String get caloriesShiftGoalStartAction => 'Zielstart verschieben';
 
   @override
   String get caloriesCalculatorAction => 'Ziel neu berechnen';
 
   @override
-  String get caloriesGoalDialogTitle => 'Tagesziel setzen';
-
-  @override
-  String get caloriesGoalFieldLabel => 'Tagesziel in kcal';
-
-  @override
-  String get caloriesGoalSaveAction => 'Ziel speichern';
-
-  @override
-  String get caloriesGoalClearAction => 'Ziel löschen';
-
-  @override
-  String get caloriesGoalInvalidValue => 'Bitte eine Zahl größer als null eingeben.';
-
-  @override
   String get caloriesGoalSaveFailed => 'Kalorienziel konnte nicht gespeichert werden.';
-
-  @override
-  String get caloriesGoalClearFailed => 'Kalorienziel konnte nicht gelöscht werden.';
 
   @override
   String get caloriesGoalStartDialogTitle => 'Zielstart verschieben';
@@ -1602,9 +1448,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesCalculatorSheetTitle => 'Kalorienrechner';
-
-  @override
-  String get caloriesCalculatorOnboardingTitle => 'Kalorienziel festlegen';
 
   @override
   String get caloriesCalculatorOnboardingSubtitle => 'Wir berechnen aus ein paar Angaben dein tägliches Kalorienziel.';
@@ -1693,15 +1536,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorActivityLevelExtremeDescription => 'Sehr hohe Trainingsumfänge, körperlich harte Arbeit oder Leistungssport.';
 
   @override
-  String get caloriesCalculatorActivityLevelHint => 'Zum Beispiel 1,2 bis 2,0';
-
-  @override
-  String get caloriesCalculatorActivityLevelEmpty => 'Bitte gib dein Aktivitätslevel ein.';
-
-  @override
-  String get caloriesCalculatorActivityLevelInvalid => 'Bitte gib ein gültiges Aktivitätslevel ein.';
-
-  @override
   String get caloriesCalculatorGoalModeLabel => 'Zielmodus';
 
   @override
@@ -1750,9 +1584,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorOnboardingStartTitle => 'Wann soll dein Ziel starten?';
 
   @override
-  String get caloriesCalculatorOnboardingStartNowAction => 'Ab sofort';
-
-  @override
   String get caloriesCalculatorOnboardingStartLaterAction => 'Später starten';
 
   @override
@@ -1763,15 +1594,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesCalculatorOnboardingTodayTrackingLabel => 'Wie trackst du heute?';
-
-  @override
-  String get caloriesCalculatorOnboardingTodayTrackingExactAction => 'Ganzer Tag exakt';
-
-  @override
-  String get caloriesCalculatorOnboardingTodayTrackingEstimateAction => 'Bisher schätzen';
-
-  @override
-  String get caloriesCalculatorOnboardingCatchUpLabel => 'Wie viel hast du bisher gegessen?';
 
   @override
   String get caloriesCalculatorOnboardingCatchUpLowAction => 'Wenig';
@@ -1854,9 +1676,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesWeeklyCheckInDialogTrendLabel => 'Gewichtstrend';
-
-  @override
-  String get caloriesWeeklyCheckInDialogTrueTdeeLabel => 'Gelernter TDEE';
 
   @override
   String get caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel => 'Gemessener Gesamt-TDEE';
@@ -1955,13 +1774,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get caloriesConsumedLabel => 'Verbraucht';
-
-  @override
   String get caloriesGoalLabel => 'Ziel';
-
-  @override
-  String get caloriesRemainingLabel => 'Verbleibend';
 
   @override
   String get caloriesDebugActionsTooltip => 'Kalorien-Debug-Aktionen';
@@ -2020,78 +1833,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get calorieBudgetDetailsActualLabel => 'Ist (du)';
-
-  @override
-  String get calorieBudgetDetailsTargetLabel => 'Soll (Ziel)';
-
-  @override
-  String get calorieBudgetDetailsBalanceExplanation => 'Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs.';
-
-  @override
-  String get calorieBudgetDetailsTodayBudget => 'Heutiges Budget';
-
-  @override
-  String get calorieBudgetDetailsFoodToday => 'Essen heute';
-
-  @override
-  String get calorieBudgetDetailsRemaining => 'Verbleibend';
-
-  @override
-  String get burnWeekDetailsTitle => 'Burn-Week-Details';
-
-  @override
-  String get burnWeekDetailsHowCalculated => 'So wird es berechnet';
-
-  @override
-  String get burnWeekDetailsDailyGoal => 'Tagesziel';
-
-  @override
-  String get burnWeekDetailsWeekTarget => 'Wochenziel';
-
-  @override
-  String get burnWeekDetailsCurrentTime => 'Aktuelle Zeit';
-
-  @override
-  String get burnWeekDetailsStarsHearts => 'Sterne / Herzen';
-
-  @override
-  String get burnWeekDetailsHeartKcalUsed => 'Herz-Anpassung';
-
-  @override
-  String get burnWeekDetailsWeekRatio => 'Wochenfortschritt';
-
-  @override
-  String get burnWeekDetailsTargetFormula => 'Zielformel';
-
-  @override
-  String get burnWeekDetailsLoggedFoodSoFar => 'Bisher erfasstes Essen';
-
-  @override
-  String get burnWeekDetailsPlannedLaterToday => 'Später heute geplant';
-
-  @override
-  String get burnWeekDetailsActivityBonusSoFar => 'Bisheriger Aktivitätsbonus';
-
-  @override
-  String get burnWeekDetailsWeekCarryover => 'Übertrag dieser Woche';
-
-  @override
-  String get burnWeekDetailsPreviousWeekOverflow => 'Übertrag aus letzter Woche';
-
-  @override
-  String get burnWeekDetailsWeekLeftAfterFood => 'Woche übrig nach Essen';
-
-  @override
-  String get burnWeekDetailsSportCounting => 'Sport-Zählung';
-
-  @override
-  String get burnWeekDetailsSportCountingValue => 'Erwartete Aktivität steckt bereits im Basisziel. Die Hälfte der Aktivität über dieser Erwartung wird als essbare kcal addiert.';
-
-  @override
-  String get burnWeekDetailsSafeZone => 'Sicherheitszone';
-
-  @override
   String burnWeekWeekDayLabel(int week, int day) {
     return 'Woche $week Tag $day';
   }
@@ -2126,17 +1867,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryWeightClearFailed => 'Manuelles Gewicht konnte nicht gelöscht werden.';
 
   @override
-  String get caloriesDeleteEntryDialogTitle => 'Eintrag löschen?';
-
-  @override
-  String caloriesDeleteEntryDialogMessage(String name) {
-    return '\"$name\" für diesen Tag löschen?';
-  }
-
-  @override
-  String get caloriesDeleteEntryConfirmAction => 'Löschen';
-
-  @override
   String get caloriesRemoveEntryAction => 'Eintrag entfernen';
 
   @override
@@ -2155,21 +1885,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesRemoveAndRestoreAction => 'In den Vorrat zurücklegen';
 
   @override
-  String get caloriesReturnPreparedMealDialogTitle => 'Mahlzeit zurück in den Vorrat legen?';
-
-  @override
-  String caloriesReturnPreparedMealDialogMessage(String name) {
-    return '\"$name\" zurück in den Vorrat legen und aus dem Tagebuch entfernen?';
-  }
-
-  @override
-  String get caloriesReturnPreparedMealConfirmAction => 'Zurück in den Vorrat';
-
-  @override
   String get caloriesReturnPreparedMealFailed => 'Die Mahlzeit konnte nicht zurück in den Vorrat gelegt werden.';
-
-  @override
-  String get caloriesDeleteRestoreInventoryQuestion => 'Nahrungsmittel wieder in den Vorrat legen?';
 
   @override
   String get caloriesDeleteRestoreFailed => 'Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.';
@@ -2300,27 +2016,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesMealSnack => 'Snack';
 
   @override
-  String get caloriesWeekdayShortMonday => 'Mo';
-
-  @override
-  String get caloriesWeekdayShortTuesday => 'Di';
-
-  @override
-  String get caloriesWeekdayShortWednesday => 'Mi';
-
-  @override
-  String get caloriesWeekdayShortThursday => 'Do';
-
-  @override
-  String get caloriesWeekdayShortFriday => 'Fr';
-
-  @override
-  String get caloriesWeekdayShortSaturday => 'Sa';
-
-  @override
-  String get caloriesWeekdayShortSunday => 'So';
-
-  @override
   String get caloriesUnitKcal => 'kcal';
 
   @override
@@ -2334,11 +2029,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryTodayTitle => 'Heute';
-
-  @override
-  String diaryCycleDayLabel(int week, int day) {
-    return 'Woche $week Tag $day';
-  }
 
   @override
   String get diaryMealsTitle => 'Tagebuch';
@@ -2385,9 +2075,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBalanceEatenLabel => 'Gegessen';
 
   @override
-  String get diaryBalanceLeftLabel => 'Übrig';
-
-  @override
   String get diaryBalanceLeftTodayLabel => 'Übrig heute';
 
   @override
@@ -2408,12 +2095,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryBalanceTargetMarkerLabel => 'Soll';
-
-  @override
-  String get diaryBalanceWeekActualLabel => 'Ist (Woche)';
-
-  @override
-  String get diaryBalanceWeekTargetLabel => 'Wochenziel';
 
   @override
   String diaryBalanceRealEatenLabel(Object kcal) {
@@ -2443,16 +2124,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryBalanceRevertHeartDayAction => 'Herztag zurücknehmen';
-
-  @override
-  String diaryBalanceActivityIncludedLabel(String kcal) {
-    return '$kcal Aktivität im Tagesziel enthalten';
-  }
-
-  @override
-  String diaryBalanceActivityBonusLabel(String kcal) {
-    return '$kcal Extra-Sport';
-  }
 
   @override
   String diaryBalanceBaseGoalShort(String value) {
@@ -2492,9 +2163,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryBudgetDetailsCarryoverLabel => 'Übertrag aus Vortagen';
-
-  @override
-  String get diaryBudgetDetailsActivityBonusLabel => 'Aktivitätsbonus';
 
   @override
   String get diaryBudgetDetailsEffectiveGoalLabel => 'Effektives Tagesziel';
@@ -2560,9 +2228,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryIntroDoneAction => 'Loslegen';
-
-  @override
-  String get diaryIntroReplayAction => 'Intro nochmal';
 
   @override
   String get diaryIntroBannerTitle => 'Neu bei YAMT?';
@@ -2632,15 +2297,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryActivityTitle => 'Aktivität';
 
   @override
-  String get diaryActivityEmpty => 'Keine Aktivität';
-
-  @override
   String get diaryActivityWeightLoadFailed => 'Aktivität und Gewicht konnten nicht geladen werden';
-
-  @override
-  String diaryActiveMinutesLabel(String minutes) {
-    return '$minutes Min. aktiv';
-  }
 
   @override
   String get diaryWeightTitle => 'Gewicht';
@@ -2830,9 +2487,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsLanguageTitle => 'Sprache';
 
   @override
-  String get settingsLanguageSubtitle => 'App-Sprache auswählen';
-
-  @override
   String get settingsLanguageEnglish => 'Englisch';
 
   @override
@@ -2849,12 +2503,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsThemeDark => 'Dunkel';
-
-  @override
-  String get settingsDiaryTitle => 'Tagebuch';
-
-  @override
-  String get settingsDiaryGoalNoGoal => 'Kein Ziel gesetzt';
 
   @override
   String get settingsDiaryGoalSetGoalFirst => 'Zuerst Ziel setzen';
@@ -2897,9 +2545,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsAccountTitle => 'Konto';
-
-  @override
-  String get settingsAccountSubtitle => 'Profil und Anmeldung verwalten';
 
   @override
   String get settingsHealthConnectPlatformTitle => 'Health Connect';
@@ -3321,9 +2966,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onboardingHeightCmUnit => 'cm';
 
   @override
-  String get onboardingDoneAction => 'Fertig';
-
-  @override
   String get onboardingNextAction => 'Weiter';
 
   @override
@@ -3343,12 +2985,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingActivityLevelSubtitle => 'Dein normaler Alltag (Training kommt später).';
-
-  @override
-  String get onboardingActivityTitle => 'Aktivitätslevel';
-
-  @override
-  String get onboardingActivitySubtitle => 'Wie aktiv bist du in deinem Alltag?';
 
   @override
   String get onboardingGoalWeightTitle => 'Dein Ziel';
@@ -3444,9 +3080,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingStartDateNowEstimate => 'Ich schätze grob ab, was ich bisher aß';
-
-  @override
-  String get onboardingStartDateLaterLabel => 'Ab morgen';
 
   @override
   String get onboardingStartDateLaterDesc => 'Heute ist schon fast rum, ich starte lieber morgen frisch.';
@@ -3648,9 +3281,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookflowPreparationBody => 'Bevor wir loslegen: Wähle alle Töpfe oder Behälter und trage ihr Leergewicht ein.';
 
   @override
-  String get cookflowTaraFieldTitle => 'Leergewicht (Tara)';
-
-  @override
   String get cookflowGramUnit => 'Gramm';
 
   @override
@@ -3668,11 +3298,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String cookflowOriginalPortionsLabel(int count) {
     return 'Originalrezept: $count Portionen';
-  }
-
-  @override
-  String cookflowTargetPortionsLabel(int count) {
-    return '$count Portionen';
   }
 
   @override
@@ -3733,9 +3358,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookflowSummaryMatchInventoryButton => 'Als Zutat hinzufügen';
 
   @override
-  String get cookflowSummaryPlaceholderAdjustment => '200g Gurken';
-
-  @override
   String get cookflowFinalizeTitle => '4. Finalisieren';
 
   @override
@@ -3762,9 +3384,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookflowContainerTaraLabel => 'Tara';
 
   @override
-  String get cookflowPortionsUnit => 'Portionen';
-
-  @override
   String get cookflowIngredientContainerTitle => 'Wo ist welche Zutat verstaut?';
 
   @override
@@ -3775,9 +3394,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cookflowGrossWeightHint => 'z.B. 2500';
-
-  @override
-  String get cookflowMinusTaraLabel => 'Minus Leergewicht (Tara)';
 
   @override
   String get cookflowNetWeightLabel => 'Netto-Endgewicht';

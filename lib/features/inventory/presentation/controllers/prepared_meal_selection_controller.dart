@@ -133,11 +133,6 @@ class PreparedMealSelectionController
     );
   }
 
-  /// Request create meal.
-  void requestCreateMeal() {
-    state = state.copyWith(bindRequestToken: state.bindRequestToken + 1);
-  }
-
   /// Request the active selection action.
   void confirmSelection() {
     state = state.copyWith(bindRequestToken: state.bindRequestToken + 1);

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
     'ai_chef_button/ai_chef_button.dart';
@@ -26,8 +27,6 @@ import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_error_state.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_grid.dart';
-import 'package:yamt/features/meal_templates/presentation/widgets/'
-    'meal_templates_page/meal_templates_loading_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines meal templates page.
@@ -92,7 +91,7 @@ class MealTemplatesPage extends ConsumerWidget {
       },
       loading: () => const SliverFillRemaining(
         hasScrollBody: false,
-        child: MealTemplatesLoadingState(),
+        child: AppLoadingView(),
       ),
       error: (error, stackTrace) => SliverFillRemaining(
         hasScrollBody: false,

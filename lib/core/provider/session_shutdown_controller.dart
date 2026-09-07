@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'session_shutdown_controller.g.dart';
@@ -35,12 +34,6 @@ class SessionShutdownSignal {
     _epoch = 0;
     finish();
   }
-}
-
-/// Resets shutdown signal for tests.
-@visibleForTesting
-void resetSessionShutdownSignal(SessionShutdownSignal signal) {
-  signal.reset();
 }
 
 /// Provides global shutdown signal object.

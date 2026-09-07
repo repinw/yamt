@@ -3,13 +3,13 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_mode.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_filter_divider.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_filter_content.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'

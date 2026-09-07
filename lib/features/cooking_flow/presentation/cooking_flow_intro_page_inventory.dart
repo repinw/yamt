@@ -50,10 +50,10 @@ class CookingFlowInventoryCheckCard extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<CookingFlowInventoryCheckCard> createState() =>
-      CookingFlowInventoryCheckCardState();
+      _CookingFlowInventoryCheckCardState();
 }
 
-class CookingFlowInventoryCheckCardState
+class _CookingFlowInventoryCheckCardState
     extends ConsumerState<CookingFlowInventoryCheckCard> {
   late List<GlobalKey> _rowKeys;
   bool _syncScheduled = false;

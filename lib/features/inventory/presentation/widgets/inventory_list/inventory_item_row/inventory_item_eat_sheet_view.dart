@@ -5,8 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_amount_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_hero.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_quick_chip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
@@ -17,8 +21,6 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_when_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_eat_sheet_display.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_eat_sheet_hero.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_eat_sheet_input_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -35,10 +37,23 @@ class InventoryItemEatSheetView extends StatelessWidget {
   Widget build(BuildContext context) {
     return InventoryEatFlowSheetScaffold(
       viewInsetsBottom: data.viewInsetsBottom,
-      hero: InventoryItemEatHero(
-        itemName: data.hero.itemName,
+      hero: InventoryEatFlowHero(
+        title: data.hero.itemName,
         eyebrow: data.hero.eyebrow,
         imageUrl: data.hero.imageUrl,
+        cancelButtonKey: const Key(
+          'inventory_item_amount_dialog_cancel_button',
+        ),
+        fallback: ColoredBox(
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
+          child: const Center(
+            child: Text(
+              AppInventoryItemVisuals.fallbackEmoji,
+              key: Key('inventory_item_eat_sheet_hero_fallback'),
+              style: TextStyle(fontSize: 48),
+            ),
+          ),
+        ),
       ),
       confirmActionText: data.footer.confirmActionText,
       confirmButtonKey: const Key(

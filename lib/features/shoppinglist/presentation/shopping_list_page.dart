@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_content.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/'
-    'shopping_list_state_views.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_quick_add_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -49,8 +48,8 @@ class ShoppingListPage extends ConsumerWidget {
           l10n: l10n,
           currency: currency,
         ),
-        loading: () => const ShoppingListLoadingView(),
-        error: (error, stackTrace) => ShoppingListErrorView(
+        loading: () => const AppLoadingView(),
+        error: (error, stackTrace) => AppErrorRetryView(
           onRetry: controller.refresh,
           message: l10n.shoppingListLoadFailed,
           retryLabel: l10n.shoppingListRetryAction,

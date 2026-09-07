@@ -11,9 +11,6 @@ const carbEnergyDensityKcalPerGram = 4.1;
 /// Conversion factor: Fat kcal per gram (sports nutrition standard).
 const fatEnergyDensityKcalPerGram = 9.3;
 
-/// Conversion factor: Protein kcal per gram.
-const proteinEnergyDensityKcalPerGram = 4;
-
 /// Proportion of carryover allocated to carbs (75%).
 const carryoverCarbFraction = 0.75;
 

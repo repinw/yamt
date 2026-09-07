@@ -30,6 +30,8 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_mode.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'prepared_meal_sorter.dart';
@@ -37,8 +39,6 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_home_shell_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'

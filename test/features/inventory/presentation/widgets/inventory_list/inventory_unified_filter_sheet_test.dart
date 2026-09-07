@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_mode.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_unified_filter_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';

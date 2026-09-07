@@ -23,16 +23,6 @@ DateTime previousDiaryDay(DateTime day) {
   return previousLocalDay(day);
 }
 
-/// Returns the last visible diary day.
-DateTime resolveDiaryWindowEnd({DateTime? anchorDay}) {
-  return resolveRollingLocalWindowEnd(anchorDay: anchorDay);
-}
-
-/// Returns the first visible diary day in the rolling window.
-DateTime resolveDiaryWindowStart({DateTime? anchorDay}) {
-  return resolveRollingLocalWindowStart(anchorDay: anchorDay);
-}
-
 /// Builds the visible diary days from oldest to newest.
 List<DateTime> buildDiaryVisibleDays({DateTime? anchorDay}) {
   return buildRollingLocalDays(anchorDay: anchorDay);

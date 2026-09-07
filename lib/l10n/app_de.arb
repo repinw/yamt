@@ -83,11 +83,9 @@
     }
   },
   "homeHeartCounterEmptyTooltip": "Keine Herzen übrig",
-  "homeHeartCounterUnavailableTooltip":
-      "Herzen können nur in der aktuellen Burn Week genutzt werden",
+  "homeHeartCounterUnavailableTooltip": "Herzen können nur in der aktuellen Burn Week genutzt werden",
   "homeHeartUseTitle": "Herztag nutzen?",
-  "homeHeartUseMessage":
-      "Gib 1 Herz aus, um {day} zu ignorieren. Erfasstes Essen bleibt im Tagebuch, aber der Tag zählt als perfekt und wird beim Wochenlernen übersprungen.",
+  "homeHeartUseMessage": "Gib 1 Herz aus, um {day} zu ignorieren. Erfasstes Essen bleibt im Tagebuch, aber der Tag zählt als perfekt und wird beim Wochenlernen übersprungen.",
   "homeHeartUseConfirmAction": "Herz nutzen",
   "@homeHeartUseMessage": {
     "placeholders": {
@@ -106,7 +104,6 @@
   "productSearchHubInventoryAction": "Aus Vorrat",
   "productSearchHubMealAction": "Mahlzeit",
   "productSearchHubCreateOwnAction": "Erstellen",
-  "productSearchHubSearchLabel": "Produkt suchen",
   "productSearchHubSearchHint": "Name, Marke...",
   "productSearchHubClearSearchAction": "Suche leeren",
   "productSearchHubSearchLoading": "Produkte werden gesucht",
@@ -132,10 +129,8 @@
   "inventoryActionUploadImagePdf": "Bild/PDF hochladen",
   "inventoryActionCamera": "Kamera",
   "inventorySharedReceiptConfirmTitle": "Geteilten Beleg scannen?",
-  "inventorySharedReceiptConfirmSingleMessage":
-      "Möchtest du diese geteilte Datei als Beleg scannen?",
-  "inventorySharedReceiptConfirmMultipleMessage":
-      "Möchtest du {count} geteilte Dateien als Belege scannen?",
+  "inventorySharedReceiptConfirmSingleMessage": "Möchtest du diese geteilte Datei als Beleg scannen?",
+  "inventorySharedReceiptConfirmMultipleMessage": "Möchtest du {count} geteilte Dateien als Belege scannen?",
   "@inventorySharedReceiptConfirmMultipleMessage": {
     "placeholders": {
       "count": {
@@ -212,15 +207,10 @@
   "inventoryReceiptReviewProductSelectionLabel": "Produkt auswählen",
   "inventoryReceiptReviewManualSearchLabel": "Produkt suchen",
   "inventoryReceiptReviewRecentProductsTitle": "Zuletzt hinzugefügt",
-  "inventoryReceiptReviewManualDataAction":
-      "Produkt suchen oder Barcode scannen",
-  "inventoryReceiptReviewManualDataTitle":
-      "Produkt suchen oder Barcode scannen",
-  "inventoryReceiptReviewManualDataHint":
-      "Produkt suchen oder Barcode scannen. Nährwerte später ergänzen.",
+  "inventoryReceiptReviewManualDataAction": "Produkt suchen oder Barcode scannen",
+  "inventoryReceiptReviewManualDataHint": "Produkt suchen oder Barcode scannen. Nährwerte später ergänzen.",
   "inventoryReceiptReviewManualDataSaveAction": "Übernehmen",
-  "inventoryReceiptReviewManualDataRequired":
-      "Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.",
+  "inventoryReceiptReviewManualDataRequired": "Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.",
   "inventoryReceiptReviewSwitchAction": "Wechseln",
   "inventoryReceiptReviewCancelAction": "Abbrechen",
   "inventoryReceiptReviewSaveAction": "Speichern",
@@ -362,37 +352,20 @@
   "inventorySortDirectionAlphaDescending": "Z bis A",
   "inventoryNutritionCaloriesShortLabel": "Kcal",
   "inventoryNutritionCarbsShortLabel": "KH",
-  "inventoryFilterConsumed": "Verbraucht",
-  "inventoryFilterNotConsumed": "Nicht verbraucht",
   "inventoryHideConsumedFilterTitle": "Verbrauchte ausblenden",
-  "inventoryHideConsumedFilterSubtitle":
-      "Komplett leere Artikel verbergen",
-  "inventoryHideFullyConsumedItemsToggle":
-      "Komplett verbrauchte Artikel ausblenden",
-  "preparedMealFilterAction": "Filtern",
-  "preparedMealFiltersTitle": "Ansicht anpassen",
+  "inventoryHideConsumedFilterSubtitle": "Komplett leere Artikel verbergen",
   "preparedMealFiltersSubtitle": "Sortiere und filtere deine Mahlzeiten",
   "preparedMealShowReadyOnlyToggle": "Nur fertige anzeigen",
   "preparedMealShowIncompleteOnlyToggle": "Vollständige ausblenden",
   "preparedMealShowDepletedOnlyToggle": "Nur aufgebrauchte anzeigen",
-  "preparedMealHideFullyConsumedItemsToggle":
-      "Verbrauchte ausblenden",
+  "preparedMealHideFullyConsumedItemsToggle": "Verbrauchte ausblenden",
   "inventoryReceiptGroupTitle": "Beleg",
   "inventoryReceiptGroupNoReceipt": "Ohne Beleg",
   "inventoryReceiptGroupItems": "Artikel",
-  "inventoryItemDeleteAction": "Löschen",
   "inventoryItemDeletedMessage": "Artikel gelöscht.",
   "inventoryItemRemovedMessage": "Artikel aussortiert.",
   "inventoryItemEatAction": "Essen",
   "inventoryItemEatSheetEyebrow": "Essen loggen",
-  "inventoryItemEatSheetTitle": "Essen: {name}",
-  "@inventoryItemEatSheetTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "inventoryItemEatSheetAmountLabel": "Menge eingeben",
   "inventoryItemEatSheetAvailableAmount": "Im Vorrat verfügbar: {amount} {unit}",
   "@inventoryItemEatSheetAvailableAmount": {
@@ -401,13 +374,9 @@
       "unit": {}
     }
   },
-  "inventoryItemEatSheetQuickSelectLabel": "Schnellwahl",
   "inventoryItemEatSheetAllAction": "Alles",
   "inventoryAmountDialogAllRemainingAction": "Alles/Rest",
-  "inventoryItemEatSheetPortionModeTitle": "Portionen",
-  "inventoryItemEatSheetUsePortionsToggle": "Portionsanzahl verwenden",
   "inventoryItemEatSheetPortionLabelFieldLabel": "Portionsname",
-  "inventoryItemEatSheetPortionCountFieldLabel": "Anzahl",
   "inventoryItemEatSheetPortionAmountFieldLabel": "Menge pro Portion",
   "inventoryItemEatSheetDecreasePortionCountAction": "Portionen verringern",
   "inventoryItemEatSheetIncreasePortionCountAction": "Portionen erhöhen",
@@ -429,29 +398,19 @@
       }
     }
   },
-  "inventoryItemEatSheetInedibleAmountLabel":
-      "Nicht essbaren Anteil abziehen",
-  "inventoryItemEatSheetInedibleAmountHint":
-      "Optional, z. B. Knochen",
-  "inventoryItemEatSheetInedibleAmountFieldLabel":
-      "Nicht essbarer Anteil",
-  "inventoryItemEatSheetInedibleAmountError":
-      "Der Abzug muss kleiner als die verzehrte Menge sein.",
-  "inventoryItemEatSheetWhenLabel": "Wann?",
-  "inventoryItemEatSheetNowValue": "Heute",
-  "inventoryItemEatSheetNutritionLabel": "Nährwerte",
+  "inventoryItemEatSheetInedibleAmountLabel": "Nicht essbaren Anteil abziehen",
+  "inventoryItemEatSheetInedibleAmountHint": "Optional, z. B. Knochen",
+  "inventoryItemEatSheetInedibleAmountFieldLabel": "Nicht essbarer Anteil",
+  "inventoryItemEatSheetInedibleAmountError": "Der Abzug muss kleiner als die verzehrte Menge sein.",
   "inventoryItemEatSheetConfirmAction": "Hinzufügen",
   "inventoryItemEatSheetAddMoreAction": "+ Mehr",
   "inventoryItemEatSheetClearAmountAction": "Menge leeren",
   "inventoryItemAddToListAction": "Auf Liste",
   "inventoryItemAddToShoppingListAction": "Zur Einkaufsliste hinzufügen",
-  "inventoryItemBuyAgainAction": "Erneut kaufen",
-  "inventoryItemBuyAgainSucceeded":
-      "Artikel zur Einkaufsliste hinzugefügt.",
+  "inventoryItemBuyAgainSucceeded": "Artikel zur Einkaufsliste hinzugefügt.",
   "inventoryItemRemoveAction": "Aussortieren",
   "inventoryItemRemoveDialogTitle": "Artikel aussortieren",
-  "inventoryItemRemoveDialogMessage":
-      "Warum möchtest du {name} aussortieren?",
+  "inventoryItemRemoveDialogMessage": "Warum möchtest du {name} aussortieren?",
   "@inventoryItemRemoveDialogMessage": {
     "placeholders": {
       "name": {
@@ -462,40 +421,27 @@
   "inventoryItemRemoveDiscardAction": "Weggeworfen",
   "inventoryItemRemoveDiscardSubtitle": "Abgelaufen oder verdorben",
   "inventoryItemRemoveConsumeElsewhereAction": "Anderweitig verbraucht",
-  "inventoryItemRemoveConsumeElsewhereSubtitle":
-      "Gespendet, verschenkt oder geteilt",
+  "inventoryItemRemoveConsumeElsewhereSubtitle": "Gespendet, verschenkt oder geteilt",
   "inventoryItemRemoveDeleteAction": "Komplett löschen",
-  "inventoryItemRemoveDeleteSubtitle":
-      "Fehleingabe, nicht in Statistiken werten",
+  "inventoryItemRemoveDeleteSubtitle": "Fehleingabe, nicht in Statistiken werten",
   "inventoryItemThrowAwayAction": "Wegwerfen",
   "inventoryItemEditTitle": "Vorratsartikel bearbeiten",
   "inventoryItemUpdatedMessage": "Vorratsartikel wurde aktualisiert.",
-  "inventoryItemEditRequiresFullItem":
-      "Du kannst den Artikel nur bearbeiten, solange er noch vollständig vorhanden ist.",
+  "inventoryItemEditRequiresFullItem": "Du kannst den Artikel nur bearbeiten, solange er noch vollständig vorhanden ist.",
   "inventoryItemSwapCandidateAction": "Tauschen",
-  "inventoryItemSwapCandidateRequiresFullItem":
-      "Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.",
+  "inventoryItemSwapCandidateRequiresFullItem": "Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.",
   "inventoryItemActionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
-  "inventoryBarcodeScanUnsupported":
-      "Barcode-Scan wird aktuell auf Android und iOS unterstützt.",
-  "inventoryManualAddTitle": "Lebensmittel manuell hinzufügen",
-  "inventoryManualAddHint":
-      "Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.",
+  "inventoryBarcodeScanUnsupported": "Barcode-Scan wird aktuell auf Android und iOS unterstützt.",
+  "inventoryManualAddHint": "Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.",
   "inventoryManualAddScanBarcodeAction": "Barcode scannen",
   "inventoryManualAddResolving": "Barcode wird gesucht...",
   "inventoryManualAddCandidateTitle": "Produkt auswählen",
-  "inventoryManualAddCandidateSubtitle":
-      "Zu diesem Barcode wurden mehrere passende Produkte gefunden.",
+  "inventoryManualAddCandidateSubtitle": "Zu diesem Barcode wurden mehrere passende Produkte gefunden.",
   "inventoryManualAddCandidateSourceLearned": "Community",
   "inventoryManualAddCandidateSourceOff": "OFF",
-  "inventoryManualAddUnknownBrand": "Unbekannte Marke",
-  "inventoryManualAddNotFound":
-      "Zu diesem Barcode wurde kein passendes Produkt gefunden.",
-  "inventoryManualAddLookupFailed":
-      "Barcode-Abfrage fehlgeschlagen. Bitte versuche es erneut.",
-  "inventoryManualAddSaveFailed":
-      "Das Produkt konnte nicht zum Inventar hinzugefügt werden.",
-  "inventoryManualAddSaved": "Produkt zum Inventar hinzugefügt.",
+  "inventoryManualAddNotFound": "Zu diesem Barcode wurde kein passendes Produkt gefunden.",
+  "inventoryManualAddLookupFailed": "Barcode-Abfrage fehlgeschlagen. Bitte versuche es erneut.",
+  "inventoryManualAddSaveFailed": "Das Produkt konnte nicht zum Inventar hinzugefügt werden.",
   "inventoryManualAddEatSucceeded": "Ins Tagebuch eingetragen",
   "inventoryManualAddSearchDialogTitle": "Produktsuche",
   "inventoryManualAddPackageSizeLabel": "Packungsgröße",
@@ -507,52 +453,36 @@
   "inventoryManualAddNutritionComplete": "Nährwerte vollständig",
   "inventoryManualAddNutritionVerified": "Nährwerte verifiziert",
   "inventoryManualAddCreateOwnAction": "Manuell erstellen",
-  "inventoryManualAddEatNowOption": "Sofort essen",
-  "inventoryManualAddEatNowSizeLabel": "Sofort essen Menge",
-  "inventoryManualAddEatNowRequiresNutrition":
-      "Nur verfügbar, wenn Nährwerte vorhanden sind.",
+  "inventoryManualAddEatNowRequiresNutrition": "Nur verfügbar, wenn Nährwerte vorhanden sind.",
   "inventoryManualAddMissingBarcodeTitle": "Barcode eintragen?",
-  "inventoryManualAddMissingBarcodeMessage":
-      "Dieses Produkt hat noch keinen Barcode. Trage ihn jetzt ein, damit es später wiedererkannt wird, oder speichere es ohne Barcode.",
+  "inventoryManualAddMissingBarcodeMessage": "Dieses Produkt hat noch keinen Barcode. Trage ihn jetzt ein, damit es später wiedererkannt wird, oder speichere es ohne Barcode.",
   "inventoryManualAddMissingBarcodeLabel": "Barcode",
-  "inventoryManualAddMissingBarcodeRequired":
-      "Trage einen Barcode ein oder speichere ohne Barcode.",
+  "inventoryManualAddMissingBarcodeRequired": "Trage einen Barcode ein oder speichere ohne Barcode.",
   "inventoryManualAddMissingBarcodeSaveWithout": "Ohne Barcode speichern",
   "inventoryManualAddMissingBarcodeSave": "Speichern",
   "inventoryManualAddVoiceSearchStartTooltip": "Sprachsuche starten",
   "inventoryManualAddVoiceSearchStopTooltip": "Sprachsuche beenden",
-  "inventoryManualAddVoiceSearchUnavailable":
-      "Sprachsuche wird auf diesem Gerät aktuell nicht unterstützt.",
-  "inventoryManualAddVoiceSearchPermissionDenied":
-      "Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.",
-  "inventoryManualAddVoiceSearchFailed":
-      "Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.",
+  "inventoryManualAddVoiceSearchUnavailable": "Sprachsuche wird auf diesem Gerät aktuell nicht unterstützt.",
+  "inventoryManualAddVoiceSearchPermissionDenied": "Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.",
+  "inventoryManualAddVoiceSearchFailed": "Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.",
   "inventoryManualAddAiSearchAction": "KI-Vorschlag",
   "inventoryManualAddAiSearchTitle": "Lebensmittel mit KI erstellen",
   "inventoryManualAddAiSearchPromptLabel": "Lebensmittelbeschreibung",
   "inventoryManualAddAiSearchPromptHint": "Zum Beispiel: Döner Hähnchen",
   "inventoryManualAddAiSearchGenerateAction": "Schätzung erstellen",
-  "inventoryManualAddAiSearchPromptRequired":
-      "Bitte gib eine Lebensmittelbeschreibung ein.",
-  "inventoryManualAddAiSearchFailed":
-      "Die Lebensmittelschätzung konnte nicht erstellt werden. Bitte versuche es erneut.",
-  "inventoryManualAddAiSearchReadOnlyHint":
-      "Passe Gewicht oder kcal pro 100 g an, wenn sich die Schätzung falsch anfühlt.",
+  "inventoryManualAddAiSearchPromptRequired": "Bitte gib eine Lebensmittelbeschreibung ein.",
+  "inventoryManualAddAiSearchFailed": "Die Lebensmittelschätzung konnte nicht erstellt werden. Bitte versuche es erneut.",
+  "inventoryManualAddAiSearchReadOnlyHint": "Passe Gewicht oder kcal pro 100 g an, wenn sich die Schätzung falsch anfühlt.",
   "inventoryManualAddAiSearchIngredientsTitle": "Zutaten für diese Portion",
   "inventoryManualAddAiSearchAmountColumn": "Menge",
   "inventoryManualAddAiSearchTotalLabel": "Gesamt",
-  "inventoryManualAddAiSearchPer100Title": "Gespeichert pro 100 g",
   "inventoryManualAddAiSearchPer100CardTitle": "PRO 100 G",
   "inventoryManualAddAiSearchPortionCardTitle": "DEINE PORTION",
   "inventoryManualAddAiSearchWeightLabel": "Gewicht",
-  "inventoryManualAddAiSearchWeightRequired":
-      "Bitte gib ein gültiges Gewicht ein.",
-  "inventoryManualAddAiSearchDensityTitle":
-      "Kaloriendichte anpassen (pro 100 g)",
-  "inventoryManualAddAiSearchDensityHint":
-      "War das Gericht eher leichter oder gehaltvoller als erwartet? Skaliere die Kalorien pro 100 g. Die Gesamtwerte passen sich automatisch an.",
-  "inventoryManualAddAiSearchDensityMinLabel":
-      "{kcal} kcal/100g (Leichter)",
+  "inventoryManualAddAiSearchWeightRequired": "Bitte gib ein gültiges Gewicht ein.",
+  "inventoryManualAddAiSearchDensityTitle": "Kaloriendichte anpassen (pro 100 g)",
+  "inventoryManualAddAiSearchDensityHint": "War das Gericht eher leichter oder gehaltvoller als erwartet? Skaliere die Kalorien pro 100 g. Die Gesamtwerte passen sich automatisch an.",
+  "inventoryManualAddAiSearchDensityMinLabel": "{kcal} kcal/100g (Leichter)",
   "@inventoryManualAddAiSearchDensityMinLabel": {
     "placeholders": {
       "kcal": {}
@@ -564,8 +494,7 @@
       "kcal": {}
     }
   },
-  "inventoryManualAddAiSearchDensityMaxLabel":
-      "{kcal} kcal/100g (Gehaltvoller)",
+  "inventoryManualAddAiSearchDensityMaxLabel": "{kcal} kcal/100g (Gehaltvoller)",
   "@inventoryManualAddAiSearchDensityMaxLabel": {
     "placeholders": {
       "kcal": {}
@@ -575,8 +504,7 @@
   "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",
   "inventoryBarcodePortionDialogConfirmAction": "Weiter",
   "inventoryEmptyState": "Noch keine Vorratsartikel vorhanden. Scanne einen Beleg oder füge Lebensmittel manuell hinzu.",
-  "inventoryFilteredEmptyState":
-      "Keine Artikel passen zu deiner Suche oder den aktiven Filtern.",
+  "inventoryFilteredEmptyState": "Keine Artikel passen zu deiner Suche oder den aktiven Filtern.",
   "inventoryLoadFailed": "Vorratsartikel konnten nicht geladen werden.",
   "inventoryRetryAction": "Erneut versuchen",
   "preparedMealSectionTitle": "Mahlzeiten",
@@ -586,27 +514,21 @@
   "preparedMealClearNameAction": "Namen leeren",
   "preparedMealInvalidName": "Bitte gib einen Mahlzeitnamen ein.",
   "preparedMealPortionsLabel": "Portionen",
-  "preparedMealInvalidPortions":
-      "Bitte gib mindestens eine Portion ein.",
-  "preparedMealFixFormErrorsMessage":
-      "Bitte prüfe die markierten Felder.",
-  "preparedMealInvalidPortionsRange":
-      "Bitte gib eine gültige Portionsanzahl im verfügbaren Bereich ein.",
+  "preparedMealInvalidPortions": "Bitte gib mindestens eine Portion ein.",
+  "preparedMealFixFormErrorsMessage": "Bitte prüfe die markierten Felder.",
+  "preparedMealInvalidPortionsRange": "Bitte gib eine gültige Portionsanzahl im verfügbaren Bereich ein.",
   "preparedMealImageLabel": "Titelbild",
   "preparedMealAddImageAction": "Bild hinzufügen",
   "preparedMealChangeImageAction": "Bild ändern",
   "preparedMealRemoveImageAction": "Bild entfernen",
-  "preparedMealImageHint":
-      "Füge ein Foto für diese Mahlzeit hinzu oder nutze das Standard-Cover.",
+  "preparedMealImageHint": "Füge ein Foto für diese Mahlzeit hinzu oder nutze das Standard-Cover.",
   "preparedMealImageCameraAction": "Foto aufnehmen",
-  "preparedMealImagePickFailed":
-      "Das Mahlzeitenbild konnte nicht ausgewählt werden.",
+  "preparedMealImagePickFailed": "Das Mahlzeitenbild konnte nicht ausgewählt werden.",
   "preparedMealImageTooLarge": "Das ausgewählte Bild ist zu groß.",
   "preparedMealIngredientsTitle": "Zutaten",
   "preparedMealAddIngredientAction": "Zutat hinzufügen",
   "preparedMealRemoveIngredientAction": "Zutat entfernen",
-  "preparedMealEmptyIngredientsMessage":
-      "Füge vor dem Speichern mindestens eine Zutat hinzu.",
+  "preparedMealEmptyIngredientsMessage": "Füge vor dem Speichern mindestens eine Zutat hinzu.",
   "preparedMealCreateAction": "Mahlzeit erstellen",
   "preparedMealBindAction": "Als Mahlzeit binden",
   "preparedMealUsedAmountLabel": "Verwendete Menge",
@@ -621,12 +543,9 @@
       }
     }
   },
-  "preparedMealInvalidIngredientAmount":
-      "Bitte gib eine gültige Zutatenmenge ein.",
-  "preparedMealNutritionPerPieceHint":
-      "Bitte Nährwerte pro verwendetem Stück eintragen.",
-  "preparedMealNutritionPerHundredHint":
-      "Bitte Nährwerte pro 100 g/ml eintragen.",
+  "preparedMealInvalidIngredientAmount": "Bitte gib eine gültige Zutatenmenge ein.",
+  "preparedMealNutritionPerPieceHint": "Bitte Nährwerte pro verwendetem Stück eintragen.",
+  "preparedMealNutritionPerHundredHint": "Bitte Nährwerte pro 100 g/ml eintragen.",
   "preparedMealNutritionModePerHundred": "100 g/ml",
   "preparedMealNutritionModePerPortion": "Portion",
   "preparedMealNutritionModeTotal": "Gesamt",
@@ -643,14 +562,10 @@
   },
   "preparedMealCreatedMessage": "Mahlzeit wurde erstellt.",
   "preparedMealUpdatedMessage": "Mahlzeit wurde aktualisiert.",
-  "preparedMealInsufficientAmountMessage":
-      "Mindestens eine ausgewählte Zutat ist nicht mehr in ausreichender Menge verfügbar.",
-  "preparedMealMissingNutritionMessage":
-      "Mindestens einer ausgewählten Zutat fehlen vollständige Nährwerte.",
-  "preparedMealItemUnavailableMessage":
-      "Mindestens eine ausgewählte Zutat ist nicht mehr im Inventar verfügbar.",
-  "preparedMealActionFailed":
-      "Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.",
+  "preparedMealInsufficientAmountMessage": "Mindestens eine ausgewählte Zutat ist nicht mehr in ausreichender Menge verfügbar.",
+  "preparedMealMissingNutritionMessage": "Mindestens einer ausgewählten Zutat fehlen vollständige Nährwerte.",
+  "preparedMealItemUnavailableMessage": "Mindestens eine ausgewählte Zutat ist nicht mehr im Inventar verfügbar.",
+  "preparedMealActionFailed": "Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.",
   "preparedMealIngredientsCount": "{count} Zutaten",
   "@preparedMealIngredientsCount": {
     "placeholders": {
@@ -660,19 +575,14 @@
     }
   },
   "preparedMealIncompleteLabel": "Unvollständig",
-  "preparedMealIncompleteHint":
-      "Diese Mahlzeit ist noch nicht vollständig und kann erst gegessen werden, wenn alle fehlenden Zutaten ergänzt wurden.",
+  "preparedMealIncompleteHint": "Diese Mahlzeit ist noch nicht vollständig und kann erst gegessen werden, wenn alle fehlenden Zutaten ergänzt wurden.",
   "preparedMealPendingIngredientUnassigned": "Noch nicht belegt",
   "preparedMealPendingIngredientAddAction": "Zutat ergänzen",
   "preparedMealPendingIngredientIgnoreAction": "Zutat ignorieren",
-  "preparedMealPendingIngredientSelectionTitle":
-      "Zutat aus Inventar ergänzen",
-  "preparedMealPendingIngredientSelectionEmpty":
-      "Keine Inventarartikel vorhanden.",
-  "preparedMealPendingIngredientFillFailed":
-      "Zutat konnte nicht zur Mahlzeit hinzugefügt werden.",
-  "preparedMealPendingIngredientIgnoreFailed":
-      "Zutat konnte nicht ignoriert werden.",
+  "preparedMealPendingIngredientSelectionTitle": "Zutat aus Inventar ergänzen",
+  "preparedMealPendingIngredientSelectionEmpty": "Keine Inventarartikel vorhanden.",
+  "preparedMealPendingIngredientFillFailed": "Zutat konnte nicht zur Mahlzeit hinzugefügt werden.",
+  "preparedMealPendingIngredientIgnoreFailed": "Zutat konnte nicht ignoriert werden.",
   "preparedMealPortionsRemaining": "{remaining}/{total} Portionen",
   "@preparedMealPortionsRemaining": {
     "placeholders": {
@@ -709,11 +619,7 @@
   "preparedMealTemplateRecipeSheetTitle": "Rezept anlegen",
   "preparedMealTemplateRecipeEditSheetTitle": "Rezept bearbeiten",
   "preparedMealTemplateRecipeSheetSubtitle": "Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.",
-  "preparedMealTemplateRecipeGreetingTitle": "Lass uns ein Rezept zaubern! 🍳",
   "preparedMealTemplateRecipeGreetingSubtitle": "Kopiere die Web-Adresse deines Lieblingsrezepts und wir lesen alle Zutaten automatisch für dich aus.",
-  "preparedMealTemplateStepCopy": "1. 🔗 Kopieren",
-  "preparedMealTemplateStepPaste": "2. 📝 Einfügen",
-  "preparedMealTemplateStepCreate": "3. ✨ Starten",
   "preparedMealTemplateClipboardTitle": "Aus Zwischenablage einfügen ✨",
   "@preparedMealTemplateClipboardTitle": {
     "description": "Title shown when prompting the user to paste from clipboard"
@@ -743,9 +649,6 @@
   "preparedMealTemplateNameHelper": "Optional. Wenn leer, wird der Name aus dem Link abgeleitet.",
   "preparedMealTemplatePortionsLabel": "Portionen",
   "preparedMealTemplatePortionsHelper": "Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.",
-  "preparedMealTemplateRecipePlaceholder": "Rezept-Link",
-  "preparedMealTemplateNoIngredientsYet": "Noch keine Zutaten verknüpft.",
-  "preparedMealTemplateOpenAction": "Rezept öffnen",
   "preparedMealTemplateUpdatedMessage": "Rezept aktualisiert.",
   "kitchenUtensilsPageTitle": "Küchenutensilien",
   "kitchenUtensilsOpenAction": "Küchenutensilien",
@@ -784,14 +687,6 @@
   "preparedMealTemplateImportReviewTitle": "Rezept prüfen",
   "preparedMealTemplateImportReviewInstructionsTitle": "Kurze Anleitung",
   "preparedMealTemplateImportReviewSavingAction": "Speichert...",
-  "preparedMealTemplateRecipeSource": "Rezept: {host}",
-  "@preparedMealTemplateRecipeSource": {
-    "placeholders": {
-      "host": {
-        "type": "String"
-      }
-    }
-  },
   "preparedMealTemplatePortions": "{count} Portionen",
   "@preparedMealTemplatePortions": {
     "placeholders": {
@@ -808,8 +703,7 @@
   "shoppingListAddAction": "Artikel hinzufügen",
   "shoppingListEmptyState": "Deine Einkaufsliste ist leer.",
   "shoppingListInvalidNameError": "Bitte einen Artikelnamen eingeben.",
-  "shoppingListAddFailedError":
-      "Artikel konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
+  "shoppingListAddFailedError": "Artikel konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
   "shoppingListLoadFailed": "Einkaufsartikel konnten nicht geladen werden.",
   "shoppingListRetryAction": "Erneut versuchen",
   "shoppingListQuantityLabel": "Menge",
@@ -823,55 +717,24 @@
       }
     }
   },
-  "shoppingListClearCrossedOffDialogTitle":
-      "Durchgestrichene Artikel löschen?",
-  "shoppingListClearCrossedOffDialogMessage":
-      "Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.",
+  "shoppingListClearCrossedOffDialogTitle": "Durchgestrichene Artikel löschen?",
+  "shoppingListClearCrossedOffDialogMessage": "Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.",
   "shoppingListClearCrossedOffConfirmAction": "Löschen",
-  "caloriesAddOptionManual": "Manueller Eintrag",
-  "caloriesAddOptionBarcode": "Barcode scannen",
-  "caloriesFabTooltip": "Kalorien-Eintrag hinzufügen",
-  "caloriesBarcodeScannerTitle": "Barcode scannen",
-  "caloriesBarcodeResolving": "Produkt wird gesucht...",
-  "caloriesBarcodeLookupFailed":
-      "Barcode-Suche fehlgeschlagen. Bitte erneut versuchen.",
-  "caloriesBarcodeCandidateTitle": "Produkt auswählen",
-  "caloriesBarcodeCandidateSubtitle":
-      "Für diesen Barcode wurden mehrere Produkte gefunden.",
-  "caloriesBarcodeUnknownBrand": "Unbekannte Marke",
-  "caloriesBarcodeNotFoundTitle": "Produkt nicht gefunden",
-  "caloriesBarcodeNotFoundMessage":
-      "Für diesen Barcode wurde kein Produkt gefunden.",
-  "caloriesBarcodeNotFoundManualAction": "Manueller Eintrag",
   "caloriesBarcodeNotFoundOcrAction": "Nährwertetikett scannen",
   "caloriesOcrScanning": "Nährwertetikett wird gelesen…",
-  "caloriesOcrScanningSemantics":
-      "Das aufgenommene Nährwertetikett wird gescannt",
-  "caloriesOcrFailed":
-      "Nährwertetikett konnte nicht erkannt werden.",
-  "caloriesOcrAppCheckThrottled":
-      "Nährwertscan ist vorübergehend blockiert. Bitte versuche es später erneut.",
+  "caloriesOcrScanningSemantics": "Das aufgenommene Nährwertetikett wird gescannt",
+  "caloriesOcrFailed": "Nährwertetikett konnte nicht erkannt werden.",
+  "caloriesOcrAppCheckThrottled": "Nährwertscan ist vorübergehend blockiert. Bitte versuche es später erneut.",
   "caloriesLoadFailed": "Kalorien-Einträge konnten nicht geladen werden.",
   "caloriesRetryAction": "Erneut versuchen",
   "caloriesAuthRequired": "Bitte melde dich an, um Kalorien zu verwalten.",
   "caloriesTodayAction": "Heute",
-  "caloriesSetGoalAction": "Ziel manuell setzen",
   "caloriesShiftGoalStartAction": "Zielstart verschieben",
   "caloriesCalculatorAction": "Ziel neu berechnen",
-  "caloriesGoalDialogTitle": "Tagesziel setzen",
-  "caloriesGoalFieldLabel": "Tagesziel in kcal",
-  "caloriesGoalSaveAction": "Ziel speichern",
-  "caloriesGoalClearAction": "Ziel löschen",
-  "caloriesGoalInvalidValue":
-      "Bitte eine Zahl größer als null eingeben.",
-  "caloriesGoalSaveFailed":
-      "Kalorienziel konnte nicht gespeichert werden.",
-  "caloriesGoalClearFailed":
-      "Kalorienziel konnte nicht gelöscht werden.",
+  "caloriesGoalSaveFailed": "Kalorienziel konnte nicht gespeichert werden.",
   "caloriesGoalStartDialogTitle": "Zielstart verschieben",
   "caloriesGoalStartDateLabel": "Datum",
-  "caloriesGoalStartSaveFailed":
-      "Der Zielstart konnte nicht aktualisiert werden.",
+  "caloriesGoalStartSaveFailed": "Der Zielstart konnte nicht aktualisiert werden.",
   "caloriesCalculatorSheetTitle": "Kalorienrechner",
   "caloriesCalculatorStepProgress": "Schritt {current} von {total}",
   "@caloriesCalculatorStepProgress": {
@@ -884,9 +747,7 @@
       }
     }
   },
-  "caloriesCalculatorOnboardingTitle": "Kalorienziel festlegen",
-  "caloriesCalculatorOnboardingSubtitle":
-      "Wir berechnen aus ein paar Angaben dein tägliches Kalorienziel.",
+  "caloriesCalculatorOnboardingSubtitle": "Wir berechnen aus ein paar Angaben dein tägliches Kalorienziel.",
   "caloriesCalculatorBackAction": "Zurück",
   "caloriesCalculatorNextAction": "Weiter",
   "caloriesCalculatorSexLabel": "Geschlecht",
@@ -894,81 +755,51 @@
   "caloriesCalculatorSexFemale": "Weiblich",
   "caloriesCalculatorWeightLabel": "Gewicht (kg)",
   "caloriesCalculatorWeightEmpty": "Bitte gib dein Gewicht ein.",
-  "caloriesCalculatorWeightInvalid":
-      "Bitte gib ein gültiges Gewicht ein.",
+  "caloriesCalculatorWeightInvalid": "Bitte gib ein gültiges Gewicht ein.",
   "caloriesCalculatorHeightLabel": "Größe (cm)",
   "caloriesCalculatorHeightEmpty": "Bitte gib deine Größe ein.",
-  "caloriesCalculatorHeightInvalid":
-      "Bitte gib eine gültige Größe ein.",
+  "caloriesCalculatorHeightInvalid": "Bitte gib eine gültige Größe ein.",
   "caloriesCalculatorAgeLabel": "Alter (Jahre)",
   "caloriesCalculatorAgeEmpty": "Bitte gib dein Alter ein.",
-  "caloriesCalculatorAgeInvalid":
-      "Bitte gib ein gültiges Alter ein.",
+  "caloriesCalculatorAgeInvalid": "Bitte gib ein gültiges Alter ein.",
   "caloriesCalculatorActivityLevelLabel": "Aktivitätslevel (PAL)",
-  "caloriesCalculatorActivityLevelHelp":
-      "Wähle die Option, die am besten zu deiner typischen Woche passt.",
+  "caloriesCalculatorActivityLevelHelp": "Wähle die Option, die am besten zu deiner typischen Woche passt.",
   "caloriesCalculatorActivityLevelNoneTitle": "Kaum aktiv",
-  "caloriesCalculatorActivityLevelNoneDescription":
-      "Büro, viel sitzen, wenige Schritte und kein oder kaum Sport.",
+  "caloriesCalculatorActivityLevelNoneDescription": "Büro, viel sitzen, wenige Schritte und kein oder kaum Sport.",
   "caloriesCalculatorActivityLevelLowTitle": "Leicht aktiv",
-  "caloriesCalculatorActivityLevelLowDescription":
-      "Überwiegend sitzend, aber mit etwas Bewegung im Alltag oder 1 bis 2 lockeren Einheiten pro Woche.",
+  "caloriesCalculatorActivityLevelLowDescription": "Überwiegend sitzend, aber mit etwas Bewegung im Alltag oder 1 bis 2 lockeren Einheiten pro Woche.",
   "caloriesCalculatorActivityLevelMediumTitle": "Moderat aktiv",
-  "caloriesCalculatorActivityLevelMediumDescription":
-      "Regelmäßige Bewegung im Alltag oder 3 bis 4 Sporteinheiten pro Woche.",
+  "caloriesCalculatorActivityLevelMediumDescription": "Regelmäßige Bewegung im Alltag oder 3 bis 4 Sporteinheiten pro Woche.",
   "caloriesCalculatorActivityLevelHighTitle": "Sehr aktiv",
-  "caloriesCalculatorActivityLevelHighDescription":
-      "Körperlich aktiver Alltag oder intensives Training an den meisten Tagen.",
+  "caloriesCalculatorActivityLevelHighDescription": "Körperlich aktiver Alltag oder intensives Training an den meisten Tagen.",
   "caloriesCalculatorActivityLevelExtremeTitle": "Extrem aktiv",
-  "caloriesCalculatorActivityLevelExtremeDescription":
-      "Sehr hohe Trainingsumfänge, körperlich harte Arbeit oder Leistungssport.",
-  "caloriesCalculatorActivityLevelHint": "Zum Beispiel 1,2 bis 2,0",
-  "caloriesCalculatorActivityLevelEmpty":
-      "Bitte gib dein Aktivitätslevel ein.",
-  "caloriesCalculatorActivityLevelInvalid":
-      "Bitte gib ein gültiges Aktivitätslevel ein.",
+  "caloriesCalculatorActivityLevelExtremeDescription": "Sehr hohe Trainingsumfänge, körperlich harte Arbeit oder Leistungssport.",
   "caloriesCalculatorGoalModeLabel": "Zielmodus",
   "caloriesCalculatorGoalModeLose": "Abnehmen",
   "caloriesCalculatorGoalModeMaintain": "Halten",
   "caloriesCalculatorGoalModeGain": "Zunehmen",
   "caloriesCalculatorGoalSpeedLabel": "Zielgeschwindigkeit (kg/Woche)",
-  "caloriesCalculatorGoalSpeedHint":
-      "Zum Beispiel 0,25, 0,5 oder 0,75",
-  "caloriesCalculatorGoalSpeedEmpty":
-      "Bitte gib eine Zielgeschwindigkeit ein.",
-  "caloriesCalculatorGoalSpeedInvalid":
-      "Bitte gib eine gültige Zielgeschwindigkeit ein.",
+  "caloriesCalculatorGoalSpeedHint": "Zum Beispiel 0,25, 0,5 oder 0,75",
+  "caloriesCalculatorGoalSpeedEmpty": "Bitte gib eine Zielgeschwindigkeit ein.",
+  "caloriesCalculatorGoalSpeedInvalid": "Bitte gib eine gültige Zielgeschwindigkeit ein.",
   "caloriesCalculatorResultsTitle": "Ergebnisse",
   "caloriesCalculatorBmrLabel": "Grundumsatz",
   "caloriesCalculatorTdeeLabel": "Erhaltungskalorien",
   "caloriesCalculatorDailyGoalLabel": "Tägliches Kalorienziel",
   "caloriesCalculatorGoalStartLabel": "Zielstart",
-  "caloriesCalculatorGoalStartHint":
-      "Dein Kalorienziel-Verlauf beginnt ab diesem Tag.",
+  "caloriesCalculatorGoalStartHint": "Dein Kalorienziel-Verlauf beginnt ab diesem Tag.",
   "caloriesCalculatorGoalStartChangeAction": "Ändern",
-  "caloriesCalculatorOnboardingStartTitle":
-      "Wann soll dein Ziel starten?",
-  "caloriesCalculatorOnboardingStartNowAction": "Ab sofort",
+  "caloriesCalculatorOnboardingStartTitle": "Wann soll dein Ziel starten?",
   "caloriesCalculatorOnboardingStartLaterAction": "Später starten",
-  "caloriesCalculatorOnboardingStartLaterHint":
-      "Heute bleibt folgenfrei. Burn Week startet ab diesem Tag automatisch.",
+  "caloriesCalculatorOnboardingStartLaterHint": "Heute bleibt folgenfrei. Burn Week startet ab diesem Tag automatisch.",
   "caloriesCalculatorOnboardingChooseFutureDateAction": "Tag wählen",
-  "caloriesCalculatorOnboardingTodayTrackingLabel":
-      "Wie trackst du heute?",
-  "caloriesCalculatorOnboardingTodayTrackingExactAction":
-      "Ganzer Tag exakt",
-  "caloriesCalculatorOnboardingTodayTrackingEstimateAction":
-      "Bisher schätzen",
-  "caloriesCalculatorOnboardingCatchUpLabel":
-      "Wie viel hast du bisher gegessen?",
+  "caloriesCalculatorOnboardingTodayTrackingLabel": "Wie trackst du heute?",
   "caloriesCalculatorOnboardingCatchUpLowAction": "Wenig",
   "caloriesCalculatorOnboardingCatchUpNormalAction": "Normal",
   "caloriesCalculatorOnboardingCatchUpHighAction": "Viel",
-  "caloriesCalculatorOnboardingCatchUpHint":
-      "Wir setzen dich sicher in die heutige Pufferzone.",
+  "caloriesCalculatorOnboardingCatchUpHint": "Wir setzen dich sicher in die heutige Pufferzone.",
   "caloriesOnboardingPlaceholderName": "Geschätzte Mahlzeit",
-  "caloriesCalculatorMinimumGoalWarning":
-      "Beim Abnehmen darf das tägliche Ziel nicht unter {minimumKcal} kcal fallen. Das Ergebnis wurde auf dieses Minimum begrenzt.",
+  "caloriesCalculatorMinimumGoalWarning": "Beim Abnehmen darf das tägliche Ziel nicht unter {minimumKcal} kcal fallen. Das Ergebnis wurde auf dieses Minimum begrenzt.",
   "@caloriesCalculatorMinimumGoalWarning": {
     "placeholders": {
       "minimumKcal": {
@@ -977,12 +808,9 @@
     }
   },
   "caloriesCalculatorSaveAction": "Ziel speichern",
-  "caloriesCalculatorSaveFailed":
-      "Das berechnete Kalorienziel konnte nicht gespeichert werden.",
-  "caloriesGoalStartFoodTrackingTitle":
-      "Hast du dein Essen heute getrackt?",
-  "caloriesGoalStartFoodTrackingBody":
-      "Ich habe heute {entryCount} Essenseinträge gefunden. Soll heute als voller Tracking-Tag für dieses neue Ziel zählen?",
+  "caloriesCalculatorSaveFailed": "Das berechnete Kalorienziel konnte nicht gespeichert werden.",
+  "caloriesGoalStartFoodTrackingTitle": "Hast du dein Essen heute getrackt?",
+  "caloriesGoalStartFoodTrackingBody": "Ich habe heute {entryCount} Essenseinträge gefunden. Soll heute als voller Tracking-Tag für dieses neue Ziel zählen?",
   "@caloriesGoalStartFoodTrackingBody": {
     "placeholders": {
       "entryCount": {
@@ -991,101 +819,71 @@
     }
   },
   "caloriesGoalStartNoFoodTrackingTitle": "Heute kein Essen getrackt",
-  "caloriesGoalStartNoFoodTrackingBody":
-      "Heute wird ein Starter-Tag. Dein neues Ziel startet jetzt, aber das wöchentliche Lernen startet morgen.",
+  "caloriesGoalStartNoFoodTrackingBody": "Heute wird ein Starter-Tag. Dein neues Ziel startet jetzt, aber das wöchentliche Lernen startet morgen.",
   "caloriesGoalStartFoodTrackingNoAction": "Frisch starten",
   "caloriesGoalStartFoodTrackingYesAction": "Heute mitzählen",
   "caloriesGoalStartFoodTrackingOkAction": "OK",
   "caloriesLearnedTdeeSheetTitle": "Ziel aus gelerntem TDEE neu berechnen",
-  "caloriesLearnedTdeeSheetSubtitle":
-      "Verwende deinen letzten erfolgreichen Wochen-Check-in statt einer Aktivitätsschätzung.",
+  "caloriesLearnedTdeeSheetSubtitle": "Verwende deinen letzten erfolgreichen Wochen-Check-in statt einer Aktivitätsschätzung.",
   "caloriesLearnedTdeeLabel": "Gelernter TDEE",
   "caloriesLearnedTdeeResultLabel": "Neues Tagesziel",
-  "caloriesLearnedTdeeUseProfileResetAction":
-      "Profilbasierten Reset nutzen",
-  "caloriesLearnedTdeeSaveFailed":
-      "Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.",
+  "caloriesLearnedTdeeUseProfileResetAction": "Profilbasierten Reset nutzen",
+  "caloriesLearnedTdeeSaveFailed": "Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.",
   "caloriesWeeklyCheckInDialogTitle": "Wochen-Check-in",
-  "caloriesWeeklyCheckInDialogReadyBody":
-      "Prüfe deine letzten 7 abgeschlossenen Tage. Dein Ziel nutzt diese Lernwerte bereits automatisch.",
-  "caloriesWeeklyCheckInDialogBlockedBody":
-      "Uns fehlen noch ein paar Daten, bevor diese Wochenzusammenfassung vollständig ist.",
+  "caloriesWeeklyCheckInDialogReadyBody": "Prüfe deine letzten 7 abgeschlossenen Tage. Dein Ziel nutzt diese Lernwerte bereits automatisch.",
+  "caloriesWeeklyCheckInDialogBlockedBody": "Uns fehlen noch ein paar Daten, bevor diese Wochenzusammenfassung vollständig ist.",
   "caloriesWeeklyCheckInDialogWindowLabel": "Zeitraum",
   "caloriesWeeklyCheckInDialogTrendLabel": "Gewichtstrend",
-  "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Gelernter TDEE",
   "caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel": "Gemessener Gesamt-TDEE",
   "caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel": "Gemessener Basis-TDEE",
-  "caloriesWeeklyCheckInDialogCreditedActivityAverageLabel":
-      "Angerechnete Aktivität Ø",
+  "caloriesWeeklyCheckInDialogCreditedActivityAverageLabel": "Angerechnete Aktivität Ø",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
-  "caloriesWeeklyCheckInDialogLowConfidence":
-      "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
-  "caloriesWeeklyCheckInBlockedUnstableWeight":
-      "Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.",
+  "caloriesWeeklyCheckInDialogLowConfidence": "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
+  "caloriesWeeklyCheckInBlockedUnstableWeight": "Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.",
   "caloriesWeeklyCheckInApplyAction": "Fertig",
   "caloriesWeeklyCheckInLaterAction": "Später",
-  "caloriesWeeklyCheckInApplyFailed":
-      "Der Wochen-Check-in konnte nicht geschlossen werden.",
+  "caloriesWeeklyCheckInApplyFailed": "Der Wochen-Check-in konnte nicht geschlossen werden.",
   "caloriesWeeklyCheckInHintReadyTitle": "Wochen-Check-in bereit",
-  "caloriesWeeklyCheckInHintReadyBody":
-      "Deine letzten 7 abgeschlossenen Tage sind bereit zur Prüfung.",
-  "caloriesWeeklyCheckInHintBlockedTitle":
-      "Wochen-Check-in braucht Daten",
-  "caloriesWeeklyCheckInHintBlockedBody":
-      "Ergänze fehlende Aufnahme- oder Gewichtsdaten, um die Zusammenfassung zu vervollständigen.",
+  "caloriesWeeklyCheckInHintReadyBody": "Deine letzten 7 abgeschlossenen Tage sind bereit zur Prüfung.",
+  "caloriesWeeklyCheckInHintBlockedTitle": "Wochen-Check-in braucht Daten",
+  "caloriesWeeklyCheckInHintBlockedBody": "Ergänze fehlende Aufnahme- oder Gewichtsdaten, um die Zusammenfassung zu vervollständigen.",
   "caloriesWeeklyCheckInHintContinueAction": "Fortsetzen",
   "caloriesWeeklyCheckInHintStaleTitle": "Ziel wird alt",
-  "caloriesWeeklyCheckInHintStaleBody":
-      "Nutze den nächsten Wochen-Check-in, damit dein Ziel aktuell bleibt.",
-  "caloriesWeeklyCheckInHintUrgentTitle":
-      "Ziel braucht Aktualisierung",
-  "caloriesWeeklyCheckInHintUrgentBody":
-      "Du verwendest schon länger ältere Zieldaten.",
+  "caloriesWeeklyCheckInHintStaleBody": "Nutze den nächsten Wochen-Check-in, damit dein Ziel aktuell bleibt.",
+  "caloriesWeeklyCheckInHintUrgentTitle": "Ziel braucht Aktualisierung",
+  "caloriesWeeklyCheckInHintUrgentBody": "Du verwendest schon länger ältere Zieldaten.",
   "caloriesWeeklyCheckInShowAgainAction": "Wochen-Check-in anzeigen",
-  "caloriesWeeklyCheckInShowAgainFailed":
-      "Der Wochen-Check-in konnte nicht erneut geöffnet werden.",
+  "caloriesWeeklyCheckInShowAgainFailed": "Der Wochen-Check-in konnte nicht erneut geöffnet werden.",
   "caloriesWeeklyCheckInSkipDayAction": "Tag als ausgelassen markieren",
-  "caloriesWeeklyCheckInUnskipDayAction":
-      "Ausgelassen-Markierung entfernen",
-  "caloriesWeeklyCheckInAutoAdjustedHint":
-      "Ziel durch Wochen-Check-in aktualisiert:",
-  "caloriesWeeklyCheckInTrackMissingWeightAction":
-      "Fehlendes Gewicht eintragen",
-  "caloriesWeeklyCheckInBlockedMissingIntake":
-      "Mindestens ein Tag in diesem Zeitraum hat noch keine Aufnahme. Trage ihn ein oder markiere 1 oder 2 leere Tage als ausgelassen.",
-  "caloriesWeeklyCheckInBlockedTooManyMissingIntake":
-      "Dieser Zeitraum hat 3 oder mehr fehlende Aufnahmetage. Wir behalten dein letztes gelerntes Ziel, bis du wieder mehr vollständige Tage geloggt hast.",
-  "caloriesWeeklyCheckInBlockedSkippedWithoutAverage":
-      "Ein ausgelassener Tag braucht frühere geloggte Aufnahme im selben Zeitraum, bevor wir ihn schätzen können.",
-  "caloriesWeeklyCheckInBlockedMissingStartWeightOn":
-      "Füge ein Gewicht für den ersten Tag dieses Zeitraums ({date}) hinzu, um fortzufahren.",
+  "caloriesWeeklyCheckInUnskipDayAction": "Ausgelassen-Markierung entfernen",
+  "caloriesWeeklyCheckInAutoAdjustedHint": "Ziel durch Wochen-Check-in aktualisiert:",
+  "caloriesWeeklyCheckInTrackMissingWeightAction": "Fehlendes Gewicht eintragen",
+  "caloriesWeeklyCheckInBlockedMissingIntake": "Mindestens ein Tag in diesem Zeitraum hat noch keine Aufnahme. Trage ihn ein oder markiere 1 oder 2 leere Tage als ausgelassen.",
+  "caloriesWeeklyCheckInBlockedTooManyMissingIntake": "Dieser Zeitraum hat 3 oder mehr fehlende Aufnahmetage. Wir behalten dein letztes gelerntes Ziel, bis du wieder mehr vollständige Tage geloggt hast.",
+  "caloriesWeeklyCheckInBlockedSkippedWithoutAverage": "Ein ausgelassener Tag braucht frühere geloggte Aufnahme im selben Zeitraum, bevor wir ihn schätzen können.",
+  "caloriesWeeklyCheckInBlockedMissingStartWeightOn": "Füge ein Gewicht für den ersten Tag dieses Zeitraums ({date}) hinzu, um fortzufahren.",
   "@caloriesWeeklyCheckInBlockedMissingStartWeightOn": {
     "placeholders": {
       "date": {}
     }
   },
-  "caloriesWeeklyCheckInBlockedMissingEndWeightOn":
-      "Füge ein Gewicht für den letzten Tag dieses Zeitraums ({date}) hinzu, um fortzufahren.",
+  "caloriesWeeklyCheckInBlockedMissingEndWeightOn": "Füge ein Gewicht für den letzten Tag dieses Zeitraums ({date}) hinzu, um fortzufahren.",
   "@caloriesWeeklyCheckInBlockedMissingEndWeightOn": {
     "placeholders": {
       "date": {}
     }
   },
-  "caloriesWeeklyCheckInBlockedMissingWeightDates":
-      "Füge Gewichte für diese Daten hinzu, um fortzufahren: {dates}.",
+  "caloriesWeeklyCheckInBlockedMissingWeightDates": "Füge Gewichte für diese Daten hinzu, um fortzufahren: {dates}.",
   "@caloriesWeeklyCheckInBlockedMissingWeightDates": {
     "placeholders": {
       "dates": {}
     }
   },
-  "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
-  "caloriesRemainingLabel": "Verbleibend",
   "caloriesDebugActionsTooltip": "Kalorien-Debug-Aktionen",
   "caloriesDebugDumpAction": "Kalorien-Debug-TXT herunterladen",
   "caloriesDebugDumpSaveDialogTitle": "Kalorien-Debug-TXT speichern",
-  "caloriesDebugDumpPrinted":
-      "Kalorien-Debug-TXT heruntergeladen ({rowCount} Zeilen).",
+  "caloriesDebugDumpPrinted": "Kalorien-Debug-TXT heruntergeladen ({rowCount} Zeilen).",
   "@caloriesDebugDumpPrinted": {
     "placeholders": {
       "rowCount": {
@@ -1093,13 +891,10 @@
       }
     }
   },
-  "caloriesDebugDumpCanceled":
-      "Kalorien-Debug-TXT-Download abgebrochen.",
-  "caloriesDebugDumpFailed":
-      "Kalorien-Debug-TXT konnte nicht heruntergeladen werden.",
+  "caloriesDebugDumpCanceled": "Kalorien-Debug-TXT-Download abgebrochen.",
+  "caloriesDebugDumpFailed": "Kalorien-Debug-TXT konnte nicht heruntergeladen werden.",
   "caloriesSettingsDebugDumpAction": "Kalorien-Einstellungen als JSON ausgeben",
-  "caloriesSettingsDebugDumpPrinted":
-      "Kalorien-Einstellungen-Debug-Ausgabe gedruckt ({entryCount} Zieleinträge).",
+  "caloriesSettingsDebugDumpPrinted": "Kalorien-Einstellungen-Debug-Ausgabe gedruckt ({entryCount} Zieleinträge).",
   "@caloriesSettingsDebugDumpPrinted": {
     "placeholders": {
       "entryCount": {
@@ -1107,14 +902,10 @@
       }
     }
   },
-  "caloriesSettingsDebugDumpFailed":
-      "Kalorien-Einstellungen-Debug-Ausgabe konnte nicht gedruckt werden.",
-  "caloriesWeeklyCheckInDebugDumpAction":
-      "Wochen-Check-in-Status ausgeben",
-  "caloriesWeeklyCheckInDebugDumpPrinted":
-      "Wochen-Check-in-Debug-Ausgabe gedruckt.",
-  "caloriesWeeklyCheckInDebugDumpFailed":
-      "Wochen-Check-in-Debug-Ausgabe konnte nicht gedruckt werden.",
+  "caloriesSettingsDebugDumpFailed": "Kalorien-Einstellungen-Debug-Ausgabe konnte nicht gedruckt werden.",
+  "caloriesWeeklyCheckInDebugDumpAction": "Wochen-Check-in-Status ausgeben",
+  "caloriesWeeklyCheckInDebugDumpPrinted": "Wochen-Check-in-Debug-Ausgabe gedruckt.",
+  "caloriesWeeklyCheckInDebugDumpFailed": "Wochen-Check-in-Debug-Ausgabe konnte nicht gedruckt werden.",
   "burnWeekRunOverTitle": "Run beendet",
   "burnWeekRunRestartsOn": "Frischer Run startet am {date}.",
   "@burnWeekRunRestartsOn": {
@@ -1123,39 +914,12 @@
     }
   },
   "burnWeekPracticeDayTitle": "Übungstag",
-  "burnWeekPracticeDayMessage":
-      "Heute zählt noch nicht. Du kannst Tracking testen, und Burn Week startet am {date}.",
+  "burnWeekPracticeDayMessage": "Heute zählt noch nicht. Du kannst Tracking testen, und Burn Week startet am {date}.",
   "@burnWeekPracticeDayMessage": {
     "placeholders": {
       "date": {}
     }
   },
-  "calorieBudgetDetailsActualLabel": "Ist (du)",
-  "calorieBudgetDetailsTargetLabel": "Soll (Ziel)",
-  "calorieBudgetDetailsBalanceExplanation":
-      "Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs.",
-  "calorieBudgetDetailsTodayBudget": "Heutiges Budget",
-  "calorieBudgetDetailsFoodToday": "Essen heute",
-  "calorieBudgetDetailsRemaining": "Verbleibend",
-  "burnWeekDetailsTitle": "Burn-Week-Details",
-  "burnWeekDetailsHowCalculated": "So wird es berechnet",
-  "burnWeekDetailsDailyGoal": "Tagesziel",
-  "burnWeekDetailsWeekTarget": "Wochenziel",
-  "burnWeekDetailsCurrentTime": "Aktuelle Zeit",
-  "burnWeekDetailsStarsHearts": "Sterne / Herzen",
-  "burnWeekDetailsHeartKcalUsed": "Herz-Anpassung",
-  "burnWeekDetailsWeekRatio": "Wochenfortschritt",
-  "burnWeekDetailsTargetFormula": "Zielformel",
-  "burnWeekDetailsLoggedFoodSoFar": "Bisher erfasstes Essen",
-  "burnWeekDetailsPlannedLaterToday": "Später heute geplant",
-  "burnWeekDetailsActivityBonusSoFar": "Bisheriger Aktivitätsbonus",
-  "burnWeekDetailsWeekCarryover": "Übertrag dieser Woche",
-  "burnWeekDetailsPreviousWeekOverflow": "Übertrag aus letzter Woche",
-  "burnWeekDetailsWeekLeftAfterFood": "Woche übrig nach Essen",
-  "burnWeekDetailsSportCounting": "Sport-Zählung",
-  "burnWeekDetailsSportCountingValue":
-      "Erwartete Aktivität steckt bereits im Basisziel. Die Hälfte der Aktivität über dieser Erwartung wird als essbare kcal addiert.",
-  "burnWeekDetailsSafeZone": "Sicherheitszone",
   "burnWeekWeekDayLabel": "Woche {week} Tag {day}",
   "@burnWeekWeekDayLabel": {
     "placeholders": {
@@ -1181,51 +945,18 @@
   },
   "diaryWeightSaveAction": "Speichern",
   "diaryWeightClearAction": "Überschreibung löschen",
-  "diaryWeightSaveFailed":
-      "Gewicht konnte nicht gespeichert werden.",
-  "diaryWeightClearFailed":
-      "Manuelles Gewicht konnte nicht gelöscht werden.",
-  "caloriesDeleteEntryDialogTitle": "Eintrag löschen?",
-  "caloriesDeleteEntryDialogMessage":
-      "\"{name}\" für diesen Tag löschen?",
-  "@caloriesDeleteEntryDialogMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "caloriesDeleteEntryConfirmAction": "Löschen",
+  "diaryWeightSaveFailed": "Gewicht konnte nicht gespeichert werden.",
+  "diaryWeightClearFailed": "Manuelles Gewicht konnte nicht gelöscht werden.",
   "caloriesRemoveEntryAction": "Eintrag entfernen",
   "caloriesRemoveEntryDialogTitle": "Eintrag entfernen",
-  "caloriesRemoveEntryDialogMessage":
-      "Möchtest du das Nahrungsmittel wieder in den Vorrat zurücklegen?",
-  "caloriesRemoveEntryPreparedMealMessage":
-      "Möchtest du die Mahlzeit wieder in den Vorrat zurücklegen?",
+  "caloriesRemoveEntryDialogMessage": "Möchtest du das Nahrungsmittel wieder in den Vorrat zurücklegen?",
+  "caloriesRemoveEntryPreparedMealMessage": "Möchtest du die Mahlzeit wieder in den Vorrat zurücklegen?",
   "caloriesRemoveEntryOnlyAction": "Nur aus Tagebuch löschen",
   "caloriesRemoveAndRestoreAction": "In den Vorrat zurücklegen",
-  "caloriesReturnPreparedMealDialogTitle":
-      "Mahlzeit zurück in den Vorrat legen?",
-  "caloriesReturnPreparedMealDialogMessage":
-      "\"{name}\" zurück in den Vorrat legen und aus dem Tagebuch entfernen?",
-  "@caloriesReturnPreparedMealDialogMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "caloriesReturnPreparedMealConfirmAction": "Zurück in den Vorrat",
-  "caloriesReturnPreparedMealFailed":
-      "Die Mahlzeit konnte nicht zurück in den Vorrat gelegt werden.",
-  "caloriesDeleteRestoreInventoryQuestion":
-      "Nahrungsmittel wieder in den Vorrat legen?",
-  "caloriesDeleteRestoreFailed":
-      "Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.",
-  "caloriesMissingInventorySourceDialogTitle":
-      "Nahrungsmittel nicht mehr im Vorrat",
-  "caloriesMissingInventorySourceDialogMessage":
-      "\"{name}\" ist nicht mehr im Vorrat und kann nicht zurückgelegt werden. Nur aus dem Tagebuch löschen?",
+  "caloriesReturnPreparedMealFailed": "Die Mahlzeit konnte nicht zurück in den Vorrat gelegt werden.",
+  "caloriesDeleteRestoreFailed": "Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.",
+  "caloriesMissingInventorySourceDialogTitle": "Nahrungsmittel nicht mehr im Vorrat",
+  "caloriesMissingInventorySourceDialogMessage": "\"{name}\" ist nicht mehr im Vorrat und kann nicht zurückgelegt werden. Nur aus dem Tagebuch löschen?",
   "@caloriesMissingInventorySourceDialogMessage": {
     "placeholders": {
       "name": {
@@ -1239,8 +970,7 @@
   "caloriesEditEntryTitle": "Kalorien-Eintrag bearbeiten",
   "caloriesEntryDetailsTitle": "Kalorien-Eintragsdetails",
   "caloriesDiscardChangesDialogTitle": "Ungespeicherte Änderungen verwerfen?",
-  "caloriesDiscardChangesDialogMessage":
-      "Deine Änderungen an diesem Tagebucheintrag wurden noch nicht gespeichert.",
+  "caloriesDiscardChangesDialogMessage": "Deine Änderungen an diesem Tagebucheintrag wurden noch nicht gespeichert.",
   "caloriesDiscardChangesConfirmAction": "Änderungen verwerfen",
   "caloriesEntryNotFound": "Eintrag wurde nicht gefunden.",
   "caloriesEntryNameLabel": "Name",
@@ -1267,37 +997,17 @@
   "caloriesSaveFailed": "Eintrag konnte nicht gespeichert werden.",
   "caloriesRequiredField": "Pflichtfeld",
   "caloriesInvalidNumber": "Bitte gültige Zahlen eingeben.",
-  "caloriesPositiveNumberValidation":
-      "Bitte eine Zahl größer als null eingeben.",
-  "caloriesNonNegativeNumberValidation":
-      "Bitte eine Zahl größer oder gleich null eingeben.",
+  "caloriesPositiveNumberValidation": "Bitte eine Zahl größer als null eingeben.",
+  "caloriesNonNegativeNumberValidation": "Bitte eine Zahl größer oder gleich null eingeben.",
   "caloriesMealBreakfast": "Frühstück",
   "caloriesMealLunch": "Mittagessen",
   "caloriesMealDinner": "Abendessen",
   "caloriesMealSnack": "Snack",
-  "caloriesWeekdayShortMonday": "Mo",
-  "caloriesWeekdayShortTuesday": "Di",
-  "caloriesWeekdayShortWednesday": "Mi",
-  "caloriesWeekdayShortThursday": "Do",
-  "caloriesWeekdayShortFriday": "Fr",
-  "caloriesWeekdayShortSaturday": "Sa",
-  "caloriesWeekdayShortSunday": "So",
   "caloriesUnitKcal": "kcal",
   "caloriesUnitKg": "kg",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
   "diaryTodayTitle": "Heute",
-  "diaryCycleDayLabel": "Woche {week} Tag {day}",
-  "@diaryCycleDayLabel": {
-    "placeholders": {
-      "week": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
-  },
   "diaryMealsTitle": "Tagebuch",
   "diaryMealsEmpty": "Noch nichts eingetragen",
   "diaryMealsLoadFailed": "Mahlzeiten konnten nicht geladen werden",
@@ -1319,7 +1029,6 @@
   "diaryNutritionLoadFailed": "Nährwerte konnten nicht geladen werden",
   "diaryNutritionTitle": "Makronährstoffe",
   "diaryBalanceEatenLabel": "Gegessen",
-  "diaryBalanceLeftLabel": "Übrig",
   "diaryBalanceLeftTodayLabel": "Übrig heute",
   "diaryBalanceBaseLabel": "Basis",
   "diaryBalancePlannedWithCarryoverLabel": "Mit Übertrag geplant",
@@ -1337,8 +1046,6 @@
     }
   },
   "diaryBalanceTargetMarkerLabel": "Soll",
-  "diaryBalanceWeekActualLabel": "Ist (Woche)",
-  "diaryBalanceWeekTargetLabel": "Wochenziel",
   "diaryBalanceRealEatenLabel": "Echt {kcal}",
   "@diaryBalanceRealEatenLabel": {
     "placeholders": {
@@ -1366,22 +1073,6 @@
   "diaryBalanceHeartDayValue": "Herztag",
   "diaryBalanceHeartDaySubtitle": "Für Lernen ignoriert",
   "diaryBalanceRevertHeartDayAction": "Herztag zurücknehmen",
-  "diaryBalanceActivityIncludedLabel": "{kcal} Aktivität im Tagesziel enthalten",
-  "@diaryBalanceActivityIncludedLabel": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryBalanceActivityBonusLabel": "{kcal} Extra-Sport",
-  "@diaryBalanceActivityBonusLabel": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
   "diaryBalanceBaseGoalShort": "Basis {value}",
   "@diaryBalanceBaseGoalShort": {
     "placeholders": {
@@ -1414,7 +1105,6 @@
   "diaryBudgetDetailsExpectedActivityLabel": "Vermutete Aktivität",
   "diaryBudgetDetailsExtraSportLabel": "Zusätzlicher Sport",
   "diaryBudgetDetailsCarryoverLabel": "Übertrag aus Vortagen",
-  "diaryBudgetDetailsActivityBonusLabel": "Aktivitätsbonus",
   "diaryBudgetDetailsEffectiveGoalLabel": "Effektives Tagesziel",
   "diaryBudgetDetailsEatenLabel": "Bisher gegessen",
   "diaryBudgetDetailsLeftLabel": "Noch übrig heute",
@@ -1480,7 +1170,6 @@
   "diaryIntroBackAction": "Zurück",
   "diaryIntroNextAction": "Weiter",
   "diaryIntroDoneAction": "Loslegen",
-  "diaryIntroReplayAction": "Intro nochmal",
   "diaryIntroBannerTitle": "Neu bei YAMT?",
   "diaryIntroBannerBody": "Erfahre, wie dein Ziel berechnet wird und wie sich dein Stoffwechsel mit der Zeit anpasst.",
   "diaryIntroBannerAction": "Intro ansehen",
@@ -1544,17 +1233,7 @@
   "diaryIntroBetterDataTitle": "Besser mit Daten",
   "diaryIntroBetterDataBody": "Nach 7 Tagen ist die Schätzung besser als der Startwert. Nach 14 konsequenten Tagen sieht YAMT deinen Stoffwechsel deutlich klarer.",
   "diaryActivityTitle": "Aktivität",
-  "diaryActivityEmpty": "Keine Aktivität",
-  "diaryActivityWeightLoadFailed":
-      "Aktivität und Gewicht konnten nicht geladen werden",
-  "diaryActiveMinutesLabel": "{minutes} Min. aktiv",
-  "@diaryActiveMinutesLabel": {
-    "placeholders": {
-      "minutes": {
-        "type": "String"
-      }
-    }
-  },
+  "diaryActivityWeightLoadFailed": "Aktivität und Gewicht konnten nicht geladen werden",
   "diaryWeightTitle": "Gewicht",
   "diarySevenDaysLabel": "7 Tage",
   "diaryProfileWeightLabel": "Profil: {weight} kg",
@@ -1645,15 +1324,12 @@
   "settingsAppearanceSectionTitle": "Darstellung",
   "settingsAppSectionTitle": "App",
   "settingsLanguageTitle": "Sprache",
-  "settingsLanguageSubtitle": "App-Sprache auswählen",
   "settingsLanguageEnglish": "Englisch",
   "settingsLanguageGerman": "Deutsch",
   "settingsThemeTitle": "Design",
   "settingsThemeSystem": "System",
   "settingsThemeLight": "Hell",
   "settingsThemeDark": "Dunkel",
-  "settingsDiaryTitle": "Tagebuch",
-  "settingsDiaryGoalNoGoal": "Kein Ziel gesetzt",
   "settingsDiaryGoalSetGoalFirst": "Zuerst Ziel setzen",
   "settingsColorTitle": "Akzentfarbe",
   "settingsColorLime": "Limette",
@@ -1668,38 +1344,24 @@
   "settingsHouseholdTitle": "Haushalt",
   "settingsHouseholdSubtitle": "Mitglieder einladen und geteilten Zugriff verwalten",
   "settingsAccountTitle": "Konto",
-  "settingsAccountSubtitle": "Profil und Anmeldung verwalten",
   "settingsHealthConnectPlatformTitle": "Health Connect",
   "settingsHealthConnectTitle": "Health verbinden",
-  "settingsHealthConnectSubtitle":
-      "Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Health Connect zu lesen.",
+  "settingsHealthConnectSubtitle": "Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Health Connect zu lesen.",
   "settingsAppleHealthTitle": "Apple Health",
-  "settingsAppleHealthConnectSubtitle":
-      "Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Apple Health zu lesen.",
-  "settingsHealthHistorySubtitle":
-      "Erlaube ältere Health-Connect-Historie, damit vergangene Tagebuch-Tage Aktivitätsdaten laden können.",
-  "settingsHealthInstallSubtitle":
-      "Installiere Health Connect, bevor du hier Gesundheitsdaten verbinden kannst.",
-  "settingsHealthDisconnectSubtitle":
-      "Entferne den Health-Connect-Zugriff für YAMT.",
-  "settingsAppleHealthDisconnectSubtitle":
-      "Stoppe die Nutzung von Apple Health in YAMT.",
+  "settingsAppleHealthConnectSubtitle": "Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Apple Health zu lesen.",
+  "settingsHealthHistorySubtitle": "Erlaube ältere Health-Connect-Historie, damit vergangene Tagebuch-Tage Aktivitätsdaten laden können.",
+  "settingsHealthInstallSubtitle": "Installiere Health Connect, bevor du hier Gesundheitsdaten verbinden kannst.",
+  "settingsHealthDisconnectSubtitle": "Entferne den Health-Connect-Zugriff für YAMT.",
+  "settingsAppleHealthDisconnectSubtitle": "Stoppe die Nutzung von Apple Health in YAMT.",
   "settingsHealthDisconnectDialogTitle": "Health-Zugriff trennen?",
-  "settingsHealthDisconnectDialogBody":
-      "YAMT verliert den Zugriff auf Health Connect, bis du es erneut verbindest.",
-  "settingsAppleHealthDisconnectDialogBody":
-      "YAMT nutzt Apple-Health-Daten nicht mehr, bis du es erneut verbindest. Die Apple-Health-Berechtigungen auf deinem iPhone bleiben unverändert.",
+  "settingsHealthDisconnectDialogBody": "YAMT verliert den Zugriff auf Health Connect, bis du es erneut verbindest.",
+  "settingsAppleHealthDisconnectDialogBody": "YAMT nutzt Apple-Health-Daten nicht mehr, bis du es erneut verbindest. Die Apple-Health-Berechtigungen auf deinem iPhone bleiben unverändert.",
   "settingsHealthDisconnectAction": "Trennen",
-  "settingsHealthDisconnectSuccess":
-      "Health-Zugriff getrennt. Starte YAMT neu, bevor du Health Connect erneut verbindest.",
-  "settingsAppleHealthDisconnectSuccess":
-      "Apple Health in YAMT getrennt. Du kannst es jederzeit in den Einstellungen wieder verbinden.",
-  "settingsHealthDisconnectOpenedSettings":
-      "Einstellungen geöffnet, damit du den Apple-Health-Zugriff verwalten kannst.",
-  "settingsHealthDisconnectFailed":
-      "Health-Zugriff konnte nicht getrennt werden.",
-  "settingsHealthConnectFailed":
-      "Health-Zugriff konnte nicht verbunden werden.",
+  "settingsHealthDisconnectSuccess": "Health-Zugriff getrennt. Starte YAMT neu, bevor du Health Connect erneut verbindest.",
+  "settingsAppleHealthDisconnectSuccess": "Apple Health in YAMT getrennt. Du kannst es jederzeit in den Einstellungen wieder verbinden.",
+  "settingsHealthDisconnectOpenedSettings": "Einstellungen geöffnet, damit du den Apple-Health-Zugriff verwalten kannst.",
+  "settingsHealthDisconnectFailed": "Health-Zugriff konnte nicht getrennt werden.",
+  "settingsHealthConnectFailed": "Health-Zugriff konnte nicht verbunden werden.",
   "accountPageNoSession": "Keine aktive Kontositzung.",
   "accountPageGuestTitle": "Gastkonto",
   "accountPageGuestDescription": "Verknüpfe dein Gastkonto mit Google, um den Zugriff geräteübergreifend zu behalten.",
@@ -1710,8 +1372,7 @@
   "accountPageLinkEmailPasswordConfirmAction": "Konto verknüpfen",
   "healthInstallAction": "Health Connect installieren",
   "healthHistoryAction": "Ältere Historie erlauben",
-  "healthUnsupportedHint":
-      "Health Connect oder Apple Health ist auf diesem Gerät nicht verfügbar.",
+  "healthUnsupportedHint": "Health Connect oder Apple Health ist auf diesem Gerät nicht verfügbar.",
   "accountPageLinkSuccess": "Konto erfolgreich verknüpft.",
   "accountPageLinkNotCompleted": "Die Kontoverknüpfung wurde nicht abgeschlossen. Bitte erneut versuchen.",
   "accountPageLinkConflictTitle": "Konto bereits vergeben",
@@ -1726,8 +1387,7 @@
   "accountPageSignOut": "Abmelden",
   "accountPageDeleteAction": "Konto löschen",
   "accountPageDeleteDialogTitle": "Konto löschen?",
-  "accountPageDeleteDialogMessage":
-      "Dadurch wird dein Konto dauerhaft gelöscht und kann nicht rückgängig gemacht werden.",
+  "accountPageDeleteDialogMessage": "Dadurch wird dein Konto dauerhaft gelöscht und kann nicht rückgängig gemacht werden.",
   "accountPageDeleteDialogConfirmAction": "Löschen",
   "accountPageDeleteSuccess": "Konto gelöscht.",
   "accountPageDisplayName": "Anzeigename",
@@ -1828,7 +1488,6 @@
   "onboardingWelcomeLoginAction": "Hier einloggen",
   "onboardingAgeYearsUnit": "Jahre",
   "onboardingHeightCmUnit": "cm",
-  "onboardingDoneAction": "Fertig",
   "onboardingNextAction": "Weiter",
   "onboardingNextActionStep5": "Klingt super, weiter!",
   "onboardingFinishAction": "Starten",
@@ -1836,8 +1495,6 @@
   "onboardingPersonalInfoSubtitle": "Diese Daten helfen uns, deinen Grundumsatz zu berechnen – denn jeder Körper verbrennt Energie anders!",
   "onboardingActivityLevelTitle": "Wie aktiv bist du?",
   "onboardingActivityLevelSubtitle": "Dein normaler Alltag (Training kommt später).",
-  "onboardingActivityTitle": "Aktivitätslevel",
-  "onboardingActivitySubtitle": "Wie aktiv bist du in deinem Alltag?",
   "onboardingGoalWeightTitle": "Dein Ziel",
   "onboardingGoalWeightSubtitle": "Lass uns dein Zielgewicht festlegen.",
   "onboardingGoalWeightStartLabel": "Startgewicht (kg)",
@@ -1876,7 +1533,6 @@
   "onboardingStartDateNowQuestion": "Wie gehen wir mit dem heutigen Tag um?",
   "onboardingStartDateNowExact": "Ich trage den ganzen Tag exakt nach",
   "onboardingStartDateNowEstimate": "Ich schätze grob ab, was ich bisher aß",
-  "onboardingStartDateLaterLabel": "Ab morgen",
   "onboardingStartDateLaterDesc": "Heute ist schon fast rum, ich starte lieber morgen frisch.",
   "onboardingReadyTitle": "Alles bereit!",
   "onboardingReadySubtitle": "Dein Profil ist fertig. Lass uns loslegen!",
@@ -1975,7 +1631,6 @@
   "cookflowInventoryReturnSuggestionButton": "Übernehmen",
   "cookflowPreparationTitle": "1. Vorbereitung",
   "cookflowPreparationBody": "Bevor wir loslegen: Wähle alle Töpfe oder Behälter und trage ihr Leergewicht ein.",
-  "cookflowTaraFieldTitle": "Leergewicht (Tara)",
   "cookflowGramUnit": "Gramm",
   "cookflowTaraUtensilsTitle": "Gespeicherte Utensilien",
   "cookflowTaraUtensilsLoadFailed": "Utensilien konnten nicht geladen werden.",
@@ -1983,14 +1638,6 @@
   "cookflowPortionScalerTitle": "Rezeptportionen",
   "cookflowOriginalPortionsLabel": "Originalrezept: {count} Portionen",
   "@cookflowOriginalPortionsLabel": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cookflowTargetPortionsLabel": "{count} Portionen",
-  "@cookflowTargetPortionsLabel": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -2016,7 +1663,6 @@
   "cookflowSummaryIngredientsTitle": "Grundrezept Zutaten",
   "cookflowSummaryAdjustmentsTitle": "Ungelöste Anpassungen",
   "cookflowSummaryMatchInventoryButton": "Als Zutat hinzufügen",
-  "cookflowSummaryPlaceholderAdjustment": "200g Gurken",
   "cookflowFinalizeTitle": "4. Finalisieren",
   "cookflowFinalizeBody": "Stell jeden gefüllten Behälter auf die Waage und lege danach die Portionen für die erstellten Mahlzeiten fest.",
   "cookflowStorageContainersTitle": "Aufbewahrungsbehälter",
@@ -2032,12 +1678,10 @@
   },
   "cookflowRemoveContainerTooltip": "Behälter entfernen",
   "cookflowContainerTaraLabel": "Tara",
-  "cookflowPortionsUnit": "Portionen",
   "cookflowIngredientContainerTitle": "Wo ist welche Zutat verstaut?",
   "cookflowIngredientContainerEmpty": "Keine Vorratszutaten für Behälter-Zuweisung vorhanden.",
   "cookflowGrossWeightTitle": "Bruttogewicht (Topf + Essen)",
   "cookflowGrossWeightHint": "z.B. 2500",
-  "cookflowMinusTaraLabel": "Minus Leergewicht (Tara)",
   "cookflowNetWeightLabel": "Netto-Endgewicht",
   "cookflowSplitIntoPortionsLabel": "Portionen nachjustieren?",
   "cookflowHowManyPortions": "Wie viele Portionen sind das?",

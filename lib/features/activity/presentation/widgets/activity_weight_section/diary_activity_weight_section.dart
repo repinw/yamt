@@ -9,10 +9,10 @@ import 'package:yamt/features/activity/application/diary_activity_weight_data_pr
 import 'package:yamt/features/activity/application/diary_steps_summary_provider.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
-import 'package:yamt/features/activity/presentation/widgets/activity_card/diary_activity_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section_keys.dart';
-import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_compact_activity_weight_card.dart';
+import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_compact_activity_weight_surface.dart';
 import 'package:yamt/features/activity/presentation/widgets/diary_activity_details_card.dart';
+import 'package:yamt/features/activity/presentation/widgets/diary_workouts_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/health_connect_metric_card/diary_health_connect_metric_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_details_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog.dart';
@@ -219,7 +219,7 @@ class _DiaryActivityWeightSectionState
                       ],
                       if (showActivityTrainings) ...[
                         const SizedBox(height: AppSpacing.md),
-                        DiaryActivityTrainingsPanel(
+                        DiaryWorkoutsCard(
                           selectedDay: widget.selectedDay,
                         ),
                       ],

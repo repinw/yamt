@@ -11,6 +11,8 @@ import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
+    'inventory_eat_flow_hero.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_sheet_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_when_section.dart';
@@ -167,11 +169,32 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     final metrics = _buildNutritionMetrics(l10n, selectedPortions ?? 1);
     final canUseGrams = _canUseGramAmountMode(widget.meal);
 
+    final trimmedMealName = widget.meal.name.trim();
+    final mealInitial = trimmedMealName.isEmpty
+        ? '?'
+        : trimmedMealName.substring(0, 1);
+
     return InventoryEatFlowSheetScaffold(
       viewInsetsBottom: MediaQuery.viewInsetsOf(context).bottom,
-      hero: PreparedMealEatHero(
-        meal: widget.meal,
+      hero: InventoryEatFlowHero(
+        title: widget.meal.name,
+        eyebrow: l10n.preparedMealEatTitle,
+        imageUrl: widget.meal.imageUrl,
         imageBytes: widget.imageBytes,
+        imageKey: const Key('prepared_meal_eat_sheet_hero_cover'),
+        cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
+        fallback: ColoredBox(
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
+          child: Center(
+            child: Text(
+              mealInitial.toUpperCase(),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
       ),
       confirmActionText: l10n.inventoryItemEatSheetConfirmAction,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),

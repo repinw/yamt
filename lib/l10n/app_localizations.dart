@@ -383,12 +383,6 @@ abstract class AppLocalizations {
   /// **'Create'**
   String get productSearchHubCreateOwnAction;
 
-  /// No description provided for @productSearchHubSearchLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Search product'**
-  String get productSearchHubSearchLabel;
-
   /// No description provided for @productSearchHubSearchHint.
   ///
   /// In en, this message translates to:
@@ -911,12 +905,6 @@ abstract class AppLocalizations {
   /// **'Search product or scan barcode'**
   String get inventoryReceiptReviewManualDataAction;
 
-  /// No description provided for @inventoryReceiptReviewManualDataTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Search product or scan barcode'**
-  String get inventoryReceiptReviewManualDataTitle;
-
   /// No description provided for @inventoryReceiptReviewManualDataHint.
   ///
   /// In en, this message translates to:
@@ -1193,18 +1181,6 @@ abstract class AppLocalizations {
   /// **'Carbs'**
   String get inventoryNutritionCarbsShortLabel;
 
-  /// No description provided for @inventoryFilterConsumed.
-  ///
-  /// In en, this message translates to:
-  /// **'Consumed'**
-  String get inventoryFilterConsumed;
-
-  /// No description provided for @inventoryFilterNotConsumed.
-  ///
-  /// In en, this message translates to:
-  /// **'Not consumed'**
-  String get inventoryFilterNotConsumed;
-
   /// No description provided for @inventoryHideConsumedFilterTitle.
   ///
   /// In en, this message translates to:
@@ -1216,24 +1192,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide completely empty items'**
   String get inventoryHideConsumedFilterSubtitle;
-
-  /// No description provided for @inventoryHideFullyConsumedItemsToggle.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide fully consumed items'**
-  String get inventoryHideFullyConsumedItemsToggle;
-
-  /// No description provided for @preparedMealFilterAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter meals'**
-  String get preparedMealFilterAction;
-
-  /// No description provided for @preparedMealFiltersTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Adjust view'**
-  String get preparedMealFiltersTitle;
 
   /// No description provided for @preparedMealFiltersSubtitle.
   ///
@@ -1283,12 +1241,6 @@ abstract class AppLocalizations {
   /// **'items'**
   String get inventoryReceiptGroupItems;
 
-  /// No description provided for @inventoryItemDeleteAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get inventoryItemDeleteAction;
-
   /// No description provided for @inventoryItemDeletedMessage.
   ///
   /// In en, this message translates to:
@@ -1313,12 +1265,6 @@ abstract class AppLocalizations {
   /// **'Log food'**
   String get inventoryItemEatSheetEyebrow;
 
-  /// No description provided for @inventoryItemEatSheetTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat: {name}'**
-  String inventoryItemEatSheetTitle(String name);
-
   /// No description provided for @inventoryItemEatSheetAmountLabel.
   ///
   /// In en, this message translates to:
@@ -1330,12 +1276,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Available in inventory: {amount} {unit}'**
   String inventoryItemEatSheetAvailableAmount(Object amount, Object unit);
-
-  /// No description provided for @inventoryItemEatSheetQuickSelectLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick select'**
-  String get inventoryItemEatSheetQuickSelectLabel;
 
   /// No description provided for @inventoryItemEatSheetAllAction.
   ///
@@ -1349,29 +1289,11 @@ abstract class AppLocalizations {
   /// **'All/Rest'**
   String get inventoryAmountDialogAllRemainingAction;
 
-  /// No description provided for @inventoryItemEatSheetPortionModeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Portions'**
-  String get inventoryItemEatSheetPortionModeTitle;
-
-  /// No description provided for @inventoryItemEatSheetUsePortionsToggle.
-  ///
-  /// In en, this message translates to:
-  /// **'Use portion count'**
-  String get inventoryItemEatSheetUsePortionsToggle;
-
   /// No description provided for @inventoryItemEatSheetPortionLabelFieldLabel.
   ///
   /// In en, this message translates to:
   /// **'Portion label'**
   String get inventoryItemEatSheetPortionLabelFieldLabel;
-
-  /// No description provided for @inventoryItemEatSheetPortionCountFieldLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Count'**
-  String get inventoryItemEatSheetPortionCountFieldLabel;
 
   /// No description provided for @inventoryItemEatSheetPortionAmountFieldLabel.
   ///
@@ -1463,24 +1385,6 @@ abstract class AppLocalizations {
   /// **'The deducted amount must be smaller than the eaten amount.'**
   String get inventoryItemEatSheetInedibleAmountError;
 
-  /// No description provided for @inventoryItemEatSheetWhenLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'When?'**
-  String get inventoryItemEatSheetWhenLabel;
-
-  /// No description provided for @inventoryItemEatSheetNowValue.
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get inventoryItemEatSheetNowValue;
-
-  /// No description provided for @inventoryItemEatSheetNutritionLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Nutrition'**
-  String get inventoryItemEatSheetNutritionLabel;
-
   /// No description provided for @inventoryItemEatSheetConfirmAction.
   ///
   /// In en, this message translates to:
@@ -1510,12 +1414,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add to shopping list'**
   String get inventoryItemAddToShoppingListAction;
-
-  /// No description provided for @inventoryItemBuyAgainAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Buy again'**
-  String get inventoryItemBuyAgainAction;
 
   /// No description provided for @inventoryItemBuyAgainSucceeded.
   ///
@@ -1625,12 +1523,6 @@ abstract class AppLocalizations {
   /// **'Barcode scanning is currently supported on Android and iOS.'**
   String get inventoryBarcodeScanUnsupported;
 
-  /// No description provided for @inventoryManualAddTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Add food manually'**
-  String get inventoryManualAddTitle;
-
   /// No description provided for @inventoryManualAddHint.
   ///
   /// In en, this message translates to:
@@ -1673,12 +1565,6 @@ abstract class AppLocalizations {
   /// **'OFF'**
   String get inventoryManualAddCandidateSourceOff;
 
-  /// No description provided for @inventoryManualAddUnknownBrand.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown brand'**
-  String get inventoryManualAddUnknownBrand;
-
   /// No description provided for @inventoryManualAddNotFound.
   ///
   /// In en, this message translates to:
@@ -1696,12 +1582,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The product could not be added to the inventory.'**
   String get inventoryManualAddSaveFailed;
-
-  /// No description provided for @inventoryManualAddSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Product added to inventory.'**
-  String get inventoryManualAddSaved;
 
   /// No description provided for @inventoryManualAddEatSucceeded.
   ///
@@ -1768,18 +1648,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create manually'**
   String get inventoryManualAddCreateOwnAction;
-
-  /// No description provided for @inventoryManualAddEatNowOption.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat now'**
-  String get inventoryManualAddEatNowOption;
-
-  /// No description provided for @inventoryManualAddEatNowSizeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat now amount'**
-  String get inventoryManualAddEatNowSizeLabel;
 
   /// No description provided for @inventoryManualAddEatNowRequiresNutrition.
   ///
@@ -1918,12 +1786,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total'**
   String get inventoryManualAddAiSearchTotalLabel;
-
-  /// No description provided for @inventoryManualAddAiSearchPer100Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved per 100 g'**
-  String get inventoryManualAddAiSearchPer100Title;
 
   /// No description provided for @inventoryManualAddAiSearchPer100CardTitle.
   ///
@@ -2489,35 +2351,11 @@ abstract class AppLocalizations {
   /// **'Paste a recipe link, for example from Chefkoch.'**
   String get preparedMealTemplateRecipeSheetSubtitle;
 
-  /// No description provided for @preparedMealTemplateRecipeGreetingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Let\'s cook up a new recipe! 🍳'**
-  String get preparedMealTemplateRecipeGreetingTitle;
-
   /// No description provided for @preparedMealTemplateRecipeGreetingSubtitle.
   ///
   /// In en, this message translates to:
   /// **'Simply copy the web address of your favorite recipe and we will read all ingredients automatically.'**
   String get preparedMealTemplateRecipeGreetingSubtitle;
-
-  /// No description provided for @preparedMealTemplateStepCopy.
-  ///
-  /// In en, this message translates to:
-  /// **'1. 🔗 Copy'**
-  String get preparedMealTemplateStepCopy;
-
-  /// No description provided for @preparedMealTemplateStepPaste.
-  ///
-  /// In en, this message translates to:
-  /// **'2. 📝 Paste'**
-  String get preparedMealTemplateStepPaste;
-
-  /// No description provided for @preparedMealTemplateStepCreate.
-  ///
-  /// In en, this message translates to:
-  /// **'3. ✨ Create'**
-  String get preparedMealTemplateStepCreate;
 
   /// Title shown when prompting the user to paste from clipboard
   ///
@@ -2590,24 +2428,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Optional. If empty, the servings from the recipe are used.'**
   String get preparedMealTemplatePortionsHelper;
-
-  /// No description provided for @preparedMealTemplateRecipePlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Recipe link'**
-  String get preparedMealTemplateRecipePlaceholder;
-
-  /// No description provided for @preparedMealTemplateNoIngredientsYet.
-  ///
-  /// In en, this message translates to:
-  /// **'No ingredients linked yet.'**
-  String get preparedMealTemplateNoIngredientsYet;
-
-  /// No description provided for @preparedMealTemplateOpenAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Open template'**
-  String get preparedMealTemplateOpenAction;
 
   /// No description provided for @preparedMealTemplateUpdatedMessage.
   ///
@@ -2795,12 +2615,6 @@ abstract class AppLocalizations {
   /// **'Saving...'**
   String get preparedMealTemplateImportReviewSavingAction;
 
-  /// No description provided for @preparedMealTemplateRecipeSource.
-  ///
-  /// In en, this message translates to:
-  /// **'Recipe: {host}'**
-  String preparedMealTemplateRecipeSource(String host);
-
   /// No description provided for @preparedMealTemplatePortions.
   ///
   /// In en, this message translates to:
@@ -2915,78 +2729,6 @@ abstract class AppLocalizations {
   /// **'Clear'**
   String get shoppingListClearCrossedOffConfirmAction;
 
-  /// No description provided for @caloriesAddOptionManual.
-  ///
-  /// In en, this message translates to:
-  /// **'Manual entry'**
-  String get caloriesAddOptionManual;
-
-  /// No description provided for @caloriesAddOptionBarcode.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan barcode'**
-  String get caloriesAddOptionBarcode;
-
-  /// No description provided for @caloriesFabTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Add calorie entry'**
-  String get caloriesFabTooltip;
-
-  /// No description provided for @caloriesBarcodeScannerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan barcode'**
-  String get caloriesBarcodeScannerTitle;
-
-  /// No description provided for @caloriesBarcodeResolving.
-  ///
-  /// In en, this message translates to:
-  /// **'Looking up product...'**
-  String get caloriesBarcodeResolving;
-
-  /// No description provided for @caloriesBarcodeLookupFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Barcode lookup failed. Please try again.'**
-  String get caloriesBarcodeLookupFailed;
-
-  /// No description provided for @caloriesBarcodeCandidateTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose product'**
-  String get caloriesBarcodeCandidateTitle;
-
-  /// No description provided for @caloriesBarcodeCandidateSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Multiple products were found for this barcode.'**
-  String get caloriesBarcodeCandidateSubtitle;
-
-  /// No description provided for @caloriesBarcodeUnknownBrand.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown brand'**
-  String get caloriesBarcodeUnknownBrand;
-
-  /// No description provided for @caloriesBarcodeNotFoundTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Product not found'**
-  String get caloriesBarcodeNotFoundTitle;
-
-  /// No description provided for @caloriesBarcodeNotFoundMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'No product was found for this barcode.'**
-  String get caloriesBarcodeNotFoundMessage;
-
-  /// No description provided for @caloriesBarcodeNotFoundManualAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Manual entry'**
-  String get caloriesBarcodeNotFoundManualAction;
-
   /// No description provided for @caloriesBarcodeNotFoundOcrAction.
   ///
   /// In en, this message translates to:
@@ -3041,12 +2783,6 @@ abstract class AppLocalizations {
   /// **'Today'**
   String get caloriesTodayAction;
 
-  /// No description provided for @caloriesSetGoalAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Set goal manually'**
-  String get caloriesSetGoalAction;
-
   /// No description provided for @caloriesShiftGoalStartAction.
   ///
   /// In en, this message translates to:
@@ -3059,47 +2795,11 @@ abstract class AppLocalizations {
   /// **'Recalculate goal'**
   String get caloriesCalculatorAction;
 
-  /// No description provided for @caloriesGoalDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Set daily goal'**
-  String get caloriesGoalDialogTitle;
-
-  /// No description provided for @caloriesGoalFieldLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily kcal goal'**
-  String get caloriesGoalFieldLabel;
-
-  /// No description provided for @caloriesGoalSaveAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Save goal'**
-  String get caloriesGoalSaveAction;
-
-  /// No description provided for @caloriesGoalClearAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear goal'**
-  String get caloriesGoalClearAction;
-
-  /// No description provided for @caloriesGoalInvalidValue.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a number greater than zero.'**
-  String get caloriesGoalInvalidValue;
-
   /// No description provided for @caloriesGoalSaveFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not save calorie goal.'**
   String get caloriesGoalSaveFailed;
-
-  /// No description provided for @caloriesGoalClearFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not clear calorie goal.'**
-  String get caloriesGoalClearFailed;
 
   /// No description provided for @caloriesGoalStartDialogTitle.
   ///
@@ -3124,12 +2824,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Calorie calculator'**
   String get caloriesCalculatorSheetTitle;
-
-  /// No description provided for @caloriesCalculatorOnboardingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Set your calorie goal'**
-  String get caloriesCalculatorOnboardingTitle;
 
   /// No description provided for @caloriesCalculatorOnboardingSubtitle.
   ///
@@ -3299,24 +2993,6 @@ abstract class AppLocalizations {
   /// **'Very high training volume, physically demanding work, or competitive sports.'**
   String get caloriesCalculatorActivityLevelExtremeDescription;
 
-  /// No description provided for @caloriesCalculatorActivityLevelHint.
-  ///
-  /// In en, this message translates to:
-  /// **'For example 1.2 to 2.0'**
-  String get caloriesCalculatorActivityLevelHint;
-
-  /// No description provided for @caloriesCalculatorActivityLevelEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter your activity level.'**
-  String get caloriesCalculatorActivityLevelEmpty;
-
-  /// No description provided for @caloriesCalculatorActivityLevelInvalid.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a valid activity level.'**
-  String get caloriesCalculatorActivityLevelInvalid;
-
   /// No description provided for @caloriesCalculatorGoalModeLabel.
   ///
   /// In en, this message translates to:
@@ -3413,12 +3089,6 @@ abstract class AppLocalizations {
   /// **'When should your goal start?'**
   String get caloriesCalculatorOnboardingStartTitle;
 
-  /// No description provided for @caloriesCalculatorOnboardingStartNowAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Start now'**
-  String get caloriesCalculatorOnboardingStartNowAction;
-
   /// No description provided for @caloriesCalculatorOnboardingStartLaterAction.
   ///
   /// In en, this message translates to:
@@ -3442,24 +3112,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'How will you track today?'**
   String get caloriesCalculatorOnboardingTodayTrackingLabel;
-
-  /// No description provided for @caloriesCalculatorOnboardingTodayTrackingExactAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Full day exact'**
-  String get caloriesCalculatorOnboardingTodayTrackingExactAction;
-
-  /// No description provided for @caloriesCalculatorOnboardingTodayTrackingEstimateAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Estimate so far'**
-  String get caloriesCalculatorOnboardingTodayTrackingEstimateAction;
-
-  /// No description provided for @caloriesCalculatorOnboardingCatchUpLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'How much have you eaten so far?'**
-  String get caloriesCalculatorOnboardingCatchUpLabel;
 
   /// No description provided for @caloriesCalculatorOnboardingCatchUpLowAction.
   ///
@@ -3616,12 +3268,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Weight trend'**
   String get caloriesWeeklyCheckInDialogTrendLabel;
-
-  /// No description provided for @caloriesWeeklyCheckInDialogTrueTdeeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Learned TDEE'**
-  String get caloriesWeeklyCheckInDialogTrueTdeeLabel;
 
   /// No description provided for @caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel.
   ///
@@ -3803,23 +3449,11 @@ abstract class AppLocalizations {
   /// **'Add weights for these dates to continue: {dates}.'**
   String caloriesWeeklyCheckInBlockedMissingWeightDates(Object dates);
 
-  /// No description provided for @caloriesConsumedLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Consumed'**
-  String get caloriesConsumedLabel;
-
   /// No description provided for @caloriesGoalLabel.
   ///
   /// In en, this message translates to:
   /// **'Goal'**
   String get caloriesGoalLabel;
-
-  /// No description provided for @caloriesRemainingLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Remaining'**
-  String get caloriesRemainingLabel;
 
   /// No description provided for @caloriesDebugActionsTooltip.
   ///
@@ -3917,150 +3551,6 @@ abstract class AppLocalizations {
   /// **'Today does not count yet. You can try tracking, and Burn Week starts on {date}.'**
   String burnWeekPracticeDayMessage(Object date);
 
-  /// No description provided for @calorieBudgetDetailsActualLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Actual (you)'**
-  String get calorieBudgetDetailsActualLabel;
-
-  /// No description provided for @calorieBudgetDetailsTargetLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Target (goal)'**
-  String get calorieBudgetDetailsTargetLabel;
-
-  /// No description provided for @calorieBudgetDetailsBalanceExplanation.
-  ///
-  /// In en, this message translates to:
-  /// **'Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run.'**
-  String get calorieBudgetDetailsBalanceExplanation;
-
-  /// No description provided for @calorieBudgetDetailsTodayBudget.
-  ///
-  /// In en, this message translates to:
-  /// **'Today budget'**
-  String get calorieBudgetDetailsTodayBudget;
-
-  /// No description provided for @calorieBudgetDetailsFoodToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Food today'**
-  String get calorieBudgetDetailsFoodToday;
-
-  /// No description provided for @calorieBudgetDetailsRemaining.
-  ///
-  /// In en, this message translates to:
-  /// **'Remaining'**
-  String get calorieBudgetDetailsRemaining;
-
-  /// No description provided for @burnWeekDetailsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Burn Week details'**
-  String get burnWeekDetailsTitle;
-
-  /// No description provided for @burnWeekDetailsHowCalculated.
-  ///
-  /// In en, this message translates to:
-  /// **'How this is calculated'**
-  String get burnWeekDetailsHowCalculated;
-
-  /// No description provided for @burnWeekDetailsDailyGoal.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily goal'**
-  String get burnWeekDetailsDailyGoal;
-
-  /// No description provided for @burnWeekDetailsWeekTarget.
-  ///
-  /// In en, this message translates to:
-  /// **'Week target'**
-  String get burnWeekDetailsWeekTarget;
-
-  /// No description provided for @burnWeekDetailsCurrentTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Current time'**
-  String get burnWeekDetailsCurrentTime;
-
-  /// No description provided for @burnWeekDetailsStarsHearts.
-  ///
-  /// In en, this message translates to:
-  /// **'Stars / Hearts'**
-  String get burnWeekDetailsStarsHearts;
-
-  /// No description provided for @burnWeekDetailsHeartKcalUsed.
-  ///
-  /// In en, this message translates to:
-  /// **'Heart adjustment'**
-  String get burnWeekDetailsHeartKcalUsed;
-
-  /// No description provided for @burnWeekDetailsWeekRatio.
-  ///
-  /// In en, this message translates to:
-  /// **'Week ratio'**
-  String get burnWeekDetailsWeekRatio;
-
-  /// No description provided for @burnWeekDetailsTargetFormula.
-  ///
-  /// In en, this message translates to:
-  /// **'Target formula'**
-  String get burnWeekDetailsTargetFormula;
-
-  /// No description provided for @burnWeekDetailsLoggedFoodSoFar.
-  ///
-  /// In en, this message translates to:
-  /// **'Logged food so far'**
-  String get burnWeekDetailsLoggedFoodSoFar;
-
-  /// No description provided for @burnWeekDetailsPlannedLaterToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Planned later today'**
-  String get burnWeekDetailsPlannedLaterToday;
-
-  /// No description provided for @burnWeekDetailsActivityBonusSoFar.
-  ///
-  /// In en, this message translates to:
-  /// **'Activity bonus so far'**
-  String get burnWeekDetailsActivityBonusSoFar;
-
-  /// No description provided for @burnWeekDetailsWeekCarryover.
-  ///
-  /// In en, this message translates to:
-  /// **'This week carryover'**
-  String get burnWeekDetailsWeekCarryover;
-
-  /// No description provided for @burnWeekDetailsPreviousWeekOverflow.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous week overflow'**
-  String get burnWeekDetailsPreviousWeekOverflow;
-
-  /// No description provided for @burnWeekDetailsWeekLeftAfterFood.
-  ///
-  /// In en, this message translates to:
-  /// **'Week left after food'**
-  String get burnWeekDetailsWeekLeftAfterFood;
-
-  /// No description provided for @burnWeekDetailsSportCounting.
-  ///
-  /// In en, this message translates to:
-  /// **'Sport counting'**
-  String get burnWeekDetailsSportCounting;
-
-  /// No description provided for @burnWeekDetailsSportCountingValue.
-  ///
-  /// In en, this message translates to:
-  /// **'Expected activity is already in your base goal. Half of activity above that expectation is added as eatable kcal.'**
-  String get burnWeekDetailsSportCountingValue;
-
-  /// No description provided for @burnWeekDetailsSafeZone.
-  ///
-  /// In en, this message translates to:
-  /// **'Safe zone'**
-  String get burnWeekDetailsSafeZone;
-
   /// No description provided for @burnWeekWeekDayLabel.
   ///
   /// In en, this message translates to:
@@ -4121,24 +3611,6 @@ abstract class AppLocalizations {
   /// **'Could not clear manual weight.'**
   String get diaryWeightClearFailed;
 
-  /// No description provided for @caloriesDeleteEntryDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete entry?'**
-  String get caloriesDeleteEntryDialogTitle;
-
-  /// No description provided for @caloriesDeleteEntryDialogMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete \"{name}\" from this day?'**
-  String caloriesDeleteEntryDialogMessage(String name);
-
-  /// No description provided for @caloriesDeleteEntryConfirmAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get caloriesDeleteEntryConfirmAction;
-
   /// No description provided for @caloriesRemoveEntryAction.
   ///
   /// In en, this message translates to:
@@ -4175,35 +3647,11 @@ abstract class AppLocalizations {
   /// **'Return to inventory'**
   String get caloriesRemoveAndRestoreAction;
 
-  /// No description provided for @caloriesReturnPreparedMealDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Return meal to inventory?'**
-  String get caloriesReturnPreparedMealDialogTitle;
-
-  /// No description provided for @caloriesReturnPreparedMealDialogMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Return \"{name}\" to inventory and remove it from the diary?'**
-  String caloriesReturnPreparedMealDialogMessage(String name);
-
-  /// No description provided for @caloriesReturnPreparedMealConfirmAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Return to inventory'**
-  String get caloriesReturnPreparedMealConfirmAction;
-
   /// No description provided for @caloriesReturnPreparedMealFailed.
   ///
   /// In en, this message translates to:
   /// **'The meal could not be returned to inventory.'**
   String get caloriesReturnPreparedMealFailed;
-
-  /// No description provided for @caloriesDeleteRestoreInventoryQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Add the food back to inventory?'**
-  String get caloriesDeleteRestoreInventoryQuestion;
 
   /// No description provided for @caloriesDeleteRestoreFailed.
   ///
@@ -4457,48 +3905,6 @@ abstract class AppLocalizations {
   /// **'Snack'**
   String get caloriesMealSnack;
 
-  /// No description provided for @caloriesWeekdayShortMonday.
-  ///
-  /// In en, this message translates to:
-  /// **'Mon'**
-  String get caloriesWeekdayShortMonday;
-
-  /// No description provided for @caloriesWeekdayShortTuesday.
-  ///
-  /// In en, this message translates to:
-  /// **'Tue'**
-  String get caloriesWeekdayShortTuesday;
-
-  /// No description provided for @caloriesWeekdayShortWednesday.
-  ///
-  /// In en, this message translates to:
-  /// **'Wed'**
-  String get caloriesWeekdayShortWednesday;
-
-  /// No description provided for @caloriesWeekdayShortThursday.
-  ///
-  /// In en, this message translates to:
-  /// **'Thu'**
-  String get caloriesWeekdayShortThursday;
-
-  /// No description provided for @caloriesWeekdayShortFriday.
-  ///
-  /// In en, this message translates to:
-  /// **'Fri'**
-  String get caloriesWeekdayShortFriday;
-
-  /// No description provided for @caloriesWeekdayShortSaturday.
-  ///
-  /// In en, this message translates to:
-  /// **'Sat'**
-  String get caloriesWeekdayShortSaturday;
-
-  /// No description provided for @caloriesWeekdayShortSunday.
-  ///
-  /// In en, this message translates to:
-  /// **'Sun'**
-  String get caloriesWeekdayShortSunday;
-
   /// No description provided for @caloriesUnitKcal.
   ///
   /// In en, this message translates to:
@@ -4528,12 +3934,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Today'**
   String get diaryTodayTitle;
-
-  /// No description provided for @diaryCycleDayLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Week {week} day {day}'**
-  String diaryCycleDayLabel(int week, int day);
 
   /// No description provided for @diaryMealsTitle.
   ///
@@ -4619,12 +4019,6 @@ abstract class AppLocalizations {
   /// **'Eaten'**
   String get diaryBalanceEatenLabel;
 
-  /// No description provided for @diaryBalanceLeftLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Left'**
-  String get diaryBalanceLeftLabel;
-
   /// No description provided for @diaryBalanceLeftTodayLabel.
   ///
   /// In en, this message translates to:
@@ -4660,18 +4054,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Target'**
   String get diaryBalanceTargetMarkerLabel;
-
-  /// No description provided for @diaryBalanceWeekActualLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Week actual'**
-  String get diaryBalanceWeekActualLabel;
-
-  /// No description provided for @diaryBalanceWeekTargetLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Week target'**
-  String get diaryBalanceWeekTargetLabel;
 
   /// No description provided for @diaryBalanceRealEatenLabel.
   ///
@@ -4714,18 +4096,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Revert heart day'**
   String get diaryBalanceRevertHeartDayAction;
-
-  /// No description provided for @diaryBalanceActivityIncludedLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} activity included in daily goal'**
-  String diaryBalanceActivityIncludedLabel(String kcal);
-
-  /// No description provided for @diaryBalanceActivityBonusLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} extra sport bonus'**
-  String diaryBalanceActivityBonusLabel(String kcal);
 
   /// No description provided for @diaryBalanceBaseGoalShort.
   ///
@@ -4792,12 +4162,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Carryover from previous days'**
   String get diaryBudgetDetailsCarryoverLabel;
-
-  /// No description provided for @diaryBudgetDetailsActivityBonusLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Activity bonus'**
-  String get diaryBudgetDetailsActivityBonusLabel;
 
   /// No description provided for @diaryBudgetDetailsEffectiveGoalLabel.
   ///
@@ -4913,12 +4277,6 @@ abstract class AppLocalizations {
   /// **'Start tracking'**
   String get diaryIntroDoneAction;
 
-  /// No description provided for @diaryIntroReplayAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Show intro'**
-  String get diaryIntroReplayAction;
-
   /// No description provided for @diaryIntroBannerTitle.
   ///
   /// In en, this message translates to:
@@ -5033,23 +4391,11 @@ abstract class AppLocalizations {
   /// **'Activity'**
   String get diaryActivityTitle;
 
-  /// No description provided for @diaryActivityEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No activity'**
-  String get diaryActivityEmpty;
-
   /// No description provided for @diaryActivityWeightLoadFailed.
   ///
   /// In en, this message translates to:
   /// **'Activity and weight could not be loaded'**
   String get diaryActivityWeightLoadFailed;
-
-  /// No description provided for @diaryActiveMinutesLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{minutes} min active'**
-  String diaryActiveMinutesLabel(String minutes);
 
   /// No description provided for @diaryWeightTitle.
   ///
@@ -5405,12 +4751,6 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get settingsLanguageTitle;
 
-  /// No description provided for @settingsLanguageSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose app language'**
-  String get settingsLanguageSubtitle;
-
   /// No description provided for @settingsLanguageEnglish.
   ///
   /// In en, this message translates to:
@@ -5446,18 +4786,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get settingsThemeDark;
-
-  /// No description provided for @settingsDiaryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Diary'**
-  String get settingsDiaryTitle;
-
-  /// No description provided for @settingsDiaryGoalNoGoal.
-  ///
-  /// In en, this message translates to:
-  /// **'No goal set'**
-  String get settingsDiaryGoalNoGoal;
 
   /// No description provided for @settingsDiaryGoalSetGoalFirst.
   ///
@@ -5542,12 +4870,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account'**
   String get settingsAccountTitle;
-
-  /// No description provided for @settingsAccountSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage profile and sign-in'**
-  String get settingsAccountSubtitle;
 
   /// No description provided for @settingsHealthConnectPlatformTitle.
   ///
@@ -6383,12 +5705,6 @@ abstract class AppLocalizations {
   /// **'cm'**
   String get onboardingHeightCmUnit;
 
-  /// No description provided for @onboardingDoneAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Done'**
-  String get onboardingDoneAction;
-
   /// No description provided for @onboardingNextAction.
   ///
   /// In en, this message translates to:
@@ -6430,18 +5746,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your normal daily level (training comes later).'**
   String get onboardingActivityLevelSubtitle;
-
-  /// No description provided for @onboardingActivityTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Activity Level'**
-  String get onboardingActivityTitle;
-
-  /// No description provided for @onboardingActivitySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How active are you in your daily life?'**
-  String get onboardingActivitySubtitle;
 
   /// No description provided for @onboardingGoalWeightTitle.
   ///
@@ -6628,12 +5932,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'I will estimate what I ate so far'**
   String get onboardingStartDateNowEstimate;
-
-  /// No description provided for @onboardingStartDateLaterLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Tomorrow'**
-  String get onboardingStartDateLaterLabel;
 
   /// No description provided for @onboardingStartDateLaterDesc.
   ///
@@ -7013,12 +6311,6 @@ abstract class AppLocalizations {
   /// **'Before we begin: choose every pot or storage box you will use and enter its empty weight.'**
   String get cookflowPreparationBody;
 
-  /// No description provided for @cookflowTaraFieldTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Empty weight (tare)'**
-  String get cookflowTaraFieldTitle;
-
   /// No description provided for @cookflowGramUnit.
   ///
   /// In en, this message translates to:
@@ -7054,12 +6346,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Original recipe: {count} portions'**
   String cookflowOriginalPortionsLabel(int count);
-
-  /// No description provided for @cookflowTargetPortionsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} portions'**
-  String cookflowTargetPortionsLabel(int count);
 
   /// No description provided for @cookflowTargetPortionsFieldLabel.
   ///
@@ -7175,12 +6461,6 @@ abstract class AppLocalizations {
   /// **'Add as ingredient'**
   String get cookflowSummaryMatchInventoryButton;
 
-  /// No description provided for @cookflowSummaryPlaceholderAdjustment.
-  ///
-  /// In en, this message translates to:
-  /// **'200g cucumbers'**
-  String get cookflowSummaryPlaceholderAdjustment;
-
   /// No description provided for @cookflowFinalizeTitle.
   ///
   /// In en, this message translates to:
@@ -7229,12 +6509,6 @@ abstract class AppLocalizations {
   /// **'Tare'**
   String get cookflowContainerTaraLabel;
 
-  /// No description provided for @cookflowPortionsUnit.
-  ///
-  /// In en, this message translates to:
-  /// **'portions'**
-  String get cookflowPortionsUnit;
-
   /// No description provided for @cookflowIngredientContainerTitle.
   ///
   /// In en, this message translates to:
@@ -7258,12 +6532,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'e.g. 2500'**
   String get cookflowGrossWeightHint;
-
-  /// No description provided for @cookflowMinusTaraLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Minus empty weight (tare)'**
-  String get cookflowMinusTaraLabel;
 
   /// No description provided for @cookflowNetWeightLabel.
   ///

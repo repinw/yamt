@@ -22,7 +22,6 @@ Other features may consume these public Meal Templates entry points:
 
 - `MealTemplatesPage`
 - `MealTemplateImportReviewPage`
-- `RecipeSourceHost`
 
 ## Providers
 

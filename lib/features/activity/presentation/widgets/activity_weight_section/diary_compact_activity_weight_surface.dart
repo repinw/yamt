@@ -9,67 +9,6 @@ import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Compact fused activity and weight card for diary page.
-class DiaryCompactActivityWeightCard extends StatelessWidget {
-  /// Creates compact activity and weight card.
-  const DiaryCompactActivityWeightCard({
-    required this.data,
-    required this.header,
-    required this.stepsState,
-    required this.isStepsExpanded,
-    required this.isActivityExpanded,
-    required this.isWeightExpanded,
-    required this.onToggleSteps,
-    required this.onToggleActivity,
-    required this.onTapWeight,
-    super.key,
-  });
-
-  /// Loaded activity and weight data.
-  final DiaryActivityWeightData data;
-
-  /// Optional content rendered above metric row.
-  final Widget? header;
-
-  /// Step summary state for compact step value.
-  final AsyncValue<int?> stepsState;
-
-  /// Whether step details are expanded.
-  final bool isStepsExpanded;
-
-  /// Whether activity details are expanded.
-  final bool isActivityExpanded;
-
-  /// Whether weight details are expanded.
-  final bool isWeightExpanded;
-
-  /// Toggles step details.
-  final VoidCallback onToggleSteps;
-
-  /// Toggles activity details.
-  final VoidCallback onToggleActivity;
-
-  /// Opens weight dialog or toggles weight details.
-  final VoidCallback onTapWeight;
-
-  @override
-  Widget build(BuildContext context) {
-    return DiaryCompactActivityWeightSurface(
-      header: header,
-      body: DiaryCompactActivityWeightMetricsRow(
-        data: data,
-        stepsState: stepsState,
-        isStepsExpanded: isStepsExpanded,
-        isActivityExpanded: isActivityExpanded,
-        isWeightExpanded: isWeightExpanded,
-        onToggleSteps: onToggleSteps,
-        onToggleActivity: onToggleActivity,
-        onTapWeight: onTapWeight,
-      ),
-    );
-  }
-}
-
 /// Stable compact activity and weight frame.
 class DiaryCompactActivityWeightSurface extends StatelessWidget {
   /// Creates compact activity and weight surface.
@@ -191,23 +130,6 @@ class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Skeleton state for compact activity and weight card.
-class DiaryCompactActivityWeightSkeleton extends StatelessWidget {
-  /// Creates compact activity and weight skeleton.
-  const DiaryCompactActivityWeightSkeleton({this.header, super.key});
-
-  /// Optional content rendered above metric row.
-  final Widget? header;
-
-  @override
-  Widget build(BuildContext context) {
-    return DiaryCompactActivityWeightSurface(
-      header: header,
-      body: const DiaryCompactActivityWeightSkeletonRow(),
     );
   }
 }
