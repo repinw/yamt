@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_barcode_scanner_page.dart';
+    'inventory_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'

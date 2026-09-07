@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_barcode_scanner_page.dart';
+    'inventory_barcode_scanner_page/inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';

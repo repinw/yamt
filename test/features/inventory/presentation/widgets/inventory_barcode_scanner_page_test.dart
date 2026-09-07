@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -7,7 +8,9 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_candidate_picker_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_barcode_scanner_page.dart';
+    'inventory_barcode_lookup_candidate.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_barcode_scanner_page/inventory_barcode_scanner_support.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 GlobalBarcodeCandidate _learnedCandidate({
@@ -315,4 +318,61 @@ void main() {
     expect(createTapped, 1);
     expect(find.text('Manuell erstellen'), findsOneWidget);
   });
+
+  test('isBarcodeScanThrottled throttles identical barcode within window', () {
+    final now = DateTime.now();
+    expect(
+      isBarcodeScanThrottled(
+        barcode: '4006381333931',
+        lastScannedBarcode: '4006381333931',
+        lastScannedAt: now.subtract(const Duration(milliseconds: 500)),
+      ),
+      isTrue,
+    );
+    expect(
+      isBarcodeScanThrottled(
+        barcode: '4006381333931',
+        lastScannedBarcode: '4006381333931',
+        lastScannedAt: now.subtract(const Duration(milliseconds: 2000)),
+      ),
+      isFalse,
+    );
+    expect(
+      isBarcodeScanThrottled(
+        barcode: '4006381333931',
+        lastScannedBarcode: '7613035987654',
+        lastScannedAt: now.subtract(const Duration(milliseconds: 500)),
+      ),
+      isFalse,
+    );
+  });
+
+  test(
+    'extractValidBarcodeFromCapture ignores 2D codes and invalid barcodes',
+    () {
+      const qrCapture = BarcodeCapture(
+        barcodes: [
+          Barcode(
+            rawValue: 'https://example.com',
+            format: BarcodeFormat.qrCode,
+          ),
+        ],
+      );
+      expect(extractValidBarcodeFromCapture(qrCapture), isNull);
+
+      const invalidChecksumCapture = BarcodeCapture(
+        barcodes: [
+          Barcode(rawValue: '4006381333939', format: BarcodeFormat.ean13),
+        ],
+      );
+      expect(extractValidBarcodeFromCapture(invalidChecksumCapture), isNull);
+
+      const validCapture = BarcodeCapture(
+        barcodes: [
+          Barcode(rawValue: '4006381333931', format: BarcodeFormat.ean13),
+        ],
+      );
+      expect(extractValidBarcodeFromCapture(validCapture), '4006381333931');
+    },
+  );
 }
