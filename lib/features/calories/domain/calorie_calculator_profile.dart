@@ -51,6 +51,12 @@ class CalorieCalculatorProfile {
     required this.goalMode,
     required this.goalSpeedKgPerWeek,
     this.targetWeightKg,
+    this.trainingWeekdays = const <int>[
+      DateTime.monday,
+      DateTime.wednesday,
+      DateTime.friday,
+    ],
+    this.trainingDayKcalOffset = 0.0,
   });
 
   /// Creates a [CalorieCalculatorProfile] for from json.
@@ -67,7 +73,13 @@ class CalorieCalculatorProfile {
       activityLevel = 1.2,
       goalMode = CalorieGoalMode.maintain,
       goalSpeedKgPerWeek = 0,
-      targetWeightKg = null;
+      targetWeightKg = null,
+      trainingWeekdays = const <int>[
+        DateTime.monday,
+        DateTime.wednesday,
+        DateTime.friday,
+      ],
+      trainingDayKcalOffset = 0.0;
 
   @JsonKey(
     defaultValue: CalorieCalculatorSex.male,
@@ -105,6 +117,13 @@ class CalorieCalculatorProfile {
   @NullableFlexibleDoubleConverter()
   final double? targetWeightKg;
 
+  /// Configured weekdays for training (1 = Monday, 7 = Sunday).
+  final List<int> trainingWeekdays;
+
+  /// Extra calories allocated to training days (calorie cycling).
+  @FlexibleDoubleConverter()
+  final double trainingDayKcalOffset;
+
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieCalculatorProfileToJson(this);
 
@@ -118,6 +137,8 @@ class CalorieCalculatorProfile {
     CalorieGoalMode? goalMode,
     double? goalSpeedKgPerWeek,
     double? targetWeightKg,
+    List<int>? trainingWeekdays,
+    double? trainingDayKcalOffset,
   }) {
     return CalorieCalculatorProfile(
       sex: sex ?? this.sex,
@@ -128,6 +149,9 @@ class CalorieCalculatorProfile {
       goalMode: goalMode ?? this.goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek ?? this.goalSpeedKgPerWeek,
       targetWeightKg: targetWeightKg ?? this.targetWeightKg,
+      trainingWeekdays: trainingWeekdays ?? this.trainingWeekdays,
+      trainingDayKcalOffset:
+          trainingDayKcalOffset ?? this.trainingDayKcalOffset,
     );
   }
 }

@@ -1,7 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/'
-    'calorie_health_activity_kcal_reader.dart';
-import 'package:yamt/features/calories/application/'
     'daily_learned_tdee_models.dart';
 import 'package:yamt/features/calories/application/'
     'daily_learned_tdee_resolver.dart';
@@ -26,7 +24,6 @@ import 'package:yamt/features/health/presentation/controllers/'
 
 part 'daily_learned_tdee_provider.g.dart';
 
-const _learnedTdeeLogName = 'DailyLearnedTdeeProvider';
 
 /// Resolve optional learned TDEE overrides for multiple days.
 @riverpod
@@ -264,27 +261,5 @@ Future<Map<String, int>> _loadActiveKcalByDay({
       activeKcalByDay[diaryDayKey(day)] = 0;
     }
   }
-  if (healthStatus.accessState != HealthDataAccessState.ready) {
-    return activeKcalByDay;
-  }
-
-  final days = {
-    for (final window in windows)
-      for (final windowDay in window.windowDays)
-        if (settings.isActivityTrackingActiveForDay(windowDay))
-          diaryDayKey(windowDay): windowDay,
-  }.values.toList(growable: false);
-  if (days.isEmpty) {
-    return activeKcalByDay;
-  }
-  final loadedActiveKcalByDay = await loadHealthActivityKcalByDay(
-    diaryHealthService: diaryHealthService,
-    days: days,
-    userHeightCm: settings.calculatorProfile?.heightCm,
-    logName: _learnedTdeeLogName,
-    aggregateFailureMessage:
-        'Failed to load aggregate activity for learned TDEE.',
-  );
-  activeKcalByDay.addAll(loadedActiveKcalByDay);
   return activeKcalByDay;
 }

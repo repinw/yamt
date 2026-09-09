@@ -17,19 +17,11 @@ const _iosConnectionEnabledValue = '1';
 const _iosConnectionDisabledValue = '0';
 
 const _androidAuthorizationTypes = <HealthDataType>[
-  HealthDataType.STEPS,
-  HealthDataType.ACTIVE_ENERGY_BURNED,
-  HealthDataType.TOTAL_CALORIES_BURNED,
   HealthDataType.WEIGHT,
-  HealthDataType.DISTANCE_DELTA,
-  HealthDataType.WORKOUT,
 ];
 
 const _iosAuthorizationTypes = <HealthDataType>[
-  HealthDataType.STEPS,
-  HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.WEIGHT,
-  HealthDataType.WORKOUT,
 ];
 const _iosPermissionStatusTypes = <HealthDataType>[HealthDataType.WEIGHT];
 const _iosPermissionStatusPermissions = <HealthDataAccess>[

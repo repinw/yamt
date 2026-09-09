@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -379,6 +380,14 @@ class CalorieGoalSettings {
     required this.calorieMathVersion,
     this.expectedActivityKcal,
     this.activityTrackingStartDate,
+    this.trainingWeekdays = const <int>[
+      DateTime.monday,
+      DateTime.wednesday,
+      DateTime.friday,
+    ],
+    this.trainingDayKcalOffset = 0.0,
+    this.trainingDayOverrides = const <String, bool>{},
+    this.pauseDayKeys = const <String>[],
   });
 
   /// Creates a [CalorieGoalSettings] for from json.
@@ -396,7 +405,15 @@ class CalorieGoalSettings {
       updatedAt = null,
       goalHistory = const <CalorieGoalHistoryEntry>[],
       pendingWeeklyCheckIn = null,
-      skippedIntakeDayKeys = const <String>[];
+      skippedIntakeDayKeys = const <String>[],
+      trainingWeekdays = const <int>[
+        DateTime.monday,
+        DateTime.wednesday,
+        DateTime.friday,
+      ],
+      trainingDayKcalOffset = 0.0,
+      trainingDayOverrides = const <String, bool>{},
+      pauseDayKeys = const <String>[];
 
   /// Creates a [CalorieGoalSettings] for single.
   factory CalorieGoalSettings.single({
@@ -409,11 +426,27 @@ class CalorieGoalSettings {
     DateTime? updatedAt,
     CalorieGoalSource source = CalorieGoalSource.manual,
     CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
+    List<int>? trainingWeekdays,
+    double? trainingDayKcalOffset,
+    Map<String, bool>? trainingDayOverrides,
+    List<String>? pauseDayKeys,
   }) {
     final normalizedCountingStartDate = _resolveNormalizedCountingStartDate(
       effectiveDate: effectiveDate,
       countingStartDate: countingStartDate,
     );
+    final resolvedWeekdays =
+        trainingWeekdays ??
+        calculatorProfile?.trainingWeekdays ??
+        const <int>[
+          DateTime.monday,
+          DateTime.wednesday,
+          DateTime.friday,
+        ];
+    final resolvedOffset =
+        trainingDayKcalOffset ??
+        calculatorProfile?.trainingDayKcalOffset ??
+        0.0;
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
@@ -423,6 +456,10 @@ class CalorieGoalSettings {
           ? null
           : normalizeDiaryDay(activityTrackingStartDate),
       updatedAt: updatedAt ?? effectiveDate,
+      trainingWeekdays: resolvedWeekdays,
+      trainingDayKcalOffset: resolvedOffset,
+      trainingDayOverrides: trainingDayOverrides ?? const <String, bool>{},
+      pauseDayKeys: pauseDayKeys ?? const <String>[],
       goalHistory: <CalorieGoalHistoryEntry>[
         CalorieGoalHistoryEntry(
           dailyKcalGoal: dailyKcalGoal,
@@ -473,6 +510,19 @@ class CalorieGoalSettings {
   /// The skipped intake day keys.
   @JsonKey(defaultValue: <String>[])
   final List<String> skippedIntakeDayKeys;
+
+  /// Configured weekdays for training (1 = Monday, 7 = Sunday).
+  final List<int> trainingWeekdays;
+
+  /// Extra calories allocated to training days (calorie cycling).
+  @FlexibleDoubleConverter()
+  final double trainingDayKcalOffset;
+
+  /// Manual per-day training overrides (dayKey -> isTrainingDay).
+  final Map<String, bool> trainingDayOverrides;
+
+  /// Days marked as pause/exception days (Urlaub, Krankheit, Wettkampf).
+  final List<String> pauseDayKeys;
 
   /// Whether goal.
   bool get hasGoal => dailyKcalGoal != null;
@@ -626,44 +676,106 @@ class CalorieGoalSettings {
     return null;
   }
 
-  /// Goal kcal for day.
-  double goalKcalForDay(DateTime day) {
-    final entry = goalEntryForDay(day);
-    if (entry != null) {
-      return entry.dailyKcalGoal ?? 0.0;
+  /// Unadjusted base goal kcal for day.
+  double baseGoalKcalForDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    CalorieGoalHistoryEntry? latestGoalEntry;
+
+    for (final entry in sortedGoalHistory) {
+      if (entry.effectiveDate.isAfter(normalizedDay)) {
+        break;
+      }
+      if (entry.hasGoal) {
+        latestGoalEntry = entry;
+      }
     }
-    return nextGoalStartAfterDay(day) == null
+
+    if (latestGoalEntry?.dailyKcalGoal != null) {
+      return latestGoalEntry!.dailyKcalGoal!;
+    }
+    return nextGoalStartAfterDay(normalizedDay) == null
         ? defaultDailyCalorieGoalKcal
         : 0.0;
   }
 
-  /// Expected activity kcal for day.
-  double? expectedActivityKcalForDay(DateTime day) {
-    return goalEntryForDay(day)?.expectedActivityKcal ?? expectedActivityKcal;
+  /// Whether [day] is a training day taking scheduled weekdays and overrides
+  /// into account.
+  bool isTrainingDay(DateTime day) {
+    final dayKey = _dayKey(day);
+    if (trainingDayOverrides.containsKey(dayKey)) {
+      return trainingDayOverrides[dayKey]!;
+    }
+    final activeProfile =
+        goalEntryForDay(day)?.calculatorProfile ?? calculatorProfile;
+    final weekdays = activeProfile?.trainingWeekdays ?? trainingWeekdays;
+    return weekdays.contains(day.weekday);
   }
 
-  /// Whether health activity should be counted for day.
-  bool isActivityTrackingActiveForDay(DateTime day) {
-    final startDate = activityTrackingStartDate;
-    if (startDate == null) {
-      return false;
-    }
-    return !normalizeDiaryDay(day).isBefore(normalizeDiaryDay(startDate));
+  /// Whether [day] is marked as a pause/exception day.
+  bool isPauseDay(DateTime day) {
+    return pauseDayKeys.contains(_dayKey(day));
   }
 
-  /// Sets the activity tracking backfill boundary.
-  CalorieGoalSettings markActivityTrackingStarted(DateTime startedAt) {
-    final normalizedStartedAt = normalizeDiaryDay(startedAt);
-    final currentStartDate = activityTrackingStartDate;
-    if (currentStartDate != null &&
-        isSameDiaryDay(currentStartDate, normalizedStartedAt)) {
-      return this;
+  /// Effective goal kcal for day taking training days / rest day cycling into
+  /// account.
+  double goalKcalForDay(DateTime day) {
+    final base = baseGoalKcalForDay(day);
+    if (base <= 0) {
+      return base;
     }
-    return copyWith(
-      activityTrackingStartDate: normalizedStartedAt,
-      updatedAt: startedAt,
-    );
+    final activeProfile =
+        goalEntryForDay(day)?.calculatorProfile ?? calculatorProfile;
+    final offset =
+        activeProfile?.trainingDayKcalOffset ?? trainingDayKcalOffset;
+    if (offset <= 0) {
+      return base.clamp(minimumDailyCalorieBudgetKcal, double.infinity);
+    }
+    final weekdays = activeProfile?.trainingWeekdays ?? trainingWeekdays;
+    final trainingDaysCount = weekdays.length;
+    if (trainingDaysCount <= 0 || trainingDaysCount >= 7) {
+      return base.clamp(minimumDailyCalorieBudgetKcal, double.infinity);
+    }
+    final restDaysCount = 7 - trainingDaysCount;
+    final restDayReduction = (trainingDaysCount * offset) / restDaysCount;
+
+    if (isTrainingDay(day)) {
+      return (base + offset).clamp(
+        minimumDailyCalorieBudgetKcal,
+        double.infinity,
+      );
+    } else {
+      return (base - restDayReduction).clamp(
+        minimumDailyCalorieBudgetKcal,
+        double.infinity,
+      );
+    }
   }
+
+  /// Toggles training day status for [day].
+  CalorieGoalSettings toggleTrainingDay(DateTime day) {
+    final dayKey = _dayKey(day);
+    final currentlyTraining = isTrainingDay(day);
+    final nextOverrides = Map<String, bool>.from(trainingDayOverrides);
+    nextOverrides[dayKey] = !currentlyTraining;
+    return copyWith(trainingDayOverrides: nextOverrides);
+  }
+
+  /// Sets whether [day] is a pause day.
+  CalorieGoalSettings setPauseDay({
+    required DateTime day,
+    required bool isPause,
+  }) {
+    final dayKey = _dayKey(day);
+    final nextKeys = List<String>.from(pauseDayKeys);
+    if (isPause && !nextKeys.contains(dayKey)) {
+      nextKeys.add(dayKey);
+    } else if (!isPause && nextKeys.contains(dayKey)) {
+      nextKeys.remove(dayKey);
+    }
+    nextKeys.sort();
+    return copyWith(pauseDayKeys: List<String>.unmodifiable(nextKeys));
+  }
+
 
   /// Balance start for window.
   DateTime balanceStartForWindow(Iterable<DateTime> days) {
@@ -737,6 +849,10 @@ class CalorieGoalSettings {
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
       skippedIntakeDayKeys: skippedIntakeDayKeys,
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
+      trainingDayOverrides: trainingDayOverrides,
+      pauseDayKeys: pauseDayKeys,
     );
   }
 
@@ -795,6 +911,11 @@ class CalorieGoalSettings {
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
       pendingWeeklyCheckIn: null,
       skippedIntakeDayKeys: skippedIntakeDayKeys,
+      trainingWeekdays: calculatorProfile?.trainingWeekdays ?? trainingWeekdays,
+      trainingDayKcalOffset:
+          calculatorProfile?.trainingDayKcalOffset ?? trainingDayKcalOffset,
+      trainingDayOverrides: trainingDayOverrides,
+      pauseDayKeys: pauseDayKeys,
     );
   }
 
@@ -817,6 +938,10 @@ class CalorieGoalSettings {
       goalHistory: goalHistory,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
       skippedIntakeDayKeys: skippedIntakeDayKeys,
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
+      trainingDayOverrides: trainingDayOverrides,
+      pauseDayKeys: pauseDayKeys,
     );
   }
 
@@ -856,6 +981,10 @@ class CalorieGoalSettings {
       goalHistory: goalHistory,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
       skippedIntakeDayKeys: List<String>.unmodifiable(nextKeys),
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
+      trainingDayOverrides: trainingDayOverrides,
+      pauseDayKeys: pauseDayKeys,
     );
   }
 
@@ -888,6 +1017,10 @@ class CalorieGoalSettings {
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextEntries),
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
       skippedIntakeDayKeys: skippedIntakeDayKeys,
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
+      trainingDayOverrides: trainingDayOverrides,
+      pauseDayKeys: pauseDayKeys,
     );
   }
 
@@ -902,6 +1035,10 @@ class CalorieGoalSettings {
     List<CalorieGoalHistoryEntry>? goalHistory,
     PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
     List<String>? skippedIntakeDayKeys,
+    List<int>? trainingWeekdays,
+    double? trainingDayKcalOffset,
+    Map<String, bool>? trainingDayOverrides,
+    List<String>? pauseDayKeys,
   }) {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal ?? this.dailyKcalGoal,
@@ -915,6 +1052,12 @@ class CalorieGoalSettings {
       goalHistory: goalHistory ?? this.goalHistory,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn ?? this.pendingWeeklyCheckIn,
       skippedIntakeDayKeys: skippedIntakeDayKeys ?? this.skippedIntakeDayKeys,
+      trainingWeekdays: trainingWeekdays ?? this.trainingWeekdays,
+      trainingDayKcalOffset:
+          trainingDayKcalOffset ?? this.trainingDayKcalOffset,
+      trainingDayOverrides:
+          trainingDayOverrides ?? this.trainingDayOverrides,
+      pauseDayKeys: pauseDayKeys ?? this.pauseDayKeys,
     );
   }
 }

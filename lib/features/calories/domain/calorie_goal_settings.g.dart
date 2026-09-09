@@ -139,6 +139,26 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
       ),
       activityTrackingStartDate: const NullableFlexibleDateTimeConverter()
           .fromJson(json['activity_tracking_start_date']),
+      trainingWeekdays:
+          (json['training_weekdays'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList() ??
+          const <int>[DateTime.monday, DateTime.wednesday, DateTime.friday],
+      trainingDayKcalOffset: json['training_day_kcal_offset'] == null
+          ? 0.0
+          : const FlexibleDoubleConverter().fromJson(
+              json['training_day_kcal_offset'],
+            ),
+      trainingDayOverrides:
+          (json['training_day_overrides'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as bool),
+          ) ??
+          const <String, bool>{},
+      pauseDayKeys:
+          (json['pause_day_keys'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const <String>[],
     );
 
 Map<String, dynamic> _$CalorieGoalSettingsToJson(
@@ -160,4 +180,10 @@ Map<String, dynamic> _$CalorieGoalSettingsToJson(
   'goal_history': instance.goalHistory.map((e) => e.toJson()).toList(),
   'pending_weekly_check_in': instance.pendingWeeklyCheckIn?.toJson(),
   'skipped_intake_day_keys': instance.skippedIntakeDayKeys,
+  'training_weekdays': instance.trainingWeekdays,
+  'training_day_kcal_offset': const FlexibleDoubleConverter().toJson(
+    instance.trainingDayKcalOffset,
+  ),
+  'training_day_overrides': instance.trainingDayOverrides,
+  'pause_day_keys': instance.pauseDayKeys,
 };

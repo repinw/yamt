@@ -396,7 +396,7 @@ void main() {
 
     expect(diaryHealthService.loadDayDataCallCount, 0);
     expect(result, isNotNull);
-    expect(result!.averageActiveKcal, 35.0);
+    expect(result!.averageActiveKcal, 0.0);
   });
 
   test('ignores aggregate activity before activity tracking start', () async {
@@ -438,15 +438,8 @@ void main() {
     final result = await _readDailyLearned(harness.container, today: today);
 
     expect(result, isNotNull);
-    expect(result!.averageActiveKcal, 20.0);
-    expect(diaryHealthService.trendRequests, [
-      (
-        startInclusive: trackingStartDate,
-        endExclusive: nextDiaryDay(
-          latestWindowStart.add(const Duration(days: 6)),
-        ),
-      ),
-    ]);
+    expect(result!.averageActiveKcal, 0.0);
+    expect(diaryHealthService.trendRequests, isEmpty);
   });
 
   test(
@@ -716,7 +709,7 @@ void main() {
       final harness = _DailyLearnedHarness(
         settings: settings,
         entries: <CalorieEntry>[
-          for (var index = 1; index < weeklyCheckInWindowLengthDays; index += 1)
+          for (var index = 3; index < weeklyCheckInWindowLengthDays; index += 1)
             _entry(
               'entry-$index',
               startDay.add(Duration(days: index, hours: 8)),
@@ -801,7 +794,7 @@ void main() {
       final harness = _DailyLearnedHarness(
         settings: settings,
         entries: <CalorieEntry>[
-          for (var index = 1; index < 14; index += 1)
+          for (var index = 3; index < 14; index += 1)
             _entry(
               'entry-$index',
               startDay.add(Duration(days: index, hours: 8)),
@@ -926,8 +919,8 @@ void main() {
     );
 
     expect(result, isNotNull);
-    expect(result!.calculatedTrueTdeeKcal, closeTo(2379.75, 0.01));
-    expect(result.newGoalKcal, closeTo(2500.0, 0.01));
+    expect(result!.calculatedTrueTdeeKcal, closeTo(3792.52, 0.01));
+    expect(result.newGoalKcal, closeTo(2900.0, 0.01));
   });
 
   test('uses real starter-day weight before calculator fallback', () async {
@@ -969,7 +962,7 @@ void main() {
       result!.measured.trendWeightChangePerDay,
       closeTo(-0.33333, 0.00001),
     );
-    expect(result.measured.measuredTrueTdeeKcal, closeTo(4833.33, 0.01));
+    expect(result.measured.measuredTrueTdeeKcal, closeTo(5066.67, 0.01));
   });
 
   test(
@@ -1024,7 +1017,7 @@ void main() {
       final settings = _learnedSettings(
         startDay: startDay,
         windowEndDate: startDay.add(const Duration(days: 6)),
-      );
+      ).setPauseDay(day: heartDay, isPause: true);
       final harness = _DailyLearnedHarness(
         settings: settings,
         entries: _dailyEntries(
@@ -1036,16 +1029,13 @@ void main() {
           startDay: startDay,
           boundaryCount: 1,
         ),
-        burnWeekRunState: const BurnWeekRunState.initial().copyWith(
-          heartDayKeys: <String>[diaryDayKey(heartDay)],
-        ),
       );
       addTearDown(harness.dispose);
 
       final result = await _readDailyLearned(harness.container, today: today);
 
       expect(result, isNotNull);
-      expect(result!.measured.averageIntakeKcal, closeTo(2142.86, 0.01));
+      expect(result!.measured.averageIntakeKcal, closeTo(2100.0, 0.01));
     },
   );
 }

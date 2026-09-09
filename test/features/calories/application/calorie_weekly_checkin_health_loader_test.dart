@@ -5,7 +5,6 @@ import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_health_loader.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
@@ -20,32 +19,13 @@ const _readyStatus = HealthConnectionStatus(
 
 void main() {
   test(
-    'loads health weights and aggregate activity for weekly check-in',
+    'loads health weights and skips activity queries for weekly check-in',
     () async {
       final start = DateTime(2026, 4, 8);
       final secondDay = nextDiaryDay(start);
       final today = DateTime(2026, 4, 15);
       final dates = _dates(start: start, secondDay: secondDay);
-      final diaryHealthService = FakeTrendDiaryHealthService(
-        const {},
-        trendDays: [
-          DiaryHealthActivityTrendDay(
-            day: start,
-            totalSteps: 0,
-            activeEnergyKcal: 200,
-          ),
-          DiaryHealthActivityTrendDay(
-            day: secondDay,
-            totalSteps: 1000,
-            activeEnergyKcal: 0,
-          ),
-          DiaryHealthActivityTrendDay(
-            day: today,
-            totalSteps: 0,
-            activeEnergyKcal: 300,
-          ),
-        ],
-      );
+      final diaryHealthService = FakeDiaryHealthService(const {});
       final healthWeightService = FakeHealthWeightService([
         HealthWeightSample(
           recordedAt: start.add(const Duration(hours: 8)),
@@ -67,67 +47,13 @@ void main() {
         isMounted: () => true,
       );
 
-      expect(data.usesHealthActivity, isTrue);
-      expect(data.activeKcalByDay[diaryDayKey(start)], 200);
-      expect(data.activeKcalByDay[diaryDayKey(secondDay)], 40);
-      expect(data.todayActiveKcal, 300);
+      expect(data.usesHealthActivity, isFalse);
+      expect(data.activeKcalByDay[diaryDayKey(start)], 0);
+      expect(data.activeKcalByDay[diaryDayKey(secondDay)], 0);
+      expect(data.todayActiveKcal, 0);
       expect(data.representativeWeightByDay[diaryDayKey(start)], 81);
-      expect(diaryHealthService.loadDayDataCallCount, 0);
-      expect(diaryHealthService.trendRequests, [
-        (
-          startInclusive: start,
-          endExclusive: nextDiaryDay(today),
-        ),
-      ]);
     },
   );
-
-  test('loads activity only from activity tracking start date', () async {
-    final start = DateTime(2026, 4, 8);
-    final secondDay = nextDiaryDay(start);
-    final today = DateTime(2026, 4, 15);
-    final dates = _dates(start: start, secondDay: secondDay);
-    final diaryHealthService = FakeTrendDiaryHealthService(
-      const {},
-      trendDays: [
-        DiaryHealthActivityTrendDay(
-          day: start,
-          totalSteps: 0,
-          activeEnergyKcal: 200,
-        ),
-        DiaryHealthActivityTrendDay(
-          day: secondDay,
-          totalSteps: 0,
-          activeEnergyKcal: 210,
-        ),
-        DiaryHealthActivityTrendDay(
-          day: today,
-          totalSteps: 0,
-          activeEnergyKcal: 300,
-        ),
-      ],
-    );
-
-    final data = await loadCalorieWeeklyCheckInHealthData(
-      healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
-      healthWeightService: FakeHealthWeightService(const []),
-      diaryHealthService: diaryHealthService,
-      settings: _settings(start, activityTrackingStartDate: secondDay),
-      dates: dates,
-      today: today,
-      isMounted: () => true,
-    );
-
-    expect(data.activeKcalByDay[diaryDayKey(start)], 0);
-    expect(data.activeKcalByDay[diaryDayKey(secondDay)], 210);
-    expect(data.todayActiveKcal, 300);
-    expect(diaryHealthService.trendRequests, [
-      (
-        startInclusive: secondDay,
-        endExclusive: nextDiaryDay(today),
-      ),
-    ]);
-  });
 
   test('returns empty health data when access is unavailable', () async {
     final start = DateTime(2026, 4, 8);

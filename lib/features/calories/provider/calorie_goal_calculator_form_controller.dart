@@ -111,6 +111,16 @@ class CalorieGoalCalculatorFormController
     );
   }
 
+  /// Update workout weekdays (1 = Monday, 7 = Sunday).
+  void updateTrainingWeekdays(List<int> weekdays) {
+    state = state.copyWith(trainingWeekdays: weekdays);
+  }
+
+  /// Update calorie offset for workout days.
+  void updateTrainingDayKcalOffset(double offset) {
+    state = state.copyWith(trainingDayKcalOffset: offset);
+  }
+
   /// Save.
   Future<bool> save({
     required DateTime goalStartDate,

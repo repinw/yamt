@@ -10,10 +10,7 @@ import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/controllers/guest_auth_controller.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_health_activity_cache_warmup.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_health_connection_sync.dart';
+
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -23,7 +20,6 @@ import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_f
 import 'package:yamt/features/scanner/presentation/shared_receipt_listener.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-const _calorieHealthSyncStartupDelay = Duration(seconds: 2);
 
 /// Root application widget.
 @Dependencies([
@@ -43,33 +39,23 @@ class YAMT extends ConsumerStatefulWidget {
 
 class _YAMTState extends ConsumerState<YAMT> {
   ProviderSubscription<AsyncValue<User?>>? _initialAuthSubscription;
-  ProviderSubscription<void>? _calorieActivityCacheWarmupSubscription;
-  ProviderSubscription<void>? _calorieHealthSyncSubscription;
   ProviderSubscription<AsyncValue<List<InventoryItem>>>?
   _inventoryWarmupSubscription;
   ProviderSubscription<AsyncValue<List<PreparedMeal>>>?
   _preparedMealsWarmupSubscription;
-  Timer? _calorieHealthSyncTimer;
 
   @override
   void initState() {
     super.initState();
     _ensureInitialGuestAuth();
     _startInventoryWarmup();
-    _calorieHealthSyncTimer = Timer(
-      _calorieHealthSyncStartupDelay,
-      _startCalorieHealthSync,
-    );
   }
 
   @override
   void dispose() {
     _initialAuthSubscription?.close();
-    _calorieActivityCacheWarmupSubscription?.close();
-    _calorieHealthSyncSubscription?.close();
     _inventoryWarmupSubscription?.close();
     _preparedMealsWarmupSubscription?.close();
-    _calorieHealthSyncTimer?.cancel();
     super.dispose();
   }
 
@@ -124,21 +110,6 @@ class _YAMTState extends ConsumerState<YAMT> {
     );
   }
 
-  void _startCalorieHealthSync() {
-    if (!mounted) {
-      return;
-    }
-    _calorieHealthSyncSubscription ??= ref.listenManual<void>(
-      calorieHealthConnectionSyncProvider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-    _calorieActivityCacheWarmupSubscription ??= ref.listenManual<void>(
-      calorieHealthActivityCacheWarmupProvider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-  }
 
   void _startInventoryWarmup() {
     _inventoryWarmupSubscription ??= ref

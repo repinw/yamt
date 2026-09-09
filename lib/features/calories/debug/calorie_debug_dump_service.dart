@@ -1,4 +1,3 @@
-import 'package:yamt/features/calories/application/calorie_health_activity_kcal_reader.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_dump_formatting.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_weekly_checkin_rows.dart';
@@ -9,16 +8,13 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
-import 'package:yamt/features/health/domain/diary_activity_summary.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
-const _debugActivityFallbackDays = 30;
+const _debugDumpFallbackDays = 30;
 
 /// Result for debug calorie dump.
 class CalorieDebugDumpResult {
@@ -43,10 +39,9 @@ class CalorieDebugDumpResult {
   final DateTime endExclusive;
 }
 
-/// Builds one debug table with food, activity, and weight data.
+/// Builds one debug table with food and weight data.
 Future<CalorieDebugDumpResult> buildCalorieDebugDump({
   required CalorieLogRepositoryContract calorieLogRepository,
-  required DiaryHealthService diaryHealthService,
   required HealthWeightService healthWeightService,
   required ManualHealthWeightRepository manualWeightRepository,
   required Future<HealthConnectionStatus> healthStatusFuture,
@@ -58,13 +53,13 @@ Future<CalorieDebugDumpResult> buildCalorieDebugDump({
   final firstEntryDate = await calorieLogRepository.readFirstEntryDate();
   final manualWeightEntries = await manualWeightRepository.readEntries();
   final settings = await settingsFuture;
-  final activityStartInclusive = _resolveActivityStart(
+  final fallbackStartInclusive = _resolveFallbackDumpStart(
     today: today,
     firstEntryDate: firstEntryDate,
   );
   final startInclusive = _resolveDebugDumpStart(
     settings: settings,
-    fallbackStartInclusive: activityStartInclusive,
+    fallbackStartInclusive: fallbackStartInclusive,
     today: today,
   );
   final calorieEntries = await calorieLogRepository.readEntriesInRange(
@@ -87,15 +82,17 @@ Future<CalorieDebugDumpResult> buildCalorieDebugDump({
   ];
 
   if (healthStatus.accessState == HealthDataAccessState.ready) {
+    final weightSamples = await healthWeightService.loadWeightSamples(
+      startInclusive: startInclusive,
+      endExclusive: endExclusive,
+    );
     rows.addAll(
-      await _loadHealthRows(
+      _dailyWeightRows(
+        healthWeightSamples: weightSamples,
+        manualWeightEntries: manualWeightEntries,
+        settings: settings,
         startInclusive: startInclusive,
         endExclusive: endExclusive,
-        settings: settings,
-        diaryHealthService: diaryHealthService,
-        healthWeightService: healthWeightService,
-        manualWeightEntries: manualWeightEntries,
-        userHeightCm: settings.calculatorProfile?.heightCm,
       ),
     );
   } else {
@@ -136,7 +133,6 @@ Future<CalorieDebugDumpResult> buildCalorieDebugDump({
     calorieEntries: calorieEntries,
     manualWeightEntries: manualWeightEntries,
     healthStatus: healthStatus,
-    diaryHealthService: diaryHealthService,
     healthWeightService: healthWeightService,
     today: today,
   );
@@ -169,14 +165,14 @@ Future<CalorieDebugDumpResult> buildCalorieDebugDump({
   );
 }
 
-DateTime _resolveActivityStart({
+DateTime _resolveFallbackDumpStart({
   required DateTime today,
   required DateTime? firstEntryDate,
 }) {
   if (firstEntryDate != null) {
     return normalizeDiaryDay(firstEntryDate.toLocal());
   }
-  return today.subtract(const Duration(days: _debugActivityFallbackDays - 1));
+  return today.subtract(const Duration(days: _debugDumpFallbackDays - 1));
 }
 
 DateTime _resolveDebugDumpStart({
@@ -224,105 +220,7 @@ bool _isDebugGoalWindowDay({
   return settings.countingGoalEntryForDay(day)?.hasGoal == true;
 }
 
-Future<List<CalorieDebugDumpRow>> _loadHealthRows({
-  required DateTime startInclusive,
-  required DateTime endExclusive,
-  required CalorieGoalSettings settings,
-  required DiaryHealthService diaryHealthService,
-  required HealthWeightService healthWeightService,
-  required List<ManualHealthWeightEntry> manualWeightEntries,
-  required double? userHeightCm,
-}) async {
-  final rows = <CalorieDebugDumpRow>[];
-  final weightSamples = await healthWeightService.loadWeightSamples(
-    startInclusive: startInclusive,
-    endExclusive: endExclusive,
-  );
-  rows.addAll(
-    _dailyWeightRows(
-      healthWeightSamples: weightSamples,
-      manualWeightEntries: manualWeightEntries,
-      settings: settings,
-      startInclusive: startInclusive,
-      endExclusive: endExclusive,
-    ),
-  );
 
-  final activityDays = <DateTime>[];
-  for (
-    var day = normalizeDiaryDay(startInclusive);
-    day.isBefore(endExclusive);
-    day = nextDiaryDay(day)
-  ) {
-    if (!_isDebugGoalWindowDay(settings: settings, day: day)) {
-      continue;
-    }
-    activityDays.add(day);
-  }
-  for (final day in activityDays) {
-    final data = await diaryHealthService.loadDayData(
-      day: day,
-      userHeightCm: userHeightCm,
-    );
-    rows.addAll(_activityRows(day: day, data: data));
-  }
-  return rows;
-}
-
-List<CalorieDebugDumpRow> _activityRows({
-  required DateTime day,
-  required DiaryHealthDayData data,
-}) {
-  if (data.totalSteps <= 0 &&
-      data.workouts.isEmpty &&
-      data.unassignedActiveEnergySegments.isEmpty) {
-    return const <CalorieDebugDumpRow>[];
-  }
-  final summary = buildDiaryActivitySummary(day: day, dayData: data);
-  final activityKcal = calculateImportedHealthActivityKcal(
-    stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
-    workoutCalories: summary.workouts.map(
-      (workout) => workout.totalCalories,
-    ),
-    unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
-  );
-  final workoutKcal = summary.workouts.fold<int>(
-    0,
-    (sum, workout) {
-      final totalCalories = workout.totalCalories;
-      return totalCalories == null ? sum : sum + totalCalories;
-    },
-  );
-  final unassignedActiveEnergyKcal = summary.unassignedActiveEnergySegments
-      .fold<int>(0, (sum, segment) => sum + segment.totalCalories);
-
-  return [
-    CalorieDebugDumpRow(
-      sortAt: day,
-      typeOrder: 2,
-      cells: [
-        _formatDay(day),
-        '',
-        'activity_day',
-        'activity_total',
-        _formatNumber(activityKcal),
-        '',
-        '',
-        '',
-        '',
-        data.totalSteps.toString(),
-        '',
-        'health',
-        [
-          'steps_outside_workouts=${summary.stepsOutsideWorkouts}',
-          'workouts=${summary.workouts.length}',
-          'workout_kcal=$workoutKcal',
-          'unassigned_active_energy_kcal=$unassignedActiveEnergyKcal',
-        ].join('; '),
-      ],
-    ),
-  ];
-}
 
 CalorieDebugDumpRow _summaryRow({
   required DateTime startInclusive,
@@ -497,11 +395,6 @@ List<CalorieDebugDumpRow> _goalWeekRows({
     type: 'eaten_day',
     name: 'eaten_total',
   );
-  final activityKcalByDay = _dailyRowKcalByDay(
-    rows: rows,
-    type: 'activity_day',
-    name: 'activity_total',
-  );
   final weightByDay = _dailyRowWeightByDay(rows);
   final weekRows = <CalorieDebugDumpRow>[];
 
@@ -546,7 +439,6 @@ List<CalorieDebugDumpRow> _goalWeekRows({
             weekEndExclusive: weekEndExclusive,
             weekNumber: weekNumber,
             eatenKcalByDay: eatenKcalByDay,
-            activityKcalByDay: activityKcalByDay,
             weightByDay: weightByDay,
           ),
         );
@@ -657,7 +549,6 @@ CalorieDebugDumpRow _weekSummaryRow({
   required DateTime weekEndExclusive,
   required int weekNumber,
   required Map<String, double> eatenKcalByDay,
-  required Map<String, double> activityKcalByDay,
   required Map<String, double> weightByDay,
 }) {
   final days = _buildExclusiveDays(
@@ -669,7 +560,6 @@ CalorieDebugDumpRow _weekSummaryRow({
     (sum, day) => sum + settings.goalKcalForDay(day),
   );
   final eatenTotal = _sumDailyValues(days, eatenKcalByDay);
-  final activityTotal = _sumDailyValues(days, activityKcalByDay);
   final weights = [
     for (final day in days)
       if (weightByDay[diaryDayKey(day)] != null)
@@ -711,7 +601,6 @@ CalorieDebugDumpRow _weekSummaryRow({
         'calculated_goal_total=${_formatNumber(calculatedGoalTotal)}',
         'eaten_total=${_formatNumber(eatenTotal)}',
         'eaten_minus_goal=${_formatNumber(eatenTotal - calculatedGoalTotal)}',
-        'activity_total=${_formatNumber(activityTotal)}',
         'start_weight=${_formatNumber(startWeight)}',
         'end_weight=${_formatNumber(endWeight)}',
         'weight_change=${_formatNumber(weightChange)}',
@@ -744,18 +633,9 @@ CalorieDebugWeekTdeeData _weekTdeeData({
     final measuredTotalTdee = _formatNumber(
       learnedSnapshot.measuredTotalTdeeKcal,
     );
-    final measuredBaseTdee = _formatNumber(
-      learnedSnapshot.measuredBaseTdeeKcal,
-    );
-    final creditedActivityAverage = _formatNumber(
-      learnedSnapshot.averageCreditedActivityKcal,
-    );
     final newTarget = _formatNumber(learnedSnapshot.baseGoalKcal);
     final trendPerDay = learnedSnapshot.trendWeightChangePerDay.toStringAsFixed(
       5,
-    );
-    final usesHealthActivity = settings.isActivityTrackingActiveForDay(
-      learnedSnapshot.windowEndDate,
     );
     return CalorieDebugWeekTdeeData(
       source: 'learned_tdee',
@@ -763,11 +643,6 @@ CalorieDebugWeekTdeeData _weekTdeeData({
       used: [
         'snapshot_window=$snapshotWindow',
         'measured_total_tdee=$measuredTotalTdee',
-        if (usesHealthActivity) ...[
-          'measured_base_tdee=$measuredBaseTdee',
-          'credited_activity_average=$creditedActivityAverage',
-          'activity_subtracted_from_total_tdee=$creditedActivityAverage',
-        ],
         'new_target=$newTarget',
         'trend_kg_per_day=$trendPerDay',
       ].join(','),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 
 /// Horizontal pill selector for TDEE analytics time ranges.
@@ -69,7 +70,7 @@ class _RangePill extends StatelessWidget {
         ? colorScheme.onPrimary
         : colorScheme.onSurfaceVariant;
 
-    return InkWell(
+    return AppInkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.pill),
       child: AnimatedContainer(

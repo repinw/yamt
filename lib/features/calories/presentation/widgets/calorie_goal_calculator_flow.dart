@@ -20,6 +20,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_training_days_card.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/'
@@ -436,8 +438,19 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (state.calculation != null)
+            if (state.calculation != null) ...[
               CalorieGoalCalculatorResultsCard(calculation: state.calculation!),
+              const SizedBox(height: AppSpacing.md),
+              CalorieGoalTrainingDaysCard(
+                baseGoalKcal: state.calculation!.finalGoalKcal,
+                trainingWeekdays: state.trainingWeekdays,
+                trainingDayKcalOffset: state.trainingDayKcalOffset,
+                onTrainingWeekdaysChanged:
+                    ref.read(formProvider.notifier).updateTrainingWeekdays,
+                onOffsetChanged:
+                    ref.read(formProvider.notifier).updateTrainingDayKcalOffset,
+              ),
+            ],
             if (state.calculation?.wasClampedToMinimum ?? false) ...[
               const SizedBox(height: AppSpacing.md),
               CalorieGoalCalculatorWarningCard(

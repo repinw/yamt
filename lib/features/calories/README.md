@@ -23,8 +23,6 @@ state, and calorie-owned side effects from health or weight changes.
 
 ## Public Edge
 
-- `application/calorie_health_connection_sync.dart` reacts to Health
-  connection readiness and records the calorie activity-tracking start day.
 - `application/calorie_weight_state_refresh.dart` refreshes calorie state after
   health weight changes.
 - Legacy controllers and derived providers under `provider/` are current public
@@ -56,7 +54,6 @@ the legacy `provider/` surface or exposing action wrappers to sibling features.
 
 Main application providers:
 
-- `application/calorie_health_connection_sync.dart`
 - `application/calorie_weight_state_refresh.dart`
 - `application/calorie_entry_delete_flow.dart`
 - `application/calorie_inventory_entry_save_handler.dart`
@@ -64,23 +61,31 @@ Main application providers:
 
 ## TDEE Learning
 
-Calories starts with a classic calculator target. The calculator profile
-produces Total-TDEE from height, weight, age, sex, and selected activity level.
-Goal mode and speed then apply deficit or surplus to create the initial daily
-target.
+Calories uses a pure intake and weight-trend model. The calculator profile
+produces an initial TDEE from height, weight, age, sex, and selected activity level.
+Goal mode and speed then apply deficit or surplus to create the initial daily target.
 
-When Health activity tracking is connected, the target is split into a base
-goal and tracked activity credit:
+Health Connect is restricted strictly to body weight readings (`HealthDataType.weight`).
+Wearable activity readings (steps, active calories burned) are decoupled from TDEE calculation.
+
+### Calorie Cycling & Training Days
+
+Users can configure training days (e.g. Mo, We, Fr) and a kcal offset (+200..+300 kcal).
+The weekly budget is preserved budget-neutrally:
 
 ```text
-baseGoal = totalTdeeGoal - expectedActivityKcal * 0.75
-dailyGoal = baseGoal + trackedActivityTodayKcal * 0.75
+N_training = count of training days
+N_rest = 7 - N_training
+offset_rest = (N_training * offset_training) / N_rest
+trainingGoal = baseGoal + offset_training
+restGoal = max(1200, baseGoal - offset_rest)
 ```
 
-Without Health activity tracking, users see the normal Total-TDEE-based goal.
+The diary header includes a toggle (`🏋️ Trainingstag`, `🛋️ Ruhetag`, `⏸️ Pausentag`).
 
-Weekly learned TDEE uses an expanding window first, then a rolling 28-day
-window:
+### Learning Windows & Interpolation
+
+Weekly learned TDEE uses an expanding window first, then a rolling 28-day window:
 
 ```text
 week 1: days 1-7
@@ -90,26 +95,21 @@ week 4: days 1-28
 week 5+: latest 28 days only
 ```
 
-The measured learning signal is calculated from intake, weight trend, and
-tracked activity in the same learning window:
+The measured learning signal is calculated strictly from intake and weight trend:
 
 ```text
-measuredTotalTdee = averageIntake - weightTrendKgPerDay * 7000
-measuredBaseTdee = measuredTotalTdee - averageTrackedActivityKcal * 0.75
-newLearnedBaseTdee = oldLearnedBaseTdee * 0.70 + measuredBaseTdee * 0.30
+measuredTdee = averageIntake - weightTrendKgPerDay * 7700
+newLearnedTdee = oldLearnedTdee * 0.70 + measuredTdee * 0.30
 ```
 
-The learned value is a base target without tracked activity credit. Daily UI
-adds today's tracked activity back with the same 75% correction.
+### Pause Days & Missing Days
 
-Heart days count as perfect days for learning. The backend substitutes that
-day's goal kcal and ignores raw logged intake for the heart day. This keeps the
-7-day balance intact without letting one marked day distort TDEE learning.
-
-Missing intake blocks learning when at least three intake days are missing.
-Skipped intake days are interpolated from logged-day average. Weight learning
-requires enough boundary data to form at least two weight points; two-point
-calculations are allowed but marked low confidence.
+- A day without logged entries or explicitly set to pause acts as a **Pausentag**.
+- Pausentage (Urlaub, Krankheit, Wettkampf) are neutral: no streak penalty, ignored in learning.
+- In a 7-day check-in window:
+  - Missing/pause days (< 3 days) are auto-interpolated from the logged average of tracked days without blocking the check-in.
+  - Check-in triggers every 7 days from the anchor start date.
+  - >= 3 missing days blocks learning due to insufficient data.
 
 Weight handling uses median filtering plus a trendline:
 

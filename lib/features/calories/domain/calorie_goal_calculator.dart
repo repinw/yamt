@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 
 /// The minimum calorie goal kcal.
 const double minimumCalorieGoalKcal = minimumDailyCalorieBudgetKcal;
-const _kcalPerKilogram = 7000.0;
+const _kcalPerKilogram = 7700.0;
 const _daysPerWeek = 7.0;
 const _calculatorLogName = 'CalorieGoalCalculator';
 

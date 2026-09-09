@@ -1,6 +1,5 @@
 import 'package:yamt/features/calories/application/'
     'daily_learned_tdee_models.dart';
-import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
     show CalorieGoalMode;
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
@@ -161,27 +160,11 @@ abstract final class DailyLearnedTdeeResolver {
     }
 
     final firstWindowStartDate = context.windows.first.windowStartDate;
-    var previousGoalKcal = calculateActivityAdjustedBaseGoalKcal(
-      totalGoalKcal: settings.goalKcalForDay(
-        previousDiaryDay(firstWindowStartDate),
-      ),
-      expectedActivityKcal: settings.expectedActivityKcalForDay(
-        previousDiaryDay(firstWindowStartDate),
-      ),
-      isActivityTrackingActive: settings.isActivityTrackingActiveForDay(
-        firstWindowStartDate,
-      ),
+    var previousGoalKcal = settings.baseGoalKcalForDay(
+      previousDiaryDay(firstWindowStartDate),
     );
     if (previousGoalKcal <= 0) {
-      previousGoalKcal = calculateActivityAdjustedBaseGoalKcal(
-        totalGoalKcal: context.storedGoalKcal,
-        expectedActivityKcal: settings.expectedActivityKcalForDay(
-          firstWindowStartDate,
-        ),
-        isActivityTrackingActive: settings.isActivityTrackingActiveForDay(
-          firstWindowStartDate,
-        ),
-      );
+      previousGoalKcal = context.storedGoalKcal;
     }
     var previousLearnedTdeeKcal = learnedTdeeSeed(
       settings: settings,
@@ -230,21 +213,16 @@ abstract final class DailyLearnedTdeeResolver {
         isLosing: goalMode == CalorieGoalMode.lose,
         isGaining: goalMode == CalorieGoalMode.gain,
         intakeKcalByDay: intakeKcalByDay,
-        rawActivityKcalByDay: activityKcalByDay(
-          days: learningDays,
-          activeKcalByDay: activeKcalByDay,
-        ),
         weightPoints: weightPoints,
       );
       latest = DailyLearnedTdeeGoalData(
         measured: calculation.measured,
-        calculatedBaseTdeeKcal: calculation.calculatedBaseTdeeKcal,
-        newBaseGoalKcal: calculation.newBaseGoalKcal,
-        averageCreditedActivityKcal:
-            calculation.measured.averageCreditedActivityKcal,
+        calculatedBaseTdeeKcal: calculation.calculatedTdeeKcal,
+        newBaseGoalKcal: calculation.newGoalKcal,
+        averageCreditedActivityKcal: 0,
       );
       previousGoalKcal = calculation.newGoalKcal;
-      previousLearnedTdeeKcal = calculation.calculatedBaseTdeeKcal;
+      previousLearnedTdeeKcal = calculation.calculatedTdeeKcal;
     }
 
     return latest;
@@ -407,19 +385,16 @@ abstract final class DailyLearnedTdeeResolver {
     required List<DateTime> days,
     required Map<String, List<CalorieEntry>> entriesByDay,
     required CalorieGoalSettings settings,
-    required Set<String> heartDayKeys,
+    Set<String> heartDayKeys = const <String>{},
   }) {
     final loggedVals = <double>[];
     final missingDays = <DateTime>[];
 
     for (final day in days) {
       final dayKey = diaryDayKey(day);
-      if (heartDayKeys.contains(dayKey)) {
-        loggedVals.add(settings.goalKcalForDay(day));
-        continue;
-      }
+      final isExplicitPause = settings.isPauseDay(day);
       final dayEntries = entriesByDay[dayKey] ?? const <CalorieEntry>[];
-      if (dayEntries.isNotEmpty) {
+      if (dayEntries.isNotEmpty && !isExplicitPause) {
         loggedVals.add(
           dayEntries.fold<double>(
             0,
@@ -429,6 +404,10 @@ abstract final class DailyLearnedTdeeResolver {
       } else {
         missingDays.add(day);
       }
+    }
+
+    if (missingDays.length >= weeklyCheckInMissingIntakeBlockThreshold) {
+      return null;
     }
 
     if (loggedVals.isEmpty && missingDays.isNotEmpty) {
@@ -442,12 +421,9 @@ abstract final class DailyLearnedTdeeResolver {
 
     for (final day in days) {
       final dayKey = diaryDayKey(day);
-      if (heartDayKeys.contains(dayKey)) {
-        intakeKcalByDay.add(settings.goalKcalForDay(day));
-        continue;
-      }
+      final isExplicitPause = settings.isPauseDay(day);
       final dayEntries = entriesByDay[dayKey] ?? const <CalorieEntry>[];
-      if (dayEntries.isNotEmpty) {
+      if (dayEntries.isNotEmpty && !isExplicitPause) {
         intakeKcalByDay.add(
           dayEntries.fold<double>(
             0,
@@ -455,9 +431,6 @@ abstract final class DailyLearnedTdeeResolver {
           ),
         );
       } else {
-        if (!settings.isSkippedIntakeDay(day)) {
-          return null;
-        }
         intakeKcalByDay.add(averageLogged);
       }
     }
@@ -593,10 +566,6 @@ abstract final class DailyLearnedTdeeResolver {
         );
     if (calculatorProfile != null) {
       final result = CalorieGoalCalculator.calculate(calculatorProfile);
-      if (settings.isActivityTrackingActiveForDay(day)) {
-        return result.tdeeKcal -
-            (result.expectedActivityKcal * importedActivityCorrectionFactor);
-      }
       return result.tdeeKcal;
     }
     return fallbackGoalKcal;

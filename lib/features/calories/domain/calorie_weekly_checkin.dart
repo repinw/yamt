@@ -1,7 +1,6 @@
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
-import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
@@ -23,7 +22,7 @@ const learnedTdeeStaleAfterDays = 14;
 const learnedTdeeUrgentStaleAfterDays = 28;
 const _emaHistoryWeight = 0.7;
 const _emaNewDataWeight = 0.3;
-const _kcalPerKilogram = 7000.0;
+const _kcalPerKilogram = 7700.0;
 const _maxWeeklyGoalAdjustmentKcal = 200.0;
 const _weeklyCheckInLogName = 'CalorieWeeklyCheckInCalculator';
 
@@ -55,9 +54,12 @@ class CalorieWeeklyCheckInCalculation {
   const CalorieWeeklyCheckInCalculation({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
-    required this.todayActiveKcal,
-    required this.activityDeltaKcal,
-    required this.dynamicGoalTodayKcal,
+    double? measuredTdeeKcal,
+    double? calculatedTdeeKcal,
+    double? newGoalKcal,
+    this.todayActiveKcal = 0,
+    this.activityDeltaKcal = 0,
+    double? dynamicGoalTodayKcal,
     double? measuredTotalTdeeKcal,
     double? measuredBaseTdeeKcal,
     double? calculatedBaseTdeeKcal,
@@ -65,18 +67,21 @@ class CalorieWeeklyCheckInCalculation {
     double? averageCreditedActivityKcal,
     double? measuredTrueTdeeKcal,
     double? calculatedTrueTdeeKcal,
-    double? newGoalKcal,
     double? lastWeekAverageActiveKcal,
-  }) : measuredTotalTdeeKcal =
-           measuredTotalTdeeKcal ?? measuredTrueTdeeKcal ?? 0,
-       measuredBaseTdeeKcal =
-           measuredBaseTdeeKcal ??
+  }) : measuredTdeeKcal =
+           measuredTdeeKcal ??
            measuredTotalTdeeKcal ??
+           measuredBaseTdeeKcal ??
            measuredTrueTdeeKcal ??
            0,
-       calculatedBaseTdeeKcal =
-           calculatedBaseTdeeKcal ?? calculatedTrueTdeeKcal ?? 0,
-       newBaseGoalKcal = newBaseGoalKcal ?? newGoalKcal ?? 0,
+       calculatedTdeeKcal =
+           calculatedTdeeKcal ??
+           calculatedBaseTdeeKcal ??
+           calculatedTrueTdeeKcal ??
+           0,
+       newGoalKcal = newGoalKcal ?? newBaseGoalKcal ?? 0,
+       dynamicGoalTodayKcal =
+           dynamicGoalTodayKcal ?? newGoalKcal ?? newBaseGoalKcal ?? 0,
        averageCreditedActivityKcal =
            averageCreditedActivityKcal ?? lastWeekAverageActiveKcal ?? 0;
 
@@ -86,20 +91,14 @@ class CalorieWeeklyCheckInCalculation {
   /// The average intake kcal.
   final double averageIntakeKcal;
 
-  /// The measured total TDEE kcal before activity is removed.
-  final double measuredTotalTdeeKcal;
+  /// The measured true TDEE kcal from intake and weight trend.
+  final double measuredTdeeKcal;
 
-  /// The measured Base-TDEE kcal before smoothing.
-  final double measuredBaseTdeeKcal;
+  /// The smoothed learned TDEE kcal.
+  final double calculatedTdeeKcal;
 
-  /// The smoothed learned Base-TDEE kcal.
-  final double calculatedBaseTdeeKcal;
-
-  /// The new base goal kcal after target mode and movement cap.
-  final double newBaseGoalKcal;
-
-  /// Average corrected activity kcal in the learning window.
-  final double averageCreditedActivityKcal;
+  /// The new daily goal kcal after target mode and movement cap.
+  final double newGoalKcal;
 
   /// The today active kcal.
   final int todayActiveKcal;
@@ -110,14 +109,26 @@ class CalorieWeeklyCheckInCalculation {
   /// The dynamic goal today kcal.
   final double dynamicGoalTodayKcal;
 
+  /// Average corrected activity kcal in the learning window (legacy).
+  final double averageCreditedActivityKcal;
+
   /// Backwards-compatible label for measured total TDEE.
-  double get measuredTrueTdeeKcal => measuredTotalTdeeKcal;
+  double get measuredTotalTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for measured base TDEE.
+  double get measuredBaseTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for calculated base TDEE.
+  double get calculatedBaseTdeeKcal => calculatedTdeeKcal;
+
+  /// Backwards-compatible label for new base goal.
+  double get newBaseGoalKcal => newGoalKcal;
+
+  /// Backwards-compatible label for measured total TDEE.
+  double get measuredTrueTdeeKcal => measuredTdeeKcal;
 
   /// Backwards-compatible label for Base-TDEE while UI copy is updated.
-  double get calculatedTrueTdeeKcal => calculatedBaseTdeeKcal;
-
-  /// Backwards-compatible label for base goal.
-  double get newGoalKcal => newBaseGoalKcal;
+  double get calculatedTrueTdeeKcal => calculatedTdeeKcal;
 
   /// Backwards-compatible label for average credited activity.
   double get lastWeekAverageActiveKcal => averageCreditedActivityKcal;
@@ -129,15 +140,15 @@ class CalorieMeasuredTdeeCalculation {
   const CalorieMeasuredTdeeCalculation({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
+    double? measuredTdeeKcal,
     double? measuredTotalTdeeKcal,
     double? measuredBaseTdeeKcal,
     double? measuredTrueTdeeKcal,
     double? averageCreditedActivityKcal,
-  }) : measuredTotalTdeeKcal =
-           measuredTotalTdeeKcal ?? measuredTrueTdeeKcal ?? 0,
-       measuredBaseTdeeKcal =
-           measuredBaseTdeeKcal ??
+  }) : measuredTdeeKcal =
+           measuredTdeeKcal ??
            measuredTotalTdeeKcal ??
+           measuredBaseTdeeKcal ??
            measuredTrueTdeeKcal ??
            0,
        averageCreditedActivityKcal = averageCreditedActivityKcal ?? 0;
@@ -148,17 +159,20 @@ class CalorieMeasuredTdeeCalculation {
   /// The average intake kcal.
   final double averageIntakeKcal;
 
-  /// The measured total TDEE kcal before activity is removed.
-  final double measuredTotalTdeeKcal;
-
-  /// The measured Base-TDEE kcal after credited activity is removed.
-  final double measuredBaseTdeeKcal;
+  /// The measured true TDEE kcal.
+  final double measuredTdeeKcal;
 
   /// Average corrected activity kcal in the learning window.
   final double averageCreditedActivityKcal;
 
   /// Backwards-compatible label for measured total TDEE.
-  double get measuredTrueTdeeKcal => measuredTotalTdeeKcal;
+  double get measuredTotalTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for measured base TDEE.
+  double get measuredBaseTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for measured total TDEE.
+  double get measuredTrueTdeeKcal => measuredTdeeKcal;
 }
 
 /// Defines learned TDEE target calculation from measured data.
@@ -166,28 +180,35 @@ class CalorieLearnedTdeeGoalCalculation {
   /// The learned TDEE goal calculation.
   const CalorieLearnedTdeeGoalCalculation({
     required this.measured,
-    required this.calculatedBaseTdeeKcal,
+    required this.calculatedTdeeKcal,
     required this.rawGoalKcal,
-    required this.newBaseGoalKcal,
-  });
+    required this.newGoalKcal,
+    double? calculatedBaseTdeeKcal,
+    double? newBaseGoalKcal,
+  }) : calculatedBaseTdeeKcal =
+           calculatedBaseTdeeKcal ?? calculatedTdeeKcal,
+       newBaseGoalKcal = newBaseGoalKcal ?? newGoalKcal;
 
   /// The measured TDEE calculation.
   final CalorieMeasuredTdeeCalculation measured;
 
-  /// The smoothed learned Base-TDEE kcal.
-  final double calculatedBaseTdeeKcal;
+  /// The smoothed learned TDEE kcal.
+  final double calculatedTdeeKcal;
 
   /// The goal before movement clamping.
   final double rawGoalKcal;
 
   /// The final base goal after movement clamping.
+  final double newGoalKcal;
+
+  /// Backwards-compatible label for Base-TDEE.
+  final double calculatedBaseTdeeKcal;
+
+  /// Backwards-compatible label for base goal.
   final double newBaseGoalKcal;
 
   /// Backwards-compatible label for Base-TDEE.
-  double get calculatedTrueTdeeKcal => calculatedBaseTdeeKcal;
-
-  /// Backwards-compatible label for base goal.
-  double get newGoalKcal => newBaseGoalKcal;
+  double get calculatedTrueTdeeKcal => calculatedTdeeKcal;
 }
 
 /// Defines calorie weekly check in calculator.
@@ -199,19 +220,15 @@ abstract final class CalorieWeeklyCheckInCalculator {
     required CalorieGoalMode goalMode,
     required double goalSpeedKgPerWeek,
     required List<double> intakeKcalByDay,
-    required List<int> lastWeekActiveKcalByDay,
-    required int todayActiveKcal,
     required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
+    List<int> lastWeekActiveKcalByDay = const <int>[],
+    int todayActiveKcal = 0,
     List<int>? learningActiveKcalByDay,
   }) {
     assert(
       intakeKcalByDay.length >= weeklyCheckInWindowLengthDays - 1 &&
           intakeKcalByDay.length <= dailyLearnedTdeeMaximumLookbackDays,
       'Weekly check-in requires 6 to 28 intake values.',
-    );
-    assert(
-      lastWeekActiveKcalByDay.isNotEmpty,
-      'Weekly check-in activity baseline values must not be empty.',
     );
     assert(
       weightPoints.length >= 2,
@@ -227,22 +244,16 @@ abstract final class CalorieWeeklyCheckInCalculator {
       isLosing: goalMode == CalorieGoalMode.lose,
       isGaining: goalMode == CalorieGoalMode.gain,
       intakeKcalByDay: intakeKcalByDay,
-      rawActivityKcalByDay: learningActiveKcalByDay ?? lastWeekActiveKcalByDay,
       weightPoints: weightPoints,
     );
     final measured = goalCalculation.measured;
     final trendWeightChangePerDay = measured.trendWeightChangePerDay;
     final averageIntakeKcal = measured.averageIntakeKcal;
-    final measuredTotalTdeeKcal = measured.measuredTotalTdeeKcal;
-    final measuredBaseTdeeKcal = measured.measuredBaseTdeeKcal;
-    final calculatedBaseTdeeKcal = goalCalculation.calculatedBaseTdeeKcal;
+    final measuredTdeeKcal = measured.measuredTdeeKcal;
+    final calculatedTdeeKcal = goalCalculation.calculatedTdeeKcal;
     final rawNewGoalKcal = goalCalculation.rawGoalKcal;
-    final newBaseGoalKcal = goalCalculation.newBaseGoalKcal;
-    final averageCreditedActivityKcal = measured.averageCreditedActivityKcal;
-    final activityDeltaKcal = calculateActivityCreditKcal(
-      rawActivityKcal: todayActiveKcal,
-    );
-    final dynamicGoalTodayKcal = (newBaseGoalKcal + activityDeltaKcal).clamp(
+    final newGoalKcal = goalCalculation.newGoalKcal;
+    final dynamicGoalTodayKcal = newGoalKcal.clamp(
       minimumResolvedDailyCalorieGoalKcal,
       double.infinity,
     );
@@ -255,7 +266,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
       final intakeLabel = intakeKcalByDay
           .map((value) => value.toStringAsFixed(2))
           .join(',');
-      final activeLabel = lastWeekActiveKcalByDay.join(',');
       final message =
           'WEEKLY_TDEE_DEBUG '
           'previousGoalKcal=${previousGoalKcal.toStringAsFixed(2)} '
@@ -264,23 +274,16 @@ abstract final class CalorieWeeklyCheckInCalculator {
           'goalMode=${goalMode.name} '
           'goalSpeedKgPerWeek=${goalSpeedKgPerWeek.toStringAsFixed(2)} '
           'intakeKcalByDay=[$intakeLabel] '
-          'lastWeekActiveKcalByDay=[$activeLabel] '
-          'todayActiveKcal=$todayActiveKcal '
           'weightPoints=[$weightPointsLabel] '
           '-> trendWeightChangePerDay='
           '${trendWeightChangePerDay.toStringAsFixed(5)} '
           'averageIntakeKcal=${averageIntakeKcal.toStringAsFixed(2)} '
-          'measuredTotalTdeeKcal='
-          '${measuredTotalTdeeKcal.toStringAsFixed(2)} '
-          'measuredBaseTdeeKcal='
-          '${measuredBaseTdeeKcal.toStringAsFixed(2)} '
-          'calculatedBaseTdeeKcal='
-          '${calculatedBaseTdeeKcal.toStringAsFixed(2)} '
+          'measuredTdeeKcal='
+          '${measuredTdeeKcal.toStringAsFixed(2)} '
+          'calculatedTdeeKcal='
+          '${calculatedTdeeKcal.toStringAsFixed(2)} '
           'rawNewGoalKcal=${rawNewGoalKcal.toStringAsFixed(2)} '
-          'newBaseGoalKcal=${newBaseGoalKcal.toStringAsFixed(2)} '
-          'averageCreditedActivityKcal='
-          '${averageCreditedActivityKcal.toStringAsFixed(2)} '
-          'activityDeltaKcal=${activityDeltaKcal.toStringAsFixed(2)} '
+          'newGoalKcal=${newGoalKcal.toStringAsFixed(2)} '
           'dynamicGoalTodayKcal=${dynamicGoalTodayKcal.toStringAsFixed(2)}';
       log(message, name: _weeklyCheckInLogName);
     }
@@ -288,14 +291,12 @@ abstract final class CalorieWeeklyCheckInCalculator {
     return CalorieWeeklyCheckInCalculation(
       trendWeightChangePerDay: trendWeightChangePerDay,
       averageIntakeKcal: averageIntakeKcal,
-      measuredTotalTdeeKcal: measuredTotalTdeeKcal,
-      measuredBaseTdeeKcal: measuredBaseTdeeKcal,
-      calculatedBaseTdeeKcal: calculatedBaseTdeeKcal,
-      newBaseGoalKcal: newBaseGoalKcal,
-      averageCreditedActivityKcal: averageCreditedActivityKcal,
+      measuredTdeeKcal: measuredTdeeKcal,
+      calculatedTdeeKcal: calculatedTdeeKcal,
+      newGoalKcal: newGoalKcal,
       todayActiveKcal: todayActiveKcal,
-      activityDeltaKcal: activityDeltaKcal,
       dynamicGoalTodayKcal: dynamicGoalTodayKcal,
+      averageCreditedActivityKcal: 0,
     );
   }
 
@@ -326,31 +327,27 @@ abstract final class CalorieWeeklyCheckInCalculator {
     final smoothedWeightPoints = _smoothWeightPoints(weightPoints);
     final trendWeightChangePerDay = _calculateSlope(smoothedWeightPoints);
     final averageIntakeKcal = CalorieDomainMath.average(intakeKcalByDay);
-    final measuredTotalTdeeKcal =
+    final measuredTdeeKcal =
         averageIntakeKcal - (trendWeightChangePerDay * _kcalPerKilogram);
-    final measuredBaseTdeeKcal = calculateMeasuredBaseTdeeKcal(
-      measuredTotalTdeeKcal: measuredTotalTdeeKcal,
-      rawActivityKcalByDay: rawActivityKcalByDay,
-    );
-    final averageCreditedActivityKcal = calculateAverageActivityCreditKcal(
-      rawActivityKcalByDay: rawActivityKcalByDay,
-    );
     return CalorieMeasuredTdeeCalculation(
       trendWeightChangePerDay: trendWeightChangePerDay,
       averageIntakeKcal: averageIntakeKcal,
-      measuredTotalTdeeKcal: measuredTotalTdeeKcal,
-      measuredBaseTdeeKcal: measuredBaseTdeeKcal,
-      averageCreditedActivityKcal: averageCreditedActivityKcal,
+      measuredTdeeKcal: measuredTdeeKcal,
+      averageCreditedActivityKcal: 0,
     );
   }
 
-  /// Smooth measured Base-TDEE into the learned Base-TDEE estimate.
+  /// Smooth measured TDEE into the learned TDEE estimate.
   static double smoothLearnedTdee({
     required double previousLearnedTdeeKcal,
-    required double measuredBaseTdeeKcal,
+    required double measuredTdeeKcal,
+    double? measuredBaseTdeeKcal,
   }) {
+    final effectiveMeasured = measuredTdeeKcal > 0
+        ? measuredTdeeKcal
+        : (measuredBaseTdeeKcal ?? 0.0);
     return (previousLearnedTdeeKcal * _emaHistoryWeight) +
-        (measuredBaseTdeeKcal * _emaNewDataWeight);
+        (effectiveMeasured * _emaNewDataWeight);
   }
 
   /// Calculate learned TDEE and target goal from measured data.
@@ -367,29 +364,28 @@ abstract final class CalorieWeeklyCheckInCalculator {
   }) {
     final measured = calculateMeasuredTdee(
       intakeKcalByDay: intakeKcalByDay,
-      rawActivityKcalByDay: rawActivityKcalByDay,
       weightPoints: weightPoints,
     );
-    final calculatedBaseTdeeKcal = smoothLearnedTdee(
+    final calculatedTdeeKcal = smoothLearnedTdee(
       previousLearnedTdeeKcal: previousLearnedTdeeKcal,
-      measuredBaseTdeeKcal: measured.measuredBaseTdeeKcal,
+      measuredTdeeKcal: measured.measuredTdeeKcal,
     );
     final rawGoalKcal = calculateGoalFromLearnedTdee(
-      learnedTdeeKcal: calculatedBaseTdeeKcal,
+      learnedTdeeKcal: calculatedTdeeKcal,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
       isLosing: isLosing,
       isGaining: isGaining,
     );
-    final newBaseGoalKcal = clampGoalAdjustment(
+    final newGoalKcal = clampGoalAdjustment(
       previousGoalKcal: previousGoalKcal,
       newGoalKcal: rawGoalKcal,
       maxGoalAdjustmentKcal: maxGoalAdjustmentKcal,
     );
     return CalorieLearnedTdeeGoalCalculation(
       measured: measured,
-      calculatedBaseTdeeKcal: calculatedBaseTdeeKcal,
+      calculatedTdeeKcal: calculatedTdeeKcal,
       rawGoalKcal: rawGoalKcal,
-      newBaseGoalKcal: newBaseGoalKcal,
+      newGoalKcal: newGoalKcal,
     );
   }
 

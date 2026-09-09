@@ -41,13 +41,7 @@ void main() {
     expect(decoded.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
     expect(decoded.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
     expect(decoded.goalHistory.single.expectedActivityKcal, 420);
-    expect(decoded.expectedActivityKcalForDay(DateTime(2026, 2, 26)), 420);
     expect(decoded.activityTrackingStartDate, DateTime(2026, 2, 26));
-    expect(
-      decoded.isActivityTrackingActiveForDay(DateTime(2026, 2, 25)),
-      false,
-    );
-    expect(decoded.isActivityTrackingActiveForDay(DateTime(2026, 2, 26)), true);
   });
 
   test('json without math version decodes as current clean shape', () {

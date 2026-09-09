@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 
-/// Interactive line chart displaying learned TDEE with a shaded flux range.
+/// Interactive line chart displaying learned TDEE trend curve.
 class TdeeFluxChart extends StatelessWidget {
-  /// Creates the TDEE flux chart.
+  /// Creates the TDEE chart.
   const TdeeFluxChart({
     required this.points,
     super.key,
@@ -52,16 +52,8 @@ class TdeeFluxChart extends StatelessWidget {
             titlesData: _buildTitlesData(colorScheme, theme),
             borderData: FlBorderData(show: false),
             lineTouchData: _buildTouchData(colorScheme, theme),
-            betweenBarsData: [
-              BetweenBarsData(
-                fromIndex: 0,
-                toIndex: 1,
-                color: colorScheme.primary.withValues(alpha: 0.15),
-              ),
-            ],
             lineBarsData: [
-              _buildBaseTdeeBar(colorScheme),
-              _buildTotalTdeeBar(colorScheme),
+              _buildTdeeBar(colorScheme),
             ],
           ),
         ),
@@ -69,7 +61,7 @@ class TdeeFluxChart extends StatelessWidget {
     );
   }
 
-  LineChartBarData _buildBaseTdeeBar(ColorScheme colorScheme) {
+  LineChartBarData _buildTdeeBar(ColorScheme colorScheme) {
     final spots = <FlSpot>[];
     for (var i = 0; i < points.length; i++) {
       final val = points[i].learnedBaseTdeeKcal;
@@ -84,25 +76,10 @@ class TdeeFluxChart extends StatelessWidget {
       color: colorScheme.primary,
       barWidth: 3,
       isStrokeCapRound: true,
-      dotData: const FlDotData(show: false),
-    );
-  }
-
-  LineChartBarData _buildTotalTdeeBar(ColorScheme colorScheme) {
-    final spots = <FlSpot>[];
-    for (var i = 0; i < points.length; i++) {
-      final base = points[i].learnedBaseTdeeKcal;
-      final total = points[i].totalTdeeKcal ?? base;
-      if (total != null) {
-        spots.add(FlSpot(i.toDouble(), total));
-      }
-    }
-    return LineChartBarData(
-      spots: spots,
-      isCurved: true,
-      curveSmoothness: 0.25,
-      color: colorScheme.primary.withValues(alpha: 0.3),
-      barWidth: 1,
+      belowBarData: BarAreaData(
+        show: true,
+        color: colorScheme.primary.withValues(alpha: 0.12),
+      ),
       dotData: const FlDotData(show: false),
     );
   }
@@ -194,9 +171,8 @@ class TdeeFluxChart extends StatelessWidget {
 
     for (final p in valid) {
       final base = p.learnedBaseTdeeKcal!;
-      final total = p.totalTdeeKcal ?? base;
       if (base < minVal) minVal = base;
-      if (total > maxVal) maxVal = total;
+      if (base > maxVal) maxVal = base;
     }
 
     final roundedMin = ((minVal - 80) / 100).floor() * 100.0;

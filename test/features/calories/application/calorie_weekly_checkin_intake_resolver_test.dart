@@ -21,7 +21,6 @@ void main() {
       settings: settings,
       activeKcalByDay: {diaryDayKey(start): 150},
       weightByDay: {diaryDayKey(secondDay): 80},
-      heartDayKeys: const <String>{},
     );
 
     expect(data.blockedReason, isNull);
@@ -31,26 +30,27 @@ void main() {
     expect(data.days.last.weightKg, 80);
   });
 
-  test('blocks when a missing day is not marked as skipped', () {
-    final start = DateTime(2026, 4, 2);
-    final secondDay = nextDiaryDay(start);
+  test('blocks when >= 3 missing days are present', () {
+    final day1 = DateTime(2026, 4, 2);
+    final day2 = nextDiaryDay(day1);
+    final day3 = nextDiaryDay(day2);
+    final day4 = nextDiaryDay(day3);
 
     final data = resolveWeeklyWindowIntakeData(
-      days: [start, secondDay],
+      days: [day1, day2, day3, day4],
       calorieEntriesByDay: {
-        diaryDayKey(start): [_entry('a', start, 1200)],
+        diaryDayKey(day1): [_entry('a', day1, 1200)],
       },
-      settings: _settings(start),
+      settings: _settings(day1),
       activeKcalByDay: const <String, int>{},
       weightByDay: const <String, double>{},
-      heartDayKeys: const <String>{},
     );
 
     expect(
       data.blockedReason,
-      CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
+      CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays,
     );
-    expect(data.missingIntakeDays, [secondDay]);
+    expect(data.missingIntakeDays, [day2, day3, day4]);
   });
 
   test(
@@ -72,7 +72,6 @@ void main() {
         settings: settings,
         activeKcalByDay: const <String, int>{},
         weightByDay: const <String, double>{},
-        heartDayKeys: const <String>{},
       );
 
       expect(data.blockedReason, isNull);
@@ -99,7 +98,6 @@ void main() {
       settings: settings,
       activeKcalByDay: const <String, int>{},
       weightByDay: const <String, double>{},
-      heartDayKeys: const <String>{},
     );
 
     expect(data.blockedReason, isNull);
@@ -110,25 +108,27 @@ void main() {
     expect(data.days[0].hasEntries, isFalse);
   });
 
-  test('learning intake substitutes heart days with the goal', () {
+  test(
+    'learning intake interpolates pause days with average logged intake',
+    () {
     final start = DateTime(2026, 4, 2);
-    final heartDay = nextDiaryDay(start);
-    final thirdDay = nextDiaryDay(heartDay);
+    final pauseDay = nextDiaryDay(start);
+    final thirdDay = nextDiaryDay(pauseDay);
 
+    final settings = _settings(start).setPauseDay(day: pauseDay, isPause: true);
     final data = resolveWeeklyLearningIntakeData(
-      days: [start, heartDay, thirdDay],
+      days: [start, pauseDay, thirdDay],
       calorieEntriesByDay: {
         diaryDayKey(start): [_entry('a', start, 1000)],
-        diaryDayKey(heartDay): [_entry('b', heartDay, 8000)],
+        diaryDayKey(pauseDay): [_entry('b', pauseDay, 8000)],
         diaryDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
       },
-      settings: _settings(start),
-      heartDayKeys: {diaryDayKey(heartDay)},
+      settings: settings,
     );
 
     expect(data.blockedReason, isNull);
-    expect(data.intakeKcalByDay, [1000, 2000, 2000]);
-    expect(data.missingIntakeDays, isEmpty);
+    expect(data.intakeKcalByDay, [1000, 1500, 2000]);
+    expect(data.missingIntakeDays, [pauseDay]);
   });
 }
 

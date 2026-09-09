@@ -33,25 +33,26 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
   required CalorieGoalSettings settings,
   required Map<String, int> activeKcalByDay,
   required Map<String, double> weightByDay,
-  required Set<String> heartDayKeys,
+  Set<String> heartDayKeys = const <String>{},
 }) {
   final missingIntakeDays = <DateTime>[];
   final windowDays = <CalorieWeeklyCheckInWindowDay>[];
   for (final day in days) {
     final dayKey = diaryDayKey(day);
     final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
-    final isHeartDay = heartDayKeys.contains(dayKey);
-    if (dayEntries.isEmpty && !isHeartDay) {
+    final isExplicitPause = settings.isPauseDay(day);
+    final hasEntries = dayEntries.isNotEmpty && !isExplicitPause;
+    if (!hasEntries) {
       missingIntakeDays.add(day);
     }
     windowDays.add(
       CalorieWeeklyCheckInWindowDay(
         day: day,
-        hasEntries: dayEntries.isNotEmpty && !isHeartDay,
+        hasEntries: hasEntries,
         loggedIntakeKcal: sumCalorieEntryKcal(dayEntries),
         resolvedIntakeKcal: null,
-        isSkippedIntakeDay: settings.isSkippedIntakeDay(day),
-        isHeartDay: isHeartDay,
+        isSkippedIntakeDay: !hasEntries,
+        isHeartDay: isExplicitPause,
         activeKcal: activeKcalByDay[dayKey] ?? 0,
         weightKg: weightByDay[dayKey],
       ),
@@ -72,27 +73,21 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
   );
 }
 
-/// Resolves learning intake, including skipped-day interpolation.
-///
-/// Heart days count as perfect days: learning uses the target kcal for that
-/// day and ignores any logged intake.
+/// Resolves learning intake, including missing/pause day interpolation.
 CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
   required List<DateTime> days,
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
   required CalorieGoalSettings settings,
-  required Set<String> heartDayKeys,
+  Set<String> heartDayKeys = const <String>{},
 }) {
   final loggedVals = <double>[];
   final missingIntakeDays = <DateTime>[];
 
   for (final day in days) {
     final dayKey = diaryDayKey(day);
-    if (heartDayKeys.contains(dayKey)) {
-      loggedVals.add(settings.goalKcalForDay(day));
-      continue;
-    }
+    final isExplicitPause = settings.isPauseDay(day);
     final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
-    if (dayEntries.isNotEmpty) {
+    if (dayEntries.isNotEmpty && !isExplicitPause) {
       loggedVals.add(sumCalorieEntryKcal(dayEntries));
     } else {
       missingIntakeDays.add(day);
@@ -120,20 +115,11 @@ CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
 
   for (final day in days) {
     final dayKey = diaryDayKey(day);
-    if (heartDayKeys.contains(dayKey)) {
-      intakeKcalByDay.add(settings.goalKcalForDay(day));
-      continue;
-    }
+    final isExplicitPause = settings.isPauseDay(day);
     final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
-    if (dayEntries.isNotEmpty) {
+    if (dayEntries.isNotEmpty && !isExplicitPause) {
       intakeKcalByDay.add(sumCalorieEntryKcal(dayEntries));
     } else {
-      if (!settings.isSkippedIntakeDay(day)) {
-        return CalorieWeeklyLearningIntakeData.blocked(
-          blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
-          missingIntakeDays: missingIntakeDays,
-        );
-      }
       intakeKcalByDay.add(averageLogged);
     }
   }
@@ -165,9 +151,6 @@ CalorieWeeklyWindowIntakeData _resolveSkippedWindowIntake({
 }) {
   final loggedVals = <double>[];
   for (final day in windowDays) {
-    if (day.isHeartDay) {
-      continue;
-    }
     if (day.hasEntries) {
       loggedVals.add(day.loggedIntakeKcal);
     }
@@ -187,9 +170,6 @@ CalorieWeeklyWindowIntakeData _resolveSkippedWindowIntake({
 
   for (var index = 0; index < windowDays.length; index += 1) {
     final day = windowDays[index];
-    if (day.isHeartDay) {
-      continue;
-    }
     if (day.hasEntries) {
       windowDays[index] = _copyWindowDayWithResolvedIntake(
         day: day,
@@ -198,13 +178,6 @@ CalorieWeeklyWindowIntakeData _resolveSkippedWindowIntake({
         resolvedIntakeKcal: day.loggedIntakeKcal,
       );
     } else {
-      if (!day.isSkippedIntakeDay) {
-        return CalorieWeeklyWindowIntakeData.blocked(
-          days: windowDays,
-          blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
-          missingIntakeDays: missingIntakeDays,
-        );
-      }
       windowDays[index] = _copyWindowDayWithResolvedIntake(
         day: day,
         hasEntries: false,

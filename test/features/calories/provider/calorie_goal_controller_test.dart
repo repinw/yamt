@@ -1173,36 +1173,6 @@ void main() {
     expect(settings.isSkippedIntakeDay(skippedDay), isFalse);
   });
 
-  test('markActivityTrackingStarted stores tracking backfill day', () async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(repository),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await container.read(calorieGoalControllerProvider.future);
-
-    final controller = container.read(calorieGoalControllerProvider.notifier);
-    final saved = await controller.markActivityTrackingStarted(
-      startedAt: DateTime(2026, 4, 8, 10),
-    );
-    final savedAgain = await controller.markActivityTrackingStarted(
-      startedAt: DateTime(2026, 4, 8, 12),
-    );
-    final savedLater = await controller.markActivityTrackingStarted(
-      startedAt: DateTime(2026, 4, 10, 12),
-    );
-
-    expect(saved, isTrue);
-    expect(savedAgain, isTrue);
-    expect(savedLater, isTrue);
-    final settings = await repository.readSettings();
-    expect(settings.activityTrackingStartDate, DateTime(2026, 4, 10));
-  });
 
   test(
     'dismissPendingWeeklyCheckIn succeeds when nothing is pending',
@@ -1324,7 +1294,7 @@ void main() {
     expect(settings.latestLearnedTdeeEntry?.calculatorProfile, isNull);
     expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
     expect(settings.goalKcalForDay(DateTime(2026, 4, 14)), 2200);
-    expect(settings.goalKcalForDay(DateTime(2026, 4, 15)), 2200);
+    expect(settings.goalKcalForDay(DateTime(2026, 4, 15)), 2300);
     expect(
       settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot?.windowEndDate,
       DateTime(2026, 4, 14),
@@ -1633,7 +1603,7 @@ void main() {
 
     expect(saved, isTrue);
     final settings = await repository.readSettings();
-    expect(settings.dailyKcalGoal, closeTo(1950, 0.01));
+    expect(settings.dailyKcalGoal, closeTo(1900, 0.01));
     expect(settings.calculatorProfile?.goalMode, CalorieGoalMode.lose);
     expect(settings.calculatorProfile?.goalSpeedKgPerWeek, 0.5);
     expect(settings.calculatorProfile?.activityLevel, 1.7);

@@ -237,7 +237,8 @@ void main() {
   });
 
   test(
-    'applyWeeklyCheckIn stores learned cache without changing active goal',
+    'applyWeeklyCheckIn stores learned cache and updates active goal for '
+    'due date',
     () async {
       final goalStart = DateTime(2026, 4, 8);
       final dueDate = DateTime(2026, 4, 15);
@@ -298,7 +299,7 @@ void main() {
       expect(saved, isTrue);
       final settings = await settingsRepository.readSettings();
       expect(settings.goalKcalForDay(DateTime(2026, 4, 14)), 2426.875);
-      expect(settings.goalKcalForDay(dueDate), 2426.875);
+      expect(settings.goalKcalForDay(dueDate), 2626.875);
       expect(settings.latestGoalEntry?.effectiveDate, goalStart);
       expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
       expect(settings.pendingWeeklyCheckIn?.isDismissed, isTrue);
@@ -745,6 +746,5 @@ const _defaultWeeklyCheckInCalculation = CalorieWeeklyCheckInCalculation(
   newGoalKcal: 2626.875,
   lastWeekAverageActiveKcal: 300,
   todayActiveKcal: 8,
-  activityDeltaKcal: 0,
   dynamicGoalTodayKcal: 2626.875,
 );

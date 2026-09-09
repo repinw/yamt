@@ -258,17 +258,6 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(nextSettings);
   }
 
-  /// Mark health activity tracking as active from a day.
-  Future<bool> markActivityTrackingStarted({DateTime? startedAt}) async {
-    final previous = await _currentSettings();
-    final nextSettings = previous.markActivityTrackingStarted(
-      startedAt ?? DateTime.now(),
-    );
-    if (identical(previous, nextSettings)) {
-      return Future<bool>.value(true);
-    }
-    return _persistSettings(nextSettings);
-  }
 
   /// Save learned tdee goal.
   Future<bool> saveLearnedTdeeGoal({
@@ -384,7 +373,28 @@ class CalorieGoalController extends _$CalorieGoalController {
       goalHistory: snapshotSettings.goalHistory,
       pendingWeeklyCheckIn: previousSettings.pendingWeeklyCheckIn,
       skippedIntakeDayKeys: snapshotSettings.skippedIntakeDayKeys,
+      trainingWeekdays: previousSettings.trainingWeekdays,
+      trainingDayKcalOffset: previousSettings.trainingDayKcalOffset,
+      trainingDayOverrides: previousSettings.trainingDayOverrides,
+      pauseDayKeys: previousSettings.pauseDayKeys,
     );
+    return _persistSettings(nextSettings);
+  }
+
+  /// Toggle training day for a specific date.
+  Future<bool> toggleTrainingDay(DateTime day) async {
+    final previous = await _currentSettings();
+    final nextSettings = previous.toggleTrainingDay(day);
+    return _persistSettings(nextSettings);
+  }
+
+  /// Set pause day for a specific date.
+  Future<bool> setPauseDay({
+    required DateTime day,
+    required bool isPause,
+  }) async {
+    final previous = await _currentSettings();
+    final nextSettings = previous.setPauseDay(day: day, isPause: isPause);
     return _persistSettings(nextSettings);
   }
 

@@ -239,10 +239,10 @@ void main() {
     expect(diaryHealthService.loadDayDataCallCount, 0);
     expect(
       checkInData.days.map((day) => day.activeKcal),
-      <int>[100, 110, 120, 130, 140, 150, 160],
+      <int>[0, 0, 0, 0, 0, 0, 0],
     );
-    expect(checkInData.calculation?.lastWeekAverageActiveKcal, 130.0);
-    expect(checkInData.calculation?.todayActiveKcal, 250);
+    expect(checkInData.calculation?.lastWeekAverageActiveKcal, 0.0);
+    expect(checkInData.calculation?.todayActiveKcal, 0);
   });
 
   test(
@@ -256,7 +256,7 @@ void main() {
           dailyKcalGoal: 2400,
           calculatorProfile: null,
           effectiveDate: goalStart,
-        ),
+        ).setPauseDay(day: heartDay, isPause: true),
       );
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
@@ -285,9 +285,6 @@ void main() {
         logRepository: logRepository,
         settingsRepository: settingsRepository,
         manualRepository: manualRepository,
-        burnWeekRunState: const BurnWeekRunState.initial().copyWith(
-          heartDayKeys: <String>['2026-4-10'],
-        ),
       );
       addTearDown(container.dispose);
 
@@ -311,11 +308,11 @@ void main() {
       );
       expect(heartWindowDay.isHeartDay, isTrue);
       expect(heartWindowDay.hasEntries, isFalse);
-      expect(heartWindowDay.loggedIntakeKcal, 8000);
-      expect(heartWindowDay.resolvedIntakeKcal, isNull);
+      expect(heartWindowDay.loggedIntakeKcal, 0);
+      expect(heartWindowDay.resolvedIntakeKcal, 2100.0);
       expect(
         checkInData.calculation?.averageIntakeKcal,
-        closeTo(2142.86, 0.01),
+        closeTo(2100.0, 0.01),
       );
     },
   );

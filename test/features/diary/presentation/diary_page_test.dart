@@ -50,7 +50,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_weekly_balance_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_heart_counter_button.dart';
+    'diary_day_type_toggle.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -172,7 +172,7 @@ void main() {
     expect(providerObserver.calorieEntryDeleteFlowAddCount, 0);
   });
 
-  testWidgets('shows heart button while diary dashboard refreshes', (
+  testWidgets('shows day type toggle while diary dashboard refreshes', (
     tester,
   ) async {
     await _pumpDiaryPage(
@@ -191,8 +191,26 @@ void main() {
       includeHomeShellChrome: true,
     );
 
-    expect(find.byType(DiaryHeartCounterButton), findsOneWidget);
-    expect(find.text('x 1'), findsOneWidget);
+    expect(find.byType(DiaryDayTypeToggle), findsOneWidget);
+  });
+
+  testWidgets('tapping day type toggle opens day type bottom sheet', (
+    tester,
+  ) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      includeHomeShellChrome: true,
+    );
+
+    expect(find.byType(DiaryDayTypeToggle), findsOneWidget);
+    await tester.tap(find.byType(DiaryDayTypeToggle));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tages-Status wählen'), findsOneWidget);
+    expect(find.text('🏋️ Trainingstag'), findsOneWidget);
+    expect(find.text('🛋️ Ruhetag'), findsOneWidget);
+    expect(find.text('⏸️ Pausentag'), findsOneWidget);
   });
 
   test('diary warmup follows today without warming heavy providers', () async {

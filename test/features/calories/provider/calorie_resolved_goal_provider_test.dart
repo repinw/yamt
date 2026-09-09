@@ -1,153 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
-import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
-import 'package:yamt/features/health/data/diary_health_service.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
-import 'package:yamt/features/health/data/health_connection_service.dart';
-import 'package:yamt/features/health/data/health_connection_service_provider.dart';
-import 'package:yamt/features/health/data/health_weight_service.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
-import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
-import 'package:yamt/features/health/data/'
-    'manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/domain/health_energy_segment.dart';
-import 'package:yamt/features/health/domain/health_weight_sample.dart';
-import 'package:yamt/features/health/domain/health_workout_session.dart';
-import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
 import '../support/fake_calories_repositories.dart';
-
-const _readyStatus = HealthConnectionStatus(
-  platform: HealthPlatform.android,
-  healthConnectAvailability: HealthConnectAvailability.available,
-  permissionState: HealthPermissionState.granted,
-  historyAccess: HealthHistoryAccess.granted,
-);
 
 ProviderContainer _createContainer({
   required DateTime today,
   required CalorieGoalSettings settings,
-  required DiaryHealthService diaryHealthService,
-  HealthConnectionService? healthConnectionService,
-  CalorieLogRepositoryContract? logRepository,
-  HealthWeightService? healthWeightService,
-  ManualHealthWeightRepository? manualWeightRepository,
 }) {
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: settings,
   );
-  final overrides = [
-    calorieBalanceNowProvider.overrideWith(
-      (ref) =>
-          () => today,
-    ),
-    calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-    healthConnectionServiceProvider.overrideWith(
-      (ref) =>
-          healthConnectionService ??
-          FakeHealthConnectionService(
-            _readyStatus,
-          ),
-    ),
-    diaryHealthServiceProvider.overrideWith((ref) => diaryHealthService),
-  ];
-  if (logRepository != null) {
-    overrides.add(
-      calorieLogRepositoryProvider.overrideWithValue(logRepository),
-    );
-  }
-  if (healthWeightService != null) {
-    overrides.add(
-      healthWeightServiceProvider.overrideWith((ref) => healthWeightService),
-    );
-  }
-  if (manualWeightRepository != null) {
-    overrides.add(
-      manualHealthWeightRepositoryProvider.overrideWith(
-        (ref) => manualWeightRepository,
-      ),
-    );
-  }
   return ProviderContainer(
-    overrides: overrides,
-  );
-}
-
-CalorieEntry _entry({
-  required String id,
-  required DateTime loggedAt,
-  required double totalKcal,
-}) {
-  return CalorieEntry.create(
-    id: id,
-    userId: 'user-1',
-    name: 'Item $id',
-    mealType: MealType.breakfast,
-    consumedAmount: 100,
-    consumedUnit: ConsumedUnit.grams,
-    per100Kcal: totalKcal,
-    per100Protein: 10,
-    per100Carbs: 5,
-    per100Fat: 1,
-    loggedAt: loggedAt,
-    createdAt: loggedAt,
-    updatedAt: loggedAt,
-  );
-}
-
-List<CalorieEntry> _weeklySourceEntries({
-  required DateTime startDay,
-  required double dailyKcal,
-}) {
-  return <CalorieEntry>[
-    for (var index = 0; index < 7; index += 1)
-      _entry(
-        id: 'source-$index',
-        loggedAt: startDay.add(Duration(days: index, hours: 8)),
-        totalKcal: dailyKcal,
-      ),
-  ];
-}
-
-List<HealthWeightSample> _stableBoundaryWeights({
-  required DateTime startDay,
-  required DateTime boundaryDay,
-}) {
-  return <HealthWeightSample>[
-    HealthWeightSample(recordedAt: startDay, weightKg: 80),
-    HealthWeightSample(recordedAt: boundaryDay, weightKg: 80),
-  ];
-}
-
-DiaryHealthDayData _healthDayWithWorkout({
-  required DateTime day,
-  required int totalCalories,
-}) {
-  return DiaryHealthDayData(
-    totalSteps: 0,
-    workouts: <HealthWorkoutSession>[
-      HealthWorkoutSession(
-        id: 'workout-${diaryDayKey(day)}',
-        start: day.add(const Duration(hours: 18)),
-        endExclusive: day.add(const Duration(hours: 19)),
-        durationMinutes: 60,
-        activityLabel: 'Run',
-        sourceName: 'Health',
-        totalCalories: totalCalories,
-        totalSteps: 0,
-      ),
+    overrides: [
+      calorieBalanceNowProvider.overrideWith((ref) => () => today),
+      calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
     ],
   );
 }
@@ -186,35 +57,12 @@ void main() {
   test('resolves batch goals by day key without swapping day data', () async {
     final firstDay = DateTime(2026, 4, 14);
     final secondDay = DateTime(2026, 4, 15);
-    final settings = const CalorieGoalSettings.empty()
-        .applyGoalChange(
-          dailyKcalGoal: 2100,
-          changedAt: firstDay,
-          calculatorProfile: null,
-          expectedActivityKcal: 500,
-        )
-        .copyWith(activityTrackingStartDate: firstDay);
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: const <CalorieEntry>[],
+    final settings = const CalorieGoalSettings.empty().applyGoalChange(
+      dailyKcalGoal: 2100,
+      changedAt: firstDay,
+      calculatorProfile: null,
     );
-    addTearDown(logRepository.dispose);
-    final container = _createContainer(
-      today: secondDay,
-      settings: settings,
-      diaryHealthService: FakeDiaryHealthService(
-        <String, DiaryHealthDayData>{
-          diaryDayKey(firstDay): _healthDayWithWorkout(
-            day: firstDay,
-            totalCalories: 400,
-          ),
-          diaryDayKey(secondDay): _healthDayWithWorkout(
-            day: secondDay,
-            totalCalories: 800,
-          ),
-        },
-      ),
-      logRepository: logRepository,
-    );
+    final container = _createContainer(today: secondDay, settings: settings);
     addTearDown(container.dispose);
 
     final goals = await container.read(
@@ -237,694 +85,126 @@ void main() {
     );
     expect(firstGoal, isNotNull);
     expect(firstGoal!.day, normalizeDiaryDay(firstDay));
-    expect(firstGoal.todayActiveKcal, 400);
-    expect(firstGoal.activityComparisonKcal, -100);
-    expect(firstGoal.activityDeltaKcal, 0);
     expect(firstGoal.goalKcal, 2100);
     expect(secondGoal, isNotNull);
     expect(secondGoal!.day, normalizeDiaryDay(secondDay));
-    expect(secondGoal.todayActiveKcal, 800);
-    expect(secondGoal.activityComparisonKcal, 300);
-    expect(secondGoal.activityDeltaKcal, 300);
-    expect(secondGoal.goalKcal, 2400);
+    expect(secondGoal.goalKcal, 2100);
   });
 
   test(
-    'recalculates expected activity delta for a selected historical day',
+    'resolves higher goal on training days and budget-neutral deduction '
+    'on rest days',
     () async {
-      final today = DateTime(2026, 4, 15);
-      final selectedDay = DateTime(2026, 4, 14);
+      // 2026-04-13 is Monday (weekday 1)
+      final monday = DateTime(2026, 4, 13);
+      // 2026-04-14 is Tuesday (weekday 2)
+      final tuesday = DateTime(2026, 4, 14);
+
+      // 3 training days: Monday (1), Wednesday (3), Friday (5)
+      // Base: 2000 kcal, Offset: +200 kcal
+      // Training days (3): 2200 kcal
+      // Rest days (4): (7*2000 - 3*2200) / 4 = (14000 - 6600) / 4 = 1850 kcal
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
-            dailyKcalGoal: 2100,
-            changedAt: DateTime(2026, 4, 13, 9),
+            dailyKcalGoal: 2000,
+            changedAt: monday,
             calculatorProfile: null,
-            expectedActivityKcal: 500,
           )
           .copyWith(
-            activityTrackingStartDate: selectedDay,
+            trainingWeekdays: const [1, 3, 5],
+            trainingDayKcalOffset: 200,
           );
 
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{
-            diaryDayKey(selectedDay): DiaryHealthDayData(
-              totalSteps: 5000,
-              workouts: <HealthWorkoutSession>[
-                HealthWorkoutSession(
-                  id: 'history-run',
-                  start: selectedDay.add(const Duration(hours: 18)),
-                  endExclusive: selectedDay.add(const Duration(hours: 19)),
-                  durationMinutes: 60,
-                  activityLabel: 'Run',
-                  sourceName: 'Health',
-                  totalCalories: 400,
-                  totalSteps: 0,
-                ),
-              ],
-            ),
-          },
-        ),
-      );
+      final container = _createContainer(today: monday, settings: settings);
       addTearDown(container.dispose);
 
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(selectedDay).future,
+      final mondayGoal = await container.read(
+        resolvedCalorieGoalForDayProvider(monday).future,
+      );
+      final tuesdayGoal = await container.read(
+        resolvedCalorieGoalForDayProvider(tuesday).future,
       );
 
-      expect(resolvedGoal.day, normalizeDiaryDay(selectedDay));
-      expect(resolvedGoal.storedGoalKcal, 2100);
-      expect(resolvedGoal.goalKcal, 2200);
-      expect(resolvedGoal.activityDeltaKcal, 100);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.expectedActivityKcal, 500);
-      expect(resolvedGoal.todayActiveKcal, 600);
-      expect(resolvedGoal.isActivityTrackingActive, isTrue);
-      expect(resolvedGoal.usedLearnedTdee, isFalse);
-      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
+      expect(mondayGoal.storedGoalKcal, 2000);
+      expect(mondayGoal.goalKcal, 2200);
+      expect(tuesdayGoal.storedGoalKcal, 2000);
+      expect(tuesdayGoal.goalKcal, 1850);
     },
   );
 
-  test(
-    'treats missing tracking start as rolling backfill boundary',
-    () async {
-      final today = DateTime.now();
-      final selectedDay = normalizeDiaryDay(
-        today.subtract(const Duration(days: 1)),
-      );
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: const CalorieGoalSettings.empty().applyGoalChange(
-          dailyKcalGoal: 2100,
-          changedAt: DateTime(2026, 4, 13, 9),
-          calculatorProfile: null,
-          expectedActivityKcal: 500,
-        ),
-      );
-      final container = ProviderContainer(
-        overrides: [
-          calorieBalanceNowProvider.overrideWith(
-            (ref) =>
-                () => today,
-          ),
-          calorieSettingsRepositoryProvider.overrideWithValue(
-            settingsRepository,
-          ),
-          healthConnectionServiceProvider.overrideWith(
-            (ref) => FakeHealthConnectionService(_readyStatus),
-          ),
-          diaryHealthServiceProvider.overrideWith(
-            (ref) => FakeDiaryHealthService(
-              <String, DiaryHealthDayData>{
-                diaryDayKey(selectedDay): DiaryHealthDayData(
-                  totalSteps: 5000,
-                  workouts: <HealthWorkoutSession>[
-                    HealthWorkoutSession(
-                      id: 'before-tracking-run',
-                      start: selectedDay.add(const Duration(hours: 18)),
-                      endExclusive: selectedDay.add(
-                        const Duration(hours: 19),
-                      ),
-                      durationMinutes: 60,
-                      activityLabel: 'Run',
-                      sourceName: 'Health',
-                      totalCalories: 400,
-                      totalSteps: 0,
-                    ),
-                  ],
-                ),
-              },
-            ),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-      addTearDown(settingsRepository.dispose);
+  test('respects manual day toggle override for training day', () async {
+    // 2026-04-14 is Tuesday (normally rest day)
+    final tuesday = DateTime(2026, 4, 14);
 
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(selectedDay).future,
-      );
-      final persistedSettings = await settingsRepository.readSettings();
-
-      expect(persistedSettings.activityTrackingStartDate, isNull);
-      expect(resolvedGoal.isActivityTrackingActive, isTrue);
-      expect(resolvedGoal.todayActiveKcal, 600);
-      expect(resolvedGoal.activityDeltaKcal, 100);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.goalKcal, 2200);
-    },
-  );
-
-  test(
-    'uses expected activity base before learned TDEE on a full day',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            dailyKcalGoal: 2100,
-            changedAt: DateTime(2026, 4, 14, 9),
-            calculatorProfile: null,
-            expectedActivityKcal: 500,
-          )
-          .copyWith(activityTrackingStartDate: today);
-      final diaryHealthService = FakeDiaryHealthService(
-        <String, DiaryHealthDayData>{
-          diaryDayKey(today): DiaryHealthDayData(
-            totalSteps: 5000,
-            workouts: <HealthWorkoutSession>[
-              HealthWorkoutSession(
-                id: 'run-1',
-                start: today.add(const Duration(hours: 18)),
-                endExclusive: today.add(const Duration(hours: 19)),
-                durationMinutes: 60,
-                activityLabel: 'Run',
-                sourceName: 'Health',
-                totalCalories: 400,
-                totalSteps: 0,
-              ),
-            ],
-          ),
-        },
-      );
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: diaryHealthService,
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(resolvedGoal.storedGoalKcal, 2100);
-      expect(resolvedGoal.activityDeltaKcal, 100);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.expectedActivityKcal, 500);
-      expect(resolvedGoal.goalKcal, 2200);
-      expect(resolvedGoal.todayActiveKcal, 600);
-      expect(resolvedGoal.isActivityTrackingActive, isTrue);
-      expect(resolvedGoal.usedLearnedTdee, isFalse);
-      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
-    },
-  );
-
-  test(
-    'uses detailed workout activity when aggregate trend is lower',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            dailyKcalGoal: 2100,
-            changedAt: DateTime(2026, 4, 14, 9),
-            calculatorProfile: null,
-            expectedActivityKcal: 200,
-          )
-          .copyWith(activityTrackingStartDate: today);
-      final diaryHealthService = FakeTrendDiaryHealthService(
-        <String, DiaryHealthDayData>{
-          diaryDayKey(today): _healthDayWithWorkout(
-            day: today,
-            totalCalories: 899,
-          ),
-        },
-        trendDays: [
-          DiaryHealthActivityTrendDay(
-            day: today,
-            totalSteps: 2000,
-            activeEnergyKcal: 14,
-          ),
-        ],
-      );
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: diaryHealthService,
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(diaryHealthService.loadDayDataCallCount, 1);
-      expect(diaryHealthService.trendRequests, [
-        (
-          startInclusive: today,
-          endExclusive: nextDiaryDay(today),
-        ),
-      ]);
-      expect(resolvedGoal.todayActiveKcal, 899);
-      expect(resolvedGoal.activityComparisonKcal, 699);
-      expect(resolvedGoal.activityDeltaKcal, 699);
-      expect(resolvedGoal.goalKcal, 2799);
-    },
-  );
-
-  test(
-    'ignores unassigned active energy without steps',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            dailyKcalGoal: 2100,
-            changedAt: DateTime(2026, 4, 14, 9),
-            calculatorProfile: null,
-            expectedActivityKcal: 200,
-          )
-          .copyWith(activityTrackingStartDate: today);
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{
-            diaryDayKey(today): DiaryHealthDayData(
-              totalSteps: 0,
-              workouts: const <HealthWorkoutSession>[],
-              unassignedActiveEnergySegments: [
-                HealthEnergySegment(
-                  id: 'unassigned-bike',
-                  start: today.add(const Duration(hours: 18)),
-                  endExclusive: today.add(const Duration(hours: 19)),
-                  durationMinutes: 60,
-                  sourceName: 'Health',
-                  totalCalories: 300,
-                  totalSteps: null,
-                ),
-              ],
-            ),
-          },
-        ),
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(resolvedGoal.todayActiveKcal, 300);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.activityDeltaKcal, 100);
-      expect(resolvedGoal.goalKcal, 2200);
-    },
-  );
-
-  test('keeps total goal as base when expected activity is missing', () async {
-    final today = DateTime(2026, 4, 15, 18);
     final settings = const CalorieGoalSettings.empty()
         .applyGoalChange(
-          changedAt: today,
-          dailyKcalGoal: 2100,
+          dailyKcalGoal: 2000,
+          changedAt: DateTime(2026, 4),
           calculatorProfile: null,
         )
-        .copyWith(activityTrackingStartDate: today);
+        .copyWith(
+          trainingWeekdays: const [1, 3, 5],
+          trainingDayKcalOffset: 200,
+        )
+        .toggleTrainingDay(tuesday);
 
-    final container = _createContainer(
-      today: today,
-      settings: settings,
-      diaryHealthService: FakeDiaryHealthService(
-        <String, DiaryHealthDayData>{
-          diaryDayKey(today): DiaryHealthDayData(
-            totalSteps: 0,
-            workouts: <HealthWorkoutSession>[
-              HealthWorkoutSession(
-                id: 'lift-1',
-                start: today.add(const Duration(minutes: 30)),
-                endExclusive: today.add(const Duration(hours: 1, minutes: 30)),
-                durationMinutes: 60,
-                activityLabel: 'Weights',
-                sourceName: 'Health',
-                totalCalories: 500,
-                totalSteps: 0,
-              ),
-            ],
-          ),
-        },
-      ),
+    final container = _createContainer(today: tuesday, settings: settings);
+    addTearDown(container.dispose);
+
+    final tuesdayGoal = await container.read(
+      resolvedCalorieGoalForDayProvider(tuesday).future,
     );
+
+    // Tuesday is now toggled to a training day: gets base + 200 = 2200
+    expect(tuesdayGoal.goalKcal, 2200);
+  });
+
+  test('does not clamp a resolved goal above the 1200 floor', () async {
+    final today = DateTime(2026, 4, 15);
+    final settings = const CalorieGoalSettings.empty().applyGoalChange(
+      changedAt: DateTime(2026, 4, 14, 9),
+      dailyKcalGoal: 1400,
+      calculatorProfile: null,
+    );
+
+    final container = _createContainer(today: today, settings: settings);
     addTearDown(container.dispose);
 
     final resolvedGoal = await container.read(
       resolvedCalorieGoalForDayProvider(today).future,
     );
 
-    expect(resolvedGoal.goalKcal, 2600);
-    expect(resolvedGoal.activityDeltaKcal, 500);
-    expect(resolvedGoal.activityComparisonKcal, 500);
-    expect(resolvedGoal.expectedActivityKcal, 0);
-    expect(resolvedGoal.todayActiveKcal, 500);
-    expect(resolvedGoal.isActivityTrackingActive, isTrue);
-    expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
+    expect(resolvedGoal.storedGoalKcal, 1400);
+    expect(resolvedGoal.goalKcal, 1400);
+    expect(resolvedGoal.usedLearnedTdee, isFalse);
+    expect(resolvedGoal.wasClampedToMinimum, isFalse);
+  });
+
+  test('clamps a resolved goal to the 1200 floor when goal is lower', () async {
+    final today = DateTime(2026, 4, 15);
+    final settings = const CalorieGoalSettings.empty().applyGoalChange(
+      changedAt: DateTime(2026, 4, 14, 9),
+      dailyKcalGoal: 1100,
+      calculatorProfile: null,
+    );
+
+    final container = _createContainer(today: today, settings: settings);
+    addTearDown(container.dispose);
+
+    final resolvedGoal = await container.read(
+      resolvedCalorieGoalForDayProvider(today).future,
+    );
+
+    expect(resolvedGoal.storedGoalKcal, 1100);
+    expect(resolvedGoal.goalKcal, 1200);
+    expect(resolvedGoal.wasClampedToMinimum, isTrue);
   });
 
   test(
-    'does not clamp a resolved goal above the 1200 floor',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final settings = const CalorieGoalSettings.empty().applyGoalChange(
-        changedAt: DateTime(2026, 4, 14, 9),
-        dailyKcalGoal: 1400,
-        calculatorProfile: null,
-      );
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{},
-        ),
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(resolvedGoal.storedGoalKcal, 1400);
-      expect(resolvedGoal.activityDeltaKcal, 0);
-      expect(resolvedGoal.activityComparisonKcal, 0);
-      expect(resolvedGoal.goalKcal, 1400);
-      expect(resolvedGoal.usedLearnedTdee, isFalse);
-      expect(resolvedGoal.wasClampedToMinimum, isFalse);
-    },
-  );
-
-  test(
-    'same-day starter still compares against expected activity baseline',
-    () async {
-      final today = DateTime(2026, 4, 15, 0, 0, 0, 0, 1);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: today,
-            dailyKcalGoal: 2100,
-            calculatorProfile: null,
-            expectedActivityKcal: 300,
-          )
-          .copyWith(activityTrackingStartDate: today);
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{
-            diaryDayKey(today): DiaryHealthDayData(
-              totalSteps: 0,
-              workouts: <HealthWorkoutSession>[
-                HealthWorkoutSession(
-                  id: 'micro-start-workout',
-                  start: today.add(const Duration(hours: 1)),
-                  endExclusive: today.add(const Duration(hours: 2)),
-                  durationMinutes: 60,
-                  activityLabel: 'Run',
-                  sourceName: 'Health',
-                  totalCalories: 450,
-                  totalSteps: 0,
-                ),
-              ],
-            ),
-          },
-        ),
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(resolvedGoal.goalKcal, 2250);
-      expect(resolvedGoal.activityDeltaKcal, 150);
-      expect(resolvedGoal.activityComparisonKcal, 150);
-      expect(resolvedGoal.expectedActivityKcal, 300);
-      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
-    },
-  );
-
-  test(
-    'adds only positive learned activity bonus after weekly check-in',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final sourceStart = today.subtract(const Duration(days: 7));
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: _weeklySourceEntries(
-          startDay: sourceStart,
-          dailyKcal: 2100,
-        ),
-      );
-      addTearDown(logRepository.dispose);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: sourceStart,
-            dailyKcalGoal: 2100,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: today,
-            dailyKcalGoal: 2100,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: sourceStart,
-              windowEndDate: today.subtract(const Duration(days: 1)),
-              trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2100,
-              averageActiveKcal: 0,
-              lowConfidence: false,
-            ),
-          )
-          .copyWith(activityTrackingStartDate: today);
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{
-            diaryDayKey(today): _healthDayWithWorkout(
-              day: today,
-              totalCalories: 100,
-            ),
-          },
-        ),
-        logRepository: logRepository,
-        healthWeightService: FakeHealthWeightService(
-          _stableBoundaryWeights(startDay: sourceStart, boundaryDay: today),
-        ),
-        manualWeightRepository: FakeManualHealthWeightRepository(
-          <ManualHealthWeightEntry>[],
-        ),
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(resolvedGoal.activityDeltaKcal, 100);
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.goalKcal, 2200);
-      expect(resolvedGoal.usedLearnedTdee, isTrue);
-      expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
-    },
-  );
-
-  test(
-    'uses saved check-in base target before adding today activity',
-    () async {
-      final sourceStart = DateTime(2026, 5, 27);
-      final today = DateTime(2026, 6, 3);
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _entry(
-            id: 'source',
-            loggedAt: sourceStart.add(const Duration(hours: 8)),
-            totalKcal: 2443.83,
-          ),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: sourceStart,
-            dailyKcalGoal: 1483.81,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: today,
-            dailyKcalGoal: 1283.81,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: sourceStart,
-              windowEndDate: DateTime(2026, 6, 2),
-              trendWeightChangePerDay: 0.26316,
-              measuredTotalTdeeKcal: 601.73,
-              measuredBaseTdeeKcal: 147.55,
-              calculatedBaseTdeeKcal: 1395.59,
-              averageCreditedActivityKcal: 454.18,
-              baseGoalKcal: 1283.81,
-              lowConfidence: false,
-              inputHash: 'trusted-window',
-            ),
-          )
-          .copyWith(activityTrackingStartDate: today);
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{
-            diaryDayKey(today): _healthDayWithWorkout(
-              day: today,
-              totalCalories: 21,
-            ),
-          },
-        ),
-        logRepository: logRepository,
-        healthWeightService: FakeHealthWeightService(
-          const <HealthWeightSample>[],
-        ),
-        manualWeightRepository: FakeManualHealthWeightRepository(
-          <ManualHealthWeightEntry>[],
-        ),
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(resolvedGoal.storedGoalKcal, closeTo(1283.81, 0.01));
-      expect(resolvedGoal.activityDeltaKcal, 0);
-      expect(resolvedGoal.activityComparisonKcal, closeTo(-433.18, 0.01));
-      expect(resolvedGoal.goalKcal, closeTo(1283.81, 0.01));
-      expect(resolvedGoal.expectedActivityKcal, closeTo(1395.59, 0.01));
-      expect(resolvedGoal.lastWeekAverageActiveKcal, closeTo(454.18, 0.01));
-      expect(resolvedGoal.usedLearnedTdee, isTrue);
-    },
-  );
-
-  test(
-    'keeps learned target stable until the next weekly check-in',
-    () async {
-      final startDay = DateTime(2026, 4, 8);
-      final today = DateTime(2026, 4, 16);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: DateTime(2026, 4, 1, 9),
-            dailyKcalGoal: 2400,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: DateTime(2026, 4, 15),
-            dailyKcalGoal: 2400,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: startDay,
-              windowEndDate: DateTime(2026, 4, 14),
-              trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2400,
-              averageActiveKcal: 0,
-              lowConfidence: false,
-            ),
-          )
-          .copyWith(activityTrackingStartDate: today);
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          for (var index = 0; index < 8; index += 1)
-            _entry(
-              id: 'day-$index',
-              loggedAt: startDay.add(Duration(days: index, hours: 8)),
-              totalKcal: 2500,
-            ),
-        ],
-      );
-      final healthWeightService = FakeHealthWeightService(
-        <HealthWeightSample>[
-          HealthWeightSample(
-            recordedAt: startDay.add(const Duration(hours: 7)),
-            weightKg: 80,
-          ),
-          HealthWeightSample(
-            recordedAt: DateTime(2026, 4, 15, 7),
-            weightKg: 79.3,
-          ),
-          HealthWeightSample(
-            recordedAt: today.add(const Duration(hours: 7)),
-            weightKg: 79.2,
-          ),
-        ],
-      );
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[],
-      );
-      addTearDown(logRepository.dispose);
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          const <String, DiaryHealthDayData>{},
-        ),
-        logRepository: logRepository,
-        healthWeightService: healthWeightService,
-        manualWeightRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
-      final subscription = container.listen(
-        resolvedCalorieGoalForDayProvider(today),
-        (_, _) {},
-        fireImmediately: true,
-      );
-      addTearDown(subscription.close);
-
-      final resolvedToday = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-      final resolvedHistorical = await container.read(
-        resolvedCalorieGoalForDayProvider(DateTime(2026, 4, 15)).future,
-      );
-
-      expect(resolvedToday.storedGoalKcal, 2400);
-      expect(resolvedToday.goalKcal, 2400);
-      expect(resolvedToday.usedLearnedTdee, isFalse);
-      expect(resolvedHistorical.storedGoalKcal, 2400);
-      expect(resolvedHistorical.goalKcal, 2400);
-
-      for (var index = 0; index < 8; index += 1) {
-        await logRepository.saveEntry(
-          _entry(
-            id: 'day-$index',
-            loggedAt: startDay.add(Duration(days: index, hours: 8)),
-            totalKcal: 1000,
-          ),
-        );
-      }
-      container.read(calorieOverviewRevisionProvider.notifier).markChanged();
-
-      final recomputedToday = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(recomputedToday.storedGoalKcal, 2400);
-      expect(recomputedToday.goalKcal, 2400);
-    },
-  );
-
-  test(
-    'uses saved learned target when end weight is missing from health',
+    'uses saved learned target when weekly check-in snapshot is present',
     () async {
       final startDay = DateTime(2026, 4, 8);
       final today = DateTime(2026, 4, 15);
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: _weeklySourceEntries(
-          startDay: startDay,
-          dailyKcal: 2580,
-        ),
-      );
-      addTearDown(logRepository.dispose);
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
             changedAt: startDay,
@@ -946,174 +226,16 @@ void main() {
             ),
           );
 
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          const <String, DiaryHealthDayData>{},
-        ),
-        logRepository: logRepository,
-        healthWeightService: FakeHealthWeightService(
-          <HealthWeightSample>[
-            HealthWeightSample(recordedAt: startDay, weightKg: 80),
-          ],
-        ),
-        manualWeightRepository: FakeManualHealthWeightRepository(
-          <ManualHealthWeightEntry>[],
-        ),
-      );
+      final container = _createContainer(today: today, settings: settings);
       addTearDown(container.dispose);
 
       final resolvedGoal = await container.read(
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.storedGoalKcal, 2400);
-      expect(resolvedGoal.goalKcal, 2400);
-      expect(resolvedGoal.usedLearnedTdee, isFalse);
-    },
-  );
-
-  test(
-    'recalculates learned activity comparison for a selected historical day',
-    () async {
-      final today = DateTime(2026, 4, 16);
-      final selectedDay = DateTime(2026, 4, 15);
-      final sourceStart = DateTime(2026, 4, 5);
-      final sourceBoundary = DateTime(2026, 4, 12);
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: _weeklySourceEntries(
-          startDay: sourceStart,
-          dailyKcal: 2100,
-        ),
-      );
-      addTearDown(logRepository.dispose);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: sourceStart,
-            dailyKcalGoal: 2100,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: sourceBoundary,
-            dailyKcalGoal: 2100,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: sourceStart,
-              windowEndDate: previousDiaryDay(sourceBoundary),
-              trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2100,
-              averageActiveKcal: 0,
-              lowConfidence: false,
-            ),
-          )
-          .copyWith(activityTrackingStartDate: selectedDay);
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{
-            diaryDayKey(selectedDay): _healthDayWithWorkout(
-              day: selectedDay,
-              totalCalories: 100,
-            ),
-          },
-        ),
-        logRepository: logRepository,
-        healthWeightService: FakeHealthWeightService(
-          _stableBoundaryWeights(
-            startDay: sourceStart,
-            boundaryDay: sourceBoundary,
-          ),
-        ),
-        manualWeightRepository: FakeManualHealthWeightRepository(
-          <ManualHealthWeightEntry>[],
-        ),
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(selectedDay).future,
-      );
-
-      expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.activityDeltaKcal, 100);
-      expect(resolvedGoal.goalKcal, 2200);
+      expect(resolvedGoal.storedGoalKcal, 2580);
+      expect(resolvedGoal.goalKcal, 2580);
       expect(resolvedGoal.usedLearnedTdee, isTrue);
-      expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
-    },
-  );
-
-  test(
-    'keeps learned base goal on a rest day without activity subtraction',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final sourceStart = today.subtract(const Duration(days: 7));
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: _weeklySourceEntries(
-          startDay: sourceStart,
-          dailyKcal: 2000,
-        ),
-      );
-      addTearDown(logRepository.dispose);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: sourceStart,
-            dailyKcalGoal: 2000,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: today,
-            dailyKcalGoal: 2000,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: sourceStart,
-              windowEndDate: today.subtract(const Duration(days: 1)),
-              trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2000,
-              averageActiveKcal: 400,
-              lowConfidence: false,
-            ),
-          )
-          .copyWith(activityTrackingStartDate: sourceStart);
-
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{
-            for (var index = 0; index < 7; index += 1)
-              diaryDayKey(
-                sourceStart.add(Duration(days: index)),
-              ): _healthDayWithWorkout(
-                day: sourceStart.add(Duration(days: index)),
-                totalCalories: 400,
-              ),
-          },
-        ),
-        logRepository: logRepository,
-        healthWeightService: FakeHealthWeightService(
-          _stableBoundaryWeights(startDay: sourceStart, boundaryDay: today),
-        ),
-        manualWeightRepository: FakeManualHealthWeightRepository(
-          <ManualHealthWeightEntry>[],
-        ),
-      );
-      addTearDown(container.dispose);
-
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
-
-      expect(resolvedGoal.activityDeltaKcal, 0);
-      expect(resolvedGoal.activityComparisonKcal, -400);
-      expect(resolvedGoal.goalKcal, 1880);
-      expect(resolvedGoal.lastWeekAverageActiveKcal, 400);
-      expect(resolvedGoal.usedLearnedTdee, isTrue);
-      expect(resolvedGoal.wasClampedToMinimum, isFalse);
     },
   );
 
@@ -1122,13 +244,6 @@ void main() {
     () async {
       final today = DateTime(2026, 4, 15);
       final sourceStart = today.subtract(const Duration(days: 7));
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: _weeklySourceEntries(
-          startDay: sourceStart,
-          dailyKcal: 1450,
-        ),
-      );
-      addTearDown(logRepository.dispose);
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
             changedAt: sourceStart,
@@ -1150,20 +265,7 @@ void main() {
             ),
           );
 
-      final container = _createContainer(
-        today: today,
-        settings: settings,
-        diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{},
-        ),
-        logRepository: logRepository,
-        healthWeightService: FakeHealthWeightService(
-          _stableBoundaryWeights(startDay: sourceStart, boundaryDay: today),
-        ),
-        manualWeightRepository: FakeManualHealthWeightRepository(
-          <ManualHealthWeightEntry>[],
-        ),
-      );
+      final container = _createContainer(today: today, settings: settings);
       addTearDown(container.dispose);
 
       final resolvedGoal = await container.read(

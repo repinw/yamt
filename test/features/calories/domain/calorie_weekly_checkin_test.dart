@@ -25,13 +25,11 @@ void main() {
 
     expect(result.trendWeightChangePerDay, closeTo(-0.08036, 0.00001));
     expect(result.averageIntakeKcal, closeTo(2347.14, 0.01));
-    expect(result.measuredTotalTdeeKcal, closeTo(2909.64, 0.01));
-    expect(result.measuredBaseTdeeKcal, closeTo(2617.07, 0.01));
-    expect(result.calculatedBaseTdeeKcal, closeTo(2484.02, 0.01));
-    expect(result.newBaseGoalKcal, closeTo(2484.02, 0.01));
-    expect(result.averageCreditedActivityKcal, closeTo(292.57, 0.01));
-    expect(result.activityDeltaKcal, 150.0);
-    expect(result.dynamicGoalTodayKcal, closeTo(2634.02, 0.01));
+    expect(result.measuredTotalTdeeKcal, closeTo(2965.89, 0.01));
+    expect(result.measuredBaseTdeeKcal, closeTo(2965.89, 0.01));
+    expect(result.calculatedBaseTdeeKcal, closeTo(2588.67, 0.01));
+    expect(result.newBaseGoalKcal, closeTo(2588.67, 0.01));
+    expect(result.dynamicGoalTodayKcal, closeTo(2588.67, 0.01));
   });
 
   test('caps weekly goal movement to keep one check-in stable', () {
@@ -42,7 +40,6 @@ void main() {
       goalSpeedKgPerWeek: 0,
       intakeKcalByDay: const <double>[2000, 2000, 2000, 2000, 2000, 2000, 2000],
       lastWeekActiveKcalByDay: const <int>[0, 0, 0, 0, 0, 0, 0],
-      todayActiveKcal: 0,
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 90),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 1, weightKg: 89.5),
@@ -54,8 +51,8 @@ void main() {
       ],
     );
 
-    expect(result.measuredTrueTdeeKcal, closeTo(5500, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(3190, 0.01));
+    expect(result.measuredTrueTdeeKcal, closeTo(5850, 0.01));
+    expect(result.calculatedTrueTdeeKcal, closeTo(3295, 0.01));
     expect(result.newGoalKcal, 2400);
   });
 
@@ -76,13 +73,11 @@ void main() {
 
     expect(result.trendWeightChangePerDay, closeTo(-0.1, 0.00001));
     expect(result.averageIntakeKcal, 2000);
-    expect(result.measuredTrueTdeeKcal, closeTo(2700, 0.01));
-    expect(result.measuredBaseTdeeKcal, closeTo(2600, 0.01));
-    expect(result.calculatedBaseTdeeKcal, closeTo(2320, 0.01));
-    expect(result.newBaseGoalKcal, closeTo(2320, 0.01));
-    expect(result.averageCreditedActivityKcal, 100);
-    expect(result.activityDeltaKcal, 250.0);
-    expect(result.dynamicGoalTodayKcal, closeTo(2570, 0.01));
+    expect(result.measuredTrueTdeeKcal, closeTo(2770, 0.01));
+    expect(result.measuredBaseTdeeKcal, closeTo(2770, 0.01));
+    expect(result.calculatedBaseTdeeKcal, closeTo(2371, 0.01));
+    expect(result.newBaseGoalKcal, closeTo(2371, 0.01));
+    expect(result.dynamicGoalTodayKcal, closeTo(2371, 0.01));
   });
 
   test('rest day uses learned Base-TDEE without activity credit', () {
@@ -93,16 +88,14 @@ void main() {
       goalSpeedKgPerWeek: 0,
       intakeKcalByDay: const <double>[1600, 1600, 1600, 1600, 1600, 1600, 1600],
       lastWeekActiveKcalByDay: const <int>[800, 800, 800, 800, 800, 800, 800],
-      todayActiveKcal: 0,
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 6, weightKg: 80),
       ],
     );
 
-    expect(result.activityDeltaKcal, 0);
-    expect(result.measuredBaseTdeeKcal, closeTo(800, 0.01));
-    expect(result.dynamicGoalTodayKcal, closeTo(1400, 0.01));
+    expect(result.measuredBaseTdeeKcal, closeTo(1600, 0.01));
+    expect(result.dynamicGoalTodayKcal, closeTo(1600, 0.01));
   });
 
   test(
@@ -123,14 +116,12 @@ void main() {
           1100,
         ],
         lastWeekActiveKcalByDay: const <int>[0, 0, 0, 0, 0, 0, 0],
-        todayActiveKcal: 0,
         weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
           CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
           CalorieWeeklyCheckInWeightPoint(dayIndex: 6, weightKg: 80),
         ],
       );
 
-      expect(result.activityDeltaKcal, 0);
       expect(result.dynamicGoalTodayKcal, minimumResolvedDailyCalorieGoalKcal);
     },
   );
@@ -143,7 +134,6 @@ void main() {
       goalSpeedKgPerWeek: 0.5,
       intakeKcalByDay: const <double>[2500, 2500, 2500, 2500, 2500, 2500, 2500],
       lastWeekActiveKcalByDay: const <int>[0, 0, 0, 0, 0, 0, 0],
-      todayActiveKcal: 0,
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 6, weightKg: 80),
@@ -152,7 +142,7 @@ void main() {
 
     expect(result.measuredTrueTdeeKcal, 2500);
     expect(result.calculatedTrueTdeeKcal, 2500);
-    expect(result.newGoalKcal, 2000);
+    expect(result.newGoalKcal, 1950);
   });
 
   test('calculates manual rerun goal from learned TDEE', () {
@@ -163,7 +153,7 @@ void main() {
         isLosing: true,
         isGaining: false,
       ),
-      closeTo(2000, 0.01),
+      closeTo(1950, 0.01),
     );
     expect(
       CalorieWeeklyCheckInCalculator.calculateGoalFromLearnedTdee(
@@ -172,7 +162,7 @@ void main() {
         isLosing: false,
         isGaining: true,
       ),
-      closeTo(2750, 0.01),
+      closeTo(2775, 0.01),
     );
     expect(
       CalorieWeeklyCheckInCalculator.calculateGoalFromLearnedTdee(

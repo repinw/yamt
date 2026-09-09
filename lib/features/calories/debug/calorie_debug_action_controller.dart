@@ -13,11 +13,9 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
 
@@ -111,7 +109,6 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
     required String saveDialogTitle,
   }) async {
     final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
-    final diaryHealthService = ref.read(diaryHealthServiceProvider);
     final healthWeightService = ref.read(healthWeightServiceProvider);
     final fileExporter = ref.read(calorieDebugFileExporterProvider);
     final manualWeightRepository = ref.read(
@@ -125,7 +122,6 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
     try {
       final result = await buildCalorieDebugDump(
         calorieLogRepository: calorieLogRepository,
-        diaryHealthService: diaryHealthService,
         healthWeightService: healthWeightService,
         manualWeightRepository: manualWeightRepository,
         healthStatusFuture: healthStatusFuture,
@@ -185,23 +181,11 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
   Future<CalorieWeeklyCheckInDebugDumpPrintResult>
   printWeeklyCheckInDebugDump() async {
     final checkInDataFuture = ref.read(calorieWeeklyCheckInDataProvider.future);
-    final healthStatusFuture = ref.read(
-      healthConnectionControllerProvider.future,
-    );
-
     try {
       final checkInData = await checkInDataFuture;
-      final healthStatus = await healthStatusFuture;
-      final encoded =
-          const JsonEncoder.withIndent(
-            '  ',
-          ).convert(
-            _weeklyCheckInDataDebugJson(
-              checkInData,
-              usesHealthActivity:
-                  healthStatus.accessState == HealthDataAccessState.ready,
-            ),
-          );
+      final encoded = const JsonEncoder.withIndent(
+        '  ',
+      ).convert(_weeklyCheckInDataDebugJson(checkInData));
       _logDebugDump(
         name: 'CalorieWeeklyCheckInDebugDump',
         dump: 'calorieWeeklyCheckInData\n$encoded',
@@ -269,9 +253,8 @@ Object? _jsonDebugValue(Object? value) {
 }
 
 Map<String, Object?> _weeklyCheckInDataDebugJson(
-  CalorieWeeklyCheckInData checkInData, {
-  required bool usesHealthActivity,
-}) {
+  CalorieWeeklyCheckInData checkInData,
+) {
   return <String, Object?>{
     'today': diaryDayKey(DateTime.now()),
     'has_pending': checkInData.hasPending,
@@ -297,17 +280,9 @@ Map<String, Object?> _weeklyCheckInDataDebugJson(
     'cache_weekly_check_in': _pendingWeeklyCheckInDebugJson(
       checkInData.cacheWeeklyCheckIn,
     ),
-    'calculation': _calculationDebugJson(
-      checkInData.calculation,
-      usesHealthActivity: usesHealthActivity,
-    ),
+    'calculation': _calculationDebugJson(checkInData.calculation),
     'days': checkInData.days
-        .map(
-          (day) => _windowDayDebugJson(
-            day,
-            usesHealthActivity: usesHealthActivity,
-          ),
-        )
+        .map(_windowDayDebugJson)
         .toList(growable: false),
   };
 }
@@ -328,36 +303,24 @@ Map<String, Object?>? _pendingWeeklyCheckInDebugJson(
 }
 
 Map<String, Object?>? _calculationDebugJson(
-  CalorieWeeklyCheckInCalculation? calculation, {
-  required bool usesHealthActivity,
-}) {
+  CalorieWeeklyCheckInCalculation? calculation,
+) {
   if (calculation == null) {
     return null;
   }
   return <String, Object?>{
     'trend_weight_change_per_day': calculation.trendWeightChangePerDay,
     'average_intake_kcal': calculation.averageIntakeKcal,
-    'measured_total_tdee_kcal': calculation.measuredTotalTdeeKcal,
-    'calculated_base_tdee_kcal': calculation.calculatedBaseTdeeKcal,
-    'new_base_goal_kcal': calculation.newBaseGoalKcal,
-    'new_target_kcal': calculation.newBaseGoalKcal,
-    if (usesHealthActivity) ...{
-      'measured_base_tdee_kcal': calculation.measuredBaseTdeeKcal,
-      'average_credited_activity_kcal': calculation.averageCreditedActivityKcal,
-      'credited_activity_average_kcal': calculation.averageCreditedActivityKcal,
-      'activity_subtracted_from_total_tdee_kcal':
-          calculation.averageCreditedActivityKcal,
-      'today_active_kcal': calculation.todayActiveKcal,
-      'activity_delta_kcal': calculation.activityDeltaKcal,
-      'dynamic_goal_today_kcal': calculation.dynamicGoalTodayKcal,
-    },
+    'measured_tdee_kcal': calculation.measuredTdeeKcal,
+    'calculated_tdee_kcal': calculation.calculatedTdeeKcal,
+    'new_base_goal_kcal': calculation.newGoalKcal,
+    'new_target_kcal': calculation.newGoalKcal,
   };
 }
 
 Map<String, Object?> _windowDayDebugJson(
-  CalorieWeeklyCheckInWindowDay day, {
-  required bool usesHealthActivity,
-}) {
+  CalorieWeeklyCheckInWindowDay day,
+) {
   return <String, Object?>{
     'day': diaryDayKey(day.day),
     'has_entries': day.hasEntries,
@@ -365,7 +328,6 @@ Map<String, Object?> _windowDayDebugJson(
     'resolved_intake_kcal': day.resolvedIntakeKcal,
     'is_skipped_intake_day': day.isSkippedIntakeDay,
     'is_heart_day': day.isHeartDay,
-    if (usesHealthActivity) 'active_kcal': day.activeKcal,
     'weight_kg': day.weightKg,
   };
 }

@@ -2,8 +2,6 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:yamt/features/calories/application/'
-    'calorie_health_activity_kcal_reader.dart';
-import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -13,7 +11,6 @@ import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
-const _weeklyCheckInHealthLoaderLogName = 'CalorieWeeklyCheckInProvider';
 const _weeklyCheckInDisposedMessage = 'Calorie weekly check-in disposed.';
 
 Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
@@ -28,7 +25,7 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
   final activeKcalByDay = <String, int>{
     for (final day in dates.learningDays) diaryDayKey(day): 0,
   };
-  var todayActiveKcal = 0;
+  const todayActiveKcal = 0;
   var representativeWeightByDay = const <String, double>{};
 
   final status = await healthStatusFuture;
@@ -52,27 +49,11 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
   _throwIfUnmounted(isMounted);
   representativeWeightByDay = _representativeWeightByDay(healthWeightSamples);
 
-  final activeDays = <DateTime>{
-    ...dates.learningDays,
-    today,
-  }.where(settings.isActivityTrackingActiveForDay).toList(growable: false);
-  final loadedActiveKcalByDay = await loadHealthActivityKcalByDay(
-    diaryHealthService: diaryHealthService,
-    days: activeDays,
-    userHeightCm: settings.calculatorProfile?.heightCm,
-    logName: _weeklyCheckInHealthLoaderLogName,
-    aggregateFailureMessage:
-        'Failed to load aggregate activity for weekly check-in.',
-  );
-  _throwIfUnmounted(isMounted);
-  activeKcalByDay.addAll(loadedActiveKcalByDay);
-  todayActiveKcal = activeKcalByDay[diaryDayKey(today)] ?? 0;
-
   return CalorieWeeklyCheckInHealthData(
     activeKcalByDay: activeKcalByDay,
     todayActiveKcal: todayActiveKcal,
     representativeWeightByDay: representativeWeightByDay,
-    usesHealthActivity: true,
+    usesHealthActivity: false,
   );
 }
 

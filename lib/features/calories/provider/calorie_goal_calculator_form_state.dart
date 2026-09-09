@@ -31,6 +31,8 @@ class CalorieGoalCalculatorFormState {
     required this.goalSpeedError,
     required this.calculation,
     required this.isSaving,
+    this.trainingWeekdays = const <int>[1, 3, 5],
+    this.trainingDayKcalOffset = 0.0,
     this.sex,
   });
 
@@ -60,6 +62,8 @@ class CalorieGoalCalculatorFormState {
       goalMode: profile.goalMode,
       goalSpeedKgPerWeekText: normalizedGoalSpeedText,
       lastNonMaintainGoalSpeedText: preservedGoalSpeedText,
+      trainingWeekdays: profile.trainingWeekdays,
+      trainingDayKcalOffset: profile.trainingDayKcalOffset,
     );
   }
 
@@ -72,6 +76,8 @@ class CalorieGoalCalculatorFormState {
     required CalorieGoalMode goalMode,
     required String goalSpeedKgPerWeekText,
     required String lastNonMaintainGoalSpeedText,
+    List<int> trainingWeekdays = const <int>[1, 3, 5],
+    double trainingDayKcalOffset = 0.0,
     CalorieCalculatorSex? sex,
     bool isSaving = false,
   }) {
@@ -101,6 +107,8 @@ class CalorieGoalCalculatorFormState {
             goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
                 ? 0
                 : _parsePositiveDouble(goalSpeedKgPerWeekText)!,
+            trainingWeekdays: trainingWeekdays,
+            trainingDayKcalOffset: trainingDayKcalOffset,
           )
         : null;
 
@@ -114,6 +122,8 @@ class CalorieGoalCalculatorFormState {
       goalMode: goalMode,
       goalSpeedKgPerWeekText: goalSpeedKgPerWeekText,
       lastNonMaintainGoalSpeedText: lastNonMaintainGoalSpeedText,
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
       sexError: sexError,
       weightError: weightError,
       targetWeightError: targetWeightError,
@@ -144,6 +154,12 @@ class CalorieGoalCalculatorFormState {
 
   /// The age years text.
   final String ageYearsText;
+
+  /// Days of the week for workouts.
+  final List<int> trainingWeekdays;
+
+  /// Kcal offset for workout days.
+  final double trainingDayKcalOffset;
 
   /// The activity level option.
   final CalorieActivityLevelOption activityLevelOption;
@@ -210,6 +226,8 @@ class CalorieGoalCalculatorFormState {
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
       targetWeightKg: _parsePositiveDouble(targetWeightKgText),
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
     );
   }
 
@@ -224,6 +242,8 @@ class CalorieGoalCalculatorFormState {
     CalorieGoalMode? goalMode,
     String? goalSpeedKgPerWeekText,
     String? lastNonMaintainGoalSpeedText,
+    List<int>? trainingWeekdays,
+    double? trainingDayKcalOffset,
     bool? isSaving,
   }) {
     return CalorieGoalCalculatorFormState._create(
@@ -238,6 +258,9 @@ class CalorieGoalCalculatorFormState {
           goalSpeedKgPerWeekText ?? this.goalSpeedKgPerWeekText,
       lastNonMaintainGoalSpeedText:
           lastNonMaintainGoalSpeedText ?? this.lastNonMaintainGoalSpeedText,
+      trainingWeekdays: trainingWeekdays ?? this.trainingWeekdays,
+      trainingDayKcalOffset:
+          trainingDayKcalOffset ?? this.trainingDayKcalOffset,
       isSaving: isSaving ?? this.isSaving,
     );
   }

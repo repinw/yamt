@@ -840,7 +840,7 @@
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
   "caloriesWeeklyCheckInDialogLowConfidence": "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
   "caloriesWeeklyCheckInBlockedUnstableWeight": "Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.",
-  "caloriesWeeklyCheckInApplyAction": "Fertig",
+  "caloriesWeeklyCheckInApplyAction": "Übernehmen",
   "caloriesWeeklyCheckInLaterAction": "Später",
   "caloriesWeeklyCheckInApplyFailed": "Der Wochen-Check-in konnte nicht geschlossen werden.",
   "caloriesWeeklyCheckInHintReadyTitle": "Wochen-Check-in bereit",

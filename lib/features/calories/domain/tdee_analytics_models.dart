@@ -21,6 +21,9 @@ class TdeeAnalyticsPoint {
   /// Learned Base-TDEE (without activity credit).
   final double? learnedBaseTdeeKcal;
 
+  /// Unified TDEE value.
+  double? get tdeeKcal => learnedBaseTdeeKcal;
+
   /// Total TDEE (Base-TDEE + activity credit) for flux range upper bound.
   final double? totalTdeeKcal;
 
