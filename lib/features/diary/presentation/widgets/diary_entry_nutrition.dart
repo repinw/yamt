@@ -5,6 +5,7 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/domain/diary_macro_profile.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_macro_profile_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Labeled portion values and, when expanded, their daily contributions.
@@ -154,10 +155,10 @@ class _ExpandedEntryNutrition extends StatelessWidget {
             padding: const EdgeInsets.only(top: AppSpacing.xxs),
             child: ActionChip(
               visualDensity: VisualDensity.compact,
-              label: Text(_profileLabel(l10n, profile.emphasis)),
+              label: Text(diaryMacroEmphasisLabel(l10n, profile.emphasis)),
               onPressed: () => showDialog<void>(
                 context: context,
-                builder: (context) => _MacroProfileDialog(
+                builder: (context) => DiaryMacroProfileDialog(
                   profile: profile,
                   numberFormat: format,
                 ),
@@ -196,49 +197,3 @@ class _MacroColumn extends StatelessWidget {
     );
   }
 }
-
-class _MacroProfileDialog extends StatelessWidget {
-  const _MacroProfileDialog({
-    required this.profile,
-    required this.numberFormat,
-  });
-
-  final DiaryMacroProfile profile;
-  final NumberFormat numberFormat;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final title = _profileLabel(l10n, profile.emphasis);
-    return AlertDialog(
-      title: Text(title),
-      content: SingleChildScrollView(
-        child: Text(
-          '${l10n.caloriesProteinLabel}: '
-          '${numberFormat.format(profile.protein * 100)} %\n'
-          '${l10n.caloriesCarbsLabel}: '
-          '${numberFormat.format(profile.carbs * 100)} %\n'
-          '${l10n.caloriesFatLabel}: '
-          '${numberFormat.format(profile.fat * 100)} %\n\n'
-          '${l10n.diaryMacroProfileExplanation}',
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            MaterialLocalizations.of(context).closeButtonLabel,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-String _profileLabel(AppLocalizations l10n, DiaryMacroEmphasis emphasis) =>
-    switch (emphasis) {
-      DiaryMacroEmphasis.protein => l10n.diaryMacroProteinEmphasis,
-      DiaryMacroEmphasis.carbs => l10n.diaryMacroCarbsEmphasis,
-      DiaryMacroEmphasis.fat => l10n.diaryMacroFatEmphasis,
-      DiaryMacroEmphasis.mixed => l10n.diaryMacroMixedEmphasis,
-    };

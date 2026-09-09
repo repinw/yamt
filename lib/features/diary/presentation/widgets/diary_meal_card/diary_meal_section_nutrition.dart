@@ -29,36 +29,39 @@ class DiaryMealSectionNutrition extends StatelessWidget {
       fontWeight: FontWeight.w700,
     );
 
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: '$pLetter ${format.format(section.totalProtein)}$unit',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colors.protein,
-              fontWeight: FontWeight.w700,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '$pLetter ${format.format(section.totalProtein)}$unit',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colors.protein,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          TextSpan(text: ' · ', style: separatorStyle),
-          TextSpan(
-            text: '$cLetter ${format.format(section.totalCarbs)}$unit',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colors.carbs,
-              fontWeight: FontWeight.w700,
+            TextSpan(text: ' · ', style: separatorStyle),
+            TextSpan(
+              text: '$cLetter ${format.format(section.totalCarbs)}$unit',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colors.carbs,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          TextSpan(text: ' · ', style: separatorStyle),
-          TextSpan(
-            text: '$fLetter ${format.format(section.totalFat)}$unit',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colors.fat,
-              fontWeight: FontWeight.w700,
+            TextSpan(text: ' · ', style: separatorStyle),
+            TextSpan(
+              text: '$fLetter ${format.format(section.totalFat)}$unit',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colors.fat,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+        maxLines: 1,
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
     );
   }
 }

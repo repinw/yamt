@@ -89,10 +89,14 @@ void main() {
     expect(find.text('Lunch'), findsOneWidget);
     expect(find.text('Dinner'), findsOneWidget);
     expect(find.text('Snack'), findsOneWidget);
-    expect(find.text('Oats'), findsOneWidget);
-    expect(find.text('Pasta'), findsOneWidget);
+    expect(find.text('Oats'), findsNothing);
+    expect(find.text('Pasta'), findsNothing);
     expect(find.text('250 kcal'), findsOneWidget);
     expect(find.text('520 kcal'), findsOneWidget);
+
+    await tester.tap(find.text('Breakfast'));
+    await tester.pumpAndSettle();
+    expect(find.text('Oats'), findsOneWidget);
     expect(
       find.byKey(DiaryMealsSectionKeys.collapsedEmpty(MealType.lunch)),
       findsOneWidget,
@@ -254,6 +258,8 @@ void main() {
 
     expect(find.text('Meals could not be loaded'), findsNothing);
     expect(find.text('Breakfast'), findsOneWidget);
+    await tester.tap(find.text('Breakfast'));
+    await tester.pumpAndSettle();
     expect(find.text('Oats'), findsOneWidget);
   });
 
@@ -297,6 +303,9 @@ void main() {
       selectedDay: selectedDay,
     );
 
+    expect(find.text('Breakfast'), findsOneWidget);
+    await tester.tap(find.text('Breakfast'));
+    await tester.pumpAndSettle();
     expect(find.text('Oats'), findsOneWidget);
 
     replaceFakeDiaryDashboardState(
@@ -305,6 +314,7 @@ void main() {
     );
     await tester.pump();
 
+    expect(find.text('Breakfast'), findsOneWidget);
     expect(find.text('Oats'), findsOneWidget);
     expect(find.byType(DiaryMealCardsSkeleton), findsNothing);
   });

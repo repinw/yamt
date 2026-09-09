@@ -9,6 +9,7 @@ import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_nutrition.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_card/diary_meal_portion_formatter.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_card/diary_meal_section_footer.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_media.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -37,7 +38,7 @@ class DiaryExpandedMealBody extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
       child: DecoratedBox(
         decoration: BoxDecoration(
           border: Border(
@@ -47,21 +48,31 @@ class DiaryExpandedMealBody extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.only(top: AppSpacing.md),
+          padding: const EdgeInsets.only(top: AppSpacing.sm),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (section.entries.isEmpty)
                 DiaryExpandedEmptyMeal(mealType: section.mealType)
-              else
+              else ...[
                 for (final entry in section.entries)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                     child: DiaryExpandedMealEntry(
-                      macroTargets: macroTargets,
                       entry: entry,
                       onTap: () => onTapEntry(entry),
                     ),
                   ),
+                Divider(
+                  color: colors.outlineVariant.withValues(alpha: 0.3),
+                  height: 1,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                DiaryMealSectionFooter(
+                  section: section,
+                  macroTargets: macroTargets,
+                ),
+              ],
             ],
           ),
         ),
@@ -105,7 +116,7 @@ class DiaryExpandedMealEntry extends StatelessWidget {
     super.key,
   });
 
-  /// Day macro targets for contribution percentage breakdown.
+  /// Optional day macro targets retained for backwards compatibility.
   final DiaryMacroTargets? macroTargets;
 
   /// Entry to display.
@@ -117,7 +128,6 @@ class DiaryExpandedMealEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
     );
@@ -129,34 +139,30 @@ class DiaryExpandedMealEntry extends StatelessWidget {
       color: Colors.transparent,
       child: AppInkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         child: Ink(
           decoration: BoxDecoration(
             color: AppEditorialSurfaces.section(colors),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(
               color: AppEditorialSurfaces.solidCardBorder(colors),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.14 : 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: 6,
+            ),
             child: Row(
               children: [
-                MealThumb(entry: entry),
+                MealThumb(entry: entry, compact: true),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Text(
@@ -170,38 +176,50 @@ class DiaryExpandedMealEntry extends StatelessWidget {
                                   ),
                             ),
                           ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '${numberFormat.format(
-                                  entry.totalKcal.round(),
-                                )} ${l10n.caloriesUnitKcal}',
-                                style: Theme.of(context).textTheme.labelLarge
-                                    ?.copyWith(
-                                      color: accentColors.meal,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                              ),
-                              if (portionText != null) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  portionText,
-                                  style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(
-                                        color: colors.onSurfaceVariant,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            '${numberFormat.format(
+                              entry.totalKcal.round(),
+                            )} ${l10n.caloriesUnitKcal}',
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: accentColors.meal,
+                                  fontWeight: FontWeight.w900,
                                 ),
-                              ],
-                            ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.xs),
-                      DiaryEntryNutrition(entry: entry, targets: macroTargets),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: DiaryEntryNutrition(entry: entry),
+                            ),
+                          ),
+                          if (portionText != null) ...[
+                            const SizedBox(width: AppSpacing.xs),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 120),
+                              child: Text(
+                                portionText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),

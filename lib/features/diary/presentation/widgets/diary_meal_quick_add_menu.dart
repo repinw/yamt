@@ -27,7 +27,7 @@ class DiaryMealQuickAddMenu extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return SizedBox.square(
-      dimension: 32,
+      dimension: 28,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: AppEditorialSurfaces.section(colors),
@@ -38,7 +38,7 @@ class DiaryMealQuickAddMenu extends StatelessWidget {
           tooltip: l10n.diaryQuickEatAddTooltip(mealType.localizedName(l10n)),
           useRootNavigator: true,
           icon: Icon(Icons.add_rounded, color: colors.primary),
-          iconSize: 18,
+          iconSize: 16,
           padding: EdgeInsets.zero,
           position: PopupMenuPosition.under,
           onSelected: onSelected,

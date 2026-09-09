@@ -71,22 +71,45 @@ class DiaryMealCard extends StatelessWidget {
                   child: Row(
                     children: [
                       DiaryMealIcon(mealType: section.mealType),
-                      const SizedBox(width: AppSpacing.md),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              section.mealType.localizedName(l10n),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: colors.onSurface,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    section.mealType.localizedName(l10n),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: colors.onSurface,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                        ),
                                   ),
+                                ),
+                                if (section.entries.isNotEmpty) ...[
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Text(
+                                    '${numberFormat.format(
+                                      section.totalKcal.round(),
+                                    )} ${l10n.caloriesUnitKcal}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(
+                                          color: colors.onSurfaceVariant,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                  ),
+                                ],
+                              ],
                             ),
                             if (section.entries.isNotEmpty) ...[
                               const SizedBox(height: 2),
@@ -95,24 +118,12 @@ class DiaryMealCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (section.entries.isNotEmpty) ...[
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          '${numberFormat.format(section.totalKcal.round())} '
-                          '${l10n.caloriesUnitKcal}',
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: colors.onSurfaceVariant,
-                                fontWeight: FontWeight.w800,
-                              ),
-                        ),
-                      ],
                       const SizedBox(width: AppSpacing.xs),
                       DiaryMealQuickAddMenu(
                         mealType: section.mealType,
                         onSelected: onQuickAdd,
                       ),
-                      const SizedBox(width: AppSpacing.xs),
+                      const SizedBox(width: AppSpacing.xxs),
                       AnimatedRotation(
                         turns: isExpanded ? 0.25 : 0,
                         duration: const Duration(milliseconds: 220),
@@ -122,7 +133,7 @@ class DiaryMealCard extends StatelessWidget {
                           color: isExpanded
                               ? accentColors.today
                               : colors.onSurfaceVariant,
-                          size: 20,
+                          size: 18,
                         ),
                       ),
                     ],
