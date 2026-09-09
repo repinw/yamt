@@ -209,6 +209,7 @@ class CalorieGoalCalculatorFormState {
       activityLevel: activityLevelOption.palValue,
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+      targetWeightKg: _parsePositiveDouble(targetWeightKgText),
     );
   }
 

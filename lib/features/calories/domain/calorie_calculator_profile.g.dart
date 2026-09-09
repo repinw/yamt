@@ -32,6 +32,9 @@ CalorieCalculatorProfile _$CalorieCalculatorProfileFromJson(
   goalSpeedKgPerWeek: const FlexibleDoubleConverter().fromJson(
     json['goal_speed_kg_per_week'],
   ),
+  targetWeightKg: const NullableFlexibleDoubleConverter().fromJson(
+    json['target_weight_kg'],
+  ),
 );
 
 Map<String, dynamic> _$CalorieCalculatorProfileToJson(
@@ -47,6 +50,9 @@ Map<String, dynamic> _$CalorieCalculatorProfileToJson(
   'goal_mode': _$CalorieGoalModeEnumMap[instance.goalMode]!,
   'goal_speed_kg_per_week': const FlexibleDoubleConverter().toJson(
     instance.goalSpeedKgPerWeek,
+  ),
+  'target_weight_kg': const NullableFlexibleDoubleConverter().toJson(
+    instance.targetWeightKg,
   ),
 };
 

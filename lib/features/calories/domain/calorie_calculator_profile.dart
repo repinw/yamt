@@ -50,6 +50,7 @@ class CalorieCalculatorProfile {
     required this.activityLevel,
     required this.goalMode,
     required this.goalSpeedKgPerWeek,
+    this.targetWeightKg,
   });
 
   /// Creates a [CalorieCalculatorProfile] for from json.
@@ -65,7 +66,8 @@ class CalorieCalculatorProfile {
       ageYears = 30,
       activityLevel = 1.2,
       goalMode = CalorieGoalMode.maintain,
-      goalSpeedKgPerWeek = 0;
+      goalSpeedKgPerWeek = 0,
+      targetWeightKg = null;
 
   @JsonKey(
     defaultValue: CalorieCalculatorSex.male,
@@ -99,6 +101,10 @@ class CalorieCalculatorProfile {
   @FlexibleDoubleConverter()
   final double goalSpeedKgPerWeek;
 
+  /// Optional target weight in kg.
+  @NullableFlexibleDoubleConverter()
+  final double? targetWeightKg;
+
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieCalculatorProfileToJson(this);
 
@@ -111,6 +117,7 @@ class CalorieCalculatorProfile {
     double? activityLevel,
     CalorieGoalMode? goalMode,
     double? goalSpeedKgPerWeek,
+    double? targetWeightKg,
   }) {
     return CalorieCalculatorProfile(
       sex: sex ?? this.sex,
@@ -120,6 +127,7 @@ class CalorieCalculatorProfile {
       activityLevel: activityLevel ?? this.activityLevel,
       goalMode: goalMode ?? this.goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek ?? this.goalSpeedKgPerWeek,
+      targetWeightKg: targetWeightKg ?? this.targetWeightKg,
     );
   }
 }

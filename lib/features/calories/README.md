@@ -33,6 +33,9 @@ state, and calorie-owned side effects from health or weight changes.
 - Domain models under `domain/` used by Diary, Activity, and Settings.
 - Complete presentation surfaces such as calorie entry editors, goal dialogs,
   calculator sheets, and diary health card parts.
+- `presentation/pages/tdee_analytics_page.dart` for visual TDEE expenditure,
+  flux range corridor, and goal anticipation analysis (routed via
+  `AppRoutes.homeCaloriesAnalytics`).
 - Debug-only surfaces under `debug/`, currently composed by the Diary home shell
   only in debug builds.
 
@@ -57,6 +60,7 @@ Main application providers:
 - `application/calorie_weight_state_refresh.dart`
 - `application/calorie_entry_delete_flow.dart`
 - `application/calorie_inventory_entry_save_handler.dart`
+- `application/tdee_analytics_provider.dart`
 
 ## TDEE Learning
 

@@ -11,6 +11,7 @@ import 'package:yamt/features/auth/presentation/welcome_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/presentation/pages/tdee_analytics_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_controller.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
@@ -196,6 +197,10 @@ Raw<GoRouter> appRouter(Ref ref) {
             child: CalorieEntryEditorPage(entryId: entryId),
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.homeCaloriesAnalytics,
+        builder: (context, state) => const TdeeAnalyticsPage(),
       ),
       GoRoute(
         path: AppRoutes.homeProductSearchHub,

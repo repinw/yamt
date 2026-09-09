@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_add_row.dart';
@@ -61,6 +63,14 @@ class DiaryWeightDetailsContent extends StatelessWidget {
                   letterSpacing: 0.8,
                 ),
               ),
+            ),
+            IconButton(
+              tooltip: 'TDEE & Trend Analytics',
+              icon: const Icon(Icons.insights_rounded, size: 18),
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () => context.push(AppRoutes.homeCaloriesAnalytics),
             ),
           ],
         ),

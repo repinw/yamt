@@ -71,6 +71,7 @@ class SettingsPage extends ConsumerWidget {
                           SettingsHealthConnectTile(),
                           _CalorieGoalStartTile(),
                           _CalorieGoalCalculatorTile(),
+                          _TdeeAnalyticsTile(),
                           _MacroGoalsTile(),
                           _CalorieGoalIntroTile(),
                         ],
@@ -205,6 +206,20 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
                 initialSettings: settings,
               ),
             ),
+    );
+  }
+}
+
+class _TdeeAnalyticsTile extends StatelessWidget {
+  const _TdeeAnalyticsTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return SettingsTile(
+      icon: Icons.insights_rounded,
+      title: 'TDEE- & Gewichtsverlauf',
+      subtitle: 'Verbrauchskurve, Flux-Range & Ziel-Antizipation',
+      onTap: () => unawaited(context.push(AppRoutes.homeCaloriesAnalytics)),
     );
   }
 }

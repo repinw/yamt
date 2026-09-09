@@ -63,6 +63,9 @@ abstract final class AppRoutes {
   static const homeCaloriesEntryDetails =
       '/home/calories/entry/:entryId/details';
 
+  /// TDEE and weight analytics route.
+  static const homeCaloriesAnalytics = '/home/calories/analytics';
+
   /// Settings home route.
   static const homeSettings = '/home/settings';
 
