@@ -219,8 +219,7 @@ class _CalorieOnboardingWizardState
                     onStartNowChanged: _handleStartNowChanged,
                     onTodayModeChanged: _handleTodayTrackingChanged,
                     onCatchUpEstimateChanged: _handleCatchUpEstimateChanged,
-                    onFutureGoalStartChangeRequested:
-                        _pickFutureGoalStartDate,
+                    onFutureGoalStartChangeRequested: _pickFutureGoalStartDate,
                     onFinish: () => _handleFinish(formState, finishFlow),
                   ),
                 ),

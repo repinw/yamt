@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 
 /// Renders the circular icon badge for a meal type.
@@ -19,7 +18,7 @@ class DiaryMealIcon extends StatelessWidget {
       width: 34,
       height: 34,
       decoration: BoxDecoration(
-        color: AppEditorialSurfaces.section(colors),
+        color: colors.surfaceContainerLow,
         shape: BoxShape.circle,
       ),
       child: Icon(

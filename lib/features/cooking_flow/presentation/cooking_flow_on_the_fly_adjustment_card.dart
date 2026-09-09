@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_action_button.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -230,7 +229,7 @@ class _CookingFlowOnTheFlyHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-        const Icon(Icons.add, color: AppSeedColors.orange, size: 18),
+        const Icon(Icons.add, color: Color(0xFFE65100), size: 18),
         const SizedBox(width: AppSpacing.sm),
         Text(
           l10n.cookflowOnTheFlyTitle,
@@ -327,7 +326,7 @@ class _CookingFlowVoiceInputButton extends StatelessWidget {
             : l10n.cookflowVoiceInputStartTooltip,
         style: IconButton.styleFrom(
           backgroundColor: isListeningToSpeech
-              ? AppSeedColors.orange
+              ? const Color(0xFFE65100)
               : const Color(0xFF39455D),
           foregroundColor: Colors.white,
         ),
@@ -396,7 +395,7 @@ class _CookingFlowOnTheFlyAdjustmentChip extends StatelessWidget {
             height: 8,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: AppSeedColors.orange,
+                color: Color(0xFFE65100),
                 shape: BoxShape.circle,
               ),
             ),

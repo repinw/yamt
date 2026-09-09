@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
@@ -19,7 +18,7 @@ void main() {
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: AppTheme.light(seedColor: Colors.green),
+        theme: AppTheme.light(),
         home: Scaffold(
           body: DiaryMealCard(
             section: const DiaryMealSection(
@@ -53,7 +52,12 @@ void main() {
       find.byWidgetPredicate(
         (widget) =>
             widget is DecoratedBox &&
-            widget.decoration == AppQuietSurfaces.cardDecoration(colors),
+            widget.decoration ==
+                BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(color: colors.outlineVariant),
+                ),
       ),
       findsOneWidget,
     );
@@ -75,7 +79,7 @@ void main() {
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: AppTheme.light(seedColor: Colors.green),
+        theme: AppTheme.light(),
         home: Scaffold(
           body: DiaryMealCard(
             section: const DiaryMealSection(
@@ -130,7 +134,7 @@ void main() {
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: AppTheme.light(seedColor: Colors.green),
+        theme: AppTheme.light(),
         home: Scaffold(
           body: DiaryMealCard(
             section: const DiaryMealSection(
@@ -150,8 +154,7 @@ void main() {
     expect(
       find.byWidgetPredicate(
         (widget) =>
-            widget is RichText &&
-            widget.text.toPlainText().contains('P 0g'),
+            widget is RichText && widget.text.toPlainText().contains('P 0g'),
       ),
       findsNothing,
     );
@@ -160,127 +163,129 @@ void main() {
   testWidgets(
     'hides entries when collapsed and shows portion size when expanded',
     (tester) async {
-    const entry = DiaryMealEntry(
-      id: 'oats',
-      mealType: MealType.breakfast,
-      name: 'Oats',
-      totalKcal: 150,
-      totalProtein: 10,
-      totalCarbs: 25,
-      totalFat: 2,
-      consumedAmount: 75,
-      consumedUnit: ConsumedUnit.grams,
-    );
+      const entry = DiaryMealEntry(
+        id: 'oats',
+        mealType: MealType.breakfast,
+        name: 'Oats',
+        totalKcal: 150,
+        totalProtein: 10,
+        totalCarbs: 25,
+        totalFat: 2,
+        consumedAmount: 75,
+        consumedUnit: ConsumedUnit.grams,
+      );
 
-    // Collapsed
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        theme: AppTheme.light(seedColor: Colors.green),
-        home: Scaffold(
-          body: DiaryMealCard(
-            section: const DiaryMealSection(
-              mealType: MealType.breakfast,
-              totalKcal: 250,
-              entries: [entry],
+      // Collapsed
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: DiaryMealCard(
+              section: const DiaryMealSection(
+                mealType: MealType.breakfast,
+                totalKcal: 250,
+                entries: [entry],
+              ),
+              isExpanded: false,
+              onToggle: () {},
+              onTapEntry: (_) {},
+              onQuickAdd: (_) {},
             ),
-            isExpanded: false,
-            onToggle: () {},
-            onTapEntry: (_) {},
-            onQuickAdd: (_) {},
           ),
         ),
-      ),
-    );
+      );
 
-    // Header kcal is visible, but entry item details are collapsed
-    expect(find.text('250 kcal'), findsOneWidget);
-    expect(find.text('150 kcal'), findsNothing);
-    expect(find.text('75 g'), findsNothing);
+      // Header kcal is visible, but entry item details are collapsed
+      expect(find.text('250 kcal'), findsOneWidget);
+      expect(find.text('150 kcal'), findsNothing);
+      expect(find.text('75 g'), findsNothing);
 
-    // Expanded
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        theme: AppTheme.light(seedColor: Colors.green),
-        home: Scaffold(
-          body: DiaryMealCard(
-            section: const DiaryMealSection(
-              mealType: MealType.breakfast,
-              totalKcal: 250,
-              entries: [entry],
+      // Expanded
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: DiaryMealCard(
+              section: const DiaryMealSection(
+                mealType: MealType.breakfast,
+                totalKcal: 250,
+                entries: [entry],
+              ),
+              isExpanded: true,
+              onToggle: () {},
+              onTapEntry: (_) {},
+              onQuickAdd: (_) {},
             ),
-            isExpanded: true,
-            onToggle: () {},
-            onTapEntry: (_) {},
-            onQuickAdd: (_) {},
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('150 kcal'), findsOneWidget);
-    expect(find.text('75 g'), findsOneWidget);
-  });
+      expect(find.text('150 kcal'), findsOneWidget);
+      expect(find.text('75 g'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'renders section footer with targets and emphasis chip when expanded',
     (tester) async {
-    const entry = DiaryMealEntry(
-      id: 'oats',
-      mealType: MealType.breakfast,
-      name: 'Oats',
-      totalKcal: 150,
-      totalProtein: 10,
-      totalCarbs: 25,
-      totalFat: 2,
-    );
+      const entry = DiaryMealEntry(
+        id: 'oats',
+        mealType: MealType.breakfast,
+        name: 'Oats',
+        totalKcal: 150,
+        totalProtein: 10,
+        totalCarbs: 25,
+        totalFat: 2,
+      );
 
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        theme: AppTheme.light(seedColor: Colors.green),
-        home: Scaffold(
-          body: DiaryMealCard(
-            section: const DiaryMealSection(
-              mealType: MealType.breakfast,
-              totalKcal: 150,
-              entries: [entry],
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: DiaryMealCard(
+              section: const DiaryMealSection(
+                mealType: MealType.breakfast,
+                totalKcal: 150,
+                entries: [entry],
+              ),
+              macroTargets: const DiaryMacroTargets(
+                protein: 100,
+                carbs: 200,
+                fat: 50,
+              ),
+              isExpanded: true,
+              onToggle: () {},
+              onTapEntry: (_) {},
+              onQuickAdd: (_) {},
             ),
-            macroTargets: const DiaryMacroTargets(
-              protein: 100,
-              carbs: 200,
-              fat: 50,
-            ),
-            isExpanded: true,
-            onToggle: () {},
-            onTapEntry: (_) {},
-            onQuickAdd: (_) {},
           ),
         ),
-      ),
-    );
+      );
 
-    // 10 / 100 = 10 %, 25 / 200 = 12.5 %, 2 / 50 = 4 %
-    expect(find.text('10 % deines Tagesziels'), findsOneWidget);
-    expect(find.text('12,5 % deines Tagesziels'), findsOneWidget);
-    expect(find.text('4 % deines Tagesziels'), findsOneWidget);
+      // 10 / 100 = 10 %, 25 / 200 = 12.5 %, 2 / 50 = 4 %
+      expect(find.text('10 % deines Tagesziels'), findsOneWidget);
+      expect(find.text('12,5 % deines Tagesziels'), findsOneWidget);
+      expect(find.text('4 % deines Tagesziels'), findsOneWidget);
 
-    // Energy: Protein 40, Carbs 100, Fat 18. Total = 158.
-    // Carbs leads by (100 - 40) / 158 = 37.9% >= 10% -> Kohlenhydratbetont
-    expect(find.text('Kohlenhydratbetont'), findsOneWidget);
+      // Energy: Protein 40, Carbs 100, Fat 18. Total = 158.
+      // Carbs leads by (100 - 40) / 158 = 37.9% >= 10% -> Kohlenhydratbetont
+      expect(find.text('Kohlenhydratbetont'), findsOneWidget);
 
-    await tester.tap(find.text('Kohlenhydratbetont'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Kohlenhydratbetont'));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(AlertDialog), findsOneWidget);
-  });
+      expect(find.byType(AlertDialog), findsOneWidget);
+    },
+  );
 
   testWidgets('renders expanded meal entry in a compact two-line structure', (
     tester,
@@ -302,7 +307,7 @@ void main() {
         locale: const Locale('de'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: AppTheme.light(seedColor: Colors.green),
+        theme: AppTheme.light(),
         home: Scaffold(
           body: DiaryMealCard(
             section: const DiaryMealSection(

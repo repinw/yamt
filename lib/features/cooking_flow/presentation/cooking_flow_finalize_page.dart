@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -81,13 +80,10 @@ class CookingFlowFinalizePage extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xxxxl),
         DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(
-              AppEditorial.cardRadius,
-            ),
-            blurRadius: 22,
-            shadowOffset: const Offset(0, 10),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Padding(
             padding: AppInsets.card,
@@ -109,7 +105,7 @@ class CookingFlowFinalizePage extends StatelessWidget {
                       value: splitIntoPortions,
                       onChanged: onSplitIntoPortionsChanged,
                       activeThumbColor: Colors.white,
-                      activeTrackColor: AppSeedColors.orange,
+                      activeTrackColor: const Color(0xFFE65100),
                     ),
                   ],
                 ),
@@ -132,7 +128,7 @@ class CookingFlowFinalizePage extends StatelessWidget {
                       Expanded(
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: AppSeedColors.orange,
+                            activeTrackColor: const Color(0xFFE65100),
                             inactiveTrackColor: colors.outlineVariant,
                             thumbColor: Colors.grey.shade700,
                           ),
@@ -205,11 +201,10 @@ class _FinalizeStorageContainersSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
-        blurRadius: 22,
-        shadowOffset: const Offset(0, 10),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -362,7 +357,9 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
                   '${netWeight.toStringAsFixed(0)} g',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: isWeightValid ? AppSeedColors.orange : colors.error,
+                    color: isWeightValid
+                        ? const Color(0xFFE65100)
+                        : colors.error,
                   ),
                 ),
               ],

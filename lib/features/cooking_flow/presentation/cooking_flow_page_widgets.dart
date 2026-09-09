@@ -1,8 +1,5 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_builder.dart';
@@ -136,39 +133,19 @@ class _CookingFlowPhaseBottomSurface extends StatelessWidget {
           horizontalInset,
           AppSpacing.xl,
         ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            boxShadow: <BoxShadow>[
-              AppEditorialSurfaces.ambientBoxShadow(
-                colors,
-                blurRadius: 28,
-                offset: const Offset(0, -10),
+        child: ClipRRect(
+          borderRadius: radius,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLow,
+              borderRadius: radius,
+              border: Border.all(
+                color: colors.outlineVariant,
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: AppEditorial.glassBlur,
-                sigmaY: AppEditorial.glassBlur,
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppEditorialSurfaces.glass(colors).withValues(
-                    alpha: 0.94,
-                  ),
-                  borderRadius: radius,
-                  border: Border.all(
-                    color: AppEditorialSurfaces.ghostBorder(colors),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  child: child,
-                ),
-              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              child: child,
             ),
           ),
         ),
@@ -201,63 +178,54 @@ class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
     final horizontalInset = responsivePageHorizontalPadding(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: AppEditorial.glassBlur,
-          sigmaY: AppEditorial.glassBlur,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppEditorialSurfaces.glass(colors),
-            border: Border(
-              bottom: BorderSide(
-                color: AppEditorialSurfaces.ghostBorder(
-                  colors,
-                ).withValues(alpha: 0.2),
-              ),
-            ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        border: Border(
+          bottom: BorderSide(
+            color: colors.outlineVariant.withValues(alpha: 0.2),
           ),
-          child: SafeArea(
-            bottom: false,
-            child: SizedBox(
-              height: preferredSize.height,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: horizontalInset),
-                child: Row(
-                  children: <Widget>[
-                    if (onBackPressed != null) ...<Widget>[
-                      IconButton(
-                        onPressed: onBackPressed,
-                        icon: const Icon(Icons.arrow_back_rounded),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                    ],
-                    const Icon(
-                      Icons.soup_kitchen_outlined,
-                      color: AppSeedColors.orange,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        l10n.cookflowPrepflowTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                    if (progressIndex != null)
-                      CookingFlowProgressIndicator(
-                        activeIndex: progressIndex!,
-                        semanticLabel: l10n.cookflowPhaseChip(
-                          progressIndex! + 1,
-                          4,
-                        ),
-                      ),
-                  ],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: preferredSize.height,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+            child: Row(
+              children: <Widget>[
+                if (onBackPressed != null) ...<Widget>[
+                  IconButton(
+                    onPressed: onBackPressed,
+                    icon: const Icon(Icons.arrow_back_rounded),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                ],
+                const Icon(
+                  Icons.soup_kitchen_outlined,
+                  color: Color(0xFFE65100),
                 ),
-              ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    l10n.cookflowPrepflowTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                if (progressIndex != null)
+                  CookingFlowProgressIndicator(
+                    activeIndex: progressIndex!,
+                    semanticLabel: l10n.cookflowPhaseChip(
+                      progressIndex! + 1,
+                      4,
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

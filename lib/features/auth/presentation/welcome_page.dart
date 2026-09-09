@@ -91,8 +91,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                tooltip:
-                    MaterialLocalizations.of(context).backButtonTooltip,
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                 onPressed: () => Navigator.of(context).pop(),
               ),
             )

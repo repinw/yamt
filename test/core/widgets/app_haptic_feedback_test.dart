@@ -139,7 +139,7 @@ void main() {
     try {
       await tester.pumpWidget(
         MaterialApp(
-          theme: AppTheme.light(seedColor: Colors.green),
+          theme: AppTheme.light(),
           home: Scaffold(
             body: Center(
               child: ElevatedButton(

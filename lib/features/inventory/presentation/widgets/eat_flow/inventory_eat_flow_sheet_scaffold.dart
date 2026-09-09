@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_footer.dart';
 
 /// Shared bottom sheet chrome for inventory eat flows.
@@ -68,14 +67,13 @@ class InventoryEatFlowSheetScaffold extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(
-                AppEditorial.cardRadius,
+                AppRadius.xl,
               ),
               child: DecoratedBox(
-                decoration: AppEditorialSurfaces.liftedCardDecoration(
-                  colors,
-                  borderRadius: BorderRadius.circular(
-                    AppEditorial.cardRadius,
-                  ),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
+                  border: Border.all(color: colors.outlineVariant),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

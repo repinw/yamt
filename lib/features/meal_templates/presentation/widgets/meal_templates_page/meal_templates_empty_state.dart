@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
@@ -23,15 +22,16 @@ class MealTemplatesEmptyState extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final borderRadius = BorderRadius.circular(AppEditorial.cardRadius);
+    final borderRadius = BorderRadius.circular(AppRadius.xl);
 
     return Center(
       child: SingleChildScrollView(
         padding: AppInsets.pageLarge,
         child: DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
             borderRadius: borderRadius,
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -152,37 +152,22 @@ class _GlowingHalo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
 
-    final blurRadius = isDark
-        ? AppEditorial.emptyStateActionDarkBlurRadius
-        : AppEditorial.emptyStateActionLightBlurRadius;
-    final spreadRadius = isDark
-        ? AppEditorial.emptyStateActionDarkSpreadRadius
-        : AppEditorial.emptyStateActionLightSpreadRadius;
-
-    return Container(
-      width: AppEditorial.emptyStateActionHighlightSize,
-      height: AppEditorial.emptyStateActionHighlightSize,
-      alignment: Alignment.center,
-      child: Container(
-        width: AppEditorial.emptyStateActionHaloSize,
-        height: AppEditorial.emptyStateActionHaloSize,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: colors.primary.withValues(alpha: isDark ? 0.35 : 0.2),
-              blurRadius: blurRadius,
-              spreadRadius: spreadRadius,
-            ),
-          ],
-          color: colors.primaryContainer.withValues(alpha: 0.8),
-        ),
-        child: Icon(
-          icon,
-          size: 32,
-          color: colors.primary,
+    return SizedBox.square(
+      dimension: 96,
+      child: Center(
+        child: Container(
+          width: 68,
+          height: 68,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: colors.primaryContainer.withValues(alpha: 0.8),
+          ),
+          child: Icon(
+            icon,
+            size: 32,
+            color: colors.primary,
+          ),
         ),
       ),
     );

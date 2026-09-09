@@ -87,13 +87,17 @@ class _BarcodeScannerOverlayState extends State<BarcodeScannerOverlay>
 
     _lockScaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1, end: 1.05)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 1,
+          end: 1.05,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.05, end: 1)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
+        tween: Tween<double>(
+          begin: 1.05,
+          end: 1,
+        ).chain(CurveTween(curve: Curves.easeInCubic)),
         weight: 60,
       ),
     ]).animate(_lockController);

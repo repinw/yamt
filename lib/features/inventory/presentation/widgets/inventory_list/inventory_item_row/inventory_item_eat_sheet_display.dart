@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 class InventoryItemEatSectionCard extends StatelessWidget {
   const InventoryItemEatSectionCard({required this.child});
@@ -17,17 +16,10 @@ class InventoryItemEatSectionCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: AppEditorialSurfaces.ghostBorder(colors),
+          color: colors.outlineVariant,
         ),
-        boxShadow: [
-          AppEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),

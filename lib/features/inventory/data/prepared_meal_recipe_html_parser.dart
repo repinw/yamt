@@ -98,7 +98,8 @@ class PreparedMealRecipeHtmlParser {
     }
 
     final rawTitle = _extractTitle(resolved, document);
-    final rawImageUrl = _extractImageUrl(
+    final rawImageUrl =
+        _extractImageUrl(
           resolved['image'],
           graphById: graphById,
         ) ??

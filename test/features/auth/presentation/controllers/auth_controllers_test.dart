@@ -2,14 +2,12 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
-import 'package:yamt/core/theme/theme_mode_controller.dart';
+
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/google_sign_in_provider.dart';
@@ -421,15 +419,10 @@ void main() {
 
       await container
           .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName(
-            '  Guest Wlad  ',
-            seedColor: AppColors.seed,
-            themeMode: ThemeMode.dark,
-          );
+          .saveDisplayName('  Guest Wlad  ');
 
       expect(fakeRepository.guestNameUpdateCalls, 1);
       expect(fakeRepository.lastGuestDisplayName, 'Guest Wlad');
-      expect(container.read(themeModeControllerProvider), ThemeMode.dark);
       expect(
         container.read(guestNameSetupControllerProvider).hasError,
         isFalse,
@@ -448,11 +441,7 @@ void main() {
 
       await container
           .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName(
-            '  ',
-            seedColor: AppColors.seed,
-            themeMode: ThemeMode.light,
-          );
+          .saveDisplayName('  ');
 
       expect(fakeRepository.guestNameUpdateCalls, 0);
       expect(
@@ -483,11 +472,7 @@ void main() {
 
       final future = container
           .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName(
-            'Guest',
-            seedColor: AppColors.seed,
-            themeMode: ThemeMode.system,
-          );
+          .saveDisplayName('Guest');
       disposeContainer();
       completer.complete();
 

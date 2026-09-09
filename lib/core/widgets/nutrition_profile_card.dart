@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 
 /// Shared nutrition summary card.
@@ -107,15 +106,11 @@ class NutritionProfileCard extends StatelessWidget {
     final resolvedAccent = accentColor ?? colors.primary;
 
     return Container(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+      decoration: BoxDecoration(
         color: Color.alphaBlend(
           colors.surfaceContainerLowest.withValues(alpha: 0.96),
           colors.surface,
         ),
-        blurRadius: 16,
-        shadowOffset: const Offset(0, 8),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -203,9 +198,7 @@ class _NutritionDivider extends StatelessWidget {
       child: VerticalDivider(
         width: AppSpacing.xl,
         thickness: 1,
-        color: AppEditorialSurfaces.ghostBorder(
-          colors,
-        ).withValues(alpha: 0.9),
+        color: colors.outline,
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Defines inventory primary action button.
 class InventoryPrimaryActionButton extends StatelessWidget {
@@ -101,17 +100,8 @@ class InventoryPrimaryActionButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: backgroundColor,
-        gradient: usesSoulGradient
-            ? AppEditorialSurfaces.soulGradient(colors)
-            : null,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: borderColor),
-        boxShadow: [
-          AppEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: 24,
-          ),
-        ],
       ),
       child: SizedBox(
         width: width,

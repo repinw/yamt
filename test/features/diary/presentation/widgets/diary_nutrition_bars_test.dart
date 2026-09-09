@@ -305,7 +305,6 @@ Future<void> _pumpNutritionBarsWithContainer(
   await tester.pumpAndSettle();
 }
 
-
 CalorieEntry _entry({
   required String id,
   required DateTime day,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Displays result dialog action buttons.
@@ -45,7 +44,7 @@ class AiChefActionButtonsRow extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: isSaving
                   ? null
-                  : AppEditorialSurfaces.soulGradient(colors),
+                  : LinearGradient(colors: [colors.primary, colors.primary]),
               borderRadius: BorderRadius.circular(AppRadius.pill),
             ),
             child: FilledButton(

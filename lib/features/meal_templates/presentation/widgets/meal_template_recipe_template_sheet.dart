@@ -4,7 +4,6 @@ import 'dart:developer' show log;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -183,9 +182,10 @@ class _PreparedMealRecipeTemplateSheetState
           bottomInset + AppSpacing.xxl,
         ),
         child: DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
@@ -217,10 +217,9 @@ class _PreparedMealRecipeTemplateSheetState
                       hintText: l10n.preparedMealTemplateRecipeUrlHint,
                       errorText: _recipeUrlErrorText,
                       prefixIcon: ShaderMask(
-                        shaderCallback: (bounds) =>
-                            AppEditorialSurfaces.soulGradient(
-                              colors,
-                            ).createShader(bounds),
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [colors.primary, colors.primary],
+                        ).createShader(bounds),
                         child: const Icon(
                           Icons.link_rounded,
                           color: Colors.white,
@@ -696,7 +695,9 @@ class _ActionButtonsRow extends StatelessWidget {
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              gradient: AppEditorialSurfaces.soulGradient(colors),
+              gradient: LinearGradient(
+                colors: [colors.primary, colors.primary],
+              ),
               borderRadius: BorderRadius.circular(AppRadius.pill),
               boxShadow: [
                 BoxShadow(

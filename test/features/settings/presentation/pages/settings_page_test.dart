@@ -9,8 +9,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
-import 'package:yamt/core/theme/seed_color_controller.dart';
-import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -309,16 +307,6 @@ void main() {
     expect(find.text('Health Connect'), findsOneWidget);
     expect(find.text('Remove Health Connect access for YAMT.'), findsOneWidget);
     expect(find.text('Set goal manually'), findsNothing);
-
-    await _scrollToText(tester, 'Theme');
-    expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
-    expect(find.text('Theme'), findsOneWidget);
-    expect(find.text('System'), findsNWidgets(2));
-
-    await _scrollToText(tester, 'Accent color');
-    expect(find.byIcon(Icons.format_paint_outlined), findsOneWidget);
-    expect(find.text('Accent color'), findsOneWidget);
-    expect(find.text('Teal'), findsNWidgets(2));
 
     await _scrollToText(tester, 'Language');
     expect(find.byIcon(Icons.language_rounded), findsOneWidget);
@@ -964,94 +952,28 @@ void main() {
     expect(find.text('1.1.0+2'), findsOneWidget);
   });
 
-  testWidgets('theme sheet updates theme mode provider', (tester) async {
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(settingsRepository.dispose);
-    final container = _createSettingsContainer(
-      settingsRepository: settingsRepository,
-    );
-    addTearDown(container.dispose);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: SettingsPage()),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(container.read(themeModeControllerProvider), ThemeMode.system);
-
-    await _scrollToTile(tester, SettingsPageKeys.themeTile);
-    await tester.tap(_settingsTile(SettingsPageKeys.themeTile));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Dark').last);
-    await tester.pumpAndSettle();
-
-    expect(container.read(themeModeControllerProvider), ThemeMode.dark);
-    expect(find.text('Dark'), findsNWidgets(2));
-  });
-
-  testWidgets('color sheet updates seed color provider', (tester) async {
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(settingsRepository.dispose);
-    final container = _createSettingsContainer(
-      settingsRepository: settingsRepository,
-    );
-    addTearDown(container.dispose);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: SettingsPage()),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(container.read(seedColorControllerProvider).toARGB32(), 0xFF00695C);
-
-    await _scrollToText(tester, 'Accent color');
-    await tester.tap(_settingsTile(SettingsPageKeys.colorTile));
-    await tester.pumpAndSettle();
-    expect(find.text('Pink'), findsOneWidget);
-    await tester.tap(find.text('Pink').last);
-    await tester.pumpAndSettle();
-
-    expect(container.read(seedColorControllerProvider).toARGB32(), 0xFFFF006F);
-    expect(find.text('Pink'), findsNWidgets(2));
-  });
-
   testWidgets('settings bottom sheets open above shell bottom menu', (
     tester,
   ) async {
     final menuCatchesTaps = ValueNotifier<bool>(false);
     addTearDown(menuCatchesTaps.dispose);
     var menuTapCount = 0;
-    final container = await _pumpSettingsPageUnderShellOverlay(
+    await _pumpSettingsPageUnderShellOverlay(
       tester,
       menuCatchesTaps: menuCatchesTaps,
       onMenuTap: () => menuTapCount += 1,
     );
 
-    await _scrollToText(tester, 'Accent color');
-    await tester.tap(_settingsTile(SettingsPageKeys.colorTile));
+    await _scrollToTile(tester, SettingsPageKeys.languageTile);
+    await tester.tap(_settingsTile(SettingsPageKeys.languageTile));
     await tester.pumpAndSettle();
     menuCatchesTaps.value = true;
     await tester.pump();
 
-    await tester.tap(find.text('Pink').last);
+    await tester.tap(find.text('English').last);
     await tester.pumpAndSettle();
 
     expect(menuTapCount, 0);
-    expect(container.read(seedColorControllerProvider).toARGB32(), 0xFFFF006F);
   });
 
   testWidgets('calculator bottom sheet opens above shell bottom menu', (

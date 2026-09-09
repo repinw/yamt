@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart';
 
 /// Animated target label above the expanded progress track.
@@ -58,7 +57,7 @@ class DiaryExpandedBalanceProgressTargetLabel extends StatelessWidget {
       child: Center(
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: AppEditorialSurfaces.liftedCard(colors),
+            color: colors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(5),
             border: Border.all(
               color: colors.outlineVariant.withValues(

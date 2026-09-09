@@ -163,9 +163,7 @@ class _SliderHeader extends StatelessWidget {
         Icon(
           icon,
           size: 20,
-          color: hasError
-              ? colorScheme.error
-              : colorScheme.onSurfaceVariant,
+          color: hasError ? colorScheme.error : colorScheme.onSurfaceVariant,
         ),
         const SizedBox(width: AppSpacing.xs),
         Expanded(

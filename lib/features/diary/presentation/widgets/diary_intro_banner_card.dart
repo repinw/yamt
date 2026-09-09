@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -37,7 +36,7 @@ class DiaryIntroBannerCard extends StatelessWidget {
       key: DiaryIntroDialogKeys.bannerCard,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: AppQuietSurfaces.cardBorderRadius(),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: borderColor),
       ),
       padding: const EdgeInsets.fromLTRB(

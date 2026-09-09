@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -36,7 +35,7 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: AppQuietSurfaces.cardBorderRadius(),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
@@ -49,7 +48,7 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: AppQuietSurfaces.cardBorderRadius(),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Stack(
           children: [
             Positioned(

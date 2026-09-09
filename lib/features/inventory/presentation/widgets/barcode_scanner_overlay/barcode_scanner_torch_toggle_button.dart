@@ -1,9 +1,8 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 
-/// Frosted glass circular button to toggle the camera torch (flashlight).
+/// Circular button to toggle the camera torch (flashlight).
 class BarcodeScannerTorchToggleButton extends StatelessWidget {
   /// Creates a torch toggle button.
   const BarcodeScannerTorchToggleButton({
@@ -27,32 +26,18 @@ class BarcodeScannerTorchToggleButton extends StatelessWidget {
       button: true,
       label: semanticLabel,
       child: ClipOval(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Material(
-            color: isTorchOn
-                ? Colors.amber.withValues(alpha: 0.3)
-                : Colors.black.withValues(alpha: 0.4),
-            shape: CircleBorder(
-              side: BorderSide(
-                color: isTorchOn
-                    ? Colors.amber.withValues(alpha: 0.8)
-                    : Colors.white.withValues(alpha: 0.2),
-                width: 1.2,
-              ),
-            ),
-            child: InkWell(
-              onTap: onPressed,
-              customBorder: const CircleBorder(),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Icon(
-                  isTorchOn
-                      ? Icons.flash_on_rounded
-                      : Icons.flash_off_rounded,
-                  color: isTorchOn ? Colors.amberAccent : Colors.white,
-                  size: 22,
-                ),
+        child: Material(
+          color: isTorchOn ? Colors.amber : Colors.black54,
+          shape: const CircleBorder(),
+          child: AppInkWell(
+            onTap: onPressed,
+            customBorder: const CircleBorder(),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Icon(
+                isTorchOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+                color: isTorchOn ? Colors.black : Colors.white,
+                size: 22,
               ),
             ),
           ),

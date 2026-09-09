@@ -161,8 +161,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     }
   }
 
-  void _openBarcodeScan() =>
-      _runWhenIdle(_openBarcodeScanFlow);
+  void _openBarcodeScan() => _runWhenIdle(_openBarcodeScanFlow);
 
   Future<void> _openBarcodeScanFlow() async {
     final scannedBarcode = await openProductSearchHubBarcodeScanner(

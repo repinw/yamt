@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Defines inventory segmented button frame.
 class InventorySegmentedButtonFrame extends StatelessWidget {
@@ -26,7 +25,7 @@ class InventorySegmentedButtonFrame extends StatelessWidget {
         color: colors.surfaceContainerLow.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: AppEditorialSurfaces.ghostBorder(colors),
+          color: colors.outlineVariant,
         ),
       ),
       child: Padding(padding: padding, child: child),

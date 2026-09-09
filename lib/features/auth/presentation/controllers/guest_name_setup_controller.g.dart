@@ -84,7 +84,7 @@ final class GuestNameSetupControllerProvider
 }
 
 String _$guestNameSetupControllerHash() =>
-    r'41f1caf6021718e10eac4a8f03806d70a1d76ddc';
+    r'a4def995adeb9edea9ebcbedd78881e20b3eecc1';
 
 /// Defines guest name setup controller.
 

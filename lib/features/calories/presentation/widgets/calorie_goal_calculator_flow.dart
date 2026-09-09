@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -254,9 +253,10 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
     final totalSteps = visibleSteps.length;
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: AppInsets.card,

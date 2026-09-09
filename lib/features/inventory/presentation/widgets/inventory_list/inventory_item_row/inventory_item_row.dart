@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
@@ -676,7 +675,7 @@ class _InventoryItemRowLayoutData {
       colorScheme: colors,
       snapshot: InventoryItemRowSnapshot.fromItem(item),
       viewData: InventoryItemRowViewData(
-        rowBorderColor: AppEditorialSurfaces.ghostBorder(colors),
+        rowBorderColor: colors.outlineVariant,
         expandedRowBorderColor: colors.primary.withValues(alpha: 0.2),
         nameTextStyle:
             (Theme.of(context).textTheme.titleMedium ?? const TextStyle())
@@ -702,15 +701,11 @@ class _InventoryItemRowLayoutData {
         eatActionBackgroundColor: isShoppingListPrimaryAction
             ? shoppingListActionColors.backgroundColor
             : eatActionColors.backgroundColor,
-        disabledActionBackgroundColor: AppEditorialSurfaces.section(
-          colors,
-        ),
+        disabledActionBackgroundColor: colors.surfaceContainerLow,
         eatActionBorderColor: isShoppingListPrimaryAction
             ? shoppingListActionColors.borderColor
             : eatActionColors.borderColor,
-        disabledActionBorderColor: AppEditorialSurfaces.ghostBorder(
-          colors,
-        ),
+        disabledActionBorderColor: colors.outlineVariant,
         primaryActionTooltip: isShoppingListPrimaryAction
             ? l10n.inventoryItemAddToShoppingListAction
             : l10n.inventoryItemEatAction,
@@ -821,11 +816,15 @@ class _InventoryItemRowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = AppSurfaceCard.borderRadius();
+    final radius = BorderRadius.circular(AppRadius.lg);
     final colors = layoutData.colorScheme;
 
     return DecoratedBox(
-      decoration: AppSurfaceCard.decoration(colors),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
+      ),
       child: ClipRRect(
         borderRadius: radius,
         child: Material(
@@ -890,7 +889,7 @@ class _InventoryItemRowBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: AppSurfaceCard.padding,
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

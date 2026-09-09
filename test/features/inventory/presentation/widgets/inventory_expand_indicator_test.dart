@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 
@@ -32,7 +31,7 @@ Future<void> _pumpIndicator(
 }
 
 void main() {
-  final theme = AppTheme.light(seedColor: AppColors.seed);
+  final theme = AppTheme.light();
 
   testWidgets('uses expanded enabled colors and rotation', (tester) async {
     await _pumpIndicator(tester, theme: theme, isExpanded: true, enabled: true);

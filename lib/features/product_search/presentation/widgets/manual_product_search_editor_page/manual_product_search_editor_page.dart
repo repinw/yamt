@@ -180,8 +180,9 @@ class _InventoryReceiptManualProductEditorPageState
       onScanBarcode: () => unawaited(_openBarcodeScanner()),
       onAiSearchTap: () => unawaited(_openAiSearchPage()),
       onCreateManualDraft: () => unawaited(_startManualProductDraft()),
-      onScanNutritionLabel:
-          state.canScanNutritionLabel ? _onScanNutritionLabel : null,
+      onScanNutritionLabel: state.canScanNutritionLabel
+          ? _onScanNutritionLabel
+          : null,
       onActionChanged: (action) => setState(() => _selectedAction = action),
       onCancel: _closePage,
       onSave: _onSave,
@@ -235,18 +236,18 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   Future<void> _openBarcodeScanner() => launchEditorBarcodeScanner(
-        context: context,
-        quickEatConfig: ref.read(inventoryManualAddQuickEatConfigProvider),
-        config: widget.config,
-        controller: _controller,
-        voiceSearchController: _voiceSearchController,
-        showEatImmediatelyOption: widget.showEatImmediatelyOption,
-        autofocusSearch: widget.autofocusSearch,
-        onApplyAction: _apply,
-        onShowSnackBar: _showSnackBar,
-        onSaved: widget.onSaved,
-        onClosePage: _closePage,
-      );
+    context: context,
+    quickEatConfig: ref.read(inventoryManualAddQuickEatConfigProvider),
+    config: widget.config,
+    controller: _controller,
+    voiceSearchController: _voiceSearchController,
+    showEatImmediatelyOption: widget.showEatImmediatelyOption,
+    autofocusSearch: widget.autofocusSearch,
+    onApplyAction: _apply,
+    onShowSnackBar: _showSnackBar,
+    onSaved: widget.onSaved,
+    onClosePage: _closePage,
+  );
 
   void _apply(InventoryReceiptManualProductAction action, VoidCallback apply) {
     if (mounted) {
@@ -259,17 +260,17 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   Future<void> _openAiSearchPage() => launchEditorAiSearchPage(
-        context: context,
-        quickEatConfig: ref.read(inventoryManualAddQuickEatConfigProvider),
-        config: widget.config,
-        voiceSearchController: _voiceSearchController,
-        searchQuery: _searchController.text,
-        showEatImmediatelyOption: widget.showEatImmediatelyOption,
-        selectedAction: _selectedAction,
-        closeCurrentEditorOnSave: widget.closeCurrentEditorOnSave,
-        onSaved: widget.onSaved,
-        onClosePage: _closePage,
-      );
+    context: context,
+    quickEatConfig: ref.read(inventoryManualAddQuickEatConfigProvider),
+    config: widget.config,
+    voiceSearchController: _voiceSearchController,
+    searchQuery: _searchController.text,
+    showEatImmediatelyOption: widget.showEatImmediatelyOption,
+    selectedAction: _selectedAction,
+    closeCurrentEditorOnSave: widget.closeCurrentEditorOnSave,
+    onSaved: widget.onSaved,
+    onClosePage: _closePage,
+  );
 
   Future<void> _startManualProductDraft() =>
       startManualProductDraftWithVoiceCleanup(
@@ -280,8 +281,8 @@ class _InventoryReceiptManualProductEditorPageState
   void _showSnackBar(String message) => showEditorSnackBar(context, message);
 
   void _closePage<T extends Object?>([T? result]) => closeEditorPage(
-        context: context,
-        voiceSearchController: _voiceSearchController,
-        result: result,
-      );
+    context: context,
+    voiceSearchController: _voiceSearchController,
+    result: result,
+  );
 }

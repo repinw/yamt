@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Error state card for the cookbook page.
@@ -18,15 +17,16 @@ class MealTemplatesErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final borderRadius = BorderRadius.circular(AppEditorial.cardRadius);
+    final borderRadius = BorderRadius.circular(AppRadius.xl);
 
     return Center(
       child: Padding(
         padding: AppInsets.pageLarge,
         child: DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
             borderRadius: borderRadius,
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(

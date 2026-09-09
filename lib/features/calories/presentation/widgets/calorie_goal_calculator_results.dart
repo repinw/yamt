@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
@@ -28,9 +27,10 @@ class CalorieGoalCalculatorResultsCard extends StatelessWidget {
 
     return DecoratedBox(
       key: CalorieGoalCalculatorSheetKeys.resultsCard,
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: AppInsets.card,

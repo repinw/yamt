@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CookingFlowIntroPortionScaler extends StatefulWidget {
@@ -66,13 +65,10 @@ class _CookingFlowIntroPortionScalerState
     final canDecrease = resolvedTargetPortions > 1;
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(
-          AppEditorial.cardRadius,
-        ),
-        blurRadius: 18,
-        shadowOffset: const Offset(0, 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: AppInsets.card,

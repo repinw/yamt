@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -92,19 +91,12 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
       curve: Curves.easeOutCubic,
       decoration: hasUnresolvedConflict
           ? BoxDecoration(
-              color: AppEditorialSurfaces.liftedCard(colors),
+              color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
                 color: cookingFlowConflictBorderColor,
                 width: 1.4,
               ),
-              boxShadow: <BoxShadow>[
-                AppEditorialSurfaces.ambientBoxShadow(
-                  colors,
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
             )
           : hasSuggestion
           ? BoxDecoration(
@@ -114,35 +106,20 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
                 color: colors.primary.withValues(alpha: 0.4),
                 width: 1.4,
               ),
-              boxShadow: <BoxShadow>[
-                AppEditorialSurfaces.ambientBoxShadow(
-                  colors,
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
             )
           : isCompleted
           ? BoxDecoration(
-              color: AppEditorialSurfaces.liftedCard(colors),
+              color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
                 color: successColors.borderColor,
                 width: 1.4,
               ),
-              boxShadow: <BoxShadow>[
-                AppEditorialSurfaces.ambientBoxShadow(
-                  colors,
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
             )
-          : AppEditorialSurfaces.liftedCardDecoration(
-              colors,
+          : BoxDecoration(
+              color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              blurRadius: 14,
-              shadowOffset: const Offset(0, 6),
+              border: Border.all(color: colors.outlineVariant),
             ),
       child: Padding(
         padding: const EdgeInsets.symmetric(

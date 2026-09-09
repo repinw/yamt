@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Primary accent button used across Cookflow screens.
@@ -104,7 +103,7 @@ class _CookingFlowAccentSurface extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: isEnabled
-            ? AppEditorialSurfaces.soulGradient(colors)
+            ? LinearGradient(colors: [colors.primary, colors.primary])
             : LinearGradient(
                 colors: <Color>[
                   colors.surfaceContainerHighest,
@@ -114,11 +113,7 @@ class _CookingFlowAccentSurface extends StatelessWidget {
         borderRadius: radius,
         boxShadow: isEnabled
             ? <BoxShadow>[
-                AppEditorialSurfaces.ambientBoxShadow(
-                  colors,
-                  blurRadius: shadowBlurRadius,
-                  offset: shadowOffset,
-                ),
+                const BoxShadow(color: Colors.transparent),
               ]
             : null,
       ),

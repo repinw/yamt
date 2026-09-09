@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_goal_progress_track.dart';
@@ -78,7 +77,7 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
       numberFormat,
       unit,
     );
-    final trackColor = AppEditorialSurfaces.appBackground(colors);
+    final trackColor = colors.surface;
     final activityColor = accents.activityFor(colors.brightness);
     final activityTextColor = accents.activityTextFor(colors.brightness);
     final primary = accents.today;
@@ -131,7 +130,7 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
           activitySegmentRatio: activitySegmentRatio,
           activityFillRatio: activityFillRatio,
           activitySegmentStartRatio: activitySegmentStartRatio,
-          dividerColor: AppEditorialSurfaces.liftedCard(colors),
+          dividerColor: colors.surfaceContainerLow,
         ),
       ],
     );
@@ -158,7 +157,7 @@ class _ActivitySegmentPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: Color.alphaBlend(
           color.withValues(alpha: isDark ? 0.18 : 0.12),
-          AppEditorialSurfaces.liftedCard(colors),
+          colors.surfaceContainerLow,
         ),
         borderRadius: BorderRadius.circular(7),
       ),

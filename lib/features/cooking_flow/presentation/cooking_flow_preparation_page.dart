@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -56,13 +55,10 @@ class CookingFlowPreparationPage extends StatelessWidget {
       subtitle: l10n.cookflowPreparationBody,
       children: <Widget>[
         DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(
-              AppEditorial.cardRadius,
-            ),
-            blurRadius: 22,
-            shadowOffset: const Offset(0, 10),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Padding(
             padding: AppInsets.card,
@@ -73,7 +69,6 @@ class CookingFlowPreparationPage extends StatelessWidget {
                   children: <Widget>[
                     const Icon(
                       Icons.balance_outlined,
-                      color: AppSeedColors.orange,
                       size: 18,
                     ),
                     const SizedBox(width: AppSpacing.sm),

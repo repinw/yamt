@@ -60,9 +60,7 @@ class DiaryFoodLogFeedbackMacroRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final hasTarget = target != null && target!.isFinite && target! > 0;
-    final progress = hasTarget
-        ? (value / target!).clamp(0.0, 1.0)
-        : 0.0;
+    final progress = hasTarget ? (value / target!).clamp(0.0, 1.0) : 0.0;
     final remaining = hasTarget ? target! - value : 0.0;
     final amount = numberFormat.format(remaining.abs().round());
 

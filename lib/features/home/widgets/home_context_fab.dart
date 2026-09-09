@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -16,18 +15,11 @@ class HomeContextFab extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppEditorialSurfaces.soulGradient(colors),
+        color: colors.primary,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: [
-          AppEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: 28,
-            offset: const Offset(0, 16),
-          ),
-        ],
       ),
       child: SizedBox.square(
-        dimension: AppEditorial.contextFabSize,
+        dimension: 64,
         child: Material(
           color: Colors.transparent,
           child: AppInkWell(

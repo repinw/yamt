@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -136,11 +135,10 @@ class InventoryFiltersSheet extends StatelessWidget {
             maxHeight: mediaQuery.size.height * (isCompact ? 0.92 : 0.84),
           ),
           child: DecoratedBox(
-            decoration: AppEditorialSurfaces.liftedCardDecoration(
-              colors,
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLow,
               borderRadius: borderRadius,
-              blurRadius: 28,
-              shadowOffset: const Offset(0, 16),
+              border: Border.all(color: colors.outlineVariant),
             ),
             child: ClipRRect(
               borderRadius: borderRadius,
@@ -326,7 +324,7 @@ class InventorySortOptionCard extends StatelessWidget {
     final backgroundColor = isSelected
         ? Color.alphaBlend(
             colors.primary.withValues(alpha: 0.08),
-            AppEditorialSurfaces.section(colors),
+            colors.surfaceContainerLow,
           )
         : Colors.transparent;
     final iconBackground = isSelected
@@ -347,15 +345,6 @@ class InventorySortOptionCard extends StatelessWidget {
               color: backgroundColor,
               borderRadius: BorderRadius.circular(AppRadius.xl),
               border: Border.all(color: borderColor),
-              boxShadow: isSelected
-                  ? [
-                      AppEditorialSurfaces.ambientBoxShadow(
-                        colors,
-                        blurRadius: 18,
-                        offset: const Offset(0, 10),
-                      ),
-                    ]
-                  : null,
             ),
             padding: const EdgeInsets.all(AppSpacing.xs),
             child: Row(
@@ -489,15 +478,8 @@ class _InventoryFiltersPrimaryButton extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppEditorialSurfaces.soulGradient(colors),
+        color: colors.primary,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [
-          AppEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
       ),
       child: SizedBox(
         width: double.infinity,
@@ -594,12 +576,13 @@ class InventoryEmptyState extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final emptyStateMessage = message ?? l10n.inventoryEmptyState;
-    final cardRadius = BorderRadius.circular(AppEditorial.cardRadius);
+    final cardRadius = BorderRadius.circular(AppRadius.xl);
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
         borderRadius: cardRadius,
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -643,7 +626,6 @@ class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
 
     return SizedBox.square(
       key: const Key('inventory_empty_state_fab_highlight'),
-      dimension: AppEditorial.emptyStateActionHighlightSize,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -654,18 +636,10 @@ class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: haloShadowColor,
-                  blurRadius: isLightTheme
-                      ? AppEditorial.emptyStateActionLightBlurRadius
-                      : AppEditorial.emptyStateActionDarkBlurRadius,
-                  spreadRadius: isLightTheme
-                      ? AppEditorial.emptyStateActionLightSpreadRadius
-                      : AppEditorial.emptyStateActionDarkSpreadRadius,
                 ),
               ],
             ),
-            child: const SizedBox.square(
-              dimension: AppEditorial.emptyStateActionHaloSize,
-            ),
+            child: const SizedBox.square(),
           ),
           child,
         ],

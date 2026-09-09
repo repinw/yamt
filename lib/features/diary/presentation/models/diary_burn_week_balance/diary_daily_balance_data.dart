@@ -93,8 +93,9 @@ class DiaryDailyBalanceData {
     );
 
     final baseNumber = numberFormat.format(metrics.baseGoalKcal.round());
-    final plannedWithCarryoverNumber =
-        numberFormat.format(metrics.targetKcal.round());
+    final plannedWithCarryoverNumber = numberFormat.format(
+      metrics.targetKcal.round(),
+    );
     final eatenNumber = numberFormat.format(metrics.eatenKcal.round());
     final targetNumber = numberFormat.format(metrics.targetKcal.round());
     final leftNumber = isHeartDay

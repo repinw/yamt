@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Shared amount input card for inventory eat flows.
 class InventoryEatFlowAmountCard extends StatelessWidget {
@@ -112,7 +111,7 @@ class InventoryEatFlowAmountCard extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 64,
-                  color: AppEditorialSurfaces.ghostBorder(colors),
+                  color: colors.outlineVariant,
                 ),
                 Expanded(
                   child: Padding(

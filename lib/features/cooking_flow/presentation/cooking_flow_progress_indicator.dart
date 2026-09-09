@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Stable finder key for cookflow phase progress.
 const Key cookingFlowProgressIndicatorKey = ValueKey<String>(
@@ -43,7 +42,7 @@ class CookingFlowProgressIndicator extends StatelessWidget {
           dotHeight: 7,
           spacing: 5,
           radius: 7,
-          activeDotColor: AppSeedColors.orange,
+          activeDotColor: const Color(0xFFE65100),
           dotColor: colors.outlineVariant,
         ),
       ),

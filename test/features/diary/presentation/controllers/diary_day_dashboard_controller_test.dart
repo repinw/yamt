@@ -300,56 +300,57 @@ void main() {
   test(
     'concurrent refreshAfterMutation calls share in-flight refresh',
     () async {
-    final preferences = MemoryAppPreferences();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: [_entry(selectedDay, name: 'Shared oats')],
-    );
-    final completer = Completer<CalorieWeekOverview>();
-    var weekOverviewReadCount = 0;
-    addTearDown(logRepository.dispose);
+      final preferences = MemoryAppPreferences();
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: [_entry(selectedDay, name: 'Shared oats')],
+      );
+      final completer = Completer<CalorieWeekOverview>();
+      var weekOverviewReadCount = 0;
+      addTearDown(logRepository.dispose);
 
-    final container = _dashboardContainer(
-      preferences: preferences,
-      logRepository: logRepository,
-      selectedDay: selectedDay,
-      weekOverviewBuilder: () {
-        weekOverviewReadCount += 1;
-        if (weekOverviewReadCount == 1) {
-          return diaryWeekOverviewForTest(
-            selectedDay: selectedDay,
-            dayTotals: const <double>[0, 0, 0, 0, 0, 0, 240],
-          );
-        }
-        return completer.future;
-      },
-    );
-    addTearDown(container.dispose);
+      final container = _dashboardContainer(
+        preferences: preferences,
+        logRepository: logRepository,
+        selectedDay: selectedDay,
+        weekOverviewBuilder: () {
+          weekOverviewReadCount += 1;
+          if (weekOverviewReadCount == 1) {
+            return diaryWeekOverviewForTest(
+              selectedDay: selectedDay,
+              dayTotals: const <double>[0, 0, 0, 0, 0, 0, 240],
+            );
+          }
+          return completer.future;
+        },
+      );
+      addTearDown(container.dispose);
 
-    final provider = diaryDayDashboardControllerProvider(selectedDay);
-    final subscription = container.listen(
-      provider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-    addTearDown(subscription.close);
+      final provider = diaryDayDashboardControllerProvider(selectedDay);
+      final subscription = container.listen(
+        provider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
 
-    await _waitForDashboardRefresh(container, selectedDay);
-    expect(weekOverviewReadCount, 1);
+      await _waitForDashboardRefresh(container, selectedDay);
+      expect(weekOverviewReadCount, 1);
 
-    final first = container.read(provider.notifier).refreshAfterMutation();
-    final second = container.read(provider.notifier).refreshAfterMutation();
+      final first = container.read(provider.notifier).refreshAfterMutation();
+      final second = container.read(provider.notifier).refreshAfterMutation();
 
-    expect(weekOverviewReadCount, 2);
+      expect(weekOverviewReadCount, 2);
 
-    completer.complete(
-      diaryWeekOverviewForTest(selectedDay: selectedDay),
-    );
+      completer.complete(
+        diaryWeekOverviewForTest(selectedDay: selectedDay),
+      );
 
-    final results = await Future.wait([first, second]);
-    expect(weekOverviewReadCount, 2);
-    expect(results[0].data?.selectedDayEntries.single.name, 'Shared oats');
-    expect(results[1].data?.selectedDayEntries.single.name, 'Shared oats');
-  });
+      final results = await Future.wait([first, second]);
+      expect(weekOverviewReadCount, 2);
+      expect(results[0].data?.selectedDayEntries.single.name, 'Shared oats');
+      expect(results[1].data?.selectedDayEntries.single.name, 'Shared oats');
+    },
+  );
 }
 
 ProviderContainer _dashboardContainer({

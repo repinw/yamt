@@ -72,17 +72,16 @@ Future<void> openManualProductAiSearchPage({
   required Future<void> Function(InventoryReceiptManualProductResult)? onSaved,
   required void Function(InventoryReceiptManualProductResult) onClosePage,
 }) async {
-  final result =
-      await pushManualProductSearchPage<ManualProductAiSearchResult>(
-        context: context,
-        args: ManualProductSearchRouteArgs.aiSearch(
-          item: config.item,
-          initialPrompt: searchQuery,
-          showEatImmediatelyOption: showEatImmediatelyOption,
-          initialAction: selectedAction,
-          quickEatConfig: quickEatConfig,
-        ),
-      );
+  final result = await pushManualProductSearchPage<ManualProductAiSearchResult>(
+    context: context,
+    args: ManualProductSearchRouteArgs.aiSearch(
+      item: config.item,
+      initialPrompt: searchQuery,
+      showEatImmediatelyOption: showEatImmediatelyOption,
+      initialAction: selectedAction,
+      quickEatConfig: quickEatConfig,
+    ),
+  );
   if (!context.mounted || result == null) {
     return;
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Defines inventory filter toggle.
 class InventoryFilterToggle extends StatelessWidget {
@@ -36,7 +35,7 @@ class InventoryFilterToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final borderColor = AppEditorialSurfaces.ghostBorder(colors);
+    final borderColor = colors.outlineVariant;
     final iconBackground = value
         ? colors.primary.withValues(alpha: 0.14)
         : colors.surfaceContainerHigh;
@@ -45,7 +44,7 @@ class InventoryFilterToggle extends StatelessWidget {
     return MergeSemantics(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppEditorialSurfaces.section(colors),
+          color: colors.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(color: borderColor),
         ),

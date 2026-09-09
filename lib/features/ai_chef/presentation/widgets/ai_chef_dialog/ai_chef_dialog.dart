@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/ai_chef/application/'
     'ai_chef_inventory_input_builder.dart';
 import 'package:yamt/features/ai_chef/presentation/controllers/'
@@ -99,9 +98,10 @@ class _AiChefDialogState extends ConsumerState<AiChefDialog> {
           maxWidth: AppSizes.narrowContentMaxWidth,
         ),
         child: DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),

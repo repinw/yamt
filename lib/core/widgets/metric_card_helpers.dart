@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Shared rounded detail card shell for secondary metric cards.
 class MetricDetailCardShell extends StatelessWidget {
@@ -15,7 +14,11 @@ class MetricDetailCardShell extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: AppQuietSurfaces.cardDecoration(colors),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: child,
@@ -31,7 +34,6 @@ class MetricCardFrame extends StatelessWidget {
     required this.child,
     this.padding,
     this.clip = true,
-    this.withShadow = true,
     super.key,
   });
 
@@ -44,19 +46,17 @@ class MetricCardFrame extends StatelessWidget {
   /// Whether to clip overflowing children to the rounded shape.
   final bool clip;
 
-  /// Whether to draw the metric card shadow.
-  final bool withShadow;
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final radius = AppQuietSurfaces.cardBorderRadius();
+    final radius = BorderRadius.circular(AppRadius.lg);
     final content = padding == null
         ? child
         : Padding(padding: padding!, child: child);
-    final decoration = AppQuietSurfaces.cardDecoration(
-      colors,
-      withShadow: withShadow,
+    final decoration = BoxDecoration(
+      color: colors.surfaceContainerLow,
+      borderRadius: radius,
+      border: Border.all(color: colors.outlineVariant),
     );
 
     return DecoratedBox(

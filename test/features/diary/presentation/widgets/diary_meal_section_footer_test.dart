@@ -16,7 +16,7 @@ void main() {
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: AppTheme.light(seedColor: Colors.green),
+      theme: AppTheme.light(),
       home: Scaffold(body: child),
     );
   }

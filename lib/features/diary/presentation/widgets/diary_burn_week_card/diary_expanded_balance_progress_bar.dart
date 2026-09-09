@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart';
@@ -42,7 +41,7 @@ class DiaryExpandedBalanceProgressBar extends StatelessWidget {
     final targetLabel = AppLocalizations.of(
       context,
     )!.diaryBalanceTargetMarkerLabel;
-    final trackColor = AppEditorialSurfaces.appBackground(colors);
+    final trackColor = colors.surface;
     final dividerColor = diaryBalanceProgressDividerColor(colors);
 
     return SizedBox(

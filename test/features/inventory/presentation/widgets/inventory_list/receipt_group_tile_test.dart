@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -173,8 +172,8 @@ Future<void> _toggleExpansion(WidgetTester tester) async {
   manualProductRecentItemsService,
 ])
 void main() {
-  final lightTheme = AppTheme.light(seedColor: AppColors.seed);
-  final darkTheme = AppTheme.dark(seedColor: AppColors.seed);
+  final lightTheme = AppTheme.light();
+  final darkTheme = AppTheme.dark();
 
   setUpAll(() async {
     await initializeDateFormatting('en');

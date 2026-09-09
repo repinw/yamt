@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -53,7 +52,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final borderRadius = BorderRadius.circular(
-      AppEditorial.cardRadius,
+      AppRadius.xl,
     );
     final tile = Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -62,7 +61,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
         children: [
           InventoryReceiptSelectionThumbnail(
             imageUrl: imageUrl,
-            dimension: AppEditorial.imageTileSize,
+            dimension: 56,
             backgroundColor: colors.secondaryContainer.withValues(alpha: 0.28),
             foregroundColor: colors.onSecondaryContainer,
           ),
@@ -86,12 +85,10 @@ class InventoryProductCandidateTile extends StatelessWidget {
     );
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
         borderRadius: borderRadius,
-        color: colors.surfaceContainerLowest.withValues(alpha: 0.96),
-        blurRadius: 22,
-        shadowOffset: const Offset(0, 10),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Material(
         color: Colors.transparent,

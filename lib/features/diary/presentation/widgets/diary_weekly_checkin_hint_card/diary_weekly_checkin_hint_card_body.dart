@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -46,7 +45,11 @@ class DiaryWeeklyCheckInHintCardBody extends StatelessWidget {
 
     return DecoratedBox(
       key: DiaryWeeklyCheckInCardKeys.hintCard,
-      decoration: AppQuietSurfaces.cardDecoration(colors),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
+      ),
       child: Padding(
         padding: AppInsets.card,
         child: Column(

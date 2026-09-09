@@ -91,15 +91,17 @@ void main() {
         overrides: [
           diaryStepsSummaryProvider(
             selectedDay,
-          ).overrideWith((ref) async => _summary(selectedDay, [
-                _workout(
-                  selectedDay,
-                  activityLabel: 'Running',
-                  durationMinutes: 30,
-                  totalCalories: 200,
-                  sourceName: 'Health Connect',
-                ),
-              ])),
+          ).overrideWith(
+            (ref) async => _summary(selectedDay, [
+              _workout(
+                selectedDay,
+                activityLabel: 'Running',
+                durationMinutes: 30,
+                totalCalories: 200,
+                sourceName: 'Health Connect',
+              ),
+            ]),
+          ),
           resolvedCalorieGoalForDayProvider(selectedDay).overrideWith(
             (ref) async => ResolvedCalorieGoalData(
               day: selectedDay,
@@ -139,15 +141,17 @@ void main() {
         overrides: [
           diaryStepsSummaryProvider(
             selectedDay,
-          ).overrideWith((ref) async => _summary(selectedDay, [
-                _workout(
-                  selectedDay,
-                  activityLabel: 'Running',
-                  durationMinutes: 60,
-                  totalCalories: 600,
-                  sourceName: 'Health Connect',
-                ),
-              ])),
+          ).overrideWith(
+            (ref) async => _summary(selectedDay, [
+              _workout(
+                selectedDay,
+                activityLabel: 'Running',
+                durationMinutes: 60,
+                totalCalories: 600,
+                sourceName: 'Health Connect',
+              ),
+            ]),
+          ),
           resolvedCalorieGoalForDayProvider(selectedDay).overrideWith(
             (ref) async => ResolvedCalorieGoalData(
               day: selectedDay,

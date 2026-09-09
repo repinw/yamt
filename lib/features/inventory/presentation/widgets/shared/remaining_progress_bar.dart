@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 const _maxSegmentCount = 12;
 
@@ -26,7 +25,7 @@ class RemainingProgressBar extends StatelessWidget {
     this.labelLayout = RemainingProgressBarLabelLayout.belowBar,
     this.trackColor,
     this.fillColor,
-    this.barHeight = AppEditorial.progressHeight,
+    this.barHeight = 8.0,
     this.stockLabelStyle,
     this.percentageStyle,
   });

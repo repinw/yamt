@@ -8,7 +8,6 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
@@ -626,7 +625,7 @@ class _InventoryErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final cardRadius = BorderRadius.circular(AppEditorial.cardRadius);
+    final cardRadius = BorderRadius.circular(AppRadius.xl);
 
     return CustomScrollView(
       slivers: [
@@ -638,9 +637,10 @@ class _InventoryErrorView extends StatelessWidget {
             child: Padding(
               padding: AppInsets.pageLarge,
               child: DecoratedBox(
-                decoration: AppEditorialSurfaces.liftedCardDecoration(
-                  colors,
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
                   borderRadius: cardRadius,
+                  border: Border.all(color: colors.outlineVariant),
                 ),
                 child: Padding(
                   padding: AppInsets.card,

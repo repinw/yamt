@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/core/widgets/metric_card_shell/metric_sparkline_painter.dart';
 
@@ -135,9 +134,7 @@ class MetricCardShell extends StatelessWidget {
                       painter: MetricSparklinePainter(
                         values: trend,
                         color: accentColor,
-                        backgroundColor: AppEditorialSurfaces.appBackground(
-                          colors,
-                        ),
+                        backgroundColor: colors.surface,
                       ),
                     ),
                   ),

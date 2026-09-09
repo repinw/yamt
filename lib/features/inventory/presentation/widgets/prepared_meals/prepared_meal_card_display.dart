@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, formatInventoryAmountValue;
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -79,9 +78,9 @@ class PreparedMealPrimaryActionButton extends StatelessWidget {
       width: AppInventoryClosedTile.actionWidth,
       height: AppInventoryClosedTile.actionHeight,
       enabledBackgroundColor: colors.primary,
-      disabledBackgroundColor: AppEditorialSurfaces.section(colors),
+      disabledBackgroundColor: colors.surfaceContainerLow,
       enabledBorderColor: colors.primary,
-      disabledBorderColor: AppEditorialSurfaces.ghostBorder(colors),
+      disabledBorderColor: colors.outlineVariant,
       enabledForegroundColor: colors.onPrimary,
       disabledForegroundColor: colors.onSurfaceVariant,
       useGradientWhenShowText: false,
@@ -111,7 +110,7 @@ class PreparedMealPriceCard extends StatelessWidget {
           InventoryItemRowConstants.nutritionStripRadius,
         ),
         border: Border.all(
-          color: AppEditorialSurfaces.ghostBorder(colors),
+          color: colors.outlineVariant,
         ),
       ),
       child: Padding(

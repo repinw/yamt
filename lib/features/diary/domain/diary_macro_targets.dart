@@ -181,8 +181,7 @@ class DiaryMacroTargets {
           (carryoverKcal * carryoverCarbFraction) /
           carbEnergyDensityKcalPerGram,
       fatGrams:
-          (carryoverKcal * carryoverFatFraction) /
-          fatEnergyDensityKcalPerGram,
+          (carryoverKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram,
     );
   }
 

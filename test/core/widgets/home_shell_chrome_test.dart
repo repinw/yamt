@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 
 void main() {
@@ -60,7 +59,7 @@ void main() {
       expect(find.text('Mon, Apr 27'), findsOneWidget);
     });
 
-    testWidgets('uses app background color for its chrome surface', (
+    testWidgets('renders top bar content without extra decoration', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -73,13 +72,8 @@ void main() {
         ),
       );
 
-      final context = tester.element(find.byType(HomeTopBar));
-      final colors = Theme.of(context).colorScheme;
-      final chrome = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-      final decoration = chrome.decoration as BoxDecoration;
-
-      expect(decoration.color, AppEditorialSurfaces.appBackground(colors));
-      expect(decoration.border, isNull);
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Mon, Apr 27'), findsOneWidget);
     });
 
     testWidgets('wraps icon actions in circular app bar surfaces', (
@@ -116,7 +110,7 @@ void main() {
       expect(style.shape?.resolve(<WidgetState>{}), isA<CircleBorder>());
       expect(
         style.backgroundColor?.resolve(<WidgetState>{}),
-        AppEditorialSurfaces.section(colors),
+        colors.surfaceContainerHigh,
       );
     });
 

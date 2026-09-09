@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Premium animated loading view for AI recipe generator.
@@ -151,8 +150,9 @@ class _AnimatedStarsIcon extends StatelessWidget {
         RotationTransition(
           turns: rotationController,
           child: ShaderMask(
-            shaderCallback: (bounds) =>
-                AppEditorialSurfaces.soulGradient(colors).createShader(bounds),
+            shaderCallback: (bounds) => LinearGradient(
+              colors: [colors.primary, colors.primary],
+            ).createShader(bounds),
             child: const Icon(
               Icons.auto_awesome_rounded,
               size: 48,

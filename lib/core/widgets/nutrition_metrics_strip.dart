@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Defines nutrition metric.
 class NutritionMetric {
@@ -68,9 +67,7 @@ class NutritionMetricsStrip extends StatelessWidget {
           color: stripColor,
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: AppEditorialSurfaces.ghostBorder(
-              resolvedColorScheme,
-            ),
+            color: resolvedColorScheme.outline,
           ),
         ),
         child: Row(
@@ -91,9 +88,7 @@ class NutritionMetricsStrip extends StatelessWidget {
                   child: VerticalDivider(
                     width: 1,
                     thickness: 1,
-                    color: AppEditorialSurfaces.ghostBorder(
-                      resolvedColorScheme,
-                    ).withValues(alpha: 0.9),
+                    color: resolvedColorScheme.outline,
                   ),
                 ),
             ],

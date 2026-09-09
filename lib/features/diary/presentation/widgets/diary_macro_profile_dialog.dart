@@ -51,10 +51,9 @@ class DiaryMacroProfileDialog extends StatelessWidget {
 String diaryMacroEmphasisLabel(
   AppLocalizations l10n,
   DiaryMacroEmphasis emphasis,
-) =>
-    switch (emphasis) {
-      DiaryMacroEmphasis.protein => l10n.diaryMacroProteinEmphasis,
-      DiaryMacroEmphasis.carbs => l10n.diaryMacroCarbsEmphasis,
-      DiaryMacroEmphasis.fat => l10n.diaryMacroFatEmphasis,
-      DiaryMacroEmphasis.mixed => l10n.diaryMacroMixedEmphasis,
-    };
+) => switch (emphasis) {
+  DiaryMacroEmphasis.protein => l10n.diaryMacroProteinEmphasis,
+  DiaryMacroEmphasis.carbs => l10n.diaryMacroCarbsEmphasis,
+  DiaryMacroEmphasis.fat => l10n.diaryMacroFatEmphasis,
+  DiaryMacroEmphasis.mixed => l10n.diaryMacroMixedEmphasis,
+};

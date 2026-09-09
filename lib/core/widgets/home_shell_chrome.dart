@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 
@@ -294,68 +293,63 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     );
     final subtitleStyle = _homeTopBarSubtitleStyle(context);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppEditorialSurfaces.appBackground(colors),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: resolvedHeight,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: compact ? AppSpacing.lg : AppSpacing.xl,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      if (titleIcon != null) ...[
-                        Icon(
-                          titleIcon,
-                          color: titleColor ?? colors.primary,
-                          size: compact ? 20 : 22,
-                        ),
-                        SizedBox(
-                          width: compact ? AppSpacing.xs : AppSpacing.sm,
-                        ),
-                      ],
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: titleStyle,
-                            ),
-                            if (subtitle != null) ...[
-                              const SizedBox(height: AppSpacing.xxs),
-                              Text(
-                                subtitle!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: subtitleStyle,
-                              ),
-                            ],
-                          ],
-                        ),
+    return SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: resolvedHeight,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? AppSpacing.lg : AppSpacing.xl,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    if (titleIcon != null) ...[
+                      Icon(
+                        titleIcon,
+                        color: titleColor ?? colors.primary,
+                        size: compact ? 20 : 22,
+                      ),
+                      SizedBox(
+                        width: compact ? AppSpacing.xs : AppSpacing.sm,
                       ),
                     ],
-                  ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: titleStyle,
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: AppSpacing.xxs),
+                            Text(
+                              subtitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: subtitleStyle,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                if (middle != null) ...[
-                  SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-                  middle!,
-                ],
-                if (actions.isNotEmpty)
-                  SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-                _HomeTopBarActions(actions: actions),
+              ),
+              if (middle != null) ...[
+                SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
+                middle!,
               ],
-            ),
+              if (actions.isNotEmpty)
+                SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
+              _HomeTopBarActions(actions: actions),
+            ],
           ),
         ),
       ),
@@ -374,10 +368,10 @@ class _HomeTopBarActions extends StatelessWidget {
     return IconButtonTheme(
       data: IconButtonThemeData(
         style: IconButton.styleFrom(
-          backgroundColor: AppEditorialSurfaces.section(colors),
-          disabledBackgroundColor: AppEditorialSurfaces.section(
-            colors,
-          ).withValues(alpha: AppOpacities.homeTopBarDisabledBackground),
+          backgroundColor: colors.surfaceContainerHigh,
+          disabledBackgroundColor: colors.surfaceContainerHigh.withValues(
+            alpha: AppOpacities.homeTopBarDisabledBackground,
+          ),
           disabledForegroundColor: colors.onSurfaceVariant.withValues(
             alpha: AppOpacities.homeTopBarDisabledForeground,
           ),
@@ -525,7 +519,7 @@ class HomeBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final compactChrome = shouldUseCompactHomeChrome(context);
-    final radius = BorderRadius.circular(AppEditorial.cardRadius);
+    final radius = BorderRadius.circular(AppRadius.xl);
     final horizontalInset = compactChrome ? AppSpacing.xxs : AppSpacing.xs;
 
     return SafeArea(
@@ -537,62 +531,48 @@ class HomeBottomNavBar extends StatelessWidget {
           horizontalInset,
           AppSpacing.xl,
         ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            boxShadow: [
-              AppEditorialSurfaces.ambientBoxShadow(
-                colors,
-                blurRadius: 30,
-                offset: const Offset(0, -10),
+        child: ClipRRect(
+          borderRadius: radius,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLow,
+              borderRadius: radius,
+              border: Border.all(
+                color: colors.outlineVariant,
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: AppEditorialSurfaces.section(colors),
-                borderRadius: radius,
-                border: Border.all(
-                  color: AppEditorialSurfaces.solidCardBorder(colors),
-                ),
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final navHorizontalPadding = compactChrome
-                      ? AppSpacing.xs
-                      : AppSpacing.xs;
-                  final showLabels = _shouldShowBottomNavLabels(
-                    entries,
-                    maxWidth: constraints.maxWidth,
-                    navHorizontalPadding: navHorizontalPadding,
-                  );
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const navHorizontalPadding = AppSpacing.xs;
+                final showLabels = _shouldShowBottomNavLabels(
+                  entries,
+                  maxWidth: constraints.maxWidth,
+                  navHorizontalPadding: navHorizontalPadding,
+                );
 
-                  return Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      navHorizontalPadding,
-                      compactChrome ? AppSpacing.xs : AppSpacing.sm,
-                      navHorizontalPadding,
-                      compactChrome ? AppSpacing.sm : AppSpacing.md,
-                    ),
-                    child: Row(
-                      children: [
-                        for (final entry in entries)
-                          Expanded(
-                            child: _HomeBottomNavItemButton(
-                              item: entry.item,
-                              isSelected: entry.isSelected,
-                              showTopIndicator: entry.showTopIndicator,
-                              onTap: entry.onTap,
-                              showLabel: showLabels,
-                            ),
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    navHorizontalPadding,
+                    compactChrome ? AppSpacing.xs : AppSpacing.sm,
+                    navHorizontalPadding,
+                    compactChrome ? AppSpacing.sm : AppSpacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      for (final entry in entries)
+                        Expanded(
+                          child: _HomeBottomNavItemButton(
+                            item: entry.item,
+                            isSelected: entry.isSelected,
+                            showTopIndicator: entry.showTopIndicator,
+                            onTap: entry.onTap,
+                            showLabel: showLabels,
                           ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ),

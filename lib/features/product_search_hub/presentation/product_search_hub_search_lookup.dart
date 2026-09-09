@@ -122,8 +122,9 @@ Future<List<OffProductSearchResult>> _lookupGlobalFoodItems({
           )
         : await repository.searchCandidates(
             normalizedName: normalizeGlobalFoodText(query),
-            normalizedStoreName:
-                store != null ? normalizeGlobalFoodText(store) : null,
+            normalizedStoreName: store != null
+                ? normalizeGlobalFoodText(store)
+                : null,
             searchTokens: buildGlobalFoodSearchTokens(name: query),
             limit: limit,
           );

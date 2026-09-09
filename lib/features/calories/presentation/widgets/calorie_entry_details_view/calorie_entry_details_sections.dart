@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -63,15 +62,10 @@ class CalorieEntryIngredientsSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: DecoratedBox(
             key: CalorieEntryDetailKeys.ingredientsTable,
-            decoration: AppEditorialSurfaces.liftedCardDecoration(
-              colors,
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppRadius.xl),
-              color: Color.alphaBlend(
-                colors.surfaceContainerLowest.withValues(alpha: 0.96),
-                colors.surface,
-              ),
-              blurRadius: 16,
-              shadowOffset: const Offset(0, 8),
+              border: Border.all(color: colors.outlineVariant),
             ),
             child: Column(
               children: [
@@ -84,17 +78,12 @@ class CalorieEntryIngredientsSection extends StatelessWidget {
                     Divider(
                       height: 1,
                       thickness: 1,
-                      color: AppEditorialSurfaces.ghostBorder(
-                        colors,
-                      ).withValues(alpha: 0.9),
+                      color: colors.outlineVariant.withValues(alpha: 0.9),
                     ),
                   CalorieEntryIngredientRow(
                     component: entry.bundleComponents[index],
                     index: index,
-                    accentColor: AppEditorialSurfaces.ingredientAccent(
-                      colors,
-                      index,
-                    ),
+                    accentColor: colors.primary,
                   ),
                 ],
               ],

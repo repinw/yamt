@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
@@ -39,7 +38,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final borderRadius = BorderRadius.circular(AppEditorial.cardRadius);
+    final borderRadius = BorderRadius.circular(AppRadius.xl);
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final activeSession = ref
@@ -53,9 +52,10 @@ class PreparedMealTemplateCard extends ConsumerWidget {
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
         borderRadius: borderRadius,
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Material(
         color: Colors.transparent,
@@ -76,7 +76,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                       imageUrl: template.imageUrl,
                       size: double.infinity,
                       borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(AppEditorial.cardRadius),
+                        top: Radius.circular(AppRadius.xl),
                       ),
                     ),
                   ),
@@ -259,7 +259,7 @@ class _ResumeCookflowButton extends StatelessWidget {
           vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
-          gradient: AppEditorialSurfaces.soulGradient(colors),
+          gradient: LinearGradient(colors: [colors.primary, colors.primary]),
           borderRadius: BorderRadius.circular(AppRadius.md),
           boxShadow: [
             BoxShadow(

@@ -52,7 +52,7 @@ class InventoryBarcodeCandidateSelection {
 
 /// Resolves learned and OpenFoodFacts candidates for [barcode].
 Future<List<InventoryBarcodeLookupCandidate>>
-    resolveInventoryBarcodeCandidates({
+resolveInventoryBarcodeCandidates({
   required WidgetRef ref,
   required String barcode,
 }) async {

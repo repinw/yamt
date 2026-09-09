@@ -144,9 +144,6 @@ abstract final class AppOpacities {
 
 /// Shared font-size scale for app typography.
 abstract final class AppFontSizes {
-  /// Display-small size from the current diary baseline.
-  static const double displaySmall = 36;
-
   /// Headline-small size from the current diary baseline.
   static const double headlineSmall = 24;
 
@@ -266,12 +263,6 @@ abstract final class AppSizes {
 
   /// Vertical divider height for compact metric cards.
   static const double compactMetricDividerHeight = 38;
-
-  /// Skeleton label width for compact metric cards.
-  static const double compactMetricSkeletonLabelWidth = 74;
-
-  /// Skeleton label height for compact metric cards.
-  static const double compactMetricSkeletonLabelHeight = 12;
 
   /// Skeleton value width for compact metric cards.
   static const double compactMetricSkeletonValueWidth = 58;

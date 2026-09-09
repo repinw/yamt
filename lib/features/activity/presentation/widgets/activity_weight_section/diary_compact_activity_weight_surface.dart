@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
-import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
@@ -80,8 +78,6 @@ class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(localeName);
     final weightFormat = NumberFormat('0.#', localeName);
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-    final accents = MetricAccentColors.of(context);
     final totalSteps = stepsState.value;
     final stepsValue = totalSteps == null
         ? '-'
@@ -100,7 +96,6 @@ class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
         Expanded(
           child: _CompactMetricItem(
             icon: Icons.directions_walk_rounded,
-            color: accents.stepsFor(colors.brightness),
             label: l10n.diaryStepsTitle,
             value: stepsValue,
             isExpanded: isStepsExpanded,
@@ -111,7 +106,6 @@ class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
         Expanded(
           child: _CompactMetricItem(
             icon: Icons.local_fire_department_rounded,
-            color: accents.activityFor(colors.brightness),
             label: l10n.diaryActivityTitle,
             value: activityValue,
             isExpanded: isActivityExpanded,
@@ -122,7 +116,6 @@ class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
         Expanded(
           child: _CompactMetricItem(
             icon: Icons.monitor_weight_outlined,
-            color: accents.weight,
             label: l10n.diaryWeightTitle,
             value: weightValue,
             isExpanded: isWeightExpanded,
@@ -141,8 +134,6 @@ class DiaryCompactActivityWeightSkeletonRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final accents = MetricAccentColors.of(context);
     final l10n = AppLocalizations.of(context)!;
 
     return Row(
@@ -150,7 +141,6 @@ class DiaryCompactActivityWeightSkeletonRow extends StatelessWidget {
         Expanded(
           child: _CompactMetricSkeletonItem(
             icon: Icons.directions_walk_rounded,
-            color: accents.stepsFor(colors.brightness),
             label: l10n.diaryStepsTitle,
           ),
         ),
@@ -158,7 +148,6 @@ class DiaryCompactActivityWeightSkeletonRow extends StatelessWidget {
         Expanded(
           child: _CompactMetricSkeletonItem(
             icon: Icons.local_fire_department_rounded,
-            color: accents.activityFor(colors.brightness),
             label: l10n.diaryActivityTitle,
           ),
         ),
@@ -166,7 +155,6 @@ class DiaryCompactActivityWeightSkeletonRow extends StatelessWidget {
         Expanded(
           child: _CompactMetricSkeletonItem(
             icon: Icons.monitor_weight_outlined,
-            color: accents.weight,
             label: l10n.diaryWeightTitle,
           ),
         ),
@@ -211,7 +199,11 @@ class _CompactMetricsFrame extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: AppQuietSurfaces.cardDecoration(colors),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: child,
@@ -223,7 +215,6 @@ class _CompactMetricsFrame extends StatelessWidget {
 class _CompactMetricItem extends StatelessWidget {
   const _CompactMetricItem({
     required this.icon,
-    required this.color,
     required this.label,
     required this.value,
     required this.isExpanded,
@@ -231,7 +222,6 @@ class _CompactMetricItem extends StatelessWidget {
   });
 
   final IconData icon;
-  final Color color;
   final String label;
   final String value;
   final bool isExpanded;
@@ -261,7 +251,7 @@ class _CompactMetricItem extends StatelessWidget {
                 children: [
                   Icon(
                     icon,
-                    color: color,
+                    color: colors.primary,
                     size: AppSizes.compactMetricIcon,
                   ),
                   const SizedBox(
@@ -286,7 +276,7 @@ class _CompactMetricItem extends StatelessWidget {
                     curve: Curves.easeOutCubic,
                     child: Icon(
                       Icons.chevron_right_rounded,
-                      color: color,
+                      color: colors.onSurfaceVariant,
                       size: AppSizes.actionChevron,
                     ),
                   ),
@@ -319,14 +309,9 @@ class _CompactMetricItem extends StatelessWidget {
 }
 
 class _CompactMetricSkeletonItem extends StatelessWidget {
-  const _CompactMetricSkeletonItem({
-    required this.icon,
-    required this.color,
-    required this.label,
-  });
+  const _CompactMetricSkeletonItem({required this.icon, required this.label});
 
   final IconData icon;
-  final Color color;
   final String label;
 
   @override
@@ -347,7 +332,6 @@ class _CompactMetricSkeletonItem extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: color,
                 size: AppSizes.compactMetricIcon,
               ),
               const SizedBox(width: AppSizes.compactMetricIconLabelGap),

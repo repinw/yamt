@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shared prepared meal bottom sheet layout.
@@ -32,11 +31,10 @@ class PreparedMealSheetContainer extends StatelessWidget {
           bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xxxl,
         ),
         child: DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(
-              AppEditorial.cardRadius,
-            ),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Padding(
             padding: AppInsets.card,

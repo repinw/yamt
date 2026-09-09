@@ -69,9 +69,7 @@ class DiaryDailyBalanceSubtitleText extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: data.isHeartDay
-              ? accents
-                    .heartFor(colors.brightness)
-                    .withValues(alpha: 0.78)
+              ? accents.heartFor(colors.brightness).withValues(alpha: 0.78)
               : accents.today.withValues(alpha: 0.78),
           fontWeight: FontWeight.w800,
           letterSpacing: 0,
@@ -97,8 +95,9 @@ class DiaryDailyBalanceSubtitleText extends StatelessWidget {
       final valueColor = switch (part.type) {
         DiaryDailyBalanceSubtitleType.base => colors.onSurface,
         DiaryDailyBalanceSubtitleType.carryover => accents.today,
-        DiaryDailyBalanceSubtitleType.sport =>
-          accents.activityFor(colors.brightness),
+        DiaryDailyBalanceSubtitleType.sport => accents.activityFor(
+          colors.brightness,
+        ),
       };
       spans.addAll([
         TextSpan(text: '${part.label} ', style: labelStyle),

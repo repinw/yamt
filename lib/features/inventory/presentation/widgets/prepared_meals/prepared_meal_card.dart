@@ -6,7 +6,6 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
@@ -247,13 +246,17 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
     );
 
     return DecoratedBox(
-      decoration: AppSurfaceCard.decoration(colors),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
+      ),
       child: ClipRRect(
-        borderRadius: AppSurfaceCard.borderRadius(),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Material(
           color: Colors.transparent,
           child: Padding(
-            padding: AppSurfaceCard.padding,
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

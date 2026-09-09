@@ -160,15 +160,16 @@ void main() {
       var didCallCustom = false;
       final result = await lookupProductSearchHubRouteProducts(
         repository: _FakeOffRepository(),
-        lookupProducts: ({
-          required query,
-          required limit,
-          store,
-          weight,
-        }) async {
-          didCallCustom = true;
-          return ProductSearchHubSearchLookupResult.success(const []);
-        },
+        lookupProducts:
+            ({
+              required query,
+              required limit,
+              store,
+              weight,
+            }) async {
+              didCallCustom = true;
+              return ProductSearchHubSearchLookupResult.success(const []);
+            },
         args: const ProductSearchHubRouteArgs.inventory(),
         query: 'milk',
         limit: 5,

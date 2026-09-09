@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -142,10 +141,10 @@ class DiaryExpandedMealEntry extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: Ink(
           decoration: BoxDecoration(
-            color: AppEditorialSurfaces.section(colors),
+            color: colors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(
-              color: AppEditorialSurfaces.solidCardBorder(colors),
+              color: colors.outlineVariant,
             ),
           ),
           child: Padding(
@@ -208,9 +207,7 @@ class DiaryExpandedMealEntry extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.end,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
+                                style: Theme.of(context).textTheme.labelSmall
                                     ?.copyWith(
                                       color: colors.onSurfaceVariant,
                                       fontWeight: FontWeight.w600,

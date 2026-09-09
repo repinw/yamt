@@ -95,8 +95,9 @@ Ingredient _calculateIngredient(String rawIngredientString) {
     }
   }
 
-  final amountMatch =
-      RegExp(r'^\d+([.,]\d+)?').stringMatch(ingredientParts.first);
+  final amountMatch = RegExp(
+    r'^\d+([.,]\d+)?',
+  ).stringMatch(ingredientParts.first);
   final amount = amountMatch != null
       ? double.tryParse(amountMatch.replaceAll(',', '.'))
       : null;

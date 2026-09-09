@@ -319,10 +319,9 @@ String? _redirectForState(Ref ref, GoRouterState state) {
       isAnonymous || ref.read(authProfileSetupCompletedProvider);
   final needsGuestNameSetup =
       isAuthenticated && !isAnonymous && !hasCompletedProfileSetup;
-  final calorieGoalOnboardingState =
-      isAuthenticated && hasCompletedProfileSetup
-          ? ref.read(calorieGoalOnboardingCompletedProvider)
-          : const AsyncData<bool>(false);
+  final calorieGoalOnboardingState = isAuthenticated && hasCompletedProfileSetup
+      ? ref.read(calorieGoalOnboardingCompletedProvider)
+      : const AsyncData<bool>(false);
   final isCalorieGoalOnboardingLoading =
       isAuthenticated &&
       hasCompletedProfileSetup &&

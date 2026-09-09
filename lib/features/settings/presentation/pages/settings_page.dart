@@ -7,12 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
-import 'package:yamt/core/theme/seed_color_controller.dart';
-import 'package:yamt/core/theme/theme_mode_controller.dart';
-import 'package:yamt/core/theme/theme_option_labels.dart';
+
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
@@ -40,91 +36,85 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
 
-    return ColoredBox(
-      color: AppQuietSurfaces.pageBackground(colors),
-      child: CustomScrollView(
-        slivers: [
-          if (includeHomeShellChrome)
-            HomeShellTabTopChrome(title: l10n.homeSettings),
-          SliverPadding(
-            padding: responsivePagePadding(
-              context,
-              top: AppSpacing.xl,
-              bottom: homeShellPageBottomPadding(context),
-            ),
-            sliver: SliverList.list(
-              children: [
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: settingsMaxWidth,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _SettingsIntro(l10n: l10n),
-                        const SizedBox(height: AppSpacing.lg),
-                        const SettingsProfileCard(),
-                        const SizedBox(height: AppSpacing.lg),
-                        SettingsSection(
-                          title: l10n.settingsAccountHouseholdSectionTitle,
-                          children: [_HouseholdTile(l10n: l10n)],
-                        ),
-                        SettingsSection(
-                          title: l10n.settingsHealthGoalsSectionTitle,
-                          children: const [
-                            SettingsHealthConnectTile(),
-                            _CalorieGoalStartTile(),
-                            _CalorieGoalCalculatorTile(),
-                            _MacroGoalsTile(),
-                            _CalorieGoalIntroTile(),
-                          ],
-                        ),
-                        SettingsSection(
-                          title: l10n.settingsAppearanceSectionTitle,
-                          children: const [
-                            _ThemeModeTile(),
-                            _SeedColorTile(),
-                            _LanguageTile(),
-                          ],
-                        ),
-                        SettingsSection(
-                          title: l10n.settingsAppSectionTitle,
-                          children: [
-                            SettingsTile(
-                              key: SettingsPageKeys.notificationsTile,
-                              icon: Icons.notifications_none_rounded,
-                              title: l10n.settingsNotificationsTitle,
-                              subtitle: l10n.settingsNotificationsSubtitle,
-                              onTap: () => _showNotImplementedSnackBar(
-                                context,
-                                l10n.commonNotImplementedYet,
-                              ),
+    return CustomScrollView(
+      slivers: [
+        if (includeHomeShellChrome)
+          HomeShellTabTopChrome(title: l10n.homeSettings),
+        SliverPadding(
+          padding: responsivePagePadding(
+            context,
+            top: AppSpacing.xl,
+            bottom: homeShellPageBottomPadding(context),
+          ),
+          sliver: SliverList.list(
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: settingsMaxWidth,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _SettingsIntro(l10n: l10n),
+                      const SizedBox(height: AppSpacing.lg),
+                      const SettingsProfileCard(),
+                      const SizedBox(height: AppSpacing.lg),
+                      SettingsSection(
+                        title: l10n.settingsAccountHouseholdSectionTitle,
+                        children: [_HouseholdTile(l10n: l10n)],
+                      ),
+                      SettingsSection(
+                        title: l10n.settingsHealthGoalsSectionTitle,
+                        children: const [
+                          SettingsHealthConnectTile(),
+                          _CalorieGoalStartTile(),
+                          _CalorieGoalCalculatorTile(),
+                          _MacroGoalsTile(),
+                          _CalorieGoalIntroTile(),
+                        ],
+                      ),
+                      SettingsSection(
+                        title: l10n.settingsAppearanceSectionTitle,
+                        children: const [
+                          _LanguageTile(),
+                        ],
+                      ),
+                      SettingsSection(
+                        title: l10n.settingsAppSectionTitle,
+                        children: [
+                          SettingsTile(
+                            key: SettingsPageKeys.notificationsTile,
+                            icon: Icons.notifications_none_rounded,
+                            title: l10n.settingsNotificationsTitle,
+                            subtitle: l10n.settingsNotificationsSubtitle,
+                            onTap: () => _showNotImplementedSnackBar(
+                              context,
+                              l10n.commonNotImplementedYet,
                             ),
-                            SettingsTile(
-                              key: SettingsPageKeys.privacyTile,
-                              icon: Icons.lock_outline_rounded,
-                              title: l10n.settingsPrivacyTitle,
-                              subtitle: l10n.settingsPrivacySubtitle,
-                              onTap: () => _showNotImplementedSnackBar(
-                                context,
-                                l10n.commonNotImplementedYet,
-                              ),
+                          ),
+                          SettingsTile(
+                            key: SettingsPageKeys.privacyTile,
+                            icon: Icons.lock_outline_rounded,
+                            title: l10n.settingsPrivacyTitle,
+                            subtitle: l10n.settingsPrivacySubtitle,
+                            onTap: () => _showNotImplementedSnackBar(
+                              context,
+                              l10n.commonNotImplementedYet,
                             ),
-                            const _AboutTile(),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                          const _AboutTile(),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -257,8 +247,9 @@ class _CalorieGoalIntroTile extends ConsumerWidget {
           ? null
           : () {
               final introData = DiaryIntroData.fromSettings(settings);
-              final healthStatus =
-                  ref.read(healthConnectionControllerProvider).value;
+              final healthStatus = ref
+                  .read(healthConnectionControllerProvider)
+                  .value;
               unawaited(
                 runDiaryIntroFlow(
                   context: context,
@@ -318,144 +309,6 @@ class _HouseholdTile extends StatelessWidget {
       title: l10n.settingsHouseholdTitle,
       subtitle: l10n.settingsHouseholdSubtitle,
       onTap: () => context.push(AppRoutes.homeSettingsHousehold),
-    );
-  }
-}
-
-class _ThemeModeTile extends ConsumerWidget {
-  const _ThemeModeTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final themeMode = ref.watch(themeModeControllerProvider);
-
-    return SettingsTile(
-      key: SettingsPageKeys.themeTile,
-      icon: Icons.palette_outlined,
-      title: l10n.settingsThemeTitle,
-      subtitle: localizedThemeModeLabel(l10n, themeMode),
-      trailing: SettingsTrailingValue(
-        value: localizedThemeModeLabel(l10n, themeMode),
-      ),
-      onTap: () => _showThemeModeSheet(context, ref, themeMode),
-    );
-  }
-
-  void _showThemeModeSheet(
-    BuildContext context,
-    WidgetRef ref,
-    ThemeMode selectedMode,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        useRootNavigator: true,
-        showDragHandle: true,
-        builder: (sheetContext) {
-          return SafeArea(
-            child: RadioGroup<ThemeMode>(
-              groupValue: selectedMode,
-              onChanged: (mode) {
-                if (mode == null) {
-                  return;
-                }
-                unawaited(
-                  ref
-                      .read(themeModeControllerProvider.notifier)
-                      .setThemeMode(mode),
-                );
-                Navigator.of(sheetContext).pop();
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (final mode in ThemeMode.values)
-                    AppRadioListTile<ThemeMode>(
-                      value: mode,
-                      title: Text(localizedThemeModeLabel(l10n, mode)),
-                    ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _SeedColorTile extends ConsumerWidget {
-  const _SeedColorTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final seedColor = ref.watch(seedColorControllerProvider);
-
-    return SettingsTile(
-      key: SettingsPageKeys.colorTile,
-      icon: Icons.format_paint_outlined,
-      title: l10n.settingsColorTitle,
-      subtitle: localizedSeedColorLabel(l10n, seedColor),
-      trailing: SettingsTrailingValue(
-        value: localizedSeedColorLabel(l10n, seedColor),
-        swatchColor: seedColor,
-      ),
-      iconColor: seedColor,
-      onTap: () => _showSeedColorSheet(context, ref, seedColor),
-    );
-  }
-
-  void _showSeedColorSheet(
-    BuildContext context,
-    WidgetRef ref,
-    Color selectedColor,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        useRootNavigator: true,
-        showDragHandle: true,
-        builder: (sheetContext) {
-          return SafeArea(
-            child: RadioGroup<int>(
-              groupValue: selectedColor.toARGB32(),
-              onChanged: (colorValue) {
-                if (colorValue == null) {
-                  return;
-                }
-                unawaited(
-                  ref
-                      .read(seedColorControllerProvider.notifier)
-                      .setSeedColor(Color(colorValue)),
-                );
-                Navigator.of(sheetContext).pop();
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (final color in AppSeedColors.values)
-                    AppRadioListTile<int>(
-                      value: color.toARGB32(),
-                      title: Text(localizedSeedColorLabel(l10n, color)),
-                      secondary: Container(
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
 }

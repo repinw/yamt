@@ -5,8 +5,10 @@ import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Subtitle resolution result containing formatted text and individual parts.
-typedef DiaryDailyBalanceSubtitleResult =
-    ({String? text, List<DiaryDailyBalanceSubtitlePart> parts});
+typedef DiaryDailyBalanceSubtitleResult = ({
+  String? text,
+  List<DiaryDailyBalanceSubtitlePart> parts,
+});
 
 /// Resolves the subtitle text and components for a daily balance card.
 DiaryDailyBalanceSubtitleResult resolveDiaryDailyBalanceSubtitle({
@@ -65,7 +67,8 @@ DiaryDailyBalanceSubtitleResult _resolveHeartAdjustmentSubtitle(
     numberFormat,
     l10n.caloriesUnitKcal,
   );
-  final text = '${l10n.diaryBalanceRealLeftLabel(realLeft)} · '
+  final text =
+      '${l10n.diaryBalanceRealLeftLabel(realLeft)} · '
       '${l10n.diaryBalanceHeartAdjustmentLabel(adjustment)}';
   return (text: text, parts: const <DiaryDailyBalanceSubtitlePart>[]);
 }

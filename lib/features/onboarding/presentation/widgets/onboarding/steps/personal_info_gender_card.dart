@@ -78,8 +78,7 @@ class PersonalInfoGenderCard extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: AppFontSizes.titleMedium,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.w600,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                     color: foregroundColor,
                   ),
                   textAlign: TextAlign.center,

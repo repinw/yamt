@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -72,7 +71,7 @@ class _EntryImage extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppEditorialSurfaces.backdropGradient(colors),
+        gradient: LinearGradient(colors: [colors.surface, colors.surface]),
       ),
       child: _EntryImageFallback(initial: initial),
     );

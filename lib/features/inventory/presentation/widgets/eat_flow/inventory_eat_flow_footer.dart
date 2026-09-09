@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Shared sticky footer for inventory eat flows.
 class InventoryEatFlowFooter extends StatelessWidget {
@@ -42,7 +41,7 @@ class InventoryEatFlowFooter extends StatelessWidget {
         color: colors.surfaceContainerLowest,
         border: Border(
           top: BorderSide(
-            color: AppEditorialSurfaces.ghostBorder(colors),
+            color: colors.outlineVariant,
           ),
         ),
       ),

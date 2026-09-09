@@ -8,9 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/core/theme/seed_color_controller.dart';
-import 'package:yamt/core/theme/theme_mode_controller.dart';
-import 'package:yamt/core/widgets/app_background.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/controllers/guest_auth_controller.dart';
 import 'package:yamt/features/calories/application/'
@@ -78,19 +75,16 @@ class _YAMTState extends ConsumerState<YAMT> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeModeControllerProvider);
-    final seedColor = ref.watch(seedColorControllerProvider);
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
       title: 'YAMT',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(seedColor: seedColor),
-      darkTheme: AppTheme.dark(seedColor: seedColor),
-      themeMode: themeMode,
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
       routerConfig: router,
       builder: (context, child) => SharedReceiptListener(
-        child: AppBackground(child: child),
+        child: child ?? const SizedBox.shrink(),
       ),
       localizationsDelegates: const [
         AppLocalizations.delegate,

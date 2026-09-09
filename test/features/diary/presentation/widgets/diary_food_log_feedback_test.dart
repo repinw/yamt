@@ -27,9 +27,7 @@ void main() {
     locale: const Locale('de'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    theme: dark
-        ? AppTheme.dark(seedColor: Colors.green)
-        : AppTheme.light(seedColor: Colors.green),
+    theme: dark ? AppTheme.dark() : AppTheme.light(),
     builder: (context, child) => MediaQuery(
       data: MediaQuery.of(context).copyWith(
         accessibleNavigation: accessible,

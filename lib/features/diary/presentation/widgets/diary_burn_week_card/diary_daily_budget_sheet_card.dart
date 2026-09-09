@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Styled card container for daily budget details sheet sections.
 class DiaryDailyBudgetSheetCard extends StatelessWidget {
@@ -18,7 +17,7 @@ class DiaryDailyBudgetSheetCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: AppEditorialSurfaces.liftedCard(colors),
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: colors.outlineVariant.withValues(alpha: 0.5),

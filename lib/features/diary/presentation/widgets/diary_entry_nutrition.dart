@@ -51,7 +51,8 @@ class _CollapsedEntryNutrition extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _MacroColumn(
-          text: '${l10n.caloriesProteinShortLetter} '
+          text:
+              '${l10n.caloriesProteinShortLetter} '
               '${format.format(entry.totalProtein)}$unit',
           color: colors.protein,
         ),
@@ -59,7 +60,8 @@ class _CollapsedEntryNutrition extends StatelessWidget {
         Text('·', style: separatorStyle),
         const SizedBox(width: AppSpacing.xxs),
         _MacroColumn(
-          text: '${l10n.caloriesCarbsShortLetter} '
+          text:
+              '${l10n.caloriesCarbsShortLetter} '
               '${format.format(entry.totalCarbs)}$unit',
           color: colors.carbs,
         ),
@@ -67,7 +69,8 @@ class _CollapsedEntryNutrition extends StatelessWidget {
         Text('·', style: separatorStyle),
         const SizedBox(width: AppSpacing.xxs),
         _MacroColumn(
-          text: '${l10n.caloriesFatShortLetter} '
+          text:
+              '${l10n.caloriesFatShortLetter} '
               '${format.format(entry.totalFat)}$unit',
           color: colors.fat,
         ),

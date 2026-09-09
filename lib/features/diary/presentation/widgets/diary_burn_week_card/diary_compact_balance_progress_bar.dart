@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart';
@@ -34,7 +33,7 @@ class DiaryCompactBalanceProgressBar extends StatelessWidget {
     final isDark = colors.brightness == Brightness.dark;
     final accents = MetricAccentColors.of(context);
     final activity = accents.activityFor(colors.brightness);
-    final trackColor = AppEditorialSurfaces.compactProgressTrack(colors);
+    final trackColor = colors.surfaceContainerHighest;
 
     final progressRatio = diaryBalanceProgressRatioForKcal(
       actualConsumedKcal,

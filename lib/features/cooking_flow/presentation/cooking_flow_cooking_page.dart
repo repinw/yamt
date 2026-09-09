@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_instruction_builder.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
@@ -222,11 +221,10 @@ class _CookingInstructionCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
-        blurRadius: 22,
-        shadowOffset: const Offset(0, 10),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -236,20 +234,20 @@ class _CookingInstructionCard extends StatelessWidget {
             Container(
               width: 34,
               height: 34,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: colors.surfaceContainerHighest,
+                color: colors.primary.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              alignment: Alignment.center,
               child: Text(
                 '$stepNumber',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
+                  color: colors.primary,
                 ),
               ),
             ),
-            const SizedBox(width: AppSpacing.lg),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text.rich(
                 TextSpan(
@@ -259,7 +257,7 @@ class _CookingInstructionCard extends StatelessWidget {
                         text: segment.text,
                         style: segment.isHighlight
                             ? const TextStyle(
-                                color: AppSeedColors.orange,
+                                color: Color(0xFFE65100),
                                 fontWeight: FontWeight.w800,
                                 backgroundColor: Color(0xFFFFE7D6),
                               )

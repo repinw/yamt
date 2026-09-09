@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -75,13 +74,10 @@ class CookingFlowSummaryPage extends StatelessWidget {
       subtitle: l10n.cookflowSummaryBody,
       children: <Widget>[
         DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(
-              AppEditorial.cardRadius,
-            ),
-            blurRadius: 22,
-            shadowOffset: const Offset(0, 10),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,7 +123,7 @@ class CookingFlowSummaryPage extends StatelessWidget {
             children: <Widget>[
               const Icon(
                 Icons.warning_amber_rounded,
-                color: AppSeedColors.orange,
+                color: Color(0xFFE65100),
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
@@ -320,15 +316,8 @@ class _SummaryIngredientAddMenuButton extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppEditorialSurfaces.soulGradient(colors),
+        color: colors.primary,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: <BoxShadow>[
-          AppEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -498,15 +487,10 @@ class _SummaryIngredientsTable extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.xl),
       child: DecoratedBox(
-        decoration: AppEditorialSurfaces.liftedCardDecoration(
-          colors,
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppRadius.xl),
-          color: Color.alphaBlend(
-            colors.surfaceContainerLowest.withValues(alpha: 0.96),
-            colors.surface,
-          ),
-          blurRadius: 16,
-          shadowOffset: const Offset(0, 8),
+          border: Border.all(color: colors.outlineVariant),
         ),
         child: Column(
           children: <Widget>[
@@ -574,9 +558,7 @@ class _SummaryIngredientDivider extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: AppEditorialSurfaces.ghostBorder(
-        colors,
-      ).withValues(alpha: 0.9),
+      color: colors.outlineVariant.withValues(alpha: 0.9),
     );
   }
 }
@@ -603,11 +585,10 @@ class _SummaryIngredientContainerSection extends StatelessWidget {
         .toList(growable: false);
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppEditorial.cardRadius),
-        blurRadius: 22,
-        shadowOffset: const Offset(0, 10),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: AppInsets.card,

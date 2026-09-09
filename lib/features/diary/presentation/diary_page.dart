@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -120,7 +119,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
     return DiaryFoodLogFeedbackHost(
       child: ColoredBox(
-        color: AppQuietSurfaces.pageBackground(colors),
+        color: colors.surface,
         child: CustomScrollView(
           key: DiaryPage.pageKey,
           cacheExtent: 0,

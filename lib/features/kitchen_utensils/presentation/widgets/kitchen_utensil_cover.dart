@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
 /// Square cover for kitchen utensils.
@@ -34,8 +34,7 @@ class KitchenUtensilCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final radius =
-        borderRadius ?? BorderRadius.circular(AppEditorial.cardRadius);
+    final radius = borderRadius ?? BorderRadius.circular(AppRadius.xl);
 
     return DecoratedBox(
       decoration: BoxDecoration(

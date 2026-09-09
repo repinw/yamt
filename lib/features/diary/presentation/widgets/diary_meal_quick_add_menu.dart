@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -30,7 +29,7 @@ class DiaryMealQuickAddMenu extends StatelessWidget {
       dimension: 28,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppEditorialSurfaces.section(colors),
+          color: colors.surfaceContainerLow,
           shape: BoxShape.circle,
         ),
         child: PopupMenuButton<DiaryQuickEatSource>(

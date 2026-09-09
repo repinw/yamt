@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Outer shell for diary Burn Week card states.
 class DiaryBalanceShell extends StatelessWidget {
@@ -26,7 +25,11 @@ class DiaryBalanceShell extends StatelessWidget {
     }
 
     return DecoratedBox(
-      decoration: AppQuietSurfaces.cardDecoration(colors),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: child,

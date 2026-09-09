@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_transition.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
@@ -65,7 +64,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     final remainingFormatted = numberFormat.format(
       math.max(0, roundedRemaining),
     );
-    final trackColor = AppEditorialSurfaces.appBackground(colors);
+    final trackColor = colors.surface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),

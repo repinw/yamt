@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Compact labeled card used by calorie entry detail controls.
 class CalorieEntryCompactFieldCard extends StatelessWidget {
@@ -22,15 +21,10 @@ class CalorieEntryCompactFieldCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.lg + AppSpacing.xs),
-        color: Color.alphaBlend(
-          colors.surfaceContainerLowest.withValues(alpha: 0.94),
-          colors.surface,
-        ),
-        blurRadius: 18,
-        shadowOffset: const Offset(0, 8),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -81,7 +80,7 @@ class _WeeklyBalanceSummarySkeleton extends StatelessWidget {
     final activity = MetricAccentColors.of(context).activityFor(
       colors.brightness,
     );
-    final skeletonColor = AppEditorialSurfaces.section(colors);
+    final skeletonColor = colors.surfaceContainerLow;
 
     return Row(
       children: [

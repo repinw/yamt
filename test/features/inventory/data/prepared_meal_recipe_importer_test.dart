@@ -331,10 +331,10 @@ void main() {
       unawaited(request.response.close());
     });
 
-    final notFoundResult =
-        await const PreparedMealRecipeImporter().importRecipe(
-      'http://${server.address.host}:${server.port}/missing',
-    );
+    final notFoundResult = await const PreparedMealRecipeImporter()
+        .importRecipe(
+          'http://${server.address.host}:${server.port}/missing',
+        );
     expect(notFoundResult, isNull);
 
     final invalidResult = await const PreparedMealRecipeImporter().importRecipe(

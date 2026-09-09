@@ -173,15 +173,15 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
             ? quickEatConfig.quickEatOnly
                   ? null
                   : (product) => onSearchResultAction(
-                        product,
-                        InventoryReceiptManualProductAction.addToInventory,
-                      )
+                      product,
+                      InventoryReceiptManualProductAction.addToInventory,
+                    )
             : null,
         onSearchResultEatSelected: showEatImmediatelyOption
             ? (product) => onSearchResultAction(
-                  product,
-                  InventoryReceiptManualProductAction.eatNow,
-                )
+                product,
+                InventoryReceiptManualProductAction.eatNow,
+              )
             : null,
         onRecentItemSelected: controller.applyRecentItem,
         onSearchChanged: controller.updateSearchQuery,

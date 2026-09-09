@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_item_row_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
@@ -173,7 +172,7 @@ class _InventoryItemActionPanel extends StatelessWidget {
   }
 
   _InventoryItemActionColors _warningActionColors(ColorScheme colors) {
-    const tint = AppEditorial.warning;
+    final tint = colors.error;
 
     return _InventoryItemActionColors(
       backgroundColor: Color.alphaBlend(

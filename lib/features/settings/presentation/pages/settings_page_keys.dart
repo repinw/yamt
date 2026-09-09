@@ -34,12 +34,6 @@ abstract final class SettingsPageKeys {
     'settings-calorie-goal-intro-tile',
   );
 
-  /// Theme mode row.
-  static const themeTile = ValueKey<String>('settings-theme-tile');
-
-  /// Accent color row.
-  static const colorTile = ValueKey<String>('settings-color-tile');
-
   /// Language row.
   static const languageTile = ValueKey<String>('settings-language-tile');
 

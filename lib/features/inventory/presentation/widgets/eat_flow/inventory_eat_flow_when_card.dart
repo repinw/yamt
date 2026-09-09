@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_leading_icon.dart';
 
@@ -51,7 +50,7 @@ class InventoryEatFlowWhenCard extends StatelessWidget {
             color: colors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
-              color: AppEditorialSurfaces.ghostBorder(colors),
+              color: colors.outlineVariant,
             ),
           ),
           child: ConstrainedBox(

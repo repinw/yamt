@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_cover.dart';
@@ -35,7 +34,7 @@ class KitchenUtensilCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final borderRadius = BorderRadius.circular(
-      AppEditorial.cardRadius,
+      AppRadius.xl,
     );
     final imagePath = utensil.imageStoragePath;
     final imageUrl = imagePath == null
@@ -44,9 +43,10 @@ class KitchenUtensilCard extends ConsumerWidget {
     final displayName = utensil.name ?? l10n.kitchenUtensilUnnamedLabel;
 
     return DecoratedBox(
-      decoration: AppEditorialSurfaces.liftedCardDecoration(
-        colors,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
         borderRadius: borderRadius,
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: AppInsets.card,

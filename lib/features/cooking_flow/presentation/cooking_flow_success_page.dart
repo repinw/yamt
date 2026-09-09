@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_action_button.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -32,13 +31,10 @@ class CookingFlowSuccessPage extends StatelessWidget {
       subtitle: l10n.cookflowSuccessSubtitle,
       children: <Widget>[
         DecoratedBox(
-          decoration: AppEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(
-              AppEditorial.cardRadius,
-            ),
-            blurRadius: 22,
-            shadowOffset: const Offset(0, 10),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Padding(
             padding: AppInsets.card,

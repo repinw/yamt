@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/guest_name_setup_page.dart';
@@ -144,21 +143,11 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Guest Wlad');
-    await tester.tap(find.byType(DropdownButtonFormField<int>).first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Blue').last);
-    await tester.pumpAndSettle();
-
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
     expect(repository.guestNameUpdateCalls, 1);
     expect(repository.lastGuestDisplayName, 'Guest Wlad');
-    expect(
-      preferences.getIntSync('preferred_seed_color'),
-      AppSeedColors.blue.toARGB32(),
-    );
-    expect(preferences.getStringSync('preferred_theme_mode'), 'system');
     expect(find.text('Inventory'), findsNothing);
   });
 
@@ -286,42 +275,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('guest_name_setup_back_button')), findsNothing);
-  });
-
-  testWidgets('changing color selection does not persist before save', (
-    tester,
-  ) async {
-    final repository = FakeAuthRepository();
-    final preferences = MemoryAppPreferences();
-    await tester.pumpWidget(
-      _wrapWithRouter(repository, appPreferences: preferences),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byType(DropdownButtonFormField<int>).first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Blue').last);
-    await tester.pumpAndSettle();
-
-    expect(preferences.getIntSync('preferred_seed_color'), isNull);
-  });
-
-  testWidgets('changing theme selection does not persist before save', (
-    tester,
-  ) async {
-    final repository = FakeAuthRepository();
-    final preferences = MemoryAppPreferences();
-    await tester.pumpWidget(
-      _wrapWithRouter(repository, appPreferences: preferences),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byType(DropdownButtonFormField<ThemeMode>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Dark').last);
-    await tester.pumpAndSettle();
-
-    expect(preferences.getStringSync('preferred_theme_mode'), isNull);
   });
 
   testWidgets('shows snackbar when profile save fails', (tester) async {
