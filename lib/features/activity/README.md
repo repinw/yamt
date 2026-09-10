@@ -1,14 +1,14 @@
 # Activity Feature
 
-Activity owns the diary-facing activity, steps, workouts, and weight surfaces.
+Activity owns the diary-facing weight surface.
 It exposes complete widgets that other features can compose without wiring the
 Activity providers themselves.
 
 ## Owns
 
-- Activity, steps, workouts, and weight diary widgets under `presentation/`.
-- Activity and weight value objects under `domain/`.
-- Activity and weight aggregation services under `application/`.
+- Weight diary widgets under `presentation/`.
+- Weight value objects under `domain/`.
+- Weight aggregation services under `application/`.
 - Riverpod providers that load Activity-owned application data.
 
 ## Does Not Own
@@ -20,7 +20,7 @@ Activity providers themselves.
 ## Public Edge
 
 - `presentation/widgets/activity_weight_section/diary_activity_weight_section.dart`
-  is the main diary section for activity, weight, and steps.
+  is the diary section for weight and the weekly balance summary.
 - `presentation/diary_weight_tracking_flow.dart` opens the Activity-owned
   diary weight entry flow for callers that already know which day needs weight.
 - Dedicated cards under `presentation/widgets/` may be used by Activity tests
@@ -39,10 +39,8 @@ Activity sub-widgets or Activity providers directly.
 Current application providers:
 
 - `application/diary_activity_weight_data_provider.dart`
-- `application/diary_steps_summary_provider.dart`
 - `application/diary_activity_weight_service.dart`
 - `application/diary_weight_actions.dart`
-- `application/diary_health_connect_action_provider.dart`
 
 ## Accepted Dependencies
 

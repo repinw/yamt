@@ -432,6 +432,8 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
 
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -200));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.showAgainButton));
     await _pumpFrames(tester);
 
@@ -643,7 +645,7 @@ void main() {
     expect(find.text('Could not close the weekly check-in.'), findsOneWidget);
   });
 
-  testWidgets('shows activity tracking widgets when Health is ready', (
+  testWidgets('shows weekly balance beside weight without activity metrics', (
     tester,
   ) async {
     const healthStatus = HealthConnectionStatus(
@@ -665,19 +667,15 @@ void main() {
       },
     );
 
-    await tester.scrollUntilVisible(
-      find.byType(DiaryActivityWeightSection),
-      120,
-      scrollable: find.byType(Scrollable).first,
-    );
     await _pumpFrames(tester);
 
     expect(find.byType(DiaryWeeklyBalanceSummary), findsOneWidget);
-    expect(find.text('STEPS'), findsOneWidget);
-    expect(find.textContaining('4,321', findRichText: true), findsOneWidget);
+    expect(find.text('WEIGHT'), findsOneWidget);
+    expect(find.text('STEPS'), findsNothing);
+    expect(find.text('ACTIVITY'), findsNothing);
   });
 
-  testWidgets('shows activity skeleton while dashboard is loading', (
+  testWidgets('shows weekly and weight skeleton while dashboard is loading', (
     tester,
   ) async {
     await _pumpDiaryPage(

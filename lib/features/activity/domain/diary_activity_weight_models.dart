@@ -1,37 +1,15 @@
-import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
-/// Data for the diary activity and weight cards.
+/// Data for the diary weight card.
 class DiaryActivityWeightData {
-  /// Creates diary activity and weight data.
+  /// Creates diary weight data.
   const DiaryActivityWeightData({
-    required this.healthAccessState,
-    required this.activityKcal,
-    required this.activeMinutes,
     required this.profileWeightKg,
     required this.selectedWeightKg,
     required this.hasSelectedDayWeight,
-    required this.activityTrend,
     required this.weightTrend,
     required this.weightDays,
   });
-
-  /// Health access state for activity tracking.
-  final HealthDataAccessState healthAccessState;
-
-  /// Whether Health data is ready for Activity detail panels.
-  bool get hasReadyHealthAccess =>
-      healthAccessState == HealthDataAccessState.ready;
-
-  /// Whether the user still needs Health setup.
-  bool get needsHealthConnection =>
-      healthAccessState != HealthDataAccessState.ready;
-
-  /// Burned kcal for the selected day.
-  final int? activityKcal;
-
-  /// Active workout minutes for the selected day.
-  final int? activeMinutes;
 
   /// Profile weight from the calorie calculator.
   final double? profileWeightKg;
@@ -41,9 +19,6 @@ class DiaryActivityWeightData {
 
   /// Whether the selected day has a real saved weight point.
   final bool hasSelectedDayWeight;
-
-  /// Seven day burned kcal trend.
-  final List<double?> activityTrend;
 
   /// Seven day weight trend.
   final List<double?> weightTrend;
@@ -82,17 +57,13 @@ class DiaryWeightDayData {
   bool get canDeleteWeight => hasManualWeight || hasAppOwnedHealthWeight;
 }
 
-/// Profile inputs needed for activity and weight estimates.
+/// Profile input used as the fallback weight.
 class DiaryActivityWeightProfile {
-  /// Creates activity and weight profile inputs.
+  /// Creates the weight profile input.
   const DiaryActivityWeightProfile({
     required this.weightKg,
-    required this.heightCm,
   });
 
   /// Profile weight in kilograms.
   final double? weightKg;
-
-  /// Profile height in centimeters.
-  final double? heightCm;
 }

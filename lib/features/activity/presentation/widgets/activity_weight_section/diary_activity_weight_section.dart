@@ -6,14 +6,10 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
-import 'package:yamt/features/activity/application/diary_steps_summary_provider.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section_keys.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_compact_activity_weight_surface.dart';
-import 'package:yamt/features/activity/presentation/widgets/diary_activity_details_card.dart';
-import 'package:yamt/features/activity/presentation/widgets/diary_workouts_card.dart';
-import 'package:yamt/features/activity/presentation/widgets/health_connect_metric_card/diary_health_connect_metric_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_details_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart';
@@ -52,8 +48,6 @@ class _DiaryActivityWeightSectionState
   DateTime? _dataDay;
   Timer? _dataLoadTimer;
   Timer? _refreshTimer;
-  var _isStepsExpanded = false;
-  var _isActivityExpanded = false;
   var _isWeightExpanded = false;
 
   @override
@@ -112,11 +106,6 @@ class _DiaryActivityWeightSectionState
     final dataState = dataDay == null
         ? const AsyncLoading<DiaryActivityWeightData>()
         : ref.watch(diaryActivityWeightDataProvider(dataDay));
-    final stepsState = dataDay == null
-        ? const AsyncLoading<int?>()
-        : ref
-              .watch(diaryStepsSummaryProvider(dataDay))
-              .whenData((summary) => summary.totalSteps);
     final loadedData = hasCurrentDataDay ? dataState.value : null;
     if (loadedData != null) {
       _lastData = loadedData;
@@ -128,9 +117,6 @@ class _DiaryActivityWeightSectionState
         lastDataDay != null &&
         isSameLocalDay(lastDataDay, normalizedDay);
     final data = canUseLastData ? loadedData ?? _lastData : null;
-    final currentStepsState = hasCurrentDataDay
-        ? stepsState
-        : const AsyncLoading<int?>();
     if (data == null && hasCurrentDataDay && dataState.hasError) {
       final l10n = AppLocalizations.of(context)!;
       return MetricDetailCardShell(
@@ -152,11 +138,8 @@ class _DiaryActivityWeightSectionState
         data != null &&
         !data.hasSelectedDayWeight &&
         dismissedDayKey != localDayKey(normalizedDay);
-    final hasReadyHealth = data?.hasReadyHealthAccess ?? false;
-    final showActivityTrainings = _isActivityExpanded && hasReadyHealth;
     final showWeightDetails =
         _isWeightExpanded && data != null && !showWeightWarning;
-    final showStepDetails = _isStepsExpanded && hasReadyHealth;
     final detailsData = data;
 
     return Column(
@@ -167,20 +150,7 @@ class _DiaryActivityWeightSectionState
               ? const DiaryCompactActivityWeightSkeletonRow()
               : DiaryCompactActivityWeightMetricsRow(
                   data: data,
-                  stepsState: currentStepsState,
-                  isStepsExpanded: _isStepsExpanded,
-                  isActivityExpanded: _isActivityExpanded,
                   isWeightExpanded: _isWeightExpanded,
-                  onToggleSteps: () {
-                    setState(() {
-                      _isStepsExpanded = !_isStepsExpanded;
-                    });
-                  },
-                  onToggleActivity: () {
-                    setState(() {
-                      _isActivityExpanded = !_isActivityExpanded;
-                    });
-                  },
                   onTapWeight: () {
                     if (showWeightWarning) {
                       _openWeightDialog(data, normalizedDay);
@@ -192,10 +162,6 @@ class _DiaryActivityWeightSectionState
                   },
                 ),
         ),
-        if (data != null && data.needsHealthConnection) ...[
-          const SizedBox(height: AppSpacing.md),
-          DiaryHealthConnectMetricCard(accessState: data.healthAccessState),
-        ],
         if (data != null && showWeightWarning) ...[
           const SizedBox(height: AppSpacing.md),
           DiaryWeightMissingPromptCard(
@@ -208,21 +174,9 @@ class _DiaryActivityWeightSectionState
             duration: const Duration(milliseconds: 260),
             curve: Curves.easeOutCubic,
             alignment: Alignment.topCenter,
-            child: showStepDetails || showActivityTrainings || showWeightDetails
+            child: showWeightDetails
                 ? Column(
                     children: [
-                      if (showStepDetails) ...[
-                        const SizedBox(height: AppSpacing.md),
-                        DiaryActivityDetailsCard(
-                          selectedDay: widget.selectedDay,
-                        ),
-                      ],
-                      if (showActivityTrainings) ...[
-                        const SizedBox(height: AppSpacing.md),
-                        DiaryWorkoutsCard(
-                          selectedDay: widget.selectedDay,
-                        ),
-                      ],
                       if (showWeightDetails && detailsData != null) ...[
                         const SizedBox(height: AppSpacing.md),
                         DiaryWeightDetailsCard(
@@ -293,8 +247,6 @@ class _DiaryActivityWeightSectionState
     if (!mounted || dataDay == null) {
       return;
     }
-    ref
-      ..invalidate(diaryActivityWeightDataProvider(dataDay))
-      ..invalidate(diaryStepsSummaryProvider(dataDay));
+    ref.invalidate(diaryActivityWeightDataProvider(dataDay));
   }
 }

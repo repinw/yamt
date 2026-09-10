@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
@@ -33,17 +32,12 @@ class DiaryCompactActivityWeightSurface extends StatelessWidget {
   }
 }
 
-/// Loaded compact activity and weight metric row.
+/// Loaded compact weight metric.
 class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
-  /// Creates loaded compact metric row.
+  /// Creates the loaded compact weight metric.
   const DiaryCompactActivityWeightMetricsRow({
     required this.data,
-    required this.stepsState,
-    required this.isStepsExpanded,
-    required this.isActivityExpanded,
     required this.isWeightExpanded,
-    required this.onToggleSteps,
-    required this.onToggleActivity,
     required this.onTapWeight,
     super.key,
   });
@@ -51,23 +45,8 @@ class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
   /// Loaded activity and weight data.
   final DiaryActivityWeightData data;
 
-  /// Step summary state for compact step value.
-  final AsyncValue<int?> stepsState;
-
-  /// Whether step details are expanded.
-  final bool isStepsExpanded;
-
-  /// Whether activity details are expanded.
-  final bool isActivityExpanded;
-
   /// Whether weight details are expanded.
   final bool isWeightExpanded;
-
-  /// Toggles step details.
-  final VoidCallback onToggleSteps;
-
-  /// Toggles activity details.
-  final VoidCallback onToggleActivity;
 
   /// Opens weight dialog or toggles weight details.
   final VoidCallback onTapWeight;
@@ -75,54 +54,19 @@ class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeName = Localizations.localeOf(context).toLanguageTag();
-    final numberFormat = NumberFormat.decimalPattern(localeName);
     final weightFormat = NumberFormat('0.#', localeName);
     final l10n = AppLocalizations.of(context)!;
-    final totalSteps = stepsState.value;
-    final stepsValue = totalSteps == null
-        ? '-'
-        : numberFormat.format(totalSteps);
-    final activityValue = data.activityKcal == null
-        ? '-'
-        : '${numberFormat.format(data.activityKcal)} '
-              '${l10n.caloriesUnitKcal}';
     final weightValue = data.selectedWeightKg == null
         ? '-'
         : '${weightFormat.format(data.selectedWeightKg)} '
               '${l10n.caloriesUnitKg}';
 
-    return Row(
-      children: [
-        Expanded(
-          child: _CompactMetricItem(
-            icon: Icons.directions_walk_rounded,
-            label: l10n.diaryStepsTitle,
-            value: stepsValue,
-            isExpanded: isStepsExpanded,
-            onTap: onToggleSteps,
-          ),
-        ),
-        const _CompactMetricDivider(),
-        Expanded(
-          child: _CompactMetricItem(
-            icon: Icons.local_fire_department_rounded,
-            label: l10n.diaryActivityTitle,
-            value: activityValue,
-            isExpanded: isActivityExpanded,
-            onTap: onToggleActivity,
-          ),
-        ),
-        const _CompactMetricDivider(),
-        Expanded(
-          child: _CompactMetricItem(
-            icon: Icons.monitor_weight_outlined,
-            label: l10n.diaryWeightTitle,
-            value: weightValue,
-            isExpanded: isWeightExpanded,
-            onTap: onTapWeight,
-          ),
-        ),
-      ],
+    return _CompactMetricItem(
+      icon: Icons.monitor_weight_outlined,
+      label: l10n.diaryWeightTitle,
+      value: weightValue,
+      isExpanded: isWeightExpanded,
+      onTap: onTapWeight,
     );
   }
 }
@@ -136,29 +80,9 @@ class DiaryCompactActivityWeightSkeletonRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Row(
-      children: [
-        Expanded(
-          child: _CompactMetricSkeletonItem(
-            icon: Icons.directions_walk_rounded,
-            label: l10n.diaryStepsTitle,
-          ),
-        ),
-        const _CompactMetricDivider(),
-        Expanded(
-          child: _CompactMetricSkeletonItem(
-            icon: Icons.local_fire_department_rounded,
-            label: l10n.diaryActivityTitle,
-          ),
-        ),
-        const _CompactMetricDivider(),
-        Expanded(
-          child: _CompactMetricSkeletonItem(
-            icon: Icons.monitor_weight_outlined,
-            label: l10n.diaryWeightTitle,
-          ),
-        ),
-      ],
+    return _CompactMetricSkeletonItem(
+      icon: Icons.monitor_weight_outlined,
+      label: l10n.diaryWeightTitle,
     );
   }
 }
@@ -174,16 +98,16 @@ class _CompactMetricsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (header case final header?) ...[
-          header,
-          const SizedBox(height: AppSpacing.xl),
-          const _CompactMetricsHorizontalDivider(),
-          const SizedBox(height: AppSpacing.xl),
+          Expanded(child: header),
+          const SizedBox(width: AppSpacing.md),
+          const _CompactMetricDivider(),
+          const SizedBox(width: AppSpacing.md),
         ],
-        body,
+        SizedBox(width: 92, child: body),
       ],
     );
   }
@@ -205,7 +129,10 @@ class _CompactMetricsFrame extends StatelessWidget {
         border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl,
+          vertical: AppSpacing.xs,
+        ),
         child: child,
       ),
     );
@@ -240,7 +167,7 @@ class _CompactMetricItem extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.xxs,
-            vertical: AppSpacing.xs,
+            vertical: AppSpacing.xxs,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -282,9 +209,9 @@ class _CompactMetricItem extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSizes.compactMetricValueTopGap),
+              const SizedBox(height: 2),
               SizedBox(
-                height: AppSizes.compactMetricValueSlotHeight,
+                height: 20,
                 child: Center(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
@@ -321,7 +248,7 @@ class _CompactMetricSkeletonItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.xxs,
-        vertical: AppSpacing.xs,
+        vertical: AppSpacing.xxs,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -350,9 +277,9 @@ class _CompactMetricSkeletonItem extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSizes.compactMetricValueTopGap),
+          const SizedBox(height: 2),
           SizedBox(
-            height: AppSizes.compactMetricValueSlotHeight,
+            height: 20,
             child: Center(
               child: MetricSkeletonBlock(
                 width: AppSizes.compactMetricSkeletonValueWidth,
@@ -374,21 +301,7 @@ class _CompactMetricDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: AppSizes.compactMetricDividerWidth,
-      height: AppSizes.compactMetricDividerHeight,
-      color: Theme.of(context).colorScheme.outlineVariant.withValues(
-        alpha: AppOpacities.compactMetricDivider,
-      ),
-    );
-  }
-}
-
-class _CompactMetricsHorizontalDivider extends StatelessWidget {
-  const _CompactMetricsHorizontalDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: AppSizes.compactMetricDividerWidth,
+      height: 32,
       color: Theme.of(context).colorScheme.outlineVariant.withValues(
         alpha: AppOpacities.compactMetricDivider,
       ),

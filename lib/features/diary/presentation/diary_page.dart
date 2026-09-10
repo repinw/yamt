@@ -155,6 +155,13 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                           DiaryBalanceCard(
                             selectedDay: calendarState.selectedDay,
                           ),
+                          const SizedBox(height: AppSpacing.xs),
+                          DiaryActivityWeightSection(
+                            selectedDay: calendarState.selectedDay,
+                            header: DiaryWeeklyBalanceSummary(
+                              selectedDay: calendarState.selectedDay,
+                            ),
+                          ),
                           if (showIntroBanner) ...[
                             const SizedBox(height: AppSpacing.sm),
                             DiaryIntroBannerCard(
@@ -188,13 +195,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                               selectedDay: calendarState.selectedDay,
                             ),
                           const SizedBox(height: AppSpacing.xl),
-                          DiaryActivityWeightSection(
-                            selectedDay: calendarState.selectedDay,
-                            header: DiaryWeeklyBalanceSummary(
-                              selectedDay: calendarState.selectedDay,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xxl),
                         ],
                       ),
                     ),
