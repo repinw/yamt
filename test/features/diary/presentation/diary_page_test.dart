@@ -728,7 +728,10 @@ void main() {
       find.byKey(DiaryWeeklyCheckInCardKeys.successCard),
       findsOneWidget,
     );
-    expect(find.textContaining('1,800 kcal'), findsOneWidget);
+    expect(
+      find.text('Target updated from weekly check-in: 1,800 kcal.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shows practice day message before tomorrow goal start', (

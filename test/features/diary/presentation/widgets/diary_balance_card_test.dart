@@ -231,7 +231,7 @@ void main() {
   });
 
   testWidgets(
-    'daily progress shows activity extension as transparent yellow',
+    'daily progress ignores legacy activity kcal',
     (
       tester,
     ) async {
@@ -254,24 +254,14 @@ void main() {
       final eatenRect = tester.getRect(
         find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
       );
-      final previewRect = tester.getRect(
-        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
-      );
-      final activityRect = tester.getRect(
-        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-      );
-      final previewBox = tester.widget<ColoredBox>(
-        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
-      );
-
-      expect(eatenRect.width / trackRect.width, closeTo(1000 / 2200, 0.02));
-      expect(previewRect.width / trackRect.width, closeTo(200 / 2200, 0.02));
-      expect(previewRect.right, closeTo(trackRect.right, 0.5));
-      expect(previewBox.color.a, closeTo(0.3, 0.01));
-      expect(activityRect.width, 0);
+      expect(eatenRect.width / trackRect.width, closeTo(1000 / 2000, 0.02));
       expect(
-        (activityRect.left - trackRect.left) / trackRect.width,
-        closeTo(2000 / 2200, 0.02),
+        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+        findsNothing,
+      );
+      expect(
+        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+        findsNothing,
       );
     },
   );
@@ -777,7 +767,7 @@ void main() {
     expect(_findTextContaining('-838 kcal'), findsOneWidget);
   });
 
-  testWidgets('daily progress previews corrected 899 kcal activity', (
+  testWidgets('daily progress ignores legacy corrected activity kcal', (
     tester,
   ) async {
     final selectedDay = DateTime(2026, 4, 27);
@@ -796,29 +786,17 @@ void main() {
       todayFlexibleGoalKcal: 2774.25,
     );
 
-    final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-    );
-    final previewRect = tester.getRect(
+    expect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+      findsNothing,
     );
-    final activityRect = tester.getRect(
+    expect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-    );
-
-    expect(
-      previewRect.width / trackRect.width,
-      closeTo(674.25 / 2774.25, 0.02),
-    );
-    expect(previewRect.right, closeTo(trackRect.right, 0.5));
-    expect(activityRect.width, 0);
-    expect(
-      (activityRect.left - trackRect.left) / trackRect.width,
-      closeTo(1 - (674.25 / 2774.25), 0.02),
+      findsNothing,
     );
   });
 
-  testWidgets('daily progress previews activity with carryover', (
+  testWidgets('daily progress ignores legacy activity kcal with carryover', (
     tester,
   ) async {
     final selectedDay = DateTime(2026, 4, 27);
@@ -837,25 +815,13 @@ void main() {
       todayFlexibleGoalKcal: 5000,
     );
 
-    final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-    );
-    final previewRect = tester.getRect(
+    expect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+      findsNothing,
     );
-    final activityRect = tester.getRect(
+    expect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-    );
-
-    expect(
-      previewRect.width / trackRect.width,
-      closeTo(674.25 / 2774.25, 0.02),
-    );
-    expect(previewRect.right, closeTo(trackRect.right, 0.5));
-    expect(activityRect.width, 0);
-    expect(
-      (activityRect.left - trackRect.left) / trackRect.width,
-      closeTo(1 - (674.25 / 2774.25), 0.02),
+      findsNothing,
     );
   });
 
@@ -961,7 +927,8 @@ void main() {
       activityBonusKcal: 200,
     );
 
-    expect(_findTextContaining('Base 2,000 · Sport +200'), findsOneWidget);
+    expect(_findTextContaining('Base 2,000 kcal'), findsOneWidget);
+    expect(_findTextContaining('Sport'), findsNothing);
   });
 }
 

@@ -43,41 +43,10 @@ class DiaryDailyBudgetTodayCard extends StatelessWidget {
               letterSpacing: 0.5,
             ),
           ),
-          if (data.hasExpectedActivity) ...[
-            DiaryDailyBudgetRow(
-              label: l10n.diaryBudgetDetailsBaseGoalWithoutActivityLabel,
-              value: formatDiaryKcal(
-                numberFormat,
-                data.baseGoalWithoutActivityKcal,
-                unit,
-              ),
-            ),
-            DiaryDailyBudgetRow(
-              label: l10n.diaryBudgetDetailsExpectedActivityLabel,
-              value:
-                  '+${formatDiaryKcal(
-                    numberFormat,
-                    data.expectedActivityKcal,
-                    unit,
-                  )}',
-              valueColor: accents.activityFor(colors.brightness),
-            ),
-          ] else ...[
-            DiaryDailyBudgetRow(
-              label: l10n.diaryBudgetDetailsBaseGoalLabel,
-              value: formatDiaryKcal(numberFormat, data.baseGoalKcal, unit),
-            ),
-          ],
-          if (data.hasExceededActivity)
-            DiaryDailyBudgetRow(
-              label: l10n.diaryBudgetDetailsExtraSportLabel,
-              value: formatDiarySignedKcal(
-                data.extraSportKcal,
-                numberFormat,
-                unit,
-              ),
-              valueColor: accents.activityFor(colors.brightness),
-            ),
+          DiaryDailyBudgetRow(
+            label: l10n.diaryBudgetDetailsBaseGoalLabel,
+            value: formatDiaryKcal(numberFormat, data.baseGoalKcal, unit),
+          ),
           if (data.carryoverKcal.round() != 0)
             DiaryDailyBudgetRow(
               label: l10n.diaryBudgetDetailsCarryoverLabel,

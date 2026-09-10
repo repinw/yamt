@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
@@ -39,7 +40,6 @@ class DiaryDailyBudgetDetailsData {
     required this.selectedDay,
     required this.baseGoalKcal,
     required this.carryoverKcal,
-    required this.activityBonusKcal,
     required this.targetKcal,
     required this.eatenKcal,
     required this.dayLeftKcal,
@@ -47,8 +47,6 @@ class DiaryDailyBudgetDetailsData {
     required this.totalCarryoverBeforeTodayKcal,
     required this.remainingRunDays,
     required this.previousDays,
-    this.expectedActivityKcal = 0.0,
-    this.todayActiveKcal = 0,
   });
 
   /// Builds budget details from week overview, day overview, and daily metrics.
@@ -57,69 +55,25 @@ class DiaryDailyBudgetDetailsData {
     required CalorieWeekDayOverview selectedDayOverview,
     required DiaryDailyBalanceMetrics metrics,
     required bool isHeartDay,
-  }) {
-    final selectedDate = normalizeDiaryDay(selectedDayOverview.date);
-    final balanceStartDate = normalizeDiaryDay(weekOverview.balanceStartDate);
-
-    final previousDays = <DiaryCarryoverDayDetail>[];
-    var computedTotalCarryover = 0.0;
-
-    for (final day in weekOverview.days) {
-      final dayDate = normalizeDiaryDay(day.date);
-      if (!dayDate.isBefore(selectedDate)) {
-        continue;
-      }
-      if (dayDate.isBefore(balanceStartDate)) {
-        continue;
-      }
-      final diff = day.goalKcal - day.countedTotalKcal;
-      computedTotalCarryover += diff;
-      previousDays.add(
-        DiaryCarryoverDayDetail(
-          date: day.date,
-          goalKcal: day.goalKcal,
-          consumedKcal: day.countedTotalKcal,
-          differenceKcal: diff,
-          isHeartDay: day.isHeartDay,
-        ),
-      );
-    }
-
-    final remainingRunDays = math.max(1, 7 - previousDays.length);
-    final totalCarryover = previousDays.isNotEmpty
-        ? computedTotalCarryover
-        : (metrics.carryoverKcal * remainingRunDays);
-
-    return DiaryDailyBudgetDetailsData(
-      selectedDay: selectedDayOverview.date,
-      baseGoalKcal: metrics.baseGoalKcal,
-      carryoverKcal: metrics.carryoverKcal,
-      activityBonusKcal: metrics.activitySegmentKcal,
-      targetKcal: metrics.targetKcal,
-      eatenKcal: metrics.eatenKcal,
-      dayLeftKcal: metrics.dayLeftKcal,
-      isHeartDay: isHeartDay,
-      totalCarryoverBeforeTodayKcal: totalCarryover,
-      remainingRunDays: remainingRunDays,
-      previousDays: List<DiaryCarryoverDayDetail>.unmodifiable(previousDays),
-      expectedActivityKcal: metrics.expectedActivityKcal,
-      todayActiveKcal: metrics.todayActiveKcal,
-    );
-  }
+    required DateTime carryoverStartDate,
+  }) => _DiaryDailyBudgetDetailsResolver(
+    weekOverview: weekOverview,
+    selectedDayOverview: selectedDayOverview,
+    metrics: metrics,
+    isHeartDay: isHeartDay,
+    carryoverStartDate: carryoverStartDate,
+  ).resolve();
 
   /// Selected diary day.
   final DateTime selectedDay;
 
-  /// Base daily target before activity and carryover adjustments.
+  /// Base daily target before carryover adjustments.
   final double baseGoalKcal;
 
   /// Distributed carryover adjustment applied to today.
   final double carryoverKcal;
 
-  /// Activity bonus calories earned today.
-  final double activityBonusKcal;
-
-  /// Effective daily target (baseGoal + carryover + activity).
+  /// Effective daily target (base goal plus carryover).
   final double targetKcal;
 
   /// Calories eaten so far today.
@@ -139,25 +93,6 @@ class DiaryDailyBudgetDetailsData {
 
   /// Detailed contributions from each finished day in this run.
   final List<DiaryCarryoverDayDetail> previousDays;
-
-  /// Expected baseline active calories for today.
-  final double expectedActivityKcal;
-
-  /// Tracked active calories on this day.
-  final int todayActiveKcal;
-
-  /// Whether expected baseline activity is configured for this day.
-  bool get hasExpectedActivity => expectedActivityKcal.round() > 0;
-
-  /// Base goal without the expected baseline activity.
-  double get baseGoalWithoutActivityKcal =>
-      math.max(0, baseGoalKcal - expectedActivityKcal);
-
-  /// Additional sport / activity calories exceeding the baseline.
-  double get extraSportKcal => activityBonusKcal;
-
-  /// Whether the user exceeded the expected activity through sports.
-  bool get hasExceededActivity => extraSportKcal.round() > 0;
 
   /// Whether Schutzregel C capped the daily carryover reduction.
   bool get wasSafetyCapActive {
@@ -185,4 +120,77 @@ class DiaryDailyBudgetDetailsData {
         : -((carryoverKcal.abs() * carryoverFatFraction) /
               fatEnergyDensityKcalPerGram);
   }
+}
+
+class _DiaryDailyBudgetDetailsResolver {
+  const _DiaryDailyBudgetDetailsResolver({
+    required this.weekOverview,
+    required this.selectedDayOverview,
+    required this.metrics,
+    required this.isHeartDay,
+    required this.carryoverStartDate,
+  });
+
+  final CalorieWeekOverview weekOverview;
+  final CalorieWeekDayOverview selectedDayOverview;
+  final DiaryDailyBalanceMetrics metrics;
+  final bool isHeartDay;
+  final DateTime carryoverStartDate;
+
+  DiaryDailyBudgetDetailsData resolve() {
+    final previousDays = _resolvePreviousDays();
+    return DiaryDailyBudgetDetailsData(
+      selectedDay: selectedDayOverview.date,
+      baseGoalKcal: metrics.baseGoalKcal,
+      carryoverKcal: metrics.carryoverKcal,
+      targetKcal: metrics.targetKcal,
+      eatenKcal: metrics.eatenKcal,
+      dayLeftKcal: metrics.dayLeftKcal,
+      isHeartDay: isHeartDay,
+      totalCarryoverBeforeTodayKcal: _sumCarryover(previousDays),
+      remainingRunDays: _resolveRemainingRunDays(),
+      previousDays: List<DiaryCarryoverDayDetail>.unmodifiable(previousDays),
+    );
+  }
+
+  List<DiaryCarryoverDayDetail> _resolvePreviousDays() {
+    return weekOverview.days
+        .where(_isFinishedDayInActiveRun)
+        .map(_toCarryoverDayDetail)
+        .toList(growable: false);
+  }
+
+  bool _isFinishedDayInActiveRun(CalorieWeekDayOverview day) {
+    final date = normalizeDiaryDay(day.date);
+    return date.isBefore(normalizeDiaryDay(selectedDayOverview.date)) &&
+        !date.isBefore(normalizeDiaryDay(carryoverStartDate));
+  }
+
+  int _resolveRemainingRunDays() {
+    final completedDays = normalizeDiaryDay(
+      selectedDayOverview.date,
+    ).difference(normalizeDiaryDay(carryoverStartDate)).inDays;
+    return math.max(
+      1,
+      calorieGoalRunLengthDays -
+          completedDays.clamp(0, calorieGoalRunLengthDays - 1),
+    );
+  }
+}
+
+DiaryCarryoverDayDetail _toCarryoverDayDetail(
+  CalorieWeekDayOverview day,
+) {
+  final differenceKcal = day.goalKcal - day.countedTotalKcal;
+  return DiaryCarryoverDayDetail(
+    date: day.date,
+    goalKcal: day.goalKcal,
+    consumedKcal: day.countedTotalKcal,
+    differenceKcal: differenceKcal,
+    isHeartDay: day.isHeartDay,
+  );
+}
+
+double _sumCarryover(Iterable<DiaryCarryoverDayDetail> days) {
+  return days.fold<double>(0, (sum, day) => sum + day.differenceKcal);
 }

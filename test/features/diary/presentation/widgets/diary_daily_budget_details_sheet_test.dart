@@ -51,12 +51,10 @@ void main() {
         selectedDay: wednesday,
         baseGoalKcal: 2000,
         carryoverKcal: 150,
-        activityBonusKcal: 200,
         targetKcal: 2350,
         eatenKcal: 650,
         dayLeftKcal: 1700,
         isHeartDay: false,
-        expectedActivityKcal: 400,
         totalCarryoverBeforeTodayKcal: 300,
         remainingRunDays: 2,
         previousDays: [
@@ -89,12 +87,11 @@ void main() {
       expect(find.text("Today's calculation"), findsOneWidget);
 
       // Rows in calculation card
-      expect(find.text('Base daily goal (without activity)'), findsOneWidget);
-      expect(find.text('1,600 kcal'), findsOneWidget);
-      expect(find.text('Expected activity'), findsOneWidget);
-      expect(find.text('+400 kcal'), findsOneWidget);
-      expect(find.text('Extra activity / workouts'), findsOneWidget);
-      expect(find.text('+200 kcal'), findsOneWidget);
+      expect(find.text('Base daily goal'), findsOneWidget);
+      expect(find.text('2,000 kcal'), findsOneWidget);
+      expect(find.text('Base daily goal (without activity)'), findsNothing);
+      expect(find.text('Expected activity'), findsNothing);
+      expect(find.text('Extra activity / workouts'), findsNothing);
       expect(find.text('Carryover from previous days'), findsOneWidget);
       expect(find.text('+150 kcal'), findsOneWidget);
       expect(find.text('Effective daily goal'), findsOneWidget);
@@ -132,7 +129,6 @@ void main() {
         selectedDay: monday,
         baseGoalKcal: 2000,
         carryoverKcal: 0,
-        activityBonusKcal: 0,
         targetKcal: 2000,
         eatenKcal: 400,
         dayLeftKcal: 1600,

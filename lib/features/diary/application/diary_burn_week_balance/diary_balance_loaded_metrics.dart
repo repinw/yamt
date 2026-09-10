@@ -56,6 +56,15 @@ class DiaryBalanceLoadedState {
   final int runWeekNumber;
 }
 
+typedef _DiaryBalanceLoadedContext = ({
+  CalorieWeekOverview weekOverview,
+  CalorieWeekDayOverview selectedDayOverview,
+  List<CalorieEntry> selectedDayEntries,
+  BurnWeekRunState runState,
+  bool isLiveDay,
+  DateTime now,
+});
+
 /// Resolves all derived values for a loaded Burn Week balance card.
 DiaryBalanceLoadedMetrics resolveDiaryBalanceLoadedMetrics({
   required CalorieWeekOverview weekOverview,
@@ -65,54 +74,97 @@ DiaryBalanceLoadedMetrics resolveDiaryBalanceLoadedMetrics({
   required bool isLiveDay,
   required DateTime now,
 }) {
-  final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
-    currentDay: selectedDayOverview.date,
-    balanceStartDate: weekOverview.balanceStartDate,
-    storedWeekStartDayKey: runState.currentWeekStartDayKey,
-  );
-  final loadedState = _resolveDiaryBalanceLoadedState(
-    weekOverview: weekOverview,
-    selectedDayOverview: selectedDayOverview,
-    runState: runState,
-    isLiveDay: isLiveDay,
-  );
-  final bufferAdjustmentKcal = isLiveDay ? runState.heartCreditKcal : 0.0;
-  final dailyMetrics = resolveDiaryDailyBalanceMetrics(
-    flexibleGoalKcal: weekOverview.todayFlexibleGoalKcal,
-    totalKcal: selectedDayOverview.totalKcal,
-    goalKcal: selectedDayOverview.goalKcal,
-    baseGoalKcal: selectedDayOverview.baseGoalKcal,
-    activitySegmentKcal: selectedDayOverview.activityBonusKcal,
-    bufferAdjustmentKcal: bufferAdjustmentKcal,
-    heartCreditKcal: runState.heartCreditKcal,
-    isHeartDay: loadedState.isHeartDay,
-    todayActiveKcal: selectedDayOverview.todayActiveKcal,
-    expectedActivityKcal: selectedDayOverview.expectedActivityKcal,
-    isActivityTrackingActive: selectedDayOverview.isActivityTrackingActive,
-  );
-  final weeklyMetrics = resolveDiaryWeeklyBalanceMetrics(
+  final context = (
     weekOverview: weekOverview,
     selectedDayOverview: selectedDayOverview,
     selectedDayEntries: selectedDayEntries,
-    currentWeekStartDate: currentWeekStartDate,
     runState: runState,
+    isLiveDay: isLiveDay,
     now: now,
   );
-  final budgetDetails = DiaryDailyBudgetDetailsData.from(
-    weekOverview: weekOverview,
-    selectedDayOverview: selectedDayOverview,
-    metrics: dailyMetrics,
-    isHeartDay: loadedState.isHeartDay,
-  );
+  return _resolveDiaryBalanceLoadedMetrics(context);
+}
 
+DiaryBalanceLoadedMetrics _resolveDiaryBalanceLoadedMetrics(
+  _DiaryBalanceLoadedContext context,
+) {
+  final weekStart = _resolveCurrentWeekStartDate(context);
+  final state = _resolveLoadedState(context);
+  final daily = _resolveDailyMetrics(context, state);
+  return _buildDiaryBalanceLoadedMetrics(context, weekStart, state, daily);
+}
+
+DiaryBalanceLoadedMetrics _buildDiaryBalanceLoadedMetrics(
+  _DiaryBalanceLoadedContext context,
+  DateTime weekStart,
+  DiaryBalanceLoadedState state,
+  DiaryDailyBalanceMetrics daily,
+) {
   return DiaryBalanceLoadedMetrics(
-    selectedDay: selectedDayOverview.date,
-    daily: dailyMetrics,
-    weekly: weeklyMetrics,
-    state: loadedState,
-    budgetDetails: budgetDetails,
+    selectedDay: context.selectedDayOverview.date,
+    daily: daily,
+    weekly: _resolveWeeklyMetrics(context, weekStart),
+    state: state,
+    budgetDetails: _resolveBudgetDetails(context, weekStart, state, daily),
   );
 }
+
+DateTime _resolveCurrentWeekStartDate(_DiaryBalanceLoadedContext context) =>
+    resolveBurnWeekLiveWeekStartDate(
+      currentDay: context.selectedDayOverview.date,
+      balanceStartDate: context.weekOverview.balanceStartDate,
+      storedWeekStartDayKey: context.runState.currentWeekStartDayKey,
+    );
+
+DiaryDailyBalanceMetrics _resolveDailyMetrics(
+  _DiaryBalanceLoadedContext context,
+  DiaryBalanceLoadedState state,
+) => resolveDiaryDailyBalanceMetrics(
+  flexibleGoalKcal: context.weekOverview.todayFlexibleGoalKcal,
+  totalKcal: context.selectedDayOverview.totalKcal,
+  goalKcal: context.selectedDayOverview.goalKcal,
+  baseGoalKcal: context.selectedDayOverview.baseGoalKcal,
+  activitySegmentKcal: 0,
+  bufferAdjustmentKcal: context.isLiveDay
+      ? context.runState.heartCreditKcal
+      : 0,
+  heartCreditKcal: context.runState.heartCreditKcal,
+  isHeartDay: state.isHeartDay,
+);
+
+DiaryWeeklyBalanceMetrics _resolveWeeklyMetrics(
+  _DiaryBalanceLoadedContext context,
+  DateTime weekStart,
+) => resolveDiaryWeeklyBalanceMetrics(
+  weekOverview: context.weekOverview,
+  selectedDayOverview: context.selectedDayOverview,
+  selectedDayEntries: context.selectedDayEntries,
+  currentWeekStartDate: weekStart,
+  runState: context.runState,
+  now: context.now,
+);
+
+DiaryDailyBudgetDetailsData _resolveBudgetDetails(
+  _DiaryBalanceLoadedContext context,
+  DateTime weekStart,
+  DiaryBalanceLoadedState state,
+  DiaryDailyBalanceMetrics daily,
+) => DiaryDailyBudgetDetailsData.from(
+  weekOverview: context.weekOverview,
+  selectedDayOverview: context.selectedDayOverview,
+  metrics: daily,
+  isHeartDay: state.isHeartDay,
+  carryoverStartDate: weekStart,
+);
+
+DiaryBalanceLoadedState _resolveLoadedState(
+  _DiaryBalanceLoadedContext context,
+) => _resolveDiaryBalanceLoadedState(
+  weekOverview: context.weekOverview,
+  selectedDayOverview: context.selectedDayOverview,
+  runState: context.runState,
+  isLiveDay: context.isLiveDay,
+);
 
 DiaryBalanceLoadedState _resolveDiaryBalanceLoadedState({
   required CalorieWeekOverview weekOverview,

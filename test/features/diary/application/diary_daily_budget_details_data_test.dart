@@ -62,11 +62,11 @@ void main() {
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
         isHeartDay: false,
+        carryoverStartDate: monday,
       );
 
       expect(data.baseGoalKcal, 2000);
       expect(data.carryoverKcal, 60);
-      expect(data.activityBonusKcal, 100);
       expect(data.targetKcal, 2160);
       expect(data.eatenKcal, 500);
       expect(data.dayLeftKcal, 1660);
@@ -83,14 +83,9 @@ void main() {
 
       expect(data.totalCarryoverBeforeTodayKcal, 300);
       expect(data.remainingRunDays, 5); // 7 - 2 finished days
-      expect(data.expectedActivityKcal, 0);
-      expect(data.hasExpectedActivity, isFalse);
-      expect(data.baseGoalWithoutActivityKcal, 2000);
-      expect(data.extraSportKcal, 100);
-      expect(data.hasExceededActivity, isTrue);
     });
 
-    test('correctly calculates baseGoalWithoutActivity and extraSport', () {
+    test('discards legacy activity kcal', () {
       final monday = DateTime(2026, 4, 13);
       final weekOverview = CalorieWeekOverview(
         days: [
@@ -134,14 +129,10 @@ void main() {
         selectedDayOverview: weekOverview.days.first,
         metrics: metrics,
         isHeartDay: false,
+        carryoverStartDate: monday,
       );
 
       expect(data.baseGoalKcal, 2000);
-      expect(data.expectedActivityKcal, 400);
-      expect(data.hasExpectedActivity, isTrue);
-      expect(data.baseGoalWithoutActivityKcal, 1600);
-      expect(data.extraSportKcal, 150);
-      expect(data.hasExceededActivity, isTrue);
     });
 
     test('handles heart days in previous days history', () {
@@ -193,6 +184,7 @@ void main() {
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
         isHeartDay: false,
+        carryoverStartDate: monday,
       );
 
       expect(data.previousDays.length, 1);
@@ -244,6 +236,63 @@ void main() {
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
         isHeartDay: false,
+        carryoverStartDate: monday,
+      );
+
+      expect(data.previousDays, isEmpty);
+      expect(data.totalCarryoverBeforeTodayKcal, 0);
+      expect(data.remainingRunDays, 7);
+    });
+
+    test('resets carryover details on the first day of a new run', () {
+      final previousRunDay = DateTime(2026, 4, 19);
+      final newRunStart = DateTime(2026, 4, 20);
+      final weekOverview = CalorieWeekOverview(
+        days: [
+          CalorieWeekDayOverview(
+            date: previousRunDay,
+            totalKcal: 3000,
+            goalKcal: 2000,
+            entryCount: 4,
+          ),
+          CalorieWeekDayOverview(
+            date: newRunStart,
+            totalKcal: 400,
+            goalKcal: 2000,
+            entryCount: 1,
+          ),
+        ],
+        totalConsumedKcal: 3400,
+        totalGoalKcal: 4000,
+        remainingKcal: 600,
+        balanceStartDate: previousRunDay,
+        carryoverBeforeTodayKcal: -1000,
+        todayFlexibleGoalKcal: 1000,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
+        futureGoalKcal: null,
+      );
+
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 400,
+        eatenKcal: 400,
+        realDayLeftKcal: 600,
+        heartAdjustmentKcal: 0,
+        dayLeftKcal: 600,
+        targetKcal: 1000,
+        baseGoalKcal: 2000,
+        carryoverKcal: -1000,
+        activitySegmentKcal: 0,
+        activitySegmentReferenceKcal: 2000,
+      );
+
+      final data = DiaryDailyBudgetDetailsData.from(
+        weekOverview: weekOverview,
+        selectedDayOverview: weekOverview.days.last,
+        metrics: metrics,
+        isHeartDay: false,
+        carryoverStartDate: newRunStart,
       );
 
       expect(data.previousDays, isEmpty);
@@ -260,7 +309,6 @@ void main() {
         selectedDay: tuesday,
         baseGoalKcal: 2000,
         carryoverKcal: -350,
-        activityBonusKcal: 0,
         targetKcal: 1650,
         eatenKcal: 0,
         dayLeftKcal: 1650,
@@ -285,7 +333,6 @@ void main() {
         selectedDay: tuesday,
         baseGoalKcal: 2000,
         carryoverKcal: 100,
-        activityBonusKcal: 0,
         targetKcal: 2100,
         eatenKcal: 0,
         dayLeftKcal: 2100,
