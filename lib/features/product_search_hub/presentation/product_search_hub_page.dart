@@ -166,7 +166,6 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   Future<void> _openBarcodeScanFlow() async {
     final scannedBarcode = await openProductSearchHubBarcodeScanner(
       context: context,
-      args: widget.args,
     );
     if (!mounted || scannedBarcode == null || scannedBarcode.trim().isEmpty) {
       return;

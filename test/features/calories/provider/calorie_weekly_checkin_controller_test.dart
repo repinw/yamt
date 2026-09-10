@@ -302,12 +302,84 @@ void main() {
       expect(settings.goalKcalForDay(dueDate), 2626.875);
       expect(settings.latestGoalEntry?.effectiveDate, goalStart);
       expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
-      expect(settings.pendingWeeklyCheckIn?.isDismissed, isTrue);
+      expect(settings.pendingWeeklyCheckIn, isNull);
       expect(settings.hasLearnedTdee, isTrue);
       expect(settings.latestLearnedTdeeKcal, 2665.82);
       final snapshot = settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot;
       expect(snapshot?.windowStartDate, goalStart);
       expect(snapshot?.windowEndDate, DateTime(2026, 4, 14));
+      expect(runStateRepository.state.heartCount, burnWeekInitialHeartCount);
+    },
+  );
+
+  test(
+    'rejectWeeklyCheckIn preserves previous goal, marks snapshot rejected, '
+    'clears pending, and refills hearts',
+    () async {
+      final goalStart = DateTime(2026, 4, 8);
+      final dueDate = DateTime(2026, 4, 15);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2426.875,
+          calculatorProfile: const CalorieCalculatorProfile(
+            sex: CalorieCalculatorSex.male,
+            weightKg: 84,
+            heightCm: 172,
+            ageYears: 31,
+            activityLevel: 1.375,
+            goalMode: CalorieGoalMode.maintain,
+            goalSpeedKgPerWeek: 0,
+          ),
+          effectiveDate: goalStart,
+          source: CalorieGoalSource.calculator,
+        ),
+      );
+      addTearDown(settingsRepository.dispose);
+      final runStateRepository = _FakeBurnWeekRunStateRepository(
+        const BurnWeekRunState(
+          currentWeekStartDayKey: '2026-4-8',
+          runWeekNumber: 2,
+          starCount: 1,
+          heartCount: 0,
+          heartCreditKcal: 0,
+          starBrokeThisWeek: true,
+          missedTrackingThisWeek: false,
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          burnWeekRunStateRepositoryProvider.overrideWithValue(
+            runStateRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(calorieGoalControllerProvider.future);
+
+      final checkInData = _weeklyCheckInData(
+        pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
+          windowStartDate: goalStart,
+          windowEndDate: DateTime(2026, 4, 14),
+          dueDate: dueDate,
+        ),
+      );
+
+      final saved = await container
+          .read(calorieWeeklyCheckInControllerProvider.notifier)
+          .rejectWeeklyCheckIn(checkInData);
+
+      expect(saved, isTrue);
+      final settings = await settingsRepository.readSettings();
+      expect(settings.goalKcalForDay(DateTime(2026, 4, 14)), 2426.875);
+      expect(settings.goalKcalForDay(dueDate), 2426.875);
+      expect(settings.pendingWeeklyCheckIn, isNull);
+      final history = settings.sortedGoalHistory;
+      final checkInEntry = history.firstWhere((e) => e.isWeeklyCheckIn);
+      expect(checkInEntry.weeklyCheckInSnapshot?.isRejected, isTrue);
+      expect(checkInEntry.hasLearnedTdee, isFalse);
       expect(runStateRepository.state.heartCount, burnWeekInitialHeartCount);
     },
   );

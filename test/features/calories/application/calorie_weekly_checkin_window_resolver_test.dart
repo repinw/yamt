@@ -79,6 +79,96 @@ void main() {
     expect(pending, isNull);
   });
 
+  test('does not surface pending window after rejected snapshot exists', () {
+    final start = DateTime(2026, 2, 27);
+    final today = DateTime(2026, 3, 6);
+    final settings = _settings(start).applyGoalChange(
+      dailyKcalGoal: 2000,
+      calculatorProfile: null,
+      changedAt: today,
+      source: CalorieGoalSource.weeklyCheckIn,
+      weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: start,
+        windowEndDate: DateTime(2026, 3, 5),
+        trendWeightChangePerDay: 0,
+        calculatedBaseTdeeKcal: 2050,
+        baseGoalKcal: 2050,
+        lowConfidence: false,
+        isRejected: true,
+      ),
+    );
+
+    final pending = resolvePendingCalorieWeeklyCheckIn(
+      settings: settings,
+      today: today,
+    );
+
+    expect(pending, isNull);
+  });
+
+  test('does not return persisted pending when window is already resolved', () {
+    final start = DateTime(2026, 2, 27);
+    final today = DateTime(2026, 3, 6);
+    final settings = _settings(start)
+        .applyGoalChange(
+          dailyKcalGoal: 2050,
+          calculatorProfile: null,
+          changedAt: today,
+          source: CalorieGoalSource.weeklyCheckIn,
+          weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+            windowStartDate: start,
+            windowEndDate: DateTime(2026, 3, 5),
+            trendWeightChangePerDay: 0,
+            calculatedBaseTdeeKcal: 2050,
+            baseGoalKcal: 2050,
+            lowConfidence: false,
+          ),
+        )
+        .copyWithPendingWeeklyCheckIn(
+          PendingCalorieGoalWeeklyCheckIn(
+            windowStartDate: start,
+            windowEndDate: DateTime(2026, 3, 5),
+            dueDate: today,
+            dismissedAt: today,
+          ),
+        );
+
+    final pending = resolvePendingCalorieWeeklyCheckIn(
+      settings: settings,
+      today: today,
+    );
+
+    expect(pending, isNull);
+  });
+
+  test('dirty snapshot is not treated as resolved', () {
+    final start = DateTime(2026, 2, 27);
+    final today = DateTime(2026, 3, 6);
+    final settings = _settings(start).applyGoalChange(
+      dailyKcalGoal: 2050,
+      calculatorProfile: null,
+      changedAt: today,
+      source: CalorieGoalSource.weeklyCheckIn,
+      weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: start,
+        windowEndDate: DateTime(2026, 3, 5),
+        trendWeightChangePerDay: 0,
+        calculatedBaseTdeeKcal: 2050,
+        baseGoalKcal: 2050,
+        lowConfidence: false,
+        invalidatedAt: today,
+      ),
+    );
+
+    final pending = resolvePendingCalorieWeeklyCheckIn(
+      settings: settings,
+      today: today,
+    );
+
+    expect(pending?.windowStartDate, start);
+    expect(pending?.windowEndDate, DateTime(2026, 3, 5));
+  });
+
   test('builds inclusive days across month boundary', () {
     expect(
       buildCalorieWeeklyInclusiveDays(

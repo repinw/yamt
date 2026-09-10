@@ -68,8 +68,8 @@ PendingCalorieGoalWeeklyCheckIn? resolvePendingCalorieWeeklyCheckIn({
 
   final resolvedWindowKeys = <String>{};
   for (final entry in settings.sortedGoalHistory) {
-    final snapshot = entry.learnedTdeeSnapshot;
-    if (snapshot == null) {
+    final snapshot = entry.weeklyCheckInSnapshot;
+    if (snapshot == null || snapshot.isInputDirty) {
       continue;
     }
     if (snapshot.windowStartDate.isBefore(firstWindowStartDate)) {
@@ -84,7 +84,6 @@ PendingCalorieGoalWeeklyCheckIn? resolvePendingCalorieWeeklyCheckIn({
   }
 
   final persistedPending = settings.pendingWeeklyCheckIn;
-  PendingCalorieGoalWeeklyCheckIn? resolvedPersistedPending;
   var windowStartDate = firstWindowStartDate;
   while (true) {
     final countedDayCount =
@@ -98,21 +97,18 @@ PendingCalorieGoalWeeklyCheckIn? resolvePendingCalorieWeeklyCheckIn({
     );
     final dueDate = nextDiaryDay(windowEndDate);
     if (dueDate.isAfter(today)) {
-      return resolvedPersistedPending;
+      return null;
     }
     final windowKey = calorieWeeklyCheckInWindowKey(
       windowStartDate,
       windowEndDate,
     );
-    final isPersistedPending =
-        persistedPending != null && persistedPending.windowKey == windowKey;
     if (resolvedWindowKeys.contains(windowKey)) {
-      if (isPersistedPending) {
-        resolvedPersistedPending = persistedPending;
-      }
       windowStartDate = nextDiaryDay(windowEndDate);
       continue;
     }
+    final isPersistedPending =
+        persistedPending != null && persistedPending.windowKey == windowKey;
     if (isPersistedPending) {
       return persistedPending;
     }

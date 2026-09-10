@@ -287,7 +287,6 @@ class _ProductSearchHubSearchPageState
     _hideSearchKeyboard();
     final scannedBarcode = await openProductSearchHubBarcodeScanner(
       context: context,
-      args: widget.args,
     );
     if (!mounted || _isClosing) {
       return;

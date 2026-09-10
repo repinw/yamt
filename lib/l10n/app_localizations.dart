@@ -3311,6 +3311,12 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get caloriesWeeklyCheckInApplyAction;
 
+  /// No description provided for @caloriesWeeklyCheckInRejectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get caloriesWeeklyCheckInRejectAction;
+
   /// No description provided for @caloriesWeeklyCheckInLaterAction.
   ///
   /// In en, this message translates to:
@@ -3322,6 +3328,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not close the weekly check-in.'**
   String get caloriesWeeklyCheckInApplyFailed;
+
+  /// No description provided for @caloriesWeeklyCheckInRejectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reject the weekly check-in.'**
+  String get caloriesWeeklyCheckInRejectFailed;
 
   /// No description provided for @caloriesWeeklyCheckInHintReadyTitle.
   ///

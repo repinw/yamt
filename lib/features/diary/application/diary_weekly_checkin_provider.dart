@@ -84,6 +84,7 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
   return DiaryWeeklyCheckInActions(
     syncLearnedTdeeCache: checkInController.syncLearnedTdeeCache,
     applyWeeklyCheckIn: checkInController.applyWeeklyCheckIn,
+    rejectWeeklyCheckIn: checkInController.rejectWeeklyCheckIn,
     showWeeklyCheckInAgain: (pendingWeeklyCheckIn) async {
       final saved = await checkInController.showPendingWeeklyCheckInAgain(
         pendingWeeklyCheckIn,
@@ -113,6 +114,8 @@ class DiaryWeeklyCheckInActions {
     syncLearnedTdeeCache,
     required Future<bool> Function(DiaryWeeklyCheckInData data)
     applyWeeklyCheckIn,
+    required Future<bool> Function(DiaryWeeklyCheckInData data)
+    rejectWeeklyCheckIn,
     required Future<bool> Function(
       PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
     )
@@ -125,6 +128,7 @@ class DiaryWeeklyCheckInActions {
     required void Function() refreshCheckInData,
   }) : _syncLearnedTdeeCache = syncLearnedTdeeCache,
        _applyWeeklyCheckIn = applyWeeklyCheckIn,
+       _rejectWeeklyCheckIn = rejectWeeklyCheckIn,
        _showWeeklyCheckInAgain = showWeeklyCheckInAgain,
        _setSkippedIntakeDay = setSkippedIntakeDay,
        _refreshCheckInData = refreshCheckInData;
@@ -132,6 +136,7 @@ class DiaryWeeklyCheckInActions {
   final Future<void> Function(DiaryWeeklyCheckInData data)
   _syncLearnedTdeeCache;
   final Future<bool> Function(DiaryWeeklyCheckInData data) _applyWeeklyCheckIn;
+  final Future<bool> Function(DiaryWeeklyCheckInData data) _rejectWeeklyCheckIn;
   final Future<bool> Function(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   )
@@ -151,6 +156,11 @@ class DiaryWeeklyCheckInActions {
   /// Applies a weekly check-in.
   Future<bool> applyWeeklyCheckIn(DiaryWeeklyCheckInData data) {
     return _applyWeeklyCheckIn(data);
+  }
+
+  /// Rejects a weekly check-in, keeping the previous TDEE and goal.
+  Future<bool> rejectWeeklyCheckIn(DiaryWeeklyCheckInData data) {
+    return _rejectWeeklyCheckIn(data);
   }
 
   /// Reopens a dismissed weekly check-in window.

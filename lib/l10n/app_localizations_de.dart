@@ -1699,10 +1699,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInApplyAction => 'Übernehmen';
 
   @override
+  String get caloriesWeeklyCheckInRejectAction => 'Ablehnen';
+
+  @override
   String get caloriesWeeklyCheckInLaterAction => 'Später';
 
   @override
   String get caloriesWeeklyCheckInApplyFailed => 'Der Wochen-Check-in konnte nicht geschlossen werden.';
+
+  @override
+  String get caloriesWeeklyCheckInRejectFailed => 'Der Wochen-Check-in konnte nicht abgelehnt werden.';
 
   @override
   String get caloriesWeeklyCheckInHintReadyTitle => 'Wochen-Check-in bereit';

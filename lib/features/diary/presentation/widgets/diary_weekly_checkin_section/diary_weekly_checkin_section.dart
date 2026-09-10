@@ -212,6 +212,8 @@ class _DiaryWeeklyCheckInSectionState
     switch (action) {
       case DiaryWeeklyCheckInDialogAction.apply:
         await _applyWeeklyCheckIn(actions, checkInData, pending);
+      case DiaryWeeklyCheckInDialogAction.reject:
+        await _rejectWeeklyCheckIn(actions, checkInData, pending);
       case DiaryWeeklyCheckInDialogAction.trackMissingWeight:
         if (mounted) {
           _trackMissingWeight(
@@ -243,6 +245,27 @@ class _DiaryWeeklyCheckInSectionState
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.caloriesWeeklyCheckInApplyFailed)),
+    );
+  }
+
+  Future<void> _rejectWeeklyCheckIn(
+    DiaryWeeklyCheckInActions actions,
+    DiaryWeeklyCheckInData checkInData,
+    PendingCalorieGoalWeeklyCheckIn pending,
+  ) async {
+    _hide(pending);
+    final saved = await actions.rejectWeeklyCheckIn(checkInData);
+    if (!mounted) {
+      return;
+    }
+    if (saved) {
+      _refreshDashboard();
+      return;
+    }
+    _showAgain(pending);
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.caloriesWeeklyCheckInRejectFailed)),
     );
   }
 

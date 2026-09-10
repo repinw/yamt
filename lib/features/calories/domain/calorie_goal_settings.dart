@@ -51,6 +51,7 @@ class CalorieGoalWeeklyCheckInSnapshot {
     double? newGoalKcal,
     this.inputHash,
     this.invalidatedAt,
+    this.isRejected = false,
   }) : measuredTotalTdeeKcal =
            measuredTotalTdeeKcal ?? calculatedTrueTdeeKcal ?? 0,
        measuredBaseTdeeKcal =
@@ -109,6 +110,7 @@ class CalorieGoalWeeklyCheckInSnapshot {
       invalidatedAt: const NullableFlexibleDateTimeConverter().fromJson(
         json['invalidated_at'],
       ),
+      isRejected: json['is_rejected'] as bool? ?? false,
     );
   }
 
@@ -151,6 +153,11 @@ class CalorieGoalWeeklyCheckInSnapshot {
   @NullableFlexibleDateTimeConverter()
   final DateTime? invalidatedAt;
 
+  /// Whether the user rejected this weekly check-in update to keep the
+  /// previous TDEE.
+  @JsonKey(defaultValue: false)
+  final bool isRejected;
+
   /// Whether inputs changed after this snapshot was saved.
   bool get isInputDirty => invalidatedAt != null;
 
@@ -167,6 +174,7 @@ class CalorieGoalWeeklyCheckInSnapshot {
   CalorieGoalWeeklyCheckInSnapshot copyWith({
     Object? inputHash = _keepValue,
     Object? invalidatedAt = _keepValue,
+    Object? isRejected = _keepValue,
   }) {
     return CalorieGoalWeeklyCheckInSnapshot(
       windowStartDate: windowStartDate,
@@ -184,6 +192,9 @@ class CalorieGoalWeeklyCheckInSnapshot {
       invalidatedAt: invalidatedAt == _keepValue
           ? this.invalidatedAt
           : invalidatedAt as DateTime?,
+      isRejected: isRejected == _keepValue
+          ? this.isRejected
+          : (isRejected as bool?) ?? false,
     );
   }
 
@@ -218,6 +229,7 @@ class CalorieGoalWeeklyCheckInSnapshot {
         'invalidated_at': const NullableFlexibleDateTimeConverter().toJson(
           invalidatedAt,
         ),
+      if (isRejected) 'is_rejected': isRejected,
     };
   }
 }
@@ -353,10 +365,10 @@ class CalorieGoalHistoryEntry {
   /// Whether learned tdee.
   bool get hasLearnedTdee => learnedTdeeSnapshot != null;
 
-  /// The learned TDEE snapshot if its inputs are still valid.
+  /// The learned TDEE snapshot if its inputs are still valid and not rejected.
   CalorieGoalWeeklyCheckInSnapshot? get learnedTdeeSnapshot {
     final snapshot = weeklyCheckInSnapshot;
-    if (snapshot == null || snapshot.isInputDirty) {
+    if (snapshot == null || snapshot.isInputDirty || snapshot.isRejected) {
       return null;
     }
     return snapshot;

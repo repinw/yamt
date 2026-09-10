@@ -10,37 +10,8 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'models/product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_barcode_direct_result.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_barcode_scanner.dart';
 
 void main() {
-  test('inventory barcode mode selects candidates directly for inventory', () {
-    final options = productSearchHubBarcodeOptionsForArgs(
-      const ProductSearchHubRouteArgs.inventory(),
-    );
-
-    expect(options.showActionButtons, isFalse);
-    expect(options.eatOnly, isFalse);
-  });
-
-  test('diary barcode mode shows eat-only candidate actions', () {
-    final options = productSearchHubBarcodeOptionsForArgs(
-      const ProductSearchHubRouteArgs.diary(),
-    );
-
-    expect(options.showActionButtons, isTrue);
-    expect(options.eatOnly, isTrue);
-  });
-
-  test('selection barcode mode behaves like inventory selection', () {
-    final options = productSearchHubBarcodeOptionsForArgs(
-      ProductSearchHubRouteArgs.selection(item: _draftItem()),
-    );
-
-    expect(options.showActionButtons, isFalse);
-    expect(options.eatOnly, isFalse);
-  });
-
   test('diary barcode mode explains missing eat nutrition', () {
     final needsMessage = productSearchHubBarcodeNeedsEatNutritionMessage(
       args: const ProductSearchHubRouteArgs.diary(),

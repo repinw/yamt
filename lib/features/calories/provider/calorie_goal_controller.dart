@@ -207,6 +207,15 @@ class CalorieGoalController extends _$CalorieGoalController {
     );
   }
 
+  /// Clear pending weekly check in.
+  Future<bool> clearPendingWeeklyCheckIn() async {
+    final previous = await _currentSettings();
+    if (previous.pendingWeeklyCheckIn == null) {
+      return Future<bool>.value(true);
+    }
+    return _persistSettings(previous.copyWithPendingWeeklyCheckIn(null));
+  }
+
   /// Set skipped intake day.
   Future<bool> setSkippedIntakeDay({
     required DateTime day,

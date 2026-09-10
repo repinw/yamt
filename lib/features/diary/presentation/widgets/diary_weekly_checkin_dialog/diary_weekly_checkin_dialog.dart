@@ -15,6 +15,9 @@ enum DiaryWeeklyCheckInDialogAction {
   /// Apply.
   apply,
 
+  /// Reject.
+  reject,
+
   /// Track missing weight.
   trackMissingWeight,
 }
@@ -59,12 +62,18 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
             Navigator.of(context).pop(DiaryWeeklyCheckInDialogAction.later);
           },
         ),
-        if (checkInData.isReady)
+        if (checkInData.isReady) ...<Widget>[
+          DiaryWeeklyCheckInRejectAction(
+            onPressed: () {
+              Navigator.of(context).pop(DiaryWeeklyCheckInDialogAction.reject);
+            },
+          ),
           DiaryWeeklyCheckInApplyAction(
             onPressed: () {
               Navigator.of(context).pop(DiaryWeeklyCheckInDialogAction.apply);
             },
           ),
+        ],
       ],
     );
   }

@@ -410,6 +410,7 @@ void main() {
           DiaryWeeklyCheckInActions(
             syncLearnedTdeeCache: (_) async {},
             applyWeeklyCheckIn: (_) async => true,
+            rejectWeeklyCheckIn: (_) async => true,
             showWeeklyCheckInAgain: (_) async {
               _setWeeklyCheckInData(container, reopenedCheckIn);
               return true;
@@ -613,6 +614,10 @@ void main() {
 
     saveCompleter.complete();
     await _pumpFrames(tester);
+    expect(
+      find.byKey(DiaryWeeklyCheckInCardKeys.showAgainButton),
+      findsNothing,
+    );
   });
 
   testWidgets('shows weekly check-in hint again when apply fails', (
@@ -643,6 +648,80 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
     expect(find.text('Could not close the weekly check-in.'), findsOneWidget);
+  });
+
+  testWidgets('hides weekly check-in hint and dialog when reject succeeds', (
+    tester,
+  ) async {
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+      ),
+    );
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      settingsRepository: settingsRepository,
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
+        windowStartDate: DateTime(2026, 4, 20),
+      ),
+    );
+
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(
+      find.byKey(DiaryWeeklyCheckInDialogKeys.rejectButton),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.rejectButton));
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
+    expect(
+      find.byKey(DiaryWeeklyCheckInCardKeys.showAgainButton),
+      findsNothing,
+    );
+
+    final currentSettings = await settingsRepository.readSettings();
+    expect(
+      currentSettings.goalHistory.last.weeklyCheckInSnapshot?.isRejected,
+      isTrue,
+    );
+    expect(currentSettings.goalKcalForDay(selectedDay), 2200);
+  });
+
+  testWidgets('shows weekly check-in hint again when reject fails', (
+    tester,
+  ) async {
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+      ),
+    )..saveShouldFail = true;
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      settingsRepository: settingsRepository,
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
+        windowStartDate: DateTime(2026, 4, 20),
+      ),
+    );
+
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.rejectButton));
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
+    expect(find.text('Could not reject the weekly check-in.'), findsOneWidget);
   });
 
   testWidgets('shows weekly balance beside weight without activity metrics', (
@@ -1484,6 +1563,7 @@ DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
   return DiaryWeeklyCheckInActions(
     syncLearnedTdeeCache: (_) async {},
     applyWeeklyCheckIn: (_) async => true,
+    rejectWeeklyCheckIn: (_) async => true,
     showWeeklyCheckInAgain: (_) async => true,
     setSkippedIntakeDay:
         ({

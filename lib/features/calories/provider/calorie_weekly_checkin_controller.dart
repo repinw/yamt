@@ -122,6 +122,12 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     if (!ref.mounted) {
       return false;
     }
+    if (_hasRejectedWeeklyCheckInSnapshot(
+      settings: settings,
+      weeklyCheckIn: cacheWeeklyCheckIn,
+    )) {
+      return true;
+    }
     if (_hasMatchingWeeklyCheckInSnapshot(
       settings: settings,
       dailyKcalGoal: calculation.newGoalKcal,
@@ -178,7 +184,81 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       return false;
     }
 
-    final saved = await goalController.dismissPendingWeeklyCheckIn();
+    final saved = await goalController.clearPendingWeeklyCheckIn();
+
+    if (saved && ref.mounted) {
+      await ref
+          .read(burnWeekRunControllerProvider.notifier)
+          .refillHeartsForWeeklyCheckIn();
+    }
+    if (!ref.mounted) {
+      return saved;
+    }
+    state = const AsyncData(null);
+    return saved;
+  }
+
+  /// Reject weekly check in.
+  Future<bool> rejectWeeklyCheckIn(
+    CalorieWeeklyCheckInData checkInData,
+  ) async {
+    final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
+    final calculation = checkInData.calculation;
+    if (pendingWeeklyCheckIn == null ||
+        calculation == null ||
+        checkInData.isBlocked) {
+      return false;
+    }
+
+    state = const AsyncLoading();
+    final synced = await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
+    if (!ref.mounted) {
+      return false;
+    }
+    if (!synced) {
+      state = AsyncError(
+        StateError('Failed to persist pending weekly check-in.'),
+        StackTrace.empty,
+      );
+      return false;
+    }
+
+    final goalController = ref.read(calorieGoalControllerProvider.notifier);
+    final settings = await ref.read(calorieGoalControllerProvider.future);
+    if (!ref.mounted) {
+      return false;
+    }
+
+    final previousGoalKcal = _resolveGoalKcalPriorToCheckIn(
+      settings: settings,
+      checkInWindowStartDate: pendingWeeklyCheckIn.windowStartDate,
+    );
+
+    final rejectedSnapshot = _weeklyCheckInSnapshot(
+      weeklyCheckIn: pendingWeeklyCheckIn,
+      calculation: calculation,
+      lowConfidence: checkInData.lowConfidence,
+      inputHash: checkInData.inputHash,
+    ).copyWith(isRejected: true);
+
+    final savedGoal = await goalController.saveWeeklyCheckInGoal(
+      completedAt: pendingWeeklyCheckIn.dueDate,
+      dailyKcalGoal: previousGoalKcal,
+      weeklyCheckInSnapshot: rejectedSnapshot,
+    );
+
+    if (!ref.mounted) {
+      return savedGoal;
+    }
+    if (!savedGoal) {
+      state = AsyncError(
+        StateError('Failed to persist rejected weekly check-in.'),
+        StackTrace.empty,
+      );
+      return false;
+    }
+
+    final saved = await goalController.clearPendingWeeklyCheckIn();
 
     if (saved && ref.mounted) {
       await ref
@@ -203,6 +283,49 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
   }
 }
 
+bool _hasRejectedWeeklyCheckInSnapshot({
+  required CalorieGoalSettings settings,
+  required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
+}) {
+  for (final entry in settings.sortedGoalHistory) {
+    final snapshot = entry.weeklyCheckInSnapshot;
+    if (snapshot == null) {
+      continue;
+    }
+    if (isSameDiaryDay(
+          snapshot.windowStartDate,
+          weeklyCheckIn.windowStartDate,
+        ) &&
+        isSameDiaryDay(
+          snapshot.windowEndDate,
+          weeklyCheckIn.windowEndDate,
+        ) &&
+        snapshot.isRejected) {
+      return true;
+    }
+  }
+  return false;
+}
+
+double _resolveGoalKcalPriorToCheckIn({
+  required CalorieGoalSettings settings,
+  required DateTime checkInWindowStartDate,
+}) {
+  for (final entry in settings.sortedGoalHistory.reversed) {
+    if (entry.isWeeklyCheckIn &&
+        entry.weeklyCheckInSnapshot != null &&
+        !entry.weeklyCheckInSnapshot!.windowStartDate.isBefore(
+          checkInWindowStartDate,
+        )) {
+      continue;
+    }
+    if (entry.hasGoal) {
+      return entry.dailyKcalGoal!;
+    }
+  }
+  return settings.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
+}
+
 bool _hasMatchingWeeklyCheckInSnapshot({
   required CalorieGoalSettings settings,
   required double dailyKcalGoal,
@@ -223,6 +346,7 @@ bool _hasMatchingWeeklyCheckInSnapshot({
         _sameDouble(entry.dailyKcalGoal, dailyKcalGoal);
     final matches =
         goalMatches &&
+        snapshot.isRejected == weeklyCheckInSnapshot.isRejected &&
         snapshot.lowConfidence == weeklyCheckInSnapshot.lowConfidence &&
         _sameDouble(
           snapshot.trendWeightChangePerDay,

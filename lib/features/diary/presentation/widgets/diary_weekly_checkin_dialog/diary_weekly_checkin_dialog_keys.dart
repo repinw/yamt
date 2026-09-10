@@ -15,6 +15,11 @@ abstract final class DiaryWeeklyCheckInDialogKeys {
     'diary-weekly-checkin-apply',
   );
 
+  /// The reject button.
+  static const rejectButton = ValueKey<String>(
+    'diary-weekly-checkin-reject',
+  );
+
   /// The track missing weight button.
   static const trackMissingWeightButton = ValueKey<String>(
     'diary-weekly-checkin-dialog-track-missing-weight',

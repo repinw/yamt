@@ -64,3 +64,23 @@ class DiaryWeeklyCheckInApplyAction extends StatelessWidget {
     );
   }
 }
+
+/// Reject action for the diary weekly check-in dialog.
+class DiaryWeeklyCheckInRejectAction extends StatelessWidget {
+  /// Creates a reject dialog action.
+  const DiaryWeeklyCheckInRejectAction({required this.onPressed, super.key});
+
+  /// Called when action is tapped.
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return TextButton(
+      key: DiaryWeeklyCheckInDialogKeys.rejectButton,
+      onPressed: onPressed,
+      child: Text(l10n.caloriesWeeklyCheckInRejectAction),
+    );
+  }
+}
