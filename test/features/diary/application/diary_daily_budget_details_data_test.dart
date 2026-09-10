@@ -352,5 +352,113 @@ void main() {
         closeTo((100 * 0.25) / 9.3, 0.01),
       );
     });
+
+    test('populates calorie cycling fields for a rest day', () {
+      final monday = DateTime(2026, 4, 13);
+      final weekOverview = CalorieWeekOverview(
+        days: [
+          CalorieWeekDayOverview(
+            date: monday,
+            totalKcal: 1155,
+            goalKcal: 2403,
+            baseGoalKcal: 2553,
+            entryCount: 2,
+          ),
+        ],
+        totalConsumedKcal: 1155,
+        totalGoalKcal: 2403,
+        remainingKcal: 1248,
+        balanceStartDate: monday,
+        carryoverBeforeTodayKcal: -126,
+        todayFlexibleGoalKcal: 2277,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
+        futureGoalKcal: null,
+      );
+
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 1155,
+        eatenKcal: 1155,
+        realDayLeftKcal: 1122,
+        heartAdjustmentKcal: 0,
+        dayLeftKcal: 1122,
+        targetKcal: 2277,
+        baseGoalKcal: 2403,
+        carryoverKcal: -126,
+        activitySegmentKcal: 0,
+        activitySegmentReferenceKcal: 2277,
+      );
+
+      final data = DiaryDailyBudgetDetailsData.from(
+        weekOverview: weekOverview,
+        selectedDayOverview: weekOverview.days.last,
+        metrics: metrics,
+        isHeartDay: false,
+        carryoverStartDate: monday,
+      );
+
+      expect(data.unadjustedBaseGoalKcal, 2553);
+      expect(data.cyclingAdjustmentKcal, -150);
+      expect(data.hasCyclingAdjustment, isTrue);
+      expect(data.isTrainingDay, isFalse);
+      expect(data.baseGoalKcal, 2403);
+      expect(data.carryoverKcal, -126);
+      expect(data.targetKcal, 2277);
+    });
+
+    test('populates calorie cycling fields for a training day', () {
+      final monday = DateTime(2026, 4, 13);
+      final weekOverview = CalorieWeekOverview(
+        days: [
+          CalorieWeekDayOverview(
+            date: monday,
+            totalKcal: 1155,
+            goalKcal: 2753,
+            baseGoalKcal: 2553,
+            entryCount: 2,
+          ),
+        ],
+        totalConsumedKcal: 1155,
+        totalGoalKcal: 2753,
+        remainingKcal: 1598,
+        balanceStartDate: monday,
+        carryoverBeforeTodayKcal: -126,
+        todayFlexibleGoalKcal: 2627,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
+        futureGoalKcal: null,
+      );
+
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 1155,
+        eatenKcal: 1155,
+        realDayLeftKcal: 1472,
+        heartAdjustmentKcal: 0,
+        dayLeftKcal: 1472,
+        targetKcal: 2627,
+        baseGoalKcal: 2753,
+        carryoverKcal: -126,
+        activitySegmentKcal: 0,
+        activitySegmentReferenceKcal: 2627,
+      );
+
+      final data = DiaryDailyBudgetDetailsData.from(
+        weekOverview: weekOverview,
+        selectedDayOverview: weekOverview.days.last,
+        metrics: metrics,
+        isHeartDay: false,
+        carryoverStartDate: monday,
+      );
+
+      expect(data.unadjustedBaseGoalKcal, 2553);
+      expect(data.cyclingAdjustmentKcal, 200);
+      expect(data.hasCyclingAdjustment, isTrue);
+      expect(data.isTrainingDay, isTrue);
+      expect(data.baseGoalKcal, 2753);
+      expect(data.carryoverKcal, -126);
+      expect(data.targetKcal, 2627);
+    });
   });
 }

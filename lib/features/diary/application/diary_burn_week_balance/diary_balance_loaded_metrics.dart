@@ -123,7 +123,7 @@ DiaryDailyBalanceMetrics _resolveDailyMetrics(
   flexibleGoalKcal: context.weekOverview.todayFlexibleGoalKcal,
   totalKcal: context.selectedDayOverview.totalKcal,
   goalKcal: context.selectedDayOverview.goalKcal,
-  baseGoalKcal: context.selectedDayOverview.baseGoalKcal,
+  baseGoalKcal: context.selectedDayOverview.goalKcal,
   activitySegmentKcal: 0,
   bufferAdjustmentKcal: context.isLiveDay
       ? context.runState.heartCreditKcal

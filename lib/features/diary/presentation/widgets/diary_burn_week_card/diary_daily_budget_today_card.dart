@@ -43,9 +43,34 @@ class DiaryDailyBudgetTodayCard extends StatelessWidget {
               letterSpacing: 0.5,
             ),
           ),
+          if (data.hasCyclingAdjustment &&
+              data.unadjustedBaseGoalKcal != null) ...[
+            DiaryDailyBudgetRow(
+              label: l10n.diaryBudgetDetailsWeeklyAverageGoalLabel,
+              value: formatDiaryKcal(
+                numberFormat,
+                data.unadjustedBaseGoalKcal!,
+                unit,
+              ),
+            ),
+            DiaryDailyBudgetRow(
+              label: data.isTrainingDay
+                  ? l10n.diaryBudgetDetailsTrainingDayAdjustmentLabel
+                  : l10n.diaryBudgetDetailsRestDayAdjustmentLabel,
+              value: formatDiarySignedKcal(
+                data.cyclingAdjustmentKcal,
+                numberFormat,
+                unit,
+              ),
+              valueColor: data.cyclingAdjustmentKcal > 0
+                  ? primary
+                  : accents.activityFor(colors.brightness),
+            ),
+          ],
           DiaryDailyBudgetRow(
             label: l10n.diaryBudgetDetailsBaseGoalLabel,
             value: formatDiaryKcal(numberFormat, data.baseGoalKcal, unit),
+            isBold: data.hasCyclingAdjustment,
           ),
           if (data.carryoverKcal.round() != 0)
             DiaryDailyBudgetRow(

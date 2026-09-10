@@ -2156,6 +2156,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBudgetDetailsTodaySectionTitle => 'Today\'s calculation';
 
   @override
+  String get diaryBudgetDetailsWeeklyAverageGoalLabel => 'Base goal (weekly average)';
+
+  @override
+  String get diaryBudgetDetailsTrainingDayAdjustmentLabel => 'Training day adjustment';
+
+  @override
+  String get diaryBudgetDetailsRestDayAdjustmentLabel => 'Rest day adjustment';
+
+  @override
   String get diaryBudgetDetailsBaseGoalLabel => 'Base daily goal';
 
   @override

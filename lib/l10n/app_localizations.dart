@@ -4145,6 +4145,24 @@ abstract class AppLocalizations {
   /// **'Today\'s calculation'**
   String get diaryBudgetDetailsTodaySectionTitle;
 
+  /// No description provided for @diaryBudgetDetailsWeeklyAverageGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Base goal (weekly average)'**
+  String get diaryBudgetDetailsWeeklyAverageGoalLabel;
+
+  /// No description provided for @diaryBudgetDetailsTrainingDayAdjustmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Training day adjustment'**
+  String get diaryBudgetDetailsTrainingDayAdjustmentLabel;
+
+  /// No description provided for @diaryBudgetDetailsRestDayAdjustmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest day adjustment'**
+  String get diaryBudgetDetailsRestDayAdjustmentLabel;
+
   /// No description provided for @diaryBudgetDetailsBaseGoalLabel.
   ///
   /// In en, this message translates to:

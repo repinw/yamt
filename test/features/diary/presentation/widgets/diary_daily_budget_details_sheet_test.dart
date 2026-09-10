@@ -154,5 +154,44 @@ void main() {
         findsOneWidget,
       );
     });
+
+    testWidgets(
+      'renders calorie cycling breakdown when cycling adjustment is present',
+      (
+        tester,
+      ) async {
+        final monday = DateTime(2026, 4, 13);
+
+        final data = DiaryDailyBudgetDetailsData(
+          selectedDay: monday,
+          unadjustedBaseGoalKcal: 2553,
+          cyclingAdjustmentKcal: -150,
+          baseGoalKcal: 2403,
+          carryoverKcal: -126,
+          targetKcal: 2277,
+          eatenKcal: 1155,
+          dayLeftKcal: 1122,
+          isHeartDay: false,
+          totalCarryoverBeforeTodayKcal: -126,
+          remainingRunDays: 6,
+          previousDays: const [],
+        );
+
+        await tester.pumpWidget(buildTestWidget(data));
+        await tester.tap(find.text('Open Sheet'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Base goal (weekly average)'), findsOneWidget);
+        expect(find.text('2,553 kcal'), findsOneWidget);
+        expect(find.text('Rest day adjustment'), findsOneWidget);
+        expect(find.text('-150 kcal'), findsOneWidget);
+        expect(find.text('Base daily goal'), findsOneWidget);
+        expect(find.text('2,403 kcal'), findsOneWidget);
+        expect(find.text('Carryover from previous days'), findsOneWidget);
+        expect(find.text('-126 kcal'), findsOneWidget);
+        expect(find.text('Effective daily goal'), findsOneWidget);
+        expect(find.text('2,277 kcal'), findsOneWidget);
+      },
+    );
   });
 }

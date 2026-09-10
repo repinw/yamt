@@ -47,6 +47,8 @@ class DiaryDailyBudgetDetailsData {
     required this.totalCarryoverBeforeTodayKcal,
     required this.remainingRunDays,
     required this.previousDays,
+    this.unadjustedBaseGoalKcal,
+    this.cyclingAdjustmentKcal = 0.0,
   });
 
   /// Builds budget details from week overview, day overview, and daily metrics.
@@ -66,6 +68,13 @@ class DiaryDailyBudgetDetailsData {
 
   /// Selected diary day.
   final DateTime selectedDay;
+
+  /// Unadjusted base daily target before calorie cycling (weekly average).
+  final double? unadjustedBaseGoalKcal;
+
+  /// Calorie cycling adjustment for this day (positive for training, negative
+  /// for rest).
+  final double cyclingAdjustmentKcal;
 
   /// Base daily target before carryover adjustments.
   final double baseGoalKcal;
@@ -93,6 +102,12 @@ class DiaryDailyBudgetDetailsData {
 
   /// Detailed contributions from each finished day in this run.
   final List<DiaryCarryoverDayDetail> previousDays;
+
+  /// Whether calorie cycling has modified today's base goal.
+  bool get hasCyclingAdjustment => cyclingAdjustmentKcal.round() != 0;
+
+  /// Whether today is an active training day.
+  bool get isTrainingDay => cyclingAdjustmentKcal > 0;
 
   /// Whether Schutzregel C capped the daily carryover reduction.
   bool get wasSafetyCapActive {
@@ -139,8 +154,16 @@ class _DiaryDailyBudgetDetailsResolver {
 
   DiaryDailyBudgetDetailsData resolve() {
     final previousDays = _resolvePreviousDays();
+    final unadjustedBase = selectedDayOverview.baseGoalKcal;
+    final dayBaseGoal = metrics.baseGoalKcal;
+    final cyclingAdjustment = unadjustedBase > 0
+        ? (dayBaseGoal - unadjustedBase)
+        : 0.0;
+
     return DiaryDailyBudgetDetailsData(
       selectedDay: selectedDayOverview.date,
+      unadjustedBaseGoalKcal: unadjustedBase > 0 ? unadjustedBase : null,
+      cyclingAdjustmentKcal: cyclingAdjustment,
       baseGoalKcal: metrics.baseGoalKcal,
       carryoverKcal: metrics.carryoverKcal,
       targetKcal: metrics.targetKcal,
