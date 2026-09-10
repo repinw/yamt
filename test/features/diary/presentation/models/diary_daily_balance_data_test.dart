@@ -16,7 +16,6 @@ void main() {
         realEatenKcal: 1000,
         eatenKcal: 1000,
         realDayLeftKcal: 1350,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 1350,
         targetKcal: 2350,
         baseGoalKcal: 2000,
@@ -28,8 +27,7 @@ void main() {
       final data = DiaryDailyBalanceData.from(
         selectedDay: selectedDay,
         metrics: metrics,
-        isHeartDay: false,
-        canRevertHeartDay: false,
+        isPauseDay: false,
         numberFormat: numberFormat,
         l10n: l10n,
       );
@@ -64,7 +62,6 @@ void main() {
         realEatenKcal: 1000,
         eatenKcal: 1000,
         realDayLeftKcal: 920,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 920,
         targetKcal: 1920,
         baseGoalKcal: 2000,
@@ -76,8 +73,7 @@ void main() {
       final data = DiaryDailyBalanceData.from(
         selectedDay: selectedDay,
         metrics: metrics,
-        isHeartDay: false,
-        canRevertHeartDay: false,
+        isPauseDay: false,
         numberFormat: numberFormat,
         l10n: l10n,
       );
@@ -105,7 +101,6 @@ void main() {
           realEatenKcal: 1000,
           eatenKcal: 1000,
           realDayLeftKcal: 1000,
-          heartAdjustmentKcal: 0,
           dayLeftKcal: 1000,
           targetKcal: 2000,
           baseGoalKcal: 2000,
@@ -116,8 +111,7 @@ void main() {
         final data = DiaryDailyBalanceData.from(
           selectedDay: selectedDay,
           metrics: metrics,
-          isHeartDay: false,
-          canRevertHeartDay: false,
+          isPauseDay: false,
           numberFormat: numberFormat,
           l10n: l10n,
         );
@@ -133,13 +127,12 @@ void main() {
       },
     );
 
-    test('formats leftSubtitle with heart day message on heart days', () {
+    test('formats leftSubtitle with pause day message on pause days', () {
       const metrics = DiaryDailyBalanceMetrics(
         bufferAdjustmentKcal: 0,
         realEatenKcal: 2500,
         eatenKcal: 2500,
         realDayLeftKcal: 0,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 0,
         targetKcal: 2000,
         baseGoalKcal: 2000,
@@ -151,13 +144,12 @@ void main() {
       final data = DiaryDailyBalanceData.from(
         selectedDay: selectedDay,
         metrics: metrics,
-        isHeartDay: true,
-        canRevertHeartDay: true,
+        isPauseDay: true,
         numberFormat: numberFormat,
         l10n: l10n,
       );
 
-      expect(data.leftValue, 'Heart day');
+      expect(data.leftValue, 'Pause day');
       expect(data.leftUnit, isNull);
       expect(data.leftSubtitle, 'Ignored for learning');
       expect(data.leftSubtitleParts, isEmpty);
@@ -172,7 +164,6 @@ void main() {
           realEatenKcal: 0,
           eatenKcal: 0,
           realDayLeftKcal: 2150,
-          heartAdjustmentKcal: 0,
           dayLeftKcal: 2150,
           targetKcal: 2150,
           baseGoalKcal: 2000,
@@ -185,8 +176,7 @@ void main() {
         final data = DiaryDailyBalanceData.from(
           selectedDay: futureDay,
           metrics: metrics,
-          isHeartDay: false,
-          canRevertHeartDay: false,
+          isPauseDay: false,
           numberFormat: numberFormat,
           l10n: l10n,
           now: selectedDay,
@@ -211,7 +201,6 @@ void main() {
           realEatenKcal: 0,
           eatenKcal: 0,
           realDayLeftKcal: 2000,
-          heartAdjustmentKcal: 0,
           dayLeftKcal: 2000,
           targetKcal: 2000,
           baseGoalKcal: 2000,
@@ -223,8 +212,7 @@ void main() {
         final data = DiaryDailyBalanceData.from(
           selectedDay: futureDay,
           metrics: metrics,
-          isHeartDay: false,
-          canRevertHeartDay: false,
+          isPauseDay: false,
           numberFormat: numberFormat,
           l10n: l10n,
           now: selectedDay,

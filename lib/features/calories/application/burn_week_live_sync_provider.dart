@@ -112,7 +112,6 @@ Object? burnWeekLiveSync(Ref ref) {
     currentWeekStartDate: currentWeekStartDate,
     today: todayOverviewValue.date,
     settings: settings,
-    heartDayKeys: runState.heartDayKeys.toSet(),
   );
   final closedWeekStartDates = <DateTime>[];
   var closedWeekStartDate =
@@ -169,7 +168,6 @@ Object? burnWeekLiveSync(Ref ref) {
           ),
         ),
         settings: settings,
-        heartDayKeys: runState.heartDayKeys.toSet(),
       ),
   ];
   _queueRunSync(

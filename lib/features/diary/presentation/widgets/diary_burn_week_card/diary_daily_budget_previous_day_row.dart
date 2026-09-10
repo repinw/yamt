@@ -32,7 +32,7 @@ class DiaryDailyBudgetPreviousDayRow extends StatelessWidget {
     final weekday = DateFormat.E(locale).format(day.date);
     final monthDay = DateFormat.MMMd(locale).format(day.date);
 
-    if (day.isHeartDay) {
+    if (day.isPauseDay) {
       return Row(
         children: [
           Expanded(
@@ -44,15 +44,15 @@ class DiaryDailyBudgetPreviousDayRow extends StatelessWidget {
             ),
           ),
           Icon(
-            Icons.favorite_rounded,
+            Icons.pause_circle_filled_rounded,
             size: 16,
-            color: accents.heartFor(colors.brightness),
+            color: colors.onSurfaceVariant,
           ),
           const SizedBox(width: AppSpacing.xxs),
           Text(
-            l10n.diaryBudgetDetailsHeartDayLabel,
+            l10n.diaryBudgetDetailsPauseDayLabel,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: accents.heartFor(colors.brightness),
+              color: colors.onSurfaceVariant,
               fontWeight: FontWeight.w700,
             ),
           ),

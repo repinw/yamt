@@ -118,33 +118,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeQuickActionTooltip => 'Schnellaktion';
 
   @override
-  String homeHeartCounterUseTooltip(String day) {
-    return 'Herz für $day nutzen';
-  }
-
-  @override
-  String homeHeartCounterActiveTooltip(String day) {
-    return '$day ist bereits ein Herztag';
-  }
-
-  @override
-  String get homeHeartCounterEmptyTooltip => 'Keine Herzen übrig';
-
-  @override
-  String get homeHeartCounterUnavailableTooltip => 'Herzen können nur in der aktuellen Burn Week genutzt werden';
-
-  @override
-  String get homeHeartUseTitle => 'Herztag nutzen?';
-
-  @override
-  String homeHeartUseMessage(String day) {
-    return 'Gib 1 Herz aus, um $day zu ignorieren. Erfasstes Essen bleibt im Tagebuch, aber der Tag zählt als perfekt und wird beim Wochenlernen übersprungen.';
-  }
-
-  @override
-  String get homeHeartUseConfirmAction => 'Herz nutzen';
-
-  @override
   String get inventoryFabTooltip => 'Produkt hinzufügen';
 
   @override
@@ -2118,18 +2091,10 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String diaryBalanceHeartAdjustmentLabel(Object kcal) {
-    return 'Herz $kcal';
-  }
+  String get diaryBalancePauseDayValue => 'Pausentag';
 
   @override
-  String get diaryBalanceHeartDayValue => 'Herztag';
-
-  @override
-  String get diaryBalanceHeartDaySubtitle => 'Für Lernen ignoriert';
-
-  @override
-  String get diaryBalanceRevertHeartDayAction => 'Herztag zurücknehmen';
+  String get diaryBalancePauseDaySubtitle => 'Fürs Lernen ignoriert';
 
   @override
   String diaryBalanceBaseGoalShort(String value) {
@@ -2204,7 +2169,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBudgetDetailsDayExactLabel => 'Ziel erreicht';
 
   @override
-  String get diaryBudgetDetailsHeartDayLabel => 'Durch Herz geschützt';
+  String get diaryBudgetDetailsPauseDayLabel => 'Pausentag';
 
   @override
   String get diaryBudgetDetailsTotalCarryoverLabel => 'Gesamtbilanz Vortage';

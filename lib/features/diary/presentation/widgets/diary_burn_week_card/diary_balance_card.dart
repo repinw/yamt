@@ -64,8 +64,7 @@ class DiaryBalanceCard extends ConsumerWidget {
       final dailyData = DiaryDailyBalanceData.from(
         selectedDay: data.loadedMetrics!.selectedDay,
         metrics: data.loadedMetrics!.daily,
-        isHeartDay: data.loadedMetrics!.state.isHeartDay,
-        canRevertHeartDay: data.loadedMetrics!.state.canRevertHeartDay,
+        isPauseDay: data.loadedMetrics!.state.isPauseDay,
         numberFormat: numberFormat,
         l10n: l10n,
         budgetDetails: data.loadedMetrics!.budgetDetails,
@@ -73,9 +72,6 @@ class DiaryBalanceCard extends ConsumerWidget {
 
       return DiaryDailyBalanceCard(
         data: dailyData,
-        onUnmarkHeartDay: (d) => unawaited(
-          ref.read(diaryBalanceActionsProvider).unmarkHeartDay(d),
-        ),
       );
     }
 

@@ -8,13 +8,13 @@ part of 'diary_activity_weight_service.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Provides the diary activity weight aggregation service.
+/// Provides the diary weight aggregation service.
 
 @ProviderFor(diaryActivityWeightService)
 final diaryActivityWeightServiceProvider =
     DiaryActivityWeightServiceProvider._();
 
-/// Provides the diary activity weight aggregation service.
+/// Provides the diary weight aggregation service.
 
 final class DiaryActivityWeightServiceProvider
     extends
@@ -24,7 +24,7 @@ final class DiaryActivityWeightServiceProvider
           DiaryActivityWeightService
         >
     with $Provider<DiaryActivityWeightService> {
-  /// Provides the diary activity weight aggregation service.
+  /// Provides the diary weight aggregation service.
   DiaryActivityWeightServiceProvider._()
     : super(
         from: null,

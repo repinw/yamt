@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -35,7 +34,6 @@ class DiaryDailyBudgetCarryoverFormulaBox extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final accents = MetricAccentColors.of(context);
 
     final hasCarryover = data.carryoverKcal.round() != 0;
 
@@ -131,14 +129,10 @@ class DiaryDailyBudgetCarryoverFormulaBox extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Container(
             decoration: BoxDecoration(
-              color: accents
-                  .heartFor(colors.brightness)
-                  .withValues(alpha: 0.08),
+              color: colors.tertiary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: accents
-                    .heartFor(colors.brightness)
-                    .withValues(alpha: 0.25),
+                color: colors.tertiary.withValues(alpha: 0.25),
               ),
             ),
             padding: const EdgeInsets.symmetric(
@@ -150,7 +144,7 @@ class DiaryDailyBudgetCarryoverFormulaBox extends StatelessWidget {
                 Icon(
                   Icons.shield_outlined,
                   size: 16,
-                  color: accents.heartFor(colors.brightness),
+                  color: colors.tertiary,
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(

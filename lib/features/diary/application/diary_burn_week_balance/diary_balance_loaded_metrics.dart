@@ -37,17 +37,13 @@ class DiaryBalanceLoadedMetrics {
 class DiaryBalanceLoadedState {
   /// Creates loaded-card display state.
   const DiaryBalanceLoadedState({
-    required this.isHeartDay,
-    required this.canRevertHeartDay,
+    required this.isPauseDay,
     required this.showGameControls,
     required this.runWeekNumber,
   });
 
-  /// Whether the selected day is currently marked as a heart day.
-  final bool isHeartDay;
-
-  /// Whether the selected heart day can be reverted.
-  final bool canRevertHeartDay;
+  /// Whether the selected day is currently marked as a pause day.
+  final bool isPauseDay;
 
   /// Whether Burn Week game controls should be visible.
   final bool showGameControls;
@@ -125,11 +121,6 @@ DiaryDailyBalanceMetrics _resolveDailyMetrics(
   goalKcal: context.selectedDayOverview.goalKcal,
   baseGoalKcal: context.selectedDayOverview.goalKcal,
   activitySegmentKcal: 0,
-  bufferAdjustmentKcal: context.isLiveDay
-      ? context.runState.heartCreditKcal
-      : 0,
-  heartCreditKcal: context.runState.heartCreditKcal,
-  isHeartDay: state.isHeartDay,
 );
 
 DiaryWeeklyBalanceMetrics _resolveWeeklyMetrics(
@@ -153,7 +144,7 @@ DiaryDailyBudgetDetailsData _resolveBudgetDetails(
   weekOverview: context.weekOverview,
   selectedDayOverview: context.selectedDayOverview,
   metrics: daily,
-  isHeartDay: state.isHeartDay,
+  isPauseDay: state.isPauseDay,
   carryoverStartDate: weekStart,
 );
 
@@ -180,8 +171,7 @@ DiaryBalanceLoadedState _resolveDiaryBalanceLoadedState({
         );
 
   return DiaryBalanceLoadedState(
-    isHeartDay: runState.isHeartDay(selectedDayOverview.date),
-    canRevertHeartDay: runState.canUnmarkHeartDay(selectedDayOverview.date),
+    isPauseDay: selectedDayOverview.isPauseDay,
     showGameControls:
         isLiveDay &&
         !weekOverview.goalStartsInFuture &&

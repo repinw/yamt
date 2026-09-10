@@ -10,20 +10,16 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Daily calories, macros, and heart adjustment content.
+/// Daily calories, macros, and pacing balance card.
 class DiaryDailyBalanceCard extends StatelessWidget {
   /// Creates the daily balance card.
   const DiaryDailyBalanceCard({
     required this.data,
-    required this.onUnmarkHeartDay,
     super.key,
   });
 
   /// Render-ready daily card data.
   final DiaryDailyBalanceData data;
-
-  /// Reverts a heart day.
-  final ValueChanged<DateTime> onUnmarkHeartDay;
 
   @override
   Widget build(BuildContext context) {
@@ -71,17 +67,6 @@ class DiaryDailyBalanceCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           DiaryNutritionBars.embedded(selectedDay: data.selectedDay),
-          if (data.canRevertHeartDay) ...[
-            const SizedBox(height: AppSpacing.md),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => onUnmarkHeartDay(data.selectedDay),
-                icon: const Icon(Icons.undo_rounded),
-                label: Text(l10n.diaryBalanceRevertHeartDayAction),
-              ),
-            ),
-          ],
         ],
       ),
     );

@@ -98,13 +98,13 @@ class DiaryDailyBudgetTodayCard extends StatelessWidget {
           const Divider(height: AppSpacing.md),
           DiaryDailyBudgetRow(
             label: l10n.diaryBudgetDetailsLeftLabel,
-            value: data.isHeartDay
-                ? l10n.diaryBalanceHeartDayValue
+            value: data.isPauseDay
+                ? l10n.diaryBalancePauseDayValue
                 : formatDiaryKcal(numberFormat, data.dayLeftKcal, unit),
             isBold: true,
             isHighlight: true,
-            valueColor: data.isHeartDay
-                ? accents.heartFor(colors.brightness)
+            valueColor: data.isPauseDay
+                ? colors.onSurfaceVariant
                 : primary,
           ),
         ],

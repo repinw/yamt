@@ -14,7 +14,7 @@ class DiaryCarryoverDayDetail {
     required this.goalKcal,
     required this.consumedKcal,
     required this.differenceKcal,
-    required this.isHeartDay,
+    required this.isPauseDay,
   });
 
   /// Date of the previous day.
@@ -29,8 +29,8 @@ class DiaryCarryoverDayDetail {
   /// Positive if calories were saved, negative if over budget.
   final double differenceKcal;
 
-  /// Whether this day was protected by a spent heart.
-  final bool isHeartDay;
+  /// Whether this day was a pause day.
+  final bool isPauseDay;
 }
 
 /// Detailed breakdown of today's calorie budget and carryover origin.
@@ -43,7 +43,7 @@ class DiaryDailyBudgetDetailsData {
     required this.targetKcal,
     required this.eatenKcal,
     required this.dayLeftKcal,
-    required this.isHeartDay,
+    required this.isPauseDay,
     required this.totalCarryoverBeforeTodayKcal,
     required this.remainingRunDays,
     required this.previousDays,
@@ -56,13 +56,13 @@ class DiaryDailyBudgetDetailsData {
     required CalorieWeekOverview weekOverview,
     required CalorieWeekDayOverview selectedDayOverview,
     required DiaryDailyBalanceMetrics metrics,
-    required bool isHeartDay,
+    required bool isPauseDay,
     required DateTime carryoverStartDate,
   }) => _DiaryDailyBudgetDetailsResolver(
     weekOverview: weekOverview,
     selectedDayOverview: selectedDayOverview,
     metrics: metrics,
-    isHeartDay: isHeartDay,
+    isPauseDay: isPauseDay,
     carryoverStartDate: carryoverStartDate,
   ).resolve();
 
@@ -91,8 +91,8 @@ class DiaryDailyBudgetDetailsData {
   /// Calories remaining today.
   final double dayLeftKcal;
 
-  /// Whether today is protected by a spent heart.
-  final bool isHeartDay;
+  /// Whether today is a pause day.
+  final bool isPauseDay;
 
   /// Total carryover sum accumulated from previous finished days in this run.
   final double totalCarryoverBeforeTodayKcal;
@@ -142,14 +142,14 @@ class _DiaryDailyBudgetDetailsResolver {
     required this.weekOverview,
     required this.selectedDayOverview,
     required this.metrics,
-    required this.isHeartDay,
+    required this.isPauseDay,
     required this.carryoverStartDate,
   });
 
   final CalorieWeekOverview weekOverview;
   final CalorieWeekDayOverview selectedDayOverview;
   final DiaryDailyBalanceMetrics metrics;
-  final bool isHeartDay;
+  final bool isPauseDay;
   final DateTime carryoverStartDate;
 
   DiaryDailyBudgetDetailsData resolve() {
@@ -169,7 +169,7 @@ class _DiaryDailyBudgetDetailsResolver {
       targetKcal: metrics.targetKcal,
       eatenKcal: metrics.eatenKcal,
       dayLeftKcal: metrics.dayLeftKcal,
-      isHeartDay: isHeartDay,
+      isPauseDay: isPauseDay,
       totalCarryoverBeforeTodayKcal: _sumCarryover(previousDays),
       remainingRunDays: _resolveRemainingRunDays(),
       previousDays: List<DiaryCarryoverDayDetail>.unmodifiable(previousDays),
@@ -210,7 +210,7 @@ DiaryCarryoverDayDetail _toCarryoverDayDetail(
     goalKcal: day.goalKcal,
     consumedKcal: day.countedTotalKcal,
     differenceKcal: differenceKcal,
-    isHeartDay: day.isHeartDay,
+    isPauseDay: day.isPauseDay,
   );
 }
 

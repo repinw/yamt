@@ -33,7 +33,6 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
   required CalorieGoalSettings settings,
   required Map<String, int> activeKcalByDay,
   required Map<String, double> weightByDay,
-  Set<String> heartDayKeys = const <String>{},
 }) {
   final missingIntakeDays = <DateTime>[];
   final windowDays = <CalorieWeeklyCheckInWindowDay>[];
@@ -52,7 +51,7 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
         loggedIntakeKcal: sumCalorieEntryKcal(dayEntries),
         resolvedIntakeKcal: null,
         isSkippedIntakeDay: !hasEntries,
-        isHeartDay: isExplicitPause,
+        isPauseDay: isExplicitPause,
         activeKcal: activeKcalByDay[dayKey] ?? 0,
         weightKg: weightByDay[dayKey],
       ),
@@ -78,7 +77,6 @@ CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
   required List<DateTime> days,
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
   required CalorieGoalSettings settings,
-  Set<String> heartDayKeys = const <String>{},
 }) {
   final loggedVals = <double>[];
   final missingIntakeDays = <DateTime>[];
@@ -205,7 +203,7 @@ CalorieWeeklyCheckInWindowDay _copyWindowDayWithResolvedIntake({
     loggedIntakeKcal: loggedIntakeKcal,
     resolvedIntakeKcal: resolvedIntakeKcal,
     isSkippedIntakeDay: day.isSkippedIntakeDay,
-    isHeartDay: day.isHeartDay,
+    isPauseDay: day.isPauseDay,
     activeKcal: day.activeKcal,
     weightKg: day.weightKg,
   );

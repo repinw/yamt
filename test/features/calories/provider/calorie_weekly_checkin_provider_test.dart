@@ -246,17 +246,17 @@ void main() {
   });
 
   test(
-    'heart day stays in check-in window and substitutes goal intake',
+    'pause day stays in check-in window and substitutes goal intake',
     () async {
       final today = DateTime(2026, 4, 16);
       final goalStart = DateTime(2026, 4, 8);
-      final heartDay = DateTime(2026, 4, 10);
+      final pauseDay = DateTime(2026, 4, 10);
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2400,
           calculatorProfile: null,
           effectiveDate: goalStart,
-        ).setPauseDay(day: heartDay, isPause: true),
+        ).setPauseDay(day: pauseDay, isPause: true),
       );
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
@@ -303,13 +303,13 @@ void main() {
       );
       expect(checkInData.days, hasLength(7));
 
-      final heartWindowDay = checkInData.days.firstWhere(
-        (day) => day.day == heartDay,
+      final pauseWindowDay = checkInData.days.firstWhere(
+        (day) => day.day == pauseDay,
       );
-      expect(heartWindowDay.isHeartDay, isTrue);
-      expect(heartWindowDay.hasEntries, isFalse);
-      expect(heartWindowDay.loggedIntakeKcal, 0);
-      expect(heartWindowDay.resolvedIntakeKcal, 2100.0);
+      expect(pauseWindowDay.isPauseDay, isTrue);
+      expect(pauseWindowDay.hasEntries, isFalse);
+      expect(pauseWindowDay.loggedIntakeKcal, 0);
+      expect(pauseWindowDay.resolvedIntakeKcal, 2100.0);
       expect(
         checkInData.calculation?.averageIntakeKcal,
         closeTo(2100.0, 0.01),

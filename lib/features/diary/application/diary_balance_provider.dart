@@ -194,13 +194,6 @@ DiaryBalanceActions diaryBalanceActions(Ref ref) {
         )
         ..invalidate(diaryEntriesForDayProvider(normalizedSelectedDay));
     },
-    unmarkHeartDay: (day) {
-      return ref
-          .read(burnWeekRunControllerProvider.notifier)
-          .unmarkHeartDay(
-            day,
-          );
-    },
   );
 }
 
@@ -209,21 +202,13 @@ class DiaryBalanceActions {
   /// Creates diary balance actions.
   const DiaryBalanceActions({
     required void Function(DateTime selectedDay) refreshBalance,
-    required Future<void> Function(DateTime day) unmarkHeartDay,
-  }) : _refreshBalance = refreshBalance,
-       _unmarkHeartDay = unmarkHeartDay;
+  }) : _refreshBalance = refreshBalance;
 
   final void Function(DateTime selectedDay) _refreshBalance;
-  final Future<void> Function(DateTime day) _unmarkHeartDay;
 
   /// Refreshes the balance source and the Calories adapters it reads.
   void refreshBalance(DateTime selectedDay) {
     _refreshBalance(selectedDay);
-  }
-
-  /// Removes a heart day mark from the Burn Week run.
-  Future<void> unmarkHeartDay(DateTime day) {
-    return _unmarkHeartDay(day);
   }
 }
 

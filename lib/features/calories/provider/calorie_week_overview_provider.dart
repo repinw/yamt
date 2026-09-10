@@ -11,7 +11,6 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
@@ -72,7 +71,7 @@ class CalorieWeekDayOverview {
     this.todayActiveKcal = 0,
     this.expectedActivityKcal = 0,
     this.isActivityTrackingActive = false,
-    this.isHeartDay = false,
+    this.isPauseDay = false,
   }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
 
   /// Creates data from persisted JSON.
@@ -109,23 +108,23 @@ class CalorieWeekDayOverview {
   /// The entry count.
   final int entryCount;
 
-  /// Whether this day is protected by a spent heart.
-  final bool isHeartDay;
+  /// Whether this day is marked as a pause day.
+  final bool isPauseDay;
 
   /// Whether entries.
   bool get hasEntries => entryCount > 0;
 
   /// Kcal counted by Burn Week/carryover math.
-  double get countedTotalKcal => isHeartDay ? goalKcal : totalKcal;
+  double get countedTotalKcal => isPauseDay ? goalKcal : totalKcal;
 
   /// Base-goal kcal counted by Burn Week carryover math.
-  double get countedBaseTotalKcal => isHeartDay ? baseGoalKcal : totalKcal;
+  double get countedBaseTotalKcal => isPauseDay ? baseGoalKcal : totalKcal;
 
   /// Whether within goal.
-  bool get isWithinGoal => isHeartDay || (hasEntries && totalKcal <= goalKcal);
+  bool get isWithinGoal => isPauseDay || (hasEntries && totalKcal <= goalKcal);
 
   /// Whether over goal.
-  bool get isOverGoal => !isHeartDay && hasEntries && totalKcal > goalKcal;
+  bool get isOverGoal => !isPauseDay && hasEntries && totalKcal > goalKcal;
 }
 
 /// Overview for the rolling 7-day diary strip ending at the visible window end.
@@ -289,7 +288,6 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     );
     final repository = ref.watch(calorieLogRepositoryProvider);
     final goalState = ref.watch(calorieGoalControllerProvider);
-    final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
     final resolvedGoalsFuture = ref.watch(
       resolvedCalorieGoalsForDaysProvider(
         ResolvedCalorieGoalDaysRequest.fromDays(
@@ -325,7 +323,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
               expectedActivityKcal: goal.expectedActivityKcal,
               isActivityTrackingActive: goal.isActivityTrackingActive,
               entryCount: entry.value.entryCount,
-              isHeartDay: runState?.isHeartDay(entry.value.date) ?? false,
+              isPauseDay: settings.isPauseDay(entry.value.date),
             );
           },
         )
@@ -390,7 +388,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
             expectedActivityKcal: overview.expectedActivityKcal,
             isActivityTrackingActive: overview.isActivityTrackingActive,
             entryCount: overview.entryCount,
-            isHeartDay: overview.isHeartDay,
+            isPauseDay: overview.isPauseDay,
           ),
         )
         .toList(growable: false);
@@ -399,7 +397,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       today: today,
       historicalCarryoverDays: historicalCarryoverDays,
       historicalDays: historicalDays,
-      heartDayKeys: runState?.heartDayKeys.toSet() ?? const <String>{},
+      settings: settings,
       visibleOverviews: adjustedOverviews,
     );
     final hasActiveGoalToday = settings.goalEntryForDay(today)?.hasGoal == true;
@@ -455,7 +453,9 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
     ref.watch(calorieOverviewRevisionProvider);
     final normalizedDay = normalizeDiaryDay(day);
     final repository = ref.watch(calorieLogRepositoryProvider);
-    final runState = ref.watch(burnWeekRunControllerProvider).asData?.value;
+    final goalState = ref.watch(calorieGoalControllerProvider);
+    final settings =
+        goalState.asData?.value ?? const CalorieGoalSettings.empty();
     final resolvedGoalFuture = ref.watch(
       resolvedCalorieGoalForDayProvider(normalizedDay).future,
     );
@@ -481,7 +481,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
       expectedActivityKcal: resolvedGoal.expectedActivityKcal,
       isActivityTrackingActive: resolvedGoal.isActivityTrackingActive,
       entryCount: entries.length,
-      isHeartDay: runState?.isHeartDay(normalizedDay) ?? false,
+      isPauseDay: settings.isPauseDay(normalizedDay),
     );
   } finally {
     keepAliveLink.close();
@@ -540,7 +540,7 @@ _calculateCycleTotals({
   required DateTime today,
   required List<CalorieCarryoverDay> historicalCarryoverDays,
   required List<DateTime> historicalDays,
-  required Set<String> heartDayKeys,
+  required CalorieGoalSettings settings,
   required List<CalorieWeekDayOverview> visibleOverviews,
 }) {
   var totalConsumedKcal = 0.0;
@@ -550,10 +550,10 @@ _calculateCycleTotals({
   if (!cycleStartDate.isAfter(today)) {
     for (var index = 0; index < historicalCarryoverDays.length; index += 1) {
       final day = historicalCarryoverDays[index];
-      final isHeartDay =
+      final isPauseDay =
           index < historicalDays.length &&
-          heartDayKeys.contains(diaryDayKey(historicalDays[index]));
-      final consumedKcal = isHeartDay ? day.goalKcal : day.consumedKcal;
+          settings.isPauseDay(historicalDays[index]);
+      final consumedKcal = isPauseDay ? day.goalKcal : day.consumedKcal;
       totalConsumedKcal += consumedKcal;
       totalGoalKcal += day.goalKcal;
       carryoverBeforeTodayKcal += day.goalKcal - consumedKcal;

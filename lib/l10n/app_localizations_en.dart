@@ -118,33 +118,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickActionTooltip => 'Quick action';
 
   @override
-  String homeHeartCounterUseTooltip(String day) {
-    return 'Use heart for $day';
-  }
-
-  @override
-  String homeHeartCounterActiveTooltip(String day) {
-    return '$day is already a heart day';
-  }
-
-  @override
-  String get homeHeartCounterEmptyTooltip => 'No hearts left';
-
-  @override
-  String get homeHeartCounterUnavailableTooltip => 'Hearts can only be used during the current Burn Week';
-
-  @override
-  String get homeHeartUseTitle => 'Use heart day?';
-
-  @override
-  String homeHeartUseMessage(String day) {
-    return 'Spend 1 heart to ignore $day. Logged food stays in the diary, but this day counts as perfect and is skipped for weekly learning.';
-  }
-
-  @override
-  String get homeHeartUseConfirmAction => 'Use heart';
-
-  @override
   String get inventoryFabTooltip => 'Add product';
 
   @override
@@ -2118,18 +2091,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String diaryBalanceHeartAdjustmentLabel(Object kcal) {
-    return 'Heart $kcal';
-  }
+  String get diaryBalancePauseDayValue => 'Pause day';
 
   @override
-  String get diaryBalanceHeartDayValue => 'Heart day';
-
-  @override
-  String get diaryBalanceHeartDaySubtitle => 'Ignored for learning';
-
-  @override
-  String get diaryBalanceRevertHeartDayAction => 'Revert heart day';
+  String get diaryBalancePauseDaySubtitle => 'Ignored for learning';
 
   @override
   String diaryBalanceBaseGoalShort(String value) {
@@ -2204,7 +2169,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBudgetDetailsDayExactLabel => 'on target';
 
   @override
-  String get diaryBudgetDetailsHeartDayLabel => 'Protected by heart';
+  String get diaryBudgetDetailsPauseDayLabel => 'Pause day';
 
   @override
   String get diaryBudgetDetailsTotalCarryoverLabel => 'Total previous-day balance';

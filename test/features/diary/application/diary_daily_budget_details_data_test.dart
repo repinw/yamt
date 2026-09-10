@@ -48,7 +48,6 @@ void main() {
         realEatenKcal: 500,
         eatenKcal: 500,
         realDayLeftKcal: 1660,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 1660,
         targetKcal: 2160,
         baseGoalKcal: 2000,
@@ -61,7 +60,7 @@ void main() {
         weekOverview: weekOverview,
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
-        isHeartDay: false,
+        isPauseDay: false,
         carryoverStartDate: monday,
       );
 
@@ -70,16 +69,16 @@ void main() {
       expect(data.targetKcal, 2160);
       expect(data.eatenKcal, 500);
       expect(data.dayLeftKcal, 1660);
-      expect(data.isHeartDay, isFalse);
+      expect(data.isPauseDay, isFalse);
 
       expect(data.previousDays.length, 2);
       expect(data.previousDays[0].date, monday);
       expect(data.previousDays[0].differenceKcal, 200);
-      expect(data.previousDays[0].isHeartDay, isFalse);
+      expect(data.previousDays[0].isPauseDay, isFalse);
 
       expect(data.previousDays[1].date, tuesday);
       expect(data.previousDays[1].differenceKcal, 100);
-      expect(data.previousDays[1].isHeartDay, isFalse);
+      expect(data.previousDays[1].isPauseDay, isFalse);
 
       expect(data.totalCarryoverBeforeTodayKcal, 300);
       expect(data.remainingRunDays, 5); // 7 - 2 finished days
@@ -116,9 +115,6 @@ void main() {
         goalKcal: 2000,
         baseGoalKcal: 2000,
         activitySegmentKcal: 150,
-        bufferAdjustmentKcal: 0,
-        heartCreditKcal: 0,
-        isHeartDay: false,
         expectedActivityKcal: 400,
         todayActiveKcal: 550,
         isActivityTrackingActive: true,
@@ -128,14 +124,14 @@ void main() {
         weekOverview: weekOverview,
         selectedDayOverview: weekOverview.days.first,
         metrics: metrics,
-        isHeartDay: false,
+        isPauseDay: false,
         carryoverStartDate: monday,
       );
 
       expect(data.baseGoalKcal, 2000);
     });
 
-    test('handles heart days in previous days history', () {
+    test('handles pause days in previous days history', () {
       final monday = DateTime(2026, 4, 13);
       final tuesday = DateTime(2026, 4, 14);
 
@@ -146,7 +142,7 @@ void main() {
             totalKcal: 2500,
             goalKcal: 2000,
             entryCount: 4,
-            isHeartDay: true,
+            isPauseDay: true,
           ),
           CalorieWeekDayOverview(
             date: tuesday,
@@ -171,7 +167,6 @@ void main() {
         realEatenKcal: 0,
         eatenKcal: 0,
         realDayLeftKcal: 2000,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 2000,
         targetKcal: 2000,
         baseGoalKcal: 2000,
@@ -183,13 +178,13 @@ void main() {
         weekOverview: weekOverview,
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
-        isHeartDay: false,
+        isPauseDay: false,
         carryoverStartDate: monday,
       );
 
       expect(data.previousDays.length, 1);
-      expect(data.previousDays.first.isHeartDay, isTrue);
-      // For heart days, countedTotalKcal equals goalKcal, so diff is 0
+      expect(data.previousDays.first.isPauseDay, isTrue);
+      // For pause days, countedTotalKcal equals goalKcal, so diff is 0
       expect(data.previousDays.first.differenceKcal, 0);
       expect(data.totalCarryoverBeforeTodayKcal, 0);
       expect(data.remainingRunDays, 6);
@@ -223,7 +218,6 @@ void main() {
         realEatenKcal: 400,
         eatenKcal: 400,
         realDayLeftKcal: 1600,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 1600,
         targetKcal: 2000,
         baseGoalKcal: 2000,
@@ -235,7 +229,7 @@ void main() {
         weekOverview: weekOverview,
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
-        isHeartDay: false,
+        isPauseDay: false,
         carryoverStartDate: monday,
       );
 
@@ -278,7 +272,6 @@ void main() {
         realEatenKcal: 400,
         eatenKcal: 400,
         realDayLeftKcal: 600,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 600,
         targetKcal: 1000,
         baseGoalKcal: 2000,
@@ -291,7 +284,7 @@ void main() {
         weekOverview: weekOverview,
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
-        isHeartDay: false,
+        isPauseDay: false,
         carryoverStartDate: newRunStart,
       );
 
@@ -312,7 +305,7 @@ void main() {
         targetKcal: 1650,
         eatenKcal: 0,
         dayLeftKcal: 1650,
-        isHeartDay: false,
+        isPauseDay: false,
         totalCarryoverBeforeTodayKcal: -1000,
         remainingRunDays: 2,
         previousDays: const [],
@@ -336,7 +329,7 @@ void main() {
         targetKcal: 2100,
         eatenKcal: 0,
         dayLeftKcal: 2100,
-        isHeartDay: false,
+        isPauseDay: false,
         totalCarryoverBeforeTodayKcal: 300,
         remainingRunDays: 3,
         previousDays: const [],
@@ -381,7 +374,6 @@ void main() {
         realEatenKcal: 1155,
         eatenKcal: 1155,
         realDayLeftKcal: 1122,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 1122,
         targetKcal: 2277,
         baseGoalKcal: 2403,
@@ -394,7 +386,7 @@ void main() {
         weekOverview: weekOverview,
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
-        isHeartDay: false,
+        isPauseDay: false,
         carryoverStartDate: monday,
       );
 
@@ -435,7 +427,6 @@ void main() {
         realEatenKcal: 1155,
         eatenKcal: 1155,
         realDayLeftKcal: 1472,
-        heartAdjustmentKcal: 0,
         dayLeftKcal: 1472,
         targetKcal: 2627,
         baseGoalKcal: 2753,
@@ -448,7 +439,7 @@ void main() {
         weekOverview: weekOverview,
         selectedDayOverview: weekOverview.days.last,
         metrics: metrics,
-        isHeartDay: false,
+        isPauseDay: false,
         carryoverStartDate: monday,
       );
 

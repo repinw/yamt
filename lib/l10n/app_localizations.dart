@@ -281,48 +281,6 @@ abstract class AppLocalizations {
   /// **'Quick action'**
   String get homeQuickActionTooltip;
 
-  /// No description provided for @homeHeartCounterUseTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Use heart for {day}'**
-  String homeHeartCounterUseTooltip(String day);
-
-  /// No description provided for @homeHeartCounterActiveTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'{day} is already a heart day'**
-  String homeHeartCounterActiveTooltip(String day);
-
-  /// No description provided for @homeHeartCounterEmptyTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'No hearts left'**
-  String get homeHeartCounterEmptyTooltip;
-
-  /// No description provided for @homeHeartCounterUnavailableTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Hearts can only be used during the current Burn Week'**
-  String get homeHeartCounterUnavailableTooltip;
-
-  /// No description provided for @homeHeartUseTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Use heart day?'**
-  String get homeHeartUseTitle;
-
-  /// No description provided for @homeHeartUseMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Spend 1 heart to ignore {day}. Logged food stays in the diary, but this day counts as perfect and is skipped for weekly learning.'**
-  String homeHeartUseMessage(String day);
-
-  /// No description provided for @homeHeartUseConfirmAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Use heart'**
-  String get homeHeartUseConfirmAction;
-
   /// No description provided for @inventoryFabTooltip.
   ///
   /// In en, this message translates to:
@@ -4085,29 +4043,17 @@ abstract class AppLocalizations {
   /// **'Real {kcal}'**
   String diaryBalanceRealLeftLabel(Object kcal);
 
-  /// No description provided for @diaryBalanceHeartAdjustmentLabel.
+  /// No description provided for @diaryBalancePauseDayValue.
   ///
   /// In en, this message translates to:
-  /// **'Heart {kcal}'**
-  String diaryBalanceHeartAdjustmentLabel(Object kcal);
+  /// **'Pause day'**
+  String get diaryBalancePauseDayValue;
 
-  /// No description provided for @diaryBalanceHeartDayValue.
-  ///
-  /// In en, this message translates to:
-  /// **'Heart day'**
-  String get diaryBalanceHeartDayValue;
-
-  /// No description provided for @diaryBalanceHeartDaySubtitle.
+  /// No description provided for @diaryBalancePauseDaySubtitle.
   ///
   /// In en, this message translates to:
   /// **'Ignored for learning'**
-  String get diaryBalanceHeartDaySubtitle;
-
-  /// No description provided for @diaryBalanceRevertHeartDayAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Revert heart day'**
-  String get diaryBalanceRevertHeartDayAction;
+  String get diaryBalancePauseDaySubtitle;
 
   /// No description provided for @diaryBalanceBaseGoalShort.
   ///
@@ -4241,11 +4187,11 @@ abstract class AppLocalizations {
   /// **'on target'**
   String get diaryBudgetDetailsDayExactLabel;
 
-  /// No description provided for @diaryBudgetDetailsHeartDayLabel.
+  /// No description provided for @diaryBudgetDetailsPauseDayLabel.
   ///
   /// In en, this message translates to:
-  /// **'Protected by heart'**
-  String get diaryBudgetDetailsHeartDayLabel;
+  /// **'Pause day'**
+  String get diaryBudgetDetailsPauseDayLabel;
 
   /// No description provided for @diaryBudgetDetailsTotalCarryoverLabel.
   ///

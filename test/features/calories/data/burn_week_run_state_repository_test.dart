@@ -18,7 +18,6 @@ void main() {
       expect(state.runWeekNumber, 1);
       expect(state.starCount, 0);
       expect(state.heartCount, 1);
-      expect(state.heartDayKeys, isEmpty);
       expect(state.lastActiveDayKey, isNull);
     },
   );
@@ -37,7 +36,6 @@ void main() {
       heartCreditKcal: 700,
       starBrokeThisWeek: true,
       missedTrackingThisWeek: false,
-      heartDayKeys: <String>['2026-4-22'],
     );
 
     final saved = await repository.saveState(savedState);
@@ -63,7 +61,6 @@ void main() {
     expect(restored.heartCount, 2);
     expect(restored.heartCreditKcal, 700);
     expect(restored.starBrokeThisWeek, isTrue);
-    expect(restored.heartDayKeys, <String>['2026-4-22']);
   });
 
   test('readState ignores old unversioned profile entry', () async {
@@ -86,7 +83,6 @@ void main() {
     expect(state.runWeekNumber, burnWeekLearningRunWeekNumber);
     expect(state.starCount, 0);
     expect(state.heartCount, burnWeekInitialHeartCount);
-    expect(state.heartDayKeys, isEmpty);
   });
 
   test('readState falls back to fresh state on malformed entry', () async {

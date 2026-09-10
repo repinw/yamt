@@ -3,15 +3,11 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/data/'
-    'burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entries_controller.dart';
@@ -29,18 +25,6 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
 import '../support/fake_calories_repositories.dart';
-
-class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  const _FakeBurnWeekRunStateRepository(this.state);
-
-  final BurnWeekRunState state;
-
-  @override
-  Future<BurnWeekRunState> readState() async => state;
-
-  @override
-  Future<bool> saveState(BurnWeekRunState state) async => true;
-}
 
 const _readyHealthStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,
@@ -216,10 +200,10 @@ void main() {
     expect(overview.remainingKcal, 13000);
   });
 
-  test('calorieWeekOverview treats heart day as goal-perfect', () async {
+  test('calorieWeekOverview treats pause day as goal-perfect', () async {
     final today = DateTime(2026, 4, 10);
     final firstVisibleDay = today.subtract(const Duration(days: 6));
-    final heartDay = DateTime(2026, 4, 8);
+    final pauseDay = DateTime(2026, 4, 8);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         for (var index = 0; index < 6; index += 1)
@@ -235,7 +219,7 @@ void main() {
         dailyKcalGoal: 2000,
         calculatorProfile: null,
         effectiveDate: firstVisibleDay,
-      ),
+      ).setPauseDay(day: pauseDay, isPause: true),
     );
     addTearDown(logRepository.dispose);
     addTearDown(settingsRepository.dispose);
@@ -244,29 +228,21 @@ void main() {
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        burnWeekRunStateRepositoryProvider.overrideWithValue(
-          _FakeBurnWeekRunStateRepository(
-            const BurnWeekRunState.initial().copyWith(
-              heartDayKeys: <String>['2026-4-8'],
-            ),
-          ),
-        ),
       ],
     );
     addTearDown(container.dispose);
 
     await container.read(calorieGoalControllerProvider.future);
-    await container.read(burnWeekRunControllerProvider.future);
     final overview = await _readWeekOverviewForWindow(container, today);
 
-    final heartOverview = overview.days.firstWhere(
-      (day) => day.date == heartDay,
+    final pauseOverview = overview.days.firstWhere(
+      (day) => day.date == pauseDay,
     );
-    expect(heartOverview.isHeartDay, isTrue);
-    expect(heartOverview.totalKcal, 5000);
-    expect(heartOverview.countedTotalKcal, 2000);
-    expect(heartOverview.isWithinGoal, isTrue);
-    expect(heartOverview.isOverGoal, isFalse);
+    expect(pauseOverview.isPauseDay, isTrue);
+    expect(pauseOverview.totalKcal, 5000);
+    expect(pauseOverview.countedTotalKcal, 2000);
+    expect(pauseOverview.isWithinGoal, isTrue);
+    expect(pauseOverview.isOverGoal, isFalse);
     expect(overview.totalConsumedKcal, 12000);
     expect(overview.carryoverBeforeTodayKcal, 0);
   });

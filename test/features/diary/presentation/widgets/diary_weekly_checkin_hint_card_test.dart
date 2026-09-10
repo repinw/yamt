@@ -158,7 +158,7 @@ CalorieWeeklyCheckInWindowDay _windowDay({
     loggedIntakeKcal: isSkippedIntakeDay ? 0 : 2100,
     resolvedIntakeKcal: isSkippedIntakeDay ? null : 2100,
     isSkippedIntakeDay: isSkippedIntakeDay,
-    isHeartDay: false,
+    isPauseDay: false,
     activeKcal: 300,
     weightKg: 80,
   );

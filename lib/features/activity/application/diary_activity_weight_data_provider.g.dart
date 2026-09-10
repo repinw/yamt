@@ -8,12 +8,12 @@ part of 'diary_activity_weight_data_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Provides real activity and weight data for the selected diary day.
+/// Provides weight data for the selected diary day.
 
 @ProviderFor(diaryActivityWeightData)
 final diaryActivityWeightDataProvider = DiaryActivityWeightDataFamily._();
 
-/// Provides real activity and weight data for the selected diary day.
+/// Provides weight data for the selected diary day.
 
 final class DiaryActivityWeightDataProvider
     extends
@@ -25,7 +25,7 @@ final class DiaryActivityWeightDataProvider
     with
         $FutureModifier<DiaryActivityWeightData>,
         $FutureProvider<DiaryActivityWeightData> {
-  /// Provides real activity and weight data for the selected diary day.
+  /// Provides weight data for the selected diary day.
   DiaryActivityWeightDataProvider._({
     required DiaryActivityWeightDataFamily super.from,
     required DateTime super.argument,
@@ -72,9 +72,9 @@ final class DiaryActivityWeightDataProvider
 }
 
 String _$diaryActivityWeightDataHash() =>
-    r'8212781dabf58ee9f8b5eeec49ccd88806d4d8b6';
+    r'7dfb72cabd0afd77dcc2c6f81f9ff7455d17b535';
 
-/// Provides real activity and weight data for the selected diary day.
+/// Provides weight data for the selected diary day.
 
 final class DiaryActivityWeightDataFamily extends $Family
     with
@@ -88,7 +88,7 @@ final class DiaryActivityWeightDataFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Provides real activity and weight data for the selected diary day.
+  /// Provides weight data for the selected diary day.
 
   DiaryActivityWeightDataProvider call(DateTime day) =>
       DiaryActivityWeightDataProvider._(argument: day, from: this);

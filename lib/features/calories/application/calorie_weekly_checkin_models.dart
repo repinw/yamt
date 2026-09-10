@@ -46,7 +46,7 @@ class CalorieWeeklyCheckInWindowDay {
     required this.loggedIntakeKcal,
     required this.resolvedIntakeKcal,
     required this.isSkippedIntakeDay,
-    required this.isHeartDay,
+    required this.isPauseDay,
     required this.activeKcal,
     required this.weightKg,
   });
@@ -66,8 +66,8 @@ class CalorieWeeklyCheckInWindowDay {
   /// Whether skipped intake day.
   final bool isSkippedIntakeDay;
 
-  /// Whether this day is protected by a spent heart.
-  final bool isHeartDay;
+  /// Whether this day is marked as a pause day.
+  final bool isPauseDay;
 
   /// The active kcal.
   final int activeKcal;

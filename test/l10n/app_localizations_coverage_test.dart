@@ -11,7 +11,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.homeCalories,
     l10n.homeCookbook,
     l10n.homeSettings,
-    l10n.homeHeartUseConfirmAction,
+    l10n.diaryBalancePauseDayValue,
     l10n.homeQuickActionTooltip,
     l10n.diaryBalanceWeekLabel(6),
     l10n.inventoryFabTooltip,

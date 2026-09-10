@@ -20,7 +20,7 @@ CalorieWeekDayOverview _$CalorieWeekDayOverviewFromJson(
       (json['expected_activity_kcal'] as num?)?.toDouble() ?? 0,
   isActivityTrackingActive:
       json['is_activity_tracking_active'] as bool? ?? false,
-  isHeartDay: json['is_heart_day'] as bool? ?? false,
+  isPauseDay: json['is_pause_day'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$CalorieWeekDayOverviewToJson(
@@ -35,7 +35,7 @@ Map<String, dynamic> _$CalorieWeekDayOverviewToJson(
   'expected_activity_kcal': instance.expectedActivityKcal,
   'is_activity_tracking_active': instance.isActivityTrackingActive,
   'entry_count': instance.entryCount,
-  'is_heart_day': instance.isHeartDay,
+  'is_pause_day': instance.isPauseDay,
 };
 
 CalorieWeekOverview _$CalorieWeekOverviewFromJson(
@@ -337,7 +337,7 @@ final class CalorieWeekOverviewForWindowProvider
 }
 
 String _$calorieWeekOverviewForWindowHash() =>
-    r'860e1a74dd49ea234d51ae43b190620236eed9b9';
+    r'55190b493b23656a3addc9e52af0c2de551da201';
 
 /// Calorie week overview for window.
 
@@ -429,7 +429,7 @@ final class CalorieWeekDayOverviewForDateProvider
 }
 
 String _$calorieWeekDayOverviewForDateHash() =>
-    r'fa6bdb7a204209613d556f730674b493b7c86b79';
+    r'a1725da8025940ff947197425127183b14244820';
 
 /// Calorie week day overview for date.
 

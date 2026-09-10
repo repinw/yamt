@@ -29,33 +29,6 @@ class BurnWeekMockDifficulty {
   final double safeZoneMultiplier;
 }
 
-/// Result after spending one Burn Week heart.
-class BurnWeekHeartSpendResult {
-  /// Creates Burn Week heart spend result.
-  const BurnWeekHeartSpendResult({
-    required this.starCount,
-    required this.heartCount,
-    required this.heartCreditKcal,
-    required this.didBreakStar,
-    required this.didResetRun,
-  });
-
-  /// Next star count.
-  final int starCount;
-
-  /// Next heart count.
-  final int heartCount;
-
-  /// Next signed heart kcal credit.
-  final double heartCreditKcal;
-
-  /// Whether one star broke during this spend.
-  final bool didBreakStar;
-
-  /// Whether run must reset.
-  final bool didResetRun;
-}
-
 /// Pure view data for Burn Week mock calculations.
 class BurnWeekMockMetrics {
   /// Creates calculated Burn Week mock metrics.
@@ -197,54 +170,6 @@ bool resolveBurnWeekEarnedStar({
   required bool missedTrackingThisWeek,
 }) {
   return heartCount > 0 && !starBrokeThisWeek && !missedTrackingThisWeek;
-}
-
-/// Resolves state transition after one heart spend.
-BurnWeekHeartSpendResult resolveBurnWeekHeartSpend({
-  required int starCount,
-  required int heartCount,
-  required double heartCreditKcal,
-  required double kcalDelta,
-}) {
-  if (heartCount <= 0) {
-    return BurnWeekHeartSpendResult(
-      starCount: starCount,
-      heartCount: heartCount,
-      heartCreditKcal: heartCreditKcal,
-      didBreakStar: false,
-      didResetRun: false,
-    );
-  }
-
-  final remainingHearts = heartCount - 1;
-  final nextHeartCreditKcal = heartCreditKcal + kcalDelta;
-  if (remainingHearts > 0) {
-    return BurnWeekHeartSpendResult(
-      starCount: starCount,
-      heartCount: remainingHearts,
-      heartCreditKcal: nextHeartCreditKcal,
-      didBreakStar: false,
-      didResetRun: false,
-    );
-  }
-
-  if (starCount > 0) {
-    return BurnWeekHeartSpendResult(
-      starCount: starCount - 1,
-      heartCount: remainingHearts,
-      heartCreditKcal: nextHeartCreditKcal,
-      didBreakStar: true,
-      didResetRun: false,
-    );
-  }
-
-  return BurnWeekHeartSpendResult(
-    starCount: 0,
-    heartCount: 0,
-    heartCreditKcal: nextHeartCreditKcal,
-    didBreakStar: false,
-    didResetRun: false,
-  );
 }
 
 int _resolveClampedElapsedDebugSeconds(int elapsedDebugSeconds) {

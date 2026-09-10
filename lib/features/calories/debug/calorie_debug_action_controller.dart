@@ -327,7 +327,7 @@ Map<String, Object?> _windowDayDebugJson(
     'logged_intake_kcal': day.loggedIntakeKcal,
     'resolved_intake_kcal': day.resolvedIntakeKcal,
     'is_skipped_intake_day': day.isSkippedIntakeDay,
-    'is_heart_day': day.isHeartDay,
+    'is_pause_day': day.isPauseDay,
     'weight_kg': day.weightKg,
   };
 }

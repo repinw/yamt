@@ -24,7 +24,6 @@ CalorieWeeklyLearningSeed resolveCascadedPreviousLearningSeedForWindow({
   required Map<String, double> manualWeightByDay,
   required Map<String, double> representativeWeightByDay,
   required Map<String, int> activeKcalByDay,
-  required Set<String> heartDayKeys,
 }) {
   final anchorEntry = dates.anchorEntry;
   if (anchorEntry == null) {
@@ -77,7 +76,6 @@ CalorieWeeklyLearningSeed resolveCascadedPreviousLearningSeedForWindow({
       days: previousDates.learningDays,
       calorieEntriesByDay: calorieEntriesByDay,
       settings: settings,
-      heartDayKeys: heartDayKeys,
     );
     if (learningIntakeData.blockedReason != null) {
       return seed;

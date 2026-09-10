@@ -146,9 +146,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                             today: calendarState.today,
                             selectedDay: calendarState.selectedDay,
                             todayRequest: calendarState.todayRequest,
-                            heartDayKeys:
-                                goalSettings?.pauseDayKeys.toSet() ??
-                                const <String>{},
                             onSelectDay: calendarController.selectDay,
                           ),
                           const SizedBox(height: AppSpacing.xs),

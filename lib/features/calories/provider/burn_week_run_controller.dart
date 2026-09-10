@@ -5,7 +5,6 @@ import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart'
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 part 'burn_week_run_controller.g.dart';
 
@@ -168,10 +167,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
   Future<void> resetRun() {
     final current = state.asData?.value;
     return _save(
-      const BurnWeekRunState.initial().copyWith(
-        heartDayKeys: current?.heartDayKeys,
-        heartStarBreakDayKeys: current?.heartStarBreakDayKeys,
-      ),
+      const BurnWeekRunState.initial(),
       previous: current,
     );
   }
@@ -186,8 +182,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: runWeekNumber ?? burnWeekLearningRunWeekNumber,
-        heartDayKeys: current.heartDayKeys,
-        heartStarBreakDayKeys: current.heartStarBreakDayKeys,
       ),
       previous: current,
     );
@@ -205,92 +199,9 @@ class BurnWeekRunController extends _$BurnWeekRunController {
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: runWeekNumber,
         heartCreditKcal: heartCreditKcal,
-        heartDayKeys: current.heartDayKeys,
-        heartStarBreakDayKeys: current.heartStarBreakDayKeys,
       ),
       previous: current,
     );
-  }
-
-  /// Uses one heart to protect today as a heart day.
-  Future<void> usePositiveHeart(double dailyGoalKcal) {
-    return useHeartForDay(DateTime.now());
-  }
-
-  /// Uses one heart to protect [day] from Burn Week and learning math.
-  Future<void> useHeartForDay(DateTime day) async {
-    final current = await future;
-    final normalizedDay = normalizeDiaryDay(day);
-    if (!current.canUseHeartForDay(normalizedDay)) {
-      return;
-    }
-    final dayKey = diaryDayKey(normalizedDay);
-    final spendResult = resolveBurnWeekHeartSpend(
-      starCount: current.starCount,
-      heartCount: current.heartCount,
-      heartCreditKcal: current.heartCreditKcal,
-      kcalDelta: 0,
-    );
-    if (spendResult.heartCount == current.heartCount &&
-        !spendResult.didBreakStar &&
-        !spendResult.didResetRun &&
-        spendResult.heartCreditKcal == current.heartCreditKcal) {
-      return;
-    }
-    if (spendResult.didResetRun) {
-      await restartRunFrom(weekStartDate: normalizeDiaryDay(DateTime.now()));
-      return;
-    }
-    await _save(
-      current.copyWith(
-        starCount: spendResult.starCount,
-        heartCount: spendResult.heartCount,
-        heartCreditKcal: spendResult.heartCreditKcal,
-        starBrokeThisWeek:
-            current.starBrokeThisWeek || spendResult.didBreakStar,
-        heartDayKeys: _addHeartDayKey(current.heartDayKeys, dayKey),
-        heartStarBreakDayKeys: spendResult.didBreakStar
-            ? _addHeartDayKey(current.heartStarBreakDayKeys, dayKey)
-            : current.heartStarBreakDayKeys,
-      ),
-      previous: current,
-    );
-    if (ref.mounted) {
-      await ref
-          .read(calorieGoalControllerProvider.notifier)
-          .invalidateWeeklyCheckInSnapshotsFromDay(normalizedDay);
-    }
-  }
-
-  /// Removes heart-day protection and refunds one heart.
-  Future<void> unmarkHeartDay(DateTime day) async {
-    final current = await future;
-    if (!current.canUnmarkHeartDay(day)) {
-      return;
-    }
-    final dayKey = diaryDayKey(normalizeDiaryDay(day));
-    final didBreakStar = current.heartStarBreakDayKeys.contains(dayKey);
-    final nextStarBreakDayKeys = _removeHeartDayKey(
-      current.heartStarBreakDayKeys,
-      dayKey,
-    );
-    await _save(
-      current.copyWith(
-        starCount: current.starCount + (didBreakStar ? 1 : 0),
-        heartCount: current.heartCount + 1,
-        starBrokeThisWeek: didBreakStar
-            ? current.runLimitWarningThisWeek || nextStarBreakDayKeys.isNotEmpty
-            : current.starBrokeThisWeek,
-        heartDayKeys: _removeHeartDayKey(current.heartDayKeys, dayKey),
-        heartStarBreakDayKeys: nextStarBreakDayKeys,
-      ),
-      previous: current,
-    );
-    if (ref.mounted) {
-      await ref
-          .read(calorieGoalControllerProvider.notifier)
-          .invalidateWeeklyCheckInSnapshotsFromDay(normalizeDiaryDay(day));
-    }
   }
 
   /// Keeps current run alive after an unrecoverable limit warning.
@@ -342,8 +253,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       heartCreditKcal: 0,
       starBrokeThisWeek: false,
       missedTrackingThisWeek: false,
-      heartDayKeys: current.heartDayKeys,
-      heartStarBreakDayKeys: current.heartStarBreakDayKeys,
       runLimitWarningThisWeek: false,
     );
   }
@@ -389,12 +298,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
         left.heartCreditKcal == right.heartCreditKcal &&
         left.starBrokeThisWeek == right.starBrokeThisWeek &&
         left.missedTrackingThisWeek == right.missedTrackingThisWeek &&
-        left.runLimitWarningThisWeek == right.runLimitWarningThisWeek &&
-        _sameStringList(left.heartDayKeys, right.heartDayKeys) &&
-        _sameStringList(
-          left.heartStarBreakDayKeys,
-          right.heartStarBreakDayKeys,
-        );
+        left.runLimitWarningThisWeek == right.runLimitWarningThisWeek;
   }
 
   bool _shouldReplayBackfilledClosedWeeks({
@@ -437,26 +341,4 @@ DateTime? _parseBurnWeekDayKey(String? dayKey) {
     return null;
   }
   return normalizeDiaryDay(DateTime(year, month, day));
-}
-
-List<String> _addHeartDayKey(List<String> current, String dayKey) {
-  final next = <String>{...current, dayKey}.toList()..sort();
-  return List<String>.unmodifiable(next);
-}
-
-List<String> _removeHeartDayKey(List<String> current, String dayKey) {
-  final next = current.where((key) => key != dayKey).toList();
-  return List<String>.unmodifiable(next);
-}
-
-bool _sameStringList(List<String> left, List<String> right) {
-  if (left.length != right.length) {
-    return false;
-  }
-  for (var index = 0; index < left.length; index += 1) {
-    if (left[index] != right[index]) {
-      return false;
-    }
-  }
-  return true;
 }

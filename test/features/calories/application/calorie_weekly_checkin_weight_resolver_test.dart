@@ -57,7 +57,7 @@ void main() {
         loggedIntakeKcal: 1000,
         resolvedIntakeKcal: 1000,
         isSkippedIntakeDay: false,
-        isHeartDay: false,
+        isPauseDay: false,
         activeKcal: 0,
         weightKg: null,
       ),

@@ -1009,15 +1009,15 @@ void main() {
   );
 
   test(
-    'substitutes heart days with goal kcal in daily learned replay',
+    'substitutes pause days with goal kcal in daily learned replay',
     () async {
       final startDay = DateTime(2026, 4);
       final today = startDay.add(const Duration(days: 9));
-      final heartDay = startDay.add(const Duration(days: 2));
+      final pauseDay = startDay.add(const Duration(days: 2));
       final settings = _learnedSettings(
         startDay: startDay,
         windowEndDate: startDay.add(const Duration(days: 6)),
-      ).setPauseDay(day: heartDay, isPause: true);
+      ).setPauseDay(day: pauseDay, isPause: true);
       final harness = _DailyLearnedHarness(
         settings: settings,
         entries: _dailyEntries(

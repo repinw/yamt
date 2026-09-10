@@ -16,12 +16,6 @@ BurnWeekRunState _$BurnWeekRunStateFromJson(Map<String, dynamic> json) =>
       starBrokeThisWeek: json['star_broke_this_week'] as bool? ?? false,
       missedTrackingThisWeek:
           json['missed_tracking_this_week'] as bool? ?? false,
-      heartDayKeys: json['heart_day_keys'] == null
-          ? const <String>[]
-          : _decodeHeartDayKeys(json['heart_day_keys']),
-      heartStarBreakDayKeys: json['heart_star_break_day_keys'] == null
-          ? const <String>[]
-          : _decodeHeartDayKeys(json['heart_star_break_day_keys']),
       runLimitWarningThisWeek:
           json['run_limit_warning_this_week'] as bool? ?? false,
       lastActiveDayKey: json['last_active_day_key'] as String?,
@@ -37,7 +31,5 @@ Map<String, dynamic> _$BurnWeekRunStateToJson(BurnWeekRunState instance) =>
       'heart_credit_kcal': instance.heartCreditKcal,
       'star_broke_this_week': instance.starBrokeThisWeek,
       'missed_tracking_this_week': instance.missedTrackingThisWeek,
-      'heart_day_keys': instance.heartDayKeys,
-      'heart_star_break_day_keys': instance.heartStarBreakDayKeys,
       'run_limit_warning_this_week': instance.runLimitWarningThisWeek,
     };

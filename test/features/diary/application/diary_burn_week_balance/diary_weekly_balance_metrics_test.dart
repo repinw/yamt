@@ -59,35 +59,31 @@ void main() {
     expect(metrics.progressDay, 7);
   });
 
-  test(
-    'keeps actual weekly kcal real while applying heart credit to pacing',
-    () {
-      final selectedDay = DateTime(2026, 4, 28);
-      final currentWeekStartDate = DateTime(2026, 4, 27);
-      final weekOverview = _weekOverview(
-        selectedDay: selectedDay,
-        currentWeekStartDate: currentWeekStartDate,
-        baseGoals: const <double>[2000, 2000],
-        dayTotals: const <double>[1200, 600],
-      );
+  test('resolves weekly pacing metrics with actual consumed kcal', () {
+    final selectedDay = DateTime(2026, 4, 28);
+    final currentWeekStartDate = DateTime(2026, 4, 27);
+    final weekOverview = _weekOverview(
+      selectedDay: selectedDay,
+      currentWeekStartDate: currentWeekStartDate,
+      baseGoals: const <double>[2000, 2000],
+      dayTotals: const <double>[1200, 600],
+    );
 
-      final metrics = resolveDiaryWeeklyBalanceMetrics(
-        weekOverview: weekOverview,
-        selectedDayOverview: weekOverview.days.last,
-        selectedDayEntries: const <CalorieEntry>[],
-        currentWeekStartDate: currentWeekStartDate,
-        runState: const BurnWeekRunState.initial().copyWith(
-          currentWeekStartDayKey: '2026-4-27',
-          heartCreditKcal: 250,
-        ),
-        now: selectedDay.add(const Duration(hours: 12)),
-      );
+    final metrics = resolveDiaryWeeklyBalanceMetrics(
+      weekOverview: weekOverview,
+      selectedDayOverview: weekOverview.days.last,
+      selectedDayEntries: const <CalorieEntry>[],
+      currentWeekStartDate: currentWeekStartDate,
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-4-27',
+      ),
+      now: selectedDay.add(const Duration(hours: 12)),
+    );
 
-      expect(metrics.goalKcal, 14000);
-      expect(metrics.pacing.actualConsumedKcal, 1800);
-      expect(metrics.pacing.consumedKcal, 2050);
-    },
-  );
+    expect(metrics.goalKcal, 14000);
+    expect(metrics.pacing.actualConsumedKcal, 1800);
+    expect(metrics.pacing.consumedKcal, 1800);
+  });
 
   test('expands display goal when selected day still has kcal left', () {
     final selectedDay = DateTime(2026, 5, 3);

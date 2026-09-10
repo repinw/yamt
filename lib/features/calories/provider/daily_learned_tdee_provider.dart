@@ -7,7 +7,6 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
@@ -37,7 +36,6 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
   try {
     final repository = ref.watch(calorieLogRepositoryProvider);
     final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
-    final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
     final healthStatusFuture = ref.watch(
       healthConnectionControllerProvider.future,
     );
@@ -51,8 +49,6 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
     };
 
     final settings = await settingsFuture;
-    final runState = await runStateFuture;
-    final heartDayKeys = runState.heartDayKeys.toSet();
 
     final contexts = [
       for (final dayRequest in request.days)
@@ -120,7 +116,6 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
         manualWeightByDay: manualWeightByDay,
         representativeWeightByDay: representativeWeightByDay,
         activeKcalByDay: activeKcalByDay,
-        heartDayKeys: heartDayKeys,
       );
     }
 
@@ -142,7 +137,6 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
   ref.watch(calorieOverviewRevisionProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
-  final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
   final healthStatusFuture = ref.watch(
     healthConnectionControllerProvider.future,
   );
@@ -159,8 +153,6 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
       : normalizedDay;
 
   final settings = await settingsFuture;
-  final runState = await runStateFuture;
-  final heartDayKeys = runState.heartDayKeys.toSet();
   final anchorEntry = settings.cycleAnchorEntryForDay(normalizedDay);
   if (anchorEntry == null) {
     return null;
@@ -230,7 +222,6 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     manualWeightByDay: manualWeightByDay,
     representativeWeightByDay: representativeWeightByDay,
     activeKcalByDay: activeKcalByDay,
-    heartDayKeys: heartDayKeys,
   );
 }
 

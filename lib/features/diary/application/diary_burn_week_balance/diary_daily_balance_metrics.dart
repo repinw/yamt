@@ -8,7 +8,6 @@ class DiaryDailyBalanceMetrics {
     required this.realEatenKcal,
     required this.eatenKcal,
     required this.realDayLeftKcal,
-    required this.heartAdjustmentKcal,
     required this.dayLeftKcal,
     required this.targetKcal,
     required this.activitySegmentKcal,
@@ -20,22 +19,19 @@ class DiaryDailyBalanceMetrics {
     this.isActivityTrackingActive = false,
   });
 
-  /// Calorie adjustment from active heart credit.
+  /// Calorie adjustment from buffer.
   final double bufferAdjustmentKcal;
 
-  /// Real logged kcal before virtual heart credit is applied.
+  /// Real logged kcal before adjustments.
   final double realEatenKcal;
 
   /// Displayed eaten calories after buffer adjustment.
   final double eatenKcal;
 
-  /// Real selected-day calories left before heart adjustment.
+  /// Real selected-day calories left.
   final double realDayLeftKcal;
 
-  /// Displayed heart adjustment for calories left.
-  final double heartAdjustmentKcal;
-
-  /// Displayed calories left after heart adjustment.
+  /// Displayed calories left.
   final double dayLeftKcal;
 
   /// Final daily target shown by the daily progress bar.
@@ -63,16 +59,14 @@ class DiaryDailyBalanceMetrics {
   final bool isActivityTrackingActive;
 }
 
-/// Resolves daily target and heart-adjusted display values from scalar inputs.
+/// Resolves daily target and display values from scalar inputs.
 DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
   required double flexibleGoalKcal,
   required double totalKcal,
   required double goalKcal,
   required double baseGoalKcal,
   required double activitySegmentKcal,
-  required double bufferAdjustmentKcal,
-  required double heartCreditKcal,
-  required bool isHeartDay,
+  double bufferAdjustmentKcal = 0,
   double? carryoverKcal,
   int todayActiveKcal = 0,
   double expectedActivityKcal = 0,
@@ -80,7 +74,6 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
 }) {
   final realEatenKcal = totalKcal;
   final eatenKcal = math.max<double>(0, realEatenKcal + bufferAdjustmentKcal);
-  final heartAdjustmentKcal = -heartCreditKcal;
   final targetKcal = resolveDiaryDailyTargetKcal(
     flexibleGoalKcal: flexibleGoalKcal,
     goalKcal: goalKcal,
@@ -94,7 +87,7 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     activitySegmentKcal: positiveActivitySegmentKcal,
   );
   final realDayLeftKcal = targetKcal - realEatenKcal;
-  final dayLeftKcal = isHeartDay ? 0.0 : realDayLeftKcal + heartAdjustmentKcal;
+  final dayLeftKcal = targetKcal - eatenKcal;
   final resolvedCarryoverKcal = carryoverKcal ?? (flexibleGoalKcal - goalKcal);
 
   return DiaryDailyBalanceMetrics(
@@ -102,7 +95,6 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     realEatenKcal: realEatenKcal,
     eatenKcal: eatenKcal,
     realDayLeftKcal: realDayLeftKcal,
-    heartAdjustmentKcal: heartAdjustmentKcal,
     dayLeftKcal: dayLeftKcal,
     targetKcal: targetKcal,
     activitySegmentKcal: positiveActivitySegmentKcal,

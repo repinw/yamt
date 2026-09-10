@@ -181,7 +181,6 @@ BurnWeekMockMetrics _resolveBurnWeekMetrics({
     todayOverview: selectedDayOverview,
     currentWeekStartDate: currentWeekStartDate,
     previousWeekOverflowKcal: previousWeekOverflowKcal,
-    heartCreditKcal: runState.heartCreditKcal,
     plannedLaterTodayKcal: plannedLaterTodayKcal,
     safeZoneMultiplier: difficulty.safeZoneMultiplier,
   );

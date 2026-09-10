@@ -66,34 +66,6 @@
     }
   },
   "homeQuickActionTooltip": "Schnellaktion",
-  "homeHeartCounterUseTooltip": "Herz für {day} nutzen",
-  "@homeHeartCounterUseTooltip": {
-    "placeholders": {
-      "day": {
-        "type": "String"
-      }
-    }
-  },
-  "homeHeartCounterActiveTooltip": "{day} ist bereits ein Herztag",
-  "@homeHeartCounterActiveTooltip": {
-    "placeholders": {
-      "day": {
-        "type": "String"
-      }
-    }
-  },
-  "homeHeartCounterEmptyTooltip": "Keine Herzen übrig",
-  "homeHeartCounterUnavailableTooltip": "Herzen können nur in der aktuellen Burn Week genutzt werden",
-  "homeHeartUseTitle": "Herztag nutzen?",
-  "homeHeartUseMessage": "Gib 1 Herz aus, um {day} zu ignorieren. Erfasstes Essen bleibt im Tagebuch, aber der Tag zählt als perfekt und wird beim Wochenlernen übersprungen.",
-  "homeHeartUseConfirmAction": "Herz nutzen",
-  "@homeHeartUseMessage": {
-    "placeholders": {
-      "day": {
-        "type": "String"
-      }
-    }
-  },
   "inventoryFabTooltip": "Produkt hinzufügen",
   "productSearchHubTitle": "Produkt hinzufügen",
   "productSearchHubInventoryTitle": "Zum Vorrat hinzufügen",
@@ -1066,15 +1038,8 @@
       "kcal": {}
     }
   },
-  "diaryBalanceHeartAdjustmentLabel": "Herz {kcal}",
-  "@diaryBalanceHeartAdjustmentLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
-  "diaryBalanceHeartDayValue": "Herztag",
-  "diaryBalanceHeartDaySubtitle": "Für Lernen ignoriert",
-  "diaryBalanceRevertHeartDayAction": "Herztag zurücknehmen",
+  "diaryBalancePauseDayValue": "Pausentag",
+  "diaryBalancePauseDaySubtitle": "Fürs Lernen ignoriert",
   "diaryBalanceBaseGoalShort": "Basis {value}",
   "@diaryBalanceBaseGoalShort": {
     "placeholders": {
@@ -1118,7 +1083,7 @@
   "diaryBudgetDetailsDaySavedLabel": "eingespart",
   "diaryBudgetDetailsDayOverLabel": "überzogen",
   "diaryBudgetDetailsDayExactLabel": "Ziel erreicht",
-  "diaryBudgetDetailsHeartDayLabel": "Durch Herz geschützt",
+  "diaryBudgetDetailsPauseDayLabel": "Pausentag",
   "diaryBudgetDetailsTotalCarryoverLabel": "Gesamtbilanz Vortage",
   "diaryBudgetDetailsDistributionFormula": "{total} aufgeteilt auf {days} verbleibende Tage = {daily} / Tag",
   "@diaryBudgetDetailsDistributionFormula": {

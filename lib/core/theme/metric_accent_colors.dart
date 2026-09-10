@@ -14,8 +14,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
     required this.fat,
     required this.meal,
     required this.today,
-    required this.heart,
-    required this.heartDark,
     required this.steps,
     required this.stepsDark,
   });
@@ -55,16 +53,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
       ),
       meal: primary,
       today: primary,
-      heart: _tone(
-        _harmonize(const Color(0xFFE11D48), primary, 0.06),
-        lightness: 0.48,
-        minSaturation: 0.62,
-      ),
-      heartDark: _tone(
-        _harmonize(const Color(0xFFFB7185), primary, 0.08),
-        lightness: 0.7,
-        minSaturation: 0.64,
-      ),
       steps: _tone(steps, lightness: 0.5, minSaturation: 0.58),
       stepsDark: _tone(stepsDark, lightness: 0.7, minSaturation: 0.58),
     );
@@ -82,8 +70,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
     fat: Color(0xFFEAB308),
     meal: Color(0xFF059669),
     today: Color(0xFF10B981),
-    heart: Color(0xFFE11D48),
-    heartDark: Color(0xFFFB7185),
     steps: Color(0xFF6366F1),
     stepsDark: Color(0xFF818CF8),
   );
@@ -109,11 +95,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
   /// Steps accent color adapted for brightness.
   Color stepsFor(Brightness brightness) {
     return brightness == Brightness.dark ? stepsDark : steps;
-  }
-
-  /// Heart-day accent color adapted for brightness.
-  Color heartFor(Brightness brightness) {
-    return brightness == Brightness.dark ? heartDark : heart;
   }
 
   /// Activity.
@@ -146,12 +127,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
   /// Today/current day.
   final Color today;
 
-  /// Heart day.
-  final Color heart;
-
-  /// Heart day in dark mode.
-  final Color heartDark;
-
   /// Steps.
   final Color steps;
 
@@ -170,8 +145,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
     Color? fat,
     Color? meal,
     Color? today,
-    Color? heart,
-    Color? heartDark,
     Color? steps,
     Color? stepsDark,
   }) {
@@ -186,8 +159,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
       fat: fat ?? this.fat,
       meal: meal ?? this.meal,
       today: today ?? this.today,
-      heart: heart ?? this.heart,
-      heartDark: heartDark ?? this.heartDark,
       steps: steps ?? this.steps,
       stepsDark: stepsDark ?? this.stepsDark,
     );
@@ -213,8 +184,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
       fat: Color.lerp(fat, other.fat, t)!,
       meal: Color.lerp(meal, other.meal, t)!,
       today: Color.lerp(today, other.today, t)!,
-      heart: Color.lerp(heart, other.heart, t)!,
-      heartDark: Color.lerp(heartDark, other.heartDark, t)!,
       steps: Color.lerp(steps, other.steps, t)!,
       stepsDark: Color.lerp(stepsDark, other.stepsDark, t)!,
     );

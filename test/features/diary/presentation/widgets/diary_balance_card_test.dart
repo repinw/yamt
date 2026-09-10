@@ -321,135 +321,10 @@ void main() {
     );
   });
 
-  testWidgets(
-    'heart credit adjusts daily balance while weekly actual stays real',
-    (
-      tester,
-    ) async {
-      final selectedDay = normalizeDiaryDay(DateTime.now());
-
-      await _pumpBalanceCard(
-        tester,
-        selectedDay: selectedDay,
-        weekStartDate: selectedDay,
-        dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-        runState: const BurnWeekRunState.initial().copyWith(
-          currentWeekStartDayKey: diaryDayKey(selectedDay),
-          heartCreditKcal: 2000,
-        ),
-      );
-
-      expect(
-        find.byKey(const ValueKey<String>('diary-balance-consumed-marker')),
-        findsNothing,
-      );
-      expect(find.text('3,000 / 2,000', findRichText: true), findsOneWidget);
-      expect(find.text('-1,000 kcal', findRichText: true), findsOneWidget);
-      expect(
-        find.text(
-          'Real 1,000 kcal · Heart -2,000 kcal',
-          findRichText: true,
-        ),
-        findsOneWidget,
-      );
-    },
-  );
-
-  testWidgets('live onboarding buffer appears in eaten tile', (tester) async {
-    final today = normalizeDiaryDay(DateTime.now());
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: today,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(today),
-        heartCreditKcal: 2000,
-      ),
-    );
-
-    expect(_findTextContaining('3,000 / 2,000'), findsOneWidget);
-    expect(
-      find.text('Real 1,000 kcal · Buffer +2,000 kcal'),
-      findsOneWidget,
-    );
-    expect(find.text('Buffer +2,000 kcal'), findsOneWidget);
-    expect(_findTextContaining('-1,000 kcal'), findsOneWidget);
-  });
-
-  testWidgets('under-target live metrics do not open automatic heart dialogs', (
+  testWidgets('pause day shows special balance', (
     tester,
   ) async {
     final today = normalizeDiaryDay(DateTime.now());
-    final weekStartDate = today.subtract(const Duration(days: 6));
-    var positiveHeartUseCount = 0;
-    DateTime? restartedFrom;
-    var continuedRun = false;
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: weekStartDate,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(weekStartDate),
-        runWeekNumber: 2,
-      ),
-      onUsePositiveHeart: (_) {
-        positiveHeartUseCount += 1;
-      },
-      onRestartRunFrom: (weekStartDate) {
-        restartedFrom = normalizeDiaryDay(weekStartDate);
-      },
-      onContinueRunAfterLimitWarning: () {
-        continuedRun = true;
-      },
-    );
-
-    expect(find.text('Too far below target'), findsNothing);
-    expect(find.text('Run cannot finish perfectly'), findsNothing);
-    expect(find.text('Use heart'), findsNothing);
-    expect(positiveHeartUseCount, 0);
-    expect(restartedFrom, isNull);
-    expect(continuedRun, isFalse);
-  });
-
-  testWidgets(
-    'over-target live metrics do not open automatic warning dialogs',
-    (
-      tester,
-    ) async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final weekStartDate = today.subtract(const Duration(days: 6));
-      var positiveHeartUseCount = 0;
-
-      await _pumpBalanceCard(
-        tester,
-        selectedDay: today,
-        weekStartDate: weekStartDate,
-        dayTotals: const [20000, 20000, 20000, 20000, 20000, 20000, 20000],
-        runState: const BurnWeekRunState.initial().copyWith(
-          currentWeekStartDayKey: diaryDayKey(weekStartDate),
-          runWeekNumber: 2,
-        ),
-        onUsePositiveHeart: (_) {
-          positiveHeartUseCount += 1;
-        },
-      );
-
-      expect(find.text('Use heart day?'), findsNothing);
-      expect(find.text('Out of safe zone'), findsNothing);
-      expect(find.text('Run cannot finish perfectly'), findsNothing);
-      expect(positiveHeartUseCount, 0);
-    },
-  );
-
-  testWidgets('heart day shows special balance and suppresses zone dialog', (
-    tester,
-  ) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    DateTime? revertedDay;
 
     await _pumpBalanceCard(
       tester,
@@ -459,47 +334,12 @@ void main() {
       runState: const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(today),
         runWeekNumber: 2,
-        heartDayKeys: <String>[diaryDayKey(today)],
       ),
-      onUnmarkHeartDay: (day) {
-        revertedDay = day;
-      },
+      isPauseDay: true,
     );
 
-    expect(find.text('Heart day'), findsOneWidget);
+    expect(find.text('Pause day'), findsOneWidget);
     expect(find.text('Ignored for learning'), findsOneWidget);
-    expect(find.text('Revert heart day'), findsOneWidget);
-    expect(find.text('Use heart day?'), findsNothing);
-
-    await tester.tap(find.text('Revert heart day'));
-    await tester.pumpAndSettle();
-
-    expect(revertedDay, today);
-  });
-
-  testWidgets('passed-week heart day hides revert action', (tester) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final passedWeekDay = today.subtract(const Duration(days: 7));
-    DateTime? revertedDay;
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: passedWeekDay,
-      weekStartDate: passedWeekDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 20000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(today),
-        runWeekNumber: 3,
-        heartDayKeys: <String>[diaryDayKey(passedWeekDay)],
-      ),
-      onUnmarkHeartDay: (day) {
-        revertedDay = day;
-      },
-    );
-
-    expect(find.text('Heart day'), findsOneWidget);
-    expect(find.text('Revert heart day'), findsNothing);
-    expect(revertedDay, isNull);
   });
 
   testWidgets('recoverable over-target state keeps card quiet', (
@@ -951,8 +791,7 @@ Future<void> _pumpBalanceCard(
   DateTime? nextGoalStartDate,
   double? futureGoalKcal,
   ThemeMode themeMode = ThemeMode.light,
-  ValueChanged<double>? onUsePositiveHeart,
-  ValueChanged<DateTime>? onUnmarkHeartDay,
+  bool isPauseDay = false,
   ValueChanged<DateTime>? onRestartRunFrom,
   VoidCallback? onContinueRunAfterLimitWarning,
   bool weekOverviewThrows = false,
@@ -969,6 +808,7 @@ Future<void> _pumpBalanceCard(
     goalStartsInFuture: goalStartsInFuture,
     nextGoalStartDate: nextGoalStartDate,
     futureGoalKcal: futureGoalKcal,
+    isPauseDay: isPauseDay,
   );
   final selectedDayOverview = weekOverview.days.last;
   final repository = FakeCalorieLogRepository();
@@ -1010,8 +850,6 @@ Future<void> _pumpBalanceCard(
         burnWeekRunControllerProvider.overrideWith(
           () => _FakeBurnWeekRunController(
             runState,
-            onUsePositiveHeart: onUsePositiveHeart,
-            onUnmarkHeartDay: onUnmarkHeartDay,
             onRestartRunFrom: onRestartRunFrom,
             onContinueRunAfterLimitWarning: onContinueRunAfterLimitWarning,
           ),
@@ -1167,6 +1005,7 @@ CalorieWeekOverview _weekOverview({
   bool goalStartsInFuture = false,
   DateTime? nextGoalStartDate,
   double? futureGoalKcal,
+  bool isPauseDay = false,
 }) {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final days = [
@@ -1178,6 +1017,7 @@ CalorieWeekOverview _weekOverview({
         baseGoalKcal: baseGoalKcal,
         activityBonusKcal: offset == 0 ? activityBonusKcal : 0,
         entryCount: dayTotals[6 - offset] > 0 ? 1 : 0,
+        isPauseDay: offset == 0 && isPauseDay,
       ),
   ];
   final totalConsumedKcal = days.fold<double>(
@@ -1205,30 +1045,16 @@ CalorieWeekOverview _weekOverview({
 class _FakeBurnWeekRunController extends BurnWeekRunController {
   _FakeBurnWeekRunController(
     this.initialState, {
-    this.onUsePositiveHeart,
-    this.onUnmarkHeartDay,
     this.onRestartRunFrom,
     this.onContinueRunAfterLimitWarning,
   });
 
   final BurnWeekRunState initialState;
-  final ValueChanged<double>? onUsePositiveHeart;
-  final ValueChanged<DateTime>? onUnmarkHeartDay;
   final ValueChanged<DateTime>? onRestartRunFrom;
   final VoidCallback? onContinueRunAfterLimitWarning;
 
   @override
   Future<BurnWeekRunState> build() async => initialState;
-
-  @override
-  Future<void> usePositiveHeart(double dailyGoalKcal) async {
-    onUsePositiveHeart?.call(dailyGoalKcal);
-  }
-
-  @override
-  Future<void> unmarkHeartDay(DateTime day) async {
-    onUnmarkHeartDay?.call(day);
-  }
 
   @override
   Future<void> restartRunFrom({

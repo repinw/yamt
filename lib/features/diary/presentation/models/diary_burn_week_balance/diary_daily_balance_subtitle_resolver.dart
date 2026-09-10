@@ -13,7 +13,7 @@ typedef DiaryDailyBalanceSubtitleResult = ({
 /// Resolves the subtitle text and components for a daily balance card.
 DiaryDailyBalanceSubtitleResult resolveDiaryDailyBalanceSubtitle({
   required bool isFutureDay,
-  required bool isHeartDay,
+  required bool isPauseDay,
   required DiaryDailyBalanceMetrics metrics,
   required NumberFormat numberFormat,
   required AppLocalizations l10n,
@@ -21,14 +21,11 @@ DiaryDailyBalanceSubtitleResult resolveDiaryDailyBalanceSubtitle({
   if (isFutureDay) {
     return _resolveFutureSubtitle(metrics, numberFormat, l10n);
   }
-  if (isHeartDay) {
+  if (isPauseDay) {
     return (
-      text: l10n.diaryBalanceHeartDaySubtitle,
+      text: l10n.diaryBalancePauseDaySubtitle,
       parts: const <DiaryDailyBalanceSubtitlePart>[],
     );
-  }
-  if (metrics.heartAdjustmentKcal.round() != 0) {
-    return _resolveHeartAdjustmentSubtitle(metrics, numberFormat, l10n);
   }
   return _buildSubtitleAdjustments(metrics, numberFormat, l10n);
 }
@@ -50,27 +47,6 @@ DiaryDailyBalanceSubtitleResult _resolveFutureSubtitle(
     );
   }
   return (text: null, parts: const <DiaryDailyBalanceSubtitlePart>[]);
-}
-
-DiaryDailyBalanceSubtitleResult _resolveHeartAdjustmentSubtitle(
-  DiaryDailyBalanceMetrics metrics,
-  NumberFormat numberFormat,
-  AppLocalizations l10n,
-) {
-  final realLeft = formatDiaryKcal(
-    numberFormat,
-    metrics.realDayLeftKcal,
-    l10n.caloriesUnitKcal,
-  );
-  final adjustment = formatDiarySignedKcal(
-    metrics.heartAdjustmentKcal,
-    numberFormat,
-    l10n.caloriesUnitKcal,
-  );
-  final text =
-      '${l10n.diaryBalanceRealLeftLabel(realLeft)} · '
-      '${l10n.diaryBalanceHeartAdjustmentLabel(adjustment)}';
-  return (text: text, parts: const <DiaryDailyBalanceSubtitlePart>[]);
 }
 
 DiaryDailyBalanceSubtitleResult _buildSubtitleAdjustments(

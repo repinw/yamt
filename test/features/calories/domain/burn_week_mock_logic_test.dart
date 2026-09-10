@@ -94,32 +94,6 @@ void main() {
     expect(resolveBurnWeekMockPaceRatio(overWeek), 1);
   });
 
-  test('heart spend decrements counter and may break star', () {
-    final breakResult = resolveBurnWeekHeartSpend(
-      starCount: 2,
-      heartCount: 1,
-      heartCreditKcal: 300,
-      kcalDelta: -500,
-    );
-    final resetResult = resolveBurnWeekHeartSpend(
-      starCount: 0,
-      heartCount: 1,
-      heartCreditKcal: 300,
-      kcalDelta: 500,
-    );
-
-    expect(breakResult.starCount, 1);
-    expect(breakResult.heartCount, 0);
-    expect(breakResult.heartCreditKcal, -200);
-    expect(breakResult.didBreakStar, isTrue);
-    expect(breakResult.didResetRun, isFalse);
-
-    expect(resetResult.starCount, 0);
-    expect(resetResult.heartCount, 0);
-    expect(resetResult.heartCreditKcal, 800);
-    expect(resetResult.didResetRun, isFalse);
-  });
-
   test('earned star requires hearts and no broken star or missed tracking', () {
     expect(
       resolveBurnWeekEarnedStar(

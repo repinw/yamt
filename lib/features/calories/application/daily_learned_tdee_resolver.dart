@@ -138,7 +138,6 @@ abstract final class DailyLearnedTdeeResolver {
     required Map<String, double> manualWeightByDay,
     required Map<String, double> representativeWeightByDay,
     required Map<String, int> activeKcalByDay,
-    required Set<String> heartDayKeys,
   }) {
     final savedGoal = savedLearnedGoalForDay(
       settings: settings,
@@ -182,7 +181,6 @@ abstract final class DailyLearnedTdeeResolver {
         days: learningDays,
         entriesByDay: entriesByDay,
         settings: settings,
-        heartDayKeys: heartDayKeys,
       );
       if (intakeKcalByDay == null) {
         return latest;
@@ -385,7 +383,6 @@ abstract final class DailyLearnedTdeeResolver {
     required List<DateTime> days,
     required Map<String, List<CalorieEntry>> entriesByDay,
     required CalorieGoalSettings settings,
-    Set<String> heartDayKeys = const <String>{},
   }) {
     final loggedVals = <double>[];
     final missingDays = <DateTime>[];

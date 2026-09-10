@@ -33,8 +33,7 @@ class DiaryDailyBalanceData {
     required this.metrics,
     required this.eatenValue,
     required this.leftValue,
-    required this.isHeartDay,
-    required this.canRevertHeartDay,
+    required this.isPauseDay,
     required this.numberFormat,
     this.leftUnit,
     this.targetAddition,
@@ -55,8 +54,7 @@ class DiaryDailyBalanceData {
   factory DiaryDailyBalanceData.from({
     required DateTime selectedDay,
     required DiaryDailyBalanceMetrics metrics,
-    required bool isHeartDay,
-    required bool canRevertHeartDay,
+    required bool isPauseDay,
     required NumberFormat numberFormat,
     required AppLocalizations l10n,
     DiaryDailyBudgetDetailsData? budgetDetails,
@@ -71,7 +69,7 @@ class DiaryDailyBalanceData {
               l10n.caloriesUnitKcal,
             ),
           );
-    final bufferAdjustmentLabel = isHeartDay ? null : adjustmentLabel;
+    final bufferAdjustmentLabel = isPauseDay ? null : adjustmentLabel;
     final eatenSubtitle = metrics.bufferAdjustmentKcal.round() == 0
         ? null
         : '${l10n.diaryBalanceRealEatenLabel(
@@ -86,7 +84,7 @@ class DiaryDailyBalanceData {
     final isFutureDay = normalizeDiaryDay(selectedDay).isAfter(today);
     final resolvedSubtitle = resolveDiaryDailyBalanceSubtitle(
       isFutureDay: isFutureDay,
-      isHeartDay: isHeartDay,
+      isPauseDay: isPauseDay,
       metrics: metrics,
       numberFormat: numberFormat,
       l10n: l10n,
@@ -98,10 +96,10 @@ class DiaryDailyBalanceData {
     );
     final eatenNumber = numberFormat.format(metrics.eatenKcal.round());
     final targetNumber = numberFormat.format(metrics.targetKcal.round());
-    final leftNumber = isHeartDay
-        ? l10n.diaryBalanceHeartDayValue
+    final leftNumber = isPauseDay
+        ? l10n.diaryBalancePauseDayValue
         : numberFormat.format(metrics.dayLeftKcal.round());
-    final leftUnit = isHeartDay ? null : l10n.caloriesUnitKcal;
+    final leftUnit = isPauseDay ? null : l10n.caloriesUnitKcal;
     final targetAddition = '/ $targetNumber';
 
     final baseValue = formatDiaryKcal(
@@ -125,8 +123,7 @@ class DiaryDailyBalanceData {
       baseNumber: baseNumber,
       plannedWithCarryoverNumber: plannedWithCarryoverNumber,
       caloriesUnit: l10n.caloriesUnitKcal,
-      isHeartDay: isHeartDay,
-      canRevertHeartDay: canRevertHeartDay,
+      isPauseDay: isPauseDay,
       numberFormat: numberFormat,
       bufferAdjustmentLabel: bufferAdjustmentLabel,
       eatenSubtitle: eatenSubtitle,
@@ -151,10 +148,10 @@ class DiaryDailyBalanceData {
   /// Target supplement for the eaten metric (e.g. '/ 2,000').
   final String? targetAddition;
 
-  /// Left numeric value or heart day label (e.g. '1,000').
+  /// Left numeric value or pause day label (e.g. '1,000').
   final String leftValue;
 
-  /// Unit for the left value (e.g. 'kcal', or null on heart day).
+  /// Unit for the left value (e.g. 'kcal', or null on pause day).
   final String? leftUnit;
 
   /// Whether this card represents a future day.
@@ -175,11 +172,8 @@ class DiaryDailyBalanceData {
   /// Localized calorie unit (e.g. 'kcal').
   final String caloriesUnit;
 
-  /// Whether the selected day is currently marked as a heart day.
-  final bool isHeartDay;
-
-  /// Whether the selected heart day can be reverted.
-  final bool canRevertHeartDay;
+  /// Whether the selected day is currently marked as a pause day.
+  final bool isPauseDay;
 
   /// Locale-aware number formatter.
   final NumberFormat numberFormat;

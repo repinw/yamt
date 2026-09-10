@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
-/// Shows Burn Week buffer/heart kcal adjustment.
+/// Shows Burn Week buffer kcal adjustment.
 class DiaryBalanceBufferBadge extends StatelessWidget {
   /// Creates a buffer badge.
   const DiaryBalanceBufferBadge({required this.label, super.key});

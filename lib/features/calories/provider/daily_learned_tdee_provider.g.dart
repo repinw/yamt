@@ -73,7 +73,7 @@ final class DailyLearnedTdeeGoalsForDaysProvider
 }
 
 String _$dailyLearnedTdeeGoalsForDaysHash() =>
-    r'bc2f9ade22276230829e156cf88c992f96385c4d';
+    r'5036579b2ef900d412ca9eb08542c8d7620a6fa6';
 
 /// Resolve optional learned TDEE overrides for multiple days.
 
@@ -174,7 +174,7 @@ final class DailyLearnedTdeeGoalForDayProvider
 }
 
 String _$dailyLearnedTdeeGoalForDayHash() =>
-    r'840baf0c4854d1224dc33e89eb385723b944f42d';
+    r'0e854e2c3060b54b364cfd0e26c9a41d1f334b10';
 
 /// Resolve optional learned TDEE override for [day].
 

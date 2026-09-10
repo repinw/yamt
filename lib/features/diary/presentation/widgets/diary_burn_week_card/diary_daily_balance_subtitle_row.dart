@@ -36,7 +36,6 @@ class DiaryDailyBalanceSubtitleRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.xs),
           DiaryDailyBudgetDetailsButton(
             onTap: onBudgetDetailsTap!,
-            isHeartDay: data.isHeartDay,
           ),
         ],
       ],
@@ -56,11 +55,9 @@ class DiaryDailyBalanceSubtitleText extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final accents = MetricAccentColors.of(context);
-    final metrics = data.metrics;
 
-    if (data.isHeartDay ||
+    if (data.isPauseDay ||
         data.isFutureDay ||
-        metrics.heartAdjustmentKcal.round() != 0 ||
         data.bufferAdjustmentLabel != null ||
         data.leftSubtitleParts.isEmpty) {
       return Text(
@@ -68,8 +65,8 @@ class DiaryDailyBalanceSubtitleText extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: data.isHeartDay
-              ? accents.heartFor(colors.brightness).withValues(alpha: 0.78)
+          color: data.isPauseDay
+              ? colors.onSurfaceVariant
               : accents.today.withValues(alpha: 0.78),
           fontWeight: FontWeight.w800,
           letterSpacing: 0,

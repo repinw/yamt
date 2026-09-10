@@ -23,7 +23,6 @@ String weeklyCheckInInputHash({
   required CalorieGoalSettings settings,
   required CalorieWeeklyCheckInWeightData weightData,
   required Map<String, int> activeKcalByDay,
-  required Set<String> heartDayKeys,
 }) {
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
     settings: settings,
@@ -56,15 +55,15 @@ String weeklyCheckInInputHash({
   for (final day in dates.learningDays) {
     final dayKey = diaryDayKey(day);
     final entries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
-    final isHeartDay = heartDayKeys.contains(dayKey);
+    final isPauseDay = settings.isPauseDay(day);
     buffer
       ..write('|day=')
       ..write(dayKey)
-      ..write(':heart=')
-      ..write(isHeartDay)
+      ..write(':pause=')
+      ..write(isPauseDay)
       ..write(':skipped=')
       ..write(settings.isSkippedIntakeDay(day));
-    if (!isHeartDay) {
+    if (!isPauseDay) {
       buffer
         ..write(':count=')
         ..write(entries.length)

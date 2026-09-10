@@ -16,8 +16,6 @@ void main() {
         fat: Color(0xFF000008),
         meal: Color(0xFF000009),
         today: Color(0xFF00000A),
-        heart: Color(0xFF00000B),
-        heartDark: Color(0xFF00000C),
         steps: Color(0xFF00000D),
         stepsDark: Color(0xFF00000E),
       );
@@ -37,8 +35,6 @@ void main() {
         fat: const Color(0xFF100008),
         meal: const Color(0xFF100009),
         today: const Color(0xFF10000A),
-        heart: const Color(0xFF10000B),
-        heartDark: const Color(0xFF10000C),
         steps: const Color(0xFF10000D),
         stepsDark: const Color(0xFF10000E),
       );
@@ -53,8 +49,6 @@ void main() {
       expect(changed.fat, const Color(0xFF100008));
       expect(changed.meal, const Color(0xFF100009));
       expect(changed.today, const Color(0xFF10000A));
-      expect(changed.heart, const Color(0xFF10000B));
-      expect(changed.heartDark, const Color(0xFF10000C));
       expect(changed.steps, const Color(0xFF10000D));
       expect(changed.stepsDark, const Color(0xFF10000E));
     });
@@ -71,8 +65,6 @@ void main() {
         fat: Color(0xFF700000),
         meal: Color(0xFF800000),
         today: Color(0xFF900000),
-        heart: Color(0xFFA00000),
-        heartDark: Color(0xFFB00000),
         steps: Color(0xFFC00000),
         stepsDark: Color(0xFFD00000),
       );
@@ -87,8 +79,6 @@ void main() {
         fat: Color(0xFFFF9090),
         meal: Color(0xFFFF8080),
         today: Color(0xFFFF7070),
-        heart: Color(0xFFFF6060),
-        heartDark: Color(0xFFFF5050),
         steps: Color(0xFFFF4040),
         stepsDark: Color(0xFFFF3030),
       );
@@ -114,11 +104,6 @@ void main() {
       expect(result.fat, Color.lerp(begin.fat, end.fat, 0.5));
       expect(result.meal, Color.lerp(begin.meal, end.meal, 0.5));
       expect(result.today, Color.lerp(begin.today, end.today, 0.5));
-      expect(result.heart, Color.lerp(begin.heart, end.heart, 0.5));
-      expect(
-        result.heartDark,
-        Color.lerp(begin.heartDark, end.heartDark, 0.5),
-      );
       expect(result.steps, Color.lerp(begin.steps, end.steps, 0.5));
       expect(result.stepsDark, Color.lerp(begin.stepsDark, end.stepsDark, 0.5));
     });

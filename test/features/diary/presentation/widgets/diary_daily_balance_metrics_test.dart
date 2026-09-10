@@ -9,9 +9,6 @@ void main() {
       goalKcal: 2498,
       baseGoalKcal: 2498,
       activitySegmentKcal: 171,
-      bufferAdjustmentKcal: 0,
-      heartCreditKcal: 0,
-      isHeartDay: false,
     );
 
     expect(metrics.activitySegmentKcal, 171);
@@ -26,9 +23,6 @@ void main() {
       goalKcal: 2669,
       baseGoalKcal: 2498,
       activitySegmentKcal: 171,
-      bufferAdjustmentKcal: 0,
-      heartCreditKcal: 0,
-      isHeartDay: false,
     );
 
     expect(metrics.activitySegmentKcal, 171);
@@ -45,9 +39,6 @@ void main() {
         goalKcal: 2669,
         baseGoalKcal: 2498,
         activitySegmentKcal: 171,
-        bufferAdjustmentKcal: 0,
-        heartCreditKcal: 0,
-        isHeartDay: false,
       );
 
       expect(metrics.targetKcal, 5000);
@@ -55,7 +46,7 @@ void main() {
     },
   );
 
-  test('applies heart credit to display values only', () {
+  test('applies buffer adjustment to display values only', () {
     final metrics = resolveDiaryDailyBalanceMetrics(
       flexibleGoalKcal: 2669,
       totalKcal: 655,
@@ -63,8 +54,6 @@ void main() {
       baseGoalKcal: 2498,
       activitySegmentKcal: 171,
       bufferAdjustmentKcal: 250,
-      heartCreditKcal: 250,
-      isHeartDay: false,
     );
 
     expect(metrics.realEatenKcal, 655);

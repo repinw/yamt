@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -10,24 +9,17 @@ class DiaryDailyBudgetDetailsButton extends StatelessWidget {
   /// Creates the budget details trigger button.
   const DiaryDailyBudgetDetailsButton({
     required this.onTap,
-    required this.isHeartDay,
     super.key,
   });
 
   /// Called when the button is tapped.
   final VoidCallback onTap;
 
-  /// Whether the card represents a heart day.
-  final bool isHeartDay;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final accents = MetricAccentColors.of(context);
-    final buttonColor = isHeartDay
-        ? accents.heartFor(colors.brightness)
-        : colors.onSurfaceVariant;
+    final buttonColor = colors.onSurfaceVariant;
 
     return Semantics(
       button: true,

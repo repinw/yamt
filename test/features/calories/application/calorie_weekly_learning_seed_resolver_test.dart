@@ -71,7 +71,6 @@ void main() {
       manualWeightByDay: {diaryDayKey(addDiaryDays(firstStart, 7)): 79},
       representativeWeightByDay: const <String, double>{},
       activeKcalByDay: const <String, int>{},
-      heartDayKeys: const <String>{},
     );
 
     expect(seed.previousGoalKcal, expected.newGoalKcal);
@@ -107,7 +106,6 @@ void main() {
       manualWeightByDay: {diaryDayKey(addDiaryDays(firstStart, 7)): 79},
       representativeWeightByDay: const <String, double>{},
       activeKcalByDay: const <String, int>{},
-      heartDayKeys: const <String>{},
     );
 
     expect(seed.previousGoalKcal, 2000);

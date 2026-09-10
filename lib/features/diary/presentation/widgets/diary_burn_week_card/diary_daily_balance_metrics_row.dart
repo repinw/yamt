@@ -29,17 +29,15 @@ class DiaryDailyBalanceMetricsRow extends StatelessWidget {
     final resolvedLeftUnit = data.isFutureDay
         ? data.caloriesUnit
         : data.leftUnit;
-    final resolvedLeftLabelColor = data.isFutureDay
+    final resolvedLeftLabelColor = (data.isFutureDay || data.isPauseDay)
         ? colors.onSurfaceVariant
-        : (data.isHeartDay ? accents.heartFor(colors.brightness) : primary);
+        : primary;
     final resolvedLeftValueColor = data.isFutureDay
         ? colors.onSurface
-        : (data.isHeartDay ? accents.heartFor(colors.brightness) : primary);
-    final resolvedLeftUnitColor = data.isFutureDay
+        : (data.isPauseDay ? colors.onSurfaceVariant : primary);
+    final resolvedLeftUnitColor = (data.isFutureDay || data.isPauseDay)
         ? colors.onSurfaceVariant
-        : (data.isHeartDay
-              ? accents.heartFor(colors.brightness).withValues(alpha: 0.78)
-              : primary.withValues(alpha: 0.78));
+        : primary.withValues(alpha: 0.78);
 
     final resolvedRightLabel = data.isFutureDay
         ? l10n.diaryBalancePlannedWithCarryoverLabel

@@ -66,34 +66,6 @@
     }
   },
   "homeQuickActionTooltip": "Quick action",
-  "homeHeartCounterUseTooltip": "Use heart for {day}",
-  "@homeHeartCounterUseTooltip": {
-    "placeholders": {
-      "day": {
-        "type": "String"
-      }
-    }
-  },
-  "homeHeartCounterActiveTooltip": "{day} is already a heart day",
-  "@homeHeartCounterActiveTooltip": {
-    "placeholders": {
-      "day": {
-        "type": "String"
-      }
-    }
-  },
-  "homeHeartCounterEmptyTooltip": "No hearts left",
-  "homeHeartCounterUnavailableTooltip": "Hearts can only be used during the current Burn Week",
-  "homeHeartUseTitle": "Use heart day?",
-  "homeHeartUseMessage": "Spend 1 heart to ignore {day}. Logged food stays in the diary, but this day counts as perfect and is skipped for weekly learning.",
-  "homeHeartUseConfirmAction": "Use heart",
-  "@homeHeartUseMessage": {
-    "placeholders": {
-      "day": {
-        "type": "String"
-      }
-    }
-  },
   "inventoryFabTooltip": "Add product",
   "productSearchHubTitle": "Add product",
   "productSearchHubInventoryTitle": "Add to inventory",
@@ -1066,15 +1038,8 @@
       "kcal": {}
     }
   },
-  "diaryBalanceHeartAdjustmentLabel": "Heart {kcal}",
-  "@diaryBalanceHeartAdjustmentLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
-  "diaryBalanceHeartDayValue": "Heart day",
-  "diaryBalanceHeartDaySubtitle": "Ignored for learning",
-  "diaryBalanceRevertHeartDayAction": "Revert heart day",
+  "diaryBalancePauseDayValue": "Pause day",
+  "diaryBalancePauseDaySubtitle": "Ignored for learning",
   "diaryBalanceBaseGoalShort": "Base {value}",
   "@diaryBalanceBaseGoalShort": {
     "placeholders": {
@@ -1118,7 +1083,7 @@
   "diaryBudgetDetailsDaySavedLabel": "saved",
   "diaryBudgetDetailsDayOverLabel": "over",
   "diaryBudgetDetailsDayExactLabel": "on target",
-  "diaryBudgetDetailsHeartDayLabel": "Protected by heart",
+  "diaryBudgetDetailsPauseDayLabel": "Pause day",
   "diaryBudgetDetailsTotalCarryoverLabel": "Total previous-day balance",
   "diaryBudgetDetailsDistributionFormula": "{total} spread across {days} remaining days = {daily} / day",
   "@diaryBudgetDetailsDistributionFormula": {
