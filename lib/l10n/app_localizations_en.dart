@@ -3455,4 +3455,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesFatShortLetter => 'F';
+
+  @override
+  String get shoppingListSuggestionsTitle => 'Suggestions';
+
+  @override
+  String get shoppingListSuggestionsExplanation => 'Low stock and frequently purchased products from your receipts.';
+
+  @override
+  String get shoppingListSuggestionsEmpty => 'No suggestions yet. Low stock or repeated purchases on different receipts will appear here.';
+
+  @override
+  String get shoppingListSuggestionsRetry => 'Reload suggestions';
+
+  @override
+  String shoppingListConsumptionDays(int count) {
+    return 'Consumed on $count days';
+  }
+
+  @override
+  String get shoppingListOpenTitle => 'To buy';
+
+  @override
+  String get shoppingListDoneTitle => 'Done';
+
+  @override
+  String get shoppingListLowStock => 'Low stock';
+
+  @override
+  String shoppingListPurchaseCount(int count) {
+    return 'Purchased $count times';
+  }
+
+  @override
+  String get shoppingListSchedule => 'Recurring item';
+
+  @override
+  String get shoppingListScheduleExplanation => 'Due items are added when you open this list. Items already on the list are not duplicated.';
+
+  @override
+  String get shoppingListScheduleDays => 'Interval in days';
+
+  @override
+  String get shoppingListFirstDue => 'First due';
+
+  @override
+  String get shoppingListStopSchedule => 'Stop repeating';
+
+  @override
+  String get shoppingListSaveSettings => 'Save';
+
+  @override
+  String shoppingListNumberRange(int max) {
+    return 'Enter a number from 1 to $max.';
+  }
+
+  @override
+  String get shoppingListProductSettings => 'Item settings';
+
+  @override
+  String get shoppingListRemoveFavorite => 'Remove favorite';
+
+  @override
+  String get shoppingListAddFavorite => 'Save as favorite';
+
+  @override
+  String get shoppingListSettingsFailed => 'Could not save settings.';
+
+  @override
+  String get shoppingListSavedProducts => 'Favorites & recurring items';
+
+  @override
+  String shoppingListRepeatSummary(int quantity, int days) {
+    return '$quantity items every $days days';
+  }
+
+  @override
+  String shoppingListNextDue(String date) {
+    return 'Next due: $date';
+  }
+
+  @override
+  String get shoppingListFavorite => 'Favorite';
+
+  @override
+  String get shoppingListOutOfStock => 'Out of stock';
 }

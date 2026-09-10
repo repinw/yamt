@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_product_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list item tile.
@@ -37,10 +38,6 @@ class ShoppingListItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCrossedOff = item.quantity == 0;
-    final titleStyle = Theme.of(context).textTheme.titleMedium;
-    final subtitleStyle = Theme.of(context).textTheme.bodySmall;
-
     return Dismissible(
       key: ValueKey<String>(item.id),
       direction: DismissDirection.endToStart,
@@ -63,27 +60,83 @@ class ShoppingListItemTile extends StatelessWidget {
       ),
       child: Card(
         margin: EdgeInsets.zero,
-        child: ListTile(
-          title: Text(
-            item.name,
-            style: _crossedOffStyle(titleStyle, isCrossedOff),
-          ),
-          subtitle: Text(
-            _subtitle(),
-            style: _crossedOffStyle(subtitleStyle, isCrossedOff),
-          ),
-          trailing: _ShoppingListQuantityStepper(
-            quantity: item.quantity,
-            isCrossedOff: isCrossedOff,
-            onIncrement: () => onIncrement(item.id),
-            onDecrement: isCrossedOff ? null : () => onDecrement(item.id),
-            increaseTooltip: l10n.shoppingListIncreaseQuantityAction,
-            decreaseTooltip: l10n.shoppingListDecreaseQuantityAction,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final largeText = MediaQuery.textScalerOf(context).scale(16) > 22;
+              if (constraints.maxWidth < 360 && largeText) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _description(context),
+                    Align(alignment: Alignment.centerRight, child: _actions()),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: _description(context)),
+                  const SizedBox(width: 4),
+                  _actions(),
+                ],
+              );
+            },
           ),
         ),
       ),
     );
   }
+
+  Widget _description(BuildContext context) {
+    final style = Theme.of(context).textTheme;
+    final crossedOff = item.quantity == 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (item.isSaved) ...[
+              Icon(
+                item.isFavorite ? Icons.star_rounded : Icons.event_repeat,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+            ],
+            Expanded(
+              child: Text(
+                item.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: _crossedOffStyle(style.titleMedium, crossedOff),
+              ),
+            ),
+          ],
+        ),
+        Text(
+          _subtitle(),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: _crossedOffStyle(style.bodySmall, crossedOff),
+        ),
+      ],
+    );
+  }
+
+  Widget _actions() => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      _ShoppingListQuantityStepper(
+        quantity: item.quantity,
+        isCrossedOff: item.quantity == 0,
+        onIncrement: () => onIncrement(item.id),
+        onDecrement: item.quantity == 0 ? null : () => onDecrement(item.id),
+        increaseTooltip: l10n.shoppingListIncreaseQuantityAction,
+        decreaseTooltip: l10n.shoppingListDecreaseQuantityAction,
+      ),
+      ShoppingListProductMenu(item: item),
+    ],
+  );
 
   String _subtitle() {
     final brand = item.brand;

@@ -1745,5 +1745,68 @@
   "diaryFoodFeedbackClose": "Nährwertrückmeldung schließen",
   "caloriesProteinShortLetter": "P",
   "caloriesCarbsShortLetter": "K",
-  "caloriesFatShortLetter": "F"
+  "caloriesFatShortLetter": "F",
+  "shoppingListSuggestionsTitle": "Vorschläge",
+  "shoppingListSuggestionsExplanation": "Fast leere Vorräte und häufig gekaufte Artikel aus deinen Belegen.",
+  "shoppingListSuggestionsEmpty": "Noch keine Vorschläge. Sie erscheinen bei niedrigem Vorrat oder wiederholten Käufen auf verschiedenen Belegen.",
+  "shoppingListSuggestionsRetry": "Vorschläge erneut laden",
+  "shoppingListConsumptionDays": "An {count} Tagen verbraucht",
+  "shoppingListOpenTitle": "Noch einkaufen",
+  "shoppingListDoneTitle": "Erledigt",
+  "@shoppingListConsumptionDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListLowStock": "Fast leer",
+  "shoppingListPurchaseCount": "{count}× gekauft",
+  "shoppingListSchedule": "Dauerauftrag",
+  "shoppingListScheduleExplanation": "Fällige Artikel werden beim Öffnen dieser Liste wieder hinzugefügt. Bereits offene Artikel werden nicht verdoppelt.",
+  "shoppingListScheduleDays": "Intervall in Tagen",
+  "shoppingListFirstDue": "Erstmals am",
+  "shoppingListStopSchedule": "Dauerauftrag beenden",
+  "shoppingListSaveSettings": "Speichern",
+  "shoppingListNumberRange": "Bitte eine Zahl von 1 bis {max} eingeben.",
+  "shoppingListProductSettings": "Artikeleinstellungen",
+  "shoppingListRemoveFavorite": "Favorit entfernen",
+  "shoppingListAddFavorite": "Als Favorit speichern",
+  "shoppingListSettingsFailed": "Einstellungen konnten nicht gespeichert werden.",
+  "shoppingListSavedProducts": "Favoriten & Daueraufträge",
+  "shoppingListRepeatSummary": "{quantity} Stück alle {days} Tage",
+  "shoppingListNextDue": "Nächster Termin: {date}",
+  "shoppingListFavorite": "Favorit",
+  "@shoppingListPurchaseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@shoppingListNumberRange": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@shoppingListRepeatSummary": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@shoppingListNextDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListOutOfStock": "Aufgebraucht"
 }

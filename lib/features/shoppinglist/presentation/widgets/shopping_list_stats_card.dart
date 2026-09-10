@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list stats card keys.
@@ -43,64 +42,44 @@ class ShoppingListStatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: AppInsets.card,
-        child: Column(
+    final style = Theme.of(context).textTheme;
+    return Wrap(
+      spacing: 24,
+      runSpacing: 12,
+      children: [
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.homeShopping,
-              style: Theme.of(context).textTheme.titleSmall,
+              entryCount.toString(),
+              key: ShoppingListStatsCardKeys.entriesValue,
+              style: style.headlineSmall,
             ),
-            const SizedBox(height: AppSpacing.sm),
-            _ShoppingStatRow(
-              label: l10n.shoppingListStatsEntries,
-              value: entryCount.toString(),
-              valueKey: ShoppingListStatsCardKeys.entriesValue,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            _ShoppingStatRow(
-              label: l10n.shoppingListStatsQuantity,
-              value: totalQuantity.toString(),
-              valueKey: ShoppingListStatsCardKeys.quantityValue,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            _ShoppingStatRow(
-              label: l10n.shoppingListStatsEstimatedTotal,
-              value: currency.format(estimatedTotal),
-            ),
+            Text(l10n.shoppingListStatsEntries, style: style.bodySmall),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ShoppingStatRow extends StatelessWidget {
-  const _ShoppingStatRow({
-    required this.label,
-    required this.value,
-    this.valueKey,
-  });
-
-  final String label;
-  final String value;
-  final Key? valueKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: Text(label)),
-        Text(
-          key: valueKey,
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              totalQuantity.toString(),
+              key: ShoppingListStatsCardKeys.quantityValue,
+              style: style.headlineSmall,
+            ),
+            Text(l10n.shoppingListStatsQuantity, style: style.bodySmall),
+          ],
         ),
+        if (estimatedTotal > 0)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(currency.format(estimatedTotal), style: style.headlineSmall),
+              Text(
+                l10n.shoppingListStatsEstimatedTotal,
+                style: style.bodySmall,
+              ),
+            ],
+          ),
       ],
     );
   }

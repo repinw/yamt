@@ -207,7 +207,7 @@ void main() {
     addTearDown(container.dispose);
 
     final result = container.read(
-      isSourceItemInActiveShoppingListProvider(item),
+      sourceItemInActiveShoppingListProvider(item),
     );
 
     expect(result, isTrue);

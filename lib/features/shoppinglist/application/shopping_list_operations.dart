@@ -1,6 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
+
+part 'shopping_list_operations.g.dart';
 
 /// Defines shopping list item match key typedef.
 typedef ShoppingListItemMatchKey = ({
@@ -25,29 +27,20 @@ typedef ShoppingListSourceItem = ({
   double unitPrice,
 });
 
-/// The active shopping list item keys provider.
-final activeShoppingListItemKeysProvider =
-    Provider<Set<ShoppingListItemMatchKey>>((ref) {
-      final items = ref.watch(shoppingListControllerProvider).asData?.value;
-      if (items == null) {
-        return const <ShoppingListItemMatchKey>{};
-      }
-      return computeActiveShoppingListItemKeys(items);
-    });
+/// Active product keys for integrations that add shopping entries.
+@riverpod
+Set<ShoppingListItemMatchKey> activeShoppingListItemKeys(Ref ref) {
+  final items = ref.watch(shoppingListControllerProvider).asData?.value;
+  return computeActiveShoppingListItemKeys(items ?? []);
+}
 
-/// Whether source item in active shopping list provider.
-final Provider<bool> Function(ShoppingListSourceItem)
-isSourceItemInActiveShoppingListProvider =
-    Provider.family<bool, ShoppingListSourceItem>((ref, item) {
-      return ref.watch(
-        activeShoppingListItemKeysProvider.select(
-          (keys) => isSourceItemInActiveShoppingList(
-            item: item,
-            activeItemKeys: keys,
-          ),
-        ),
-      );
-    });
+/// Whether an external product is already on the list.
+@riverpod
+bool sourceItemInActiveShoppingList(Ref ref, ShoppingListSourceItem item) =>
+    isSourceItemInActiveShoppingList(
+      item: item,
+      activeItemKeys: ref.watch(activeShoppingListItemKeysProvider),
+    );
 
 /// Add source item to shopping list.
 Future<bool> addSourceItemToShoppingList({
@@ -77,7 +70,7 @@ Set<ShoppingListItemMatchKey> computeActiveShoppingListItemKeys(
   List<ShoppingListItem> items,
 ) {
   return items
-      .where((item) => item.quantity > 0)
+      .where((item) => item.quantity > 0 && !item.isArchived)
       .map(
         (item) => (
           normalizedName: normalizeShoppingListValue(item.normalizedName),

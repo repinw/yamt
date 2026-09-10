@@ -6634,6 +6634,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'F'**
   String get caloriesFatShortLetter;
+
+  /// No description provided for @shoppingListSuggestionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestions'**
+  String get shoppingListSuggestionsTitle;
+
+  /// No description provided for @shoppingListSuggestionsExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock and frequently purchased products from your receipts.'**
+  String get shoppingListSuggestionsExplanation;
+
+  /// No description provided for @shoppingListSuggestionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No suggestions yet. Low stock or repeated purchases on different receipts will appear here.'**
+  String get shoppingListSuggestionsEmpty;
+
+  /// No description provided for @shoppingListSuggestionsRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload suggestions'**
+  String get shoppingListSuggestionsRetry;
+
+  /// No description provided for @shoppingListConsumptionDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumed on {count} days'**
+  String shoppingListConsumptionDays(int count);
+
+  /// No description provided for @shoppingListOpenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'To buy'**
+  String get shoppingListOpenTitle;
+
+  /// No description provided for @shoppingListDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get shoppingListDoneTitle;
+
+  /// No description provided for @shoppingListLowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock'**
+  String get shoppingListLowStock;
+
+  /// No description provided for @shoppingListPurchaseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchased {count} times'**
+  String shoppingListPurchaseCount(int count);
+
+  /// No description provided for @shoppingListSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring item'**
+  String get shoppingListSchedule;
+
+  /// No description provided for @shoppingListScheduleExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Due items are added when you open this list. Items already on the list are not duplicated.'**
+  String get shoppingListScheduleExplanation;
+
+  /// No description provided for @shoppingListScheduleDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval in days'**
+  String get shoppingListScheduleDays;
+
+  /// No description provided for @shoppingListFirstDue.
+  ///
+  /// In en, this message translates to:
+  /// **'First due'**
+  String get shoppingListFirstDue;
+
+  /// No description provided for @shoppingListStopSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop repeating'**
+  String get shoppingListStopSchedule;
+
+  /// No description provided for @shoppingListSaveSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get shoppingListSaveSettings;
+
+  /// No description provided for @shoppingListNumberRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number from 1 to {max}.'**
+  String shoppingListNumberRange(int max);
+
+  /// No description provided for @shoppingListProductSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Item settings'**
+  String get shoppingListProductSettings;
+
+  /// No description provided for @shoppingListRemoveFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove favorite'**
+  String get shoppingListRemoveFavorite;
+
+  /// No description provided for @shoppingListAddFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as favorite'**
+  String get shoppingListAddFavorite;
+
+  /// No description provided for @shoppingListSettingsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save settings.'**
+  String get shoppingListSettingsFailed;
+
+  /// No description provided for @shoppingListSavedProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites & recurring items'**
+  String get shoppingListSavedProducts;
+
+  /// No description provided for @shoppingListRepeatSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{quantity} items every {days} days'**
+  String shoppingListRepeatSummary(int quantity, int days);
+
+  /// No description provided for @shoppingListNextDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due: {date}'**
+  String shoppingListNextDue(String date);
+
+  /// No description provided for @shoppingListFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get shoppingListFavorite;
+
+  /// No description provided for @shoppingListOutOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of stock'**
+  String get shoppingListOutOfStock;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

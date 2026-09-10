@@ -1752,5 +1752,68 @@
   "diaryFoodFeedbackClose": "Close nutrition feedback",
   "caloriesProteinShortLetter": "P",
   "caloriesCarbsShortLetter": "C",
-  "caloriesFatShortLetter": "F"
+  "caloriesFatShortLetter": "F",
+  "shoppingListSuggestionsTitle": "Suggestions",
+  "shoppingListSuggestionsExplanation": "Low stock and frequently purchased products from your receipts.",
+  "shoppingListSuggestionsEmpty": "No suggestions yet. Low stock or repeated purchases on different receipts will appear here.",
+  "shoppingListSuggestionsRetry": "Reload suggestions",
+  "shoppingListConsumptionDays": "Consumed on {count} days",
+  "shoppingListOpenTitle": "To buy",
+  "shoppingListDoneTitle": "Done",
+  "@shoppingListConsumptionDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListLowStock": "Low stock",
+  "shoppingListPurchaseCount": "Purchased {count} times",
+  "shoppingListSchedule": "Recurring item",
+  "shoppingListScheduleExplanation": "Due items are added when you open this list. Items already on the list are not duplicated.",
+  "shoppingListScheduleDays": "Interval in days",
+  "shoppingListFirstDue": "First due",
+  "shoppingListStopSchedule": "Stop repeating",
+  "shoppingListSaveSettings": "Save",
+  "shoppingListNumberRange": "Enter a number from 1 to {max}.",
+  "shoppingListProductSettings": "Item settings",
+  "shoppingListRemoveFavorite": "Remove favorite",
+  "shoppingListAddFavorite": "Save as favorite",
+  "shoppingListSettingsFailed": "Could not save settings.",
+  "shoppingListSavedProducts": "Favorites & recurring items",
+  "shoppingListRepeatSummary": "{quantity} items every {days} days",
+  "shoppingListNextDue": "Next due: {date}",
+  "shoppingListFavorite": "Favorite",
+  "@shoppingListPurchaseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@shoppingListNumberRange": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@shoppingListRepeatSummary": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@shoppingListNextDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListOutOfStock": "Out of stock"
 }

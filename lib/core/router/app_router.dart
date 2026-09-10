@@ -25,6 +25,7 @@ import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/inventory_action_fab.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
+import 'package:yamt/features/inventory/application/inventory_shopping_suggestions.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
@@ -38,6 +39,7 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/'
     'kitchen_utensils_page.dart';
 import 'package:yamt/features/meal_templates/presentation/'
@@ -65,7 +67,6 @@ import 'package:yamt/features/scanner/presentation/'
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
-import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 
 part 'app_router.g.dart';
 
@@ -110,6 +111,7 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     manualProductRecentItemsService,
     preparedMealImagePicker,
     inventoryActivityEvents,
+    inventoryShoppingSuggestions,
     ReceiptCaptureFlowController,
     ReceiptBatchFlowController,
     receiptCameraSupported,
@@ -255,7 +257,7 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.homeShopping,
-        builder: (context, state) => const ShoppingListPage(),
+        builder: (context, state) => const InventoryShoppingListPage(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

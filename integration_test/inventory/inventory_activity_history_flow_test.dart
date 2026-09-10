@@ -89,7 +89,7 @@ class _StaticPreparedMealsController extends PreparedMealsController {
 
 class _StaticShoppingListController extends ShoppingListController {
   @override
-  FutureOr<List<ShoppingListItem>> build() {
+  Future<List<ShoppingListItem>> build() async {
     return const <ShoppingListItem>[];
   }
 }

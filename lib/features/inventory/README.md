@@ -29,6 +29,7 @@ discard events, and inventory-backed calorie handoff context.
 Other features may consume these public Inventory entry points:
 
 - `InventoryPage`
+- `InventoryShoppingListPage` (finished shopping surface with stock suggestions)
 - `InventoryItemsController`
 - `PreparedMealsController`
 - `PreparedMealTemplatesController`
@@ -62,6 +63,25 @@ Activity events are append-only household timeline entries stored under the
 effective inventory owner. They record shared stock facts only: actor, item,
 amount, timestamp, and before/after stock. Personal calorie diary data remains
 owned by `calories` and is not exposed through the activity timeline.
+
+## Shopping Recommendations
+
+- `domain/inventory_replenishment.dart` aggregates product batches by brand and
+  product-name matching. Exact names and sufficiently specific whole-word
+  variants such as `Eiweißbrot` and `Eiweißbrot - Proteinkorn` share their stock
+  total. Partial words and short generic names do not match. Distinct nonempty
+  receipt IDs within 180 days are purchase evidence; manual additions and
+  duplicate rows on one receipt do not inflate frequency. Only retained
+  inventory records can contribute receipt evidence.
+- Remaining amounts are normalized to pack equivalents across all batches.
+  At most 0.25 packs with activity in the last 60 days triggers replenishment.
+  Empty stock is labeled separately from a small positive remaining amount. Additional
+  full batches prevent false low-stock suggestions. Deposits, discounts and
+  future entries are excluded. Low stock sorts before purchase frequency.
+- `application/inventory_shopping_suggestions.dart` owns the live repository
+  input and adapts these facts to shoppinglist's public suggestion model.
+- `InventoryShoppingListPage` injects that source and retry action into the
+  finished shopping page. Shoppinglist does not import inventory.
 
 ## Accepted Dependencies
 

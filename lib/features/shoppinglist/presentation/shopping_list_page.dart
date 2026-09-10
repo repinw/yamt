@@ -1,23 +1,55 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
-    'shopping_list_content.dart';
+    'shopping_list_content/shopping_list_content.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_quick_add_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list page.
-class ShoppingListPage extends ConsumerWidget {
+@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
+class ShoppingListPage extends ConsumerStatefulWidget {
   /// The shopping list page.
   const ShoppingListPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ShoppingListPage> createState() => _ShoppingListPageState();
+}
+
+class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
+  late final AppLifecycleListener _lifecycle;
+  late final Timer _scheduleTimer;
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(onResume: _processDue);
+    _scheduleTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _processDue(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scheduleTimer.cancel();
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  void _processDue() =>
+      unawaited(ref.read(shoppingListControllerProvider.notifier).processDue());
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final currency = NumberFormat.currency(locale: locale, symbol: '€');
@@ -33,13 +65,14 @@ class ShoppingListPage extends ConsumerWidget {
         ),
         title: Text(l10n.homeShopping),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openShoppingAddDialog(
           context: context,
           controller: controller,
           l10n: l10n,
         ),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: Text(l10n.shoppingListAddAction),
       ),
       body: itemsAsync.when(
         data: (items) => ShoppingListContent(

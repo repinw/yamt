@@ -8,16 +8,16 @@ part of 'shopping_list_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Defines shopping list controller.
+/// Owns realtime list state and serialized, optimistic mutations.
 
 @ProviderFor(ShoppingListController)
 final shoppingListControllerProvider = ShoppingListControllerProvider._();
 
-/// Defines shopping list controller.
+/// Owns realtime list state and serialized, optimistic mutations.
 final class ShoppingListControllerProvider
     extends
         $AsyncNotifierProvider<ShoppingListController, List<ShoppingListItem>> {
-  /// Defines shopping list controller.
+  /// Owns realtime list state and serialized, optimistic mutations.
   ShoppingListControllerProvider._()
     : super(
         from: null,
@@ -38,9 +38,9 @@ final class ShoppingListControllerProvider
 }
 
 String _$shoppingListControllerHash() =>
-    r'951da16403adcc567363fde03cf7922e40ab7dd2';
+    r'b36ff91f603c1dd8cd26a52bfa0a0a1ecd045a86';
 
-/// Defines shopping list controller.
+/// Owns realtime list state and serialized, optimistic mutations.
 
 abstract class _$ShoppingListController
     extends $AsyncNotifier<List<ShoppingListItem>> {

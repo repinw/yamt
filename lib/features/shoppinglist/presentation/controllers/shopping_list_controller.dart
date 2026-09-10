@@ -1,385 +1,230 @@
 import 'dart:async';
 import 'dart:developer' show log;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_subscription.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_addition.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_schedule.dart';
 
 part 'shopping_list_controller.g.dart';
 
-const _controllerLogName = 'ShoppingListController';
-
-/// Defines shopping list controller.
+/// Owns realtime list state and serialized, optimistic mutations.
 @riverpod
 class ShoppingListController extends _$ShoppingListController {
-  static const _uuid = Uuid();
-
-  Future<void> Function()? _cancelItemsSubscription;
-  final _mutationQueue = SerializedMutationQueue();
+  final _subscription = ShoppingListSubscription();
+  final _queue = SerializedMutationQueue();
+  final _addition = const ShoppingListAddition();
 
   @override
-  FutureOr<List<ShoppingListItem>> build() {
-    ref
-      ..watch(shoppingListRepositoryProvider)
-      ..onDispose(() {
-        unawaited(_disposeRealtimeSubscription());
-      });
-    return _restartRealtimeSubscription();
-  }
-
-  /// Refresh.
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    final nextState = await AsyncValue.guard(_restartRealtimeSubscription);
-    if (!ref.mounted) {
-      return;
+  Future<List<ShoppingListItem>> build() async {
+    final repository = ref.watch(shoppingListRepositoryProvider);
+    ref.onDispose(() => unawaited(_subscription.cancel()));
+    final items = await _subscription.start(
+      repository,
+      onData: _onData,
+      onError: _onError,
+    );
+    if (!ref.mounted) return items;
+    final due = renewDueShoppingItems(items, DateTime.now());
+    if (due == null) return items;
+    try {
+      return await repository.saveAll(due) ? due : items;
+    } on Object {
+      return items;
     }
-    state = nextState;
   }
 
-  /// Add item.
+  /// Reloads the current list.
+  Future<void> refresh() async {
+    ref.invalidateSelf();
+    await future;
+  }
+
+  /// Adds or merges a product.
   Future<bool> addItem({
     required String name,
     String? brand,
     int quantity = 1,
-    double estimatedUnitPrice = 0.0,
+    double estimatedUnitPrice = 0,
   }) {
-    final input = _parseAddItemInput(
+    final input = _addition.parseAddItemInput(
       name: name,
       brand: brand,
       quantity: quantity,
       estimatedUnitPrice: estimatedUnitPrice,
     );
-    if (input == null) {
-      return Future<bool>.value(false);
-    }
-
-    return _runListMutation((previousItems) {
-      return _mergeAddedItem(
-        previousItems: previousItems,
-        input: input,
-        generatedId: _nextId(),
-      );
-    });
+    if (input == null) return Future.value(false);
+    return _mutate((items) => _add(items, input));
   }
 
-  /// Adds multiple name-only items in one persisted mutation.
+  /// Adds several names in one persisted mutation.
   Future<bool> addItemsByNames(Iterable<String> names) {
     final inputs = names
         .map(
-          (name) => _parseAddItemInput(
+          (name) => _addition.parseAddItemInput(
             name: name,
             quantity: 1,
             estimatedUnitPrice: 0,
           ),
         )
-        .whereType<_AddShoppingListItemInput>()
-        .toList(growable: false);
-    if (inputs.isEmpty) {
-      return Future<bool>.value(false);
-    }
-
-    return _runListMutation((previousItems) {
-      var nextItems = previousItems;
-      for (final input in inputs) {
-        nextItems = _mergeAddedItem(
-          previousItems: nextItems,
-          input: input,
-          generatedId: _nextId(),
-        );
-      }
-      return nextItems;
-    });
+        .whereType<ShoppingListAddInput>()
+        .toList();
+    if (inputs.isEmpty) return Future.value(false);
+    return _mutate((items) => inputs.fold<List<ShoppingListItem>>(items, _add));
   }
 
-  /// Remove item.
-  Future<bool> removeItem(String itemId) {
-    return _runListMutation((previousItems) {
-      final nextItems = previousItems
-          .where((item) => item.id != itemId)
-          .toList(growable: false);
-      if (nextItems.length == previousItems.length) {
-        return null;
-      }
-      return nextItems;
-    });
+  List<ShoppingListItem> _add(
+    List<ShoppingListItem> items,
+    ShoppingListAddInput input,
+  ) => _addition.mergeAddedItem(
+    previousItems: items,
+    input: input,
+    generatedId: const Uuid().v4(),
+  );
+
+  /// Removes a list entry while retaining favorite and schedule settings.
+  Future<bool> removeItem(String id) =>
+      _mutate((items) => removeShoppingItems(items, (item) => item.id == id));
+
+  /// Increases the requested quantity.
+  Future<bool> incrementQuantity(String id) => _update(
+    id,
+    (item) => item.copyWith(quantity: item.quantity + 1, isArchived: false),
+  );
+
+  /// Reduces the quantity; zero keeps the entry crossed off.
+  Future<bool> decrementQuantity(String id) => _update(
+    id,
+    (item) => item.copyWith(quantity: (item.quantity - 1).clamp(0, 999999)),
+  );
+
+  /// Resolves a set of shopping entries after purchasing or cooking.
+  Future<bool> resolveItemsByIds(Iterable<String> ids) {
+    final selected = ids.map((id) => id.trim()).toSet();
+    return _mutate(
+      (items) => removeShoppingItems(
+        [
+          for (final item in items)
+            if (selected.contains(item.id) && item.quantity > 1)
+              item.copyWith(quantity: item.quantity - 1)
+            else
+              item,
+        ],
+        (item) =>
+            selected.contains(item.id) &&
+            items.firstWhere((original) => original.id == item.id).quantity <=
+                1,
+      ),
+    );
   }
 
-  /// Increment quantity.
-  Future<bool> incrementQuantity(String itemId) {
-    return _runListMutation(_buildQuantityMutation(itemId, (q) => q + 1));
-  }
+  /// Clears completed entries without deleting saved products.
+  Future<bool> clearCrossedOffItems() => _mutate(
+    (items) => removeShoppingItems(
+      items,
+      (item) => item.quantity == 0 && !item.isArchived,
+    ),
+  );
 
-  /// Decrement quantity.
-  Future<bool> decrementQuantity(String itemId) {
-    return _runListMutation(_buildQuantityMutation(itemId, (q) => q - 1));
-  }
+  /// Toggles persistence in the favorites section.
+  Future<bool> toggleFavorite(String id) =>
+      _update(id, (item) => item.copyWith(isFavorite: !item.isFavorite));
 
-  /// Decrements or removes several items in one persisted mutation.
-  Future<bool> resolveItemsByIds(Iterable<String> itemIds) {
-    final ids = itemIds.map((id) => id.trim()).where((id) => id.isNotEmpty);
-    final itemIdsToResolve = ids.toSet();
-    if (itemIdsToResolve.isEmpty) {
-      return Future<bool>.value(true);
-    }
-    return _runListMutation((previousItems) {
-      var changed = false;
-      final nextItems = <ShoppingListItem>[];
-      for (final item in previousItems) {
-        if (!itemIdsToResolve.contains(item.id)) {
-          nextItems.add(item);
-          continue;
-        }
-        changed = true;
-        if (item.quantity > 1) {
-          nextItems.add(item.copyWith(quantity: item.quantity - 1));
-        }
-      }
-      return changed ? nextItems : null;
-    });
-  }
-
-  /// Clear crossed off items.
-  Future<bool> clearCrossedOffItems() {
-    return _runListMutation((previousItems) {
-      final nextItems = previousItems
-          .where((item) => item.quantity > 0)
-          .toList(growable: false);
-      if (nextItems.length == previousItems.length) {
-        return null;
-      }
-      return nextItems;
-    });
-  }
-
-  _AddShoppingListItemInput? _parseAddItemInput({
-    required String name,
+  /// Configures recurrence; zero disables it.
+  Future<bool> setSchedule(
+    String id, {
+    required int days,
     required int quantity,
-    required double estimatedUnitPrice,
-    String? brand,
+    DateTime? firstDue,
   }) {
-    final safeQuantity = quantity < 1 ? 1 : quantity;
-    final safePrice = estimatedUnitPrice < 0 ? 0.0 : estimatedUnitPrice;
-    final trimmedName = name.trim();
-    final trimmedBrand = brand?.trim();
-    final safeBrand = (trimmedBrand == null || trimmedBrand.isEmpty)
-        ? null
-        : trimmedBrand;
-    final normalizedName = _normalize(trimmedName);
-    if (normalizedName.isEmpty) {
-      return null;
+    if (days < 0 || days > 365 || quantity < 1 || quantity > 999) {
+      return Future.value(false);
     }
-
-    return _AddShoppingListItemInput(
-      name: trimmedName,
-      brand: safeBrand,
-      normalizedName: normalizedName,
-      normalizedBrand: _normalize(safeBrand ?? ''),
-      quantity: safeQuantity,
-      estimatedUnitPrice: safePrice,
+    return _update(
+      id,
+      (item) => configureShoppingSchedule(
+        item,
+        days: days,
+        quantity: quantity,
+        firstDue: firstDue,
+        now: DateTime.now(),
+      ),
     );
   }
 
-  List<ShoppingListItem> _mergeAddedItem({
-    required List<ShoppingListItem> previousItems,
-    required _AddShoppingListItemInput input,
-    required String generatedId,
-  }) {
-    final existingIndex = previousItems.indexWhere((item) {
-      return item.normalizedName == input.normalizedName &&
-          item.normalizedBrand == input.normalizedBrand;
-    });
-    if (existingIndex < 0) {
-      return <ShoppingListItem>[
-        ...previousItems,
-        ShoppingListItem(
-          id: generatedId,
-          name: input.name,
-          brand: input.brand,
-          normalizedName: input.normalizedName,
-          normalizedBrand: input.normalizedBrand,
-          quantity: input.quantity,
-          estimatedUnitPrice: input.estimatedUnitPrice,
-        ),
-      ];
-    }
+  /// Re-adds a saved product without duplicating an existing active entry.
+  Future<bool> addSavedItem(String id) => _update(
+    id,
+    (item) => item.quantity > 0 && !item.isArchived
+        ? item
+        : item.copyWith(
+            quantity: item.repeatEveryDays > 0 ? item.repeatQuantity : 1,
+            isArchived: false,
+          ),
+  );
 
-    final nextItems = List<ShoppingListItem>.from(previousItems);
-    final current = nextItems[existingIndex];
-    nextItems[existingIndex] = current.copyWith(
-      quantity: current.quantity + input.quantity,
-      estimatedUnitPrice: input.estimatedUnitPrice > 0
-          ? input.estimatedUnitPrice
-          : current.estimatedUnitPrice,
-    );
-    return nextItems;
-  }
+  /// Applies overdue schedules on resume and while the list is alive.
+  Future<bool> processDue() =>
+      _mutate((items) => renewDueShoppingItems(items, DateTime.now()));
 
-  List<ShoppingListItem>? Function(List<ShoppingListItem>)
-  _buildQuantityMutation(String itemId, int Function(int quantity) transform) {
-    return (previousItems) {
-      final index = previousItems.indexWhere((item) => item.id == itemId);
-      if (index < 0) {
-        return null;
-      }
+  Future<bool> _update(
+    String id,
+    ShoppingListItem Function(ShoppingListItem) update,
+  ) => _mutate((items) {
+    if (!items.any((item) => item.id == id)) return null;
+    return [
+      for (final item in items)
+        if (item.id == id) update(item) else item,
+    ];
+  });
 
-      final nextItems = List<ShoppingListItem>.from(previousItems);
-      final item = nextItems[index];
-      final nextQuantity = transform(item.quantity);
-      final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
-      nextItems[index] = item.copyWith(quantity: safeQuantity);
-      return nextItems;
-    };
-  }
+  Future<bool> _mutate(
+    List<ShoppingListItem>? Function(List<ShoppingListItem>) change,
+  ) => _queue.run<bool>(
+    operation: () async {
+      final items = state.asData?.value ?? await future;
+      if (!ref.mounted) return false;
+      final next = change(items);
+      if (next == null) return true;
+      return _save(items, next);
+    },
+    fallbackValue: false,
+    onError: _logError,
+  );
 
-  Future<bool> _runListMutation(
-    List<ShoppingListItem>? Function(List<ShoppingListItem> previousItems)
-    mutation,
-  ) {
-    return _runSerializedMutation(() => _mutateItems(mutation));
-  }
-
-  Future<bool> _mutateItems(
-    List<ShoppingListItem>? Function(List<ShoppingListItem> previousItems)
-    mutation,
+  Future<bool> _save(
+    List<ShoppingListItem> previous,
+    List<ShoppingListItem> next,
   ) async {
-    final previousItems = await _currentItems();
-    final nextItems = mutation(previousItems);
-    if (nextItems == null) {
-      return true;
-    }
-    return _saveItems(previousItems: previousItems, nextItems: nextItems);
-  }
-
-  Future<List<ShoppingListItem>> _restartRealtimeSubscription() async {
-    final initialItems = Completer<List<ShoppingListItem>>();
     final repository = ref.read(shoppingListRepositoryProvider);
-    await _disposeRealtimeSubscription();
-
-    final subscription = repository.watchAll().listen(
-      (items) {
-        if (!initialItems.isCompleted) {
-          initialItems.complete(items);
-          return;
-        }
-        _onRealtimeItems(items);
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (!initialItems.isCompleted) {
-          initialItems.completeError(error, stackTrace);
-          return;
-        }
-        _onRealtimeError(error, stackTrace);
-      },
-      onDone: () {
-        if (!initialItems.isCompleted) {
-          initialItems.complete(const <ShoppingListItem>[]);
-        }
-      },
-    );
-    _cancelItemsSubscription = subscription.cancel;
-    return initialItems.future;
-  }
-
-  Future<void> _disposeRealtimeSubscription() async {
-    final cancelSubscription = _cancelItemsSubscription;
-    _cancelItemsSubscription = null;
-    if (cancelSubscription != null) {
-      await cancelSubscription();
-    }
-  }
-
-  void _onRealtimeItems(List<ShoppingListItem> items) {
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncData(items);
-  }
-
-  void _onRealtimeError(Object error, StackTrace stackTrace) {
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncError(error, stackTrace);
-  }
-
-  Future<List<ShoppingListItem>> _currentItems() async {
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      return currentData;
-    }
-    return future;
-  }
-
-  Future<bool> _saveItems({
-    required List<ShoppingListItem> previousItems,
-    required List<ShoppingListItem> nextItems,
-  }) async {
-    if (ref.mounted) {
-      state = AsyncData(nextItems);
-    }
-
-    final repository = ref.read(shoppingListRepositoryProvider);
+    state = AsyncData(next);
     try {
-      final saved = await repository.saveAll(nextItems);
-      if (!saved && ref.mounted) {
-        state = AsyncData(previousItems);
-      }
+      final saved = await repository.saveAll(next);
+      if (!saved && ref.mounted) state = AsyncData(previous);
       return saved;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to persist shopping list mutation.',
-        name: _controllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      if (ref.mounted) {
-        state = AsyncData(previousItems);
-      }
+    } on Object catch (error, stack) {
+      _logError(error, stack);
+      if (ref.mounted) state = AsyncData(previous);
       return false;
     }
   }
 
-  Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
-    return _mutationQueue.run<bool>(
-      operation: mutation,
-      fallbackValue: false,
-      onError: (error, stackTrace) {
-        log(
-          'Unexpected shopping list mutation error.',
-          name: _controllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-      },
-    );
+  void _onData(List<ShoppingListItem> items) {
+    if (!ref.mounted) return;
+    state = AsyncData(items);
   }
 
-  String _normalize(String value) {
-    return value.trim().toLowerCase();
+  void _onError(Object error, StackTrace stack) {
+    if (ref.mounted) state = AsyncError(error, stack);
   }
 
-  String _nextId() {
-    return _uuid.v4();
-  }
-}
-
-class _AddShoppingListItemInput {
-  const _AddShoppingListItemInput({
-    required this.name,
-    required this.brand,
-    required this.normalizedName,
-    required this.normalizedBrand,
-    required this.quantity,
-    required this.estimatedUnitPrice,
-  });
-
-  final String name;
-  final String? brand;
-  final String normalizedName;
-  final String normalizedBrand;
-  final int quantity;
-  final double estimatedUnitPrice;
+  void _logError(Object error, StackTrace stack) => log(
+    'Shopping list mutation failed.',
+    name: 'ShoppingListController',
+    error: error,
+    stackTrace: stack,
+  );
 }

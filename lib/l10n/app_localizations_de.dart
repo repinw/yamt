@@ -3455,4 +3455,89 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesFatShortLetter => 'F';
+
+  @override
+  String get shoppingListSuggestionsTitle => 'Vorschläge';
+
+  @override
+  String get shoppingListSuggestionsExplanation => 'Fast leere Vorräte und häufig gekaufte Artikel aus deinen Belegen.';
+
+  @override
+  String get shoppingListSuggestionsEmpty => 'Noch keine Vorschläge. Sie erscheinen bei niedrigem Vorrat oder wiederholten Käufen auf verschiedenen Belegen.';
+
+  @override
+  String get shoppingListSuggestionsRetry => 'Vorschläge erneut laden';
+
+  @override
+  String shoppingListConsumptionDays(int count) {
+    return 'An $count Tagen verbraucht';
+  }
+
+  @override
+  String get shoppingListOpenTitle => 'Noch einkaufen';
+
+  @override
+  String get shoppingListDoneTitle => 'Erledigt';
+
+  @override
+  String get shoppingListLowStock => 'Fast leer';
+
+  @override
+  String shoppingListPurchaseCount(int count) {
+    return '$count× gekauft';
+  }
+
+  @override
+  String get shoppingListSchedule => 'Dauerauftrag';
+
+  @override
+  String get shoppingListScheduleExplanation => 'Fällige Artikel werden beim Öffnen dieser Liste wieder hinzugefügt. Bereits offene Artikel werden nicht verdoppelt.';
+
+  @override
+  String get shoppingListScheduleDays => 'Intervall in Tagen';
+
+  @override
+  String get shoppingListFirstDue => 'Erstmals am';
+
+  @override
+  String get shoppingListStopSchedule => 'Dauerauftrag beenden';
+
+  @override
+  String get shoppingListSaveSettings => 'Speichern';
+
+  @override
+  String shoppingListNumberRange(int max) {
+    return 'Bitte eine Zahl von 1 bis $max eingeben.';
+  }
+
+  @override
+  String get shoppingListProductSettings => 'Artikeleinstellungen';
+
+  @override
+  String get shoppingListRemoveFavorite => 'Favorit entfernen';
+
+  @override
+  String get shoppingListAddFavorite => 'Als Favorit speichern';
+
+  @override
+  String get shoppingListSettingsFailed => 'Einstellungen konnten nicht gespeichert werden.';
+
+  @override
+  String get shoppingListSavedProducts => 'Favoriten & Daueraufträge';
+
+  @override
+  String shoppingListRepeatSummary(int quantity, int days) {
+    return '$quantity Stück alle $days Tage';
+  }
+
+  @override
+  String shoppingListNextDue(String date) {
+    return 'Nächster Termin: $date';
+  }
+
+  @override
+  String get shoppingListFavorite => 'Favorit';
+
+  @override
+  String get shoppingListOutOfStock => 'Aufgebraucht';
 }

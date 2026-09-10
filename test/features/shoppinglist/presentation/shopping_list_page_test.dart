@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
@@ -9,9 +12,9 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/'
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_stats_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
 import '../support/fake_shopping_list_repository.dart';
 
+@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
 Widget _wrap(ProviderContainer container) {
   return UncontrolledProviderScope(
     container: container,
@@ -24,9 +27,17 @@ Widget _wrap(ProviderContainer container) {
   );
 }
 
-ProviderContainer _createContainer(FakeShoppingListRepository repository) {
+ProviderContainer _createContainer(
+  FakeShoppingListRepository repository, {
+  List<ShoppingSuggestion> suggestions = const [],
+}) {
   final container = ProviderContainer(
-    overrides: [shoppingListRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      shoppingListRepositoryProvider.overrideWithValue(repository),
+      shoppingSuggestionSourceProvider.overrideWith(
+        (ref) => AsyncData(suggestions),
+      ),
+    ],
   );
   addTearDown(container.dispose);
   addTearDown(repository.dispose);
@@ -48,7 +59,102 @@ Future<void> _addItem(
   await controller.addItem(name: name, brand: brand, quantity: quantity);
 }
 
+@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
 void main() {
+  testWidgets('adds a purchase suggestion once and hides it', (
+    tester,
+  ) async {
+    final repository = FakeShoppingListRepository();
+    final container = _createContainer(
+      repository,
+      suggestions: const [
+        ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
+      ],
+    );
+    await tester.pumpWidget(_wrap(container));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Purchased 2 times'), findsOneWidget);
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) => widget is IconButton && widget.tooltip == 'Add item',
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(repository.savedItems.single.name, 'Milk');
+    expect(repository.savedItems.single.brand, 'Farm');
+    expect(repository.savedItems.single.quantity, 1);
+    expect(find.textContaining('Purchased 2 times'), findsNothing);
+    expect(find.text('Milk'), findsOneWidget);
+  });
+
+  testWidgets('failed suggestion save restores suggestion and shows error', (
+    tester,
+  ) async {
+    final repository = FakeShoppingListRepository()
+      ..saveAllShouldFail = true
+      ..saveDelay = const Duration(milliseconds: 500);
+    final container = _createContainer(
+      repository,
+      suggestions: const [
+        ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
+      ],
+    );
+    await tester.pumpWidget(_wrap(container));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) => widget is IconButton && widget.tooltip == 'Add item',
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Purchased 2 times'), findsOneWidget);
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(
+      container.read(shoppingListControllerProvider).requireValue,
+      isEmpty,
+    );
+  });
+
+  testWidgets('fits narrow screens with large text in light and dark mode', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final container = _createContainer(FakeShoppingListRepository());
+    await container.read(shoppingListControllerProvider.future);
+    await _addItem(
+      container,
+      name: 'Whole grain bread with sunflower seeds',
+      quantity: 2,
+    );
+    for (final brightness in Brightness.values) {
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: ThemeData(brightness: brightness),
+            locale: const Locale('de'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
+            home: const ShoppingListPage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('shows empty state initially', (tester) async {
     final container = _createContainer(FakeShoppingListRepository());
 

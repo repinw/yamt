@@ -114,7 +114,7 @@ class _RecordingShoppingListController extends ShoppingListController {
   _addItemInput;
 
   @override
-  FutureOr<List<ShoppingListItem>> build() {
+  Future<List<ShoppingListItem>> build() async {
     return const <ShoppingListItem>[];
   }
 
