@@ -194,33 +194,19 @@ class CookingFlowIntroInventoryController
     required double amountPerPiece,
     required List<InventoryItem> inventoryItems,
   }) {
-    if (!_hasRow(index)) {
-      return;
-    }
-    final row = state.rows[index];
-    final requirement = cookingFlowParseInventoryRequirement(
-      row.amountLabel,
-      localeCode: state.localeCode,
-    );
-    if (requirement == null) {
-      return;
-    }
-    final selectedItems = selectedInventoryItems(
+    final target = _resolveUnitConflictTarget(
       index: index,
       inventoryItems: inventoryItems,
     );
-    final unitCode = cookingFlowSelectedUnitConflictCode(
-      selectedItems: selectedItems,
-      requirement: requirement,
-    );
-    if (unitCode == null) {
+    if (target == null) {
       return;
     }
-    final convertedAmount = requirement.amount * amountPerPiece;
+    final convertedAmount = target.requirement.amount * amountPerPiece;
     editRow(
       index: index,
-      row: row.copyWith(
-        amountLabel: '${formatCookingFlowDecimal(convertedAmount)} $unitCode',
+      row: target.row.copyWith(
+        amountLabel:
+            '${formatCookingFlowDecimal(convertedAmount)} ${target.unitCode}',
         isEdited: true,
       ),
     );
@@ -231,8 +217,36 @@ class CookingFlowIntroInventoryController
     required int index,
     required List<InventoryItem> inventoryItems,
   }) {
-    if (!_hasRow(index)) {
+    final target = _resolveUnitConflictTarget(
+      index: index,
+      inventoryItems: inventoryItems,
+    );
+    if (target == null) {
       return;
+    }
+    final rows = List<CookingFlowInventoryCheckRowData>.from(state.rows);
+    final resolutions = List<CookingFlowInventoryConflictResolution?>.from(
+      state.conflictResolutions,
+    );
+    rows[index] = target.row.copyWith(
+      amountLabel: '0 ${target.unitCode}',
+      isEdited: true,
+    );
+    resolutions[index] = CookingFlowInventoryConflictResolution.weighLater;
+    _updateState(rows: rows, conflictResolutions: resolutions);
+  }
+
+  ({
+    CookingFlowInventoryCheckRowData row,
+    CookingFlowInventoryRequirement requirement,
+    String unitCode,
+  })?
+  _resolveUnitConflictTarget({
+    required int index,
+    required List<InventoryItem> inventoryItems,
+  }) {
+    if (!_hasRow(index)) {
+      return null;
     }
     final row = state.rows[index];
     final requirement = cookingFlowParseInventoryRequirement(
@@ -240,7 +254,7 @@ class CookingFlowIntroInventoryController
       localeCode: state.localeCode,
     );
     if (requirement == null) {
-      return;
+      return null;
     }
     final selectedItems = selectedInventoryItems(
       index: index,
@@ -251,15 +265,9 @@ class CookingFlowIntroInventoryController
       requirement: requirement,
     );
     if (unitCode == null) {
-      return;
+      return null;
     }
-    final rows = List<CookingFlowInventoryCheckRowData>.from(state.rows);
-    final resolutions = List<CookingFlowInventoryConflictResolution?>.from(
-      state.conflictResolutions,
-    );
-    rows[index] = row.copyWith(amountLabel: '0 $unitCode', isEdited: true);
-    resolutions[index] = CookingFlowInventoryConflictResolution.weighLater;
-    _updateState(rows: rows, conflictResolutions: resolutions);
+    return (row: row, requirement: requirement, unitCode: unitCode);
   }
 
   /// Sets conflict resolution for a row.

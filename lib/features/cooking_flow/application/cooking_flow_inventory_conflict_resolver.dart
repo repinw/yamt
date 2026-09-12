@@ -1,25 +1,11 @@
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_amount_utils.dart';
-import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_parser_locale.dart';
+    'cooking_flow_inventory_requirement.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-/// Inventory amount required by one cookflow row.
-class CookingFlowInventoryRequirement {
-  /// Creates inventory requirement.
-  const CookingFlowInventoryRequirement({
-    required this.amount,
-    required this.unitCode,
-  });
-
-  /// Required normalized amount.
-  final double amount;
-
-  /// Required normalized unit code.
-  final String unitCode;
-}
+export 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_inventory_requirement.dart';
 
 /// Type of conflict between recipe requirement and selected inventory.
 enum CookingFlowInventoryConflictKind {
@@ -256,126 +242,6 @@ String? cookingFlowSelectedUnitConflictCode({
     }
   }
   return null;
-}
-
-/// Parses amount label into normalized inventory requirement.
-CookingFlowInventoryRequirement? cookingFlowParseInventoryRequirement(
-  String value, {
-  String? localeCode,
-}) {
-  final trimmed = cookingFlowStripInventoryPackageCountPrefix(value);
-  if (trimmed.isEmpty) {
-    return null;
-  }
-  final parserLocale = CookingFlowParserLocale.forLocaleCode(localeCode);
-
-  final match = RegExp(
-    r'^([\d.,\s/]+)(?:\s*([a-zA-ZäöüÄÖÜß]+))?$',
-  ).firstMatch(trimmed);
-  if (match == null) {
-    return null;
-  }
-
-  final rawAmount = parseCookingFlowQuantity(match.group(1)!);
-  if (rawAmount == null) {
-    return null;
-  }
-
-  final rawUnit = match.group(2)?.trim().toLowerCase();
-  if (parserLocale.isPieceUnit(rawUnit)) {
-    return CookingFlowInventoryRequirement(
-      amount: rawAmount,
-      unitCode: cookingFlowPieceUnitCode,
-    );
-  }
-  return switch (rawUnit) {
-    null || '' => CookingFlowInventoryRequirement(
-      amount: rawAmount,
-      unitCode: cookingFlowPieceUnitCode,
-    ),
-    'g' => CookingFlowInventoryRequirement(
-      amount: rawAmount,
-      unitCode: 'g',
-    ),
-    'kg' => CookingFlowInventoryRequirement(
-      amount: rawAmount * 1000,
-      unitCode: 'g',
-    ),
-    'mg' => CookingFlowInventoryRequirement(
-      amount: rawAmount / 1000,
-      unitCode: 'g',
-    ),
-    'ml' => CookingFlowInventoryRequirement(
-      amount: rawAmount,
-      unitCode: 'ml',
-    ),
-    'cl' => CookingFlowInventoryRequirement(
-      amount: rawAmount * 10,
-      unitCode: 'ml',
-    ),
-    'dl' => CookingFlowInventoryRequirement(
-      amount: rawAmount * 100,
-      unitCode: 'ml',
-    ),
-    'l' => CookingFlowInventoryRequirement(
-      amount: rawAmount * 1000,
-      unitCode: 'ml',
-    ),
-    _ => null,
-  };
-}
-
-/// Returns available selected inventory amount in requirement unit.
-double cookingFlowAvailableInventoryAmount({
-  required List<InventoryItem> selectedItems,
-  required CookingFlowInventoryRequirement requirement,
-}) {
-  var total = 0.0;
-  for (final item in selectedItems) {
-    if (requirement.unitCode == cookingFlowPieceUnitCode) {
-      if (item.usesAmountProgress && item.amountUnit?.code == 'pc') {
-        total += item.currentAmount;
-        continue;
-      }
-      total += item.quantity;
-      continue;
-    }
-
-    if (!item.usesAmountProgress ||
-        item.amountUnit?.code != requirement.unitCode) {
-      continue;
-    }
-    total += item.currentAmount;
-  }
-  return total;
-}
-
-/// Whether selected inventory can cover or compare with requirement unit.
-bool cookingFlowHasInventoryAmountCompatibleSelection({
-  required List<InventoryItem> selectedItems,
-  required CookingFlowInventoryRequirement requirement,
-}) {
-  for (final item in selectedItems) {
-    if (requirement.unitCode == cookingFlowPieceUnitCode) {
-      return true;
-    }
-    if (item.usesAmountProgress &&
-        item.amountUnit?.code == requirement.unitCode) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/// Formats inventory requirement amount.
-String cookingFlowFormatInventoryRequirementAmount({
-  required double amount,
-  required String unitCode,
-}) {
-  if (unitCode == cookingFlowPieceUnitCode) {
-    return formatCookingFlowDecimal(amount);
-  }
-  return '${formatCookingFlowDecimal(amount)}$unitCode';
 }
 
 List<CookingFlowInventoryAssignmentSelection> _countedSelections(

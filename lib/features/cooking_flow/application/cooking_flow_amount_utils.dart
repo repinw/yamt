@@ -38,9 +38,10 @@ double? _parseCookingFlowNumber(String value) {
 }
 
 /// Formats a decimal amount without trailing zero noise.
-String formatCookingFlowDecimal(double value) {
-  if (value == value.roundToDouble()) {
-    return value.round().toString();
+String formatCookingFlowDecimal(num value) {
+  final d = value.toDouble();
+  if (d == d.roundToDouble()) {
+    return d.round().toString();
   }
-  return value.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+  return d.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
 }

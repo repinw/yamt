@@ -126,6 +126,7 @@ class CookingFlowCookingPage extends ConsumerWidget {
                     l10n.cookflowCookingFallbackNoIngredients,
                 fallbackPrepPrefix: l10n.cookflowCookingFallbackPrepPrefix,
                 fallbackCookText: l10n.cookflowCookingFallbackCookText,
+                pieceUnit: l10n.inventoryItemEatSheetUnitPiece,
               ),
               localeCode: localeCode,
             ),

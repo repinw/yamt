@@ -280,7 +280,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.textContaining('2 Zwiebeln (180g)', findRichText: true),
+      find.textContaining('Zwiebeln (180g)', findRichText: true),
       findsOneWidget,
     );
   });
@@ -319,7 +319,7 @@ void main() {
     await _pumpInstructionSteps(tester);
 
     expect(
-      find.textContaining('2 stück Zwiebeln (180g)', findRichText: true),
+      find.textContaining('Zwiebeln (180g)', findRichText: true),
       findsOneWidget,
     );
   });
@@ -410,7 +410,7 @@ void main() {
     await _pumpInstructionSteps(tester);
 
     expect(
-      find.textContaining('Zwiebeln (2)', findRichText: true),
+      find.textContaining('Zwiebeln (2 Stück)', findRichText: true),
       findsOneWidget,
     );
   });

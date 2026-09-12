@@ -88,7 +88,7 @@ void main() {
 
     expect(
       steps.single.segments.where((segment) => segment.isHighlight).single.text,
-      'Tomatn (2)',
+      'Tomatn (2 Stück)',
     );
   });
 
@@ -106,15 +106,15 @@ void main() {
 
     expect(
       steps.single.segments.where((segment) => segment.isHighlight).single.text,
-      'Zwibel (1)',
+      'Zwibel (1 Stück)',
     );
   });
 
   test('fuzzy typo matching accepts one edit but rejects transposition', () {
     final cases = <({String instruction, String? highlight})>[
-      (instruction: 'Apfel schneiden.', highlight: 'Apfel (1)'),
-      (instruction: 'Apfe schneiden.', highlight: 'Apfe (1)'),
-      (instruction: 'Apxel schneiden.', highlight: 'Apxel (1)'),
+      (instruction: 'Apfel schneiden.', highlight: 'Apfel (1 Stück)'),
+      (instruction: 'Apfe schneiden.', highlight: 'Apfe (1 Stück)'),
+      (instruction: 'Apxel schneiden.', highlight: 'Apxel (1 Stück)'),
       (instruction: 'Afpel schneiden.', highlight: null),
     ];
 
@@ -163,7 +163,7 @@ void main() {
         steps.single.segments
             .where((segment) => segment.isHighlight)
             .map((segment) => segment.text),
-        <String>['Ei (2)', 'Öl (20 ml)'],
+        <String>['Ei (2 Stück)', 'Öl (20 ml)'],
       );
       expect(_plainText(steps.single), contains('ein Drittel'));
     },
@@ -223,10 +223,225 @@ void main() {
       steps.single.segments
           .where((segment) => segment.isHighlight)
           .map((segment) => segment.text),
-      <String>['rote Zwiebel (1)'],
+      <String>['rote Zwiebel (1 Stück)'],
     );
-    expect(_plainText(steps.single), 'rote Zwiebel (1) schneiden.');
+    expect(_plainText(steps.single), 'rote Zwiebel (1 Stück) schneiden.');
   });
+
+  test(
+    'replaces pre-existing different amount in instruction with required '
+    'piece amount',
+    () {
+      final steps = buildCookingFlowInstructionSteps(
+        template: _template(
+          recipeIngredients: const <String>['2 Zwiebeln'],
+          recipeInstructions: const <String>['1 Zwiebel fein wuerfeln.'],
+        ),
+        introDraft: null,
+        inventoryItems: const <InventoryItem>[],
+        text: _text,
+        localeCode: 'de',
+      );
+
+      expect(
+        steps.single.segments
+            .where((segment) => segment.isHighlight)
+            .single
+            .text,
+        'Zwiebel (2 Stück)',
+      );
+      expect(_plainText(steps.single), 'Zwiebel (2 Stück) fein wuerfeln.');
+    },
+  );
+
+  test(
+    'replaces pre-existing matching amount in instruction with required '
+    'piece amount',
+    () {
+      final steps = buildCookingFlowInstructionSteps(
+        template: _template(
+          recipeIngredients: const <String>['2 Zwiebeln'],
+          recipeInstructions: const <String>['2 Zwiebeln fein wuerfeln.'],
+        ),
+        introDraft: null,
+        inventoryItems: const <InventoryItem>[],
+        text: _text,
+        localeCode: 'de',
+      );
+
+      expect(
+        steps.single.segments
+            .where((segment) => segment.isHighlight)
+            .single
+            .text,
+        'Zwiebeln (2 Stück)',
+      );
+      expect(_plainText(steps.single), 'Zwiebeln (2 Stück) fein wuerfeln.');
+    },
+  );
+
+  test(
+    'replaces pre-existing weight amount in instruction when recipe '
+    'amount differs',
+    () {
+      final steps = buildCookingFlowInstructionSteps(
+        template: _template(
+          recipeIngredients: const <String>['800 g Hackfleisch'],
+          recipeInstructions: const <String>['500g Hackfleisch anbraten.'],
+        ),
+        introDraft: null,
+        inventoryItems: const <InventoryItem>[],
+        text: _text,
+        localeCode: 'de',
+      );
+
+      expect(
+        steps.single.segments
+            .where((segment) => segment.isHighlight)
+            .single
+            .text,
+        'Hackfleisch (800 g)',
+      );
+      expect(_plainText(steps.single), 'Hackfleisch (800 g) anbraten.');
+    },
+  );
+
+  test('does not duplicate trailing parenthesized amounts in instruction', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>['2 Zwiebeln'],
+        recipeInstructions: const <String>['Zwiebeln (2 Stück) fein wuerfeln.'],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+    );
+
+    expect(
+      steps.single.segments.where((segment) => segment.isHighlight).single.text,
+      'Zwiebeln (2 Stück)',
+    );
+    expect(_plainText(steps.single), 'Zwiebeln (2 Stück) fein wuerfeln.');
+  });
+
+  test('parses unicode vulgar fractions, ranges, and prefix qualifiers', () {
+    const instruction =
+        'Kartoffeln schaelen, Knoblauch pressen, '
+        'Zitrone auspressen und Salz zugeben.';
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>[
+          '½ Zitrone',
+          '1-2 Zehen Knoblauch',
+          'ca. 500 g Kartoffeln',
+          '1/4 TL Salz',
+        ],
+        recipeInstructions: const <String>[instruction],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+    );
+
+    final highlights = steps.single.segments
+        .where((segment) => segment.isHighlight)
+        .map((segment) => segment.text)
+        .toList();
+
+    expect(highlights, contains('Kartoffeln (500 g)'));
+    expect(highlights, contains('Knoblauch (1-2 Zehen)'));
+    expect(highlights, contains('Zitrone (1 Stück)'));
+    expect(highlights, contains('Salz (1/4 TL)'));
+  });
+
+  test('handles qualitative amounts without showing unknown amount', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>[
+          'etwas Salz',
+          'Olivenöl nach Geschmack',
+        ],
+        recipeInstructions: const <String>[
+          'Mit Salz und Olivenöl abschmecken.',
+        ],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+    );
+
+    final plain = _plainText(steps.single);
+    expect(plain, isNot(contains('unbekannt')));
+    final highlights = steps.single.segments
+        .where((segment) => segment.isHighlight)
+        .map((segment) => segment.text)
+        .toList();
+    expect(highlights, contains('Salz (etwas)'));
+    expect(highlights, contains('Olivenöl (nach Geschmack)'));
+  });
+
+  test('matches short words and irregular German plurals', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>[
+          '200 g Pilze',
+          '1 Ei',
+          '2 Knoblauchzehen',
+        ],
+        recipeInstructions: const <String>[
+          'Den Pilz putzen, die Eier trennen und den Knoblauch hacken.',
+        ],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+    );
+
+    final highlights = steps.single.segments
+        .where((segment) => segment.isHighlight)
+        .map((segment) => segment.text)
+        .toList();
+
+    expect(highlights, contains('Pilz (200 g)'));
+    expect(highlights, contains('Eier (1 Stück)'));
+    expect(highlights, contains('Knoblauch (2 Stück)'));
+  });
+
+  test(
+    'applies flow-local editedName and editedAmountLabel from introDraft',
+    () {
+      final steps = buildCookingFlowInstructionSteps(
+        template: _template(
+          recipeIngredients: const <String>['2 Zwiebeln'],
+          recipeInstructions: const <String>['Schalotten fein wuerfeln.'],
+        ),
+        introDraft: const CookingFlowIntroDraft(
+          rowStates: <CookingFlowIntroRowDraft>[
+            CookingFlowIntroRowDraft(
+              rawIngredient: '2 Zwiebeln',
+              editedName: 'Schalotten',
+              editedAmountLabel: '3 Stück',
+            ),
+          ],
+        ),
+        inventoryItems: const <InventoryItem>[],
+        text: _text,
+        localeCode: 'de',
+      );
+
+      expect(
+        steps.single.segments
+            .where((segment) => segment.isHighlight)
+            .single
+            .text,
+        'Schalotten (3 Stück)',
+      );
+    },
+  );
 }
 
 String _plainText(CookingFlowInstructionStep step) {

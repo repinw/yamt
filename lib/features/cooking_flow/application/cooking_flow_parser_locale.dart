@@ -1,14 +1,41 @@
-/// Normalized piece unit used inside cookflow parser output.
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_parser_locale_de.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_parser_locale_en.dart';
+
+/// Normalized unit code for piece-counted ingredients in cooking flow parsing.
 const String cookingFlowParserPieceUnitCode = 'pc';
 
-/// Locale-specific parser data for cookflow ingredient text.
+/// Known piece unit used inside cookflow inventory and ingredient drafts.
+const String cookingFlowPieceUnitCode = cookingFlowParserPieceUnitCode;
+
+/// Base amount unit tokens common across locales.
+const Set<String> commonAmountUnitTokens = <String>{
+  'g',
+  'kg',
+  'mg',
+  'ml',
+  'cl',
+  'dl',
+  'l',
+  cookingFlowParserPieceUnitCode,
+};
+
+/// Base piece unit tokens common across locales.
+const Set<String> commonPieceUnitTokens = <String>{
+  cookingFlowParserPieceUnitCode,
+};
+
+/// Locale-specific dictionary tokens for cooking flow ingredient matching.
 class CookingFlowParserLocale {
-  /// Creates parser locale data.
+  /// Creates a locale configuration for cooking flow parsing.
   const CookingFlowParserLocale({
     required this.amountUnitTokens,
     required this.pieceUnitTokens,
     required this.fuzzyInstructionStopWords,
     required this.fuzzyShortIngredientTokens,
+    this.defaultPieceUnitLabel = 'Stück',
+    this.irregularIngredientVariants = const <String, List<String>>{},
   });
 
   /// Resolves parser data for a locale code.
@@ -33,6 +60,13 @@ class CookingFlowParserLocale {
   /// Short ingredient tokens that are still meaningful.
   final Set<String> fuzzyShortIngredientTokens;
 
+  /// Default localized label for piece units when no specific measure label
+  /// exists.
+  final String defaultPieceUnitLabel;
+
+  /// Irregular ingredient noun forms mapping base/plural/compound forms.
+  final Map<String, List<String>> irregularIngredientVariants;
+
   /// Regex alternation for [amountUnitTokens].
   String get amountUnitPattern {
     return amountUnitTokens.map(RegExp.escape).join('|');
@@ -44,100 +78,105 @@ class CookingFlowParserLocale {
     return normalized != null && pieceUnitTokens.contains(normalized);
   }
 
+  /// Resolves morphological variants (singular, plural, irregular forms)
+  /// for [name].
+  List<String> resolveIngredientVariants(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) {
+      return const <String>[];
+    }
+
+    final lower = trimmed.toLowerCase();
+    final results = <String>{trimmed};
+
+    // Check irregular variants table.
+    final irregulars = irregularIngredientVariants[lower];
+    if (irregulars != null) {
+      for (final variant in irregulars) {
+        results.add(_matchCase(reference: trimmed, value: variant));
+      }
+    }
+
+    // Locale-specific inflection heuristics.
+    if (this == german || defaultPieceUnitLabel == 'Stück') {
+      _addGermanMorphologyVariants(trimmed, results);
+    } else if (this == english) {
+      _addEnglishMorphologyVariants(trimmed, results);
+    }
+
+    return results.toList(growable: false);
+  }
+
+  void _addGermanMorphologyVariants(String text, Set<String> results) {
+    final lower = text.toLowerCase();
+    // Plural ending with -n or -en -> singular.
+    if (lower.endsWith('n') && lower.length > 3) {
+      if (lower.endsWith('en') && lower.length > 4) {
+        // e.g. Tomaten -> Tomate, Karotten -> Karotte, Gurken -> Gurke
+        results.add(text.substring(0, text.length - 1));
+        // e.g. Möhren -> Möhre, Zwiebeln -> Zwiebel
+        if (!lower.endsWith('eln') && !lower.endsWith('ern')) {
+          results.add(text.substring(0, text.length - 2));
+        }
+      } else {
+        // e.g. Zwiebeln -> Zwiebel, Kartoffeln -> Kartoffel
+        results.add(text.substring(0, text.length - 1));
+      }
+    } else if (lower.endsWith('e') && lower.length > 3) {
+      // e.g. Zwiebel -> Zwiebeln, Tomate -> Tomaten, Pilze -> Pilz
+      results
+        ..add('${text}n')
+        ..add(text.substring(0, text.length - 1));
+    } else if (!lower.endsWith('s') && lower.length > 2) {
+      // e.g. Pilz -> Pilze
+      results.add('${text}e');
+    }
+  }
+
+  void _addEnglishMorphologyVariants(String text, Set<String> results) {
+    final lower = text.toLowerCase();
+    if (lower.endsWith('ies') && lower.length > 4) {
+      results.add('${text.substring(0, text.length - 3)}y');
+    } else if (lower.endsWith('es') && lower.length > 4) {
+      results.add(text.substring(0, text.length - 2));
+    } else if (lower.endsWith('s') && lower.length > 3) {
+      results.add(text.substring(0, text.length - 1));
+    } else {
+      results.add('${text}s');
+    }
+  }
+
+  static String _matchCase({
+    required String reference,
+    required String value,
+  }) {
+    if (reference.isEmpty || value.isEmpty) {
+      return value;
+    }
+    final first = reference[0];
+    if (first == first.toUpperCase()) {
+      return value[0].toUpperCase() + value.substring(1);
+    }
+    return value.toLowerCase();
+  }
+
   /// German parser data.
   static const german = CookingFlowParserLocale(
-    amountUnitTokens: <String>{
-      ..._commonAmountUnitTokens,
-      'el',
-      'tl',
-      'stück',
-      'stueck',
-      'stk',
-      'st',
-      'prise',
-      'prisen',
-      'bund',
-      'zehe',
-      'zehen',
-      'dose',
-      'dosen',
-      'packung',
-      'packungen',
-      'becher',
-      'bechern',
-      'tasse',
-      'tassen',
-    },
-    pieceUnitTokens: <String>{
-      ..._commonPieceUnitTokens,
-      'st',
-      'stk',
-      'stück',
-      'stueck',
-    },
-    fuzzyInstructionStopWords: <String>{
-      'das',
-      'den',
-      'der',
-      'die',
-      'ein',
-      'eine',
-      'einem',
-      'einen',
-      'einer',
-      'auch',
-      'in',
-      'mit',
-      'und',
-      'zu',
-    },
-    fuzzyShortIngredientTokens: <String>{
-      'ei',
-      'öl',
-    },
+    amountUnitTokens: germanAmountUnitTokens,
+    pieceUnitTokens: germanPieceUnitTokens,
+    fuzzyInstructionStopWords: germanFuzzyInstructionStopWords,
+    fuzzyShortIngredientTokens: germanFuzzyShortIngredientTokens,
+    irregularIngredientVariants: germanIrregularIngredientVariants,
   );
 
   /// English parser data.
   static const english = CookingFlowParserLocale(
-    amountUnitTokens: <String>{
-      ..._commonAmountUnitTokens,
-      'piece',
-      'pieces',
-      'tbsp',
-      'tablespoon',
-      'tablespoons',
-      'tsp',
-      'teaspoon',
-      'teaspoons',
-      'pinch',
-      'pinches',
-      'bunch',
-      'clove',
-      'cloves',
-      'can',
-      'cans',
-      'package',
-      'packages',
-      'cup',
-      'cups',
-    },
-    pieceUnitTokens: <String>{
-      ..._commonPieceUnitTokens,
-      'piece',
-      'pieces',
-    },
-    fuzzyInstructionStopWords: <String>{
-      'a',
-      'an',
-      'and',
-      'for',
-      'in',
-      'of',
-      'the',
-      'to',
-      'with',
-    },
-    fuzzyShortIngredientTokens: <String>{},
+    amountUnitTokens: englishAmountUnitTokens,
+    pieceUnitTokens: englishPieceUnitTokens,
+    fuzzyInstructionStopWords: englishFuzzyInstructionStopWords,
+    fuzzyShortIngredientTokens: englishFuzzyShortIngredientTokens,
+    defaultPieceUnitLabel: 'pieces',
+    irregularIngredientVariants: englishIrregularIngredientVariants,
   );
 
   /// Combined parser data for non-UI application paths without locale context.
@@ -158,20 +197,9 @@ class CookingFlowParserLocale {
       ...german.fuzzyShortIngredientTokens,
       ...english.fuzzyShortIngredientTokens,
     }),
+    irregularIngredientVariants: Map.unmodifiable(<String, List<String>>{
+      ...german.irregularIngredientVariants,
+      ...english.irregularIngredientVariants,
+    }),
   );
 }
-
-const Set<String> _commonAmountUnitTokens = <String>{
-  'g',
-  'kg',
-  'mg',
-  'ml',
-  'cl',
-  'dl',
-  'l',
-  cookingFlowParserPieceUnitCode,
-};
-
-const Set<String> _commonPieceUnitTokens = <String>{
-  cookingFlowParserPieceUnitCode,
-};

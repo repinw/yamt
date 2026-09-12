@@ -1,224 +1,27 @@
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_parser_locale.dart';
+    'cooking_flow_inventory_requirement.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_summary_ingredient_parser.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
-import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
-/// Known piece unit used inside cookflow ingredient drafts.
-const String cookingFlowPieceUnitCode = cookingFlowParserPieceUnitCode;
-
-/// Parsed ingredient label and amount label.
-class CookingFlowParsedIngredient {
-  /// Creates parsed ingredient.
-  const CookingFlowParsedIngredient({
-    required this.name,
-    required this.amountLabel,
-  });
-
-  /// Ingredient name without amount.
-  final String name;
-
-  /// Original amount label.
-  final String amountLabel;
-}
+export 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_summary_ingredient_parser.dart';
 
 /// Normalized amount requirement.
-class CookingFlowIngredientRequirement {
-  /// Creates requirement.
-  const CookingFlowIngredientRequirement({
-    required this.amount,
-    required this.unitCode,
-  });
-
-  /// Amount in normalized unit.
-  final double amount;
-
-  /// Normalized unit code.
-  final String unitCode;
-}
-
-/// Parses a recipe ingredient into amount/name parts.
-CookingFlowParsedIngredient? parseCookingFlowIngredient(
-  String ingredient, {
-  int selectedPortions = 1,
-  int basePortions = 1,
-  String? localeCode,
-}) {
-  final trimmed = ingredient.trim();
-  if (trimmed.isEmpty) {
-    return null;
-  }
-  final parserLocale = CookingFlowParserLocale.forLocaleCode(localeCode);
-
-  final requirement = const TemplateIngredientParser().parseRequirement(
-    ingredient: ingredient,
-    selectedPortions: selectedPortions,
-    basePortions: basePortions,
-  );
-  if (requirement != null) {
-    final fractionalPieceAmount =
-        requirement.unit.code == cookingFlowPieceUnitCode
-        ? _fractionalPieceAmountLabel(
-            ingredient: ingredient,
-            selectedPortions: selectedPortions,
-            basePortions: basePortions,
-          )
-        : null;
-    return CookingFlowParsedIngredient(
-      amountLabel:
-          fractionalPieceAmount ??
-          _requirementAmountLabel(
-            requirement,
-          ),
-      name: requirement.name,
-    );
-  }
-
-  final amountWithUnitMatch = RegExp(
-    '^('
-    r'\d+(?:[.,]\d+)?'
-    '(?:\\s?(?:${parserLocale.amountUnitPattern}))'
-    r')\s+(.+)$',
-    caseSensitive: false,
-  ).firstMatch(trimmed);
-  if (amountWithUnitMatch != null) {
-    return CookingFlowParsedIngredient(
-      amountLabel: amountWithUnitMatch.group(1)!.trim(),
-      name: amountWithUnitMatch.group(2)!.trim(),
-    );
-  }
-
-  final amountOnlyMatch = RegExp(
-    r'^(\d+(?:[.,]\d+)?)\s+(.+)$',
-  ).firstMatch(trimmed);
-  if (amountOnlyMatch != null) {
-    return CookingFlowParsedIngredient(
-      amountLabel: amountOnlyMatch.group(1)!.trim(),
-      name: amountOnlyMatch.group(2)!.trim(),
-    );
-  }
-
-  return null;
-}
-
-String? _fractionalPieceAmountLabel({
-  required String ingredient,
-  required int selectedPortions,
-  required int basePortions,
-}) {
-  if (selectedPortions < 1 || basePortions < 1) {
-    return null;
-  }
-  final match = RegExp(
-    r'^(\d+(?:[.,]\d+)?|\d+/\d+|\d+\s+\d+/\d+)\s+',
-  ).firstMatch(ingredient.trim());
-  final rawAmount = match?.group(1);
-  if (rawAmount == null) {
-    return null;
-  }
-  final parsedAmount = parseCookingFlowQuantity(rawAmount);
-  if (parsedAmount == null) {
-    return null;
-  }
-  final scaledAmount = parsedAmount * selectedPortions / basePortions;
-  if (scaledAmount == scaledAmount.roundToDouble()) {
-    return null;
-  }
-  return formatCookingFlowDecimal(scaledAmount);
-}
-
-String _requirementAmountLabel(TemplateIngredientRequirement requirement) {
-  final packageCountLabel = requirement.packageCountLabel?.trim();
-  if (packageCountLabel?.isNotEmpty == true &&
-      requirement.unit.code != cookingFlowPieceUnitCode) {
-    return '$packageCountLabel ${requirement.amount}${requirement.unit.code}';
-  }
-  if (requirement.unit.code == cookingFlowPieceUnitCode) {
-    return requirement.amount.toString();
-  }
-  return '${requirement.amount} ${requirement.unit.code}';
-}
+typedef CookingFlowIngredientRequirement = CookingFlowInventoryRequirement;
 
 /// Parses amount labels into normalized requirements.
 CookingFlowIngredientRequirement? parseCookingFlowIngredientRequirement(
   String value, {
   String? localeCode,
 }) {
-  final trimmed = _stripPackageCountPrefix(value);
-  if (trimmed.isEmpty) {
-    return null;
-  }
-  final parserLocale = CookingFlowParserLocale.forLocaleCode(localeCode);
-
-  final match = RegExp(
-    r'^([\d.,\s/]+)(?:\s*([a-zA-ZäöüÄÖÜß]+))?$',
-  ).firstMatch(trimmed);
-  if (match == null) {
-    return null;
-  }
-
-  final rawAmount = parseCookingFlowQuantity(match.group(1)!);
-  if (rawAmount == null) {
-    return null;
-  }
-
-  final rawUnit = match.group(2)?.trim().toLowerCase();
-  if (parserLocale.isPieceUnit(rawUnit)) {
-    return CookingFlowIngredientRequirement(
-      amount: rawAmount,
-      unitCode: cookingFlowPieceUnitCode,
-    );
-  }
-  return switch (rawUnit) {
-    null || '' => CookingFlowIngredientRequirement(
-      amount: rawAmount,
-      unitCode: cookingFlowPieceUnitCode,
-    ),
-    'g' => CookingFlowIngredientRequirement(
-      amount: rawAmount,
-      unitCode: 'g',
-    ),
-    'kg' => CookingFlowIngredientRequirement(
-      amount: rawAmount * 1000,
-      unitCode: 'g',
-    ),
-    'mg' => CookingFlowIngredientRequirement(
-      amount: rawAmount / 1000,
-      unitCode: 'g',
-    ),
-    'ml' => CookingFlowIngredientRequirement(
-      amount: rawAmount,
-      unitCode: 'ml',
-    ),
-    'cl' => CookingFlowIngredientRequirement(
-      amount: rawAmount * 10,
-      unitCode: 'ml',
-    ),
-    'dl' => CookingFlowIngredientRequirement(
-      amount: rawAmount * 100,
-      unitCode: 'ml',
-    ),
-    'l' => CookingFlowIngredientRequirement(
-      amount: rawAmount * 1000,
-      unitCode: 'ml',
-    ),
-    _ => null,
-  };
-}
-
-String _stripPackageCountPrefix(String value) {
-  final trimmed = value.trim();
-  final match = RegExp(
-    r'^\d+(?:[.,]\d+)?\s*x\s*(.+)$',
-    caseSensitive: false,
-  ).firstMatch(trimmed);
-  return match?.group(1)?.trim() ?? trimmed;
+  return cookingFlowParseInventoryRequirement(value, localeCode: localeCode);
 }
 
 List<InventoryItem> _resolveSelectedInventoryItems({
@@ -243,24 +46,10 @@ double _availableAmount({
   required List<InventoryItem> selectedItems,
   required CookingFlowIngredientRequirement requirement,
 }) {
-  var total = 0.0;
-  for (final item in selectedItems) {
-    if (requirement.unitCode == cookingFlowPieceUnitCode) {
-      if (item.usesAmountProgress && item.amountUnit?.code == 'pc') {
-        total += item.currentAmount;
-        continue;
-      }
-      total += item.quantity;
-      continue;
-    }
-
-    if (!item.usesAmountProgress ||
-        item.amountUnit?.code != requirement.unitCode) {
-      continue;
-    }
-    total += item.currentAmount;
-  }
-  return total;
+  return cookingFlowAvailableInventoryAmount(
+    selectedItems: selectedItems,
+    requirement: requirement,
+  );
 }
 
 /// Parses whole-number weight text.

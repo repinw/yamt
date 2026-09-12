@@ -1,10 +1,16 @@
 import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_inventory_requirement.dart';
+import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-/// Piece unit code used by cookflow inventory parsing.
-const String cookingFlowPieceUnitCode = cookingFlowParserPieceUnitCode;
+export 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_inventory_requirement.dart'
+    show cookingFlowStripInventoryPackageCountPrefix;
+export 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_parser_locale.dart'
+    show cookingFlowPieceUnitCode;
 
 /// User-selected inventory item for an ingredient row.
 class CookingFlowInventoryAssignmentSelection {
@@ -199,16 +205,6 @@ String cookingFlowShoppingListLabelForRow(
     return row.name;
   }
   return '$trimmedAmount ${row.name}';
-}
-
-/// Removes package count prefix, for example `2x`.
-String cookingFlowStripInventoryPackageCountPrefix(String value) {
-  final trimmed = value.trim();
-  final match = RegExp(
-    r'^\d+(?:[.,]\d+)?\s*x\s*(.+)$',
-    caseSensitive: false,
-  ).firstMatch(trimmed);
-  return match?.group(1)?.trim() ?? trimmed;
 }
 
 /// Returns locale-specific amount unit regex alternation.
