@@ -41,4 +41,73 @@ void main() {
 
     expect(alias, isNull);
   });
+
+  test(
+    'tryCreate skips aliases with single characters, pure digits, or noise',
+    () {
+      expect(
+        GlobalFoodReceiptAlias.tryCreate(
+          storeName: 'Lidl',
+          receiptName: 'B',
+          globalFoodItem: _item(),
+          now: DateTime.parse('2026-03-01T12:00:00Z'),
+        ),
+        isNull,
+      );
+      expect(
+        GlobalFoodReceiptAlias.tryCreate(
+          storeName: 'Lidl',
+          receiptName: '1',
+          globalFoodItem: _item(),
+          now: DateTime.parse('2026-03-01T12:00:00Z'),
+        ),
+        isNull,
+      );
+      expect(
+        GlobalFoodReceiptAlias.tryCreate(
+          storeName: 'Lidl',
+          receiptName: '99',
+          globalFoodItem: _item(),
+          now: DateTime.parse('2026-03-01T12:00:00Z'),
+        ),
+        isNull,
+      );
+      expect(
+        GlobalFoodReceiptAlias.tryCreate(
+          storeName: 'Lidl',
+          receiptName: 'EUR',
+          globalFoodItem: _item(),
+          now: DateTime.parse('2026-03-01T12:00:00Z'),
+        ),
+        isNull,
+      );
+      expect(
+        GlobalFoodReceiptAlias.tryCreate(
+          storeName: 'Lidl',
+          receiptName: 'Rabatt',
+          globalFoodItem: _item(),
+          now: DateTime.parse('2026-03-01T12:00:00Z'),
+        ),
+        isNull,
+      );
+    },
+  );
+
+  test(
+    'buildGlobalFoodReceiptAliasSearchTokens filters short, '
+    'numeric, and noise tokens',
+    () {
+      final tokens = buildGlobalFoodReceiptAliasSearchTokens(
+        'FRISCHKAESE B 200G',
+      );
+
+      expect(tokens, contains('frischkaese b 200g'));
+      expect(tokens, contains('frischkaeseb200g'));
+      expect(tokens, contains('frischkaese'));
+      expect(tokens, contains('200g'));
+      expect(tokens, isNot(contains('b')));
+      expect(tokens.every((token) => token.length >= 3), isTrue);
+      expect(tokens.any((token) => RegExp(r'^\d+$').hasMatch(token)), isFalse);
+    },
+  );
 }

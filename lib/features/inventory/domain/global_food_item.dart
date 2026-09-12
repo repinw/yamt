@@ -391,6 +391,10 @@ String normalizeGlobalFoodText(String raw) {
     return '';
   }
   return lower
+      .replaceAll('ß', 'ss')
+      .replaceAll('ä', 'ae')
+      .replaceAll('ö', 'oe')
+      .replaceAll('ü', 'ue')
       .replaceAll(RegExp('[^a-z0-9]+'), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
@@ -412,14 +416,21 @@ List<String> buildGlobalFoodSearchTokens({
     if (value.isEmpty) {
       continue;
     }
-    tokens
-      ..add(value)
-      ..addAll(
-        value
-            .split(' ')
-            .map((token) => token.trim())
-            .where((token) => token.isNotEmpty),
-      );
+    if (value.length >= 2) {
+      tokens.add(value);
+    }
+    final compact = value.replaceAll(' ', '');
+    if (compact.length >= 2) {
+      tokens.add(compact);
+    }
+    tokens.addAll(
+      value
+          .split(' ')
+          .map((token) => token.trim())
+          .where(
+            (token) => token.length >= 2 && !RegExp(r'^\d+$').hasMatch(token),
+          ),
+    );
   }
   return tokens.toList(growable: false);
 }

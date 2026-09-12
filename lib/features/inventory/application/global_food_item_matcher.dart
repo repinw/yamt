@@ -253,7 +253,7 @@ class GlobalFoodItemMatcher {
             compactReceiptName: compactReceiptName,
             receiptSearchTokens: receiptSearchTokens,
           );
-          if (aliasNameScore <= 0) {
+          if (aliasNameScore < 12) {
             return null;
           }
           return GlobalFoodMatchCandidate(
@@ -285,15 +285,29 @@ class GlobalFoodItemMatcher {
       score += 16;
     }
 
+    final meaningfulReceiptTokens = receiptSearchTokens
+        .where(
+          (token) =>
+              token.length >= 3 &&
+              !RegExp(r'^\d+$').hasMatch(token) &&
+              !isReceiptAliasNoise(token),
+        )
+        .toSet();
     final overlap = alias.receiptSearchTokens
-        .where(receiptSearchTokens.contains)
+        .where(
+          (token) =>
+              token.length >= 3 &&
+              !RegExp(r'^\d+$').hasMatch(token) &&
+              !isReceiptAliasNoise(token) &&
+              meaningfulReceiptTokens.contains(token),
+        )
         .length;
     if (overlap > 0) {
       score += overlap * 6;
     }
 
     if (compactReceiptName.length >= 4 &&
-        alias.compactReceiptName.isNotEmpty &&
+        alias.compactReceiptName.length >= 4 &&
         (alias.compactReceiptName.contains(compactReceiptName) ||
             compactReceiptName.contains(alias.compactReceiptName))) {
       score += 8;

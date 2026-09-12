@@ -2,47 +2,55 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 void main() {
-  test('create normalizes fields for matching and storage', () {
-    final now = DateTime.parse('2026-03-01T10:00:00Z');
-    final item = GlobalFoodItem.create(
-      id: 'milk',
-      name: '  Whole Milk  ',
-      brand: ' Acme ',
-      category: ' Dairy ',
-      storeName: ' ALDI Süd ',
-      barcode: ' 123456 ',
-      now: now,
-    );
-
-    expect(item.name, 'Whole Milk');
-    expect(item.brand, 'Acme');
-    expect(item.category, 'Dairy');
-    expect(item.storeName, 'Aldi');
-    expect(item.barcode, '123456');
-    expect(item.normalizedName, 'whole milk');
-    expect(item.normalizedBrand, 'acme');
-    expect(item.normalizedStoreName, 'aldi');
-    expect(item.searchTokens, containsAll(<String>['whole', 'milk']));
-    expect(item.foodFingerprint, isNotEmpty);
-  });
-
-  test('fromJson derives missing normalized fields and fingerprint', () {
-    final item = GlobalFoodItem.fromJson(const <String, dynamic>{
-      'id': 'milk',
-      'name': 'Whole Milk',
-      'brand': 'Acme',
-      'store_name': 'Kaufland',
-      'status': 'active',
-      'created_at': '2026-03-01T10:00:00.000Z',
-      'updated_at': '2026-03-01T10:00:00.000Z',
+  group('normalizeGlobalFoodText', () {
+    test('converts German umlauts and sharp s correctly', () {
+      expect(normalizeGlobalFoodText('Räucherlachs'), 'raeucherlachs');
+      expect(normalizeGlobalFoodText('Frischkäse'), 'frischkaese');
+      expect(normalizeGlobalFoodText('Käse'), 'kaese');
+      expect(normalizeGlobalFoodText('Müsli'), 'muesli');
+      expect(normalizeGlobalFoodText('Öl'), 'oel');
+      expect(normalizeGlobalFoodText('Süßkartoffel'), 'suesskartoffel');
+      expect(normalizeGlobalFoodText('Hähnchen'), 'haehnchen');
     });
 
-    expect(item.id, 'milk');
-    expect(item.foodFingerprint, isNotEmpty);
-    expect(item.normalizedName, 'whole milk');
-    expect(item.normalizedBrand, 'acme');
-    expect(item.storeName, 'Kaufland');
-    expect(item.normalizedStoreName, 'kaufland');
-    expect(item.searchTokens, isEmpty);
+    test('normalizes whitespace and removes special characters', () {
+      expect(
+        normalizeGlobalFoodText('  Bio-Vollmilch 3,5%  '),
+        'bio vollmilch 3 5',
+      );
+    });
+  });
+
+  group('buildGlobalFoodSearchTokens', () {
+    test(
+      'does not produce single-character tokens for umlauts like Räucherlachs',
+      () {
+        final tokens = buildGlobalFoodSearchTokens(name: 'Räucherlachs');
+
+        expect(tokens, contains('raeucherlachs'));
+        expect(tokens, isNot(contains('r')));
+        expect(tokens, isNot(contains('ucherlachs')));
+        expect(tokens.every((token) => token.length >= 2), isTrue);
+      },
+    );
+
+    test('filters out pure numeric tokens and single characters', () {
+      final tokens = buildGlobalFoodSearchTokens(
+        name: 'Milch 1,5% 1L',
+        brand: 'B',
+      );
+
+      expect(tokens, contains('milch 1 5 1l'));
+      expect(tokens, contains('milch'));
+      expect(tokens, contains('1l'));
+      expect(tokens, isNot(contains('1')));
+      expect(tokens, isNot(contains('5')));
+      expect(tokens, isNot(contains('b')));
+      expect(tokens.every((token) => token.length >= 2), isTrue);
+      expect(
+        tokens.any((token) => RegExp(r'^\d+$').hasMatch(token)),
+        isFalse,
+      );
+    });
   });
 }

@@ -584,6 +584,93 @@ void main() {
   });
 
   test(
+    'findCandidates does not match unrelated items sharing only tax code B',
+    () async {
+      final creamCheese = _globalItem(
+        id: 'frischkaese',
+        name: 'Frischkäse Natur',
+        storeName: 'Aldi',
+      );
+      final aliasRepository = _FakeGlobalFoodReceiptAliasRepository(
+        fallbackResults: <GlobalFoodReceiptAlias>[
+          _receiptAlias(
+            id: 'alias-frischkaese',
+            receiptName: 'FRISCHKAESE B',
+            item: creamCheese,
+            selectionCount: 5,
+          ),
+        ],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        globalFoodReceiptAliasRepository: aliasRepository,
+        offProductSearchRepository: _FakeOffProductSearchRepository(),
+      );
+
+      final candidates = await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Milch 1,5%',
+          ocrName: 'MILCH 1,5% B',
+          storeName: 'Aldi',
+        ),
+      );
+
+      expect(
+        candidates.any((candidate) => candidate.item.id == 'frischkaese'),
+        isFalse,
+      );
+    },
+  );
+
+  test(
+    'findCandidates rejects legacy alias matches based solely on short '
+    'single-letter token overlap',
+    () async {
+      final creamCheese = _globalItem(
+        id: 'frischkaese',
+        name: 'Frischkäse Natur',
+        storeName: 'Aldi',
+      );
+      final legacyAlias =
+          _receiptAlias(
+            id: 'alias-frischkaese',
+            receiptName: 'FRISCHKAESE B',
+            item: creamCheese,
+            selectionCount: 10,
+          ).copyWith(
+            // Simulates old alias stored in Firestore prior to token filtering
+            receiptSearchTokens: <String>[
+              'frischkaese b',
+              'frischkaeseb',
+              'frischkaese',
+              'b',
+            ],
+          );
+      final aliasRepository = _FakeGlobalFoodReceiptAliasRepository(
+        fallbackResults: <GlobalFoodReceiptAlias>[legacyAlias],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        globalFoodReceiptAliasRepository: aliasRepository,
+        offProductSearchRepository: _FakeOffProductSearchRepository(),
+      );
+
+      final candidates = await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Butter',
+          ocrName: 'BUTTER B',
+          storeName: 'Aldi',
+        ),
+      );
+
+      expect(
+        candidates.any((candidate) => candidate.item.id == 'frischkaese'),
+        isFalse,
+      );
+    },
+  );
+
+  test(
     'findCandidates keeps local and OFF buckets separate even for same barcode',
     () async {
       final globalRepository = _FakeGlobalFoodItemRepository(

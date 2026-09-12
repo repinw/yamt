@@ -106,6 +106,13 @@ class GlobalFoodReceiptAlias {
       return null;
     }
 
+    final compact = compactGlobalFoodReceiptAliasText(normalizedReceiptName);
+    if (compact.length < 3 ||
+        RegExp(r'^\d+$').hasMatch(compact) ||
+        isReceiptAliasNoise(compact)) {
+      return null;
+    }
+
     return GlobalFoodReceiptAlias(
       id: buildGlobalFoodReceiptAliasId(
         normalizedStoreName: normalizedStoreName,
@@ -313,6 +320,27 @@ String compactGlobalFoodReceiptAliasText(String rawValue) {
   return rawValue.replaceAll(' ', '');
 }
 
+/// Non-informative receipt tokens that should not be used as search keys.
+const Set<String> _receiptAliasNoiseWords = <String>{
+  'eur',
+  'stk',
+  'pcs',
+  'mwst',
+  'rabatt',
+  'summe',
+  'total',
+  'posten',
+  'artikel',
+  'pfand',
+  'gutschrift',
+};
+
+/// Whether [token] is non-informative receipt noise.
+bool isReceiptAliasNoise(String token) {
+  final lower = token.trim().toLowerCase();
+  return _receiptAliasNoiseWords.contains(lower);
+}
+
 /// Build global food receipt alias search tokens.
 List<String> buildGlobalFoodReceiptAliasSearchTokens(String rawValue) {
   final normalized = normalizeGlobalFoodReceiptAliasText(rawValue);
@@ -320,12 +348,28 @@ List<String> buildGlobalFoodReceiptAliasSearchTokens(String rawValue) {
     return const <String>[];
   }
 
-  final tokens = <String>{
+  final compact = compactGlobalFoodReceiptAliasText(normalized);
+  final candidateTokens = <String>{
     normalized,
-    compactGlobalFoodReceiptAliasText(normalized),
-    ...normalized.split(' ').where((token) => token.isNotEmpty),
+    compact,
+    ...normalized.split(' '),
   };
-  return tokens.toList(growable: false);
+
+  final filteredTokens = candidateTokens.where((token) {
+    final trimmed = token.trim();
+    if (trimmed.length < 3) {
+      return false;
+    }
+    if (RegExp(r'^\d+$').hasMatch(trimmed)) {
+      return false;
+    }
+    if (isReceiptAliasNoise(trimmed)) {
+      return false;
+    }
+    return true;
+  });
+
+  return filteredTokens.toList(growable: false);
 }
 
 /// Build global food receipt alias lookup key.

@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 
 const String _storeLogName = 'FirestoreGlobalFoodReceiptAliasStore';
 const String _globalFoodReceiptAliasesCollection =
@@ -211,7 +212,9 @@ class FirestoreGlobalFoodReceiptAliasStore
     final normalized = <String>{};
     for (final token in tokens) {
       final trimmed = token.trim();
-      if (trimmed.isEmpty) {
+      if (trimmed.length < 3 ||
+          RegExp(r'^\d+$').hasMatch(trimmed) ||
+          isReceiptAliasNoise(trimmed)) {
         continue;
       }
       normalized.add(trimmed);

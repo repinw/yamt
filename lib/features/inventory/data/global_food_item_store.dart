@@ -362,7 +362,9 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     final normalized = <String>{};
     for (final token in tokens) {
       final trimmed = _normalizeQueryValue(token);
-      if (trimmed == null) {
+      if (trimmed == null ||
+          trimmed.length < 2 ||
+          RegExp(r'^\d+$').hasMatch(trimmed)) {
         continue;
       }
       normalized.add(trimmed);
