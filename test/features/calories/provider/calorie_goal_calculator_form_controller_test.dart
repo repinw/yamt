@@ -21,11 +21,13 @@ void main() {
         ageYearsText: '',
         goalMode: CalorieGoalMode.lose,
         goalSpeedKgPerWeekText: '',
+        targetWeightKgText: '',
       );
 
       expect(state.weightError, CalorieCalculatorFieldError.empty);
       expect(state.heightError, CalorieCalculatorFieldError.empty);
       expect(state.ageError, CalorieCalculatorFieldError.empty);
+      expect(state.targetWeightError, CalorieCalculatorFieldError.empty);
       expect(state.goalSpeedError, CalorieCalculatorFieldError.empty);
       expect(state.calculation, isNull);
       expect(state.profile, isNull);
@@ -38,11 +40,13 @@ void main() {
         ageYearsText: '1.5',
         goalMode: CalorieGoalMode.gain,
         goalSpeedKgPerWeekText: '-0.5',
+        targetWeightKgText: 'invalid',
       );
 
       expect(state.weightError, CalorieCalculatorFieldError.invalid);
       expect(state.heightError, CalorieCalculatorFieldError.invalid);
       expect(state.ageError, CalorieCalculatorFieldError.invalid);
+      expect(state.targetWeightError, CalorieCalculatorFieldError.invalid);
       expect(state.goalSpeedError, CalorieCalculatorFieldError.invalid);
       expect(state.calculation, isNull);
       expect(state.profile, isNull);
@@ -100,6 +104,7 @@ void main() {
         activityLevel: 1.2,
         goalMode: CalorieGoalMode.lose,
         goalSpeedKgPerWeek: 0.75,
+        targetWeightKg: 75,
       );
       final container = ProviderContainer();
       addTearDown(container.dispose);
@@ -139,6 +144,7 @@ void main() {
       expect(loseState.goalSpeedKgPerWeekText, '0.5');
       expect(loseState.lastNonMaintainGoalSpeedText, '0.5');
       expect(loseState.goalSpeedError, isNull);
+      expect(loseState.targetWeightError, CalorieCalculatorFieldError.empty);
     });
 
     test('changing activity option updates the PAL value in the profile', () {

@@ -1521,6 +1521,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorGoalModeGain => 'Gain';
 
   @override
+  String get caloriesCalculatorTargetWeightLabel => 'Target weight (kg)';
+
+  @override
   String get caloriesCalculatorGoalSpeedLabel => 'Goal speed (kg/week)';
 
   @override
@@ -1531,6 +1534,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesCalculatorGoalSpeedInvalid => 'Please enter a valid goal speed.';
+
+  @override
+  String get caloriesMaintainUntilTitle => 'Maintain weight until';
+
+  @override
+  String get caloriesMaintainUntilUnlimited => 'No end date – until you choose a new goal';
+
+  @override
+  String get caloriesMaintainUntilChoose => 'Choose end date';
+
+  @override
+  String get caloriesMaintainUntilClear => 'Remove end date';
+
+  @override
+  String get settingsGoalArchiveTitle => 'Goal archive';
+
+  @override
+  String get settingsGoalArchiveSubtitle => 'View your current and previous goals';
+
+  @override
+  String get goalArchiveTitle => 'Goal archive';
+
+  @override
+  String get goalArchiveEmpty => 'No goals yet.';
+
+  @override
+  String get goalArchiveActive => 'Active';
+
+  @override
+  String get goalArchiveCompleted => 'Completed';
+
+  @override
+  String get goalArchiveGoalLabel => 'Goal';
+
+  @override
+  String get goalArchiveSpeedLabel => 'Speed';
+
+  @override
+  String get goalArchiveStartLabel => 'Start';
+
+  @override
+  String get goalArchiveStartWeightLabel => 'Starting weight';
+
+  @override
+  String get goalArchiveEndWeightLabel => 'Ending weight';
+
+  @override
+  String get goalArchiveEstimatedEndLabel => 'Estimated end';
+
+  @override
+  String get goalArchiveEndLabel => 'End';
+
+  @override
+  String get goalArchiveReachedLabel => 'Reached';
+
+  @override
+  String get goalArchiveUnlimited => 'No end date';
+
+  @override
+  String get goalArchiveSelectHint => 'Select one or more goals for one continuous timeline.';
+
+  @override
+  String get goalArchiveOpenAnalytics => 'Open timeline';
+
+  @override
+  String get caloriesGoalReachedTitle => 'Goal reached!';
+
+  @override
+  String get caloriesGoalReachedBody => 'You reached your target weight. Would you like to continue the current 7-day run or set a new goal now?';
+
+  @override
+  String get caloriesGoalReachedContinue => 'Continue run';
+
+  @override
+  String get caloriesGoalReachedNewGoal => 'Set new goal';
+
+  @override
+  String caloriesNewGoalCurrentWeight(String weight) {
+    return 'Current weight: $weight kg';
+  }
+
+  @override
+  String get caloriesWeeklyCheckInNewGoalAction => 'Choose new goal';
 
   @override
   String get caloriesCalculatorResultsTitle => 'Results';

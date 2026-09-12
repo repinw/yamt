@@ -288,6 +288,8 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     );
     final repository = ref.watch(calorieLogRepositoryProvider);
     final goalState = ref.watch(calorieGoalControllerProvider);
+    final settings =
+        goalState.asData?.value ?? const CalorieGoalSettings.empty();
     final resolvedGoalsFuture = ref.watch(
       resolvedCalorieGoalsForDaysProvider(
         ResolvedCalorieGoalDaysRequest.fromDays(
@@ -296,17 +298,38 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
         ),
       ).future,
     );
+    final today = visibleDays.last;
+    final visibleWindowStart = visibleDays.first;
+    // Bind the widest possible historical-goal dependency synchronously.
+    // A later first-entry lookup can only move the actual start forward. This
+    // keeps every Ref access before the first await, so an invalidated provider
+    // generation can finish silently and Riverpod can discard its stale value.
+    final widestBalanceStartDate = resolveCalorieBalanceCycleStartDate(
+      settings: settings,
+      day: today,
+      fallbackStartDate: visibleWindowStart,
+    );
+    final widestCarryoverStartDate = resolveCalorieCarryoverStartDate(
+      settings: settings,
+      day: today,
+      balanceStartDate: widestBalanceStartDate,
+    );
+    final widestHistoricalDays = buildCalorieCarryoverDateRange(
+      startInclusive: widestCarryoverStartDate,
+      endExclusive: visibleWindowStart,
+    );
+    final historicalGoalsFuture = widestHistoricalDays.isEmpty
+        ? Future<Map<String, ResolvedCalorieGoalData>>.value(
+            const <String, ResolvedCalorieGoalData>{},
+          )
+        : ref.watch(
+            resolvedCalorieGoalsForDaysProvider(
+              ResolvedCalorieGoalDaysRequest.fromDays(widestHistoricalDays),
+            ).future,
+          );
 
     final snapshot = await snapshotFuture;
-    if (!ref.mounted) {
-      throw StateError('Calorie week overview disposed.');
-    }
-    final settings =
-        goalState.asData?.value ?? const CalorieGoalSettings.empty();
     final resolvedGoalsByDay = await resolvedGoalsFuture;
-    if (!ref.mounted) {
-      throw StateError('Calorie week overview disposed.');
-    }
     final overviews = snapshot.days
         .asMap()
         .entries
@@ -328,12 +351,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
           },
         )
         .toList(growable: false);
-    final today = snapshot.days.last.date;
-    final visibleWindowStart = snapshot.days.first.date;
     final firstEntryDate = await repository.readFirstEntryDate();
-    if (!ref.mounted) {
-      throw StateError('Calorie week overview disposed.');
-    }
     final balanceStartDate = resolveCalorieBalanceCycleStartDate(
       settings: settings,
       day: today,
@@ -345,29 +363,19 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       day: today,
       balanceStartDate: balanceStartDate,
     );
-    final historicalEntries = await _readEntriesInRangeSafely(
-      repository: repository,
-      startInclusive: carryoverStartDate,
-      endExclusive: visibleWindowStart,
-    );
-    final historicalEntriesByDay = historicalEntries.groupByDiaryDayKey();
-    if (!ref.mounted) {
-      throw StateError('Calorie week overview disposed.');
-    }
     final historicalDays = buildCalorieCarryoverDateRange(
       startInclusive: carryoverStartDate,
       endExclusive: visibleWindowStart,
     );
-    final historicalGoalsByDay = historicalDays.isEmpty
-        ? const <String, ResolvedCalorieGoalData>{}
-        : await ref.read(
-            resolvedCalorieGoalsForDaysProvider(
-              ResolvedCalorieGoalDaysRequest.fromDays(historicalDays),
-            ).future,
+    final historicalEntries = historicalDays.isEmpty
+        ? const <CalorieEntry>[]
+        : await _readEntriesInRangeSafely(
+            repository: repository,
+            startInclusive: carryoverStartDate,
+            endExclusive: visibleWindowStart,
           );
-    if (!ref.mounted) {
-      throw StateError('Calorie week overview disposed.');
-    }
+    final historicalEntriesByDay = historicalEntries.groupByDiaryDayKey();
+    final historicalGoalsByDay = await historicalGoalsFuture;
     final historicalGoalKcals = historicalDays
         .map((day) => historicalGoalsByDay[diaryDayKey(day)]!.goalKcal)
         .toList(growable: false);
@@ -460,17 +468,11 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
       resolvedCalorieGoalForDayProvider(normalizedDay).future,
     );
     final entries = await _readEntriesForDaySafely(repository, normalizedDay);
-    if (!ref.mounted) {
-      throw StateError('Calorie week day overview disposed.');
-    }
     final totalKcal = entries.fold<double>(
       0,
       (sum, entry) => sum + entry.totalKcal,
     );
     final resolvedGoal = await resolvedGoalFuture;
-    if (!ref.mounted) {
-      throw StateError('Calorie week day overview disposed.');
-    }
     return CalorieWeekDayOverview(
       date: normalizedDay,
       totalKcal: totalKcal,

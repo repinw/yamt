@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_provider.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
+import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 import 'package:yamt/features/calories/presentation/controllers/tdee_analytics_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_analytics_header.dart';
 import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_flux_chart.dart';
@@ -13,17 +14,39 @@ import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_
 
 /// Full-screen analytics page for TDEE expenditure, flux range,
 /// and weight trend.
-class TdeeAnalyticsPage extends ConsumerWidget {
+class TdeeAnalyticsPage extends ConsumerStatefulWidget {
   /// Creates the TDEE analytics page.
-  const TdeeAnalyticsPage({super.key});
+  const TdeeAnalyticsPage({super.key, this.initialCycleIds});
+
+  /// Optional cycles selected by the goal archive.
+  final Set<String>? initialCycleIds;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TdeeAnalyticsPage> createState() => _TdeeAnalyticsPageState();
+}
+
+class _TdeeAnalyticsPageState extends ConsumerState<TdeeAnalyticsPage> {
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialCycleIds;
+    if (initial != null && initial.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref
+            .read(tdeeAnalyticsControllerProvider.notifier)
+            .selectCycles(initial, showFullRange: true);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final uiState = ref.watch(tdeeAnalyticsControllerProvider);
     final controller = ref.read(tdeeAnalyticsControllerProvider.notifier);
 
     final query = TdeeAnalyticsQuery(
-      cycleId: uiState.selectedCycleId,
+      cycleIds: uiState.selectedCycleIds,
       timeRange: uiState.timeRange,
     );
     final analyticsAsync = ref.watch(tdeeAnalyticsProvider(query));
@@ -36,9 +59,9 @@ class TdeeAnalyticsPage extends ConsumerWidget {
                 data: (data) => Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.md),
                   child: TdeeGoalSelector(
-                    selectedCycle: data.selectedCycle,
+                    selectedCycleIds: uiState.selectedCycleIds,
                     availableCycles: data.availableCycles,
-                    onSelectCycle: controller.selectCycle,
+                    onSelectCycles: controller.selectCycles,
                   ),
                 ),
               ) ??
@@ -90,8 +113,11 @@ class TdeeAnalyticsPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xxl),
           TdeeWeightChart(
             points: points,
+            goalCycles: data.effectiveSelectedCycles,
             anticipation: data.anticipation,
             showAnticipation: uiState.showAnticipation,
+            extendToProjectedGoal:
+                uiState.timeRange == TdeeAnalyticsTimeRange.all,
           ),
           const SizedBox(height: AppSpacing.xl),
           TdeeInsightsCard(

@@ -149,12 +149,22 @@ class TdeeAnalyticsState {
     required this.timeRange,
     required this.points,
     required this.summary,
+    this.selectedCycles = const <TdeeAnalyticsGoalCycle>[],
     this.anticipation,
     this.showAnticipation = true,
   });
 
   /// Currently selected cycle.
   final TdeeAnalyticsGoalCycle selectedCycle;
+
+  /// Individually selected cycles forming the continuous date filter.
+  final List<TdeeAnalyticsGoalCycle> selectedCycles;
+
+  /// Selected cycles with legacy single-cycle states supported.
+  List<TdeeAnalyticsGoalCycle> get effectiveSelectedCycles =>
+      selectedCycles.isEmpty
+      ? <TdeeAnalyticsGoalCycle>[selectedCycle]
+      : selectedCycles;
 
   /// All available cycles for picker.
   final List<TdeeAnalyticsGoalCycle> availableCycles;

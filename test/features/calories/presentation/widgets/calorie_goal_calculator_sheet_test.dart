@@ -24,6 +24,8 @@ import '../../support/fake_calories_repositories.dart';
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   CalorieGoalSettings initialSettings = const CalorieGoalSettings.empty(),
+  bool startsNewGoal = false,
+  double? currentWeightKg,
 }) {
   final container = ProviderContainer(
     overrides: [
@@ -46,6 +48,8 @@ Widget _buildHarness({
                   showCalorieGoalCalculatorSheet(
                     context,
                     initialSettings: initialSettings,
+                    startsNewGoal: startsNewGoal,
+                    currentWeightKg: currentWeightKg,
                   ),
                 );
               },
@@ -123,6 +127,47 @@ CalorieGoalSettings _learnedTdeeSettings() {
 }
 
 void main() {
+  testWidgets('new goal uses learned TDEE without profile questions', (
+    tester,
+  ) async {
+    final settings = _learnedTdeeSettings();
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: settings,
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialSettings: settings,
+        startsNewGoal: true,
+        currentWeightKg: 72,
+      ),
+    );
+    await _openSheet(tester);
+
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsOneWidget);
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.stepCounter),
+      findsNothing,
+    );
+    expect(
+      find.byKey(CalorieLearnedTdeeSheetKeys.fullResetButton),
+      findsNothing,
+    );
+    expect(find.text('Current weight: 72 kg'), findsOneWidget);
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 72);
+
+    tester.widget<Slider>(find.byType(Slider)).onChanged!(70);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lose'), findsOneWidget);
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalSpeedField),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('calculator sheet opens on root navigator by default', (
     tester,
   ) async {
@@ -361,6 +406,10 @@ void main() {
       findsOneWidget,
     );
     await tester.enterText(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      '45',
+    );
+    await tester.enterText(
       find.byKey(CalorieGoalCalculatorSheetKeys.goalSpeedField),
       '0.75',
     );
@@ -426,6 +475,10 @@ void main() {
     await tester.tap(find.text('Lose'));
     await tester.pumpAndSettle();
     await _tapNext(tester);
+    await tester.enterText(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      '45',
+    );
     await tester.enterText(
       find.byKey(CalorieGoalCalculatorSheetKeys.goalSpeedField),
       '0.75',

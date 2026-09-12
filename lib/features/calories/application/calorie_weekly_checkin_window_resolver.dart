@@ -246,9 +246,11 @@ DateTime calorieWeeklyLearningStartDateForCheckIn({
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
 }) {
-  final anchorEntry = settings.cycleAnchorEntryForDay(
-    pendingWeeklyCheckIn.windowEndDate,
-  );
+  final anchorEntry =
+      settings.learningAnchorEntryForDay(
+        pendingWeeklyCheckIn.windowEndDate,
+      ) ??
+      settings.cycleAnchorEntryForDay(pendingWeeklyCheckIn.windowEndDate);
   final anchorStartDate = anchorEntry == null
       ? pendingWeeklyCheckIn.windowStartDate
       : CalorieWeeklyWindowResolver.firstWindowStartDate(anchorEntry);

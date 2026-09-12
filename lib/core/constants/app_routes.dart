@@ -66,6 +66,9 @@ abstract final class AppRoutes {
   /// TDEE and weight analytics route.
   static const homeCaloriesAnalytics = '/home/calories/analytics';
 
+  /// Current and archived calorie goals.
+  static const homeSettingsGoalArchive = '/home/settings/goals';
+
   /// Settings home route.
   static const homeSettings = '/home/settings';
 

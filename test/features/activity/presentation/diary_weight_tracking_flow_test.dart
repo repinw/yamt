@@ -84,6 +84,47 @@ void main() {
     expect(recorder.deletedDay, DateTime(2026, 4, 15));
     expect(recorder.refreshedDay, isNull);
   });
+
+  testWidgets('saved weight is forwarded to calorie public edge', (
+    tester,
+  ) async {
+    final day = DateTime(2026, 4, 15);
+    final recorder = _WeightActionRecorder();
+    DateTime? checkedDay;
+    double? checkedWeight;
+    final flow = DiaryWeightTrackingFlow(
+      weightActions: recorder.toActions(),
+      onWeightRecorded:
+          ({
+            required context,
+            required day,
+            required weightKg,
+          }) async {
+            checkedDay = day;
+            checkedWeight = weightKg;
+          },
+    );
+
+    await _pumpFlowHarness(
+      tester,
+      recorder: recorder,
+      selectedDay: day,
+      day: day,
+      flow: flow,
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(DiaryWeightDialogKeys.weightDialogField),
+      '75',
+    );
+    await tester.tap(find.byKey(DiaryWeightDialogKeys.weightDialogSaveButton));
+    await tester.pumpAndSettle();
+
+    expect(checkedDay, day);
+    expect(checkedWeight, 75);
+  });
 }
 
 class _WeightActionRecorder {
@@ -128,6 +169,7 @@ Future<void> _pumpFlowHarness(
   double? initialWeightKg,
   bool hasManualWeight = false,
   bool canClearWeight = false,
+  DiaryWeightTrackingFlow? flow,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -135,6 +177,8 @@ Future<void> _pumpFlowHarness(
         diaryWeightActionsProvider.overrideWith(
           (ref) => recorder.toActions(),
         ),
+        if (flow != null)
+          diaryWeightTrackingFlowProvider.overrideWithValue(flow),
       ],
       child: MaterialApp(
         locale: const Locale('en'),

@@ -51,6 +51,7 @@ class CalorieCalculatorProfile {
     required this.goalMode,
     required this.goalSpeedKgPerWeek,
     this.targetWeightKg,
+    this.maintainUntil,
     this.trainingWeekdays = const <int>[
       DateTime.monday,
       DateTime.wednesday,
@@ -74,6 +75,7 @@ class CalorieCalculatorProfile {
       goalMode = CalorieGoalMode.maintain,
       goalSpeedKgPerWeek = 0,
       targetWeightKg = null,
+      maintainUntil = null,
       trainingWeekdays = const <int>[
         DateTime.monday,
         DateTime.wednesday,
@@ -117,6 +119,11 @@ class CalorieCalculatorProfile {
   @NullableFlexibleDoubleConverter()
   final double? targetWeightKg;
 
+  /// Optional date until which a maintain goal should stay active.
+  /// A null value means that the goal continues until it is replaced.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? maintainUntil;
+
   /// Configured weekdays for training (1 = Monday, 7 = Sunday).
   final List<int> trainingWeekdays;
 
@@ -136,7 +143,8 @@ class CalorieCalculatorProfile {
     double? activityLevel,
     CalorieGoalMode? goalMode,
     double? goalSpeedKgPerWeek,
-    double? targetWeightKg,
+    Object? targetWeightKg = _keepValue,
+    Object? maintainUntil = _keepValue,
     List<int>? trainingWeekdays,
     double? trainingDayKcalOffset,
   }) {
@@ -148,10 +156,17 @@ class CalorieCalculatorProfile {
       activityLevel: activityLevel ?? this.activityLevel,
       goalMode: goalMode ?? this.goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek ?? this.goalSpeedKgPerWeek,
-      targetWeightKg: targetWeightKg ?? this.targetWeightKg,
+      targetWeightKg: targetWeightKg == _keepValue
+          ? this.targetWeightKg
+          : (targetWeightKg as num?)?.toDouble(),
+      maintainUntil: maintainUntil == _keepValue
+          ? this.maintainUntil
+          : maintainUntil as DateTime?,
       trainingWeekdays: trainingWeekdays ?? this.trainingWeekdays,
       trainingDayKcalOffset:
           trainingDayKcalOffset ?? this.trainingDayKcalOffset,
     );
   }
 }
+
+const Object _keepValue = Object();

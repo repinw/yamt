@@ -238,4 +238,59 @@ void main() {
       DateTime(2026, 2, 24),
     );
   });
+
+  test('goal completion and ending keep the original history entry', () {
+    final profile = const CalorieCalculatorProfile.defaults().copyWith(
+      goalMode: CalorieGoalMode.lose,
+      targetWeightKg: 75,
+    );
+    final initial = CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: profile,
+      effectiveDate: DateTime(2026, 6),
+    );
+
+    final completed = initial
+        .markActiveGoalReached(
+          DateTime(2026, 6, 4, 12),
+          weightKg: 75,
+        )
+        .markGoalReachedPromptHandled(DateTime(2026, 6, 4, 12, 30))
+        .markActiveGoalEnded(DateTime(2026, 6, 4, 13), weightKg: 74.8);
+
+    expect(completed.goalHistory.single.reachedAt, DateTime(2026, 6, 4));
+    expect(completed.goalHistory.single.endedAt, DateTime(2026, 6, 4));
+    expect(completed.goalHistory.single.reachedWeightKg, 75);
+    expect(completed.goalHistory.single.endedWeightKg, 74.8);
+    expect(completed.goalHistory.single.reachedPromptHandledAt, isNotNull);
+
+    final decoded = CalorieGoalSettings.fromJson(completed.toJson());
+    expect(decoded.goalHistory.single.reachedAt, DateTime(2026, 6, 4));
+    expect(decoded.goalHistory.single.endedAt, DateTime(2026, 6, 4));
+    expect(decoded.goalHistory.single.reachedWeightKg, 75);
+    expect(decoded.goalHistory.single.endedWeightKg, 74.8);
+    expect(decoded.goalHistory.single.reachedPromptHandledAt, isNotNull);
+  });
+
+  test('learning anchor survives a later goal-cycle change', () {
+    final first = const CalorieGoalSettings.empty().applyGoalChange(
+      changedAt: DateTime(2026, 6),
+      dailyKcalGoal: 2000,
+      calculatorProfile: const CalorieCalculatorProfile.defaults(),
+    );
+    final changed = first.applyGoalChange(
+      changedAt: DateTime(2026, 6, 4),
+      dailyKcalGoal: 2400,
+      calculatorProfile: const CalorieCalculatorProfile.defaults(),
+    );
+
+    expect(
+      changed.learningAnchorEntryForDay(DateTime(2026, 6, 10))?.effectiveDate,
+      DateTime(2026, 6),
+    );
+    expect(
+      changed.cycleAnchorEntryForDay(DateTime(2026, 6, 10))?.effectiveDate,
+      DateTime(2026, 6, 4),
+    );
+  });
 }

@@ -45,7 +45,7 @@ final class TdeeAnalyticsControllerProvider
 }
 
 String _$tdeeAnalyticsControllerHash() =>
-    r'2f2c3070ba381f8539f3489fbeba19684e6fefaa';
+    r'87b7fb287da134dbe100a10417a862873fe08d2d';
 
 /// Controller managing UI filter selections for TDEE analytics.
 

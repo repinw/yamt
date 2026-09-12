@@ -107,6 +107,8 @@ abstract final class DailyLearnedTdeeResolver {
 
     final windows = weeklyLearnedWindowsForDay(
       anchorEntry: anchorEntry,
+      learningAnchorEntry:
+          settings.learningAnchorEntryForDay(normalizedDay) ?? anchorEntry,
       day: learningReferenceDay,
     );
     if (windows.isEmpty) {
@@ -114,7 +116,8 @@ abstract final class DailyLearnedTdeeResolver {
     }
 
     final firstLearningStartDate = learningStartDateForWindow(
-      anchorEntry: anchorEntry,
+      anchorEntry:
+          settings.learningAnchorEntryForDay(normalizedDay) ?? anchorEntry,
       windowEndDate: windows.first.windowEndDate,
     );
     return DailyLearnedTdeeDayContext(
@@ -301,6 +304,7 @@ abstract final class DailyLearnedTdeeResolver {
   static List<WeeklyLearnedWindow> weeklyLearnedWindowsForDay({
     required CalorieGoalHistoryEntry anchorEntry,
     required DateTime day,
+    CalorieGoalHistoryEntry? learningAnchorEntry,
   }) {
     final windows = <WeeklyLearnedWindow>[];
     var windowStartDate = CalorieWeeklyWindowResolver.firstWindowStartDate(
@@ -318,7 +322,7 @@ abstract final class DailyLearnedTdeeResolver {
       }
       final windowEndDate = addDiaryDays(windowStartDate, windowLengthDays - 1);
       final learningStartDate = learningStartDateForWindow(
-        anchorEntry: anchorEntry,
+        anchorEntry: learningAnchorEntry ?? anchorEntry,
         windowEndDate: windowEndDate,
       );
       windows.add(

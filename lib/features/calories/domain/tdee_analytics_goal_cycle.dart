@@ -14,6 +14,9 @@ class TdeeAnalyticsGoalCycle {
     this.targetWeightKg,
     this.goalSpeedKgPerWeek,
     this.initialGoalKcal,
+    this.estimatedEndDate,
+    this.reachedDate,
+    this.endWeightKg,
   });
 
   /// Unique identifier (e.g. ISO date or 'all').
@@ -45,6 +48,15 @@ class TdeeAnalyticsGoalCycle {
 
   /// Initial daily calorie target.
   final double? initialGoalKcal;
+
+  /// Planned end date derived from target/speed or chosen for maintenance.
+  final DateTime? estimatedEndDate;
+
+  /// Date on which the target weight was first reached.
+  final DateTime? reachedDate;
+
+  /// Actual ending weight, or the configured target for an active goal.
+  final double? endWeightKg;
 
   /// Whether this cycle is active today.
   bool get isActive => endDate == null && !isAllGoals;

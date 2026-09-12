@@ -53,6 +53,21 @@ Future<CalorieGoalSettings> diaryCalorieGoalSettings(Ref ref) {
   return ref.watch(goal_controller.calorieGoalControllerProvider.future);
 }
 
+/// Whether the active calorie goal had already been reached on [day].
+@riverpod
+Future<bool> diaryActiveCalorieGoalWasReached(Ref ref, DateTime day) async {
+  final settings = await ref.watch(diaryCalorieGoalSettingsProvider.future);
+  return settings.cycleAnchorEntryForDay(day)?.reachedAt != null;
+}
+
+/// Most recent recorded weight inside a weekly check-in window.
+double? latestDiaryCheckInWeightKg(DiaryWeeklyCheckInData data) {
+  for (final day in data.days.reversed) {
+    if (day.weightKg != null) return day.weightKg;
+  }
+  return null;
+}
+
 /// Weekly check-in data consumed by diary UI.
 @riverpod
 Future<DiaryWeeklyCheckInData> diaryWeeklyCheckInData(Ref ref) {

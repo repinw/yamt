@@ -102,6 +102,33 @@ void main() {
     expect(find.text('Measured base TDEE'), findsNothing);
     expect(find.text('Credited activity avg'), findsNothing);
   });
+
+  testWidgets('reached goal requires starting a new goal', (tester) async {
+    final results = <DiaryWeeklyCheckInDialogAction?>[];
+
+    await tester.pumpWidget(
+      _App(
+        checkInData: _checkInData(lowConfidence: true),
+        goalReached: true,
+        onResult: results.add,
+      ),
+    );
+
+    await _openDialog(tester);
+
+    expect(
+      find.byKey(DiaryWeeklyCheckInDialogKeys.newGoalButton),
+      findsOneWidget,
+    );
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.laterButton), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.applyButton), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.rejectButton), findsNothing);
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.newGoalButton));
+    await tester.pumpAndSettle();
+
+    expect(results, [DiaryWeeklyCheckInDialogAction.newGoal]);
+  });
 }
 
 Future<void> _openDialog(WidgetTester tester) async {
@@ -115,10 +142,12 @@ class _App extends StatelessWidget {
   const _App({
     required this.checkInData,
     required this.onResult,
+    this.goalReached = false,
   });
 
   final DiaryWeeklyCheckInData checkInData;
   final ValueChanged<DiaryWeeklyCheckInDialogAction?> onResult;
+  final bool goalReached;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +164,7 @@ class _App extends StatelessWidget {
                 final result = await showDiaryWeeklyCheckInDialog(
                   context,
                   checkInData: checkInData,
+                  goalReached: goalReached,
                 );
                 onResult(result);
               },

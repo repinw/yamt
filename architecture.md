@@ -122,7 +122,10 @@ The architecture pattern is MVVM, but naming is strictly controller-based.
 General dependency rules:
 
 - Features may depend on `core`.
-- `core` must not depend on features.
+- `core` must not depend on features, except for the router composition root.
+  `core/router/app_router.dart` may import public feature pages solely to compose
+  the application route tree; routing logic must not reach into feature state
+  or internal widgets.
 - Feature-to-feature dependencies must be explicit and small.
 - Prefer depending on another feature's public edge, not its internals.
 - Avoid dependency cycles. When a new dependency would create a cycle, extract

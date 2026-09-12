@@ -16,10 +16,13 @@ Future<void> showCalorieGoalCalculatorSheet(
   required CalorieGoalSettings initialSettings,
   bool preferLearnedTdee = true,
   bool useRootNavigator = true,
+  bool startsNewGoal = false,
+  double? currentWeightKg,
 }) {
   final route = _resolveCalorieGoalCalculatorSheetRoute(
     initialSettings: initialSettings,
     preferLearnedTdee: preferLearnedTdee,
+    startsNewGoal: startsNewGoal,
   );
 
   return switch (route) {
@@ -28,12 +31,15 @@ Future<void> showCalorieGoalCalculatorSheet(
         context,
         initialSettings: initialSettings,
         useRootNavigator: useRootNavigator,
+        startsNewGoal: startsNewGoal,
+        currentWeightKg: currentWeightKg,
       ),
     _CalorieGoalCalculatorSheetRoute.fullCalculator =>
       showCalorieGoalCalculatorResetSheet(
         context,
         initialSettings: initialSettings,
         useRootNavigator: useRootNavigator,
+        startsNewGoal: startsNewGoal,
       ),
   };
 }
@@ -41,8 +47,9 @@ Future<void> showCalorieGoalCalculatorSheet(
 _CalorieGoalCalculatorSheetRoute _resolveCalorieGoalCalculatorSheetRoute({
   required CalorieGoalSettings initialSettings,
   required bool preferLearnedTdee,
+  required bool startsNewGoal,
 }) {
-  if (preferLearnedTdee && initialSettings.hasLearnedTdee) {
+  if ((preferLearnedTdee || startsNewGoal) && initialSettings.hasLearnedTdee) {
     return _CalorieGoalCalculatorSheetRoute.learnedTdee;
   }
   return _CalorieGoalCalculatorSheetRoute.fullCalculator;

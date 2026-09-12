@@ -11,6 +11,7 @@ import 'package:yamt/features/auth/presentation/welcome_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/presentation/pages/calorie_goal_archive_page.dart';
 import 'package:yamt/features/calories/presentation/pages/tdee_analytics_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_controller.dart';
@@ -202,7 +203,15 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesAnalytics,
-        builder: (context, state) => const TdeeAnalyticsPage(),
+        builder: (context, state) => TdeeAnalyticsPage(
+          initialCycleIds: state.extra is Set<String>
+              ? state.extra! as Set<String>
+              : null,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.homeSettingsGoalArchive,
+        builder: (context, state) => const CalorieGoalArchivePage(),
       ),
       GoRoute(
         path: AppRoutes.homeProductSearchHub,

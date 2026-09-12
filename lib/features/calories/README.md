@@ -34,6 +34,14 @@ state, and calorie-owned side effects from health or weight changes.
 - `presentation/pages/tdee_analytics_page.dart` for visual TDEE expenditure,
   flux range corridor, and goal anticipation analysis (routed via
   `AppRoutes.homeCaloriesAnalytics`).
+- `presentation/pages/calorie_goal_archive_page.dart` lists current and archived
+  goals and opens analytics for one or more selected goal cycles.
+- `presentation/controllers/calorie_goal_reach_coordinator.dart` is the complete
+  presentation edge for checking a recorded weight, displaying the one-time
+  reached-goal prompt, and optionally opening a new-goal sheet.
+- `presentation/widgets/calorie_goal_reached_dialog.dart` is owned and composed
+  by the goal-reach coordinator; sibling features must not assemble it with
+  Calories controllers themselves.
 - Debug-only surfaces under `debug/`, currently composed by the Diary home shell
   only in debug builds.
 
@@ -45,6 +53,8 @@ the legacy `provider/` surface or exposing action wrappers to sibling features.
 ## Providers
 
 - New use-case providers live in `application/`.
+- `application/calorie_goal_archive_provider.dart` resolves archive cycles for
+  presentation without placing aggregation in the archive page.
 - Repository providers live with repository implementations in `data/`.
 - The feature-level `provider/` folder is legacy structure and currently holds
   calorie controllers and derived state. Do not add new provider files there

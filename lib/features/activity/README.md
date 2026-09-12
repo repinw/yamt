@@ -49,11 +49,14 @@ Current application providers:
   user when auth is available.
 - `features/health` for health access, day activity data, workouts, and weight
   samples.
-- `features/calories` for calorie profile inputs and calorie-owned weight state
-  refresh.
+- `features/calories` for calorie profile inputs, calorie-owned weight state
+  refresh, and the complete public goal-reach coordinator invoked after a
+  weight is saved.
 
-Keep these dependencies at the Activity provider or action boundary. UI callers
-should not have to assemble them.
+Keep these dependencies at the Activity provider or action boundary. Activity
+delegates goal-reached behavior as one operation and does not import Calories
+goal models, controllers, or individual dialogs. UI callers should not have to
+assemble them.
 
 ## Tests
 

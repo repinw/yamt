@@ -50,6 +50,49 @@ class _WatchErrorCalorieSettingsRepository
 }
 
 void main() {
+  test('goal reached prompt remains due until user answers it', () async {
+    final day = normalizeDiaryDay(DateTime.now());
+    final profile = const CalorieCalculatorProfile.defaults().copyWith(
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+      targetWeightKg: 75,
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: profile,
+        effectiveDate: day.subtract(const Duration(days: 3)),
+      ),
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final controller = container.read(calorieGoalControllerProvider.notifier);
+    expect(
+      await controller.markGoalReachedIfNeeded(day: day, weightKg: 75),
+      isTrue,
+    );
+    expect(
+      await controller.markGoalReachedIfNeeded(day: day, weightKg: 74.5),
+      isTrue,
+    );
+    expect(await controller.markGoalReachedPromptHandled(), isTrue);
+    expect(
+      await controller.markGoalReachedIfNeeded(day: day, weightKg: 74.5),
+      isFalse,
+    );
+    final entry = (await repository.readSettings()).goalHistory.single;
+    expect(entry.reachedAt, day);
+    expect(entry.reachedWeightKg, 75);
+    expect(entry.reachedPromptHandledAt, isNotNull);
+  });
+
   test(
     'saveCalculatedGoal persists profile and calculated daily goal',
     () async {
@@ -1173,7 +1216,6 @@ void main() {
     expect(settings.isSkippedIntakeDay(skippedDay), isFalse);
   });
 
-
   test(
     'dismissPendingWeeklyCheckIn succeeds when nothing is pending',
     () async {
@@ -1598,6 +1640,7 @@ void main() {
         .saveLearnedTdeeGoal(
           goalMode: CalorieGoalMode.lose,
           goalSpeedKgPerWeek: 0.5,
+          targetWeightKg: 60,
           goalStartDate: DateTime(2026, 4, 20, 8),
         );
 
@@ -1667,6 +1710,7 @@ void main() {
         .saveLearnedTdeeGoal(
           goalMode: CalorieGoalMode.lose,
           goalSpeedKgPerWeek: 0.5,
+          targetWeightKg: 60,
           goalStartDate: today.add(const Duration(days: 1)),
         );
 
@@ -1731,6 +1775,7 @@ void main() {
           .saveLearnedTdeeGoal(
             goalMode: CalorieGoalMode.lose,
             goalSpeedKgPerWeek: 0.5,
+            targetWeightKg: 60,
             goalStartDate: today,
           );
 
@@ -1774,6 +1819,7 @@ void main() {
         activityLevel: 1.7,
         goalMode: CalorieGoalMode.lose,
         goalSpeedKgPerWeek: 0.5,
+        targetWeightKg: 60,
       );
       final repository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
@@ -1806,6 +1852,7 @@ void main() {
           .saveLearnedTdeeGoal(
             goalMode: CalorieGoalMode.lose,
             goalSpeedKgPerWeek: 0.5,
+            targetWeightKg: 60,
             goalStartDate: today,
           );
 

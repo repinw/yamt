@@ -6,12 +6,11 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
-import 'package:yamt/features/activity/application/diary_weight_actions.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
+import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section_keys.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_compact_activity_weight_surface.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_details_card.dart';
-import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_prompt_dismissal_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -49,6 +48,7 @@ class _DiaryActivityWeightSectionState
   Timer? _dataLoadTimer;
   Timer? _refreshTimer;
   var _isWeightExpanded = false;
+  String? _lastGoalReachCheck;
 
   @override
   void initState() {
@@ -110,6 +110,7 @@ class _DiaryActivityWeightSectionState
     if (loadedData != null) {
       _lastData = loadedData;
       _lastDataDay = dataDay;
+      _scheduleGoalReachCheck(loadedData, normalizedDay);
     }
     final lastDataDay = _lastDataDay;
     final canUseLastData =
@@ -194,19 +195,44 @@ class _DiaryActivityWeightSectionState
   }
 
   void _openWeightDialog(DiaryActivityWeightData data, DateTime day) {
-    final weightActions = ref.read(diaryWeightActionsProvider);
+    final trackingFlow = ref.read(diaryWeightTrackingFlowProvider);
     unawaited(
-      showDiaryWeightDialog(
+      trackingFlow.showDialogForDay(
         context: context,
-        weightActions: weightActions,
         selectedDay: day,
         day: day,
         initialWeightKg: data.selectedWeightKg,
-        hasManualWeight: false,
-        canClearWeight: false,
-        healthSample: null,
       ),
     );
+  }
+
+  void _scheduleGoalReachCheck(
+    DiaryActivityWeightData data,
+    DateTime day,
+  ) {
+    final weight = data.selectedWeightKg;
+    if (!data.hasSelectedDayWeight ||
+        weight == null ||
+        !isSameLocalDay(day, DateTime.now())) {
+      return;
+    }
+    final checkKey = '${localDayKey(day)}:$weight';
+    if (_lastGoalReachCheck == checkKey) {
+      return;
+    }
+    _lastGoalReachCheck = checkKey;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(
+        ref
+            .read(diaryWeightTrackingFlowProvider)
+            .handleRecordedWeight(
+              context: context,
+              day: day,
+              weightKg: weight,
+            ),
+      );
+    });
   }
 
   void _dismissWeightPrompt(DateTime day) {

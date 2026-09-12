@@ -44,11 +44,15 @@ class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
   /// The calorie goal calculator flow.
   const CalorieGoalCalculatorFlow({
     required this.initialSettings,
+    this.startsNewGoal = false,
     super.key,
   });
 
   /// The initial settings.
   final CalorieGoalSettings initialSettings;
+
+  /// Whether saving should explicitly archive the currently active goal.
+  final bool startsNewGoal;
 
   @override
   ConsumerState<CalorieGoalCalculatorFlow> createState() =>
@@ -61,7 +65,9 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _heightController;
   late final TextEditingController _ageController;
   late final TextEditingController _goalSpeedController;
+  late final TextEditingController _targetWeightController;
   late DateTime _goalStartDate;
+  DateTime? _maintainUntil;
   _CalculatorStep _currentStep = _CalculatorStep.sex;
 
   @override
@@ -98,6 +104,10 @@ class _CalorieGoalCalculatorFlowState
     _goalSpeedController = TextEditingController(
       text: initialState.goalSpeedKgPerWeekText,
     );
+    _targetWeightController = TextEditingController(
+      text: initialState.targetWeightKgText,
+    );
+    _maintainUntil = widget.initialSettings.calculatorProfile?.maintainUntil;
     final initialGoalEntry =
         widget.initialSettings.activeGoalEntryForDay(DateTime.now()) ??
         widget.initialSettings.latestGoalEntry;
@@ -112,6 +122,7 @@ class _CalorieGoalCalculatorFlowState
     _heightController.dispose();
     _ageController.dispose();
     _goalSpeedController.dispose();
+    _targetWeightController.dispose();
     super.dispose();
   }
 
@@ -138,8 +149,10 @@ class _CalorieGoalCalculatorFlowState
     }
     final saved = await formNotifier.save(
       goalStartDate: _goalStartDate,
+      maintainUntil: _maintainUntil,
       allowFutureGoalStart: allowsFutureGoalStart,
       countGoalStartDayForLearning: countGoalStartDayForLearning,
+      archiveCurrentGoal: widget.startsNewGoal,
     );
     if (!mounted) {
       return;
@@ -189,6 +202,28 @@ class _CalorieGoalCalculatorFlowState
     setState(() {
       _goalStartDate = pickedDate;
     });
+  }
+
+  Future<void> _pickMaintainUntil() async {
+    final now = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+    final firstDate = _goalStartDate.isAfter(now) ? _goalStartDate : now;
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate:
+          _maintainUntil != null && !_maintainUntil!.isBefore(firstDate)
+          ? _maintainUntil!
+          : firstDate,
+      firstDate: firstDate,
+      lastDate: DateTime(firstDate.year + 50, 12, 31),
+    );
+    if (pickedDate == null || !mounted) {
+      return;
+    }
+    setState(() => _maintainUntil = pickedDate);
+  }
+
+  void _clearMaintainUntil() {
+    setState(() => _maintainUntil = null);
   }
 
   bool get _startsToday {
@@ -425,14 +460,28 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
           },
         );
       case _CalculatorStep.goalSpeed:
-        return CalorieGoalCalculatorNumberField(
-          fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
-          controller: _goalSpeedController,
-          label: l10n.caloriesCalculatorGoalSpeedLabel,
-          hintText: l10n.caloriesCalculatorGoalSpeedHint,
-          errorText: _goalSpeedErrorText(l10n, state.goalSpeedError),
-          autofocus: true,
-          onChanged: ref.read(formProvider.notifier).updateGoalSpeedKgPerWeek,
+        return Column(
+          children: [
+            CalorieGoalCalculatorNumberField(
+              fieldKey: CalorieGoalCalculatorSheetKeys.targetWeightField,
+              controller: _targetWeightController,
+              label: l10n.caloriesCalculatorTargetWeightLabel,
+              errorText: _weightErrorText(l10n, state.targetWeightError),
+              autofocus: true,
+              onChanged: ref.read(formProvider.notifier).updateTargetWeightKg,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            CalorieGoalCalculatorNumberField(
+              fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
+              controller: _goalSpeedController,
+              label: l10n.caloriesCalculatorGoalSpeedLabel,
+              hintText: l10n.caloriesCalculatorGoalSpeedHint,
+              errorText: _goalSpeedErrorText(l10n, state.goalSpeedError),
+              onChanged: ref
+                  .read(formProvider.notifier)
+                  .updateGoalSpeedKgPerWeek,
+            ),
+          ],
         );
       case _CalculatorStep.results:
         return Column(
@@ -445,10 +494,12 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
                 baseGoalKcal: state.calculation!.finalGoalKcal,
                 trainingWeekdays: state.trainingWeekdays,
                 trainingDayKcalOffset: state.trainingDayKcalOffset,
-                onTrainingWeekdaysChanged:
-                    ref.read(formProvider.notifier).updateTrainingWeekdays,
-                onOffsetChanged:
-                    ref.read(formProvider.notifier).updateTrainingDayKcalOffset,
+                onTrainingWeekdaysChanged: ref
+                    .read(formProvider.notifier)
+                    .updateTrainingWeekdays,
+                onOffsetChanged: ref
+                    .read(formProvider.notifier)
+                    .updateTrainingDayKcalOffset,
               ),
             ],
             if (state.calculation?.wasClampedToMinimum ?? false) ...[
@@ -463,6 +514,37 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
               enabled: !state.isSaving,
               onChangeRequested: _pickGoalStart,
             ),
+            if (state.goalMode == CalorieGoalMode.maintain) ...[
+              const SizedBox(height: AppSpacing.md),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.event_repeat_rounded),
+                title: Text(l10n.caloriesMaintainUntilTitle),
+                subtitle: Text(
+                  _maintainUntil == null
+                      ? l10n.caloriesMaintainUntilUnlimited
+                      : MaterialLocalizations.of(
+                          context,
+                        ).formatMediumDate(_maintainUntil!),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_maintainUntil != null)
+                      IconButton(
+                        tooltip: l10n.caloriesMaintainUntilClear,
+                        onPressed: _clearMaintainUntil,
+                        icon: const Icon(Icons.clear_rounded),
+                      ),
+                    IconButton(
+                      tooltip: l10n.caloriesMaintainUntilChoose,
+                      onPressed: _pickMaintainUntil,
+                      icon: const Icon(Icons.edit_calendar_rounded),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         );
     }
@@ -479,7 +561,8 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
       _CalculatorStep.age => state.ageError == null,
       _CalculatorStep.activityLevel => true,
       _CalculatorStep.goalMode => true,
-      _CalculatorStep.goalSpeed => state.goalSpeedError == null,
+      _CalculatorStep.goalSpeed =>
+        state.goalSpeedError == null && state.targetWeightError == null,
       _CalculatorStep.results => false,
     };
   }

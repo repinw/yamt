@@ -43,6 +43,30 @@ void main() {
       expect(window.end, today);
     });
 
+    test('multiple cycles form one continuous earliest-to-latest window', () {
+      final window = TdeeAnalyticsService.resolveDateWindowForCycles(
+        cycles: [
+          TdeeAnalyticsGoalCycle(
+            id: 'early',
+            title: 'Early',
+            startDate: DateTime(2025),
+            endDate: DateTime(2025, 1, 14),
+          ),
+          TdeeAnalyticsGoalCycle(
+            id: 'late',
+            title: 'Late',
+            startDate: DateTime(2025, 2),
+            endDate: DateTime(2025, 2, 20),
+          ),
+        ],
+        timeRange: TdeeAnalyticsTimeRange.all,
+        today: today,
+      );
+
+      expect(window.start, DateTime(2025));
+      expect(window.end, DateTime(2025, 2, 20));
+    });
+
     test('buildSummary calculates averages and deltas accurately', () {
       final points = [
         TdeeAnalyticsPoint(

@@ -55,6 +55,87 @@ final class DiaryCalorieGoalSettingsProvider
 String _$diaryCalorieGoalSettingsHash() =>
     r'856d13ab89212052dcdaf2fb71e1c650f8666400';
 
+/// Whether the active calorie goal had already been reached on [day].
+
+@ProviderFor(diaryActiveCalorieGoalWasReached)
+final diaryActiveCalorieGoalWasReachedProvider =
+    DiaryActiveCalorieGoalWasReachedFamily._();
+
+/// Whether the active calorie goal had already been reached on [day].
+
+final class DiaryActiveCalorieGoalWasReachedProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// Whether the active calorie goal had already been reached on [day].
+  DiaryActiveCalorieGoalWasReachedProvider._({
+    required DiaryActiveCalorieGoalWasReachedFamily super.from,
+    required DateTime super.argument,
+  }) : super(
+         retry: null,
+         name: r'diaryActiveCalorieGoalWasReachedProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryActiveCalorieGoalWasReachedHash();
+
+  @override
+  String toString() {
+    return r'diaryActiveCalorieGoalWasReachedProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    final argument = this.argument as DateTime;
+    return diaryActiveCalorieGoalWasReached(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DiaryActiveCalorieGoalWasReachedProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$diaryActiveCalorieGoalWasReachedHash() =>
+    r'4923f1ed178901349c81f520c8862738abfb6a10';
+
+/// Whether the active calorie goal had already been reached on [day].
+
+final class DiaryActiveCalorieGoalWasReachedFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<bool>, DateTime> {
+  DiaryActiveCalorieGoalWasReachedFamily._()
+    : super(
+        retry: null,
+        name: r'diaryActiveCalorieGoalWasReachedProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Whether the active calorie goal had already been reached on [day].
+
+  DiaryActiveCalorieGoalWasReachedProvider call(DateTime day) =>
+      DiaryActiveCalorieGoalWasReachedProvider._(argument: day, from: this);
+
+  @override
+  String toString() => r'diaryActiveCalorieGoalWasReachedProvider';
+}
+
 /// Weekly check-in data consumed by diary UI.
 
 @ProviderFor(diaryWeeklyCheckInData)

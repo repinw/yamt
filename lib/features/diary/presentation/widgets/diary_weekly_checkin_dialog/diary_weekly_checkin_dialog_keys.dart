@@ -20,6 +20,11 @@ abstract final class DiaryWeeklyCheckInDialogKeys {
     'diary-weekly-checkin-reject',
   );
 
+  /// The mandatory new-goal button shown after reaching a weight target.
+  static const newGoalButton = ValueKey<String>(
+    'diary-weekly-checkin-new-goal',
+  );
+
   /// The track missing weight button.
   static const trackMissingWeightButton = ValueKey<String>(
     'diary-weekly-checkin-dialog-track-missing-weight',

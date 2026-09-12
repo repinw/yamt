@@ -73,7 +73,7 @@ final class CalorieGoalCalculatorFormControllerProvider
 }
 
 String _$calorieGoalCalculatorFormControllerHash() =>
-    r'c5031e63dac95285663a00526ce4fbff1d31b1fe';
+    r'731fe1aee9cd4d9f3de4e697b4f916a8a10109e7';
 
 /// Defines calorie goal calculator form controller.
 

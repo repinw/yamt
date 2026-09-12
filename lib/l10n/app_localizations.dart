@@ -2975,6 +2975,12 @@ abstract class AppLocalizations {
   /// **'Gain'**
   String get caloriesCalculatorGoalModeGain;
 
+  /// No description provided for @caloriesCalculatorTargetWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target weight (kg)'**
+  String get caloriesCalculatorTargetWeightLabel;
+
   /// No description provided for @caloriesCalculatorGoalSpeedLabel.
   ///
   /// In en, this message translates to:
@@ -2998,6 +3004,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a valid goal speed.'**
   String get caloriesCalculatorGoalSpeedInvalid;
+
+  /// No description provided for @caloriesMaintainUntilTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain weight until'**
+  String get caloriesMaintainUntilTitle;
+
+  /// No description provided for @caloriesMaintainUntilUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'No end date – until you choose a new goal'**
+  String get caloriesMaintainUntilUnlimited;
+
+  /// No description provided for @caloriesMaintainUntilChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose end date'**
+  String get caloriesMaintainUntilChoose;
+
+  /// No description provided for @caloriesMaintainUntilClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove end date'**
+  String get caloriesMaintainUntilClear;
+
+  /// No description provided for @settingsGoalArchiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal archive'**
+  String get settingsGoalArchiveTitle;
+
+  /// No description provided for @settingsGoalArchiveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View your current and previous goals'**
+  String get settingsGoalArchiveSubtitle;
+
+  /// No description provided for @goalArchiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal archive'**
+  String get goalArchiveTitle;
+
+  /// No description provided for @goalArchiveEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No goals yet.'**
+  String get goalArchiveEmpty;
+
+  /// No description provided for @goalArchiveActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get goalArchiveActive;
+
+  /// No description provided for @goalArchiveCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get goalArchiveCompleted;
+
+  /// No description provided for @goalArchiveGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get goalArchiveGoalLabel;
+
+  /// No description provided for @goalArchiveSpeedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed'**
+  String get goalArchiveSpeedLabel;
+
+  /// No description provided for @goalArchiveStartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get goalArchiveStartLabel;
+
+  /// No description provided for @goalArchiveStartWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting weight'**
+  String get goalArchiveStartWeightLabel;
+
+  /// No description provided for @goalArchiveEndWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ending weight'**
+  String get goalArchiveEndWeightLabel;
+
+  /// No description provided for @goalArchiveEstimatedEndLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated end'**
+  String get goalArchiveEstimatedEndLabel;
+
+  /// No description provided for @goalArchiveEndLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get goalArchiveEndLabel;
+
+  /// No description provided for @goalArchiveReachedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached'**
+  String get goalArchiveReachedLabel;
+
+  /// No description provided for @goalArchiveUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'No end date'**
+  String get goalArchiveUnlimited;
+
+  /// No description provided for @goalArchiveSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select one or more goals for one continuous timeline.'**
+  String get goalArchiveSelectHint;
+
+  /// No description provided for @goalArchiveOpenAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Open timeline'**
+  String get goalArchiveOpenAnalytics;
+
+  /// No description provided for @caloriesGoalReachedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached!'**
+  String get caloriesGoalReachedTitle;
+
+  /// No description provided for @caloriesGoalReachedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You reached your target weight. Would you like to continue the current 7-day run or set a new goal now?'**
+  String get caloriesGoalReachedBody;
+
+  /// No description provided for @caloriesGoalReachedContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue run'**
+  String get caloriesGoalReachedContinue;
+
+  /// No description provided for @caloriesGoalReachedNewGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Set new goal'**
+  String get caloriesGoalReachedNewGoal;
+
+  /// No description provided for @caloriesNewGoalCurrentWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Current weight: {weight} kg'**
+  String caloriesNewGoalCurrentWeight(String weight);
+
+  /// No description provided for @caloriesWeeklyCheckInNewGoalAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose new goal'**
+  String get caloriesWeeklyCheckInNewGoalAction;
 
   /// No description provided for @caloriesCalculatorResultsTitle.
   ///

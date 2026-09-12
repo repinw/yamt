@@ -16,6 +16,8 @@ Future<void> showDiaryWeightDialog({
   required bool hasManualWeight,
   required bool canClearWeight,
   required HealthWeightSample? healthSample,
+  Future<void> Function({required DateTime day, required double weightKg})?
+  onWeightSaved,
 }) {
   final locale = Localizations.localeOf(context).toLanguageTag();
   final dayLabel = DateFormat.yMMMd(locale).format(day);
@@ -34,6 +36,9 @@ Future<void> showDiaryWeightDialog({
         weightKg: weightKg,
       );
     },
+    onWeightSaved: onWeightSaved == null
+        ? null
+        : (weightKg) => onWeightSaved(day: day, weightKg: weightKg),
     onClearWeight: () async {
       return weightActions.deleteWeight(
         selectedDay: selectedDay,
@@ -53,6 +58,7 @@ Future<void> _showDiaryWeightEntryDialog({
   required bool showClearAction,
   required Future<bool> Function(double weightKg) onSaveWeight,
   required Future<bool> Function() onClearWeight,
+  Future<void> Function(double weightKg)? onWeightSaved,
 }) async {
   final result = await showWeightEntryDialog(
     context: context,
@@ -89,6 +95,8 @@ Future<void> _showDiaryWeightEntryDialog({
         messenger.showSnackBar(
           SnackBar(content: Text(l10n.diaryWeightSaveFailed)),
         );
+      } else if (saved && context.mounted) {
+        await onWeightSaved?.call(weightKg);
       }
     case WeightEntryDialogAction.clear:
       final cleared = await onClearWeight();

@@ -7,13 +7,13 @@ part 'tdee_analytics_controller.g.dart';
 class TdeeAnalyticsUiState {
   /// Creates UI state for TDEE analytics.
   const TdeeAnalyticsUiState({
-    required this.selectedCycleId,
     required this.timeRange,
+    this.selectedCycleIds = const <String>{'all'},
     this.showAnticipation = true,
   });
 
-  /// ID of the currently selected goal cycle or 'all'.
-  final String selectedCycleId;
+  /// IDs of selected goal cycles; `all` means every cycle.
+  final Set<String> selectedCycleIds;
 
   /// Selected time filter window.
   final TdeeAnalyticsTimeRange timeRange;
@@ -23,12 +23,12 @@ class TdeeAnalyticsUiState {
 
   /// Copy with.
   TdeeAnalyticsUiState copyWith({
-    String? selectedCycleId,
+    Set<String>? selectedCycleIds,
     TdeeAnalyticsTimeRange? timeRange,
     bool? showAnticipation,
   }) {
     return TdeeAnalyticsUiState(
-      selectedCycleId: selectedCycleId ?? this.selectedCycleId,
+      selectedCycleIds: selectedCycleIds ?? this.selectedCycleIds,
       timeRange: timeRange ?? this.timeRange,
       showAnticipation: showAnticipation ?? this.showAnticipation,
     );
@@ -41,14 +41,21 @@ class TdeeAnalyticsController extends _$TdeeAnalyticsController {
   @override
   TdeeAnalyticsUiState build() {
     return const TdeeAnalyticsUiState(
-      selectedCycleId: 'all',
       timeRange: TdeeAnalyticsTimeRange.days28,
     );
   }
 
   /// Sets the selected goal cycle.
+  void selectCycles(Set<String> cycleIds, {bool showFullRange = false}) {
+    state = state.copyWith(
+      selectedCycleIds: cycleIds.isEmpty ? const <String>{'all'} : cycleIds,
+      timeRange: showFullRange ? TdeeAnalyticsTimeRange.all : state.timeRange,
+    );
+  }
+
+  /// Backwards-compatible single-cycle selection.
   void selectCycle(String cycleId) {
-    state = state.copyWith(selectedCycleId: cycleId);
+    selectCycles(<String>{cycleId});
   }
 
   /// Sets the selected time range.

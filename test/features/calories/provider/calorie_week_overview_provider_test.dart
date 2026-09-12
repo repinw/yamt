@@ -121,6 +121,19 @@ Future<CalorieWeekDayOverview> _readDayOverviewForDate(
   return container.read(provider.future);
 }
 
+final class _RecordingProviderObserver extends ProviderObserver {
+  final failures = <Object>[];
+
+  @override
+  void providerDidFail(
+    ProviderObserverContext context,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    failures.add(error);
+  }
+}
+
 void main() {
   test('CalorieWeekDayOverview getters report entry state', () {
     final withinGoal = CalorieWeekDayOverview(
@@ -147,6 +160,61 @@ void main() {
     expect(overGoal.isOverGoal, isTrue);
     expect(empty.isWithinGoal, isFalse);
   });
+
+  test(
+    'invalidating an in-flight week overview does not report a dispose error',
+    () async {
+      final today = DateTime(2026, 4, 8);
+      final rangeReads = <Completer<List<CalorieEntry>>>[];
+      final logRepository = FakeCalorieLogRepository()
+        ..onReadEntriesInRange = (startInclusive, endExclusive) {
+          final completer = Completer<List<CalorieEntry>>();
+          rangeReads.add(completer);
+          return completer.future;
+        };
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: today.subtract(const Duration(days: 6)),
+        ),
+      );
+      final observer = _RecordingProviderObserver();
+      final container = ProviderContainer(
+        observers: <ProviderObserver>[observer],
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+      addTearDown(container.dispose);
+
+      final provider = calorieWeekOverviewForWindowProvider(today);
+      final subscription = container.listen(provider, (_, _) {});
+      addTearDown(subscription.close);
+      unawaited(container.read(provider.future));
+      await container.pump();
+      expect(rangeReads, hasLength(1));
+
+      container.invalidate(
+        calorieWeekConsumptionSnapshotForWindowProvider(today),
+      );
+      await container.pump();
+      expect(rangeReads, hasLength(2));
+
+      rangeReads.first.complete(const <CalorieEntry>[]);
+      rangeReads.last.complete(const <CalorieEntry>[]);
+      final overview = await container.read(provider.future);
+      await container.pump();
+
+      expect(overview.days, hasLength(7));
+      expect(observer.failures, isEmpty);
+    },
+  );
 
   test('calorieWeekOverview aggregates rolling seven-day totals', () async {
     final today = normalizeDiaryDay(DateTime.now());

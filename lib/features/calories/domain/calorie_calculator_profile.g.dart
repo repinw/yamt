@@ -35,6 +35,9 @@ CalorieCalculatorProfile _$CalorieCalculatorProfileFromJson(
   targetWeightKg: const NullableFlexibleDoubleConverter().fromJson(
     json['target_weight_kg'],
   ),
+  maintainUntil: const NullableFlexibleDateTimeConverter().fromJson(
+    json['maintain_until'],
+  ),
   trainingWeekdays:
       (json['training_weekdays'] as List<dynamic>?)
           ?.map((e) => (e as num).toInt())
@@ -63,6 +66,9 @@ Map<String, dynamic> _$CalorieCalculatorProfileToJson(
   ),
   'target_weight_kg': const NullableFlexibleDoubleConverter().toJson(
     instance.targetWeightKg,
+  ),
+  'maintain_until': const NullableFlexibleDateTimeConverter().toJson(
+    instance.maintainUntil,
   ),
   'training_weekdays': instance.trainingWeekdays,
   'training_day_kcal_offset': const FlexibleDoubleConverter().toJson(

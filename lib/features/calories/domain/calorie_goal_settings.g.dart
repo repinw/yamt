@@ -71,6 +71,19 @@ CalorieGoalHistoryEntry _$CalorieGoalHistoryEntryFromJson(
       : CalorieGoalWeeklyCheckInSnapshot.fromJson(
           json['weekly_check_in_snapshot'] as Map<String, dynamic>,
         ),
+  reachedAt: const NullableFlexibleDateTimeConverter().fromJson(
+    json['reached_at'],
+  ),
+  reachedWeightKg: const NullableFlexibleDoubleConverter().fromJson(
+    json['reached_weight_kg'],
+  ),
+  reachedPromptHandledAt: const NullableFlexibleDateTimeConverter().fromJson(
+    json['reached_prompt_handled_at'],
+  ),
+  endedAt: const NullableFlexibleDateTimeConverter().fromJson(json['ended_at']),
+  endedWeightKg: const NullableFlexibleDoubleConverter().fromJson(
+    json['ended_weight_kg'],
+  ),
 );
 
 Map<String, dynamic> _$CalorieGoalHistoryEntryToJson(
@@ -94,6 +107,21 @@ Map<String, dynamic> _$CalorieGoalHistoryEntryToJson(
   ),
   'source': _$CalorieGoalSourceEnumMap[instance.source]!,
   'weekly_check_in_snapshot': instance.weeklyCheckInSnapshot?.toJson(),
+  'reached_at': const NullableFlexibleDateTimeConverter().toJson(
+    instance.reachedAt,
+  ),
+  'reached_weight_kg': const NullableFlexibleDoubleConverter().toJson(
+    instance.reachedWeightKg,
+  ),
+  'reached_prompt_handled_at': const NullableFlexibleDateTimeConverter().toJson(
+    instance.reachedPromptHandledAt,
+  ),
+  'ended_at': const NullableFlexibleDateTimeConverter().toJson(
+    instance.endedAt,
+  ),
+  'ended_weight_kg': const NullableFlexibleDoubleConverter().toJson(
+    instance.endedWeightKg,
+  ),
 };
 
 const _$CalorieGoalSourceEnumMap = {

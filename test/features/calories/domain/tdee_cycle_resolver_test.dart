@@ -26,15 +26,16 @@ void main() {
         weightKg: 75,
       );
 
-      final settings = CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: profile1,
-        effectiveDate: now,
-      ).applyGoalChange(
-        changedAt: DateTime(2025, 2),
-        dailyKcalGoal: 2500,
-        calculatorProfile: profile2,
-      );
+      final settings =
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2000,
+            calculatorProfile: profile1,
+            effectiveDate: now,
+          ).applyGoalChange(
+            changedAt: DateTime(2025, 2),
+            dailyKcalGoal: 2500,
+            calculatorProfile: profile2,
+          );
 
       final cycles = TdeeCycleResolver.resolveGoalCycles(settings);
 
@@ -46,6 +47,46 @@ void main() {
       expect(cycles[2].goalMode, CalorieGoalMode.lose);
       expect(cycles[2].isActive, isFalse);
       expect(cycles[2].endDate, DateTime(2025, 1, 31));
+    });
+
+    test('derives estimates and preserves an explicit same-day end', () {
+      final profile = const CalorieCalculatorProfile.defaults().copyWith(
+        weightKg: 80,
+        targetWeightKg: 78,
+        goalMode: CalorieGoalMode.lose,
+        goalSpeedKgPerWeek: 0.5,
+      );
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: profile,
+        effectiveDate: DateTime(2026, 6),
+      ).markActiveGoalEnded(DateTime(2026, 6, 4), weightKg: 78.4);
+
+      final cycle = TdeeCycleResolver.resolveGoalCycles(
+        settings,
+      ).firstWhere((cycle) => !cycle.isAllGoals);
+
+      expect(cycle.estimatedEndDate, DateTime(2026, 6, 29));
+      expect(cycle.endDate, DateTime(2026, 6, 4));
+      expect(cycle.startWeightKg, 80);
+      expect(cycle.endWeightKg, 78.4);
+    });
+
+    test('uses optional maintain end date', () {
+      final profile = const CalorieCalculatorProfile.defaults().copyWith(
+        maintainUntil: DateTime(2026, 12, 31),
+      );
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2400,
+        calculatorProfile: profile,
+        effectiveDate: DateTime(2026, 6),
+      );
+
+      final cycle = TdeeCycleResolver.resolveGoalCycles(
+        settings,
+      ).firstWhere((cycle) => !cycle.isAllGoals);
+
+      expect(cycle.estimatedEndDate, DateTime(2026, 12, 31));
     });
   });
 }

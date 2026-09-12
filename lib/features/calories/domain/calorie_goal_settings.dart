@@ -305,6 +305,11 @@ class CalorieGoalHistoryEntry {
     this.countingStartDate,
     this.source = CalorieGoalSource.manual,
     this.weeklyCheckInSnapshot,
+    this.reachedAt,
+    this.reachedWeightKg,
+    this.reachedPromptHandledAt,
+    this.endedAt,
+    this.endedWeightKg,
   });
 
   /// Creates a [CalorieGoalHistoryEntry] for from json.
@@ -345,6 +350,26 @@ class CalorieGoalHistoryEntry {
   /// The weekly check in snapshot.
   final CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot;
 
+  /// First date on which the configured target weight was reached.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? reachedAt;
+
+  /// Scale weight recorded when the target was first reached.
+  @NullableFlexibleDoubleConverter()
+  final double? reachedWeightKg;
+
+  /// Date on which the user answered the goal-reached prompt.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? reachedPromptHandledAt;
+
+  /// Date on which this goal was explicitly replaced by a new goal.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? endedAt;
+
+  /// Scale weight recorded when this goal was replaced.
+  @NullableFlexibleDoubleConverter()
+  final double? endedWeightKg;
+
   /// Whether goal.
   bool get hasGoal => dailyKcalGoal != null;
 
@@ -376,6 +401,66 @@ class CalorieGoalHistoryEntry {
 
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieGoalHistoryEntryToJson(this);
+
+  /// Returns a copy with goal-completion metadata changed.
+  CalorieGoalHistoryEntry copyWithReached({
+    required DateTime reachedAt,
+    required double weightKg,
+  }) {
+    return CalorieGoalHistoryEntry(
+      dailyKcalGoal: dailyKcalGoal,
+      calculatorProfile: calculatorProfile,
+      expectedActivityKcal: expectedActivityKcal,
+      effectiveDate: effectiveDate,
+      changedAt: changedAt,
+      countingStartDate: countingStartDate,
+      source: source,
+      weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+      reachedAt: normalizeDiaryDay(reachedAt),
+      reachedWeightKg: weightKg,
+      reachedPromptHandledAt: reachedPromptHandledAt,
+      endedAt: endedAt,
+      endedWeightKg: endedWeightKg,
+    );
+  }
+
+  /// Returns a copy after the user answered the reached-goal prompt.
+  CalorieGoalHistoryEntry copyWithReachedPromptHandledAt(DateTime value) {
+    return CalorieGoalHistoryEntry(
+      dailyKcalGoal: dailyKcalGoal,
+      calculatorProfile: calculatorProfile,
+      expectedActivityKcal: expectedActivityKcal,
+      effectiveDate: effectiveDate,
+      changedAt: changedAt,
+      countingStartDate: countingStartDate,
+      source: source,
+      weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+      reachedAt: reachedAt,
+      reachedWeightKg: reachedWeightKg,
+      reachedPromptHandledAt: value,
+      endedAt: endedAt,
+      endedWeightKg: endedWeightKg,
+    );
+  }
+
+  /// Returns a copy marked as explicitly ended.
+  CalorieGoalHistoryEntry copyWithEndedAt(DateTime value, {double? weightKg}) {
+    return CalorieGoalHistoryEntry(
+      dailyKcalGoal: dailyKcalGoal,
+      calculatorProfile: calculatorProfile,
+      expectedActivityKcal: expectedActivityKcal,
+      effectiveDate: effectiveDate,
+      changedAt: changedAt,
+      countingStartDate: countingStartDate,
+      source: source,
+      weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+      reachedAt: reachedAt,
+      reachedWeightKg: reachedWeightKg,
+      reachedPromptHandledAt: reachedPromptHandledAt,
+      endedAt: normalizeDiaryDay(value),
+      endedWeightKg: weightKg ?? endedWeightKg,
+    );
+  }
 }
 
 /// Defines calorie goal settings.
@@ -623,6 +708,21 @@ class CalorieGoalSettings {
     return anchorEntry;
   }
 
+  /// Earliest goal anchor that may contribute to the rolling TDEE learning
+  /// window. Goal changes do not discard otherwise valid intake/weight days.
+  CalorieGoalHistoryEntry? learningAnchorEntryForDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    for (final entry in sortedGoalHistory) {
+      if (entry.effectiveDate.isAfter(normalizedDay)) {
+        break;
+      }
+      if (entry.hasGoal && !entry.isWeeklyCheckIn) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
   /// Goal entry for day.
   CalorieGoalHistoryEntry? goalEntryForDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);
@@ -788,7 +888,6 @@ class CalorieGoalSettings {
     return copyWith(pauseDayKeys: List<String>.unmodifiable(nextKeys));
   }
 
-
   /// Balance start for window.
   DateTime balanceStartForWindow(Iterable<DateTime> days) {
     final normalizedDays = days.map(normalizeDiaryDay).toList(growable: false)
@@ -878,6 +977,7 @@ class CalorieGoalSettings {
     CalorieGoalSource source = CalorieGoalSource.manual,
     CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
     bool replaceFutureHistory = false,
+    bool preserveSameDayGoalEntries = false,
   }) {
     final effectiveDate = normalizeDiaryDay(changedAt);
     final normalizedCountingStartDate = _resolveNormalizedCountingStartDate(
@@ -893,6 +993,7 @@ class CalorieGoalSettings {
               source: source,
               weeklyCheckInSnapshot: weeklyCheckInSnapshot,
               replaceFutureHistory: replaceFutureHistory,
+              preserveSameDayGoalEntries: preserveSameDayGoalEntries,
             ))
               entry,
           CalorieGoalHistoryEntry(
@@ -928,6 +1029,72 @@ class CalorieGoalSettings {
           calculatorProfile?.trainingDayKcalOffset ?? trainingDayKcalOffset,
       trainingDayOverrides: trainingDayOverrides,
       pauseDayKeys: pauseDayKeys,
+    );
+  }
+
+  /// Marks the active non-check-in goal as reached without starting a new
+  /// goal cycle. Returns this instance if there is no markable active goal.
+  CalorieGoalSettings markActiveGoalReached(
+    DateTime reachedAt, {
+    required double weightKg,
+  }) {
+    final active = cycleAnchorEntryForDay(reachedAt);
+    if (active == null || active.reachedAt != null) {
+      return this;
+    }
+    final nextHistory = <CalorieGoalHistoryEntry>[
+      for (final entry in goalHistory)
+        if (identical(entry, active))
+          entry.copyWithReached(reachedAt: reachedAt, weightKg: weightKg)
+        else
+          entry,
+    ];
+    return copyWith(
+      goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
+      updatedAt: reachedAt,
+    );
+  }
+
+  /// Marks the reached-goal prompt as explicitly answered by the user.
+  CalorieGoalSettings markGoalReachedPromptHandled(DateTime handledAt) {
+    final active = cycleAnchorEntryForDay(handledAt);
+    if (active == null ||
+        active.reachedAt == null ||
+        active.reachedPromptHandledAt != null) {
+      return this;
+    }
+    final nextHistory = <CalorieGoalHistoryEntry>[
+      for (final entry in goalHistory)
+        if (identical(entry, active))
+          entry.copyWithReachedPromptHandledAt(handledAt)
+        else
+          entry,
+    ];
+    return copyWith(
+      goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
+      updatedAt: handledAt,
+    );
+  }
+
+  /// Ends the active goal without removing its history entry.
+  CalorieGoalSettings markActiveGoalEnded(
+    DateTime endedAt, {
+    double? weightKg,
+  }) {
+    final active = cycleAnchorEntryForDay(endedAt);
+    if (active == null || active.endedAt != null) {
+      return this;
+    }
+    final nextHistory = <CalorieGoalHistoryEntry>[
+      for (final entry in goalHistory)
+        if (identical(entry, active))
+          entry.copyWithEndedAt(endedAt, weightKg: weightKg)
+        else
+          entry,
+    ];
+    return copyWith(
+      goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
+      updatedAt: endedAt,
     );
   }
 
@@ -1067,8 +1234,7 @@ class CalorieGoalSettings {
       trainingWeekdays: trainingWeekdays ?? this.trainingWeekdays,
       trainingDayKcalOffset:
           trainingDayKcalOffset ?? this.trainingDayKcalOffset,
-      trainingDayOverrides:
-          trainingDayOverrides ?? this.trainingDayOverrides,
+      trainingDayOverrides: trainingDayOverrides ?? this.trainingDayOverrides,
       pauseDayKeys: pauseDayKeys ?? this.pauseDayKeys,
     );
   }
@@ -1086,8 +1252,12 @@ bool _shouldKeepGoalHistoryEntry({
   required CalorieGoalSource source,
   required CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
   required bool replaceFutureHistory,
+  required bool preserveSameDayGoalEntries,
 }) {
   if (_isSameDay(entry.effectiveDate, effectiveDate)) {
+    if (preserveSameDayGoalEntries && entry.hasGoal && !entry.isWeeklyCheckIn) {
+      return true;
+    }
     if (entry.isWeeklyCheckIn != (source == CalorieGoalSource.weeklyCheckIn)) {
       return true;
     }
@@ -1145,6 +1315,11 @@ CalorieGoalHistoryEntry _dirtyGoalHistoryEntrySnapshot({
       inputHash: null,
       invalidatedAt: invalidatedAt,
     ),
+    reachedAt: entry.reachedAt,
+    reachedWeightKg: entry.reachedWeightKg,
+    reachedPromptHandledAt: entry.reachedPromptHandledAt,
+    endedAt: entry.endedAt,
+    endedWeightKg: entry.endedWeightKg,
   );
 }
 

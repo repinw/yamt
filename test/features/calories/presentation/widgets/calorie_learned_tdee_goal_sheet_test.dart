@@ -43,6 +43,7 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 Widget _buildHarness({
   required CalorieGoalSettings initialSettings,
   List<Override> overrides = const <Override>[],
+  bool startsNewGoal = false,
 }) {
   return ProviderScope(
     overrides: overrides,
@@ -59,6 +60,7 @@ Widget _buildHarness({
                   showCalorieLearnedTdeeGoalSheet(
                     context,
                     initialSettings: initialSettings,
+                    startsNewGoal: startsNewGoal,
                   ),
                 );
               },
@@ -87,6 +89,7 @@ CalorieGoalSettings _learnedTdeeSettings({
       activityLevel: 1.7,
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+      targetWeightKg: goalMode == CalorieGoalMode.maintain ? null : 60,
     ),
     effectiveDate: resolvedGoalStartDate,
     countingStartDate: resolvedGoalStartDate,
@@ -144,6 +147,34 @@ void main() {
     expect(tester.widget<TextField>(speedFieldFinder).controller?.text, '0,7');
   });
 
+  testWidgets('requires a target weight for losing or gaining', (tester) async {
+    await tester.pumpWidget(
+      _buildHarness(initialSettings: _learnedTdeeSettings()),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lose'));
+    await tester.pumpAndSettle();
+
+    FilledButton saveButton() => tester.widget<FilledButton>(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      findsOneWidget,
+    );
+    expect(saveButton().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      '60',
+    );
+    await tester.pumpAndSettle();
+
+    expect(saveButton().onPressed, isNotNull);
+  });
+
   testWidgets('learned TDEE sheet opens on root navigator by default', (
     tester,
   ) async {
@@ -196,6 +227,10 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(
+      find.byKey(CalorieLearnedTdeeSheetKeys.fullResetButton),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.fullResetButton));
     await tester.pumpAndSettle();
 
@@ -326,6 +361,10 @@ void main() {
       find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
     );
     await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
     await tester.pumpAndSettle();
 
@@ -366,6 +405,7 @@ void main() {
     await tester.pumpWidget(
       _buildHarness(
         initialSettings: initialSettings,
+        startsNewGoal: true,
         overrides: <Override>[
           calorieSettingsRepositoryProvider.overrideWithValue(
             settingsRepository,
@@ -379,7 +419,7 @@ void main() {
     );
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Lose'));
+    tester.widget<Slider>(find.byType(Slider)).onChanged!(60);
     await tester.pumpAndSettle();
 
     final goalStartValue = tester.widget<Text>(
@@ -408,6 +448,13 @@ void main() {
     expect(
       runStateRepository.state.runWeekNumber,
       burnWeekLearningRunWeekNumber,
+    );
+    final savedSettings = await settingsRepository.readSettings();
+    expect(savedSettings.goalHistory, hasLength(2));
+    expect(savedSettings.goalHistory.first.endedAt, isNotNull);
+    expect(
+      savedSettings.goalHistory.last.calculatorProfile?.targetWeightKg,
+      60,
     );
     expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
   });
@@ -442,6 +489,10 @@ void main() {
     await tester.tap(find.text('Maintain'));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
     await tester.pumpAndSettle();
     await tester.tap(

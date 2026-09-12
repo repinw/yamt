@@ -1,5 +1,6 @@
 import 'package:yamt/features/calories/application/daily_learned_tdee_models.dart';
 import 'package:yamt/features/calories/application/daily_learned_tdee_resolver.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -18,8 +19,8 @@ abstract final class TdeeAnalyticsService {
     required DateTime today,
   }) {
     final normalizedToday = normalizeDiaryDay(today);
-    final cycleEnd = cycle.endDate != null &&
-            cycle.endDate!.isBefore(normalizedToday)
+    final cycleEnd =
+        cycle.endDate != null && cycle.endDate!.isBefore(normalizedToday)
         ? cycle.endDate!
         : normalizedToday;
 
@@ -35,10 +36,42 @@ abstract final class TdeeAnalyticsService {
     final rawWindowStart = cycleEnd.subtract(Duration(days: dayCount - 1));
     final windowStart =
         (!cycle.isAllGoals && rawWindowStart.isBefore(cycleStart))
-            ? cycleStart
-            : rawWindowStart;
+        ? cycleStart
+        : rawWindowStart;
 
     return (start: windowStart, end: cycleEnd);
+  }
+
+  /// Resolves one continuous window spanning all selected goal cycles.
+  static ({DateTime start, DateTime end}) resolveDateWindowForCycles({
+    required List<TdeeAnalyticsGoalCycle> cycles,
+    required TdeeAnalyticsTimeRange timeRange,
+    required DateTime today,
+  }) {
+    if (cycles.isEmpty) {
+      final day = normalizeDiaryDay(today);
+      return (start: day, end: day);
+    }
+    final normalizedToday = normalizeDiaryDay(today);
+    var start = cycles.first.startDate;
+    var end = cycles.first.endDate ?? normalizedToday;
+    for (final cycle in cycles.skip(1)) {
+      if (cycle.startDate.isBefore(start)) {
+        start = cycle.startDate;
+      }
+      final candidateEnd = cycle.endDate ?? normalizedToday;
+      if (candidateEnd.isAfter(end)) {
+        end = candidateEnd;
+      }
+    }
+    final dayCount = timeRange.dayCount;
+    if (dayCount != null) {
+      final rangeStart = end.subtract(Duration(days: dayCount - 1));
+      if (rangeStart.isAfter(start)) {
+        start = rangeStart;
+      }
+    }
+    return (start: normalizeDiaryDay(start), end: normalizeDiaryDay(end));
   }
 
   /// Builds daily analytics points from loaded inputs.
@@ -71,7 +104,8 @@ abstract final class TdeeAnalyticsService {
         fallbackGoalKcal: target,
       );
       final baseTdee = learnedData?.calculatedBaseTdeeKcal ?? fallbackBaseTdee;
-      final totalTdee = learnedData?.measured.measuredTotalTdeeKcal ??
+      final totalTdee =
+          learnedData?.measured.measuredTotalTdeeKcal ??
           (baseTdee + (learnedData?.averageCreditedActivityKcal ?? 0));
 
       final weight = weightsByDay[key];
@@ -153,7 +187,7 @@ abstract final class TdeeAnalyticsService {
     required List<TdeeAnalyticsPoint> points,
     required DateTime today,
   }) {
-    if (cycle.isAllGoals || cycle.targetWeightKg == null) {
+    if (!cycle.isActive || cycle.targetWeightKg == null) {
       return null;
     }
 
@@ -175,11 +209,27 @@ abstract final class TdeeAnalyticsService {
 
     final recentTrendPerDay = (latest.weight - earliest.weight) / daySpan;
 
-    return TdeeAnticipationCalculator.calculate(
+    final projection = TdeeAnticipationCalculator.calculate(
       currentWeightKg: latest.weight,
       targetWeightKg: cycle.targetWeightKg,
       goalMode: cycle.goalMode,
       recentWeightTrendKgPerDay: recentTrendPerDay,
+      startDate: latest.day,
+      plannedSpeedKgPerWeek: cycle.goalSpeedKgPerWeek,
+    );
+    if (projection?.isMovingAway != true ||
+        cycle.goalSpeedKgPerWeek == null ||
+        cycle.goalSpeedKgPerWeek! <= 0) {
+      return projection;
+    }
+    final plannedDailyRate = cycle.goalSpeedKgPerWeek! / DateTime.daysPerWeek;
+    return TdeeAnticipationCalculator.calculate(
+      currentWeightKg: latest.weight,
+      targetWeightKg: cycle.targetWeightKg,
+      goalMode: cycle.goalMode,
+      recentWeightTrendKgPerDay: cycle.goalMode == CalorieGoalMode.lose
+          ? -plannedDailyRate
+          : plannedDailyRate,
       startDate: latest.day,
       plannedSpeedKgPerWeek: cycle.goalSpeedKgPerWeek,
     );
