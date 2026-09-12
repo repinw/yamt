@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'global_food_nutrition.freezed.dart';
 
 /// Defines global food nutrition quality status.
 enum GlobalFoodNutritionQualityStatus {
@@ -10,102 +12,147 @@ enum GlobalFoodNutritionQualityStatus {
   unverified,
 
   /// Verified.
-  verified,
+  verified
+  ;
+
+  /// Resolves quality status from dynamic JSON value.
+  static GlobalFoodNutritionQualityStatus fromJson(Object? value) {
+    final raw = value is String ? value.trim() : '';
+    if (raw == 'partial') {
+      return GlobalFoodNutritionQualityStatus.unverified;
+    }
+    return GlobalFoodNutritionQualityStatus.values.firstWhereOrNull(
+          (status) => status.name == raw,
+        ) ??
+        GlobalFoodNutritionQualityStatus.missing;
+  }
 }
 
-@immutable
-/// Defines global food nutrition.
-class GlobalFoodNutrition {
+/// Defines global food nutrition model.
+@freezed
+abstract class GlobalFoodNutrition with _$GlobalFoodNutrition {
   /// The global food nutrition.
-  const GlobalFoodNutrition({
-    required this.qualityStatus,
-    this.per100Kcal,
-    this.per100Protein,
-    this.per100Carbs,
-    this.per100Fat,
-    this.per100Salt,
-    this.per100SaturatedFat,
-    this.per100PolyunsaturatedFat,
-    this.per100Sugar,
-    this.per100Fiber,
-  });
+  const factory GlobalFoodNutrition({
+    required GlobalFoodNutritionQualityStatus qualityStatus,
+    double? per100Kcal,
+    double? per100Protein,
+    double? per100Carbs,
+    double? per100Fat,
+    double? per100Salt,
+    double? per100SaturatedFat,
+    double? per100PolyunsaturatedFat,
+    double? per100Sugar,
+    double? per100Fiber,
+  }) = _GlobalFoodNutrition;
 
-  /// Creates a [GlobalFoodNutrition] for from json.
-  factory GlobalFoodNutrition.fromJson(Map<String, dynamic> json) {
+  const GlobalFoodNutrition._();
+
+  /// Creates a [GlobalFoodNutrition] from json payload with optional fallback.
+  factory GlobalFoodNutrition.fromJson(
+    Map<String, dynamic> json, {
+    Map<String, dynamic>? fallback,
+    GlobalFoodNutritionQualityStatus? qualityStatusOverride,
+  }) {
+    double? read(List<String> keys) => _readFirstDouble(json, fallback, keys);
+
+    final directKcal = read(const <String>[
+      'per_100_kcal',
+      'energy_kcal_100g',
+      'energy-kcal_100g',
+      'energy_kcal_100ml',
+      'energy-kcal_100ml',
+      'energy_kcal',
+    ]);
+    final kj = directKcal != null
+        ? null
+        : read(const <String>[
+            'energy_kj_100g',
+            'energy-kj_100g',
+            'energy_kj_100ml',
+            'energy-kj_100ml',
+            'energy_100g',
+            'energy_100ml',
+            'energy_kj',
+          ]);
+    final resolvedKcal = directKcal ?? (kj != null ? (kj / 4.184) : null);
+
+    final directSalt = read(const <String>[
+      'per_100_salt',
+      'salt_100g',
+      'salt_100ml',
+      'salt',
+    ]);
+    final sodium = directSalt != null
+        ? null
+        : read(const <String>[
+            'sodium_100g',
+            'sodium_100ml',
+            'sodium',
+          ]);
+    final resolvedSalt = directSalt ?? (sodium != null ? (sodium * 2.5) : null);
+
+    final qualityStatus =
+        qualityStatusOverride ??
+        GlobalFoodNutritionQualityStatus.fromJson(
+          json['quality_status'] ?? fallback?['quality_status'],
+        );
+
     return GlobalFoodNutrition(
-      qualityStatus: _nutritionQualityFromJson(json['quality_status']),
-      per100Kcal: _readFirstDouble(json, const <String>[
-        'per_100_kcal',
-        'energy_kcal_100g',
-        'energy-kcal_100g',
-      ]),
-      per100Protein: _readFirstDouble(json, const <String>[
+      qualityStatus: qualityStatus,
+      per100Kcal: resolvedKcal,
+      per100Protein: read(const <String>[
         'per_100_protein',
         'proteins_100g',
+        'proteins_100ml',
+        'proteins',
       ]),
-      per100Carbs: _readFirstDouble(json, const <String>[
+      per100Carbs: read(const <String>[
         'per_100_carbs',
         'carbohydrates_100g',
+        'carbohydrates_100ml',
+        'carbohydrates',
       ]),
-      per100Fat: _readFirstDouble(json, const <String>[
+      per100Fat: read(const <String>[
         'per_100_fat',
         'fat_100g',
+        'fat_100ml',
+        'fat',
       ]),
-      per100Salt: _readFirstDouble(json, const <String>[
-        'per_100_salt',
-        'salt_100g',
-      ]),
-      per100SaturatedFat: _readFirstDouble(json, const <String>[
+      per100Salt: resolvedSalt,
+      per100SaturatedFat: read(const <String>[
         'per_100_saturated_fat',
         'saturated-fat_100g',
         'saturated_fat_100g',
+        'saturated-fat_100ml',
+        'saturated_fat_100ml',
+        'saturated_fat',
       ]),
-      per100PolyunsaturatedFat: _readFirstDouble(json, const <String>[
+      per100PolyunsaturatedFat: read(const <String>[
         'per_100_polyunsaturated_fat',
         'polyunsaturated-fat_100g',
         'polyunsaturated_fat_100g',
+        'polyunsaturated-fat_100ml',
+        'polyunsaturated_fat_100ml',
+        'polyunsaturated_fat',
       ]),
-      per100Sugar: _readFirstDouble(json, const <String>[
+      per100Sugar: read(const <String>[
         'per_100_sugar',
         'sugars_100g',
+        'sugars_100ml',
+        'sugars',
+        'sugar',
       ]),
-      per100Fiber: _readFirstDouble(json, const <String>[
+      per100Fiber: read(const <String>[
         'per_100_fiber',
         'fiber_100g',
         'fibre_100g',
+        'fiber_100ml',
+        'fibre_100ml',
+        'fiber',
+        'fibre',
       ]),
     );
   }
-
-  /// The quality status.
-  final GlobalFoodNutritionQualityStatus qualityStatus;
-
-  /// The per100 kcal.
-  final double? per100Kcal;
-
-  /// The per100 protein.
-  final double? per100Protein;
-
-  /// The per100 carbs.
-  final double? per100Carbs;
-
-  /// The per100 fat.
-  final double? per100Fat;
-
-  /// The per100 salt.
-  final double? per100Salt;
-
-  /// The per100 saturated fat.
-  final double? per100SaturatedFat;
-
-  /// The per100 polyunsaturated fat.
-  final double? per100PolyunsaturatedFat;
-
-  /// The per100 sugar.
-  final double? per100Sugar;
-
-  /// The per100 fiber.
-  final double? per100Fiber;
 
   /// To json.
   Map<String, dynamic> toJson() {
@@ -121,51 +168,6 @@ class GlobalFoodNutrition {
       'per_100_sugar': per100Sugar,
       'per_100_fiber': per100Fiber,
     };
-  }
-
-  /// Copy with.
-  GlobalFoodNutrition copyWith({
-    GlobalFoodNutritionQualityStatus? qualityStatus,
-    Object? per100Kcal = _keepValue,
-    Object? per100Protein = _keepValue,
-    Object? per100Carbs = _keepValue,
-    Object? per100Fat = _keepValue,
-    Object? per100Salt = _keepValue,
-    Object? per100SaturatedFat = _keepValue,
-    Object? per100PolyunsaturatedFat = _keepValue,
-    Object? per100Sugar = _keepValue,
-    Object? per100Fiber = _keepValue,
-  }) {
-    return GlobalFoodNutrition(
-      qualityStatus: qualityStatus ?? this.qualityStatus,
-      per100Kcal: per100Kcal == _keepValue
-          ? this.per100Kcal
-          : per100Kcal as double?,
-      per100Protein: per100Protein == _keepValue
-          ? this.per100Protein
-          : per100Protein as double?,
-      per100Carbs: per100Carbs == _keepValue
-          ? this.per100Carbs
-          : per100Carbs as double?,
-      per100Fat: per100Fat == _keepValue
-          ? this.per100Fat
-          : per100Fat as double?,
-      per100Salt: per100Salt == _keepValue
-          ? this.per100Salt
-          : per100Salt as double?,
-      per100SaturatedFat: per100SaturatedFat == _keepValue
-          ? this.per100SaturatedFat
-          : per100SaturatedFat as double?,
-      per100PolyunsaturatedFat: per100PolyunsaturatedFat == _keepValue
-          ? this.per100PolyunsaturatedFat
-          : per100PolyunsaturatedFat as double?,
-      per100Sugar: per100Sugar == _keepValue
-          ? this.per100Sugar
-          : per100Sugar as double?,
-      per100Fiber: per100Fiber == _keepValue
-          ? this.per100Fiber
-          : per100Fiber as double?,
-    );
   }
 
   /// Whether any nutrition value.
@@ -184,10 +186,6 @@ class GlobalFoodNutrition {
   }
 
   /// Whether the mandatory EU nutrition declaration is complete.
-  ///
-  /// Germany follows the EU FIC declaration fields we model here:
-  /// energy (kcal in app), fat, saturates, carbohydrate, sugars,
-  /// protein and salt.
   bool get hasEuMandatoryNutritionDeclaration {
     return per100Kcal != null &&
         per100Fat != null &&
@@ -196,54 +194,6 @@ class GlobalFoodNutrition {
         per100Sugar != null &&
         per100Protein != null &&
         per100Salt != null;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        other is GlobalFoodNutrition &&
-            other.qualityStatus == qualityStatus &&
-            other.per100Kcal == per100Kcal &&
-            other.per100Protein == per100Protein &&
-            other.per100Carbs == per100Carbs &&
-            other.per100Fat == per100Fat &&
-            other.per100Salt == per100Salt &&
-            other.per100SaturatedFat == per100SaturatedFat &&
-            other.per100PolyunsaturatedFat == per100PolyunsaturatedFat &&
-            other.per100Sugar == per100Sugar &&
-            other.per100Fiber == per100Fiber;
-  }
-
-  @override
-  int get hashCode {
-    return Object.hash(
-      qualityStatus,
-      per100Kcal,
-      per100Protein,
-      per100Carbs,
-      per100Fat,
-      per100Salt,
-      per100SaturatedFat,
-      per100PolyunsaturatedFat,
-      per100Sugar,
-      per100Fiber,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'GlobalFoodNutrition('
-        'qualityStatus: $qualityStatus, '
-        'per100Kcal: $per100Kcal, '
-        'per100Protein: $per100Protein, '
-        'per100Carbs: $per100Carbs, '
-        'per100Fat: $per100Fat, '
-        'per100Salt: $per100Salt, '
-        'per100SaturatedFat: $per100SaturatedFat, '
-        'per100PolyunsaturatedFat: $per100PolyunsaturatedFat, '
-        'per100Sugar: $per100Sugar, '
-        'per100Fiber: $per100Fiber'
-        ')';
   }
 }
 
@@ -257,25 +207,24 @@ double? _readDouble(Object? value) {
   return null;
 }
 
-double? _readFirstDouble(Map<String, dynamic> json, List<String> keys) {
+double? _readFirstDouble(
+  Map<String, dynamic> primary,
+  Map<String, dynamic>? fallback,
+  List<String> keys,
+) {
   for (final key in keys) {
-    final value = _readDouble(json[key]);
+    final value = _readDouble(primary[key]);
     if (value != null) {
       return value;
     }
   }
+  if (fallback != null) {
+    for (final key in keys) {
+      final value = _readDouble(fallback[key]);
+      if (value != null) {
+        return value;
+      }
+    }
+  }
   return null;
 }
-
-GlobalFoodNutritionQualityStatus _nutritionQualityFromJson(Object? value) {
-  final raw = value is String ? value.trim() : '';
-  if (raw == 'partial') {
-    return GlobalFoodNutritionQualityStatus.unverified;
-  }
-  return GlobalFoodNutritionQualityStatus.values.firstWhereOrNull(
-        (status) => status.name == raw,
-      ) ??
-      GlobalFoodNutritionQualityStatus.missing;
-}
-
-const Object _keepValue = Object();

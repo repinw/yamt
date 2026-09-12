@@ -106,25 +106,27 @@ InventoryAmountParseResult? _parseWeightAmount({
   if (normalized == null || normalized.isEmpty) {
     return null;
   }
-  if (normalized.contains('ml')) {
+  if (RegExp(r'(^|\s|\d)(ml|milliliter|millilitres?)\b').hasMatch(normalized)) {
     return (unit: InventoryAmountUnit.milliliter, multiplier: 1);
   }
-  if (RegExp(r'(^|\s|\d)l\b').hasMatch(normalized)) {
+  if (RegExp(r'(^|\s|\d)(l|liter|litres?)\b').hasMatch(normalized)) {
     return (unit: InventoryAmountUnit.milliliter, multiplier: 1000);
   }
-  if (normalized.contains('stk') ||
-      normalized.contains('stück') ||
-      normalized.contains('st ') ||
-      normalized.endsWith(' st') ||
-      normalized.contains('pc') ||
-      normalized.contains('piece')) {
-    return (unit: InventoryAmountUnit.piece, multiplier: 1);
-  }
-  if (normalized.contains('kg')) {
+  if (RegExp(r'(^|\s|\d)(kg|kilo|kilogramm?|kilograms?)\b').hasMatch(
+    normalized,
+  )) {
     return (unit: InventoryAmountUnit.gram, multiplier: 1000);
   }
-  if (normalized.contains('g')) {
+  if (RegExp(r'(^|\s|\d)(mg|milligramm?|milligrams?)\b').hasMatch(normalized)) {
+    return (unit: InventoryAmountUnit.gram, multiplier: 0.001);
+  }
+  if (RegExp(r'(^|\s|\d)(g|gr|gramm?|grams?)\b').hasMatch(normalized)) {
     return (unit: InventoryAmountUnit.gram, multiplier: 1);
+  }
+  if (RegExp(
+    r'(^|\s|\d)(stk\.?|st\.?|st[üu]ck|pcs?|pieces?|packung(?:en)?|pkg\.?|flasche(?:n)?|dose(?:n)?|becher|glas|gl[äa]ser|riegel|tafel(?:n)?|portion(?:en)?|beutel|bund|rolle(?:n)?)\b',
+  ).hasMatch(normalized)) {
+    return (unit: InventoryAmountUnit.piece, multiplier: 1);
   }
   return null;
 }

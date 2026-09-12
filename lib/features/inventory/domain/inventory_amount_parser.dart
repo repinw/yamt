@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_unit_aliases.dart';
 
 /// Internal storage scale for fractional piece amounts.
 const inventoryPieceAmountScale = 1000;
@@ -133,125 +134,8 @@ class InventoryAmountParser {
 
   static final RegExp _packPattern = RegExp(r'^(\d+)[x\u00D7](.+)$');
   static final RegExp _valueWithUnitPattern = RegExp(
-    r'^(\d+(?:[.,]\d+)?)([a-zA-Z]+)?$',
+    r'^(\d+(?:[.,]\d+)?)([a-zA-ZäöüÄÖÜß]+(?:\.[a-zA-ZäöüÄÖÜß]+)*\.?)?$',
   );
-  static final Map<
-    String,
-    ({InventoryAmountUnit base, double multiplier, int scale})
-  >
-  _unitAliases =
-      <String, ({InventoryAmountUnit base, double multiplier, int scale})>{
-        'g': (
-          base: InventoryAmountUnit.gram,
-          multiplier: 1.0,
-          scale: 1,
-        ),
-        'gr': (
-          base: InventoryAmountUnit.gram,
-          multiplier: 1.0,
-          scale: 1,
-        ),
-        'gram': (
-          base: InventoryAmountUnit.gram,
-          multiplier: 1.0,
-          scale: 1,
-        ),
-        'grams': (
-          base: InventoryAmountUnit.gram,
-          multiplier: 1.0,
-          scale: 1,
-        ),
-        'kg': (
-          base: InventoryAmountUnit.gram,
-          multiplier: 1000.0,
-          scale: 1,
-        ),
-        'kilogram': (
-          base: InventoryAmountUnit.gram,
-          multiplier: 1000.0,
-          scale: 1,
-        ),
-        'kilograms': (
-          base: InventoryAmountUnit.gram,
-          multiplier: 1000.0,
-          scale: 1,
-        ),
-        'mg': (
-          base: InventoryAmountUnit.gram,
-          multiplier: 0.001,
-          scale: 1,
-        ),
-        'ml': (
-          base: InventoryAmountUnit.milliliter,
-          multiplier: 1.0,
-          scale: 1,
-        ),
-        'cl': (
-          base: InventoryAmountUnit.milliliter,
-          multiplier: 10.0,
-          scale: 1,
-        ),
-        'dl': (
-          base: InventoryAmountUnit.milliliter,
-          multiplier: 100.0,
-          scale: 1,
-        ),
-        'l': (
-          base: InventoryAmountUnit.milliliter,
-          multiplier: 1000.0,
-          scale: 1,
-        ),
-        'liter': (
-          base: InventoryAmountUnit.milliliter,
-          multiplier: 1000.0,
-          scale: 1,
-        ),
-        'liters': (
-          base: InventoryAmountUnit.milliliter,
-          multiplier: 1000.0,
-          scale: 1,
-        ),
-        'litre': (
-          base: InventoryAmountUnit.milliliter,
-          multiplier: 1000.0,
-          scale: 1,
-        ),
-        'litres': (
-          base: InventoryAmountUnit.milliliter,
-          multiplier: 1000.0,
-          scale: 1,
-        ),
-        'pc': (
-          base: InventoryAmountUnit.piece,
-          multiplier: 1.0,
-          scale: inventoryPieceAmountScale,
-        ),
-        'pcs': (
-          base: InventoryAmountUnit.piece,
-          multiplier: 1.0,
-          scale: inventoryPieceAmountScale,
-        ),
-        'piece': (
-          base: InventoryAmountUnit.piece,
-          multiplier: 1.0,
-          scale: inventoryPieceAmountScale,
-        ),
-        'pieces': (
-          base: InventoryAmountUnit.piece,
-          multiplier: 1.0,
-          scale: inventoryPieceAmountScale,
-        ),
-        'st': (
-          base: InventoryAmountUnit.piece,
-          multiplier: 1.0,
-          scale: inventoryPieceAmountScale,
-        ),
-        'stk': (
-          base: InventoryAmountUnit.piece,
-          multiplier: 1.0,
-          scale: inventoryPieceAmountScale,
-        ),
-      };
 
   /// Try parse.
   InventoryAmountParseResult? tryParse({
@@ -303,14 +187,13 @@ class InventoryAmountParser {
     );
   }
 
-  ({InventoryAmountUnit base, double multiplier, int scale})?
-  _resolveConversion({
+  InventoryAmountUnitConversion? _resolveConversion({
     required String? rawUnit,
     required InventoryAmountUnit? fallbackUnit,
   }) {
     final normalizedUnit = _normalizeUnit(rawUnit);
     if (normalizedUnit != null) {
-      final mapped = _unitAliases[normalizedUnit];
+      final mapped = resolveInventoryAmountUnitAlias(normalizedUnit);
       if (mapped != null) {
         return mapped;
       }
@@ -328,8 +211,20 @@ class InventoryAmountParser {
   }
 
   String? _normalizeWeight(String? rawWeight) {
-    final trimmed = rawWeight?.trim();
+    var trimmed = rawWeight?.trim();
     if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    trimmed = trimmed
+        .replaceAll('℮', '')
+        .replaceAll(RegExp(r'\bca\.?\s*', caseSensitive: false), '')
+        .replaceAll(
+          RegExp(r'\b(netto|net|circa|ungefähr)\b', caseSensitive: false),
+          '',
+        )
+        .replaceAll('~', '')
+        .trim();
+    if (trimmed.isEmpty) {
       return null;
     }
     return trimmed;

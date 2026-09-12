@@ -83,6 +83,60 @@ void main() {
       expect(resolved.parsedAmount?.amount, 12000);
       expect(resolved.parsedAmount?.scale, inventoryPieceAmountScale);
     });
+
+    test('does not parse packaging words or words containing g as gram', () {
+      for (final input in [
+        '1 Packung',
+        '1 Glas',
+        '1 Riegel',
+        '1 Becher',
+        '1 Flasche',
+        '1 Dose',
+        '1 Stück',
+        '1 Stk.',
+      ]) {
+        final resolved = resolveManualProductWeightInput(input);
+        expect(
+          resolved.unit,
+          InventoryAmountUnit.piece,
+          reason: '$input should resolve to piece, not gram',
+        );
+        expect(resolved.amount, '1', reason: '$input amount should be 1');
+        expect(resolved.normalizedWeight, '1 pc');
+        expect(resolved.parsedAmount?.amount, 1000);
+      }
+
+      // "1 Gurke" does not have a recognized unit, so it must NOT trigger
+      // the gram fallback
+      final gurke = resolveManualProductWeightInput(
+        '1 Gurke',
+        fallbackUnit: InventoryAmountUnit.piece,
+      );
+      expect(gurke.unit, InventoryAmountUnit.piece);
+      expect(gurke.amount, '1');
+    });
+
+    test('parses German unit names like Gramm, Kilo, Liter, Stück', () {
+      final gramm = resolveManualProductWeightInput('500 Gramm');
+      expect(gramm.amount, '500');
+      expect(gramm.unit, InventoryAmountUnit.gram);
+      expect(gramm.normalizedWeight, '500 g');
+
+      final kilo = resolveManualProductWeightInput('2 Kilo');
+      expect(kilo.amount, '2000');
+      expect(kilo.unit, InventoryAmountUnit.gram);
+      expect(kilo.normalizedWeight, '2000 g');
+
+      final liter = resolveManualProductWeightInput('1 Liter');
+      expect(liter.amount, '1000');
+      expect(liter.unit, InventoryAmountUnit.milliliter);
+      expect(liter.normalizedWeight, '1000 ml');
+
+      final stueck = resolveManualProductWeightInput('3 Stück');
+      expect(stueck.amount, '3');
+      expect(stueck.unit, InventoryAmountUnit.piece);
+      expect(stueck.normalizedWeight, '3 pc');
+    });
   });
 
   group('resolveManualProductOcrWeightInput', () {

@@ -1,12 +1,23 @@
 import 'dart:convert';
 
+import 'package:yamt/features/inventory/data/off_product_search_package_weight_resolver.dart';
 import 'package:yamt/features/inventory/data/off_product_search_result.dart';
+import 'package:yamt/features/inventory/data/off_product_search_text_payload_parser.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
 /// Parses OFF search responses from JSON or legacy text payloads.
 class OffProductSearchResponseParser {
   /// Creates an OFF product search response parser.
-  const OffProductSearchResponseParser();
+  const OffProductSearchResponseParser({
+    this.textPayloadParser = const OffProductSearchTextPayloadParser(),
+    this.packageWeightResolver = const OffProductSearchPackageWeightResolver(),
+  });
+
+  /// The text payload parser.
+  final OffProductSearchTextPayloadParser textPayloadParser;
+
+  /// The package weight resolver.
+  final OffProductSearchPackageWeightResolver packageWeightResolver;
 
   /// Parses an OFF search response body into product search results.
   List<OffProductSearchResult> parse(String body) {
@@ -20,7 +31,7 @@ class OffProductSearchResponseParser {
       return _parseJsonPayload(decoded);
     }
 
-    return _parseTextPayload(trimmed);
+    return textPayloadParser.parse(trimmed);
   }
 
   Object? _tryDecodeJson(String body) {
@@ -32,10 +43,21 @@ class OffProductSearchResponseParser {
   }
 
   List<OffProductSearchResult> _parseJsonPayload(Object decoded) {
-    final items = switch (decoded) {
+    final items = _extractJsonItems(decoded);
+    return items
+        .whereType<Object?>()
+        .map(_parseJsonResult)
+        .whereType<OffProductSearchResult>()
+        .toList(growable: false);
+  }
+
+  List<dynamic> _extractJsonItems(Object decoded) {
+    return switch (decoded) {
       final List<dynamic> list => list,
       final Map<String, dynamic> map when map['results'] is List<dynamic> =>
         map['results'] as List<dynamic>,
+      final Map<String, dynamic> map when map['products'] is List<dynamic> =>
+        map['products'] as List<dynamic>,
       final Map<String, dynamic> map when map['items'] is List<dynamic> =>
         map['items'] as List<dynamic>,
       final Map<String, dynamic> map when map['product'] is Map => <dynamic>[
@@ -43,16 +65,12 @@ class OffProductSearchResponseParser {
       ],
       final Map<String, dynamic> map
           when map['code'] != null &&
-              (map['name'] != null || map['product_name'] != null) =>
+              (map['name'] != null ||
+                  map['product_name'] != null ||
+                  map['product_name_de'] != null) =>
         <dynamic>[map],
       _ => const <dynamic>[],
     };
-
-    return items
-        .whereType<Object?>()
-        .map(_parseJsonResult)
-        .whereType<OffProductSearchResult>()
-        .toList(growable: false);
   }
 
   OffProductSearchResult? _parseJsonResult(Object? rawItem) {
@@ -62,180 +80,83 @@ class OffProductSearchResponseParser {
 
     final item = Map<String, dynamic>.from(rawItem);
     final code = _readText(item['code'] ?? item['barcode']);
-    final name = _readText(item['product_name'] ?? item['name']);
+    final name = _readName(item);
     if (code == null || name == null) {
       return null;
     }
+
+    final serving = packageWeightResolver.resolveFromItem(item);
 
     return OffProductSearchResult(
       code: code,
       name: name,
       brand: _readText(item['brands'] ?? item['brand']),
-      imageUrl: _readText(item['image_url'] ?? item['imageUrl']),
-      packageWeight: _readText(
-        item['weight'] ?? item['package_weight'] ?? item['quantity'],
-      ),
-      servingSize: _readText(item['serving_size'] ?? item['servingSize']),
-      servingQuantity: _readDouble(
-        item['serving_quantity'] ?? item['servingQuantity'],
-      ),
-      servingQuantityUnit: _readText(
-        item['serving_quantity_unit'] ?? item['servingQuantityUnit'],
-      ),
+      imageUrl: _readImageUrl(item),
+      packageWeight: serving.packageWeight,
+      servingSize: serving.servingSize,
+      servingQuantity: serving.servingQuantity,
+      servingQuantityUnit: serving.servingQuantityUnit,
       nutrition: _readNutrition(item),
       score: _readScore(item['score'] ?? item['totalScore']) ?? 0,
     );
   }
 
-  List<OffProductSearchResult> _parseTextPayload(String body) {
-    final results = <OffProductSearchResult>[];
-    for (final rawLine in const LineSplitter().convert(body)) {
-      final line = rawLine.trim();
-      if (line.isEmpty || !line.startsWith('Score:')) {
-        continue;
-      }
-
-      final parts = line.split('|').map((part) => part.trim()).toList();
-      if (parts.length < 3) {
-        continue;
-      }
-
-      final score = _readScore(parts.first.replaceFirst('Score:', '').trim());
-      final imageUrl = _parseTextImageUrl(parts.isEmpty ? null : parts.last);
-      final codeIndex = imageUrl == null ? parts.length - 2 : parts.length - 3;
-      final nameIndex = imageUrl == null ? parts.length - 1 : parts.length - 2;
-      if (codeIndex < 1 || nameIndex < 2) {
-        continue;
-      }
-
-      final code = parts[codeIndex].trim();
-      final brandedName = parts[nameIndex].trim();
-      final brandedNameMatch = RegExp(
-        r'^\[(.*?)\]\s*(.+)$',
-      ).firstMatch(brandedName);
-      final brand = brandedNameMatch?.group(1)?.trim();
-      final name = brandedNameMatch?.group(2)?.trim();
-      if (score == null || code.isEmpty || name == null || name.isEmpty) {
-        continue;
-      }
-
-      results.add(
-        OffProductSearchResult(
-          code: code,
-          name: name,
-          brand: brand == null || brand == '?' || brand.isEmpty ? null : brand,
-          imageUrl: imageUrl,
-          score: score,
-        ),
-      );
-    }
-
-    return results;
+  String? _readName(Map<String, dynamic> item) {
+    return _readText(
+      item['product_name'] ??
+          item['name'] ??
+          item['product_name_de'] ??
+          item['generic_name'] ??
+          item['generic_name_de'],
+    );
   }
 
-  String? _parseTextImageUrl(String? rawValue) {
-    final value = rawValue?.trim();
-    if (value == null || value.isEmpty) {
-      return null;
-    }
-
-    if (_looksLikeImageUrl(value)) {
-      return value;
-    }
-
-    const imagePrefix = 'image=';
-    if (value.startsWith(imagePrefix)) {
-      final imageValue = value.substring(imagePrefix.length).trim();
-      if (_looksLikeImageUrl(imageValue)) {
-        return imageValue;
-      }
-    }
-
-    return null;
+  String? _readImageUrl(Map<String, dynamic> item) {
+    return _readText(
+      item['image_url'] ??
+          item['imageUrl'] ??
+          item['image_front_url'] ??
+          item['image_front_small_url'],
+    );
   }
 
-  bool _looksLikeImageUrl(String value) {
-    return value.startsWith('http://') ||
-        value.startsWith('https://') ||
-        value.startsWith('//') ||
-        value.startsWith('/');
+  GlobalFoodNutrition? _readNutrition(Map<String, dynamic> item) {
+    final rawNutrition = item['nutrition'] ?? item['nutriments'];
+    final nutritionMap = rawNutrition is Map
+        ? Map<String, dynamic>.from(rawNutrition)
+        : null;
+
+    final qualityStatus = GlobalFoodNutritionQualityStatus.fromJson(
+      item['nutrition_quality_status'] ??
+          item['quality_status'] ??
+          nutritionMap?['quality_status'],
+    );
+
+    final nutrition = GlobalFoodNutrition.fromJson(
+      nutritionMap ?? item,
+      fallback: nutritionMap == null ? null : item,
+      qualityStatusOverride:
+          qualityStatus == GlobalFoodNutritionQualityStatus.missing
+          ? null
+          : qualityStatus,
+    );
+
+    return nutrition.hasAnyNutritionValue ? nutrition : null;
   }
 
   String? _readText(Object? value) {
     final text = value?.toString().trim();
-    if (text == null || text.isEmpty) {
-      return null;
-    }
-    return text;
-  }
-
-  double? _readDouble(Object? value) {
-    if (value is num) {
-      return value.toDouble();
-    }
-
-    final raw = value?.toString().trim();
-    if (raw == null || raw.isEmpty) {
-      return null;
-    }
-
-    return double.tryParse(raw.replaceAll(',', '.'));
-  }
-
-  GlobalFoodNutrition? _readNutrition(Map<String, dynamic> item) {
-    final rawNutrition = item['nutrition'];
-    final nutritionJson = <String, dynamic>{};
-
-    if (rawNutrition is Map) {
-      nutritionJson.addAll(Map<String, dynamic>.from(rawNutrition));
-    }
-
-    for (final key in const <String>[
-      'energy_kcal_100g',
-      'energy-kcal_100g',
-      'proteins_100g',
-      'carbohydrates_100g',
-      'fat_100g',
-      'salt_100g',
-      'saturated-fat_100g',
-      'saturated_fat_100g',
-      'polyunsaturated-fat_100g',
-      'polyunsaturated_fat_100g',
-      'sugars_100g',
-      'fiber_100g',
-      'fibre_100g',
-    ]) {
-      final value = item[key];
-      if (value != null && !nutritionJson.containsKey(key)) {
-        nutritionJson[key] = value;
-      }
-    }
-
-    final qualityStatus = _readText(
-      item['nutrition_quality_status'] ?? item['quality_status'],
-    );
-    if (qualityStatus != null && !nutritionJson.containsKey('quality_status')) {
-      nutritionJson['quality_status'] = qualityStatus;
-    }
-
-    if (nutritionJson.isEmpty) {
-      return null;
-    }
-
-    final nutrition = GlobalFoodNutrition.fromJson(nutritionJson);
-    return nutrition.hasAnyNutritionValue ? nutrition : null;
+    return (text == null || text.isEmpty) ? null : text;
   }
 
   double? _readScore(Object? value) {
     if (value is num) {
       return value.toDouble();
     }
-
     final raw = value?.toString().trim();
     if (raw == null || raw.isEmpty) {
       return null;
     }
-
     return double.tryParse(raw);
   }
 }
