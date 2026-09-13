@@ -12,8 +12,40 @@ String? normalizeStoreName(String? rawValue) {
   if (_isNettoVariant(normalizedKey)) {
     return 'Netto';
   }
+  final canonicalStoreName = _canonicalStoreNameForToken(normalizedKey);
+  if (canonicalStoreName != null) {
+    return canonicalStoreName;
+  }
 
   return collapsed;
+}
+
+const _canonicalStoreNamesByToken = <String, String>{
+  'rewe': 'Rewe',
+  'lidl': 'Lidl',
+  'edeka': 'Edeka',
+  'kaufland': 'Kaufland',
+  'penny': 'Penny',
+  'norma': 'Norma',
+  'dm': 'dm',
+  'rossmann': 'Rossmann',
+  'globus': 'Globus',
+  'hit': 'HIT',
+  'tegut': 'tegut',
+  'marktkauf': 'Marktkauf',
+  'alnatura': 'Alnatura',
+  'metro': 'Metro',
+};
+
+String? _canonicalStoreNameForToken(String normalizedKey) {
+  final tokens = normalizedKey.split(' ');
+  for (final token in tokens) {
+    final canonicalName = _canonicalStoreNamesByToken[token];
+    if (canonicalName != null) {
+      return canonicalName;
+    }
+  }
+  return null;
 }
 
 bool _isAldiVariant(String normalizedKey) {

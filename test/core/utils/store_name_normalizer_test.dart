@@ -40,8 +40,30 @@ void main() {
   });
 
   test('keeps unknown stores readable', () {
-    expect(normalizeStoreName(' Kaufland  '), 'Kaufland');
     expect(normalizeStoreName('My Store'), 'My Store');
+  });
+
+  test('normalizes common receipt store variants for product search', () {
+    const variants = <String, String>{
+      'REWE Markt GmbH': 'Rewe',
+      'Lidl Dienstleistung GmbH': 'Lidl',
+      'EDEKA Center': 'Edeka',
+      'Kaufland Filiale 123': 'Kaufland',
+      'PENNY Markt': 'Penny',
+      'NORMA Lebensmittelfilialbetrieb': 'Norma',
+      'dm-drogerie markt': 'dm',
+      'Dirk Rossmann GmbH': 'Rossmann',
+      'Globus Markthalle': 'Globus',
+      'HIT Handelsgruppe': 'HIT',
+      'tegut... gute Lebensmittel': 'tegut',
+      'Marktkauf Bielefeld': 'Marktkauf',
+      'Alnatura Super Natur Markt': 'Alnatura',
+      'METRO Deutschland': 'Metro',
+    };
+
+    for (final MapEntry(key: variant, value: expected) in variants.entries) {
+      expect(normalizeStoreName(variant), expected, reason: variant);
+    }
   });
 
   test('returns null for blank values', () {

@@ -965,6 +965,26 @@ void main() {
   );
 
   test(
+    'findCandidates sends a canonical receipt store to OFF search',
+    () async {
+      final repository = _FakeOffProductSearchRepository();
+      final matcher = GlobalFoodItemMatcher(
+        offProductSearchRepository: repository,
+      );
+
+      await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Weidemilch',
+          storeName: 'NETTO MARKEN-DISCOUNT Filiale 123',
+        ),
+      );
+
+      expect(repository.calls.single.store, 'Netto');
+    },
+  );
+
+  test(
     'findCandidates drops fallback brand when it only repeats the store',
     () async {
       final repository = _FakeOffProductSearchRepository();
