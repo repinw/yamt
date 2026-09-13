@@ -24,6 +24,7 @@ class ProductSearchHubRecentlySelectedTab extends ConsumerStatefulWidget {
   const ProductSearchHubRecentlySelectedTab({
     required this.selectedProductKeys,
     required this.onProductPressed,
+    this.onProductCopied,
     super.key,
   });
 
@@ -32,6 +33,9 @@ class ProductSearchHubRecentlySelectedTab extends ConsumerStatefulWidget {
 
   /// Called when a recent product is selected.
   final ValueChanged<InventoryItem> onProductPressed;
+
+  /// Called when a recent product is copied as template.
+  final ValueChanged<InventoryItem>? onProductCopied;
 
   @override
   ConsumerState<ProductSearchHubRecentlySelectedTab> createState() {
@@ -116,6 +120,7 @@ class _ProductSearchHubRecentlySelectedTabState
       items: _items,
       selectedProductKeys: widget.selectedProductKeys,
       onProductPressed: widget.onProductPressed,
+      onProductCopied: widget.onProductCopied,
     );
   }
 }
@@ -199,14 +204,18 @@ class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
     required this.items,
     required this.selectedProductKeys,
     required this.onProductPressed,
+    this.onProductCopied,
   });
 
   final List<InventoryItem> items;
   final Set<String> selectedProductKeys;
   final ValueChanged<InventoryItem> onProductPressed;
+  final ValueChanged<InventoryItem>? onProductCopied;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return ListView.separated(
       key: const Key('product_search_hub_recently_selected_list'),
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -228,6 +237,15 @@ class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
             imageUrl: item.imageUrl,
             packageWeight: item.weight,
             nutrition: item.nutrition,
+            onCopy: onProductCopied == null
+                ? null
+                : () {
+                    onProductCopied!(item);
+                  },
+            copyTooltip: l10n.productSearchHubCopyActionTooltip,
+            copyButtonKey: Key(
+              'product_search_hub_recently_selected_copy_${item.id}',
+            ),
             trailing: isSelected
                 ? const Icon(
                     Icons.check_circle_rounded,

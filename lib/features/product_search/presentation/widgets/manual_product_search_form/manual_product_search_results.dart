@@ -7,6 +7,8 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/presentation/utils/'
     'off_product_nutrition_grade_extension.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_product_candidate_actions.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

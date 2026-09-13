@@ -535,6 +535,32 @@ void main() {
     expect(find.text('Bitte Nährwerte ergänzen'), findsOneWidget);
   });
 
+  testWidgets(
+    'editor shows initial info message with OCR action when barcode exists',
+    (tester) async {
+      await tester.pumpWidget(
+        _wrapEditorPage(
+          item: InventoryItem.create(
+            id: 'item-barcode',
+            name: 'Milch',
+            barcode: '4001234567890',
+            entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+            storeName: 'Kaufland',
+            quantity: 1,
+          ),
+          initialInfoMessage: 'Bitte Nährwerte ergänzen',
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Bitte Nährwerte ergänzen'), findsOneWidget);
+      expect(
+        find.widgetWithText(SnackBarAction, 'Nährwertetikett scannen'),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('editor applies an initial recent item after mount', (
     tester,
   ) async {

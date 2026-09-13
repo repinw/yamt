@@ -8,10 +8,16 @@ void popProductSearchHubRoute({
   Object? result,
 }) {
   final router = GoRouter.maybeOf(context);
-  if (isBlocked || router == null || !router.canPop()) {
+  final canPop =
+      router != null ? router.canPop() : Navigator.of(context).canPop();
+  if (isBlocked || !canPop) {
     return;
   }
-  router.pop<Object?>(result);
+  if (router != null) {
+    router.pop<Object?>(result);
+  } else {
+    Navigator.of(context).pop<Object?>(result);
+  }
 }
 
 /// Runs close preparation, then pops after current frame.
@@ -22,13 +28,20 @@ void popProductSearchHubDeferredRoute({
   Object? result,
 }) {
   final router = GoRouter.maybeOf(context);
-  if (isBlocked || router == null || !router.canPop()) {
+  final canPop =
+      router != null ? router.canPop() : Navigator.of(context).canPop();
+  if (isBlocked || !canPop) {
     return;
   }
   prepareClose();
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (context.mounted && router.canPop()) {
+    if (!context.mounted) {
+      return;
+    }
+    if (router != null && router.canPop()) {
       router.pop<Object?>(result);
+    } else if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop<Object?>(result);
     }
   });
 }

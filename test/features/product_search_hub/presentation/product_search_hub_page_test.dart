@@ -66,6 +66,7 @@ Widget _buildHarness({
 ])
 Widget _buildRouteHarness({
   required ProductSearchHubRouteArgs args,
+  List<InventoryItem> recentItems = const <InventoryItem>[],
   OffProductSearchResult? searchRouteProductResult,
   List<Object?> searchRouteResults = const <Object?>[],
   ProductSearchHubEditedResult? searchRouteEditedResult,
@@ -145,7 +146,7 @@ Widget _buildRouteHarness({
   return ProviderScope(
     overrides: [
       inventoryItemRepositoryProvider.overrideWithValue(
-        const _FakeInventoryItemRepository(<InventoryItem>[]),
+        _FakeInventoryItemRepository(recentItems),
       ),
       if (inventoryController != null)
         inventoryItemsControllerProvider.overrideWith(
@@ -628,6 +629,69 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Scan barcode'), findsOneWidget);
+  });
+
+  testWidgets(
+    'diary mode copy search result opens editor instead of direct eat',
+    (tester) async {
+      ManualProductSearchRouteArgs? childArgs;
+      final inventoryController = _SuccessfulInventoryItemsController();
+
+      await tester.pumpWidget(
+        _buildRouteHarness(
+          args: ProductSearchHubRouteArgs.diary(
+            initialIntent: ProductSearchHubInitialIntent.search,
+            preselectedMealType: MealType.lunch,
+            preselectedLoggedAt: DateTime(2026, 4, 13, 12),
+          ),
+          searchRouteResults: [ProductSearchHubCopyResult(_searchProduct())],
+          inventoryController: inventoryController,
+          onChildRouteArgs: (args) => childArgs = args,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('return_search_product_result')));
+      await tester.pumpAndSettle();
+
+      expect(childArgs, isNotNull);
+      expect(childArgs?.item.name, 'Search Milk');
+      expect(childArgs?.initialInfoMessage, isNotNull);
+    },
+  );
+
+  testWidgets('copying recently selected product opens editor', (tester) async {
+    ManualProductSearchRouteArgs? childArgs;
+    final inventoryController = _SuccessfulInventoryItemsController();
+
+    await tester.pumpWidget(
+      _buildRouteHarness(
+        args: const ProductSearchHubRouteArgs.inventory(),
+        recentItems: [
+          _item(
+            id: 'recent-yogurt',
+            name: 'Greek yogurt',
+            brand: 'Dairy Co',
+            weight: '500 g',
+          ),
+        ],
+        inventoryController: inventoryController,
+        onChildRouteArgs: (args) => childArgs = args,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final copyButton = find.byKey(
+      const Key('product_search_hub_recently_selected_copy_recent-yogurt'),
+    );
+    expect(copyButton, findsOneWidget);
+    await tester.tap(copyButton);
+    await tester.pumpAndSettle();
+
+    expect(childArgs, isNotNull);
+    expect(childArgs?.item.name, 'Greek yogurt');
+    expect(childArgs?.item.id, isNot('recent-yogurt'));
+    expect(childArgs?.initialInfoMessage, isNotNull);
   });
 }
 

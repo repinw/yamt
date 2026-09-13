@@ -87,6 +87,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       onAiPressed: _openAiProduct,
       onCreateOwnPressed: _openCustomProduct,
       onRecentlySelectedProductPressed: _addRecentlySelectedProduct,
+      onRecentlySelectedProductCopied: _copyRecentlySelectedProduct,
       onCountPressed: _openSelectedProductsSheet,
       onSubmitPressed: _closeHub,
     );
@@ -135,18 +136,25 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     );
   }
 
-  void _addRecentlySelectedProduct(InventoryItem item) =>
-      unawaited(_editAndSaveRecentItem(item));
-
-  Future<void> _editAndSaveRecentItem(InventoryItem item) {
-    return editAndSaveProductSearchHubRecentItem(
+  void _addRecentlySelectedProduct(InventoryItem item) => _runWhenIdle(
+    () => editAndSaveProductSearchHubRecentItem(
       context: context,
       args: widget.args,
       item: item,
       isSourceBlocked: _isSourceBlocked,
       completeResult: _completeEditedResult,
-    );
-  }
+    ),
+  );
+
+  void _copyRecentlySelectedProduct(InventoryItem item) => _runWhenIdle(
+    () => copyAndEditProductSearchHubRecentItem(
+      context: context,
+      args: widget.args,
+      item: item,
+      isSourceBlocked: _isSourceBlocked,
+      completeResult: _completeEditedResult,
+    ),
+  );
 
   void _openInitialIntent() {
     switch (widget.args.initialIntent) {
@@ -213,15 +221,13 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       _closeHub(result);
       return;
     }
-    final l10n = AppLocalizations.of(context)!;
-    final container = ProviderScope.containerOf(context, listen: false);
 
     setState(() => _isMutatingSelection = true);
 
     final completion = await completeProductSearchHubResult(
       context: context,
-      container: container,
-      l10n: l10n,
+      container: ProviderScope.containerOf(context, listen: false),
+      l10n: AppLocalizations.of(context)!,
       args: widget.args,
       sourceKey: sourceKey,
       result: result,
@@ -252,9 +258,8 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       return;
     }
     setState(() => _isMutatingSelection = true);
-    final container = ProviderScope.containerOf(context, listen: false);
     final deleted = await removeProductSearchHubSelection(
-      container: container,
+      container: ProviderScope.containerOf(context, listen: false),
       selection: selection,
     );
     if (!mounted) {

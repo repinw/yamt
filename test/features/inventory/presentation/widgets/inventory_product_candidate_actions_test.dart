@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_product_candidate_widgets.dart';
+    'inventory_product_candidate_actions.dart';
 
 void main() {
   testWidgets('eat-only candidate actions hide inventory button', (

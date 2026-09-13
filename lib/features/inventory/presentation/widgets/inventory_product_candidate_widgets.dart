@@ -19,6 +19,9 @@ class InventoryProductCandidateTile extends StatelessWidget {
     this.statusLabel,
     this.onTap,
     this.trailing,
+    this.onCopy,
+    this.copyTooltip,
+    this.copyButtonKey,
   });
 
   /// The product name.
@@ -48,12 +51,21 @@ class InventoryProductCandidateTile extends StatelessWidget {
   /// Optional trailing widget.
   final Widget? trailing;
 
+  /// Optional copy callback.
+  final VoidCallback? onCopy;
+
+  /// Optional copy tooltip text.
+  final String? copyTooltip;
+
+  /// Optional copy button key.
+  final Key? copyButtonKey;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final borderRadius = BorderRadius.circular(
-      AppRadius.xl,
-    );
+    final borderRadius = BorderRadius.circular(AppRadius.xl);
+    final hasActions = onCopy != null || trailing != null;
+
     final tile = Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
@@ -76,9 +88,18 @@ class InventoryProductCandidateTile extends StatelessWidget {
               statusLabel: statusLabel,
             ),
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: AppSpacing.md),
-            trailing!,
+          if (hasActions) ...[
+            const SizedBox(width: AppSpacing.sm),
+            if (onCopy != null)
+              _InventoryCandidateCopyButton(
+                tooltip: copyTooltip ?? 'Kopieren',
+                buttonKey: copyButtonKey,
+                onPressed: onCopy!,
+              ),
+            if (trailing != null) ...[
+              if (onCopy != null) const SizedBox(width: AppSpacing.xs),
+              trailing!,
+            ],
           ],
         ],
       ),
@@ -102,131 +123,36 @@ class InventoryProductCandidateTile extends StatelessWidget {
   }
 }
 
-/// Shared candidate action buttons.
-class InventoryProductCandidateActions extends StatelessWidget {
-  /// The candidate action buttons.
-  const InventoryProductCandidateActions({
-    required this.inventoryLabel,
-    required this.eatLabel,
-    required this.onInventory,
-    required this.onEat,
-    super.key,
-    this.inventoryButtonKey,
-    this.eatButtonKey,
-    this.showInventoryAction = true,
-  });
-
-  /// Inventory label.
-  final String inventoryLabel;
-
-  /// Eat label.
-  final String eatLabel;
-
-  /// Inventory action.
-  final VoidCallback onInventory;
-
-  /// Eat action.
-  final VoidCallback onEat;
-
-  /// Optional inventory button key.
-  final Key? inventoryButtonKey;
-
-  /// Optional eat button key.
-  final Key? eatButtonKey;
-
-  /// Whether inventory action is visible.
-  final bool showInventoryAction;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 86),
-      child: IntrinsicHeight(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            VerticalDivider(
-              width: 1,
-              thickness: 1,
-              color: colors.outlineVariant.withValues(alpha: 0.55),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (showInventoryAction) ...[
-                  _InventoryCandidateActionButton(
-                    buttonKey: inventoryButtonKey,
-                    tooltip: inventoryLabel,
-                    icon: Icons.inventory_2_outlined,
-                    onPressed: onInventory,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
-                _InventoryCandidateActionButton(
-                  buttonKey: eatButtonKey,
-                  tooltip: eatLabel,
-                  icon: Icons.restaurant_menu_outlined,
-                  onPressed: onEat,
-                  highlighted: true,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InventoryCandidateActionButton extends StatelessWidget {
-  const _InventoryCandidateActionButton({
+class _InventoryCandidateCopyButton extends StatelessWidget {
+  const _InventoryCandidateCopyButton({
     required this.tooltip,
-    required this.icon,
     required this.onPressed,
     this.buttonKey,
-    this.highlighted = false,
   });
 
-  final Key? buttonKey;
   final String tooltip;
-  final IconData icon;
   final VoidCallback onPressed;
-  final bool highlighted;
+  final Key? buttonKey;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final backgroundColor = highlighted
-        ? colors.primaryContainer
-        : colors.surfaceContainerHigh;
-    final foregroundColor = highlighted
-        ? colors.onPrimaryContainer
-        : colors.onSurfaceVariant;
-    final borderColor = highlighted
-        ? colors.primary.withValues(alpha: 0.35)
-        : colors.outlineVariant.withValues(alpha: 0.7);
-
     return Tooltip(
       message: tooltip,
       child: IconButton(
         key: buttonKey,
         onPressed: onPressed,
-        icon: Icon(icon),
+        icon: const Icon(Icons.content_copy_rounded, size: 20),
         style: IconButton.styleFrom(
-          fixedSize: const Size.square(46),
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-          side: BorderSide(color: borderColor),
+          fixedSize: const Size.square(42),
+          backgroundColor: colors.surfaceContainerHigh,
+          foregroundColor: colors.onSurfaceVariant,
+          side: BorderSide(
+            color: colors.outlineVariant.withValues(alpha: 0.7),
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
-          shadowColor: highlighted
-              ? colors.primary.withValues(alpha: 0.22)
-              : Colors.transparent,
-          elevation: highlighted ? 4 : 0,
         ),
       ),
     );

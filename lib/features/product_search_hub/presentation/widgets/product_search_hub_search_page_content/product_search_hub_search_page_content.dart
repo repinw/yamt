@@ -5,15 +5,12 @@ import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_search_hub_search_actions/product_search_hub_search_actions.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_bar/product_search_hub_search_bar.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'product_search_hub_search_page_content/'
+    'product_search_hub_search_page_sections.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_results/product_search_hub_search_results.dart';
-
-const _productSearchHubSearchActionsAppearDuration = Duration(
-  milliseconds: 90,
-);
 
 /// Visual shell for focused product search page.
 class ProductSearchHubSearchPageContent extends StatelessWidget {
@@ -40,6 +37,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
     required this.onBlankTap,
     required this.onRetry,
     required this.onResultSelected,
+    this.onResultCopied,
     this.autofocusSearchField = true,
     super.key,
   });
@@ -110,6 +108,9 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Result selected callback.
   final ValueChanged<OffProductSearchResult> onResultSelected;
 
+  /// Result copied callback.
+  final ValueChanged<OffProductSearchResult>? onResultCopied;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,7 +136,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
                 onSearchChanged: onSearchChanged,
                 onClear: onClear,
               ),
-              _ProductSearchHubSearchActionSection(
+              ProductSearchHubSearchActionSection(
                 isVisible: showFocusedSearchField && !isClosing,
                 onBarcodePressed: onBarcodePressed,
                 onAiPressed: onAiPressed,
@@ -151,7 +152,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
 
   Widget _buildContent() {
     if (!hasSearchQuery) {
-      return _ProductSearchHubSearchBlank(onTap: onBlankTap);
+      return ProductSearchHubSearchBlank(onTap: onBlankTap);
     }
     return ProductSearchHubSearchResults(
       results: searchResults,
@@ -161,6 +162,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
       onRetry: onRetry,
       onResultSelected: onResultSelected,
+      onResultCopied: onResultCopied,
     );
   }
 }
@@ -198,7 +200,7 @@ class _ProductSearchHubSearchFieldStack extends StatelessWidget {
       children: [
         Hero(
           tag: productSearchHubSearchBarHeroTag,
-          child: _ProductSearchHubSearchHeroField(
+          child: ProductSearchHubSearchHeroField(
             isVisible: !showFocusedSearchField || isClosing,
           ),
         ),
@@ -215,86 +217,6 @@ class _ProductSearchHubSearchFieldStack extends StatelessWidget {
             onClear: onClear,
           ),
       ],
-    );
-  }
-}
-
-class _ProductSearchHubSearchActionSection extends StatelessWidget {
-  const _ProductSearchHubSearchActionSection({
-    required this.isVisible,
-    required this.onBarcodePressed,
-    required this.onAiPressed,
-    required this.onCreateOwnPressed,
-  });
-
-  final bool isVisible;
-  final VoidCallback onBarcodePressed;
-  final VoidCallback onAiPressed;
-  final VoidCallback onCreateOwnPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: _productSearchHubSearchActionsAppearDuration,
-      transitionBuilder: (child, animation) {
-        return SizeTransition(
-          sizeFactor: animation,
-          axisAlignment: -1,
-          child: FadeTransition(opacity: animation, child: child),
-        );
-      },
-      child: isVisible
-          ? Column(
-              key: const Key('product_search_hub_search_actions_section'),
-              children: [
-                const SizedBox(height: AppSpacing.md),
-                ProductSearchHubSearchActions(
-                  onBarcodePressed: onBarcodePressed,
-                  onAiPressed: onAiPressed,
-                  onCreateOwnPressed: onCreateOwnPressed,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            )
-          : const SizedBox.shrink(),
-    );
-  }
-}
-
-class _ProductSearchHubSearchHeroField extends StatelessWidget {
-  const _ProductSearchHubSearchHeroField({required this.isVisible});
-
-  final bool isVisible;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: IgnorePointer(
-        child: Opacity(
-          opacity: isVisible ? 1 : 0,
-          child: const ProductSearchHubSearchBar(
-            isSearching: false,
-            readOnly: true,
-            fieldKey: Key('product_search_hub_search_hero_field'),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProductSearchHubSearchBlank extends StatelessWidget {
-  const _ProductSearchHubSearchBlank({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: const SizedBox.expand(),
     );
   }
 }

@@ -6,15 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
-    'global_food_item_repository.dart';
-import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/product_search/domain/'
-    'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_barcode_scanner.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_entry_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_navigation.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -22,7 +20,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_context.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_entry_flow.dart';
+    'product_search_hub_search_coordinator.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_entry_launcher.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -57,14 +55,9 @@ class _ProductSearchHubSearchPageState
   late final TextEditingController _searchController;
   late final FocusNode _searchFocusNode;
   late final VoiceSearchService _voiceSearchService;
+  late final ProductSearchHubSearchCoordinator _searchCoordinator;
   final _voiceSearchController = TextVoiceSearchController();
   final _keyboardDelay = ProductSearchHubSearchDelay();
-  Timer? _searchDebounce;
-  var _searchQuery = '';
-  var _searchResults = const <OffProductSearchResult>[];
-  var _isSearching = false;
-  var _hasSearchFailed = false;
-  var _activeSearchRequestId = 0;
   var _showFocusedSearchField = false;
   var _isOpeningEntry = false;
   var _isClosing = false;
@@ -74,10 +67,25 @@ class _ProductSearchHubSearchPageState
     super.initState();
     final initialQuery = productSearchHubInitialSearchQuery(widget.args) ?? '';
     _searchController = TextEditingController(text: initialQuery);
-    _searchQuery = initialQuery;
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
     _searchFocusNode = FocusNode()..addListener(_handleSearchFocusChanged);
-    _startInitialSearch(initialQuery);
+
+    _searchCoordinator = ProductSearchHubSearchCoordinator(
+      onStateChanged: () {
+        if (mounted) setState(() {});
+      },
+      searchLookup: ({required query, required limit, store, weight}) {
+        return lookupProductSearchHubRouteProducts(
+          gateway: ref.read(productSearchGatewayProvider),
+          lookupProducts: widget.lookupProducts,
+          args: widget.args,
+          query: query,
+          limit: limit,
+        );
+      },
+    );
+
+    _searchCoordinator.startInitialSearch(initialQuery);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(_showSearchFieldAfterTransition());
     });
@@ -86,8 +94,7 @@ class _ProductSearchHubSearchPageState
   @override
   void dispose() {
     _isClosing = true;
-    _activeSearchRequestId++;
-    _searchDebounce?.cancel();
+    _searchCoordinator.dispose();
     _keyboardDelay.dispose();
     _voiceSearchController.dispose();
     _searchFocusNode.removeListener(_handleSearchFocusChanged);
@@ -114,13 +121,9 @@ class _ProductSearchHubSearchPageState
 
   Future<void> _showSearchFieldAfterTransition() async {
     await _keyboardDelay.wait(productSearchHubSearchKeyboardRetryDelay);
-    if (!mounted || _isClosing) {
-      return;
-    }
+    if (!mounted || _isClosing) return;
     setState(() => _showFocusedSearchField = true);
-    if (!widget.args.autofocusSearchField) {
-      return;
-    }
+    if (!widget.args.autofocusSearchField) return;
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _requestSearchKeyboard(),
     );
@@ -154,33 +157,13 @@ class _ProductSearchHubSearchPageState
   }
 
   void _handleSearchChanged(String value) {
-    _searchQuery = value;
-    _searchDebounce?.cancel();
-    final query = normalizeManualProductText(value);
-    if (query == null || query.length < productSearchHubSearchMinQueryLength) {
-      _activeSearchRequestId++;
-      setState(() {
-        _isSearching = false;
-        _hasSearchFailed = false;
-        _searchResults = const <OffProductSearchResult>[];
-      });
-      return;
-    }
-
-    final requestId = ++_activeSearchRequestId;
-    setState(() {
-      _isSearching = true;
-      _hasSearchFailed = false;
-    });
-    _searchDebounce = Timer(productSearchHubSearchDebounceDuration, () {
-      unawaited(_runProductSearch(query, requestId));
-    });
+    _searchCoordinator.handleSearchChanged(value);
   }
 
   void _clearSearch() {
     final shouldClose = !_searchFocusNode.hasFocus;
     _searchController.clear();
-    _handleSearchChanged('');
+    _searchCoordinator.clear();
     if (shouldClose) {
       _closeSearchPage();
       return;
@@ -189,55 +172,7 @@ class _ProductSearchHubSearchPageState
   }
 
   void _retrySearch() {
-    final query = normalizeManualProductText(_searchController.text);
-    if (query == null || query.length < productSearchHubSearchMinQueryLength) {
-      return;
-    }
-    final requestId = ++_activeSearchRequestId;
-    unawaited(_runProductSearch(query, requestId));
-  }
-
-  void _startInitialSearch(String value) {
-    final query = normalizeManualProductText(value);
-    if (query == null || query.length < productSearchHubSearchMinQueryLength) {
-      return;
-    }
-    _isSearching = true;
-    final requestId = ++_activeSearchRequestId;
-    _searchDebounce = Timer(productSearchHubSearchDebounceDuration, () {
-      unawaited(_runProductSearch(query, requestId));
-    });
-  }
-
-  Future<void> _runProductSearch(String query, int requestId) async {
-    if (!_isCurrentSearchRequest(requestId)) {
-      return;
-    }
-    setState(() {
-      _isSearching = true;
-      _hasSearchFailed = false;
-    });
-
-    final lookupResult = await lookupProductSearchHubRouteProducts(
-      repository: ref.read(offProductSearchRepositoryProvider),
-      globalFoodItemRepository: ref.read(globalFoodItemRepositoryProvider),
-      lookupProducts: widget.lookupProducts,
-      args: widget.args,
-      query: query,
-      limit: productSearchHubSearchResultLimit,
-    );
-    if (!_isCurrentSearchRequest(requestId)) {
-      return;
-    }
-    setState(() {
-      _isSearching = false;
-      _hasSearchFailed = lookupResult.hasFailed;
-      _searchResults = lookupResult.results;
-    });
-  }
-
-  bool _isCurrentSearchRequest(int requestId) {
-    return mounted && !_isClosing && requestId == _activeSearchRequestId;
+    _searchCoordinator.retrySearch();
   }
 
   @override
@@ -255,17 +190,16 @@ class _ProductSearchHubSearchPageState
         title: widget.args.title(l10n),
         searchController: _searchController,
         searchFocusNode: _searchFocusNode,
-        isSearching: _isSearching,
+        isSearching: _searchCoordinator.isSearching,
         voiceSearchService: _voiceSearchService,
         voiceSearchController: _voiceSearchController,
         startVoiceSearchOnMount: widget.args.startVoiceSearchOnMount,
         showFocusedSearchField: _showFocusedSearchField,
         autofocusSearchField: widget.args.autofocusSearchField,
         isClosing: _isClosing,
-        hasSearchQuery:
-            _searchQuery.trim().length >= productSearchHubSearchMinQueryLength,
-        searchResults: _searchResults,
-        hasSearchFailed: _hasSearchFailed,
+        hasSearchQuery: _searchCoordinator.hasSearchQuery,
+        searchResults: _searchCoordinator.results,
+        hasSearchFailed: _searchCoordinator.hasFailed,
         onBackPressed: _closeSearchPage,
         onSearchChanged: _handleSearchChanged,
         onClear: _clearSearch,
@@ -275,8 +209,13 @@ class _ProductSearchHubSearchPageState
         onBlankTap: _searchFocusNode.unfocus,
         onRetry: _retrySearch,
         onResultSelected: _closeSearchPage,
+        onResultCopied: _handleResultCopied,
       ),
     );
+  }
+
+  void _handleResultCopied(OffProductSearchResult product) {
+    _closeSearchPage(ProductSearchHubCopyResult(product));
   }
 
   void _handleBarcodePressed() {
@@ -288,9 +227,7 @@ class _ProductSearchHubSearchPageState
     final scannedBarcode = await openProductSearchHubBarcodeScanner(
       context: context,
     );
-    if (!mounted || _isClosing) {
-      return;
-    }
+    if (!mounted || _isClosing) return;
     if (scannedBarcode == null || scannedBarcode.trim().isEmpty) {
       _requestSearchKeyboard();
       return;
@@ -301,7 +238,7 @@ class _ProductSearchHubSearchPageState
   }
 
   void _handleAiPressed() => _openEditedEntry(
-    (l10n) => openProductSearchHubSearchAiEntry(
+    (l10n) => openProductSearchHubAiEntry(
       context: context,
       l10n: l10n,
       args: widget.args,
@@ -310,7 +247,7 @@ class _ProductSearchHubSearchPageState
   );
 
   void _handleCreateOwnPressed() => _openEditedEntry(
-    (l10n) => openProductSearchHubSearchCustomEntry(
+    (l10n) => openProductSearchHubCustomEntry(
       context: context,
       l10n: l10n,
       args: widget.args,

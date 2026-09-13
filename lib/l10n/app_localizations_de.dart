@@ -193,6 +193,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productSearchHubRecentlySelectedEmptyState => 'Noch keine zuletzt ausgewählten Produkte.';
 
   @override
+  String get productSearchHubCopyAction => 'Als Vorlage kopieren';
+
+  @override
+  String get productSearchHubCopyActionTooltip => 'Als neues Produkt kopieren (z. B. bei veränderter Rezeptur)';
+
+  @override
+  String get productSearchHubCopiedInfoMessage => 'Als Vorlage kopiert. Nährwerte und Angaben können jetzt angepasst werden.';
+
+  @override
   String get inventoryPageTitle => 'Mein Vorrat';
 
   @override

@@ -128,8 +128,8 @@ Future<InventoryReceiptManualProductResult?> _openProductSearchHubEditor({
         item: draftItem,
         selectedProduct: selectedProduct,
       ),
-      showEatImmediatelyOption: args.mode == ProductSearchHubMode.diary,
-      initialAction: _initialActionForMode(args.mode),
+      showEatImmediatelyOption: args.isDiary,
+      initialAction: args.initialManualProductAction,
       closeCurrentEditorOnSave: true,
       showActionSelector: false,
       quickEatConfig: productSearchHubQuickEatConfig(args),
@@ -137,17 +137,4 @@ Future<InventoryReceiptManualProductResult?> _openProductSearchHubEditor({
       initialInfoMessage: initialInfoMessage,
     ),
   );
-}
-
-manual_product_models.InventoryReceiptManualProductAction _initialActionForMode(
-  ProductSearchHubMode mode,
-) {
-  return switch (mode) {
-    ProductSearchHubMode.inventory =>
-      manual_product_models.InventoryReceiptManualProductAction.addToInventory,
-    ProductSearchHubMode.selection =>
-      manual_product_models.InventoryReceiptManualProductAction.addToInventory,
-    ProductSearchHubMode.diary =>
-      manual_product_models.InventoryReceiptManualProductAction.eatNow,
-  };
 }

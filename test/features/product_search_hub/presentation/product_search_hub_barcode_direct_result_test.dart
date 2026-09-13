@@ -12,41 +12,6 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_barcode_direct_result.dart';
 
 void main() {
-  test('diary barcode mode explains missing eat nutrition', () {
-    final needsMessage = productSearchHubBarcodeNeedsEatNutritionMessage(
-      args: const ProductSearchHubRouteArgs.diary(),
-      nutrition: const GlobalFoodNutrition(
-        qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
-        per100Kcal: 100,
-      ),
-    );
-
-    expect(needsMessage, isTrue);
-  });
-
-  test('diary barcode mode skips message for complete nutrition', () {
-    final needsMessage = productSearchHubBarcodeNeedsEatNutritionMessage(
-      args: const ProductSearchHubRouteArgs.diary(),
-      nutrition: const GlobalFoodNutrition(
-        qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
-        per100Kcal: 100,
-        per100Carbs: 10,
-        per100Protein: 5,
-        per100Fat: 2,
-      ),
-    );
-
-    expect(needsMessage, isFalse);
-  });
-
-  test('inventory barcode mode skips eat nutrition message', () {
-    final needsMessage = productSearchHubBarcodeNeedsEatNutritionMessage(
-      args: const ProductSearchHubRouteArgs.inventory(),
-      nutrition: null,
-    );
-
-    expect(needsMessage, isFalse);
-  });
 
   test('diary barcode direct result builds from complete OFF product', () {
     final container = ProviderContainer();

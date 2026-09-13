@@ -111,6 +111,11 @@ class _InventoryReceiptManualProductEditorPageState
       message: widget.initialInfoMessage,
       isMounted: () => mounted,
       onShowSnackBar: _showSnackBar,
+      actionBuilder: () => buildEditorInitialInfoAction(
+        context: context,
+        canScanNutritionLabel: ref.read(_provider).canScanNutritionLabel,
+        onScanNutritionLabel: _onScanNutritionLabel,
+      ),
     );
   }
 
@@ -278,7 +283,8 @@ class _InventoryReceiptManualProductEditorPageState
         controller: _controller,
       );
 
-  void _showSnackBar(String message) => showEditorSnackBar(context, message);
+  void _showSnackBar(String message, {SnackBarAction? action}) =>
+      showEditorSnackBar(context, message, action: action);
 
   void _closePage<T extends Object?>([T? result]) => closeEditorPage(
     context: context,

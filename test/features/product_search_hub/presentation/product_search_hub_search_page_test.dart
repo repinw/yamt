@@ -10,6 +10,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'models/product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_entry_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_lookup.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_page.dart';
@@ -336,6 +338,80 @@ void main() {
     );
 
     expect(didCreate, isTrue);
+  });
+
+  testWidgets('copy button returns ProductSearchHubCopyResult', (tester) async {
+    Object? poppedResult;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          voiceSearchServiceProvider.overrideWithValue(
+            _FakeVoiceSearchService(),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) {
+              return TextButton(
+                onPressed: () async {
+                  poppedResult = await Navigator.of(context).push(
+                    MaterialPageRoute<Object>(
+                      builder: (_) => ProductSearchHubSearchPage(
+                        lookupProducts: ({
+                          required query,
+                          required limit,
+                          store,
+                          weight,
+                        }) async {
+                          return ProductSearchHubSearchLookupResult.success(
+                            const [
+                              OffProductSearchResult(
+                                code: 'copy-target',
+                                name: 'Organic Milk',
+                                score: 1,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await _pumpFocusedSearchReady(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('product_search_hub_search_field')),
+      'Organic',
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    final copyButtonFinder = find.byKey(
+      const Key('product_search_hub_search_result_copy_copy-target'),
+    );
+    expect(copyButtonFinder, findsOneWidget);
+    await tester.tap(copyButtonFinder);
+    await tester.pumpAndSettle();
+
+    final copyResult = poppedResult;
+    expect(copyResult, isA<ProductSearchHubCopyResult>());
+    if (copyResult is ProductSearchHubCopyResult) {
+      expect(copyResult.product.code, 'copy-target');
+    }
   });
 }
 

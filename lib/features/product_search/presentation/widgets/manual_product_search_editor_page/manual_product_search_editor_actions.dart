@@ -20,6 +20,7 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page_types.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Launches the barcode scanner flow and dispatches candidate actions.
 Future<void> launchEditorBarcodeScanner({
@@ -138,10 +139,34 @@ Future<void> startManualProductDraftWithVoiceCleanup({
 }
 
 /// Shows a standard snackbar on the nearest ScaffoldMessenger.
-void showEditorSnackBar(BuildContext context, String message) {
+void showEditorSnackBar(
+  BuildContext context,
+  String message, {
+  SnackBarAction? action,
+}) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: action,
+      ),
+    );
+}
+
+/// Builds the optional initial info action (e.g. nutrition label OCR scan).
+SnackBarAction? buildEditorInitialInfoAction({
+  required BuildContext context,
+  required bool canScanNutritionLabel,
+  required VoidCallback onScanNutritionLabel,
+}) {
+  if (!canScanNutritionLabel) {
+    return null;
+  }
+  return SnackBarAction(
+    label: AppLocalizations.of(context)!.caloriesBarcodeNotFoundOcrAction,
+    onPressed: onScanNutritionLabel,
+  );
 }
 
 /// Cancels voice search and pops the editor page with an optional result.
@@ -158,14 +183,16 @@ void closeEditorPage<T extends Object?>({
 void scheduleEditorInitialInfoMessage({
   required String? message,
   required bool Function() isMounted,
-  required void Function(String message) onShowSnackBar,
+  required void Function(String message, {SnackBarAction? action})
+      onShowSnackBar,
+  SnackBarAction? Function()? actionBuilder,
 }) {
   if (message == null) {
     return;
   }
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (isMounted()) {
-      onShowSnackBar(message);
+      onShowSnackBar(message, action: actionBuilder?.call());
     }
   });
 }

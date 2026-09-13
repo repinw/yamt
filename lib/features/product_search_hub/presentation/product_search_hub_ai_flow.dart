@@ -23,8 +23,8 @@ Future<InventoryReceiptManualProductResult?> openProductSearchHubAiFlow({
     args: ManualProductSearchRouteArgs.aiSearch(
       item: draftItem,
       initialPrompt: initialPrompt,
-      showEatImmediatelyOption: args.mode == ProductSearchHubMode.diary,
-      initialAction: _initialActionForMode(args.mode),
+      showEatImmediatelyOption: args.isDiary,
+      initialAction: args.initialManualProductAction,
       quickEatConfig: productSearchHubQuickEatConfig(args),
     ),
   );
@@ -38,16 +38,4 @@ Future<InventoryReceiptManualProductResult?> openProductSearchHubAiFlow({
     skipMissingBarcodePrompt: true,
     eatSelection: result.eatSelection,
   );
-}
-
-InventoryReceiptManualProductAction _initialActionForMode(
-  ProductSearchHubMode mode,
-) {
-  return switch (mode) {
-    ProductSearchHubMode.inventory =>
-      InventoryReceiptManualProductAction.addToInventory,
-    ProductSearchHubMode.selection =>
-      InventoryReceiptManualProductAction.addToInventory,
-    ProductSearchHubMode.diary => InventoryReceiptManualProductAction.eatNow,
-  };
 }

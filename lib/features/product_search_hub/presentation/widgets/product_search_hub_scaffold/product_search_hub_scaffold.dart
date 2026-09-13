@@ -40,6 +40,7 @@ class ProductSearchHubScaffold extends StatelessWidget {
     required this.onRecentlySelectedProductPressed,
     required this.onCountPressed,
     required this.onSubmitPressed,
+    this.onRecentlySelectedProductCopied,
     super.key,
   });
 
@@ -76,6 +77,9 @@ class ProductSearchHubScaffold extends StatelessWidget {
   /// Recent product callback.
   final ValueChanged<InventoryItem> onRecentlySelectedProductPressed;
 
+  /// Recent product copy callback.
+  final ValueChanged<InventoryItem>? onRecentlySelectedProductCopied;
+
   /// Opens selected-product sheet.
   final VoidCallback onCountPressed;
 
@@ -104,6 +108,8 @@ class ProductSearchHubScaffold extends StatelessWidget {
                 onCreateOwnPressed: onCreateOwnPressed,
                 onRecentlySelectedProductPressed:
                     onRecentlySelectedProductPressed,
+                onRecentlySelectedProductCopied:
+                    onRecentlySelectedProductCopied,
               ),
               if (savedSelections.isNotEmpty)
                 _ProductSearchHubOverlay(
@@ -132,6 +138,7 @@ class _ProductSearchHubNestedContent extends StatelessWidget {
     required this.onAiPressed,
     required this.onCreateOwnPressed,
     required this.onRecentlySelectedProductPressed,
+    this.onRecentlySelectedProductCopied,
   });
 
   final double bottomClearance;
@@ -143,6 +150,7 @@ class _ProductSearchHubNestedContent extends StatelessWidget {
   final VoidCallback onAiPressed;
   final VoidCallback onCreateOwnPressed;
   final ValueChanged<InventoryItem> onRecentlySelectedProductPressed;
+  final ValueChanged<InventoryItem>? onRecentlySelectedProductCopied;
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +195,7 @@ class _ProductSearchHubNestedContent extends StatelessWidget {
         child: ProductSearchHubTabView(
           selectedProductKeys: selectedProductKeys,
           onRecentlySelectedProductPressed: onRecentlySelectedProductPressed,
+          onRecentlySelectedProductCopied: onRecentlySelectedProductCopied,
         ),
       ),
     );

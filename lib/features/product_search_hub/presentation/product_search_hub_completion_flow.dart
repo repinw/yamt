@@ -6,12 +6,10 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_product_eat_completion_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_product_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/product_search_hub/application/'
+    'product_search_hub_mode_strategy.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -58,74 +56,16 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   required String sourceKey,
   required InventoryReceiptManualProductResult result,
   bool continueDiaryBatch = false,
-}) async {
-  if (args.mode == ProductSearchHubMode.selection) {
-    return const ProductSearchHubCompletionResult.none();
-  }
-
-  final outcome = await _completeForMode(
+}) {
+  return productSearchHubModeStrategy(args.mode).completeResult(
     context: context,
     container: container,
     l10n: l10n,
     args: args,
+    sourceKey: sourceKey,
     result: result,
     continueDiaryBatch: continueDiaryBatch,
   );
-  if (!context.mounted) {
-    return const ProductSearchHubCompletionResult.none();
-  }
-
-  final savedItem = outcome.item;
-  if (outcome.status != InventoryManualProductSaveStatus.saved ||
-      savedItem == null) {
-    if (outcome.status == InventoryManualProductSaveStatus.failed) {
-      _showSnackBar(context, l10n.inventoryManualAddSaveFailed);
-    }
-    return const ProductSearchHubCompletionResult.none();
-  }
-  final selection = ProductSearchHubSavedSelection(
-    item: savedItem,
-    sourceKey: sourceKey,
-    calorieEntryId: outcome.calorieEntryId,
-  );
-  if (args.mode == ProductSearchHubMode.diary && !outcome.addMoreRequested) {
-    return ProductSearchHubCompletionResult.closeHub(selection: selection);
-  }
-  return ProductSearchHubCompletionResult.showOverlay(selection);
-}
-
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
-Future<InventoryManualProductSaveOutcome> _completeForMode({
-  required BuildContext context,
-  required ProviderContainer container,
-  required AppLocalizations l10n,
-  required ProductSearchHubRouteArgs args,
-  required InventoryReceiptManualProductResult result,
-  required bool continueDiaryBatch,
-}) {
-  return switch (args.mode) {
-    ProductSearchHubMode.inventory => saveManualProductResultToInventory(
-      context: context,
-      container: container,
-      l10n: l10n,
-      result: result,
-    ),
-    ProductSearchHubMode.diary => saveManualProductResultForEatFlow(
-      context: context,
-      container: container,
-      l10n: l10n,
-      result: result,
-      preselectedMealType: args.preselectedMealType,
-      preselectedLoggedAt: args.preselectedLoggedAt,
-      continueBatchOnConfirm: continueDiaryBatch,
-    ),
-    ProductSearchHubMode.selection => Future.value(
-      const InventoryManualProductSaveOutcome.canceled(),
-    ),
-  };
 }
 
 /// Removes a saved hub selection from diary and inventory.
@@ -147,13 +87,4 @@ Future<bool> removeProductSearchHubSelection({
   return container
       .read(inventoryItemsControllerProvider.notifier)
       .deleteItem(selection.item.id);
-}
-
-void _showSnackBar(BuildContext context, String message) {
-  if (!context.mounted) {
-    return;
-  }
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
 }

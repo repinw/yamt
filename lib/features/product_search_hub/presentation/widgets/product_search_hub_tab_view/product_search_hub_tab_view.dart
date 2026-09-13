@@ -14,6 +14,7 @@ class ProductSearchHubTabView extends StatelessWidget {
   const ProductSearchHubTabView({
     required this.selectedProductKeys,
     required this.onRecentlySelectedProductPressed,
+    this.onRecentlySelectedProductCopied,
     super.key,
   });
 
@@ -23,6 +24,9 @@ class ProductSearchHubTabView extends StatelessWidget {
   /// Called when a recent product is selected.
   final ValueChanged<InventoryItem> onRecentlySelectedProductPressed;
 
+  /// Called when a recent product is copied.
+  final ValueChanged<InventoryItem>? onRecentlySelectedProductCopied;
+
   @override
   Widget build(BuildContext context) {
     return TabBarView(
@@ -30,6 +34,7 @@ class ProductSearchHubTabView extends StatelessWidget {
         ProductSearchHubRecentlySelectedTab(
           selectedProductKeys: selectedProductKeys,
           onProductPressed: onRecentlySelectedProductPressed,
+          onProductCopied: onRecentlySelectedProductCopied,
         ),
       ],
     );

@@ -394,7 +394,7 @@ class InventoryReceiptManualProductController
     final matchedProduct = _currentMatchedProduct();
     return (
       imageUrl: normalizeProductImageUrl(
-        matchedProduct?.imageUrl ?? _config.item.imageUrl,
+        _config.item.imageUrl ?? matchedProduct?.imageUrl,
       ),
       name: _resolvedManualName(
         fallbackName: matchedProduct?.name ?? _config.item.name,
@@ -472,7 +472,7 @@ class InventoryReceiptManualProductController
           ),
           brand: _resolvedManualBrand(),
           barcode: barcode,
-          imageUrl: matchedProduct?.imageUrl ?? _config.item.imageUrl,
+          imageUrl: _config.item.imageUrl ?? matchedProduct?.imageUrl,
           weight: inventoryWeight,
           servingSize:
               matchedProduct?.servingSize ??
@@ -591,7 +591,7 @@ class InventoryReceiptManualProductController
           name: selection.name,
           brand: selection.brand,
           barcode: barcode,
-          imageUrl: selection.imageUrl ?? _config.item.imageUrl,
+          imageUrl: _config.item.imageUrl ?? selection.imageUrl,
           weight: inventoryWeight,
           servingSize: selection.servingSize ?? _config.item.servingSize,
           servingQuantity:

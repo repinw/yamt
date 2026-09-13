@@ -1,5 +1,7 @@
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Product search hub launch mode.
@@ -141,6 +143,20 @@ class ProductSearchHubRouteArgs {
 
   /// Whether focused search should autofocus search text field on mount.
   final bool autofocusSearchField;
+
+  /// Whether the hub is running in diary mode.
+  bool get isDiary => mode == ProductSearchHubMode.diary;
+
+  /// Default action to preselect in the manual product editor.
+  InventoryReceiptManualProductAction get initialManualProductAction =>
+      switch (mode) {
+        ProductSearchHubMode.inventory =>
+          InventoryReceiptManualProductAction.addToInventory,
+        ProductSearchHubMode.selection =>
+          InventoryReceiptManualProductAction.addToInventory,
+        ProductSearchHubMode.diary =>
+          InventoryReceiptManualProductAction.eatNow,
+      };
 
   /// Whether diary source buttons should be shown.
   bool get showsDiarySourceActions => mode == ProductSearchHubMode.diary;

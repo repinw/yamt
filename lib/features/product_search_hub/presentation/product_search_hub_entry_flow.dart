@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
@@ -33,11 +36,21 @@ class ProductSearchHubEditedResult {
   final inventory_models.InventoryReceiptManualProductResult result;
 }
 
+/// Search result copied as a template for a new product.
+class ProductSearchHubCopyResult {
+  /// Creates a copied search result.
+  const ProductSearchHubCopyResult(this.product);
+
+  /// The product template that was copied.
+  final OffProductSearchResult product;
+}
+
 /// Opens AI entry flow.
 Future<ProductSearchHubEditedResult?> openProductSearchHubAiEntry({
   required BuildContext context,
   required AppLocalizations l10n,
   required ProductSearchHubRouteArgs args,
+  String initialPrompt = '',
 }) async {
   final result = await openProductSearchHubAiFlow(
     context: context,
@@ -46,6 +59,7 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubAiEntry({
       sourceItem: args.item,
     ),
     args: args,
+    initialPrompt: initialPrompt,
   );
   return _editedResult(result);
 }
@@ -55,7 +69,10 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubCustomEntry({
   required BuildContext context,
   required AppLocalizations l10n,
   required ProductSearchHubRouteArgs args,
+  String initialName = '',
 }) async {
+  final normalized = normalizeBarcode(initialName);
+  final isBarcode = normalized.isNotEmpty && isSupportedBarcode(normalized);
   final result = await openProductSearchHubCustomProductEditor(
     context: context,
     draftItem: buildProductSearchHubDraftItem(
@@ -63,6 +80,8 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubCustomEntry({
       sourceItem: args.item,
     ),
     args: args,
+    scannedBarcode: isBarcode ? normalized : null,
+    initialName: isBarcode ? '' : initialName,
   );
   return _editedResult(result);
 }

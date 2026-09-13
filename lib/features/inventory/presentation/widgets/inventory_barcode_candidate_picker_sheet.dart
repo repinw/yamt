@@ -8,6 +8,8 @@ import 'package:yamt/features/inventory/presentation/utils/'
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_lookup_candidate.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_product_candidate_actions.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_product_candidate_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

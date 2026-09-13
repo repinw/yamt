@@ -431,6 +431,24 @@ abstract class AppLocalizations {
   /// **'No recently selected products yet.'**
   String get productSearchHubRecentlySelectedEmptyState;
 
+  /// No description provided for @productSearchHubCopyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as template'**
+  String get productSearchHubCopyAction;
+
+  /// No description provided for @productSearchHubCopyActionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as new product (e.g. if recipe changed)'**
+  String get productSearchHubCopyActionTooltip;
+
+  /// No description provided for @productSearchHubCopiedInfoMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied as template. Nutrition and details can now be adjusted.'**
+  String get productSearchHubCopiedInfoMessage;
+
   /// No description provided for @inventoryPageTitle.
   ///
   /// In en, this message translates to:

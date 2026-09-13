@@ -95,3 +95,5 @@ IDEAS.md
 
 # Golden test failure artifacts
 test/**/failures/
+.env
+.env.example
