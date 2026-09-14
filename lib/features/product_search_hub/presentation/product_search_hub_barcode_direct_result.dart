@@ -5,11 +5,11 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
-import 'package:yamt/features/product_search/domain/'
+import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_eat_now_nutrition.dart';
-import 'package:yamt/features/product_search/presentation/controllers/'
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
-import 'package:yamt/features/product_search/presentation/controllers/'
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart'
     as manual_product_models;
 import 'package:yamt/features/product_search_hub/presentation/models/'

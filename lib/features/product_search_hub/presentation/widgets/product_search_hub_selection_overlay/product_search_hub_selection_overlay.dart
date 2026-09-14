@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_product_candidate_widgets.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'product_search_candidate_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _productSearchHubSelectionOverlayCountSize = 48.0;

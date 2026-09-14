@@ -8,8 +8,9 @@ void popProductSearchHubRoute({
   Object? result,
 }) {
   final router = GoRouter.maybeOf(context);
-  final canPop =
-      router != null ? router.canPop() : Navigator.of(context).canPop();
+  final canPop = router != null
+      ? router.canPop()
+      : Navigator.of(context).canPop();
   if (isBlocked || !canPop) {
     return;
   }
@@ -28,8 +29,9 @@ void popProductSearchHubDeferredRoute({
   Object? result,
 }) {
   final router = GoRouter.maybeOf(context);
-  final canPop =
-      router != null ? router.canPop() : Navigator.of(context).canPop();
+  final canPop = router != null
+      ? router.canPop()
+      : Navigator.of(context).canPop();
   if (isBlocked || !canPop) {
     return;
   }

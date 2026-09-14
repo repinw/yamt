@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/presentation/controllers/'
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart'
     as manual_product_models;
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -12,7 +12,6 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_barcode_direct_result.dart';
 
 void main() {
-
   test('diary barcode direct result builds from complete OFF product', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

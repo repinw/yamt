@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/product_search/domain/'
+import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_config.dart';

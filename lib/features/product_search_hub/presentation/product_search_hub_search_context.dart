@@ -1,6 +1,6 @@
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
-import 'package:yamt/features/product_search/domain/'
+import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
@@ -69,9 +69,7 @@ String? productSearchHubInitialSearchQuery(ProductSearchHubRouteArgs args) {
 
 String? _supportedStore(String? rawValue) {
   final normalized = normalizeStoreName(rawValue);
-  if (normalized == null ||
-      normalized.isEmpty ||
-      normalized == 'Unknown') {
+  if (normalized == null || normalized.isEmpty || normalized == 'Unknown') {
     return null;
   }
   return normalized;

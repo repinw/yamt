@@ -1,0 +1,260 @@
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_search_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_page_types.dart';
+
+/// Query/path parameter name for child route flow type.
+const manualProductSearchFlowParam = 'flow';
+
+/// Query parameter name for child route payload id.
+const manualProductSearchPayloadParam = 'payload';
+
+/// Handles a save result emitted by a product-search route.
+typedef ManualProductSearchRouteSaveHandler =
+    Future<void> Function(InventoryReceiptManualProductResult result);
+
+/// Stores transient route payloads behind short URL-safe ids.
+class ManualProductSearchRoutePayloadStore {
+  /// Creates a route payload store.
+  ManualProductSearchRoutePayloadStore();
+
+  final _payloads = <String, ManualProductSearchRouteArgs>{};
+  var _nextPayloadId = 0;
+
+  /// Stores args and returns the generated payload id.
+  String put(ManualProductSearchRouteArgs args) {
+    final payloadId = 'manual_product_search_${_nextPayloadId++}';
+    _payloads[payloadId] = args;
+    return payloadId;
+  }
+
+  /// Reads args for a payload id when it belongs to the requested flow.
+  ManualProductSearchRouteArgs? read({
+    required ManualProductSearchChildFlow flow,
+    required String? payloadId,
+  }) {
+    if (payloadId == null || payloadId.isEmpty) {
+      return null;
+    }
+    final args = _payloads[payloadId];
+    if (args == null || args.flow != flow) {
+      return null;
+    }
+    return args;
+  }
+
+  /// Removes a payload after its route has completed.
+  void remove(String? payloadId) {
+    if (payloadId == null) {
+      return;
+    }
+    _payloads.remove(payloadId);
+  }
+
+  /// Clears all payloads when the owning provider scope is disposed.
+  void clear() {
+    _payloads.clear();
+  }
+}
+
+/// Product-search child route types.
+enum ManualProductSearchChildFlow {
+  /// Manual editor page.
+  editor('editor'),
+
+  /// AI search page.
+  aiSearch('ai-search')
+  ;
+
+  const ManualProductSearchChildFlow(this.pathSegment);
+
+  /// Stable path segment.
+  final String pathSegment;
+
+  /// Resolves a stable path segment to a child flow.
+  static ManualProductSearchChildFlow? fromPathSegment(String? value) {
+    for (final flow in values) {
+      if (flow.pathSegment == value) {
+        return flow;
+      }
+    }
+    return null;
+  }
+}
+
+/// Serializable route arguments for a product-search child flow.
+class ManualProductSearchRouteArgs {
+  const ManualProductSearchRouteArgs._({
+    required this.flow,
+    required this.item,
+    required this.includeStoreInSearch,
+    required this.includeWeightInSearch,
+    required this.showEatImmediatelyOption,
+    required this.initialAction,
+    required this.closeCurrentEditorOnSave,
+    required this.showActionSelector,
+    required this.autofocusSearch,
+    required this.initialStartVoiceSearch,
+    required this.quickEatConfig,
+    this.selectedProduct,
+    this.initialRecentItem,
+    this.initialPrompt,
+    this.initialInfoMessage,
+    this.onSaved,
+  });
+
+  /// Creates manual editor route args.
+  factory ManualProductSearchRouteArgs.editor({
+    required InventoryReceiptManualProductConfig config,
+    required bool showEatImmediatelyOption,
+    required InventoryReceiptManualProductAction initialAction,
+    required bool closeCurrentEditorOnSave,
+    required bool showActionSelector,
+    bool autofocusSearch = false,
+    bool initialStartVoiceSearch = false,
+    InventoryManualAddQuickEatConfig quickEatConfig =
+        InventoryManualAddQuickEatConfig.standard,
+    InventoryItem? initialRecentItem,
+    String? initialInfoMessage,
+    ManualProductSearchRouteSaveHandler? onSaved,
+  }) {
+    return ManualProductSearchRouteArgs._(
+      flow: ManualProductSearchChildFlow.editor,
+      item: config.item,
+      selectedProduct: config.selectedProduct,
+      includeStoreInSearch: config.includeStoreInSearch,
+      includeWeightInSearch: config.includeWeightInSearch,
+      showEatImmediatelyOption: showEatImmediatelyOption,
+      initialAction: initialAction,
+      closeCurrentEditorOnSave: closeCurrentEditorOnSave,
+      showActionSelector: showActionSelector,
+      autofocusSearch: autofocusSearch,
+      initialStartVoiceSearch: initialStartVoiceSearch,
+      quickEatConfig: quickEatConfig,
+      initialRecentItem: initialRecentItem,
+      initialInfoMessage: initialInfoMessage,
+      onSaved: onSaved,
+    );
+  }
+
+  /// Creates AI search route args.
+  factory ManualProductSearchRouteArgs.aiSearch({
+    required InventoryItem item,
+    required String initialPrompt,
+    required bool showEatImmediatelyOption,
+    required InventoryReceiptManualProductAction initialAction,
+    InventoryManualAddQuickEatConfig quickEatConfig =
+        InventoryManualAddQuickEatConfig.standard,
+  }) {
+    return ManualProductSearchRouteArgs._(
+      flow: ManualProductSearchChildFlow.aiSearch,
+      item: item,
+      includeStoreInSearch: true,
+      includeWeightInSearch: true,
+      showEatImmediatelyOption: showEatImmediatelyOption,
+      initialAction: initialAction,
+      closeCurrentEditorOnSave: true,
+      showActionSelector: true,
+      autofocusSearch: false,
+      initialStartVoiceSearch: false,
+      quickEatConfig: quickEatConfig,
+      initialPrompt: initialPrompt,
+    );
+  }
+
+  /// Parses route args from a go_router state.
+  factory ManualProductSearchRouteArgs.fromState(
+    GoRouterState state,
+    ManualProductSearchRoutePayloadStore payloadStore,
+  ) {
+    final args = ManualProductSearchRouteArgs.tryParse(state, payloadStore);
+    if (args == null) {
+      throw FormatException(
+        'Invalid product-search child route: ${state.uri}',
+      );
+    }
+    return args;
+  }
+
+  /// Parses route args, returning null when required URL data is missing.
+  static ManualProductSearchRouteArgs? tryParse(
+    GoRouterState state,
+    ManualProductSearchRoutePayloadStore payloadStore,
+  ) {
+    final flow = ManualProductSearchChildFlow.fromPathSegment(
+      state.pathParameters[manualProductSearchFlowParam],
+    );
+    if (flow == null) {
+      return null;
+    }
+    return payloadStore.read(
+      flow: flow,
+      payloadId: state.uri.queryParameters[manualProductSearchPayloadParam],
+    );
+  }
+
+  /// Child flow type.
+  final ManualProductSearchChildFlow flow;
+
+  /// Base inventory item.
+  final InventoryItem item;
+
+  /// Optional selected OFF product.
+  final OffProductSearchResult? selectedProduct;
+
+  /// Optional recent item to apply to editor state.
+  final InventoryItem? initialRecentItem;
+
+  /// Initial AI prompt.
+  final String? initialPrompt;
+
+  /// Whether store is included in manual search.
+  final bool includeStoreInSearch;
+
+  /// Whether weight is included in manual search.
+  final bool includeWeightInSearch;
+
+  /// Whether eat-now is available.
+  final bool showEatImmediatelyOption;
+
+  /// Initial save action.
+  final InventoryReceiptManualProductAction initialAction;
+
+  /// Whether editor save should close only the current route.
+  final bool closeCurrentEditorOnSave;
+
+  /// Whether editor action selector is shown.
+  final bool showActionSelector;
+
+  /// Whether editor search field should autofocus.
+  final bool autofocusSearch;
+
+  /// Whether editor voice search should start immediately.
+  final bool initialStartVoiceSearch;
+
+  /// Quick-eat config scoped to product-search child pages.
+  final InventoryManualAddQuickEatConfig quickEatConfig;
+
+  /// Optional editor info message.
+  final String? initialInfoMessage;
+
+  /// Optional route-local save handler.
+  final ManualProductSearchRouteSaveHandler? onSaved;
+
+  /// Concrete URL location for this route payload.
+  String locationForPayload(String payloadId) {
+    final query = <String, String>{
+      manualProductSearchPayloadParam: payloadId,
+    };
+    return Uri(
+      path: AppRoutes.productSearchChildFlowPath(flow.pathSegment),
+      queryParameters: query,
+    ).toString();
+  }
+}

@@ -11,16 +11,6 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_context.dart';
 
-export 'package:yamt/features/product_search_hub/data/'
-    'composite_product_search_adapter.dart'
-    show
-        CompositeProductSearchAdapter,
-        lookupProductSearchHubProducts,
-        productSearchGatewayProvider;
-export 'package:yamt/features/product_search_hub/domain/'
-    'product_search_gateway.dart'
-    show ProductSearchGateway, ProductSearchHubSearchLookupResult;
-
 /// Product search lookup used by the focused hub search route.
 typedef ProductSearchHubSearchLookup =
     Future<ProductSearchHubSearchLookupResult> Function({

@@ -5,19 +5,21 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/domain/'
+import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
-import 'package:yamt/features/product_search/presentation/controllers/'
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart'
     as manual_product_models;
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page_route.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page_types.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_quick_eat_config.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_page_types.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _productSearchHubDraftItemId = Uuid();

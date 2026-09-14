@@ -45,16 +45,18 @@ import 'package:yamt/features/onboarding/domain/'
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
-import 'package:yamt/features/product_search/presentation/controllers/'
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page_route.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 

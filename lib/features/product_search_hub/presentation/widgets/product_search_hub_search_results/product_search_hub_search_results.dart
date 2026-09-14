@@ -6,8 +6,8 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_result_quality.dart';
 import 'package:yamt/features/inventory/presentation/utils/'
     'off_product_nutrition_grade_extension.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_product_candidate_widgets.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'product_search_candidate_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Product search hub result list.

@@ -7,7 +7,7 @@ final _featureLabels = <String, String>{
   'meal_templates': 'Meal Templates',
   'prepared_meals': 'Prepared Meals',
   'product_nutrition': 'Product Nutrition',
-  'product_search': 'Product Search',
+  'product_search_hub': 'Product Search Hub',
   'shoppinglist': 'Shopping List',
 };
 

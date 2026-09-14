@@ -47,14 +47,14 @@ import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_page.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'models/product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/controllers/'

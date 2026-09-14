@@ -1,4 +1,6 @@
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_barcode_lookup_candidate.dart';
 
 /// Search lookup result for the product search hub.
 class ProductSearchHubSearchLookupResult {
@@ -29,7 +31,6 @@ class ProductSearchHubSearchLookupResult {
 }
 
 /// Abstract gateway for searching products from multiple sources (OFF, local/global food items).
-// ignore: one_member_abstracts
 abstract interface class ProductSearchGateway {
   /// Searches candidate products matching [query].
   Future<ProductSearchHubSearchLookupResult> search({
@@ -38,5 +39,10 @@ abstract interface class ProductSearchGateway {
     String? store,
     String? brand,
     String? weight,
+  });
+
+  /// Resolves barcode candidates from learned history and Open Food Facts.
+  Future<List<InventoryBarcodeLookupCandidate>> resolveBarcodeCandidates({
+    required String barcode,
   });
 }

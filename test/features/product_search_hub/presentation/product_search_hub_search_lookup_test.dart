@@ -3,6 +3,8 @@ import 'package:yamt/features/inventory/data/global_food_item_repository_contrac
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
+import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/product_search_hub_search_lookup.dart';
 

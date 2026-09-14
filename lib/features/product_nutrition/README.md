@@ -49,8 +49,8 @@ capture, request, and MIME detection.
 
 Current accepted cross-feature use:
 
-- `product_search` may call the OCR repository and apply OCR drafts to manual
-  product nutrition fields.
+- `product_search_hub` may call the OCR repository and apply OCR drafts to
+  manual product nutrition fields.
 
 Other features should consume the public edge above instead of reaching into
 private parsing helpers.

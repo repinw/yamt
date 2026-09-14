@@ -2,10 +2,15 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_result_quality.dart';
+import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
 
 part 'composite_product_search_adapter.g.dart';
@@ -18,6 +23,9 @@ ProductSearchGateway productSearchGateway(Ref ref) {
   return CompositeProductSearchAdapter(
     offRepository: ref.watch(offProductSearchRepositoryProvider),
     globalFoodItemRepository: ref.watch(globalFoodItemRepositoryProvider),
+    barcodeCandidateRepository: ref.watch(
+      globalBarcodeCandidateRepositoryProvider,
+    ),
   );
 }
 
@@ -27,11 +35,14 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
   const CompositeProductSearchAdapter({
     required OffProductSearchRepository offRepository,
     GlobalFoodItemRepository? globalFoodItemRepository,
+    GlobalBarcodeCandidateRepository? barcodeCandidateRepository,
   }) : _offRepository = offRepository,
-       _globalFoodItemRepository = globalFoodItemRepository;
+       _globalFoodItemRepository = globalFoodItemRepository,
+       _barcodeCandidateRepository = barcodeCandidateRepository;
 
   final OffProductSearchRepository _offRepository;
   final GlobalFoodItemRepository? _globalFoodItemRepository;
+  final GlobalBarcodeCandidateRepository? _barcodeCandidateRepository;
 
   @override
   Future<ProductSearchHubSearchLookupResult> search({
@@ -50,6 +61,56 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
       brand: brand,
       weight: weight,
     );
+  }
+
+  @override
+  Future<List<InventoryBarcodeLookupCandidate>> resolveBarcodeCandidates({
+    required String barcode,
+  }) async {
+    final learnedCandidatesFuture = _readLearnedCandidates(barcode);
+    final offCandidatesFuture = _readOffCandidates(barcode);
+    final learnedCandidates = await learnedCandidatesFuture;
+    final offCandidates = await offCandidatesFuture;
+    return mergeInventoryBarcodeCandidates(
+      learnedCandidates: learnedCandidates,
+      offCandidates: offCandidates,
+    );
+  }
+
+  Future<List<GlobalBarcodeCandidate>> _readLearnedCandidates(
+    String barcode,
+  ) async {
+    final repository = _barcodeCandidateRepository;
+    if (repository == null) {
+      return const <GlobalBarcodeCandidate>[];
+    }
+    try {
+      return await repository.readCandidates(barcode: barcode);
+    } on Object catch (error, stackTrace) {
+      log(
+        'Learned barcode candidate lookup failed for $barcode.',
+        name: _productSearchHubSearchLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <GlobalBarcodeCandidate>[];
+    }
+  }
+
+  Future<List<OffProductSearchResult>> _readOffCandidates(
+    String barcode,
+  ) async {
+    try {
+      return await _offRepository.lookupCandidatesByBarcode(barcode: barcode);
+    } on Object catch (error, stackTrace) {
+      log(
+        'OFF barcode candidate lookup failed for $barcode.',
+        name: _productSearchHubSearchLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <OffProductSearchResult>[];
+    }
   }
 }
 

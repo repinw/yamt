@@ -9,9 +9,9 @@ import 'package:yamt/features/inventory/domain/'
     'receipt_review_item_draft.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_candidate_swap_flow.dart';
-import 'package:yamt/features/product_search/presentation/controllers/'
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 
 void main() {

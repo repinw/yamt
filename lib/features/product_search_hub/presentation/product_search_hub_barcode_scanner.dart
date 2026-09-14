@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_barcode_scanner_page/inventory_barcode_scanner_page.dart';
+import 'package:yamt/core/widgets/barcode_scanner/app_barcode_scanner_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens hub barcode scanner and returns the scanned barcode string.
@@ -17,7 +16,7 @@ Future<String?> openProductSearchHubBarcodeScanner({
     builder: (sheetContext) {
       return FractionallySizedBox(
         heightFactor: 1,
-        child: InventoryBarcodeScannerPage(
+        child: AppBarcodeScannerPage(
           title: l10n.inventoryManualAddScanBarcodeAction,
           onBarcodeScanned: (scannedBarcode) async {
             sheetContext.pop(scannedBarcode);
