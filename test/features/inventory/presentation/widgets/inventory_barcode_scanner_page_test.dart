@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -9,8 +10,6 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_candidate_picker_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_lookup_candidate.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_barcode_scanner_page/inventory_barcode_scanner_support.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 GlobalBarcodeCandidate _learnedCandidate({

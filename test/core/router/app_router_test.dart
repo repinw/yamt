@@ -55,8 +55,8 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_page.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
+import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
 import '../../helpers/memory_app_preferences.dart';
@@ -194,14 +194,15 @@ const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
 );
 
 @Dependencies([
+  navigatorKey,
   appRouter,
   inventoryManualAddQuickEatConfig,
   manualProductRecentItemsService,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
   PreparedMealsController,
-  ReceiptBatchFlowController,
-  ReceiptCaptureFlowController,
+  SharedReceiptService,
+  receiptScanFlowCoordinator,
 ])
 void main() {
   testWidgets('shows splash while auth state is loading', (tester) async {

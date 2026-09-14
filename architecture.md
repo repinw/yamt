@@ -30,6 +30,9 @@ layers and Riverpod-managed MVVM.
   barrel export files or barrel classes.
 - Generated `part` files such as `*.g.dart` and `*.freezed.dart` are allowed.
   Hand-written `part` files are not.
+- Do not use `// ignore:` or `// ignore_for_file:` comments to suppress linter
+  rules or compiler diagnostics. Resolve the underlying root cause in code or
+  architecture cleanly instead.
 
 ## Feature Layout
 
@@ -116,6 +119,13 @@ The architecture pattern is MVVM, but naming is strictly controller-based.
 - If two features need the same concept, place it in the feature that naturally
   owns the underlying data. Use `core` only when the concept is truly
   feature-independent.
+- **Decoupled Feature Contracts (`abstract interface class`)**: When building
+  self-contained or modular features (such as standalone scanner engines or
+  isolated integrations), features may define their external dependencies as
+  lightweight `abstract interface class` contracts in their domain layer.
+  The integrating feature or application layer provides concrete
+  implementations via Riverpod providers. This eliminates tight coupling
+  to external databases/services and enables fast, isolated unit testing with fakes.
 
 ## Dependency Direction
 

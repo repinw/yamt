@@ -3529,4 +3529,181 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shoppingListOutOfStock => 'Aufgebraucht';
+
+  @override
+  String get receiptReviewTitle => 'Beleg prüfen';
+
+  @override
+  String get receiptReviewAddItem => 'Position hinzufügen';
+
+  @override
+  String get receiptReviewConfirmAllSuggestions => 'Alle Vorschläge übernehmen';
+
+  @override
+  String get receiptReviewSaveAction => 'Ins Inventar übernehmen';
+
+  @override
+  String get receiptReviewStoreEdit => 'Händler anpassen';
+
+  @override
+  String get receiptReviewStoreLabel => 'Händlername';
+
+  @override
+  String get receiptReviewAnalyzing => 'Beleg wird analysiert...';
+
+  @override
+  String receiptReviewProcessingFailed(String error) {
+    return 'Belegverarbeitung fehlgeschlagen: $error';
+  }
+
+  @override
+  String get receiptReviewNoDate => 'Kein Datum erkannt';
+
+  @override
+  String get receiptReviewUnknownStore => 'Unbekannter Händler';
+
+  @override
+  String get receiptReviewPrintedTotal => 'Bon-Summe';
+
+  @override
+  String get receiptReviewCalculatedTotal => 'Berechnete Summe';
+
+  @override
+  String receiptReviewDifference(String difference) {
+    return 'Differenz: $difference';
+  }
+
+  @override
+  String get receiptReviewSumMatches => 'Summe stimmt';
+
+  @override
+  String receiptReviewDiscount(String amount) {
+    return 'Rabatt: -$amount';
+  }
+
+  @override
+  String receiptReviewDeposit(String amount) {
+    return 'Pfand: $amount';
+  }
+
+  @override
+  String receiptReviewOpenItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Positionen',
+      one: '1 Position',
+    );
+    return 'Noch $_temp0 offen';
+  }
+
+  @override
+  String get receiptReviewReceiptPrefix => 'Bon';
+
+  @override
+  String get receiptReviewDepositBadge => 'Pfand';
+
+  @override
+  String get receiptReviewConfirmSuggestionTooltip => 'Vorschlag übernehmen';
+
+  @override
+  String get receiptReviewOriginalReceiptText => 'Originaltext vom Kassenbon';
+
+  @override
+  String get receiptReviewQuantityLabel => 'Menge:';
+
+  @override
+  String get receiptReviewScanBarcode => 'Barcode scannen';
+
+  @override
+  String get receiptReviewSearchProduct => 'Produkt suchen';
+
+  @override
+  String get receiptReviewIncludeItem => 'Einbeziehen';
+
+  @override
+  String get receiptReviewIgnoreItem => 'Ignorieren';
+
+  @override
+  String get receiptReviewDeleteItem => 'Löschen';
+
+  @override
+  String get receiptReviewSuggestedAlternatives => 'Vorgeschlagene Alternativen:';
+
+  @override
+  String get receiptReviewSelectCandidateAction => 'Wählen';
+
+  @override
+  String get receiptReviewNoProductAssigned => 'Kein Produkt zugewiesen';
+
+  @override
+  String get receiptReviewClearProductMatchTooltip => 'Zuordnung aufheben';
+
+  @override
+  String get receiptReviewSwitchProductAction => 'Produkt wechseln';
+
+  @override
+  String get receiptReviewSearchProductAction => 'Produkt suchen';
+
+  @override
+  String get receiptReviewItemNameLabel => 'Artikelbezeichnung';
+
+  @override
+  String get receiptReviewItemNameHint => 'z. B. Hafermilch Barista';
+
+  @override
+  String get receiptReviewItemQuantityLabel => 'Menge';
+
+  @override
+  String get receiptReviewPriceLabel => 'Preis';
+
+  @override
+  String get receiptReviewIsDepositLabel => 'Ist Pfand';
+
+  @override
+  String get receiptReviewAddAction => 'Hinzufügen';
+
+  @override
+  String get receiptReviewPriceEditTitle => 'Preis anpassen';
+
+  @override
+  String get receiptReviewBarcodeDialogTitle => 'Barcode eingeben / scannen';
+
+  @override
+  String get receiptReviewBarcodeDialogLabel => 'Barcode (EAN)';
+
+  @override
+  String get receiptReviewConfirmAction => 'Bestätigen';
+
+  @override
+  String get receiptReviewManualInputTooltip => 'Manuell eingeben';
+
+  @override
+  String get receiptReviewSearchProductDialogTitle => 'Artikel suchen';
+
+  @override
+  String get receiptReviewSearchProductHint => 'Produktname eingeben...';
+
+  @override
+  String get receiptReviewNoProductsFound => 'Keine Artikel gefunden';
+
+  @override
+  String get receiptReviewNutritionPer100g => 'Nährwerte je 100 g/ml';
+
+  @override
+  String receiptReviewPackageSize(String size) {
+    return 'Packung: $size';
+  }
+
+  @override
+  String get receiptReviewNutritionEnergy => 'Energie';
+
+  @override
+  String get receiptReviewNutritionFat => 'Fett';
+
+  @override
+  String get receiptReviewNutritionCarbs => 'KH';
+
+  @override
+  String get receiptReviewNutritionProtein => 'Protein';
 }

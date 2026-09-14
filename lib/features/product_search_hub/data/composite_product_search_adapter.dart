@@ -27,8 +27,8 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
   const CompositeProductSearchAdapter({
     required OffProductSearchRepository offRepository,
     GlobalFoodItemRepository? globalFoodItemRepository,
-  })  : _offRepository = offRepository,
-        _globalFoodItemRepository = globalFoodItemRepository;
+  }) : _offRepository = offRepository,
+       _globalFoodItemRepository = globalFoodItemRepository;
 
   final OffProductSearchRepository _offRepository;
   final GlobalFoodItemRepository? _globalFoodItemRepository;
@@ -38,6 +38,7 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
     required String query,
     required int limit,
     String? store,
+    String? brand,
     String? weight,
   }) {
     return lookupProductSearchHubProducts(
@@ -46,6 +47,7 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
       query: query,
       limit: limit,
       store: store,
+      brand: brand,
       weight: weight,
     );
   }
@@ -58,6 +60,7 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubProducts({
   required int limit,
   GlobalFoodItemRepository? globalFoodItemRepository,
   String? store,
+  String? brand,
   String? weight,
 }) async {
   try {
@@ -77,6 +80,7 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubProducts({
         query: query,
         barcode: isBarcode ? normalized : null,
         store: store,
+        brand: brand,
         weight: weight,
         limit: limit,
       ),
@@ -146,6 +150,7 @@ Future<List<OffProductSearchResult>> _lookupOffProducts({
   required String query,
   required String? barcode,
   required String? store,
+  required String? brand,
   required String? weight,
   required int limit,
 }) async {
@@ -154,6 +159,7 @@ Future<List<OffProductSearchResult>> _lookupOffProducts({
       query: query,
       limit: limit,
       store: store,
+      brand: brand,
       weight: weight,
     );
     if (results.isNotEmpty) {

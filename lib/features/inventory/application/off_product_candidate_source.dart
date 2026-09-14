@@ -20,8 +20,8 @@ class OffProductCandidateSource {
       return const <OffProductSearchResult>[];
     }
 
-    final query = (item.ocrName ?? item.name).trim();
-    if (query.isEmpty) {
+    final rawQuery = (item.ocrName ?? item.name).trim();
+    if (rawQuery.isEmpty) {
       return const <OffProductSearchResult>[];
     }
 
@@ -45,6 +45,11 @@ class OffProductCandidateSource {
         ? null
         : rawBrand;
     final effectiveWeight = item.weight?.trim();
+    final query = _stripReceiptQueryHints(
+      rawQuery,
+      brand: effectiveBrand,
+      weight: effectiveWeight,
+    );
     return repository.search(
       query: query,
       store: store,
@@ -119,5 +124,41 @@ class OffProductCandidateSource {
       return false;
     }
     return normalizedStoreName != 'Unknown';
+  }
+
+  String _stripReceiptQueryHints(
+    String query, {
+    String? brand,
+    String? weight,
+  }) {
+    var cleaned = query.trim();
+    final brandHint = brand?.trim() ?? '';
+    if (brandHint.isNotEmpty &&
+        cleaned.toLowerCase().startsWith(brandHint.toLowerCase())) {
+      final remainder = cleaned
+          .substring(brandHint.length)
+          .replaceFirst(RegExp(r'^[\s._\-/]+'), '');
+      if (remainder.isNotEmpty) cleaned = remainder;
+    }
+
+    final weightHint = weight?.trim() ?? '';
+    if (weightHint.isNotEmpty) {
+      final weightIndex = cleaned.toLowerCase().lastIndexOf(
+        weightHint.toLowerCase(),
+      );
+      if (weightIndex >= 0) {
+        final remainder =
+            (cleaned.substring(0, weightIndex) +
+                    cleaned.substring(weightIndex + weightHint.length))
+                .replaceAll(RegExp(r'^[\s._\-/]+|[\s._\-/]+$'), '');
+        if (remainder.isNotEmpty) cleaned = remainder;
+      }
+    }
+
+    cleaned = cleaned
+        .replaceAll(RegExp(r'\b(?:ggn|qs|vlog)\b', caseSensitive: false), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    return cleaned.isEmpty ? query.trim() : cleaned;
   }
 }

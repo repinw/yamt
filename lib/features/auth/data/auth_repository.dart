@@ -89,7 +89,7 @@ class FirebaseAuthRepository implements AuthRepository {
 }
 
 /// Auth repository.
-@riverpod
+@Riverpod(keepAlive: true)
 AuthRepository authRepository(Ref ref) {
   return FirebaseAuthRepository(ref.watch(firebaseAuthProvider));
 }

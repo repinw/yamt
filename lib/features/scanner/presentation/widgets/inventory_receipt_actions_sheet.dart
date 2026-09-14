@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines inventory receipt actions sheet.
+/// Modal bottom sheet displaying available inventory receipt and product add
+/// actions.
 class InventoryReceiptActionsSheet extends StatelessWidget {
-  /// The inventory receipt actions sheet.
+  /// Creates an [InventoryReceiptActionsSheet].
   const InventoryReceiptActionsSheet({
     required this.isCameraEnabled,
     required this.onManualAddTap,
@@ -12,16 +13,16 @@ class InventoryReceiptActionsSheet extends StatelessWidget {
     super.key,
   });
 
-  /// Whether camera enabled.
+  /// Whether camera scanning is supported on current platform.
   final bool isCameraEnabled;
 
-  /// The on manual add tap.
+  /// Callback when manual product search is tapped.
   final VoidCallback onManualAddTap;
 
-  /// The on scan camera tap.
+  /// Callback when camera scan is tapped.
   final VoidCallback onScanCameraTap;
 
-  /// The on upload file tap.
+  /// Callback when file upload is tapped.
   final VoidCallback onUploadFileTap;
 
   @override

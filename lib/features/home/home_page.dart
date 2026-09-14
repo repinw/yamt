@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome_visibility_controller.dart';
 import 'package:yamt/features/home/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -21,9 +22,9 @@ const _settingsBranchIndex = 3;
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
+  receiptManualProductPicker
 ])
 class HomePage extends ConsumerStatefulWidget {
   /// The home page.
@@ -37,12 +38,12 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  late final _HomeShellChromeVisibilityController _chromeVisibilityController;
+  late final HomeShellChromeVisibilityController _chromeVisibilityController;
 
   @override
   void initState() {
     super.initState();
-    _chromeVisibilityController = _HomeShellChromeVisibilityController();
+    _chromeVisibilityController = HomeShellChromeVisibilityController();
   }
 
   @override
@@ -180,84 +181,5 @@ class _HomePageState extends ConsumerState<HomePage> {
       return null;
     }
     return const InventoryActionFab();
-  }
-}
-
-class _HomeShellChromeVisibilityController extends ValueNotifier<double> {
-  _HomeShellChromeVisibilityController() : super(1);
-
-  static const _hideScrollDistance = 320;
-  static const _revealScrollDistance = 140;
-  static const _snapVisibilityThreshold = 0.5;
-  static const _topRevealThreshold = 8;
-
-  double get visibility => value;
-
-  bool handleScrollNotification(ScrollNotification notification) {
-    if (notification.depth != 0 ||
-        notification.metrics.axis != Axis.vertical ||
-        notification.metrics.maxScrollExtent <=
-            notification.metrics.minScrollExtent) {
-      return false;
-    }
-
-    if (_hasShortScrollRange(notification.metrics)) {
-      reveal();
-      return false;
-    }
-
-    if (notification is ScrollUpdateNotification &&
-        notification.scrollDelta != null) {
-      _updateFromScrollDelta(notification.scrollDelta!);
-    } else if (notification is ScrollEndNotification) {
-      _settleAfterScrollEnd(notification.metrics);
-    } else if (notification.metrics.pixels <=
-        notification.metrics.minScrollExtent + _topRevealThreshold) {
-      reveal();
-    }
-
-    return false;
-  }
-
-  void reveal() {
-    _setVisibility(1);
-  }
-
-  bool _hasShortScrollRange(ScrollMetrics metrics) {
-    return metrics.maxScrollExtent - metrics.minScrollExtent <
-        _hideScrollDistance;
-  }
-
-  void _settleAfterScrollEnd(ScrollMetrics metrics) {
-    if (metrics.pixels <= metrics.minScrollExtent + _topRevealThreshold) {
-      reveal();
-      return;
-    }
-
-    _setVisibility(visibility >= _snapVisibilityThreshold ? 1 : 0);
-  }
-
-  void _updateFromScrollDelta(double scrollDelta) {
-    if (scrollDelta == 0) {
-      return;
-    }
-
-    final scrollDistance = scrollDelta > 0
-        ? _hideScrollDistance
-        : _revealScrollDistance;
-    final nextVisibility = (visibility - (scrollDelta / scrollDistance)).clamp(
-      0.0,
-      1.0,
-    );
-    _setVisibility(nextVisibility);
-  }
-
-  void _setVisibility(double value) {
-    final targetVisibility = value.clamp(0.0, 1.0);
-    if ((visibility - targetVisibility).abs() < 0.001) {
-      return;
-    }
-
-    this.value = targetVisibility;
   }
 }

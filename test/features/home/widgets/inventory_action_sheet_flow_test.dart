@@ -10,9 +10,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _ActionSheetFlowTestAction {
@@ -24,8 +23,7 @@ enum _ActionSheetFlowTestAction {
 
 @Dependencies([
   InventoryItemsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
 ])
 class _ActionSheetFlowHost extends ConsumerWidget {
@@ -71,8 +69,7 @@ class _ActionSheetFlowHost extends ConsumerWidget {
 
 @Dependencies([
   InventoryItemsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
 ])
 Widget _buildHarness({
@@ -123,8 +120,7 @@ Widget _buildHarness({
 
 @Dependencies([
   InventoryItemsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
 ])
 void main() {

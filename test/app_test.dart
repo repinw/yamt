@@ -10,15 +10,15 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
+import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 
 import 'features/calories/support/fake_calories_repositories.dart';
 
-
 @Dependencies([
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  navigatorKey,
+  SharedReceiptService,
+  receiptScanFlowCoordinator,
 ])
 void main() {
   testWidgets('YAMT builds router app from provider', (tester) async {

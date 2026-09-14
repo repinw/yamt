@@ -38,7 +38,7 @@ final class InitialGuestAuthControllerProvider
 }
 
 String _$initialGuestAuthControllerHash() =>
-    r'b79fc967f63a9b8ecb513141fe5384da2cb13334';
+    r'6d5ad5943ca3a871ad219373a70606174479f55b';
 
 /// Manages automatic anonymous guest sign-in on initial app launch.
 

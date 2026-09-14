@@ -16,6 +16,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
     this.onCreateManualProduct,
     this.showActionButtons = true,
     this.eatOnly = false,
+    this.actions,
   }) : assert(
          onBarcodeScanned != null || onProductSelected != null,
          'Either onBarcodeScanned or onProductSelected must be provided.',
@@ -42,10 +43,16 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
   /// Whether only eat actions should be shown.
   final bool eatOnly;
 
+  /// Optional actions displayed in the app bar.
+  final List<Widget>? actions;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(title),
+        actions: actions,
+      ),
       body: InventoryBarcodeScannerView(
         onBarcodeScanned: onBarcodeScanned,
         onProductSelected: onProductSelected,

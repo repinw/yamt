@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'barcode_scanner_overlay/barcode_scanner_overlay.dart';
+import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
+import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_lookup_candidate.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -15,9 +15,6 @@ import 'package:yamt/features/inventory/presentation/widgets/'
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page/'
     'inventory_barcode_scanner_resolving_indicator.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_barcode_scanner_page/'
-    'inventory_barcode_scanner_support.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _scannerLogName = 'InventoryBarcodeScannerView';

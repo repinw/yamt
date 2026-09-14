@@ -43,6 +43,9 @@ firebase-debug.log
 firebase-debug.*.log
 .firebase/
 
+# Environment variables
+/.env*
+
 # Symbolication related
 app.*.symbols
 

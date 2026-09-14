@@ -896,6 +896,31 @@ void main() {
     },
   );
 
+  test(
+    'findCandidates removes duplicated receipt brand and weight from query',
+    () async {
+      final repository = _FakeOffProductSearchRepository();
+      final matcher = GlobalFoodItemMatcher(
+        offProductSearchRepository: repository,
+      );
+
+      await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'SG GGN Raeucherlachs 200g',
+          brand: 'SG GGN',
+          storeName: 'Netto',
+          weight: '200g',
+        ),
+      );
+
+      expect(repository.calls.single.query, 'Raeucherlachs');
+      expect(repository.calls.single.store, 'Netto');
+      expect(repository.calls.single.brand, 'SG GGN');
+      expect(repository.calls.single.weight, '200g');
+    },
+  );
+
   test('findCandidates derives Aldi from the OCR brand when needed', () async {
     final repository = _FakeOffProductSearchRepository();
     final matcher = GlobalFoodItemMatcher(

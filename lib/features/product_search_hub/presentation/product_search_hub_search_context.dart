@@ -25,6 +25,15 @@ String? productSearchHubSearchWeight(ProductSearchHubRouteArgs args) {
   return normalizeManualProductText(item.weight ?? '');
 }
 
+/// Brand hint for OFF product search.
+String? productSearchHubSearchBrand(ProductSearchHubRouteArgs args) {
+  final item = args.item;
+  if (item == null) {
+    return null;
+  }
+  return normalizeManualProductText(item.brand ?? '');
+}
+
 /// Initial text query shown when search is opened from an existing item.
 String? productSearchHubInitialSearchQuery(ProductSearchHubRouteArgs args) {
   final initialQuery = args.initialQuery?.trim();
@@ -60,11 +69,12 @@ String? productSearchHubInitialSearchQuery(ProductSearchHubRouteArgs args) {
 
 String? _supportedStore(String? rawValue) {
   final normalized = normalizeStoreName(rawValue);
-  return switch (normalized) {
-    'Aldi' => 'Aldi',
-    'Netto' => 'Netto',
-    _ => null,
-  };
+  if (normalized == null ||
+      normalized.isEmpty ||
+      normalized == 'Unknown') {
+    return null;
+  }
+  return normalized;
 }
 
 bool _looksLikeBarcodeText(String value) {

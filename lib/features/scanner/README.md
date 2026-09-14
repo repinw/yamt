@@ -1,65 +1,71 @@
 # Scanner Feature
 
-Scanner owns receipt capture, receipt AI analysis, receipt batch processing,
-shared receipt intents, and the receipt review flow.
+Scanner owns receipt capture, text extraction, receipt structuring,
+and the interactive receipt review flow.
 
 ## Owns
 
-- Receipt input selection for camera, gallery, files, and shared intents.
-- Receipt analysis repositories, parser contracts, and AI request preparation.
-- Receipt review draft mapping, candidate-resolution orchestration, and
-  persistence coordination for reviewed receipt items.
-- Receipt review pages, widgets, flow runners, and scanner-specific UI state.
-- Batch receipt processing and review state for multiple receipt inputs.
+- Receipt input selection for camera, gallery, files (PDF/images), and platform share intents.
+- Local text extraction (on-device ML Kit OCR and direct vector text extraction from PDF).
+- Parsing raw text into structured receipt models (`ScannedReceipt`, `ReceiptLineItem`) via Google Generative AI (Gemini Flash).
+- Interactive receipt review flow, item editing, status management, price adjustments, and review state (`ReceiptReviewController`).
+- Flow coordination and UI transitions (`ReceiptScanFlowCoordinator`).
 
 ## Does Not Own
 
 - Inventory item storage and global food catalog persistence. Scanner delegates
-  those writes to inventory repositories and services.
-- Product search internals. Scanner launches the product-search hub public
-  route for user-driven product lookup.
-- Calorie diary editing UI. Scanner only writes product nutrition handoff data
-  needed by calorie flows.
+  all writes to inventory services via `ReceiptStorageGateway`.
+- Product catalog search and fuzzy matching internals. Scanner resolves candidates
+  via `ReceiptProductResolver` and delegates manual product creation / catalog editing via `ReceiptManualProductPicker`.
+- Calorie diary editing or nutrition cache persistence.
 
 ## Public Edge
 
 Other features may consume these scanner entry points:
 
-- `InventoryReceiptReviewPage`
-- `ReceiptCaptureFlowController`
-- `ReceiptBatchFlowController`
-- `SharedReceiptFlowRunner`
-- Receipt domain models such as `ReceiptInputSelection`,
-  `ReceiptAnalysisExtraction`, and `ReceiptReviewItemDraft`
-
-Callers should not assemble scanner internal review widgets directly unless the
-widget is documented as a reusable scanner surface.
+- Domain models: `ScannedReceipt`, `ReceiptLineItem`, `ProductCandidate`.
+- Decoupled contracts: `ReceiptProductResolver`, `ReceiptManualProductPicker`, `ReceiptStorageGateway`, `ReceiptTextExtractor`, `ReceiptStructuredParser`.
+- Presentation flow & UI:
+  - `ReceiptScanFlowCoordinator` (entry point for camera scan and file upload flows)
+  - `ReceiptReviewPage` (primary review screen)
+  - `SharedReceiptListener` (app-level shell listener for incoming file share intents)
+  - `receiptCameraSupportedProvider` (platform camera check)
 
 ## Providers
 
-- Repository providers live in `data/`.
-- Application service providers live in `application/`.
-- Controller providers currently live in legacy `provider/`; do not add new
-  controller files there unless moving them would create unrelated churn.
-- Domain stays provider-free and contains pure models/helpers.
+- **Data Layer** (`data/receipt_gateway_providers.dart`):
+  - `receiptProductResolverProvider` (host adapter)
+  - `receiptManualProductPickerProvider` (host adapter)
+  - `receiptStorageGatewayProvider` (host adapter)
+  - `receiptTextExtractorProvider` (defaults to `MlKitReceiptTextExtractor`)
+  - `receiptStructuredParserProvider` (defaults to `GoogleAiReceiptParser`)
+- **Presentation Layer**:
+  - `receiptReviewControllerProvider` (`presentation/controllers/receipt_review_controller.dart`)
+  - `receiptScanFlowCoordinatorProvider` (`presentation/flow/receipt_scan_flow_coordinator.dart`)
+  - `receiptCameraSupportedProvider` (`presentation/flow/receipt_camera_supported.dart`)
+  - `sharedReceiptServiceProvider` (`presentation/shared/shared_receipt_service.dart`)
+  - `pendingSharedReceiptPathsProvider` (`presentation/shared/pending_shared_receipt_paths.dart`)
+- **Domain Layer**:
+  - Provider-free. Contains only pure models and `abstract interface class` contracts.
 
-## Accepted Dependencies
+## Dependencies & Adapters
 
-Scanner currently has explicit dependencies on:
+- The core scanner logic is decoupled from persistence and concrete backends via domain contracts (`abstract interface class`).
+- Yamt-specific host adapters are colocated in `data/adapters/`:
+  - `YamtReceiptStorageGateway` connects to `InventoryItemRepository` and `GlobalFoodItemRepository`.
+  - `YamtReceiptProductResolver` connects to `GlobalFoodItemMatcher` and `OffProductSearchRepository`.
+  - `YamtReceiptManualProductPicker` opens the host product search / manual item creation sheets.
+- `SharedReceiptListener` wraps the root router, listens for share intents, runs the scan coordinator, and invalidates `inventoryItemsControllerProvider` upon successful save.
+- `ReceiptBarcodeScanner` wraps `InventoryBarcodeScannerPage` for barcode matching during receipt review.
 
-- `inventory` for `InventoryItem`, `OffProductSearchResult`, global food
-  matching, inventory persistence, receipt alias persistence, manual product
-  result models, and inventory-owned receipt correction sheets.
-- `product_search_hub` for the public selection route used during receipt
-  review fallback and product correction.
-- `calories` for product nutrition cache handoff after reviewed receipt items
-  are saved.
+## Migration Notes
 
-These dependencies should stay small and flow through public edges, application
-services, or repository interfaces.
+This reworked scanner feature completely replaces the legacy scanner architecture:
+- Replaced the legacy monolithic `InventoryReceiptReviewSheet` (which had 760+ line widgets and 3400+ line test files) with 16 modular, focused widgets (< 270 lines each).
+- Replaced the legacy manual provider architecture and state machines with clean Riverpod `@Riverpod` notifiers (`ReceiptReviewController`).
+- Introduced decoupled contracts with dedicated fakes (`test/features/scanner/fakes/`), enabling isolated, blazing-fast unit and widget testing without Firestore or network dependencies.
+- Unified single-image, multi-image, PDF, and share-intent inputs under `ReceiptScanFlowCoordinator`.
 
 ## Tests
 
-Scanner tests live under `test/features/scanner/`. Receipt-review persistence
-tests that exercise inventory-owned global food behavior live under
-`test/features/inventory/`.
+All scanner unit and widget tests live under `test/features/scanner/`.

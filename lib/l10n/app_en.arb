@@ -1788,5 +1788,100 @@
       }
     }
   },
-  "shoppingListOutOfStock": "Out of stock"
+  "shoppingListOutOfStock": "Out of stock",
+  "receiptReviewTitle": "Review receipt",
+  "receiptReviewAddItem": "Add item",
+  "receiptReviewConfirmAllSuggestions": "Accept all suggestions",
+  "receiptReviewSaveAction": "Add to inventory",
+  "receiptReviewStoreEdit": "Edit store",
+  "receiptReviewStoreLabel": "Store name",
+  "receiptReviewAnalyzing": "Analyzing receipt...",
+  "receiptReviewProcessingFailed": "Receipt processing failed: {error}",
+  "@receiptReviewProcessingFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewNoDate": "No date detected",
+  "receiptReviewUnknownStore": "Unknown store",
+  "receiptReviewPrintedTotal": "Receipt total",
+  "receiptReviewCalculatedTotal": "Calculated total",
+  "receiptReviewDifference": "Difference: {difference}",
+  "@receiptReviewDifference": {
+    "placeholders": {
+      "difference": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewSumMatches": "Total matches",
+  "receiptReviewDiscount": "Discount: -{amount}",
+  "@receiptReviewDiscount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewDeposit": "Deposit: {amount}",
+  "@receiptReviewDeposit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewOpenItemsCount": "{count, plural, =1{1 item} other{{count} items}} still pending",
+  "@receiptReviewOpenItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptReviewReceiptPrefix": "Receipt",
+  "receiptReviewDepositBadge": "Deposit",
+  "receiptReviewConfirmSuggestionTooltip": "Accept suggestion",
+  "receiptReviewOriginalReceiptText": "Original text from receipt",
+  "receiptReviewQuantityLabel": "Quantity:",
+  "receiptReviewScanBarcode": "Scan barcode",
+  "receiptReviewSearchProduct": "Search product",
+  "receiptReviewIncludeItem": "Include",
+  "receiptReviewIgnoreItem": "Ignore",
+  "receiptReviewDeleteItem": "Delete",
+  "receiptReviewSuggestedAlternatives": "Suggested alternatives:",
+  "receiptReviewSelectCandidateAction": "Select",
+  "receiptReviewNoProductAssigned": "No product assigned",
+  "receiptReviewClearProductMatchTooltip": "Clear assignment",
+  "receiptReviewSwitchProductAction": "Switch product",
+  "receiptReviewSearchProductAction": "Search product",
+  "receiptReviewItemNameLabel": "Item name",
+  "receiptReviewItemNameHint": "e.g. Oat Milk Barista",
+  "receiptReviewItemQuantityLabel": "Quantity",
+  "receiptReviewPriceLabel": "Price",
+  "receiptReviewIsDepositLabel": "Deposit item",
+  "receiptReviewAddAction": "Add",
+  "receiptReviewPriceEditTitle": "Edit price",
+  "receiptReviewBarcodeDialogTitle": "Enter / scan barcode",
+  "receiptReviewBarcodeDialogLabel": "Barcode (EAN)",
+  "receiptReviewConfirmAction": "Confirm",
+  "receiptReviewManualInputTooltip": "Enter manually",
+  "receiptReviewSearchProductDialogTitle": "Search item",
+  "receiptReviewSearchProductHint": "Enter product name...",
+  "receiptReviewNoProductsFound": "No items found",
+  "receiptReviewNutritionPer100g": "Nutrition per 100 g/ml",
+  "receiptReviewPackageSize": "Package: {size}",
+  "@receiptReviewPackageSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewNutritionEnergy": "Energy",
+  "receiptReviewNutritionFat": "Fat",
+  "receiptReviewNutritionCarbs": "Carbs",
+  "receiptReviewNutritionProtein": "Protein"
 }

@@ -10,18 +10,17 @@ import 'package:yamt/features/home/widgets/inventory_fab_action_sheet_launcher.d
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_main_fab_button.dart';
-import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory action fab.
 @Dependencies([
   InventoryItemsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
+  receiptManualProductPicker
 ])
 class InventoryActionFab extends ConsumerStatefulWidget {
   /// The inventory action fab for the shell Scaffold slot.
@@ -85,20 +84,15 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final flowState = ref.watch(receiptCaptureFlowControllerProvider);
-    final batchState = ref.watch(receiptBatchFlowControllerProvider);
     final isCameraEnabled = ref.watch(receiptCameraSupportedProvider);
-    final isBusy =
-        flowState.isLoading ||
-        batchState.status == ReceiptBatchFlowStatus.running;
 
     if (widget.embedded) {
       return InventoryMainFabButton(
         buttonKey: const Key('inventory_action_fab_button'),
-        isBusy: isBusy,
+        isBusy: false,
         icon: Icons.add_rounded,
         tooltip: l10n.inventoryFabTooltip,
-        onPressed: isBusy || _isSheetOpen
+        onPressed: _isSheetOpen
             ? null
             : () => _showActionsSheet(
                 context: context,
@@ -124,16 +118,14 @@ class _InventoryActionFabState extends ConsumerState<InventoryActionFab>
           maintainState: true,
           child: InventoryMainFabButton(
             buttonKey: const Key('inventory_action_fab_button'),
-            isBusy: isBusy,
+            isBusy: false,
             icon: Icons.add_rounded,
             tooltip: l10n.inventoryFabTooltip,
-            onPressed: isBusy
-                ? null
-                : () => _showExpandedMenu(
-                    context: context,
-                    l10n: l10n,
-                    isCameraEnabled: isCameraEnabled,
-                  ),
+            onPressed: () => _showExpandedMenu(
+              context: context,
+              l10n: l10n,
+              isCameraEnabled: isCameraEnabled,
+            ),
           ),
         ),
       ),

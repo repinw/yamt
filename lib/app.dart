@@ -9,19 +9,19 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/shared_receipt_listener.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
+import 'package:yamt/features/scanner/presentation/shared/shared_receipt_listener.dart';
+import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
 
 /// Root application widget.
 @Dependencies([
+  navigatorKey,
   appRouter,
   InventoryItemsController,
   PreparedMealsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  SharedReceiptService,
+  receiptScanFlowCoordinator,
 ])
 class YAMT extends ConsumerStatefulWidget {
   /// Creates app root.
@@ -61,6 +61,7 @@ class _YAMTState extends ConsumerState<YAMT> {
       darkTheme: AppTheme.dark(),
       routerConfig: router,
       builder: (context, child) => SharedReceiptListener(
+        onReceiptSaved: () => ref.invalidate(inventoryItemsControllerProvider),
         child: child ?? const SizedBox.shrink(),
       ),
       localizationsDelegates: const [

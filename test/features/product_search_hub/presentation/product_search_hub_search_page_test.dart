@@ -40,6 +40,7 @@ Widget _buildHarness({
               required query,
               required limit,
               store,
+              brand,
               weight,
             }) async {
               return ProductSearchHubSearchLookupResult.success(
@@ -88,16 +89,22 @@ void main() {
     tester,
   ) async {
     String? capturedStore;
+    String? capturedBrand;
     String? capturedWeight;
 
     await tester.pumpWidget(
       _buildHarness(
         args: ProductSearchHubRouteArgs.inventory(
-          item: _item(storeName: 'Aldi Nord', weight: '500 g'),
+          item: _item(
+            storeName: 'Aldi Nord',
+            brand: 'Dairy Co',
+            weight: '500 g',
+          ),
         ),
         lookupProducts:
-            ({required query, required limit, store, weight}) async {
+            ({required query, required limit, store, brand, weight}) async {
               capturedStore = store;
+              capturedBrand = brand;
               capturedWeight = weight;
               return ProductSearchHubSearchLookupResult.success(
                 const <OffProductSearchResult>[],
@@ -116,6 +123,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(capturedStore, 'Aldi');
+    expect(capturedBrand, 'Dairy Co');
     expect(capturedWeight, '500 g');
   });
 
@@ -133,7 +141,7 @@ void main() {
           ),
         ),
         lookupProducts:
-            ({required query, required limit, store, weight}) async {
+            ({required query, required limit, store, brand, weight}) async {
               capturedQuery = query;
               return ProductSearchHubSearchLookupResult.success(
                 const <OffProductSearchResult>[
@@ -166,7 +174,7 @@ void main() {
     await tester.pumpWidget(
       _buildHarness(
         lookupProducts:
-            ({required query, required limit, store, weight}) async {
+            ({required query, required limit, store, brand, weight}) async {
               queries.add(query);
               if (query == 'Milk') {
                 return firstLookup.future;
@@ -361,22 +369,24 @@ void main() {
                   poppedResult = await Navigator.of(context).push(
                     MaterialPageRoute<Object>(
                       builder: (_) => ProductSearchHubSearchPage(
-                        lookupProducts: ({
-                          required query,
-                          required limit,
-                          store,
-                          weight,
-                        }) async {
-                          return ProductSearchHubSearchLookupResult.success(
-                            const [
-                              OffProductSearchResult(
-                                code: 'copy-target',
-                                name: 'Organic Milk',
-                                score: 1,
-                              ),
-                            ],
-                          );
-                        },
+                        lookupProducts:
+                            ({
+                              required query,
+                              required limit,
+                              store,
+                              brand,
+                              weight,
+                            }) async {
+                              return ProductSearchHubSearchLookupResult.success(
+                                const [
+                                  OffProductSearchResult(
+                                    code: 'copy-target',
+                                    name: 'Organic Milk',
+                                    score: 1,
+                                  ),
+                                ],
+                              );
+                            },
                       ),
                     ),
                   );

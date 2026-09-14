@@ -74,7 +74,7 @@ class _ProductSearchHubSearchPageState
       onStateChanged: () {
         if (mounted) setState(() {});
       },
-      searchLookup: ({required query, required limit, store, weight}) {
+      searchLookup: ({required query, required limit, store, brand, weight}) {
         return lookupProductSearchHubRouteProducts(
           gateway: ref.read(productSearchGatewayProvider),
           lookupProducts: widget.lookupProducts,

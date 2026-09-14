@@ -33,10 +33,9 @@ import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
     'kitchen_utensils_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_page.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/'
-    'receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _CookingFlowStartHarness {
@@ -139,10 +138,10 @@ class _StaticKitchenUtensilsController extends KitchenUtensilsController {
   CookingFlowWizardController,
   InventoryItemsController,
   PreparedMealsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
   cookingInstructionSteps,
+  receiptManualProductPicker
 ])
 _CookingFlowStartHarness _buildHarness() {
   final sessionStore = _FakeCookingFlowSessionLocalStore();
@@ -433,10 +432,10 @@ Future<void> _assignInventoryIngredient({
   CookingFlowWizardController,
   InventoryItemsController,
   PreparedMealsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
   cookingInstructionSteps,
+  receiptManualProductPicker
 ])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

@@ -8,11 +8,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_fab_menu_action.dart';
-import 'package:yamt/features/scanner/presentation/controllers/'
-    'receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/'
-    'receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Runs one expanded inventory FAB action.
@@ -22,8 +19,7 @@ typedef InventoryFabActionRunner =
 /// Builds expanded inventory FAB actions.
 @Dependencies([
   InventoryItemsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
 ])
 List<Widget> buildInventoryExpandedFabActions({

@@ -6,12 +6,17 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_context.dart';
 
 void main() {
-  test('uses supported store and weight from base item', () {
+  test('uses store, brand, and weight from base item', () {
     final args = ProductSearchHubRouteArgs.inventory(
-      item: _item(storeName: 'Aldi Nord', weight: '500 g'),
+      item: _item(
+        storeName: 'Aldi Nord',
+        brand: 'Dairy Co',
+        weight: '500 g',
+      ),
     );
 
     expect(productSearchHubSearchStore(args), 'Aldi');
+    expect(productSearchHubSearchBrand(args), 'Dairy Co');
     expect(productSearchHubSearchWeight(args), '500 g');
   });
 
@@ -24,6 +29,14 @@ void main() {
 
     expect(productSearchHubSearchStore(args), isNull);
     expect(productSearchHubSearchWeight(args), isNull);
+  });
+
+  test('forwards canonical names for every known receipt store', () {
+    final args = ProductSearchHubRouteArgs.inventory(
+      item: _item(storeName: 'REWE Markt GmbH', weight: '500 g'),
+    );
+
+    expect(productSearchHubSearchStore(args), 'Rewe');
   });
 
   test('builds initial search query from product identity', () {

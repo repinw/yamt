@@ -38,12 +38,15 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_home_shell_top_chrome.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
-import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
-import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
-import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
+import 'package:yamt/features/scanner/domain/contracts/receipt_product_resolver.dart';
+import 'package:yamt/features/scanner/domain/contracts/receipt_structured_parser.dart';
+import 'package:yamt/features/scanner/domain/contracts/receipt_text_extractor.dart';
+import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
+import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
+import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
@@ -136,46 +139,77 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
   }
 }
 
-class _RecordingReceiptCaptureFlowController
-    extends ReceiptCaptureFlowController {
-  int _runCallCount = 0;
-  ReceiptInputSource? _lastSource;
-
-  int recordedRunCallCount() => _runCallCount;
-
-  ReceiptInputSource? recordedLastSource() => _lastSource;
-
+class _DummyReceiptParser implements ReceiptStructuredParser {
+  const _DummyReceiptParser();
   @override
-  FutureOr<ReceiptCaptureFlowResult?> build() {
-    return null;
-  }
-
+  Future<ScannedReceipt> parsePdf({required String pdfFilePath}) =>
+      throw UnimplementedError();
   @override
-  Future<ReceiptCaptureFlowResult> run({
-    required ReceiptInputSource source,
-  }) async {
-    _runCallCount += 1;
-    _lastSource = source;
-    return ReceiptCaptureFlowResult.inputCanceled(source: source);
-  }
+  Future<ScannedReceipt> parseRawText({
+    required String rawText,
+    List<String> sourceFilePaths = const <String>[],
+  }) => throw UnimplementedError();
 }
 
-class _RecordingReceiptBatchFlowController extends ReceiptBatchFlowController {
-  int _runFileBatchCallCount = 0;
+class _DummyReceiptExtractor implements ReceiptTextExtractor {
+  const _DummyReceiptExtractor();
+  @override
+  Future<String> extractText(List<String> imageFilePaths) =>
+      throw UnimplementedError();
+  @override
+  Future<void> dispose() async {}
+}
 
-  int recordedRunFileBatchCallCount() => _runFileBatchCallCount;
+class _DummyReceiptResolver implements ReceiptProductResolver {
+  const _DummyReceiptResolver();
+  @override
+  Future<List<ProductCandidate>> resolveCandidates({
+    required String rawLineText,
+    String? storeName,
+    String? brand,
+    String? weight,
+  }) => throw UnimplementedError();
+  @override
+  Future<Map<String, List<ProductCandidate>>> resolveBatch({
+    required List<ReceiptLineItem> items,
+    String? storeName,
+  }) => throw UnimplementedError();
+  @override
+  Future<ProductCandidate?> resolveByBarcode(String barcode) =>
+      throw UnimplementedError();
+  @override
+  Future<List<ProductCandidate>> resolveCandidatesByBarcode(String barcode) =>
+      throw UnimplementedError();
+  @override
+  Future<List<ProductCandidate>> searchByName(
+    String query, {
+    String? storeName,
+    String? brand,
+    String? weight,
+  }) => throw UnimplementedError();
+}
+
+class _RecordingReceiptScanFlowCoordinator extends ReceiptScanFlowCoordinator {
+  _RecordingReceiptScanFlowCoordinator()
+    : super(
+        parser: const _DummyReceiptParser(),
+        extractor: const _DummyReceiptExtractor(),
+        resolver: const _DummyReceiptResolver(),
+      );
+
+  int cameraFlowCallCount = 0;
+  int filePickerFlowCallCount = 0;
 
   @override
-  ReceiptBatchFlowState build() {
-    return const ReceiptBatchFlowState();
+  Future<bool> startCameraFlow(BuildContext context) async {
+    cameraFlowCallCount++;
+    return false;
   }
 
   @override
-  Future<void> runFileBatch() async {
-    _runFileBatchCallCount += 1;
-    state = const ReceiptBatchFlowState(
-      status: ReceiptBatchFlowStatus.inputCanceled,
-    );
+  Future<bool> startFilePickerFlow(BuildContext context) async {
+    filePickerFlowCallCount++;
+    return false;
   }
 }
 
@@ -329,9 +363,9 @@ void _dispatchHomeShellScrollEnd(
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
+  receiptManualProductPicker
 ])
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
@@ -341,8 +375,7 @@ Widget _buildHarness({
   PreparedMealRepository? preparedMealRepository,
   InventoryItemsController? inventoryItemsController,
   PreparedMealsController? preparedMealsController,
-  ReceiptCaptureFlowController? receiptCaptureFlowController,
-  ReceiptBatchFlowController? receiptBatchFlowController,
+  ReceiptScanFlowCoordinator? receiptScanFlowCoordinator,
   BurnWeekRunStateRepository? burnWeekRunStateRepository,
   DateTime? selectedDiaryDay,
   bool? isCameraSupported,
@@ -455,13 +488,9 @@ Widget _buildHarness({
         preparedMealsControllerProvider.overrideWith(
           () => preparedMealsController,
         ),
-      if (receiptCaptureFlowController != null)
-        receiptCaptureFlowControllerProvider.overrideWith(
-          () => receiptCaptureFlowController,
-        ),
-      if (receiptBatchFlowController != null)
-        receiptBatchFlowControllerProvider.overrideWith(
-          () => receiptBatchFlowController,
+      if (receiptScanFlowCoordinator != null)
+        receiptScanFlowCoordinatorProvider.overrideWithValue(
+          receiptScanFlowCoordinator,
         ),
       if (selectedDiaryDay != null)
         diaryCalendarControllerProvider.overrideWith(
@@ -489,9 +518,9 @@ Widget _buildHarness({
 @Dependencies([
   InventoryItemsController,
   PreparedMealsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
+  receiptManualProductPicker
 ])
 void main() {
   testWidgets('diary tab does not show the context fab', (tester) async {
@@ -1441,7 +1470,7 @@ void main() {
   testWidgets('inventory shell fab starts upload flow', (tester) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
-    final batchController = _RecordingReceiptBatchFlowController();
+    final coordinator = _RecordingReceiptScanFlowCoordinator();
 
     await tester.pumpWidget(
       _buildHarness(
@@ -1450,7 +1479,7 @@ void main() {
         inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
           _inventoryItem('item-1'),
         ]),
-        receiptBatchFlowController: batchController,
+        receiptScanFlowCoordinator: coordinator,
       ),
     );
     await tester.pumpAndSettle();
@@ -1460,7 +1489,7 @@ void main() {
     await tester.tap(find.text('Upload image/PDF'));
     await tester.pumpAndSettle();
 
-    expect(batchController.recordedRunFileBatchCallCount(), 1);
+    expect(coordinator.filePickerFlowCallCount, 1);
   });
 
   testWidgets('inventory shell fab starts camera flow when enabled', (
@@ -1468,7 +1497,7 @@ void main() {
   ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
-    final captureController = _RecordingReceiptCaptureFlowController();
+    final coordinator = _RecordingReceiptScanFlowCoordinator();
 
     await tester.pumpWidget(
       _buildHarness(
@@ -1477,7 +1506,7 @@ void main() {
         inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
           _inventoryItem('item-1'),
         ]),
-        receiptCaptureFlowController: captureController,
+        receiptScanFlowCoordinator: coordinator,
         isCameraSupported: true,
       ),
     );
@@ -1488,8 +1517,7 @@ void main() {
     await tester.tap(find.text('Camera'));
     await tester.pumpAndSettle();
 
-    expect(captureController.recordedRunCallCount(), 1);
-    expect(captureController.recordedLastSource(), ReceiptInputSource.camera);
+    expect(coordinator.cameraFlowCallCount, 1);
   });
 
   testWidgets('inventory shell fab disables camera when unsupported', (
@@ -1497,7 +1525,7 @@ void main() {
   ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
-    final captureController = _RecordingReceiptCaptureFlowController();
+    final coordinator = _RecordingReceiptScanFlowCoordinator();
 
     await tester.pumpWidget(
       _buildHarness(
@@ -1506,7 +1534,7 @@ void main() {
         inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
           _inventoryItem('item-1'),
         ]),
-        receiptCaptureFlowController: captureController,
+        receiptScanFlowCoordinator: coordinator,
         isCameraSupported: false,
       ),
     );
@@ -1517,7 +1545,7 @@ void main() {
     await tester.tap(find.text('Camera'));
     await tester.pumpAndSettle();
 
-    expect(captureController.recordedRunCallCount(), 0);
+    expect(coordinator.cameraFlowCallCount, 0);
   });
 
   testWidgets('inventory tab shows shell fab when only prepared meals exist', (

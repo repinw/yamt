@@ -62,18 +62,20 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_page.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/'
-    'inventory_receipt_review_page.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
+import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
+import 'package:yamt/features/scanner/presentation/controllers/'
+    'receipt_review_controller.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
+import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 
 part 'app_router.g.dart';
 
 /// Provides root navigator key for app routing.
-@Riverpod(keepAlive: true)
+@Riverpod(keepAlive: true, dependencies: [])
 GlobalKey<NavigatorState> navigatorKey(Ref ref) {
   return GlobalKey<NavigatorState>(debugLabel: 'rootNavigator');
 }
@@ -103,6 +105,7 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
 @Riverpod(
   keepAlive: true,
   dependencies: [
+    navigatorKey,
     inventoryItemRepository,
     inventoryManualAddQuickEatConfig,
     diaryQuickEatInventory,
@@ -115,11 +118,12 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     inventoryBackedCalorieEntrySaveFlow,
     manualProductRecentItemsService,
     preparedMealImagePicker,
+    receiptScanFlowCoordinator,
+    receiptCameraSupported,
     inventoryActivityEvents,
     inventoryShoppingSuggestions,
-    ReceiptCaptureFlowController,
-    ReceiptBatchFlowController,
-    receiptCameraSupported,
+    ReceiptReviewController,
+    receiptManualProductPicker,
   ],
 )
 Raw<GoRouter> appRouter(Ref ref) {
@@ -227,13 +231,12 @@ Raw<GoRouter> appRouter(Ref ref) {
         path: AppRoutes.homeInventoryReceiptReview,
         builder: (context, state) {
           final args = state.extra;
-          if (args is! InventoryReceiptReviewPageArgs) {
+          if (args is! ScannedReceipt) {
             throw ArgumentError(
-              'Inventory receipt review route requires '
-              'InventoryReceiptReviewPageArgs.',
+              'Inventory receipt review route requires ScannedReceipt.',
             );
           }
-          return InventoryReceiptReviewPage(args: args);
+          return ReceiptReviewPage(initialReceipt: args);
         },
       ),
       GoRoute(

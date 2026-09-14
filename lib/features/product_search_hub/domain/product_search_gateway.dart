@@ -36,6 +36,7 @@ abstract interface class ProductSearchGateway {
     required String query,
     required int limit,
     String? store,
+    String? brand,
     String? weight,
   });
 }

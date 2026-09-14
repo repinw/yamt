@@ -6,23 +6,16 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/product_search_hub/presentation/models/'
-    'product_search_hub_route_args.dart';
-import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dart';
-import 'package:yamt/features/scanner/presentation/receipt_review_flow_runner.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_actions_sheet.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/product_search_hub_route_args.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
+import 'package:yamt/features/scanner/presentation/widgets/inventory_receipt_actions_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory action sheet flow.
 @Dependencies([
   InventoryItemsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   receiptCameraSupported,
 ])
 class InventoryActionSheetFlow {
@@ -61,22 +54,30 @@ class InventoryActionSheetFlow {
     );
   }
 
-  /// Scan receipt with camera.
+  /// Scan receipt with camera using the rebuilt scanner flow.
   static Future<void> scanCamera({
     required BuildContext context,
     required WidgetRef ref,
     required AppLocalizations l10n,
-  }) {
-    return _runFlow(context, ref, l10n, ReceiptInputSource.camera);
+  }) async {
+    final coordinator = ref.read(receiptScanFlowCoordinatorProvider);
+    final saved = await coordinator.startCameraFlow(context);
+    if (saved) {
+      ref.invalidate(inventoryItemsControllerProvider);
+    }
   }
 
-  /// Upload receipt file.
+  /// Upload receipt file (PDF / images) using the rebuilt scanner flow.
   static Future<void> uploadFile({
     required BuildContext context,
     required WidgetRef ref,
     required AppLocalizations l10n,
-  }) {
-    return _runBatchFlow(context, ref, l10n);
+  }) async {
+    final coordinator = ref.read(receiptScanFlowCoordinatorProvider);
+    final saved = await coordinator.startFilePickerFlow(context);
+    if (saved) {
+      ref.invalidate(inventoryItemsControllerProvider);
+    }
   }
 
   /// Open product search hub.
@@ -106,11 +107,11 @@ class InventoryActionSheetFlow {
           },
           onScanCameraTap: () {
             sheetContext.pop();
-            unawaited(_runFlow(context, ref, l10n, ReceiptInputSource.camera));
+            unawaited(scanCamera(context: context, ref: ref, l10n: l10n));
           },
           onUploadFileTap: () {
             sheetContext.pop();
-            unawaited(_runBatchFlow(context, ref, l10n));
+            unawaited(uploadFile(context: context, ref: ref, l10n: l10n));
           },
         );
       },
@@ -126,47 +127,5 @@ class InventoryActionSheetFlow {
       AppRoutes.homeProductSearchHub,
       extra: ProductSearchHubRouteArgs.inventory(initialIntent: initialIntent),
     );
-  }
-
-  static Future<void> _runFlow(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-    ReceiptInputSource source,
-  ) async {
-    final controller = ref.read(receiptCaptureFlowControllerProvider.notifier);
-    final result = await controller.run(source: source);
-    if (!context.mounted) {
-      return;
-    }
-
-    final reviewFlow = ReceiptReviewFlowRunner(
-      context: context,
-      ref: ref,
-      l10n: l10n,
-      captureController: controller,
-    );
-    try {
-      await reviewFlow.handleCaptureResult(
-        result: result,
-        onItemsSaved: () => ref.invalidate(inventoryItemsControllerProvider),
-      );
-    } finally {
-      reviewFlow.dispose();
-    }
-  }
-
-  static Future<void> _runBatchFlow(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-  ) async {
-    final runner = ReceiptBatchFlowRunner(
-      context: context,
-      ref: ref,
-      l10n: l10n,
-      onItemsSaved: () => ref.invalidate(inventoryItemsControllerProvider),
-    );
-    await runner.run();
   }
 }

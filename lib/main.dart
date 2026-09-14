@@ -27,15 +27,16 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_search_launcher.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_launcher.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
+import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 
 @Dependencies([
+  navigatorKey,
   appRouter,
   InventoryItemsController,
   PreparedMealsController,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  SharedReceiptService,
+  receiptScanFlowCoordinator,
 ])
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

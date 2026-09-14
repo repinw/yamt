@@ -27,6 +27,7 @@ typedef ProductSearchHubSearchLookup =
       required String query,
       required int limit,
       String? store,
+      String? brand,
       String? weight,
     });
 
@@ -41,12 +42,14 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubRouteProducts({
   GlobalFoodItemRepository? globalFoodItemRepository,
 }) {
   final store = productSearchHubSearchStore(args);
+  final brand = productSearchHubSearchBrand(args);
   final weight = productSearchHubSearchWeight(args);
   if (lookupProducts != null) {
     return lookupProducts(
       query: query,
       limit: limit,
       store: store,
+      brand: brand,
       weight: weight,
     );
   }
@@ -55,6 +58,7 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubRouteProducts({
       query: query,
       limit: limit,
       store: store,
+      brand: brand,
       weight: weight,
     );
   }
@@ -65,6 +69,7 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubRouteProducts({
       query: query,
       limit: limit,
       store: store,
+      brand: brand,
       weight: weight,
     );
   }

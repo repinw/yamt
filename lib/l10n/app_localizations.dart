@@ -6778,6 +6778,324 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Out of stock'**
   String get shoppingListOutOfStock;
+
+  /// No description provided for @receiptReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review receipt'**
+  String get receiptReviewTitle;
+
+  /// No description provided for @receiptReviewAddItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
+  String get receiptReviewAddItem;
+
+  /// No description provided for @receiptReviewConfirmAllSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept all suggestions'**
+  String get receiptReviewConfirmAllSuggestions;
+
+  /// No description provided for @receiptReviewSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to inventory'**
+  String get receiptReviewSaveAction;
+
+  /// No description provided for @receiptReviewStoreEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit store'**
+  String get receiptReviewStoreEdit;
+
+  /// No description provided for @receiptReviewStoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Store name'**
+  String get receiptReviewStoreLabel;
+
+  /// No description provided for @receiptReviewAnalyzing.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing receipt...'**
+  String get receiptReviewAnalyzing;
+
+  /// No description provided for @receiptReviewProcessingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt processing failed: {error}'**
+  String receiptReviewProcessingFailed(String error);
+
+  /// No description provided for @receiptReviewNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No date detected'**
+  String get receiptReviewNoDate;
+
+  /// No description provided for @receiptReviewUnknownStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown store'**
+  String get receiptReviewUnknownStore;
+
+  /// No description provided for @receiptReviewPrintedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt total'**
+  String get receiptReviewPrintedTotal;
+
+  /// No description provided for @receiptReviewCalculatedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculated total'**
+  String get receiptReviewCalculatedTotal;
+
+  /// No description provided for @receiptReviewDifference.
+  ///
+  /// In en, this message translates to:
+  /// **'Difference: {difference}'**
+  String receiptReviewDifference(String difference);
+
+  /// No description provided for @receiptReviewSumMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Total matches'**
+  String get receiptReviewSumMatches;
+
+  /// No description provided for @receiptReviewDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount: -{amount}'**
+  String receiptReviewDiscount(String amount);
+
+  /// No description provided for @receiptReviewDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit: {amount}'**
+  String receiptReviewDeposit(String amount);
+
+  /// No description provided for @receiptReviewOpenItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}} still pending'**
+  String receiptReviewOpenItemsCount(int count);
+
+  /// No description provided for @receiptReviewReceiptPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receiptReviewReceiptPrefix;
+
+  /// No description provided for @receiptReviewDepositBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get receiptReviewDepositBadge;
+
+  /// No description provided for @receiptReviewConfirmSuggestionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept suggestion'**
+  String get receiptReviewConfirmSuggestionTooltip;
+
+  /// No description provided for @receiptReviewOriginalReceiptText.
+  ///
+  /// In en, this message translates to:
+  /// **'Original text from receipt'**
+  String get receiptReviewOriginalReceiptText;
+
+  /// No description provided for @receiptReviewQuantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity:'**
+  String get receiptReviewQuantityLabel;
+
+  /// No description provided for @receiptReviewScanBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode'**
+  String get receiptReviewScanBarcode;
+
+  /// No description provided for @receiptReviewSearchProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Search product'**
+  String get receiptReviewSearchProduct;
+
+  /// No description provided for @receiptReviewIncludeItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Include'**
+  String get receiptReviewIncludeItem;
+
+  /// No description provided for @receiptReviewIgnoreItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore'**
+  String get receiptReviewIgnoreItem;
+
+  /// No description provided for @receiptReviewDeleteItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get receiptReviewDeleteItem;
+
+  /// No description provided for @receiptReviewSuggestedAlternatives.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested alternatives:'**
+  String get receiptReviewSuggestedAlternatives;
+
+  /// No description provided for @receiptReviewSelectCandidateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get receiptReviewSelectCandidateAction;
+
+  /// No description provided for @receiptReviewNoProductAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'No product assigned'**
+  String get receiptReviewNoProductAssigned;
+
+  /// No description provided for @receiptReviewClearProductMatchTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear assignment'**
+  String get receiptReviewClearProductMatchTooltip;
+
+  /// No description provided for @receiptReviewSwitchProductAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch product'**
+  String get receiptReviewSwitchProductAction;
+
+  /// No description provided for @receiptReviewSearchProductAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Search product'**
+  String get receiptReviewSearchProductAction;
+
+  /// No description provided for @receiptReviewItemNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Item name'**
+  String get receiptReviewItemNameLabel;
+
+  /// No description provided for @receiptReviewItemNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Oat Milk Barista'**
+  String get receiptReviewItemNameHint;
+
+  /// No description provided for @receiptReviewItemQuantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get receiptReviewItemQuantityLabel;
+
+  /// No description provided for @receiptReviewPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get receiptReviewPriceLabel;
+
+  /// No description provided for @receiptReviewIsDepositLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit item'**
+  String get receiptReviewIsDepositLabel;
+
+  /// No description provided for @receiptReviewAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get receiptReviewAddAction;
+
+  /// No description provided for @receiptReviewPriceEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit price'**
+  String get receiptReviewPriceEditTitle;
+
+  /// No description provided for @receiptReviewBarcodeDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter / scan barcode'**
+  String get receiptReviewBarcodeDialogTitle;
+
+  /// No description provided for @receiptReviewBarcodeDialogLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode (EAN)'**
+  String get receiptReviewBarcodeDialogLabel;
+
+  /// No description provided for @receiptReviewConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get receiptReviewConfirmAction;
+
+  /// No description provided for @receiptReviewManualInputTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter manually'**
+  String get receiptReviewManualInputTooltip;
+
+  /// No description provided for @receiptReviewSearchProductDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search item'**
+  String get receiptReviewSearchProductDialogTitle;
+
+  /// No description provided for @receiptReviewSearchProductHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter product name...'**
+  String get receiptReviewSearchProductHint;
+
+  /// No description provided for @receiptReviewNoProductsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No items found'**
+  String get receiptReviewNoProductsFound;
+
+  /// No description provided for @receiptReviewNutritionPer100g.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition per 100 g/ml'**
+  String get receiptReviewNutritionPer100g;
+
+  /// No description provided for @receiptReviewPackageSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Package: {size}'**
+  String receiptReviewPackageSize(String size);
+
+  /// No description provided for @receiptReviewNutritionEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy'**
+  String get receiptReviewNutritionEnergy;
+
+  /// No description provided for @receiptReviewNutritionFat.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat'**
+  String get receiptReviewNutritionFat;
+
+  /// No description provided for @receiptReviewNutritionCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs'**
+  String get receiptReviewNutritionCarbs;
+
+  /// No description provided for @receiptReviewNutritionProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein'**
+  String get receiptReviewNutritionProtein;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -1781,5 +1781,100 @@
       }
     }
   },
-  "shoppingListOutOfStock": "Aufgebraucht"
+  "shoppingListOutOfStock": "Aufgebraucht",
+  "receiptReviewTitle": "Beleg prüfen",
+  "receiptReviewAddItem": "Position hinzufügen",
+  "receiptReviewConfirmAllSuggestions": "Alle Vorschläge übernehmen",
+  "receiptReviewSaveAction": "Ins Inventar übernehmen",
+  "receiptReviewStoreEdit": "Händler anpassen",
+  "receiptReviewStoreLabel": "Händlername",
+  "receiptReviewAnalyzing": "Beleg wird analysiert...",
+  "receiptReviewProcessingFailed": "Belegverarbeitung fehlgeschlagen: {error}",
+  "@receiptReviewProcessingFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewNoDate": "Kein Datum erkannt",
+  "receiptReviewUnknownStore": "Unbekannter Händler",
+  "receiptReviewPrintedTotal": "Bon-Summe",
+  "receiptReviewCalculatedTotal": "Berechnete Summe",
+  "receiptReviewDifference": "Differenz: {difference}",
+  "@receiptReviewDifference": {
+    "placeholders": {
+      "difference": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewSumMatches": "Summe stimmt",
+  "receiptReviewDiscount": "Rabatt: -{amount}",
+  "@receiptReviewDiscount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewDeposit": "Pfand: {amount}",
+  "@receiptReviewDeposit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewOpenItemsCount": "Noch {count, plural, =1{1 Position} other{{count} Positionen}} offen",
+  "@receiptReviewOpenItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptReviewReceiptPrefix": "Bon",
+  "receiptReviewDepositBadge": "Pfand",
+  "receiptReviewConfirmSuggestionTooltip": "Vorschlag übernehmen",
+  "receiptReviewOriginalReceiptText": "Originaltext vom Kassenbon",
+  "receiptReviewQuantityLabel": "Menge:",
+  "receiptReviewScanBarcode": "Barcode scannen",
+  "receiptReviewSearchProduct": "Produkt suchen",
+  "receiptReviewIncludeItem": "Einbeziehen",
+  "receiptReviewIgnoreItem": "Ignorieren",
+  "receiptReviewDeleteItem": "Löschen",
+  "receiptReviewSuggestedAlternatives": "Vorgeschlagene Alternativen:",
+  "receiptReviewSelectCandidateAction": "Wählen",
+  "receiptReviewNoProductAssigned": "Kein Produkt zugewiesen",
+  "receiptReviewClearProductMatchTooltip": "Zuordnung aufheben",
+  "receiptReviewSwitchProductAction": "Produkt wechseln",
+  "receiptReviewSearchProductAction": "Produkt suchen",
+  "receiptReviewItemNameLabel": "Artikelbezeichnung",
+  "receiptReviewItemNameHint": "z. B. Hafermilch Barista",
+  "receiptReviewItemQuantityLabel": "Menge",
+  "receiptReviewPriceLabel": "Preis",
+  "receiptReviewIsDepositLabel": "Ist Pfand",
+  "receiptReviewAddAction": "Hinzufügen",
+  "receiptReviewPriceEditTitle": "Preis anpassen",
+  "receiptReviewBarcodeDialogTitle": "Barcode eingeben / scannen",
+  "receiptReviewBarcodeDialogLabel": "Barcode (EAN)",
+  "receiptReviewConfirmAction": "Bestätigen",
+  "receiptReviewManualInputTooltip": "Manuell eingeben",
+  "receiptReviewSearchProductDialogTitle": "Artikel suchen",
+  "receiptReviewSearchProductHint": "Produktname eingeben...",
+  "receiptReviewNoProductsFound": "Keine Artikel gefunden",
+  "receiptReviewNutritionPer100g": "Nährwerte je 100 g/ml",
+  "receiptReviewPackageSize": "Packung: {size}",
+  "@receiptReviewPackageSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReviewNutritionEnergy": "Energie",
+  "receiptReviewNutritionFat": "Fett",
+  "receiptReviewNutritionCarbs": "KH",
+  "receiptReviewNutritionProtein": "Protein"
 }

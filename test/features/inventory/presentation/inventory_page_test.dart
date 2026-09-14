@@ -47,9 +47,9 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_batch_flow_controller.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -394,10 +394,10 @@ ShoppingListItem _shoppingItem(
   preparedMealImagePicker,
   manualProductRecentItemsService,
   receiptCameraSupported,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   inventoryActivityEvents,
   inventoryBackedCalorieEntrySaveFlow,
+  receiptManualProductPicker
 ])
 Widget _buildTestApp(
   InventoryItemRepository repository, {
@@ -509,11 +509,11 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   PreparedMealsController,
   preparedMealImagePicker,
   receiptCameraSupported,
-  ReceiptCaptureFlowController,
-  ReceiptBatchFlowController,
+  receiptScanFlowCoordinator,
   manualProductRecentItemsService,
   inventoryActivityEvents,
   inventoryBackedCalorieEntrySaveFlow,
+  receiptManualProductPicker
 ])
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {

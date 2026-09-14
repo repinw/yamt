@@ -12,6 +12,9 @@ class _FakeOffRepository implements OffProductSearchRepository {
   });
 
   final List<OffProductSearchResult> searchResults;
+  String? recordedStore;
+  String? recordedBrand;
+  String? recordedWeight;
 
   @override
   Future<List<OffProductSearchResult>> search({
@@ -21,6 +24,9 @@ class _FakeOffRepository implements OffProductSearchRepository {
     String? brand,
     String? weight,
   }) async {
+    recordedStore = store;
+    recordedBrand = brand;
+    recordedWeight = weight;
     return searchResults;
   }
 
@@ -76,6 +82,26 @@ void main() {
     per100Sugar: 5,
     per100Protein: 3,
     per100Salt: 0.1,
+  );
+
+  test(
+    'lookupProductSearchHubProducts forwards receipt search hints to OFF',
+    () async {
+      final repository = _FakeOffRepository();
+
+      await lookupProductSearchHubProducts(
+        repository: repository,
+        query: 'Raeucherlachs',
+        limit: 5,
+        store: 'Netto',
+        brand: 'SG GGN',
+        weight: '200g',
+      );
+
+      expect(repository.recordedStore, 'Netto');
+      expect(repository.recordedBrand, 'SG GGN');
+      expect(repository.recordedWeight, '200g');
+    },
   );
 
   test(
@@ -165,6 +191,7 @@ void main() {
               required query,
               required limit,
               store,
+              brand,
               weight,
             }) async {
               didCallCustom = true;

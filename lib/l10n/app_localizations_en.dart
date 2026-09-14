@@ -3529,4 +3529,181 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingListOutOfStock => 'Out of stock';
+
+  @override
+  String get receiptReviewTitle => 'Review receipt';
+
+  @override
+  String get receiptReviewAddItem => 'Add item';
+
+  @override
+  String get receiptReviewConfirmAllSuggestions => 'Accept all suggestions';
+
+  @override
+  String get receiptReviewSaveAction => 'Add to inventory';
+
+  @override
+  String get receiptReviewStoreEdit => 'Edit store';
+
+  @override
+  String get receiptReviewStoreLabel => 'Store name';
+
+  @override
+  String get receiptReviewAnalyzing => 'Analyzing receipt...';
+
+  @override
+  String receiptReviewProcessingFailed(String error) {
+    return 'Receipt processing failed: $error';
+  }
+
+  @override
+  String get receiptReviewNoDate => 'No date detected';
+
+  @override
+  String get receiptReviewUnknownStore => 'Unknown store';
+
+  @override
+  String get receiptReviewPrintedTotal => 'Receipt total';
+
+  @override
+  String get receiptReviewCalculatedTotal => 'Calculated total';
+
+  @override
+  String receiptReviewDifference(String difference) {
+    return 'Difference: $difference';
+  }
+
+  @override
+  String get receiptReviewSumMatches => 'Total matches';
+
+  @override
+  String receiptReviewDiscount(String amount) {
+    return 'Discount: -$amount';
+  }
+
+  @override
+  String receiptReviewDeposit(String amount) {
+    return 'Deposit: $amount';
+  }
+
+  @override
+  String receiptReviewOpenItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0 still pending';
+  }
+
+  @override
+  String get receiptReviewReceiptPrefix => 'Receipt';
+
+  @override
+  String get receiptReviewDepositBadge => 'Deposit';
+
+  @override
+  String get receiptReviewConfirmSuggestionTooltip => 'Accept suggestion';
+
+  @override
+  String get receiptReviewOriginalReceiptText => 'Original text from receipt';
+
+  @override
+  String get receiptReviewQuantityLabel => 'Quantity:';
+
+  @override
+  String get receiptReviewScanBarcode => 'Scan barcode';
+
+  @override
+  String get receiptReviewSearchProduct => 'Search product';
+
+  @override
+  String get receiptReviewIncludeItem => 'Include';
+
+  @override
+  String get receiptReviewIgnoreItem => 'Ignore';
+
+  @override
+  String get receiptReviewDeleteItem => 'Delete';
+
+  @override
+  String get receiptReviewSuggestedAlternatives => 'Suggested alternatives:';
+
+  @override
+  String get receiptReviewSelectCandidateAction => 'Select';
+
+  @override
+  String get receiptReviewNoProductAssigned => 'No product assigned';
+
+  @override
+  String get receiptReviewClearProductMatchTooltip => 'Clear assignment';
+
+  @override
+  String get receiptReviewSwitchProductAction => 'Switch product';
+
+  @override
+  String get receiptReviewSearchProductAction => 'Search product';
+
+  @override
+  String get receiptReviewItemNameLabel => 'Item name';
+
+  @override
+  String get receiptReviewItemNameHint => 'e.g. Oat Milk Barista';
+
+  @override
+  String get receiptReviewItemQuantityLabel => 'Quantity';
+
+  @override
+  String get receiptReviewPriceLabel => 'Price';
+
+  @override
+  String get receiptReviewIsDepositLabel => 'Deposit item';
+
+  @override
+  String get receiptReviewAddAction => 'Add';
+
+  @override
+  String get receiptReviewPriceEditTitle => 'Edit price';
+
+  @override
+  String get receiptReviewBarcodeDialogTitle => 'Enter / scan barcode';
+
+  @override
+  String get receiptReviewBarcodeDialogLabel => 'Barcode (EAN)';
+
+  @override
+  String get receiptReviewConfirmAction => 'Confirm';
+
+  @override
+  String get receiptReviewManualInputTooltip => 'Enter manually';
+
+  @override
+  String get receiptReviewSearchProductDialogTitle => 'Search item';
+
+  @override
+  String get receiptReviewSearchProductHint => 'Enter product name...';
+
+  @override
+  String get receiptReviewNoProductsFound => 'No items found';
+
+  @override
+  String get receiptReviewNutritionPer100g => 'Nutrition per 100 g/ml';
+
+  @override
+  String receiptReviewPackageSize(String size) {
+    return 'Package: $size';
+  }
+
+  @override
+  String get receiptReviewNutritionEnergy => 'Energy';
+
+  @override
+  String get receiptReviewNutritionFat => 'Fat';
+
+  @override
+  String get receiptReviewNutritionCarbs => 'Carbs';
+
+  @override
+  String get receiptReviewNutritionProtein => 'Protein';
 }
