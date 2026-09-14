@@ -5,6 +5,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/auth/application/'
     'auth_profile_setup_status_provider.dart';
+import 'package:yamt/features/auth/application/'
+    'initial_guest_auth_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
@@ -83,6 +85,9 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
   ref
     ..onDispose(listenable.dispose)
     ..listen(authStateChangesProvider, (previous, next) {
+      listenable.refresh();
+    })
+    ..listen(initialGuestAuthControllerProvider, (previous, next) {
       listenable.refresh();
     })
     ..listen(authProfileSetupCompletedProvider, (previous, next) {
@@ -318,7 +323,9 @@ Raw<GoRouter> appRouter(Ref ref) {
 
 String? _redirectForState(Ref ref, GoRouterState state) {
   final authState = ref.read(authStateChangesProvider);
-  final isAuthLoading = authState.isLoading;
+  final initialGuestAuthState = ref.read(initialGuestAuthControllerProvider);
+  final isInitialGuestAuthLoading = initialGuestAuthState.isLoading;
+  final isAuthLoading = authState.isLoading || isInitialGuestAuthLoading;
   final currentUser = authState.asData?.value;
   final isAuthenticated = currentUser != null;
   final isAnonymous = currentUser?.isAnonymous ?? false;
@@ -352,10 +359,14 @@ String? _redirectForState(Ref ref, GoRouterState state) {
   }
 
   if (path == AppRoutes.welcome) {
-    if (!hasCompletedCalorieGoalOnboarding) {
+    final isFromOnboarding = state.uri.queryParameters['from'] == 'onboarding';
+    if (isAnonymous && isFromOnboarding && !hasCompletedCalorieGoalOnboarding) {
       return null;
     }
-    return AppRoutes.homeDiary;
+    if (hasCompletedCalorieGoalOnboarding) {
+      return AppRoutes.homeDiary;
+    }
+    return AppRoutes.calorieGoalSetup;
   }
 
   if (needsGuestNameSetup) {

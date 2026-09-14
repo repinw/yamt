@@ -54,7 +54,7 @@ final class CookingFlowIntroInventoryControllerProvider
 }
 
 String _$cookingFlowIntroInventoryControllerHash() =>
-    r'fa1377dbdf4f4b488004d29f50524fd115763fcd';
+    r'645e8b734fdbc6b416de8636c074d0bfd78d842e';
 
 /// Controls intro inventory assignment state.
 

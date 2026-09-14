@@ -63,6 +63,8 @@ import '../../helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User {}
 
+class _MockUserCredential extends Mock implements UserCredential {}
+
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 const _routerTransitionDuration = Duration(milliseconds: 350);
@@ -100,6 +102,7 @@ ProviderContainer _createContainerWithAuth(
   Set<String> completedCalorieGoalOnboardingUserIds = const <String>{},
   CalorieGoalSettings initialCalorieSettings =
       const CalorieGoalSettings.empty(),
+  Future<UserCredential> Function()? onSignInAnonymously,
 }) {
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository(
@@ -115,6 +118,11 @@ ProviderContainer _createContainerWithAuth(
   );
   final firebaseAuth = _MockFirebaseAuth();
   when(() => firebaseAuth.currentUser).thenReturn(null);
+  if (onSignInAnonymously != null) {
+    when(
+      firebaseAuth.signInAnonymously,
+    ).thenAnswer((_) => onSignInAnonymously());
+  }
   final container = ProviderContainer(
     overrides: [
       appPreferencesProvider.overrideWithValue(appPreferences),
@@ -1054,6 +1062,92 @@ void main() {
       AppRoutes.homeCalories,
     );
   });
+
+  testWidgets(
+    'cold start with unauthenticated state triggers auto guest login '
+    'and routes to onboarding',
+    (tester) async {
+      final guestSignInCompleter = Completer<UserCredential>();
+      final authController = StreamController<User?>();
+      final container = _createContainerWithAuth(
+        authController.stream,
+        onSignInAnonymously: () => guestSignInCompleter.future,
+      );
+      addTearDown(() {
+        unawaited(authController.close());
+      });
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await tester.pump();
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.splash,
+      );
+
+      authController.add(null);
+      await tester.pump();
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.splash,
+      );
+
+      final credential = _MockUserCredential();
+      final guestUser = _guestUser();
+      when(() => credential.user).thenReturn(guestUser);
+      guestSignInCompleter.complete(credential);
+      authController.add(guestUser);
+
+      await tester.pump();
+      await _pumpRouterTransition(tester);
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
+      expect(find.text('Glad you are here!'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'guest sign-in on welcome page routes to onboarding',
+    (tester) async {
+      final authController = StreamController<User?>();
+      final container = _createContainerWithAuth(authController.stream);
+      addTearDown(() {
+        unawaited(authController.close());
+      });
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await tester.pump();
+
+      authController.add(null);
+      await tester.pump();
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.welcome,
+      );
+
+      authController.add(_guestUser());
+      await tester.pump();
+      await _pumpRouterTransition(tester);
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
+      expect(find.text('Glad you are here!'), findsOneWidget);
+    },
+  );
 }
 
 class _FakeInventoryItemRepository

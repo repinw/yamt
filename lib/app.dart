@@ -1,15 +1,9 @@
-import 'dart:async';
-import 'dart:developer';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/presentation/controllers/guest_auth_controller.dart';
 
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -38,7 +32,6 @@ class YAMT extends ConsumerStatefulWidget {
 }
 
 class _YAMTState extends ConsumerState<YAMT> {
-  ProviderSubscription<AsyncValue<User?>>? _initialAuthSubscription;
   ProviderSubscription<AsyncValue<List<InventoryItem>>>?
   _inventoryWarmupSubscription;
   ProviderSubscription<AsyncValue<List<PreparedMeal>>>?
@@ -47,13 +40,11 @@ class _YAMTState extends ConsumerState<YAMT> {
   @override
   void initState() {
     super.initState();
-    _ensureInitialGuestAuth();
     _startInventoryWarmup();
   }
 
   @override
   void dispose() {
-    _initialAuthSubscription?.close();
     _inventoryWarmupSubscription?.close();
     _preparedMealsWarmupSubscription?.close();
     super.dispose();
@@ -82,33 +73,6 @@ class _YAMTState extends ConsumerState<YAMT> {
     );
   }
 
-  void _ensureInitialGuestAuth() {
-    _initialAuthSubscription ??= ref.listenManual<AsyncValue<User?>>(
-      authStateChangesProvider,
-      (previous, next) {
-        final user = next.asData?.value;
-        if (!next.isLoading && user == null) {
-          unawaited(
-            Future<void>(() async {
-              try {
-                await ref
-                    .read(guestAuthControllerProvider.notifier)
-                    .signInAnonymously();
-              } on Object catch (e, st) {
-                log(
-                  'Initial guest auth skipped or failed: $e',
-                  name: 'YAMT',
-                  error: e,
-                  stackTrace: st,
-                );
-              }
-            }),
-          );
-        }
-      },
-      fireImmediately: true,
-    );
-  }
 
 
   void _startInventoryWarmup() {

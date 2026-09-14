@@ -96,7 +96,7 @@ class _CalorieOnboardingWizardState
 
   void _handleLogin() {
     _dismissKeyboard();
-    unawaited(context.push(AppRoutes.welcome));
+    unawaited(context.push('${AppRoutes.welcome}?from=onboarding'));
   }
 
   Future<void> _handleFinish(

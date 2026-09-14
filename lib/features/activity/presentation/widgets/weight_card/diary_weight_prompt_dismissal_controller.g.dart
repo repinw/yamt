@@ -48,7 +48,7 @@ final class DiaryWeightPromptDismissalControllerProvider
 }
 
 String _$diaryWeightPromptDismissalControllerHash() =>
-    r'f2122dcc25aa385db0c666f0cb973d04641d8948';
+    r'db4648a92086eed7ec0861a8e939b74a89ae67c1';
 
 /// Stores the last diary day where the user dismissed the weight prompt.
 

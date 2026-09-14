@@ -34,6 +34,8 @@ Other features may import these concrete files directly:
 - `presentation/auth_error_message_mapper.dart` for auth error messages.
 - `presentation/welcome_page.dart` and `presentation/guest_name_setup_page.dart`
   for app routing.
+- `application/initial_guest_auth_controller.dart` for initial app routing and
+  cold-start guest auth.
 
 Widgets under `presentation/widgets/` are auth presentation internals unless a
 test imports them directly.
@@ -50,6 +52,8 @@ test imports them directly.
   - `googleSignInProvider`
 - `application/auth_profile_setup_status_provider.dart`
   - `authProfileSetupCompletedProvider`
+- `application/initial_guest_auth_controller.dart`
+  - `initialGuestAuthControllerProvider`
 - `presentation/auth_error_message_mapper.dart`
   - `authErrorMessageMapperProvider`
 - `presentation/controllers/auth_form_controller.dart`
