@@ -57,7 +57,6 @@ bool _isSubjectToLineCountCheck(File file) {
 }
 
 const _legacyLargeFilesAllowlist = <String>{
-  'lib/core/router/app_router.dart',
   'lib/core/widgets/app_selection_list_tiles.dart',
   'lib/core/widgets/home_shell_chrome.dart',
   'lib/core/widgets/text_voice_search_bar.dart',
