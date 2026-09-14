@@ -139,7 +139,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/inventory/presentation/controllers/inventory_items_controller.dart',
   'lib/features/inventory/presentation/controllers/prepared_meal_templates_controller.dart',
   'lib/features/inventory/presentation/controllers/prepared_meals_controller.dart',
-  'lib/features/inventory/presentation/inventory_page.dart',
   'lib/features/inventory/presentation/widgets/inventory_item_editor/inventory_receipt_item_editor_sheet.dart',
   'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_eat_sheet.dart',
   'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row.dart',

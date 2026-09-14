@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
@@ -36,6 +37,47 @@ class InventoryItemEatFlow {
     return canDirectlySaveInventoryItemEatRequest(item, request);
   }
 
+  /// Stages consumption and completes the eat flow.
+  static Future<bool> stageAndComplete({
+    required BuildContext context,
+    required ProviderContainer container,
+    required InventoryItem item,
+    required InventoryItemEatRequest request,
+  }) async {
+    final inventoryController = container.read(
+      inventoryItemsControllerProvider.notifier,
+    );
+    final pendingConsumption = await inventoryController
+        .stagePendingConsumption(item.id, request.inventoryAmount);
+    if (pendingConsumption == null) {
+      return false;
+    }
+
+    if (!context.mounted) {
+      await inventoryController.discardPendingConsumption(
+        pendingConsumption.id,
+      );
+      return false;
+    }
+
+    final completion = complete(
+      context: context,
+      container: container,
+      itemBeforeMutation: item,
+      request: request,
+      pendingConsumptionId: pendingConsumption.id,
+      pendingConsumption: pendingConsumption,
+      inventoryController: inventoryController,
+    );
+
+    if (shouldAwaitCompletion(item, request)) {
+      await completion;
+    } else {
+      unawaited(completion);
+    }
+    return true;
+  }
+
   /// Complete.
   static Future<bool> complete({
     required BuildContext context,
@@ -54,17 +96,12 @@ class InventoryItemEatFlow {
         itemBeforeMutation,
       );
       if (profile == null) {
-        await _discardPendingConsumption(
+        return _discardAndFail(
+          context: context,
           container: container,
           pendingConsumptionId: pendingConsumptionId,
+          message: l10n.inventoryItemActionFailed,
         );
-        if (context.mounted) {
-          _showSnackBar(
-            context: context,
-            message: l10n.inventoryItemActionFailed,
-          );
-        }
-        return false;
       }
 
       final inventoryContext = InventoryCalorieBridgeFlow.buildInventoryContext(
@@ -96,22 +133,20 @@ class InventoryItemEatFlow {
           return true;
         }
 
-        await _discardPendingConsumption(
+        return _discardAndFail(
+          context: context,
           container: container,
           pendingConsumptionId: pendingConsumptionId,
+          message: l10n.caloriesSaveFailed,
         );
-        if (context.mounted) {
-          _showSnackBar(context: context, message: l10n.caloriesSaveFailed);
-        }
-        return false;
       }
 
       if (!context.mounted) {
-        await _discardPendingConsumption(
+        return _discardAndFail(
+          context: context,
           container: container,
           pendingConsumptionId: pendingConsumptionId,
         );
-        return false;
       }
 
       final saved = await context.push<bool>(
@@ -135,19 +170,29 @@ class InventoryItemEatFlow {
         error: error,
         stackTrace: stackTrace,
       );
-      await _discardPendingConsumption(
+      return _discardAndFail(
+        context: context,
         container: container,
         pendingConsumptionId: pendingConsumptionId,
-      );
-      if (!context.mounted) {
-        return false;
-      }
-      _showSnackBar(
-        context: context,
         message: AppLocalizations.of(context)!.inventoryItemActionFailed,
       );
-      return false;
     }
+  }
+
+  static Future<bool> _discardAndFail({
+    required BuildContext context,
+    required ProviderContainer container,
+    required String pendingConsumptionId,
+    String? message,
+  }) async {
+    await _discardPendingConsumption(
+      container: container,
+      pendingConsumptionId: pendingConsumptionId,
+    );
+    if (context.mounted && message != null) {
+      _showSnackBar(context: context, message: message);
+    }
+    return false;
   }
 
   static Future<void> _discardPendingConsumption({
