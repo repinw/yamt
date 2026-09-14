@@ -74,11 +74,7 @@ class CalorieCalculatorProfile {
       goalMode = CalorieGoalMode.maintain,
       goalSpeedKgPerWeek = 0,
       targetWeightKg = null,
-      trainingWeekdays = const <int>[
-        DateTime.monday,
-        DateTime.wednesday,
-        DateTime.friday,
-      ],
+      trainingWeekdays = const <int>[],
       trainingDayKcalOffset = 0.0;
 
   @JsonKey(

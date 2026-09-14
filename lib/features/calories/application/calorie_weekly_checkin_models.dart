@@ -1,5 +1,5 @@
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 /// Defines calorie weekly check in blocked reason.
 enum CalorieWeeklyCheckInBlockedReason {

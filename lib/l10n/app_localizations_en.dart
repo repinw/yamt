@@ -2990,6 +2990,43 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get onboardingTrainingDaysTitle => 'Workouts & Sports';
+
+  @override
+  String get onboardingTrainingDaysSubtitle => 'We adapt your daily calorie target to your routine.';
+
+  @override
+  String get onboardingTrainingDaysQuestion => 'Do you work out on set days?';
+
+  @override
+  String get onboardingTrainingDaysNoFixedPlan => 'No set days / No regular workouts';
+
+  @override
+  String get onboardingTrainingDaysNoFixedPlanSubtitle => 'Same calorie target every day';
+
+  @override
+  String get onboardingTrainingDaysFixedPlan => 'Yes, on fixed weekdays';
+
+  @override
+  String get onboardingTrainingDaysFixedPlanSubtitle => 'Select your typical workout days';
+
+  @override
+  String get onboardingTrainingDaysExtraKcalLabel => 'Eat more on workout days (+200 kcal)';
+
+  @override
+  String get onboardingTrainingDaysExtraKcalSubtitle => 'Budget-neutral: More calories on workout days, fewer on rest days';
+
+  @override
+  String onboardingTrainingDaysTrainingResult(int days) {
+    return '🏋️ Training ($days days)';
+  }
+
+  @override
+  String onboardingTrainingDaysRestResult(int days) {
+    return '🛋️ Rest day ($days days)';
+  }
+
+  @override
   String get onboardingInfoTitle => 'Your Plan is Ready! 🎉';
 
   @override

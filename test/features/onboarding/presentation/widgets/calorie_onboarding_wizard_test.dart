@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/'
@@ -336,6 +337,7 @@ Future<void> _goToStartDateStep(
   await tester.enterText(find.byType(TextFormField).at(1), targetWeight);
   await _tapNext(tester);
 
+  await _tapNext(tester);
   await _tapNext(tester);
   await _tapNext(tester);
 }

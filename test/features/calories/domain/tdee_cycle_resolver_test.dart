@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 
 void main() {
@@ -26,15 +27,16 @@ void main() {
         weightKg: 75,
       );
 
-      final settings = CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: profile1,
-        effectiveDate: now,
-      ).applyGoalChange(
-        changedAt: DateTime(2025, 2),
-        dailyKcalGoal: 2500,
-        calculatorProfile: profile2,
-      );
+      final settings =
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2000,
+            calculatorProfile: profile1,
+            effectiveDate: now,
+          ).applyGoalChange(
+            changedAt: DateTime(2025, 2),
+            dailyKcalGoal: 2500,
+            calculatorProfile: profile2,
+          );
 
       final cycles = TdeeCycleResolver.resolveGoalCycles(settings);
 

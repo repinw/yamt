@@ -1,14 +1,22 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
@@ -267,19 +275,22 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(nextSettings);
   }
 
-
   /// Save learned tdee goal.
   Future<bool> saveLearnedTdeeGoal({
     required CalorieGoalMode goalMode,
     required double goalSpeedKgPerWeek,
     required DateTime goalStartDate,
     bool? countGoalStartDayForLearning,
+    List<int>? trainingWeekdays,
+    double? trainingDayKcalOffset,
   }) async {
     final result = await saveLearnedTdeeGoalWithResult(
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
       goalStartDate: goalStartDate,
       countGoalStartDayForLearning: countGoalStartDayForLearning,
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
     );
     return result.saved;
   }
@@ -290,6 +301,8 @@ class CalorieGoalController extends _$CalorieGoalController {
     required double goalSpeedKgPerWeek,
     required DateTime goalStartDate,
     bool? countGoalStartDayForLearning,
+    List<int>? trainingWeekdays,
+    double? trainingDayKcalOffset,
   }) async {
     final previousSettings = await _currentSettings();
     final learnedTdeeKcal = previousSettings.latestLearnedTdeeKcal;
@@ -304,6 +317,8 @@ class CalorieGoalController extends _$CalorieGoalController {
       goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
           ? 0
           : goalSpeedKgPerWeek,
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
     );
     final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
     final normalizedToday = normalizeDiaryDay(DateTime.now());
@@ -394,6 +409,24 @@ class CalorieGoalController extends _$CalorieGoalController {
   Future<bool> toggleTrainingDay(DateTime day) async {
     final previous = await _currentSettings();
     final nextSettings = previous.toggleTrainingDay(day);
+    return _persistSettings(nextSettings);
+  }
+
+  /// Update weekly training days and kcal offset.
+  Future<bool> updateTrainingSchedule({
+    required List<int> trainingWeekdays,
+    required double trainingDayKcalOffset,
+  }) async {
+    final previous = await _currentSettings();
+    final nextProfile = previous.calculatorProfile?.copyWith(
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
+    );
+    final nextSettings = previous.copyWith(
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
+      calculatorProfile: nextProfile,
+    );
     return _persistSettings(nextSettings);
   }
 
@@ -556,7 +589,9 @@ bool _sameCalculatorProfile(
       left.ageYears == right.ageYears &&
       left.activityLevel == right.activityLevel &&
       left.goalMode == right.goalMode &&
-      left.goalSpeedKgPerWeek == right.goalSpeedKgPerWeek;
+      left.goalSpeedKgPerWeek == right.goalSpeedKgPerWeek &&
+      left.trainingDayKcalOffset == right.trainingDayKcalOffset &&
+      listEquals(left.trainingWeekdays, right.trainingWeekdays);
 }
 
 DateTime _goalChangeTimestamp({

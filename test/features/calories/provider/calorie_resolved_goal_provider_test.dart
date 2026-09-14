@@ -2,6 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
@@ -17,7 +21,10 @@ ProviderContainer _createContainer({
   );
   return ProviderContainer(
     overrides: [
-      calorieBalanceNowProvider.overrideWith((ref) => () => today),
+      calorieBalanceNowProvider.overrideWith(
+        (ref) =>
+            () => today,
+      ),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
     ],
   );
@@ -220,8 +227,7 @@ void main() {
               windowStartDate: startDay,
               windowEndDate: previousDiaryDay(today),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2580,
-              averageActiveKcal: 0,
+              calculatedTdeeKcal: 2580,
               lowConfidence: false,
             ),
           );
@@ -259,8 +265,7 @@ void main() {
               windowStartDate: sourceStart,
               windowEndDate: today.subtract(const Duration(days: 1)),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 1450,
-              averageActiveKcal: 0,
+              calculatedTdeeKcal: 1450,
               lowConfidence: false,
             ),
           );

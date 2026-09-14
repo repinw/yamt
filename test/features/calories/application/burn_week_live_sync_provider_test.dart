@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -266,8 +268,7 @@ CalorieGoalSettings _learnedGoalSettings(DateTime effectiveDate) {
       windowStartDate: effectiveDate.subtract(const Duration(days: 7)),
       windowEndDate: effectiveDate.subtract(const Duration(days: 1)),
       trendWeightChangePerDay: -0.05,
-      calculatedTrueTdeeKcal: 2300,
-      averageActiveKcal: 200,
+      calculatedTdeeKcal: 2300,
       lowConfidence: false,
     ),
   );

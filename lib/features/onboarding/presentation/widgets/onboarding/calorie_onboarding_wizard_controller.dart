@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
+
+part 'calorie_onboarding_wizard_controller.g.dart';
 
 /// Wizard steps for calorie-goal onboarding.
 enum CalorieOnboardingStep {
@@ -19,6 +22,9 @@ enum CalorieOnboardingStep {
   /// Pace step.
   pace,
 
+  /// Training days and calorie cycling step.
+  trainingDays,
+
   /// Info step.
   info,
 
@@ -29,42 +35,43 @@ enum CalorieOnboardingStep {
   ready,
 }
 
-/// State controller for the calorie onboarding wizard.
-class CalorieOnboardingWizardController extends ChangeNotifier {
-  /// Creates controller.
-  CalorieOnboardingWizardController();
+/// Immutable state for the calorie onboarding wizard.
+@immutable
+class CalorieOnboardingWizardState {
+  /// Creates wizard state.
+  const CalorieOnboardingWizardState({
+    this.step = 0,
+    this.showErrors = false,
+    this.allowRouteExit = false,
+    this.isSaving = false,
+  });
 
-  static const List<CalorieOnboardingStep> _steps =
-      CalorieOnboardingStep.values;
-
-  int _step = 0;
-  bool _showErrors = false;
-  bool _allowRouteExit = false;
-  bool _isSaving = false;
+  /// The list of steps in the onboarding wizard.
+  static const List<CalorieOnboardingStep> steps = CalorieOnboardingStep.values;
 
   /// Current page index.
-  int get step => _step;
-
-  /// Total wizard step count.
-  int get totalSteps => _steps.length;
-
-  /// Current step.
-  CalorieOnboardingStep get currentStep => _steps[_step];
+  final int step;
 
   /// Whether validation errors should be shown.
-  bool get showErrors => _showErrors;
+  final bool showErrors;
 
   /// Whether route exit is allowed.
-  bool get allowRouteExit => _allowRouteExit;
+  final bool allowRouteExit;
 
   /// Whether finish action is saving.
-  bool get isSaving => _isSaving;
+  final bool isSaving;
+
+  /// Total wizard step count.
+  int get totalSteps => steps.length;
+
+  /// Current step.
+  CalorieOnboardingStep get currentStep => steps[step];
 
   /// Whether wizard top/bottom chrome should be visible.
-  bool get showsStepChrome => _step > 0 && _step < totalSteps - 1;
+  bool get showsStepChrome => step > 0 && step < totalSteps - 1;
 
   /// Progress bar value.
-  double get progress => _step / (totalSteps - 1);
+  double get progress => step / (totalSteps - 1);
 
   /// Whether current step is valid.
   bool isCurrentStepValid(
@@ -85,72 +92,112 @@ class CalorieOnboardingWizardController extends ChangeNotifier {
     };
   }
 
-  /// Move to next page. Returns target page when page changed.
+  /// Copy with.
+  CalorieOnboardingWizardState copyWith({
+    int? step,
+    bool? showErrors,
+    bool? allowRouteExit,
+    bool? isSaving,
+  }) {
+    return CalorieOnboardingWizardState(
+      step: step ?? this.step,
+      showErrors: showErrors ?? this.showErrors,
+      allowRouteExit: allowRouteExit ?? this.allowRouteExit,
+      isSaving: isSaving ?? this.isSaving,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is CalorieOnboardingWizardState &&
+        other.step == step &&
+        other.showErrors == showErrors &&
+        other.allowRouteExit == allowRouteExit &&
+        other.isSaving == isSaving;
+  }
+
+  @override
+  int get hashCode => Object.hash(step, showErrors, allowRouteExit, isSaving);
+}
+
+/// State controller for the calorie onboarding wizard.
+@riverpod
+class CalorieOnboardingWizardController
+    extends _$CalorieOnboardingWizardController {
+  @override
+  CalorieOnboardingWizardState build() {
+    return const CalorieOnboardingWizardState();
+  }
+
+  /// Move to next page. Returns target page index when changed.
   int? next(
     CalorieGoalCalculatorFormState formState, {
     required bool hasValidStartDateChoice,
   }) {
-    if (_step >= totalSteps - 1) {
+    if (state.step >= state.totalSteps - 1) {
       return null;
     }
-    if (!isCurrentStepValid(
+    if (!state.isCurrentStepValid(
       formState,
       hasValidStartDateChoice: hasValidStartDateChoice,
     )) {
-      _showErrors = true;
-      notifyListeners();
+      state = state.copyWith(showErrors: true);
       return null;
     }
 
-    _step++;
-    if (currentStep == CalorieOnboardingStep.pace &&
+    var nextStep = state.step + 1;
+    if (nextStep < state.totalSteps &&
+        CalorieOnboardingWizardState.steps[nextStep] ==
+            CalorieOnboardingStep.pace &&
         formState.goalMode == CalorieGoalMode.maintain) {
-      _step++;
+      nextStep++;
     }
-    _showErrors = false;
-    notifyListeners();
-    return _step;
+
+    state = state.copyWith(step: nextStep, showErrors: false);
+    return state.step;
   }
 
-  /// Move to previous page. Returns target page when page changed.
+  /// Move to previous page. Returns target page index when changed.
   int? back(CalorieGoalCalculatorFormState formState) {
-    if (_step <= 0) {
+    if (state.step <= 0) {
       return null;
     }
 
-    _step--;
-    if (currentStep == CalorieOnboardingStep.pace &&
+    var prevStep = state.step - 1;
+    if (prevStep >= 0 &&
+        CalorieOnboardingWizardState.steps[prevStep] ==
+            CalorieOnboardingStep.pace &&
         formState.goalMode == CalorieGoalMode.maintain) {
-      _step--;
+      prevStep--;
     }
-    notifyListeners();
-    return _step;
+
+    state = state.copyWith(step: prevStep);
+    return state.step;
   }
 
   /// Hide currently visible validation errors.
   void clearErrors() {
-    if (!_showErrors) {
+    if (!state.showErrors) {
       return;
     }
-    _showErrors = false;
-    notifyListeners();
+    state = state.copyWith(showErrors: false);
   }
 
   /// Start saving.
   void startSaving() {
-    _isSaving = true;
-    notifyListeners();
+    state = state.copyWith(isSaving: true);
   }
 
   /// Stop saving after a failed save.
   void stopSavingAfterFailure() {
-    _isSaving = false;
-    notifyListeners();
+    state = state.copyWith(isSaving: false);
   }
 
   /// Allow route exit after successful save.
   void markRouteExitAllowed() {
-    _allowRouteExit = true;
-    notifyListeners();
+    state = state.copyWith(allowRouteExit: true);
   }
 }

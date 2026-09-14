@@ -5765,6 +5765,72 @@ abstract class AppLocalizations {
   /// **'{pace} kg / week'**
   String onboardingPacePerWeek(String pace);
 
+  /// No description provided for @onboardingTrainingDaysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts & Sports'**
+  String get onboardingTrainingDaysTitle;
+
+  /// No description provided for @onboardingTrainingDaysSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We adapt your daily calorie target to your routine.'**
+  String get onboardingTrainingDaysSubtitle;
+
+  /// No description provided for @onboardingTrainingDaysQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you work out on set days?'**
+  String get onboardingTrainingDaysQuestion;
+
+  /// No description provided for @onboardingTrainingDaysNoFixedPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'No set days / No regular workouts'**
+  String get onboardingTrainingDaysNoFixedPlan;
+
+  /// No description provided for @onboardingTrainingDaysNoFixedPlanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Same calorie target every day'**
+  String get onboardingTrainingDaysNoFixedPlanSubtitle;
+
+  /// No description provided for @onboardingTrainingDaysFixedPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, on fixed weekdays'**
+  String get onboardingTrainingDaysFixedPlan;
+
+  /// No description provided for @onboardingTrainingDaysFixedPlanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your typical workout days'**
+  String get onboardingTrainingDaysFixedPlanSubtitle;
+
+  /// No description provided for @onboardingTrainingDaysExtraKcalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat more on workout days (+200 kcal)'**
+  String get onboardingTrainingDaysExtraKcalLabel;
+
+  /// No description provided for @onboardingTrainingDaysExtraKcalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget-neutral: More calories on workout days, fewer on rest days'**
+  String get onboardingTrainingDaysExtraKcalSubtitle;
+
+  /// No description provided for @onboardingTrainingDaysTrainingResult.
+  ///
+  /// In en, this message translates to:
+  /// **'🏋️ Training ({days} days)'**
+  String onboardingTrainingDaysTrainingResult(int days);
+
+  /// No description provided for @onboardingTrainingDaysRestResult.
+  ///
+  /// In en, this message translates to:
+  /// **'🛋️ Rest day ({days} days)'**
+  String onboardingTrainingDaysRestResult(int days);
+
   /// No description provided for @onboardingInfoTitle.
   ///
   /// In en, this message translates to:

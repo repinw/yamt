@@ -2990,6 +2990,43 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get onboardingTrainingDaysTitle => 'Training & Sport';
+
+  @override
+  String get onboardingTrainingDaysSubtitle => 'Wir passen deinen Kalorienbedarf an deinen Alltag an.';
+
+  @override
+  String get onboardingTrainingDaysQuestion => 'Trainierst du an festen Tagen?';
+
+  @override
+  String get onboardingTrainingDaysNoFixedPlan => 'Keine festen Tage / Kein Sport';
+
+  @override
+  String get onboardingTrainingDaysNoFixedPlanSubtitle => 'Jeden Tag das gleiche Kalorienziel';
+
+  @override
+  String get onboardingTrainingDaysFixedPlan => 'Ja, an festen Wochentagen';
+
+  @override
+  String get onboardingTrainingDaysFixedPlanSubtitle => 'Wähle deine typischen Trainingstage';
+
+  @override
+  String get onboardingTrainingDaysExtraKcalLabel => 'An Trainingstagen mehr essen (+200 kcal)';
+
+  @override
+  String get onboardingTrainingDaysExtraKcalSubtitle => 'Budgetneutral: Mehr Kalorien beim Sport, weniger an Ruhetagen';
+
+  @override
+  String onboardingTrainingDaysTrainingResult(int days) {
+    return '🏋️ Training ($days Tage)';
+  }
+
+  @override
+  String onboardingTrainingDaysRestResult(int days) {
+    return '🛋️ Ruhetag ($days Tage)';
+  }
+
+  @override
   String get onboardingInfoTitle => 'Dein Plan steht! 🎉';
 
   @override

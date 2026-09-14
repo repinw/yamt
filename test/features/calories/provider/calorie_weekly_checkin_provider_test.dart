@@ -11,6 +11,11 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/provider/'
@@ -874,8 +879,7 @@ void main() {
               windowStartDate: DateTime(2026, 4, 8),
               windowEndDate: DateTime(2026, 4, 14),
               trendWeightChangePerDay: -0.05,
-              calculatedTrueTdeeKcal: 2400,
-              averageActiveKcal: 200,
+              calculatedTdeeKcal: 2400,
               lowConfidence: false,
             ),
           );
@@ -1120,8 +1124,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: 0,
-        calculatedTrueTdeeKcal: 2580,
-        averageActiveKcal: 0,
+        calculatedTdeeKcal: 2580,
         lowConfidence: false,
       );
       final settingsRepository = FakeCalorieSettingsRepository(
@@ -1203,8 +1206,7 @@ void main() {
                 windowStartDate: goalStart,
                 windowEndDate: DateTime(2026, 4, 14),
                 trendWeightChangePerDay: 0,
-                calculatedTrueTdeeKcal: 2580,
-                averageActiveKcal: 0,
+                calculatedTdeeKcal: 2580,
                 lowConfidence: false,
                 inputHash: 'v1:week-one',
               ),
@@ -1283,8 +1285,7 @@ void main() {
                 windowStartDate: goalStart,
                 windowEndDate: DateTime(2026, 4, 14),
                 trendWeightChangePerDay: 0,
-                calculatedTrueTdeeKcal: 2580,
-                averageActiveKcal: 0,
+                calculatedTdeeKcal: 2580,
                 lowConfidence: false,
                 invalidatedAt: DateTime(2026, 4, 20),
               ),
@@ -1352,8 +1353,7 @@ void main() {
                 windowStartDate: goalStart,
                 windowEndDate: DateTime(2026, 4, 14),
                 trendWeightChangePerDay: 0,
-                calculatedTrueTdeeKcal: 2500,
-                averageActiveKcal: 0,
+                calculatedTdeeKcal: 2500,
                 lowConfidence: false,
               ),
             ),
@@ -1423,8 +1423,7 @@ void main() {
               windowStartDate: DateTime(2026, 4),
               windowEndDate: DateTime(2026, 4, 7),
               trendWeightChangePerDay: -0.05,
-              calculatedTrueTdeeKcal: 2400,
-              averageActiveKcal: 200,
+              calculatedTdeeKcal: 2400,
               lowConfidence: false,
             ),
           );
@@ -1473,8 +1472,7 @@ void main() {
               windowStartDate: DateTime(2026, 4),
               windowEndDate: DateTime(2026, 4, 7),
               trendWeightChangePerDay: -0.05,
-              calculatedTrueTdeeKcal: 2400,
-              averageActiveKcal: 200,
+              calculatedTdeeKcal: 2400,
               lowConfidence: false,
             ),
           );
@@ -1523,8 +1521,7 @@ void main() {
               windowStartDate: DateTime(2026, 4),
               windowEndDate: DateTime(2026, 4, 7),
               trendWeightChangePerDay: -0.05,
-              calculatedTrueTdeeKcal: 2400,
-              averageActiveKcal: 200,
+              calculatedTdeeKcal: 2400,
               lowConfidence: false,
             ),
           )
@@ -1537,8 +1534,7 @@ void main() {
               windowStartDate: DateTime(2026, 4, 8),
               windowEndDate: DateTime(2026, 4, 14),
               trendWeightChangePerDay: -0.04,
-              calculatedTrueTdeeKcal: 2380,
-              averageActiveKcal: 210,
+              calculatedTdeeKcal: 2380,
               lowConfidence: false,
             ),
           )
@@ -1551,8 +1547,7 @@ void main() {
               windowStartDate: DateTime(2026, 4, 15),
               windowEndDate: DateTime(2026, 4, 21),
               trendWeightChangePerDay: -0.03,
-              calculatedTrueTdeeKcal: 2360,
-              averageActiveKcal: 220,
+              calculatedTdeeKcal: 2360,
               lowConfidence: false,
             ),
           );
@@ -1623,8 +1618,7 @@ void main() {
               windowStartDate: DateTime(2026, 4),
               windowEndDate: DateTime(2026, 4, 7),
               trendWeightChangePerDay: -0.05,
-              calculatedTrueTdeeKcal: 2400,
-              averageActiveKcal: 200,
+              calculatedTdeeKcal: 2400,
               lowConfidence: false,
             ),
           )
@@ -1688,8 +1682,7 @@ void main() {
               windowStartDate: DateTime(2026, 4),
               windowEndDate: DateTime(2026, 4, 7),
               trendWeightChangePerDay: -0.05,
-              calculatedTrueTdeeKcal: 2400,
-              averageActiveKcal: 200,
+              calculatedTdeeKcal: 2400,
               lowConfidence: false,
             ),
           );
@@ -1764,8 +1757,7 @@ void main() {
               windowStartDate: goalStart,
               windowEndDate: DateTime(2026, 4, 14),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2580,
-              averageActiveKcal: 0,
+              calculatedTdeeKcal: 2580,
               lowConfidence: false,
             ),
           )
@@ -1821,8 +1813,7 @@ void main() {
             windowStartDate: DateTime(2026, 4, 8),
             windowEndDate: DateTime(2026, 4, 14),
             trendWeightChangePerDay: -0.08,
-            calculatedTrueTdeeKcal: 2450,
-            averageActiveKcal: 210,
+            calculatedTdeeKcal: 2450,
             lowConfidence: false,
           ),
         )
@@ -1897,8 +1888,7 @@ void main() {
                 windowStartDate: DateTime(2026, 4),
                 windowEndDate: DateTime(2026, 4, 7),
                 trendWeightChangePerDay: -0.05,
-                calculatedTrueTdeeKcal: 2400,
-                averageActiveKcal: 200,
+                calculatedTdeeKcal: 2400,
                 lowConfidence: false,
               ),
             )

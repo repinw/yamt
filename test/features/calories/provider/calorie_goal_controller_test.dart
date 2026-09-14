@@ -9,8 +9,14 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
@@ -657,8 +663,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.08,
-        calculatedTrueTdeeKcal: 2450,
-        averageActiveKcal: 210,
+        calculatedTdeeKcal: 2450,
         lowConfidence: false,
       );
       const initialProfile = CalorieCalculatorProfile(
@@ -681,7 +686,7 @@ void main() {
       );
       final repository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: learnedSnapshot.calculatedTrueTdeeKcal,
+          dailyKcalGoal: learnedSnapshot.calculatedTdeeKcal,
           calculatorProfile: initialProfile,
           effectiveDate: today,
           source: CalorieGoalSource.calculator,
@@ -801,8 +806,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.08,
-        calculatedTrueTdeeKcal: 2450,
-        averageActiveKcal: 210,
+        calculatedTdeeKcal: 2450,
         lowConfidence: false,
       );
       const profile = CalorieCalculatorProfile(
@@ -817,7 +821,7 @@ void main() {
       final initialSettings = const CalorieGoalSettings.empty()
           .applyGoalChange(
             changedAt: today.subtract(const Duration(days: 7)),
-            dailyKcalGoal: learnedSnapshot.calculatedTrueTdeeKcal,
+            dailyKcalGoal: learnedSnapshot.calculatedTdeeKcal,
             calculatorProfile: profile,
             source: CalorieGoalSource.calculator,
             weeklyCheckInSnapshot: learnedSnapshot,
@@ -999,8 +1003,7 @@ void main() {
         windowStartDate: today.subtract(const Duration(days: 7)),
         windowEndDate: today.subtract(const Duration(days: 1)),
         trendWeightChangePerDay: -0.08,
-        calculatedTrueTdeeKcal: 2315,
-        averageActiveKcal: 220,
+        calculatedTdeeKcal: 2315,
         lowConfidence: false,
       );
       final initialSettings = const CalorieGoalSettings.empty()
@@ -1173,7 +1176,6 @@ void main() {
     expect(settings.isSkippedIntakeDay(skippedDay), isFalse);
   });
 
-
   test(
     'dismissPendingWeeklyCheckIn succeeds when nothing is pending',
     () async {
@@ -1279,8 +1281,7 @@ void main() {
             windowStartDate: DateTime(2026, 4, 8),
             windowEndDate: DateTime(2026, 4, 14),
             trendWeightChangePerDay: -0.08,
-            calculatedTrueTdeeKcal: 2315,
-            averageActiveKcal: 220,
+            calculatedTdeeKcal: 2315,
             lowConfidence: false,
           ),
         );
@@ -1308,8 +1309,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.08,
-        calculatedTrueTdeeKcal: 2315,
-        averageActiveKcal: 220,
+        calculatedTdeeKcal: 2315,
         lowConfidence: false,
         inputHash: 'v1:old',
       );
@@ -1317,8 +1317,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.04,
-        calculatedTrueTdeeKcal: 2340,
-        averageActiveKcal: 230,
+        calculatedTdeeKcal: 2340,
         lowConfidence: false,
         inputHash: 'v1:new',
       );
@@ -1357,7 +1356,7 @@ void main() {
       );
       expect(calculatorEntry.weeklyCheckInSnapshot?.inputHash, 'v1:old');
       expect(
-        calculatorEntry.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal,
+        calculatorEntry.weeklyCheckInSnapshot?.calculatedTdeeKcal,
         2315,
       );
       expect(
@@ -1394,8 +1393,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.08,
-        calculatedTrueTdeeKcal: 2315,
-        averageActiveKcal: 220,
+        calculatedTdeeKcal: 2315,
         lowConfidence: false,
       ),
     );
@@ -1406,8 +1404,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 15),
         windowEndDate: DateTime(2026, 4, 21),
         trendWeightChangePerDay: -0.04,
-        calculatedTrueTdeeKcal: 2280,
-        averageActiveKcal: 210,
+        calculatedTdeeKcal: 2280,
         lowConfidence: true,
       ),
     );
@@ -1451,8 +1448,7 @@ void main() {
                 windowStartDate: DateTime(2026, 4, 8),
                 windowEndDate: DateTime(2026, 4, 14),
                 trendWeightChangePerDay: 0,
-                calculatedTrueTdeeKcal: 2300,
-                averageActiveKcal: 0,
+                calculatedTdeeKcal: 2300,
                 lowConfidence: false,
                 inputHash: 'v1:first',
               ),
@@ -1466,8 +1462,7 @@ void main() {
                 windowStartDate: DateTime(2026, 4, 15),
                 windowEndDate: DateTime(2026, 4, 21),
                 trendWeightChangePerDay: 0,
-                calculatedTrueTdeeKcal: 2350,
-                averageActiveKcal: 0,
+                calculatedTdeeKcal: 2350,
                 lowConfidence: false,
                 inputHash: 'v1:second',
               ),
@@ -1522,8 +1517,7 @@ void main() {
           windowStartDate: DateTime(2026, 4, 8),
           windowEndDate: DateTime(2026, 4, 14),
           trendWeightChangePerDay: 0,
-          calculatedTrueTdeeKcal: 2300,
-          averageActiveKcal: 0,
+          calculatedTdeeKcal: 2300,
           lowConfidence: false,
           inputHash: 'v1:first',
         ),
@@ -1574,8 +1568,7 @@ void main() {
             windowStartDate: DateTime(2026, 4, 8),
             windowEndDate: DateTime(2026, 4, 14),
             trendWeightChangePerDay: -0.08,
-            calculatedTrueTdeeKcal: 2450,
-            averageActiveKcal: 210,
+            calculatedTdeeKcal: 2450,
             lowConfidence: false,
           ),
         );
@@ -1643,8 +1636,7 @@ void main() {
             windowStartDate: DateTime(2026, 4, 8),
             windowEndDate: DateTime(2026, 4, 14),
             trendWeightChangePerDay: -0.08,
-            calculatedTrueTdeeKcal: 2450,
-            averageActiveKcal: 210,
+            calculatedTdeeKcal: 2450,
             lowConfidence: false,
           ),
         );
@@ -1693,8 +1685,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.08,
-        calculatedTrueTdeeKcal: 2450,
-        averageActiveKcal: 210,
+        calculatedTdeeKcal: 2450,
         lowConfidence: false,
       );
       const initialProfile = CalorieCalculatorProfile(
@@ -1708,7 +1699,7 @@ void main() {
       );
       final repository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: learnedSnapshot.calculatedTrueTdeeKcal,
+          dailyKcalGoal: learnedSnapshot.calculatedTdeeKcal,
           calculatorProfile: initialProfile,
           effectiveDate: today,
           source: CalorieGoalSource.calculator,
@@ -1762,8 +1753,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.08,
-        calculatedTrueTdeeKcal: 2450,
-        averageActiveKcal: 210,
+        calculatedTdeeKcal: 2450,
         lowConfidence: false,
       );
       const profile = CalorieCalculatorProfile(
@@ -1779,7 +1769,7 @@ void main() {
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal:
               CalorieWeeklyCheckInCalculator.calculateGoalFromLearnedTdee(
-                learnedTdeeKcal: learnedSnapshot.calculatedTrueTdeeKcal,
+                learnedTdeeKcal: learnedSnapshot.calculatedTdeeKcal,
                 goalSpeedKgPerWeek: 0.5,
                 isLosing: true,
                 isGaining: false,

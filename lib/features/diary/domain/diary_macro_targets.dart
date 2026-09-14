@@ -1,7 +1,8 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
+import 'package:yamt/features/calories/domain/macro_carryover_calculator.dart';
 
 part 'diary_macro_targets.g.dart';
 
@@ -18,7 +19,7 @@ const carryoverCarbFraction = 0.75;
 const carryoverFatFraction = 0.25;
 
 /// Minimum carbs in grams (Ketose- / Unterzuckerungsschutz).
-const minimumCarbsFloorGrams = 50.0;
+const minimumCarbsFloorGrams = 100.0;
 
 /// Minimum fat in grams per kg body weight (Schutzregel B - Fat Floor).
 const minimumFatFloorGramsPerKg = 0.6;
@@ -27,32 +28,7 @@ const minimumFatFloorGramsPerKg = 0.6;
 const minimumFatCalorieFraction = 0.20;
 
 /// Represents the delta applied to base macros due to carryover.
-@immutable
-class DiaryMacroCarryoverDelta {
-  /// Creates a carryover delta result.
-  const DiaryMacroCarryoverDelta({
-    required this.proteinGrams,
-    required this.carbsGrams,
-    required this.fatGrams,
-    this.wasFatFloorApplied = false,
-    this.wasCarbsFloorApplied = false,
-  });
-
-  /// Protein adjustment in grams (always 0.0 - Schutzregel A).
-  final double proteinGrams;
-
-  /// Carbs adjustment in grams.
-  final double carbsGrams;
-
-  /// Fat adjustment in grams.
-  final double fatGrams;
-
-  /// Whether fat reduction was limited by the physiological Fat Floor.
-  final bool wasFatFloorApplied;
-
-  /// Whether carbs reduction was limited by the 50g minimum floor.
-  final bool wasCarbsFloorApplied;
-}
+typedef DiaryMacroCarryoverDelta = MacroCarryoverDelta;
 
 /// Macro targets derived for one diary day.
 @immutable
@@ -76,28 +52,23 @@ class DiaryMacroTargets {
   }
 
   /// Calculates macro targets based on body weight multipliers and remaining
-  /// calories for carbs.
+  /// calories for carbs, guaranteeing at least 100g carbs when possible.
   factory DiaryMacroTargets.calculate({
     required double goalKcal,
     required double weightKg,
     required double proteinGramsPerKg,
     required double fatGramsPerKg,
   }) {
-    if (goalKcal <= 0) {
-      return const DiaryMacroTargets(carbs: 0, protein: 0, fat: 0);
-    }
-    final safeWeight = weightKg > 0 ? weightKg : 70;
-    final proteinGrams = safeWeight * proteinGramsPerKg;
-    final fatGrams = safeWeight * fatGramsPerKg;
-    final proteinKcal = proteinGrams * 4;
-    final fatKcal = fatGrams * 9;
-    final remainingKcal = math.max(0, goalKcal - (proteinKcal + fatKcal));
-    final carbsGrams = remainingKcal / 4;
-
+    final result = MacroBudgetCalculator.calculate(
+      goalKcal: goalKcal,
+      weightKg: weightKg,
+      proteinGramsPerKg: proteinGramsPerKg,
+      fatGramsPerKg: fatGramsPerKg,
+    );
     return DiaryMacroTargets(
-      carbs: carbsGrams,
-      protein: proteinGrams,
-      fat: fatGrams,
+      carbs: result.carbs,
+      protein: result.protein,
+      fat: result.fat,
     );
   }
 
@@ -154,108 +125,13 @@ class DiaryMacroTargets {
     required double weightKg,
     double? baseGoalKcal,
   }) {
-    if (carryoverKcal == 0) {
-      return const DiaryMacroCarryoverDelta(
-        proteinGrams: 0,
-        carbsGrams: 0,
-        fatGrams: 0,
-      );
-    }
-    if (carryoverKcal > 0) {
-      return _positiveCarryoverDelta(carryoverKcal);
-    }
-    return _negativeCarryoverDelta(
-      baseTargets: baseTargets,
+    return MacroCarryoverCalculator.calculateCarryoverDelta(
+      baseCarbs: baseTargets.carbs,
+      baseFat: baseTargets.fat,
       carryoverKcal: carryoverKcal,
       weightKg: weightKg,
       baseGoalKcal: baseGoalKcal,
     );
-  }
-
-  static DiaryMacroCarryoverDelta _positiveCarryoverDelta(
-    double carryoverKcal,
-  ) {
-    return DiaryMacroCarryoverDelta(
-      proteinGrams: 0,
-      carbsGrams:
-          (carryoverKcal * carryoverCarbFraction) /
-          carbEnergyDensityKcalPerGram,
-      fatGrams:
-          (carryoverKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram,
-    );
-  }
-
-  static DiaryMacroCarryoverDelta _negativeCarryoverDelta({
-    required DiaryMacroTargets baseTargets,
-    required double carryoverKcal,
-    required double weightKg,
-    double? baseGoalKcal,
-  }) {
-    final reductionKcal = carryoverKcal.abs();
-    final fatFloor = _calculateFatFloor(
-      weightKg: weightKg,
-      reductionKcal: reductionKcal,
-      baseGoalKcal: baseGoalKcal,
-    );
-    final fatResult = _calculateFatReduction(
-      baseFat: baseTargets.fat,
-      reductionKcal: reductionKcal,
-      fatFloor: fatFloor,
-    );
-    final carbsResult = _calculateCarbsReduction(
-      baseCarbs: baseTargets.carbs,
-      carbsReductionKcal: fatResult.remainingReductionKcal,
-    );
-
-    return DiaryMacroCarryoverDelta(
-      proteinGrams: 0,
-      carbsGrams: carbsResult.delta,
-      fatGrams: fatResult.delta,
-      wasFatFloorApplied: fatResult.wasFloorApplied,
-      wasCarbsFloorApplied: carbsResult.wasFloorApplied,
-    );
-  }
-
-  static ({double delta, double remainingReductionKcal, bool wasFloorApplied})
-  _calculateFatReduction({
-    required double baseFat,
-    required double reductionKcal,
-    required double fatFloor,
-  }) {
-    final plannedReduction =
-        (reductionKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram;
-    if (baseFat - plannedReduction >= fatFloor) {
-      return (
-        delta: -plannedReduction,
-        remainingReductionKcal: reductionKcal * carryoverCarbFraction,
-        wasFloorApplied: false,
-      );
-    }
-    final newFat = math.max<double>(
-      fatFloor,
-      math.min<double>(baseFat, fatFloor),
-    );
-    final actualDelta = newFat - baseFat;
-    final savedKcal = actualDelta.abs() * fatEnergyDensityKcalPerGram;
-    return (
-      delta: actualDelta,
-      remainingReductionKcal: math.max<double>(0, reductionKcal - savedKcal),
-      wasFloorApplied: true,
-    );
-  }
-
-  static ({double delta, bool wasFloorApplied}) _calculateCarbsReduction({
-    required double baseCarbs,
-    required double carbsReductionKcal,
-  }) {
-    final reductionGrams = carbsReductionKcal / carbEnergyDensityKcalPerGram;
-    final minCarbs = math.min<double>(baseCarbs, minimumCarbsFloorGrams);
-    final newCarbs = math.max<double>(minCarbs, baseCarbs - reductionGrams);
-    final delta = newCarbs - baseCarbs;
-    final wasFloorApplied =
-        newCarbs == minimumCarbsFloorGrams ||
-        (baseCarbs < minimumCarbsFloorGrams && delta == 0);
-    return (delta: delta, wasFloorApplied: wasFloorApplied);
   }
 
   @override
@@ -273,22 +149,4 @@ class DiaryMacroTargets {
   @override
   String toString() =>
       'DiaryMacroTargets(carbs: $carbs, protein: $protein, fat: $fat)';
-}
-
-/// Calculates the physiological Fat Floor (Schutzregel B).
-double _calculateFatFloor({
-  required double weightKg,
-  required double reductionKcal,
-  double? baseGoalKcal,
-}) {
-  final safeWeight = weightKg > 0 ? weightKg : 70;
-  final effectiveDayKcal = baseGoalKcal != null
-      ? math.max<double>(0, baseGoalKcal - reductionKcal)
-      : 0;
-  final fatFloorByWeight = safeWeight * minimumFatFloorGramsPerKg;
-  final fatFloorByCalories = effectiveDayKcal > 0
-      ? (effectiveDayKcal * minimumFatCalorieFraction) /
-            fatEnergyDensityKcalPerGram
-      : 0.toDouble();
-  return math.max<double>(fatFloorByWeight, fatFloorByCalories);
 }

@@ -12,6 +12,7 @@ import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/s
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/step_5_info.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/step_6_start_date.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/step_7_ready.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/step_training_days.dart';
 
 /// Page list for the calorie onboarding wizard.
 class CalorieOnboardingStepPages extends StatelessWidget {
@@ -98,6 +99,10 @@ class CalorieOnboardingStepPages extends StatelessWidget {
           showErrors: showErrors,
         ),
         Step4Pace(
+          state: formState,
+          notifier: formNotifier,
+        ),
+        StepTrainingDays(
           state: formState,
           notifier: formNotifier,
         ),

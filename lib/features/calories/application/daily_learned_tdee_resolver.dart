@@ -6,7 +6,10 @@ import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -246,13 +249,11 @@ abstract final class DailyLearnedTdeeResolver {
       measured: CalorieMeasuredTdeeCalculation(
         trendWeightChangePerDay: snapshot.trendWeightChangePerDay,
         averageIntakeKcal: 0,
-        measuredTotalTdeeKcal: snapshot.measuredTotalTdeeKcal,
-        measuredBaseTdeeKcal: snapshot.measuredBaseTdeeKcal,
-        averageCreditedActivityKcal: snapshot.averageCreditedActivityKcal,
+        measuredTdeeKcal: snapshot.measuredTdeeKcal,
       ),
-      calculatedBaseTdeeKcal: snapshot.calculatedBaseTdeeKcal,
+      calculatedBaseTdeeKcal: snapshot.calculatedTdeeKcal,
       newBaseGoalKcal: snapshot.baseGoalKcal,
-      averageCreditedActivityKcal: snapshot.averageCreditedActivityKcal,
+      averageCreditedActivityKcal: 0,
     );
   }
 

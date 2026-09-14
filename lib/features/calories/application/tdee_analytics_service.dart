@@ -3,6 +3,7 @@ import 'package:yamt/features/calories/application/daily_learned_tdee_resolver.d
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
@@ -18,8 +19,8 @@ abstract final class TdeeAnalyticsService {
     required DateTime today,
   }) {
     final normalizedToday = normalizeDiaryDay(today);
-    final cycleEnd = cycle.endDate != null &&
-            cycle.endDate!.isBefore(normalizedToday)
+    final cycleEnd =
+        cycle.endDate != null && cycle.endDate!.isBefore(normalizedToday)
         ? cycle.endDate!
         : normalizedToday;
 
@@ -35,8 +36,8 @@ abstract final class TdeeAnalyticsService {
     final rawWindowStart = cycleEnd.subtract(Duration(days: dayCount - 1));
     final windowStart =
         (!cycle.isAllGoals && rawWindowStart.isBefore(cycleStart))
-            ? cycleStart
-            : rawWindowStart;
+        ? cycleStart
+        : rawWindowStart;
 
     return (start: windowStart, end: cycleEnd);
   }
@@ -71,7 +72,8 @@ abstract final class TdeeAnalyticsService {
         fallbackGoalKcal: target,
       );
       final baseTdee = learnedData?.calculatedBaseTdeeKcal ?? fallbackBaseTdee;
-      final totalTdee = learnedData?.measured.measuredTotalTdeeKcal ??
+      final totalTdee =
+          learnedData?.measured.measuredTotalTdeeKcal ??
           (baseTdee + (learnedData?.averageCreditedActivityKcal ?? 0));
 
       final weight = weightsByDay[key];

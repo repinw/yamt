@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
@@ -7,22 +8,30 @@ import 'package:yamt/features/onboarding/presentation/widgets/onboarding/'
 void main() {
   group('CalorieOnboardingWizardController', () {
     test('blocks invalid personal info and shows errors', () {
-      final controller = CalorieOnboardingWizardController();
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final controller = container.read(
+        calorieOnboardingWizardControllerProvider.notifier,
+      );
       final emptyState = CalorieGoalCalculatorFormState.initial(
         null,
         useEmptyDefaults: true,
       );
 
       expect(_next(controller, emptyState), 1);
-      expect(controller.currentStep, CalorieOnboardingStep.personalInfo);
+      expect(controller.state.currentStep, CalorieOnboardingStep.personalInfo);
       expect(_next(controller, emptyState), isNull);
 
-      expect(controller.currentStep, CalorieOnboardingStep.personalInfo);
-      expect(controller.showErrors, isTrue);
+      expect(controller.state.currentStep, CalorieOnboardingStep.personalInfo);
+      expect(controller.state.showErrors, isTrue);
     });
 
     test('skips pace step for maintain goals in both directions', () {
-      final controller = CalorieOnboardingWizardController();
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final controller = container.read(
+        calorieOnboardingWizardControllerProvider.notifier,
+      );
       final maintainState = CalorieGoalCalculatorFormState.initial(
         const CalorieCalculatorProfile.defaults(),
       ).copyWith(targetWeightKgText: '70');
@@ -30,18 +39,22 @@ void main() {
       expect(_next(controller, maintainState), 1);
       expect(_next(controller, maintainState), 2);
       expect(_next(controller, maintainState), 3);
-      expect(controller.currentStep, CalorieOnboardingStep.goalWeight);
+      expect(controller.state.currentStep, CalorieOnboardingStep.goalWeight);
       expect(_next(controller, maintainState), 5);
 
-      expect(controller.currentStep, CalorieOnboardingStep.info);
+      expect(controller.state.currentStep, CalorieOnboardingStep.trainingDays);
       expect(controller.back(maintainState), 3);
-      expect(controller.currentStep, CalorieOnboardingStep.goalWeight);
+      expect(controller.state.currentStep, CalorieOnboardingStep.goalWeight);
     });
 
     test(
       'blocks start-date step until external start-date choice is valid',
       () {
-        final controller = CalorieOnboardingWizardController();
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+        final controller = container.read(
+          calorieOnboardingWizardControllerProvider.notifier,
+        );
         final maintainState = CalorieGoalCalculatorFormState.initial(
           const CalorieCalculatorProfile.defaults(),
         ).copyWith(targetWeightKgText: '70');
@@ -50,11 +63,17 @@ void main() {
         expect(_next(controller, maintainState), 2);
         expect(_next(controller, maintainState), 3);
         expect(_next(controller, maintainState), 5);
+        expect(
+          controller.state.currentStep,
+          CalorieOnboardingStep.trainingDays,
+        );
         expect(_next(controller, maintainState), 6);
+        expect(controller.state.currentStep, CalorieOnboardingStep.info);
+        expect(_next(controller, maintainState), 7);
 
-        expect(controller.currentStep, CalorieOnboardingStep.startDate);
+        expect(controller.state.currentStep, CalorieOnboardingStep.startDate);
         expect(_next(controller, maintainState), isNull);
-        expect(controller.showErrors, isTrue);
+        expect(controller.state.showErrors, isTrue);
 
         expect(
           _next(
@@ -62,25 +81,29 @@ void main() {
             maintainState,
             hasValidStartDateChoice: true,
           ),
-          7,
+          8,
         );
-        expect(controller.currentStep, CalorieOnboardingStep.ready);
-        expect(controller.showErrors, isFalse);
+        expect(controller.state.currentStep, CalorieOnboardingStep.ready);
+        expect(controller.state.showErrors, isFalse);
       },
     );
 
     test('tracks saving and route-exit flags', () {
-      final controller = CalorieOnboardingWizardController();
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final controller = container.read(
+        calorieOnboardingWizardControllerProvider.notifier,
+      );
 
       // ignore: cascade_invocations, clearer with assertion between mutations.
       controller.startSaving();
-      expect(controller.isSaving, isTrue);
+      expect(controller.state.isSaving, isTrue);
 
       controller
         ..stopSavingAfterFailure()
         ..markRouteExitAllowed();
-      expect(controller.isSaving, isFalse);
-      expect(controller.allowRouteExit, isTrue);
+      expect(controller.state.isSaving, isFalse);
+      expect(controller.state.allowRouteExit, isTrue);
     });
   });
 }

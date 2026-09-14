@@ -8,6 +8,8 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -115,8 +117,7 @@ CalorieGoalSettings _learnedTdeeSettings() {
       windowStartDate: goalStartDate.subtract(const Duration(days: 7)),
       windowEndDate: goalStartDate.subtract(const Duration(days: 1)),
       trendWeightChangePerDay: -0.08,
-      calculatedTrueTdeeKcal: 2450,
-      averageActiveKcal: 210,
+      calculatedTdeeKcal: 2450,
       lowConfidence: false,
     ),
   );

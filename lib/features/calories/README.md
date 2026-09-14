@@ -25,6 +25,10 @@ state, and calorie-owned side effects from health or weight changes.
 
 - `application/calorie_weight_state_refresh.dart` refreshes calorie state after
   health weight changes.
+- `application/daily_nutrition_target_resolver_service.dart` provides
+  `dailyNutritionTargetResolverProvider` implementing
+  `domain/daily_nutrition_target_resolver.dart` to resolve daily nutrition
+  and macro targets including calorie cycling and carryover.
 - Legacy controllers and derived providers under `provider/` are current public
   edge for existing Diary, Activity, Settings, Home, Onboarding, and Inventory
   integrations.
@@ -58,6 +62,7 @@ Main application providers:
 - `application/calorie_entry_delete_flow.dart`
 - `application/calorie_inventory_entry_save_handler.dart`
 - `application/tdee_analytics_provider.dart`
+- `application/daily_nutrition_target_resolver_service.dart`
 
 ## TDEE Learning
 

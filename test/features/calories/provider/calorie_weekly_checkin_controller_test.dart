@@ -6,7 +6,12 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
@@ -485,8 +490,7 @@ void main() {
         windowStartDate: goalStart,
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.02,
-        calculatedTrueTdeeKcal: 2500,
-        averageActiveKcal: 200,
+        calculatedTdeeKcal: 2500,
         lowConfidence: false,
       ),
     );
@@ -509,7 +513,7 @@ void main() {
         .whereType<CalorieGoalWeeklyCheckInSnapshot>()
         .toList(growable: false);
     expect(snapshots, hasLength(1));
-    expect(snapshots.single.averageActiveKcal, 300);
+    expect(snapshots.single.calculatedTdeeKcal, 2665.82);
   });
 
   test('syncLearnedTdeeCache refreshes hidden cache-only window', () async {
@@ -543,8 +547,7 @@ void main() {
               windowStartDate: goalStart,
               windowEndDate: DateTime(2026, 4, 14),
               trendWeightChangePerDay: -0.02,
-              calculatedTrueTdeeKcal: 2500,
-              averageActiveKcal: 200,
+              calculatedTdeeKcal: 2500,
               lowConfidence: false,
             ),
           ),
@@ -604,14 +607,10 @@ void main() {
               windowEndDate: cacheWeeklyCheckIn.windowEndDate,
               trendWeightChangePerDay:
                   _defaultWeeklyCheckInCalculation.trendWeightChangePerDay,
-              measuredTotalTdeeKcal:
-                  _defaultWeeklyCheckInCalculation.measuredTotalTdeeKcal,
-              measuredBaseTdeeKcal:
-                  _defaultWeeklyCheckInCalculation.measuredBaseTdeeKcal,
-              calculatedBaseTdeeKcal:
-                  _defaultWeeklyCheckInCalculation.calculatedTrueTdeeKcal,
-              averageCreditedActivityKcal:
-                  _defaultWeeklyCheckInCalculation.lastWeekAverageActiveKcal,
+              measuredTdeeKcal:
+                  _defaultWeeklyCheckInCalculation.measuredTdeeKcal,
+              calculatedTdeeKcal:
+                  _defaultWeeklyCheckInCalculation.calculatedTdeeKcal,
               baseGoalKcal: _defaultWeeklyCheckInCalculation.newGoalKcal,
               lowConfidence: false,
             ),
@@ -652,22 +651,15 @@ void main() {
         windowStartDate: goalStart,
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.02,
-        calculatedTrueTdeeKcal: 2500,
-        averageActiveKcal: 200,
+        calculatedTdeeKcal: 2500,
         lowConfidence: false,
       );
       final freshSnapshot = CalorieGoalWeeklyCheckInSnapshot(
         windowStartDate: goalStart,
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.10893,
-        measuredTotalTdeeKcal:
-            _defaultWeeklyCheckInCalculation.measuredTotalTdeeKcal,
-        measuredBaseTdeeKcal:
-            _defaultWeeklyCheckInCalculation.measuredBaseTdeeKcal,
-        calculatedBaseTdeeKcal:
-            _defaultWeeklyCheckInCalculation.calculatedTrueTdeeKcal,
-        averageCreditedActivityKcal:
-            _defaultWeeklyCheckInCalculation.lastWeekAverageActiveKcal,
+        measuredTdeeKcal: _defaultWeeklyCheckInCalculation.measuredTdeeKcal,
+        calculatedTdeeKcal: _defaultWeeklyCheckInCalculation.calculatedTdeeKcal,
         baseGoalKcal: _defaultWeeklyCheckInCalculation.newGoalKcal,
         lowConfidence: false,
       );
@@ -727,14 +719,14 @@ void main() {
       final settings = await settingsRepository.readSettings();
       expect(settings.latestLearnedTdeeKcal, 2500);
       expect(
-        settings.latestGoalEntry?.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal,
+        settings.latestGoalEntry?.weeklyCheckInSnapshot?.calculatedTdeeKcal,
         2500,
       );
       final weeklyCheckInEntry = settings.goalHistory.firstWhere(
         (entry) => entry.isWeeklyCheckIn,
       );
       expect(
-        weeklyCheckInEntry.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal,
+        weeklyCheckInEntry.weeklyCheckInSnapshot?.calculatedTdeeKcal,
         2665.82,
       );
     },

@@ -1479,6 +1479,31 @@
       }
     }
   },
+  "onboardingTrainingDaysTitle": "Training & Sport",
+  "onboardingTrainingDaysSubtitle": "Wir passen deinen Kalorienbedarf an deinen Alltag an.",
+  "onboardingTrainingDaysQuestion": "Trainierst du an festen Tagen?",
+  "onboardingTrainingDaysNoFixedPlan": "Keine festen Tage / Kein Sport",
+  "onboardingTrainingDaysNoFixedPlanSubtitle": "Jeden Tag das gleiche Kalorienziel",
+  "onboardingTrainingDaysFixedPlan": "Ja, an festen Wochentagen",
+  "onboardingTrainingDaysFixedPlanSubtitle": "Wähle deine typischen Trainingstage",
+  "onboardingTrainingDaysExtraKcalLabel": "An Trainingstagen mehr essen (+200 kcal)",
+  "onboardingTrainingDaysExtraKcalSubtitle": "Budgetneutral: Mehr Kalorien beim Sport, weniger an Ruhetagen",
+  "onboardingTrainingDaysTrainingResult": "🏋️ Training ({days} Tage)",
+  "@onboardingTrainingDaysTrainingResult": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingTrainingDaysRestResult": "🛋️ Ruhetag ({days} Tage)",
+  "@onboardingTrainingDaysRestResult": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "onboardingInfoTitle": "Dein Plan steht! 🎉",
   "onboardingInfoSubtitle": "Ein paar Dinge, die du wissen solltest.",
   "onboardingInfoPoint1Title": "Kassenzettel scannen",

@@ -2,6 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_window_resolver.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 void main() {
   test('resolves check-in window dates across month boundary', () {
@@ -64,7 +68,7 @@ void main() {
         windowStartDate: start,
         windowEndDate: DateTime(2026, 3, 5),
         trendWeightChangePerDay: 0,
-        calculatedBaseTdeeKcal: 2050,
+        calculatedTdeeKcal: 2050,
         baseGoalKcal: 2050,
         lowConfidence: false,
         inputHash: 'v2:abc',
@@ -91,7 +95,7 @@ void main() {
         windowStartDate: start,
         windowEndDate: DateTime(2026, 3, 5),
         trendWeightChangePerDay: 0,
-        calculatedBaseTdeeKcal: 2050,
+        calculatedTdeeKcal: 2050,
         baseGoalKcal: 2050,
         lowConfidence: false,
         isRejected: true,
@@ -119,7 +123,7 @@ void main() {
             windowStartDate: start,
             windowEndDate: DateTime(2026, 3, 5),
             trendWeightChangePerDay: 0,
-            calculatedBaseTdeeKcal: 2050,
+            calculatedTdeeKcal: 2050,
             baseGoalKcal: 2050,
             lowConfidence: false,
           ),
@@ -153,7 +157,7 @@ void main() {
         windowStartDate: start,
         windowEndDate: DateTime(2026, 3, 5),
         trendWeightChangePerDay: 0,
-        calculatedBaseTdeeKcal: 2050,
+        calculatedTdeeKcal: 2050,
         baseGoalKcal: 2050,
         lowConfidence: false,
         invalidatedAt: today,

@@ -47,14 +47,11 @@ class CalorieOnboardingWizard extends ConsumerStatefulWidget {
 class _CalorieOnboardingWizardState
     extends ConsumerState<CalorieOnboardingWizard> {
   final PageController _pageController = PageController();
-  late final CalorieOnboardingWizardController _wizardController;
   late final CalorieOnboardingStartDateController _startDateController;
 
   @override
   void initState() {
     super.initState();
-    _wizardController = CalorieOnboardingWizardController()
-      ..addListener(_handleWizardStateChanged);
     _startDateController = CalorieOnboardingStartDateController(now: _now())
       ..addListener(_handleWizardStateChanged);
   }
@@ -80,10 +77,12 @@ class _CalorieOnboardingWizardState
       useEmptyDefaults: true,
     );
     final formState = ref.read(formProvider);
-    final targetStep = _wizardController.next(
-      formState,
-      hasValidStartDateChoice: _startDateController.hasValidChoice,
-    );
+    final targetStep = ref
+        .read(calorieOnboardingWizardControllerProvider.notifier)
+        .next(
+          formState,
+          hasValidStartDateChoice: _startDateController.hasValidChoice,
+        );
     if (targetStep == null) {
       return;
     }
@@ -105,7 +104,9 @@ class _CalorieOnboardingWizardState
   ) {
     return CalorieOnboardingFinishHandler(
       finishFlow: finishFlow,
-      wizardController: _wizardController,
+      wizardController: ref.read(
+        calorieOnboardingWizardControllerProvider.notifier,
+      ),
       startDateController: _startDateController,
       now: _now,
     ).finish(
@@ -132,7 +133,7 @@ class _CalorieOnboardingWizardState
       return;
     }
     _startDateController.updateFutureGoalStartDate(pickedDate);
-    _wizardController.clearErrors();
+    ref.read(calorieOnboardingWizardControllerProvider.notifier).clearErrors();
   }
 
   Future<void> _handleBack() async {
@@ -142,7 +143,9 @@ class _CalorieOnboardingWizardState
       useEmptyDefaults: true,
     );
     final formState = ref.read(formProvider);
-    final targetStep = _wizardController.back(formState);
+    final targetStep = ref
+        .read(calorieOnboardingWizardControllerProvider.notifier)
+        .back(formState);
     if (targetStep == null) {
       return;
     }
@@ -155,12 +158,12 @@ class _CalorieOnboardingWizardState
 
   void _handleStartNowChanged(bool value) {
     _startDateController.updateStartNow(startNow: value);
-    _wizardController.clearErrors();
+    ref.read(calorieOnboardingWizardControllerProvider.notifier).clearErrors();
   }
 
   void _handleTodayTrackingChanged(CalorieGoalOnboardingTodayTracking value) {
     _startDateController.updateTodayTracking(value);
-    _wizardController.clearErrors();
+    ref.read(calorieOnboardingWizardControllerProvider.notifier).clearErrors();
   }
 
   void _handleCatchUpEstimateChanged(
@@ -171,9 +174,6 @@ class _CalorieOnboardingWizardState
 
   @override
   void dispose() {
-    _wizardController
-      ..removeListener(_handleWizardStateChanged)
-      ..dispose();
     _startDateController
       ..removeListener(_handleWizardStateChanged)
       ..dispose();
@@ -190,14 +190,15 @@ class _CalorieOnboardingWizardState
     final formState = ref.watch(formProvider);
     final formNotifier = ref.read(formProvider.notifier);
     final finishFlow = ref.watch(calorieGoalOnboardingFinishFlowProvider);
+    final wizardState = ref.watch(calorieOnboardingWizardControllerProvider);
     final l10n = AppLocalizations.of(context)!;
     final nextLabel =
-        _wizardController.currentStep == CalorieOnboardingStep.info
+        wizardState.currentStep == CalorieOnboardingStep.info
         ? l10n.onboardingNextActionStep5
         : l10n.onboardingNextAction;
 
     return PopScope(
-      canPop: _wizardController.allowRouteExit,
+      canPop: wizardState.allowRouteExit,
       child: Scaffold(
         backgroundColor: Theme.of(context).canvasColor,
         body: GestureDetector(
@@ -211,9 +212,9 @@ class _CalorieOnboardingWizardState
                     pageController: _pageController,
                     formState: formState,
                     formNotifier: formNotifier,
-                    showErrors: _wizardController.showErrors,
+                    showErrors: wizardState.showErrors,
                     startDateController: _startDateController,
-                    isSaving: _wizardController.isSaving || formState.isSaving,
+                    isSaving: wizardState.isSaving || formState.isSaving,
                     onNext: _handleNext,
                     onLogin: _handleLogin,
                     onStartNowChanged: _handleStartNowChanged,
@@ -223,9 +224,9 @@ class _CalorieOnboardingWizardState
                     onFinish: () => _handleFinish(formState, finishFlow),
                   ),
                 ),
-                if (_wizardController.showsStepChrome)
+                if (wizardState.showsStepChrome)
                   CalorieOnboardingWizardChrome(
-                    progress: _wizardController.progress,
+                    progress: wizardState.progress,
                     nextLabel: nextLabel,
                     onBack: _handleBack,
                     onNext: _handleNext,

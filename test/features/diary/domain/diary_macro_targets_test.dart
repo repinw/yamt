@@ -129,16 +129,16 @@ void main() {
     );
 
     test(
-      'Carbs floor: carbs never drop below 50g'
+      'Carbs floor: carbs never drop below 100g'
       ' (Ketose- & Unterzuckerungsschutz)',
       () {
-        // Base carbs = 70g.
-        // Reduction would be ~36.6g -> 33.4g < 50g!
-        // Clamped to 50g!
+        // Base carbs = 120g.
+        // Reduction would be ~36.6g -> 83.4g < 100g!
+        // Clamped to 100g!
         const lowCarbBase = DiaryMacroTargets(
           protein: 160,
           fat: 80,
-          carbs: 70,
+          carbs: 120,
         );
 
         final result = lowCarbBase.applyCarryover(
@@ -149,7 +149,7 @@ void main() {
 
         expect(result.protein, 160);
         expect(result.fat, closeTo(80 - (50.0 / 9.3), 0.001));
-        expect(result.carbs, 50);
+        expect(result.carbs, 100);
 
         final delta = DiaryMacroTargets.calculateCarryoverDelta(
           baseTargets: lowCarbBase,

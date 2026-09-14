@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
@@ -22,7 +23,6 @@ import 'package:yamt/features/health/presentation/controllers/'
     'manual_health_weight_entries_controller.dart';
 
 part 'daily_learned_tdee_provider.g.dart';
-
 
 /// Resolve optional learned TDEE overrides for multiple days.
 @riverpod

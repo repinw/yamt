@@ -24,6 +24,11 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
@@ -38,6 +43,7 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
     show
         DiaryWeeklyCheckInActions,
         DiaryWeeklyCheckInData,
+        PendingCalorieGoalWeeklyCheckIn,
         diaryCalorieGoalSettingsProvider,
         diaryWeeklyCheckInActionsProvider,
         diaryWeeklyCheckInDataProvider;
@@ -782,8 +788,7 @@ void main() {
       windowStartDate: today.subtract(const Duration(days: 7)),
       windowEndDate: today.subtract(const Duration(days: 1)),
       trendWeightChangePerDay: -0.05,
-      calculatedTrueTdeeKcal: 2200,
-      averageActiveKcal: 250,
+      calculatedTdeeKcal: 2200,
       lowConfidence: false,
     );
 
@@ -1642,8 +1647,7 @@ CalorieGoalSettings _learnedTdeeGoalSettings(DateTime effectiveDate) {
       windowStartDate: effectiveDate.subtract(const Duration(days: 8)),
       windowEndDate: effectiveDate.subtract(const Duration(days: 2)),
       trendWeightChangePerDay: -0.05,
-      calculatedTrueTdeeKcal: 2100,
-      averageActiveKcal: 120,
+      calculatedTdeeKcal: 2100,
       lowConfidence: false,
     ),
   );

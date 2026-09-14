@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 
 void main() {
   test('empty settings have no goal', () {
@@ -55,7 +59,7 @@ void main() {
     expect(decoded.calorieMathVersion, currentCalorieMathVersion);
   });
 
-  test('legacy weekly snapshot json preserves learned tdee fallback', () {
+  test('weekly snapshot json round trip preserves learned tdee values', () {
     final decoded = CalorieGoalSettings.fromJson({
       'daily_kcal_goal': 2100,
       'updated_at': '2026-03-01T08:00:00.000',
@@ -69,9 +73,9 @@ void main() {
             'window_start_date': '2026-02-16T00:00:00.000',
             'window_end_date': '2026-02-22T00:00:00.000',
             'trend_weight_change_per_day': -0.1,
-            'calculated_true_tdee_kcal': 2450,
-            'average_active_kcal': 350,
-            'new_goal_kcal': 2100,
+            'measured_tdee_kcal': 2450,
+            'calculated_tdee_kcal': 2450,
+            'base_goal_kcal': 2100,
             'low_confidence': false,
           },
         },
@@ -81,10 +85,8 @@ void main() {
     final snapshot = decoded.goalHistory.single.weeklyCheckInSnapshot;
 
     expect(snapshot, isNotNull);
-    expect(snapshot?.measuredTotalTdeeKcal, 2450);
-    expect(snapshot?.measuredBaseTdeeKcal, 2450);
-    expect(snapshot?.calculatedBaseTdeeKcal, 2450);
-    expect(snapshot?.averageCreditedActivityKcal, 350);
+    expect(snapshot?.measuredTdeeKcal, 2450);
+    expect(snapshot?.calculatedTdeeKcal, 2450);
     expect(snapshot?.baseGoalKcal, 2100);
   });
 
@@ -238,4 +240,85 @@ void main() {
       DateTime(2026, 2, 24),
     );
   });
+
+  test(
+    'spontaneous training day adds offset when training weekdays is empty',
+    () {
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 2, 24, 6),
+            dailyKcalGoal: 2000,
+            calculatorProfile: null,
+          )
+          .copyWith(
+            trainingWeekdays: const <int>[],
+            trainingDayKcalOffset: 250,
+          );
+
+      final day = DateTime(2026, 2, 24); // Tuesday
+      expect(settings.goalKcalForDay(day), 2000);
+
+      final toggled = settings.toggleTrainingDay(day);
+      expect(toggled.isTrainingDay(day), isTrue);
+      expect(toggled.goalKcalForDay(day), 2250);
+    },
+  );
+
+  test(
+    'spontaneous training day falls back to default 200 kcal offset '
+    'if offset is zero',
+    () {
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 2, 24, 6),
+            dailyKcalGoal: 2000,
+            calculatorProfile: null,
+          )
+          .copyWith(
+            trainingWeekdays: const <int>[],
+            trainingDayKcalOffset: 0,
+          );
+
+      final day = DateTime(2026, 2, 24);
+      expect(settings.goalKcalForDay(day), 2000);
+
+      final toggled = settings.toggleTrainingDay(day);
+      expect(toggled.isTrainingDay(day), isTrue);
+      expect(toggled.goalKcalForDay(day), 2200);
+    },
+  );
+
+  test(
+    'training day cycling distributes offset across rest days when '
+    'weekdays configured',
+    () {
+      // 3 training days: Mo (1), We (3), Fr (5). 4 rest days.
+      // Base: 2000, Offset: 200.
+      // Training day: 2000 + 200 = 2200.
+      // Rest day: 2000 - (3 * 200 / 4) = 2000 - 150 = 1850.
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 2, 23, 6), // Monday
+            dailyKcalGoal: 2000,
+            calculatorProfile: null,
+          )
+          .copyWith(
+            trainingWeekdays: const <int>[
+              DateTime.monday,
+              DateTime.wednesday,
+              DateTime.friday,
+            ],
+            trainingDayKcalOffset: 200,
+          );
+
+      final monday = DateTime(2026, 2, 23); // Monday
+      final tuesday = DateTime(2026, 2, 24); // Tuesday
+
+      expect(settings.isTrainingDay(monday), isTrue);
+      expect(settings.goalKcalForDay(monday), 2200);
+
+      expect(settings.isTrainingDay(tuesday), isFalse);
+      expect(settings.goalKcalForDay(tuesday), 1850);
+    },
+  );
 }

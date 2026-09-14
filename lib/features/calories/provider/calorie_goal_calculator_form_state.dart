@@ -31,7 +31,7 @@ class CalorieGoalCalculatorFormState {
     required this.goalSpeedError,
     required this.calculation,
     required this.isSaving,
-    this.trainingWeekdays = const <int>[1, 3, 5],
+    this.trainingWeekdays = const <int>[],
     this.trainingDayKcalOffset = 0.0,
     this.sex,
   });
@@ -76,7 +76,7 @@ class CalorieGoalCalculatorFormState {
     required CalorieGoalMode goalMode,
     required String goalSpeedKgPerWeekText,
     required String lastNonMaintainGoalSpeedText,
-    List<int> trainingWeekdays = const <int>[1, 3, 5],
+    List<int> trainingWeekdays = const <int>[],
     double trainingDayKcalOffset = 0.0,
     CalorieCalculatorSex? sex,
     bool isSaving = false,

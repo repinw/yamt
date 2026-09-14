@@ -1,11 +1,10 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/macro_goal_settings_controller.dart';
@@ -165,15 +164,20 @@ class _SettingsMacroGoalsSheetState
     final weightKg = _resolveWeightKg(isMale);
     final goalKcal = _resolveGoalKcal();
 
-    final proteinGrams = (weightKg * _proteinMultiplier).round();
-    final fatGrams = (weightKg * _fatMultiplier).round();
+    final targets = MacroBudgetCalculator.calculate(
+      goalKcal: goalKcal,
+      weightKg: weightKg,
+      proteinGramsPerKg: _proteinMultiplier,
+      fatGramsPerKg: _fatMultiplier,
+    );
+    final proteinGrams = targets.protein.round();
+    final fatGrams = targets.fat.round();
+    final carbsGrams = targets.carbs.round();
     final proteinKcal = proteinGrams * 4;
     final fatKcal = fatGrams * 9;
-    final isBudgetExceeded = (proteinKcal + fatKcal) > goalKcal;
-    final remainingKcal = math.max(0, goalKcal - (proteinKcal + fatKcal));
-    final carbsGrams = (remainingKcal / 4).round();
     final carbsKcal = carbsGrams * 4;
     final totalEffectiveKcal = proteinKcal + fatKcal + carbsKcal;
+    final isBudgetExceeded = (proteinKcal + fatKcal) > goalKcal;
 
     final proteinPct = totalEffectiveKcal > 0
         ? (proteinKcal / totalEffectiveKcal * 100).round()

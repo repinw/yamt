@@ -11,6 +11,8 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
@@ -95,8 +97,7 @@ CalorieGoalSettings _learnedTdeeSettings({
       windowStartDate: resolvedGoalStartDate.subtract(const Duration(days: 7)),
       windowEndDate: resolvedGoalStartDate.subtract(const Duration(days: 1)),
       trendWeightChangePerDay: -0.08,
-      calculatedTrueTdeeKcal: 2450,
-      averageActiveKcal: 210,
+      calculatedTdeeKcal: 2450,
       lowConfidence: false,
     ),
   );
@@ -230,8 +231,7 @@ void main() {
         windowStartDate: DateTime(2026, 4, 8),
         windowEndDate: DateTime(2026, 4, 14),
         trendWeightChangePerDay: -0.08,
-        calculatedTrueTdeeKcal: 2450,
-        averageActiveKcal: 210,
+        calculatedTdeeKcal: 2450,
         lowConfidence: false,
       ),
     );
@@ -261,8 +261,7 @@ void main() {
       windowStartDate: goalStartDate.subtract(const Duration(days: 7)),
       windowEndDate: goalStartDate.subtract(const Duration(days: 1)),
       trendWeightChangePerDay: -0.08,
-      calculatedTrueTdeeKcal: 2450,
-      averageActiveKcal: 210,
+      calculatedTdeeKcal: 2450,
       lowConfidence: false,
     );
     const profile = CalorieCalculatorProfile(
@@ -277,7 +276,6 @@ void main() {
     final initialSettings = CalorieGoalSettings.single(
       dailyKcalGoal: 2450,
       calculatorProfile: profile,
-      expectedActivityKcal: learnedSnapshot.averageActiveKcal,
       effectiveDate: goalStartDate,
       countingStartDate: goalStartDate,
       source: CalorieGoalSource.calculator,

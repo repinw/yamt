@@ -4,6 +4,9 @@ import 'package:yamt/features/calories/application/'
     'calorie_weight_state_refresh.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -73,8 +76,7 @@ CalorieGoalSettings _settingsWithTrustedSnapshot() {
       windowStartDate: DateTime(2026, 3),
       windowEndDate: DateTime(2026, 3, 7),
       trendWeightChangePerDay: 0,
-      calculatedTrueTdeeKcal: 2300,
-      averageActiveKcal: 0,
+      calculatedTdeeKcal: 2300,
       lowConfidence: false,
       inputHash: 'v1:trusted',
     ),

@@ -1,8 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
@@ -353,20 +355,12 @@ bool _hasMatchingWeeklyCheckInSnapshot({
           weeklyCheckInSnapshot.trendWeightChangePerDay,
         ) &&
         _sameDouble(
-          snapshot.measuredTotalTdeeKcal,
-          weeklyCheckInSnapshot.measuredTotalTdeeKcal,
+          snapshot.measuredTdeeKcal,
+          weeklyCheckInSnapshot.measuredTdeeKcal,
         ) &&
         _sameDouble(
-          snapshot.measuredBaseTdeeKcal,
-          weeklyCheckInSnapshot.measuredBaseTdeeKcal,
-        ) &&
-        _sameDouble(
-          snapshot.calculatedBaseTdeeKcal,
-          weeklyCheckInSnapshot.calculatedBaseTdeeKcal,
-        ) &&
-        _sameDouble(
-          snapshot.averageCreditedActivityKcal,
-          weeklyCheckInSnapshot.averageCreditedActivityKcal,
+          snapshot.calculatedTdeeKcal,
+          weeklyCheckInSnapshot.calculatedTdeeKcal,
         ) &&
         _sameDouble(
           snapshot.baseGoalKcal,
@@ -406,10 +400,8 @@ CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
     windowStartDate: weeklyCheckIn.windowStartDate,
     windowEndDate: weeklyCheckIn.windowEndDate,
     trendWeightChangePerDay: calculation.trendWeightChangePerDay,
-    measuredTotalTdeeKcal: calculation.measuredTotalTdeeKcal,
-    measuredBaseTdeeKcal: calculation.measuredBaseTdeeKcal,
-    calculatedBaseTdeeKcal: calculation.calculatedBaseTdeeKcal,
-    averageCreditedActivityKcal: calculation.averageCreditedActivityKcal,
+    measuredTdeeKcal: calculation.measuredTdeeKcal,
+    calculatedTdeeKcal: calculation.calculatedTdeeKcal,
     baseGoalKcal: calculation.newBaseGoalKcal,
     lowConfidence: lowConfidence,
     inputHash: inputHash,

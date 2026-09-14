@@ -10,6 +10,10 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/daily_learned_tdee_provider.dart';
@@ -123,8 +127,7 @@ CalorieGoalSettings _learnedSettings({
       windowStartDate: startDay,
       windowEndDate: windowEndDate,
       trendWeightChangePerDay: 0,
-      calculatedTrueTdeeKcal: learnedTdeeKcal,
-      averageActiveKcal: 0,
+      calculatedTdeeKcal: learnedTdeeKcal,
       lowConfidence: false,
     ),
   );
@@ -663,10 +666,8 @@ void main() {
               windowStartDate: startDay,
               windowEndDate: windowEndDate,
               trendWeightChangePerDay: 0.26316,
-              measuredTotalTdeeKcal: 601.73,
-              measuredBaseTdeeKcal: 147.55,
-              calculatedBaseTdeeKcal: 1395.59,
-              averageCreditedActivityKcal: 454.18,
+              measuredTdeeKcal: 601.73,
+              calculatedTdeeKcal: 1395.59,
               baseGoalKcal: 1283.81,
               lowConfidence: false,
               inputHash: 'trusted-window',
@@ -690,7 +691,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.calculatedBaseTdeeKcal, closeTo(1395.59, 0.01));
       expect(result.newGoalKcal, closeTo(1283.81, 0.01));
-      expect(result.averageCreditedActivityKcal, closeTo(454.18, 0.01));
+      expect(result.averageCreditedActivityKcal, closeTo(0, 0.01));
       expect(result.measured.measuredTotalTdeeKcal, closeTo(601.73, 0.01));
     },
   );
@@ -772,8 +773,7 @@ void main() {
               windowStartDate: startDay,
               windowEndDate: DateTime(2026, 4, 14),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2580,
-              averageActiveKcal: 0,
+              calculatedTdeeKcal: 2580,
               lowConfidence: false,
             ),
           )
@@ -786,8 +786,7 @@ void main() {
               windowStartDate: weekTwoStart,
               windowEndDate: DateTime(2026, 4, 21),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2650,
-              averageActiveKcal: 0,
+              calculatedTdeeKcal: 2650,
               lowConfidence: false,
             ),
           );
@@ -831,8 +830,7 @@ void main() {
               windowStartDate: startDay,
               windowEndDate: DateTime(2026, 4, 14),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2580,
-              averageActiveKcal: 0,
+              calculatedTdeeKcal: 2580,
               lowConfidence: false,
               invalidatedAt: DateTime(2026, 4, 20),
             ),
@@ -846,8 +844,7 @@ void main() {
               windowStartDate: weekTwoStart,
               windowEndDate: DateTime(2026, 4, 21),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2650,
-              averageActiveKcal: 0,
+              calculatedTdeeKcal: 2650,
               lowConfidence: false,
             ),
           );
@@ -893,8 +890,7 @@ void main() {
         windowStartDate: DateTime(2026, 4),
         windowEndDate: DateTime(2026, 4, 7),
         trendWeightChangePerDay: 0,
-        calculatedTrueTdeeKcal: 2700,
-        averageActiveKcal: 0,
+        calculatedTdeeKcal: 2700,
         lowConfidence: false,
       ),
     );

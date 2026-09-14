@@ -7,9 +7,9 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_models
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
@@ -281,9 +281,7 @@ Map<String, Object?> _weeklyCheckInDataDebugJson(
       checkInData.cacheWeeklyCheckIn,
     ),
     'calculation': _calculationDebugJson(checkInData.calculation),
-    'days': checkInData.days
-        .map(_windowDayDebugJson)
-        .toList(growable: false),
+    'days': checkInData.days.map(_windowDayDebugJson).toList(growable: false),
   };
 }
 

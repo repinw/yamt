@@ -99,6 +99,9 @@ Contains the page, wizard, and step widgets:
 - `steps/step_3_goal_weight.dart`: Current and target weight.
 - `steps/step_4_pace.dart`: Weekly goal pace plus warnings for aggressive
   gain/loss rates.
+- `steps/step_training_days.dart`: Training day schedule and calorie cycling
+  offset (modularized with `step_training_days_cycling_preview.dart` and
+  `step_training_days_weekday_selector.dart`).
 - `steps/step_5_info.dart`: Explains the learning week and tracking tools.
 - `steps/step_6_start_date.dart`: Start today/future date, exact/estimated
   today tracking, and catch-up estimate choices.

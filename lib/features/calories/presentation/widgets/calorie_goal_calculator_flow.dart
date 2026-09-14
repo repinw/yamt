@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_activity_level_selector.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -445,10 +446,12 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
                 baseGoalKcal: state.calculation!.finalGoalKcal,
                 trainingWeekdays: state.trainingWeekdays,
                 trainingDayKcalOffset: state.trainingDayKcalOffset,
-                onTrainingWeekdaysChanged:
-                    ref.read(formProvider.notifier).updateTrainingWeekdays,
-                onOffsetChanged:
-                    ref.read(formProvider.notifier).updateTrainingDayKcalOffset,
+                onTrainingWeekdaysChanged: ref
+                    .read(formProvider.notifier)
+                    .updateTrainingWeekdays,
+                onOffsetChanged: ref
+                    .read(formProvider.notifier)
+                    .updateTrainingDayKcalOffset,
               ),
             ],
             if (state.calculation?.wasClampedToMinimum ?? false) ...[

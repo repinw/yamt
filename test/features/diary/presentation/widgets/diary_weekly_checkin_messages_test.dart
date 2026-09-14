@@ -1,9 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show DiaryWeeklyCheckInData;
+    show DiaryWeeklyCheckInData, PendingCalorieGoalWeeklyCheckIn;
 import 'package:yamt/features/diary/presentation/diary_weekly_checkin_messages.dart';
 import 'package:yamt/l10n/app_localizations_en.dart';
 

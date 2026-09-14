@@ -1,10 +1,14 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart'
     as checkin_models;
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart'
+    as goal_settings;
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart'
     as goal_settings;
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart'
     as checkin_domain;
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart'
+    as goal_settings;
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart'
     as goal_controller;
 import 'package:yamt/features/calories/provider/calorie_page_action_controller.dart'

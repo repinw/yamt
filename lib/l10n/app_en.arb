@@ -1486,6 +1486,31 @@
       }
     }
   },
+  "onboardingTrainingDaysTitle": "Workouts & Sports",
+  "onboardingTrainingDaysSubtitle": "We adapt your daily calorie target to your routine.",
+  "onboardingTrainingDaysQuestion": "Do you work out on set days?",
+  "onboardingTrainingDaysNoFixedPlan": "No set days / No regular workouts",
+  "onboardingTrainingDaysNoFixedPlanSubtitle": "Same calorie target every day",
+  "onboardingTrainingDaysFixedPlan": "Yes, on fixed weekdays",
+  "onboardingTrainingDaysFixedPlanSubtitle": "Select your typical workout days",
+  "onboardingTrainingDaysExtraKcalLabel": "Eat more on workout days (+200 kcal)",
+  "onboardingTrainingDaysExtraKcalSubtitle": "Budget-neutral: More calories on workout days, fewer on rest days",
+  "onboardingTrainingDaysTrainingResult": "🏋️ Training ({days} days)",
+  "@onboardingTrainingDaysTrainingResult": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingTrainingDaysRestResult": "🛋️ Rest day ({days} days)",
+  "@onboardingTrainingDaysRestResult": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "onboardingInfoTitle": "Your Plan is Ready! 🎉",
   "onboardingInfoSubtitle": "A few things you should know.",
   "onboardingInfoPoint1Title": "Scan Receipts",

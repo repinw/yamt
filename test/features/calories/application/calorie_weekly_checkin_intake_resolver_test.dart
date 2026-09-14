@@ -5,6 +5,8 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 void main() {
@@ -111,25 +113,28 @@ void main() {
   test(
     'learning intake interpolates pause days with average logged intake',
     () {
-    final start = DateTime(2026, 4, 2);
-    final pauseDay = nextDiaryDay(start);
-    final thirdDay = nextDiaryDay(pauseDay);
+      final start = DateTime(2026, 4, 2);
+      final pauseDay = nextDiaryDay(start);
+      final thirdDay = nextDiaryDay(pauseDay);
 
-    final settings = _settings(start).setPauseDay(day: pauseDay, isPause: true);
-    final data = resolveWeeklyLearningIntakeData(
-      days: [start, pauseDay, thirdDay],
-      calorieEntriesByDay: {
-        diaryDayKey(start): [_entry('a', start, 1000)],
-        diaryDayKey(pauseDay): [_entry('b', pauseDay, 8000)],
-        diaryDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
-      },
-      settings: settings,
-    );
+      final settings = _settings(
+        start,
+      ).setPauseDay(day: pauseDay, isPause: true);
+      final data = resolveWeeklyLearningIntakeData(
+        days: [start, pauseDay, thirdDay],
+        calorieEntriesByDay: {
+          diaryDayKey(start): [_entry('a', start, 1000)],
+          diaryDayKey(pauseDay): [_entry('b', pauseDay, 8000)],
+          diaryDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
+        },
+        settings: settings,
+      );
 
-    expect(data.blockedReason, isNull);
-    expect(data.intakeKcalByDay, [1000, 1500, 2000]);
-    expect(data.missingIntakeDays, [pauseDay]);
-  });
+      expect(data.blockedReason, isNull);
+      expect(data.intakeKcalByDay, [1000, 1500, 2000]);
+      expect(data.missingIntakeDays, [pauseDay]);
+    },
+  );
 }
 
 CalorieGoalSettings _settings(DateTime effectiveDate) {

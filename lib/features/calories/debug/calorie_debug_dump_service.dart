@@ -6,7 +6,10 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
 import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
@@ -219,8 +222,6 @@ bool _isDebugGoalWindowDay({
   }
   return settings.countingGoalEntryForDay(day)?.hasGoal == true;
 }
-
-
 
 CalorieDebugDumpRow _summaryRow({
   required DateTime startInclusive,
@@ -631,7 +632,7 @@ CalorieDebugWeekTdeeData _weekTdeeData({
         '${diaryDayKey(learnedSnapshot.windowStartDate)}'
         '..${diaryDayKey(learnedSnapshot.windowEndDate)}';
     final measuredTotalTdee = _formatNumber(
-      learnedSnapshot.measuredTotalTdeeKcal,
+      learnedSnapshot.measuredTdeeKcal,
     );
     final newTarget = _formatNumber(learnedSnapshot.baseGoalKcal);
     final trendPerDay = learnedSnapshot.trendWeightChangePerDay.toStringAsFixed(
@@ -639,7 +640,7 @@ CalorieDebugWeekTdeeData _weekTdeeData({
     );
     return CalorieDebugWeekTdeeData(
       source: 'learned_tdee',
-      tdeeKcal: learnedSnapshot.calculatedBaseTdeeKcal,
+      tdeeKcal: learnedSnapshot.calculatedTdeeKcal,
       used: [
         'snapshot_window=$snapshotWindow',
         'measured_total_tdee=$measuredTotalTdee',

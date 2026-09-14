@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/application/tdee_analytics_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
@@ -116,11 +117,11 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
 
     final healthSamples =
         healthStatus.accessState == HealthDataAccessState.ready
-            ? await healthWeightService.loadWeightSamples(
-                startInclusive: window.start,
-                endExclusive: nextDiaryDay(window.end),
-              )
-            : const <HealthWeightSample>[];
+        ? await healthWeightService.loadWeightSamples(
+            startInclusive: window.start,
+            endExclusive: nextDiaryDay(window.end),
+          )
+        : const <HealthWeightSample>[];
     if (!ref.mounted) {
       throw StateError('TdeeAnalytics provider was disposed.');
     }
