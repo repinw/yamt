@@ -13,6 +13,22 @@ lists, and dependency notes belong in that feature's `README.md`.
 The project uses feature-first architecture with pragmatic Clean Architecture
 layers and Riverpod-managed MVVM.
 
+### Mandatory MVVM Design
+
+New features and new UI flows are designed according to MVVM:
+
+- **View:** Flutter pages and widgets render state and forward user
+  interactions. They contain no business rules and no direct data persistence.
+- **ViewModel:** Riverpod controllers hold UI state, coordinate user actions,
+  and expose a testable state to the view. In code, we use the name
+  `Controller`, not `ViewModel`.
+- **Model:** Domain models and pure business rules represent domain data and
+  calculations independently of Flutter and Riverpod.
+
+Dependencies strictly flow from View to Controller, and from Controller to
+Logic, Domain, and Data layers. New views must not call repositories, services,
+or persistence directly.
+
 - State management and dependency injection use Riverpod code generation
   exclusively (`riverpod_annotation`).
 - Always use the `@riverpod` annotation for providers and controllers.
@@ -59,7 +75,7 @@ Use the README for:
 
 - what the feature owns
 - what the feature explicitly does not own
-- public widgets/pages/controllers other features may use
+- public widgets/pages other features may use
 - important providers and where they live
 - accepted cross-feature dependencies
 - tests that cover the feature
@@ -188,3 +204,15 @@ Tests live with the code owner:
   instead of keeping compatibility re-exports.
 - Never change correct working code only to satisfy outdated tests. Update tests
   to match intended behavior instead.
+
+## Theme & Styling Guidelines
+
+All styling, colors, and typography must be centralized in `lib/core/theme/` to support consistent branding, scalability, and light/dark modes.
+
+- **Strictly No Hardcoded Colors or TextStyles in Widgets**: 
+  - Never use inline color definitions (e.g., `Color(0xFF...)`, `Colors.blue`) or inline `TextStyle()` configurations inside feature widgets.
+  - Colors must always be resolved via `Theme.of(context).colorScheme.<token>` (e.g., `primary`, `surface`, `onSurface`).
+  - Text typography must always use `Theme.of(context).textTheme.<style>` (e.g., `bodyMedium`, `titleLarge`).
+- **Design Tokens**: Spacing, paddings, and border radii must use shared constants or layout tokens defined in `lib/core/theme/` (e.g., `AppSpacing.md`).
+- **Domain-Specific Theme Extensions**: When features require custom semantic colors not covered by `ColorScheme` (e.g., macro-nutrient badges, status indicators), define a custom `ThemeExtension` inside `lib/core/theme/extensions/`.
+- **Theme State Management**: The active theme mode (light, dark, system) is managed by a dedicated Riverpod controller in `lib/core/theme/logic/theme_controller.dart`. UI widgets only observe the mode via `Theme.of(context)`.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -17,6 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 export 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
 
+@Dependencies([productSearchHubCompletionHandler])
 /// Completes a product search hub editor result for the active route mode.
 Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   required BuildContext context,
@@ -49,6 +51,7 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   );
 }
 
+@Dependencies([productSearchHubCompletionHandler])
 /// Removes a saved hub selection from caller persistence.
 Future<bool> removeProductSearchHubSelection({
   required ProductSearchHubSavedSelection selection,
