@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -197,6 +198,7 @@ Future<void> _cancelLoggedAtDateChange(
   await tester.pumpAndSettle();
 }
 
+@Dependencies([productSearchGateway])
 GoRouter _buildAiPageRouter({
   required ManualProductSearchRouteArgs args,
   required ValueChanged<ManualProductAiSearchResult?> onResult,
@@ -235,6 +237,7 @@ GoRouter _buildAiPageRouter({
 
 @Dependencies([
   inventoryManualAddQuickEatConfig,
+  productSearchGateway,
 ])
 void main() {
   testWidgets('ai page shows error when generation fails', (tester) async {

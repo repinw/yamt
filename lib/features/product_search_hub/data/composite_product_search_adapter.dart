@@ -2,6 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/features/inventory/application/'
+    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
@@ -9,6 +11,7 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/data/off_product_search_result_quality.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
@@ -18,7 +21,11 @@ part 'composite_product_search_adapter.g.dart';
 const _productSearchHubSearchLogName = 'ProductSearchHubSearchPage';
 
 /// Provides the composite search adapter as a [ProductSearchGateway].
-@riverpod
+@Riverpod(
+  dependencies: [
+    manualProductRecentItemsService,
+  ],
+)
 ProductSearchGateway productSearchGateway(Ref ref) {
   return CompositeProductSearchAdapter(
     offRepository: ref.watch(offProductSearchRepositoryProvider),
@@ -26,6 +33,7 @@ ProductSearchGateway productSearchGateway(Ref ref) {
     barcodeCandidateRepository: ref.watch(
       globalBarcodeCandidateRepositoryProvider,
     ),
+    recentItemsService: ref.watch(manualProductRecentItemsServiceProvider),
   );
 }
 
@@ -36,13 +44,16 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
     required OffProductSearchRepository offRepository,
     GlobalFoodItemRepository? globalFoodItemRepository,
     GlobalBarcodeCandidateRepository? barcodeCandidateRepository,
+    ManualProductRecentItemsService? recentItemsService,
   }) : _offRepository = offRepository,
        _globalFoodItemRepository = globalFoodItemRepository,
-       _barcodeCandidateRepository = barcodeCandidateRepository;
+       _barcodeCandidateRepository = barcodeCandidateRepository,
+       _recentItemsService = recentItemsService;
 
   final OffProductSearchRepository _offRepository;
   final GlobalFoodItemRepository? _globalFoodItemRepository;
   final GlobalBarcodeCandidateRepository? _barcodeCandidateRepository;
+  final ManualProductRecentItemsService? _recentItemsService;
 
   @override
   Future<ProductSearchHubSearchLookupResult> search({
@@ -75,6 +86,25 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
       learnedCandidates: learnedCandidates,
       offCandidates: offCandidates,
     );
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentItems({int limit = 6}) async {
+    final service = _recentItemsService;
+    if (service == null) {
+      return const <InventoryItem>[];
+    }
+    try {
+      return await service.readRecentItems();
+    } on Object catch (error, stackTrace) {
+      log(
+        'Recent items lookup failed.',
+        name: _productSearchHubSearchLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <InventoryItem>[];
+    }
   }
 
   Future<List<GlobalBarcodeCandidate>> _readLearnedCandidates(

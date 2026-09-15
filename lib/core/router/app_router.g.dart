@@ -154,6 +154,8 @@ final class AppRouterProvider
           inventoryShoppingSuggestionsProvider,
           receiptReviewControllerProvider,
           receiptManualProductPickerProvider,
+          productSearchGatewayProvider,
+          productSearchHubCompletionHandlerProvider,
         ],
         $allTransitiveDependencies: <ProviderOrFamily>{
           AppRouterProvider.$allTransitiveDependencies0,
@@ -184,6 +186,8 @@ final class AppRouterProvider
           AppRouterProvider.$allTransitiveDependencies25,
           AppRouterProvider.$allTransitiveDependencies26,
           AppRouterProvider.$allTransitiveDependencies27,
+          AppRouterProvider.$allTransitiveDependencies28,
+          AppRouterProvider.$allTransitiveDependencies29,
         },
       );
 
@@ -234,6 +238,9 @@ final class AppRouterProvider
       ReceiptReviewControllerProvider.$allTransitiveDependencies1;
   static final $allTransitiveDependencies27 =
       receiptManualProductPickerProvider;
+  static final $allTransitiveDependencies28 = productSearchGatewayProvider;
+  static final $allTransitiveDependencies29 =
+      productSearchHubCompletionHandlerProvider;
 
   @override
   String debugGetCreateSourceHash() => _$appRouterHash();
@@ -257,4 +264,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'7c249fa48ef0062bc9e470e808f3093d7e283629';
+String _$appRouterHash() => r'fd0ff40aeb1d58314b96a88ca60eab3c477e24b4';

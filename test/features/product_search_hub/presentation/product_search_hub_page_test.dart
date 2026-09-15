@@ -10,8 +10,6 @@ import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -21,10 +19,12 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'composite_product_search_adapter.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -37,9 +37,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/manual_pro
 import 'package:yamt/l10n/app_localizations.dart';
 
 @Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-  manualProductRecentItemsService,
+  productSearchGateway,
+  productSearchHubCompletionHandler,
 ])
 Widget _buildHarness({
   List<InventoryItem> recentItems = const <InventoryItem>[],
@@ -62,8 +61,8 @@ Widget _buildHarness({
 
 @Dependencies([
   InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-  manualProductRecentItemsService,
+  productSearchGateway,
+  productSearchHubCompletionHandler,
 ])
 Widget _buildRouteHarness({
   required ProductSearchHubRouteArgs args,
@@ -178,8 +177,8 @@ Widget _buildRouteHarness({
 
 @Dependencies([
   InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-  manualProductRecentItemsService,
+  productSearchGateway,
+  productSearchHubCompletionHandler,
 ])
 void main() {
   testWidgets('renders product search hub shell', (tester) async {

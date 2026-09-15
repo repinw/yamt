@@ -120,12 +120,25 @@ The architecture pattern is MVVM, but naming is strictly controller-based.
   owns the underlying data. Use `core` only when the concept is truly
   feature-independent.
 - **Decoupled Feature Contracts (`abstract interface class`)**: When building
-  self-contained or modular features (such as standalone scanner engines or
-  isolated integrations), features may define their external dependencies as
-  lightweight `abstract interface class` contracts in their domain layer.
-  The integrating feature or application layer provides concrete
-  implementations via Riverpod providers. This eliminates tight coupling
-  to external databases/services and enables fast, isolated unit testing with fakes.
+  self-contained or modular features (such as standalone scanner engines,
+  product search hubs, or isolated integrations), features must define their
+  external dependencies as lightweight `abstract interface class` contracts in
+  their domain layer. The integrating feature or application layer provides
+  concrete implementations via Riverpod providers. This eliminates tight
+  coupling to external databases/services and enables fast, isolated unit
+  testing with fakes.
+- **Zero Cross-Feature Controller/Presentation Imports**: A feature must never
+  import another feature's `presentation/controllers/`, `presentation/flows/`,
+  or internal state notifiers. Controllers belong strictly to the feature that
+  hosts them and must never be wired or called across feature boundaries.
+- **Caller Owns Side Effects (Hubs, Pickers, Modals)**: Reusable search hubs,
+  pickers, modals, or editors must never import or execute caller controllers,
+  mutation flows, or persistence logic (e.g., `InventoryItemsController`,
+  `CalorieEntriesController`). The hub is a presentation and editing surface:
+  it either returns the edited result directly to the caller via navigation, or
+  delegates completion effects through domain `abstract interface class`
+  contracts implemented by the caller. Dependencies must always point from
+  caller to callee, never backwards from callee to caller presentation layers.
 
 ## Dependency Direction
 
@@ -135,6 +148,7 @@ General dependency rules:
 - `core` must not depend on features.
 - Feature-to-feature dependencies must be explicit and small.
 - Prefer depending on another feature's public edge, not its internals.
+- Never depend on another feature's presentation controllers or mutation flows.
 - Avoid dependency cycles. When a new dependency would create a cycle, extract
   the shared concept to the data-owning feature or to `core` if it is genuinely
   feature-independent.

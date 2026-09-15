@@ -47,6 +47,10 @@ import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_page.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'composite_product_search_adapter.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'models/product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -68,6 +72,8 @@ import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 
 /// Builds the complete route tree for `GoRouter`.
 @Dependencies([
+  productSearchGateway,
+  productSearchHubCompletionHandler,
   manualProductRecentItemsService,
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,

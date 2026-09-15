@@ -36,6 +36,10 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'composite_product_search_adapter.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/presentation/controllers/'
     'receipt_review_controller.dart';
@@ -96,6 +100,8 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     inventoryShoppingSuggestions,
     ReceiptReviewController,
     receiptManualProductPicker,
+    productSearchGateway,
+    productSearchHubCompletionHandler,
   ],
 )
 Raw<GoRouter> appRouter(Ref ref) {

@@ -4,9 +4,12 @@ import 'dart:developer' show log;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -20,6 +23,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _scannerLogName = 'InventoryBarcodeScannerView';
 
 /// Defines inventory barcode scanner view.
+@Dependencies([productSearchGateway])
 class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
   /// The inventory barcode scanner view.
   const InventoryBarcodeScannerView({

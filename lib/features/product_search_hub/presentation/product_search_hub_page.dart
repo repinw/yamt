@@ -5,16 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
+import 'package:yamt/features/product_search_hub/data/'
+    'composite_product_search_adapter.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_search_hub_completion_providers.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -28,8 +28,6 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_result_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_saved_selection.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_selection_state.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_scaffold/product_search_hub_scaffold.dart';
@@ -40,9 +38,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Unified product search hub page.
 @Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-  manualProductRecentItemsService,
+  productSearchGateway,
+  productSearchHubCompletionHandler,
 ])
 class ProductSearchHubPage extends StatefulWidget {
   /// Creates a product search hub page.
@@ -226,8 +223,6 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
 
     final completion = await completeProductSearchHubResult(
       context: context,
-      container: ProviderScope.containerOf(context, listen: false),
-      l10n: AppLocalizations.of(context)!,
       args: widget.args,
       sourceKey: sourceKey,
       result: result,

@@ -89,8 +89,8 @@ class InventoryItemEatFlow {
     InventoryItemsController? inventoryController,
     void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
-      final l10n = AppLocalizations.of(context)!;
       final successMessage = l10n.inventoryManualAddEatSucceeded;
       final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
         itemBeforeMutation,
@@ -134,7 +134,7 @@ class InventoryItemEatFlow {
         }
 
         return _discardAndFail(
-          context: context,
+          context: context.mounted ? context : null,
           container: container,
           pendingConsumptionId: pendingConsumptionId,
           message: l10n.caloriesSaveFailed,
@@ -143,7 +143,7 @@ class InventoryItemEatFlow {
 
       if (!context.mounted) {
         return _discardAndFail(
-          context: context,
+          context: null,
           container: container,
           pendingConsumptionId: pendingConsumptionId,
         );
@@ -171,16 +171,16 @@ class InventoryItemEatFlow {
         stackTrace: stackTrace,
       );
       return _discardAndFail(
-        context: context,
+        context: context.mounted ? context : null,
         container: container,
         pendingConsumptionId: pendingConsumptionId,
-        message: AppLocalizations.of(context)!.inventoryItemActionFailed,
+        message: l10n.inventoryItemActionFailed,
       );
     }
   }
 
   static Future<bool> _discardAndFail({
-    required BuildContext context,
+    required BuildContext? context,
     required ProviderContainer container,
     required String pendingConsumptionId,
     String? message,
@@ -189,7 +189,7 @@ class InventoryItemEatFlow {
       container: container,
       pendingConsumptionId: pendingConsumptionId,
     );
-    if (context.mounted && message != null) {
+    if (context != null && context.mounted && message != null) {
       _showSnackBar(context: context, message: message);
     }
     return false;

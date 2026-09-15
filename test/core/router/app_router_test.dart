@@ -26,8 +26,6 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -37,14 +35,16 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'composite_product_search_adapter.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -199,9 +199,9 @@ const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
   navigatorKey,
   appRouter,
   inventoryManualAddQuickEatConfig,
-  manualProductRecentItemsService,
+  productSearchGateway,
+  productSearchHubCompletionHandler,
   InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
   PreparedMealsController,
   SharedReceiptService,
   receiptScanFlowCoordinator,

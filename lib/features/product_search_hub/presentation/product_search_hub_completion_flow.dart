@@ -1,66 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_receipt_manual_product_models.dart';
-import 'package:yamt/features/product_search_hub/application/'
-    'product_search_hub_mode_strategy.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_search_hub_completion_providers.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_completion_handler.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_completion_result.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_saved_selection.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Result of completing a hub product result.
-class ProductSearchHubCompletionResult {
-  const ProductSearchHubCompletionResult._({
-    required this.shouldCloseHub,
-    this.selection,
-  });
-
-  /// No user-visible completion action.
-  const ProductSearchHubCompletionResult.none() : this._(shouldCloseHub: false);
-
-  /// Close the hub after a direct save.
-  const ProductSearchHubCompletionResult.closeHub({
-    ProductSearchHubSavedSelection? selection,
-  }) : this._(shouldCloseHub: true, selection: selection);
-
-  /// Show saved item in the hub overlay.
-  const ProductSearchHubCompletionResult.showOverlay(
-    ProductSearchHubSavedSelection selection,
-  ) : this._(shouldCloseHub: false, selection: selection);
-
-  /// Whether hub should close after completion.
-  final bool shouldCloseHub;
-
-  /// Saved selection to show in overlay.
-  final ProductSearchHubSavedSelection? selection;
-}
+export 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_completion_result.dart';
 
 /// Completes a product search hub editor result for the active route mode.
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   required BuildContext context,
-  required ProviderContainer container,
-  required AppLocalizations l10n,
   required ProductSearchHubRouteArgs args,
   required String sourceKey,
   required InventoryReceiptManualProductResult result,
+  ProductSearchHubCompletionHandler? handler,
+  ProviderContainer? container,
+  AppLocalizations? l10n,
   bool continueDiaryBatch = false,
 }) {
-  return productSearchHubModeStrategy(args.mode).completeResult(
+  final ProductSearchHubCompletionHandler resolvedHandler;
+  if (handler != null) {
+    resolvedHandler = handler;
+  } else if (container != null) {
+    resolvedHandler = container.read(
+      productSearchHubCompletionHandlerProvider(args.mode),
+    );
+  } else {
+    resolvedHandler = ProviderScope.containerOf(context, listen: false).read(
+      productSearchHubCompletionHandlerProvider(args.mode),
+    );
+  }
+  return resolvedHandler.completeResult(
     context: context,
-    container: container,
-    l10n: l10n,
     args: args,
     sourceKey: sourceKey,
     result: result,
@@ -68,23 +49,25 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   );
 }
 
-/// Removes a saved hub selection from diary and inventory.
-@Dependencies([InventoryItemsController])
+/// Removes a saved hub selection from caller persistence.
 Future<bool> removeProductSearchHubSelection({
-  required ProviderContainer container,
   required ProductSearchHubSavedSelection selection,
-}) async {
-  final diaryEntryId = selection.calorieEntryId;
-  if (diaryEntryId != null) {
-    final deletedDiaryEntry = await container
-        .read(calorieEntriesControllerProvider.notifier)
-        .deleteEntry(diaryEntryId);
-    if (!deletedDiaryEntry) {
-      return false;
-    }
+  ProductSearchHubCompletionHandler? handler,
+  ProviderContainer? container,
+  ProductSearchHubMode? mode,
+}) {
+  final effectiveMode =
+      mode ??
+      (selection.calorieEntryId != null
+          ? ProductSearchHubMode.diary
+          : ProductSearchHubMode.inventory);
+  final resolvedHandler =
+      handler ??
+      container?.read(productSearchHubCompletionHandlerProvider(effectiveMode));
+  if (resolvedHandler == null) {
+    throw ArgumentError(
+      'Either handler or container must be provided to remove selection.',
+    );
   }
-
-  return container
-      .read(inventoryItemsControllerProvider.notifier)
-      .deleteItem(selection.item.id);
+  return resolvedHandler.removeSavedSelection(selection);
 }

@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -21,9 +22,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-])
+@Dependencies([inventoryManualAddQuickEatConfig, productSearchGateway])
 void main() {
   testWidgets('push helper returns typed result without route animation', (
     tester,
@@ -204,6 +203,7 @@ Widget _wrapChild(Widget child) {
   );
 }
 
+@Dependencies([productSearchGateway])
 GoRouter _buildManualProductRouteTestRouter({
   required WidgetBuilder homeBuilder,
 }) {

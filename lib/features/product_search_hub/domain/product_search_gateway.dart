@@ -1,4 +1,5 @@
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
 
@@ -45,4 +46,7 @@ abstract interface class ProductSearchGateway {
   Future<List<InventoryBarcodeLookupCandidate>> resolveBarcodeCandidates({
     required String barcode,
   });
+
+  /// Reads recently selected manual products.
+  Future<List<InventoryItem>> readRecentItems({int limit = 6});
 }

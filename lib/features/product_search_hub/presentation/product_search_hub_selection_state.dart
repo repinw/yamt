@@ -1,4 +1,4 @@
-import 'package:yamt/features/product_search_hub/presentation/'
+import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
 
 /// Local selection list state for the product search hub page.
