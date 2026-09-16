@@ -111,7 +111,10 @@ void main() {
 
     expect(find.text('Breakfast'), findsOneWidget);
     expect(find.text('250 kcal'), findsOneWidget);
-    expect(find.text('P 20g · C 55g · F 10g'), findsOneWidget);
+    // Dinner has one food, so its heading repeats no kcal.
+    expect(find.text('Dinner'), findsOneWidget);
+    expect(find.text('400 kcal'), findsOneWidget);
+    expect(find.text('P 20g · C 55g · F 10g'), findsNothing);
 
     final oats = find.byKey(DiaryMealsSectionKeys.entryTile('oats'));
     expect(

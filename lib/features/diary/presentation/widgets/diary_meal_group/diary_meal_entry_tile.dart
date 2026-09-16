@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_macro_summary.dart';
@@ -81,7 +80,7 @@ class DiaryMealEntryTile extends StatelessWidget {
                       '${numberFormat.format(entry.totalKcal.round())} '
                       '${l10n.caloriesUnitKcal}',
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: MetricAccentColors.of(context).meal,
+                        color: colors.onSurface,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

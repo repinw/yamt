@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// One-line `P · C · F` gram summary, colored per macro.
+/// One-line `P · C · F` gram summary in muted text.
 class DiaryMacroSummary extends StatelessWidget {
   /// Creates a macro summary.
   const DiaryMacroSummary({
@@ -26,32 +25,20 @@ class DiaryMacroSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final accents = MetricAccentColors.of(context);
     final format = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
     )..maximumFractionDigits = 1;
-    final baseStyle = theme.textTheme.bodySmall?.copyWith(
-      fontWeight: FontWeight.w700,
-    );
-    final separator = TextSpan(
-      text: ' · ',
-      style: baseStyle?.copyWith(color: theme.colorScheme.outlineVariant),
-    );
+    String macro(String letter, double grams) =>
+        '$letter ${format.format(grams)}${l10n.caloriesUnitGram}';
 
-    TextSpan macro(String letter, double grams, Color color) => TextSpan(
-      text: '$letter ${format.format(grams)}${l10n.caloriesUnitGram}',
-      style: baseStyle?.copyWith(color: color),
-    );
-
-    return Text.rich(
-      TextSpan(
-        children: [
-          macro(l10n.caloriesProteinShortLetter, protein, accents.protein),
-          separator,
-          macro(l10n.caloriesCarbsShortLetter, carbs, accents.carbs),
-          separator,
-          macro(l10n.caloriesFatShortLetter, fat, accents.fat),
-        ],
+    return Text(
+      [
+        macro(l10n.caloriesProteinShortLetter, protein),
+        macro(l10n.caloriesCarbsShortLetter, carbs),
+        macro(l10n.caloriesFatShortLetter, fat),
+      ].join(' · '),
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
       ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
