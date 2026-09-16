@@ -6,6 +6,9 @@ import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_macro_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Gap between the protein, carbs, and fat rows.
+const double diaryMacroRowGap = AppSpacing.xs;
+
 /// Content of the diary nutrition bars displaying all three macro rows.
 class DiaryNutritionBarsContent extends StatelessWidget {
   /// Creates the nutrition bars content.
@@ -54,7 +57,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               numberFormat: numberFormat,
               unit: l10n.caloriesUnitGram,
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: diaryMacroRowGap),
             DiaryNutritionMacroRow(
               label: l10n.caloriesCarbsShortLabel,
               current: data.carbs,
@@ -63,7 +66,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               numberFormat: numberFormat,
               unit: l10n.caloriesUnitGram,
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: diaryMacroRowGap),
             DiaryNutritionMacroRow(
               label: l10n.caloriesFatLabel,
               current: data.fat,

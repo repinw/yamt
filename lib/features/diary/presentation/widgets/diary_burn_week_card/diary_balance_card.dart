@@ -21,11 +21,19 @@ class DiaryBalanceCard extends ConsumerWidget {
   /// Creates the diary balance card.
   const DiaryBalanceCard({
     required this.selectedDay,
+    this.kcalBarKey,
+    this.macroBarsKey,
     super.key,
   });
 
   /// The selected diary day.
   final DateTime selectedDay;
+
+  /// Key of the daily kcal progress bar.
+  final Key? kcalBarKey;
+
+  /// Key of the daily macro bars.
+  final Key? macroBarsKey;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,6 +80,8 @@ class DiaryBalanceCard extends ConsumerWidget {
 
       return DiaryDailyBalanceCard(
         data: dailyData,
+        kcalBarKey: kcalBarKey,
+        macroBarsKey: macroBarsKey,
       );
     }
 

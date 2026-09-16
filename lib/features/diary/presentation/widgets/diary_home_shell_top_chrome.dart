@@ -19,7 +19,11 @@ const double _diaryTopChromeVerticalPadding = 28;
 /// Home-shell top chrome for the diary tab: a day navigator pinned to the top.
 class DiaryHomeShellTopChrome extends StatelessWidget {
   /// Creates diary top chrome.
-  const DiaryHomeShellTopChrome({super.key});
+  const DiaryHomeShellTopChrome({this.overlay, super.key});
+
+  /// Painted directly below the bar and moving with it, e.g. during the
+  /// overscroll stretch. Not hit-testable.
+  final Widget? overlay;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +39,7 @@ class DiaryHomeShellTopChrome extends StatelessWidget {
       delegate: _DiaryPinnedTopBarDelegate(
         height: height + MediaQuery.paddingOf(context).top,
         child: _DiaryTopBar(height: height),
+        overlay: overlay,
       ),
     );
   }
@@ -44,10 +49,12 @@ class _DiaryPinnedTopBarDelegate extends SliverPersistentHeaderDelegate {
   const _DiaryPinnedTopBarDelegate({
     required this.height,
     required this.child,
+    required this.overlay,
   });
 
   final double height;
   final Widget child;
+  final Widget? overlay;
 
   @override
   double get minExtent => height;
@@ -62,15 +69,29 @@ class _DiaryPinnedTopBarDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     // Opaque surface so scrolled content never shows through the bar.
-    return ColoredBox(
+    final bar = ColoredBox(
       color: Theme.of(context).colorScheme.surface,
       child: child,
+    );
+    final overlay = this.overlay;
+    if (overlay == null) {
+      return bar;
+    }
+    // Pinned headers paint above later slivers, so the overflow stays on top.
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned.fill(child: bar),
+        Positioned(top: height, left: 0, right: 0, child: overlay),
+      ],
     );
   }
 
   @override
   bool shouldRebuild(covariant _DiaryPinnedTopBarDelegate oldDelegate) {
-    return height != oldDelegate.height || child != oldDelegate.child;
+    return height != oldDelegate.height ||
+        child != oldDelegate.child ||
+        overlay != oldDelegate.overlay;
   }
 }
 

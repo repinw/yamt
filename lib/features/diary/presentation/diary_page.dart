@@ -14,7 +14,12 @@ import 'package:yamt/features/diary/presentation/controllers/diary_intro_banner_
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page_intro_coordinator.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_overlay.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_stage.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_trigger.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_page_header.dart';
 import 'package:yamt/features/health/application/'
@@ -41,6 +46,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   ProviderSubscription<void>? _providerWarmupSubscription;
   bool _didQueueDiaryIntro = false;
   bool _didStartDeferredSubscriptions = false;
+  final _macroStripAnchors = DiaryMacroStripAnchors();
+  final ValueNotifier<DiaryMacroStripStage> _macroStripStage = ValueNotifier(
+    DiaryMacroStripStage.hidden,
+  );
 
   @override
   void initState() {
@@ -52,6 +61,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   void dispose() {
     _diaryIntroSubscription?.close();
     _providerWarmupSubscription?.close();
+    _macroStripStage.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -97,11 +107,42 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         key: DiaryPage.pageKey,
         cacheExtent: 0,
         slivers: [
-          if (widget.includeHomeShellChrome) const DiaryHomeShellTopChrome(),
+          if (widget.includeHomeShellChrome)
+            DiaryHomeShellTopChrome(
+              overlay: DiaryMacroStripOverlay(
+                selectedDay: calendarState.selectedDay,
+                stage: _macroStripStage,
+                kcalRowKey: _macroStripAnchors.stripKcalRow,
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+          if (widget.includeHomeShellChrome)
+            DiaryMacroStripTrigger(
+              anchors: _macroStripAnchors,
+              stage: _macroStripStage,
+            ),
           SliverPadding(
             padding: EdgeInsets.fromLTRB(
               horizontalPagePadding,
-              AppSpacing.md,
+              0,
+              horizontalPagePadding,
+              AppSpacing.xs,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: _NarrowContent(
+                child: DiaryBalanceCard(
+                  key: _macroStripAnchors.card,
+                  kcalBarKey: _macroStripAnchors.kcalBar,
+                  macroBarsKey: _macroStripAnchors.macroBars,
+                  selectedDay: calendarState.selectedDay,
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPagePadding,
+              0,
               horizontalPagePadding,
               bottomPagePadding,
             ),
@@ -134,14 +175,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                     unawaited(notifier.dismiss());
                   },
                 ),
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: AppSizes.narrowContentMaxWidth,
-                    ),
-                    child: DiaryMealsSection(
-                      selectedDay: calendarState.selectedDay,
-                    ),
+                _NarrowContent(
+                  child: DiaryMealsSection(
+                    selectedDay: calendarState.selectedDay,
                   ),
                 ),
               ],
@@ -206,5 +242,25 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         ),
       );
     });
+  }
+}
+
+/// Centers page content at the narrow content width.
+class _NarrowContent extends StatelessWidget {
+  const _NarrowContent({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: AppSizes.narrowContentMaxWidth,
+        ),
+        // Fills the width up to the maximum instead of shrinking to fit.
+        child: SizedBox(width: double.infinity, child: child),
+      ),
+    );
   }
 }

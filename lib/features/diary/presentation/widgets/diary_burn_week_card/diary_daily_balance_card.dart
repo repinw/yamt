@@ -15,11 +15,19 @@ class DiaryDailyBalanceCard extends StatelessWidget {
   /// Creates the daily balance card.
   const DiaryDailyBalanceCard({
     required this.data,
+    this.kcalBarKey,
+    this.macroBarsKey,
     super.key,
   });
 
   /// Render-ready daily card data.
   final DiaryDailyBalanceData data;
+
+  /// Key of the kcal progress bar, used to detect when it scrolls away.
+  final Key? kcalBarKey;
+
+  /// Key of the macro bars, used to detect when they scroll away.
+  final Key? macroBarsKey;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +41,7 @@ class DiaryDailyBalanceCard extends StatelessWidget {
           DiaryDailyBalanceMetricsRow(data: data),
           const SizedBox(height: AppSpacing.sm),
           DiaryDailyGoalProgressBar(
+            key: kcalBarKey,
             eatenKcal: data.metrics.eatenKcal,
             targetKcal: data.metrics.targetKcal,
             activitySegmentKcal: data.metrics.activitySegmentKcal,
@@ -66,7 +75,10 @@ class DiaryDailyBalanceCard extends StatelessWidget {
             color: colors.outlineVariant.withValues(alpha: 0.35),
           ),
           const SizedBox(height: AppSpacing.md),
-          DiaryNutritionBars.embedded(selectedDay: data.selectedDay),
+          DiaryNutritionBars.embedded(
+            key: macroBarsKey,
+            selectedDay: data.selectedDay,
+          ),
         ],
       ),
     );

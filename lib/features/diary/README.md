@@ -24,6 +24,10 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
 - `presentation/diary_page.dart` is the main page.
 - `presentation/widgets/diary_meals_section.dart` owns the quick-eat buttons
   and the meals logged on the selected day.
+- `presentation/widgets/diary_macro_strip/` owns the compact kcal and macro
+  strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it
+  in stages as the daily card's kcal bar and macro bars scroll away; the page
+  places the trigger sliver directly above the daily card.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
   diary-facing daily and weekly calorie balance UI.
 
