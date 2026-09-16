@@ -1,11 +1,5 @@
 import 'package:intl/intl.dart';
 
-/// Formats a compact calendar header date.
-String formatCalendarHeaderDate(DateTime day, String localeName) {
-  return '${calendarWeekdayLabel(day, localeName)}, '
-      '${DateFormat.MMMMd(localeName).format(day)}';
-}
-
 /// Returns the localized short weekday label for [day].
 String calendarWeekdayLabel(DateTime day, String localeName) {
   return DateFormat.E(localeName)
@@ -14,11 +8,6 @@ String calendarWeekdayLabel(DateTime day, String localeName) {
         RegExp(r'\.$'),
         '',
       );
-}
-
-/// Returns the localized full weekday label for [day].
-String calendarWeekdayFullLabel(DateTime day, String localeName) {
-  return DateFormat.EEEE(localeName).format(day);
 }
 
 /// Normalizes [day] to date-only precision.

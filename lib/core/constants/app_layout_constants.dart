@@ -174,9 +174,6 @@ abstract final class AppFontSizes {
   /// Home tab title size for compact layouts.
   static const double homeTabTitleCompact = titleLarge;
 
-  /// Home tab subtitle size.
-  static const double homeTabSubtitle = labelLarge;
-
   /// Home bottom navigation label size.
   static const double homeBottomNavLabel = labelXSmall;
 

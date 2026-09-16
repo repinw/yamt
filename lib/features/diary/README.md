@@ -47,8 +47,13 @@ Main application adapters and mappers:
 - `application/diary_provider_warmup.dart`
 - `application/diary_food_log_mutation_adapter.dart`
 - `application/diary_quick_eat_inventory_provider.dart`
+- `application/diary_plan_start_day_provider.dart` (earliest selectable diary day)
+- `application/diary_day_type_provider.dart` (training/rest/pause status and
+  updates through the calorie goal controller)
 - `data/diary_day_dashboard_cache_store.dart`
 - `presentation/controllers/diary_day_dashboard_controller.dart`
+- `presentation/diary_calendar_controller.dart` (selected day and
+  `diaryCalendarBoundsProvider`; range rules in `domain/diary_calendar_bounds.dart`)
 
 ## Accepted Dependencies
 

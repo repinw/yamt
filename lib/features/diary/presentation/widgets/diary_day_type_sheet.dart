@@ -1,169 +1,138 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/diary/application/diary_day_type_provider.dart';
+import 'package:yamt/features/diary/domain/diary_day_type.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_day_type_labels.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shows the modal bottom sheet to select the day type (training, rest, pause).
 Future<void> showDiaryDayTypeSheet({
   required BuildContext context,
-  required WidgetRef ref,
   required DateTime selectedDay,
-  required CalorieGoalSettings settings,
 }) {
-  final colors = Theme.of(context).colorScheme;
-  final isPause = settings.isPauseDay(selectedDay);
-  final isTraining = !isPause && settings.isTrainingDay(selectedDay);
-  final isRest = !isPause && !isTraining;
-
   return showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
     useSafeArea: true,
     isScrollControlled: true,
-    backgroundColor: colors.surface,
+    showDragHandle: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(AppRadius.lg),
       ),
     ),
-    builder: (modalContext) {
-      return SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.lg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: colors.onSurfaceVariant.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Tages-Status wählen',
-                style: Theme.of(modalContext).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Steuere deinen Kalorienbedarf dynamisch nach deinem '
-                'Aktivitätsplan.',
-                style: Theme.of(modalContext).textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _OptionTile(
-                icon: Icons.fitness_center_rounded,
-                title: '🏋️ Trainingstag',
-                subtitle: settings.trainingDayKcalOffset > 0
-                    ? '+${settings.trainingDayKcalOffset.toInt()} kcal '
-                          'erhöhtes Kalorienziel'
-                    : 'Trainingstag (Kalorienziel aktiv)',
-                isSelected: isTraining,
-                color: colors.primary,
-                onTap: () async {
-                  Navigator.of(modalContext).pop();
-                  final controller = ref.read(
-                    calorieGoalControllerProvider.notifier,
-                  );
-                  if (isPause) {
-                    await controller.setPauseDay(
-                      day: selectedDay,
-                      isPause: false,
-                    );
-                  }
-                  if (!settings.isTrainingDay(selectedDay)) {
-                    await controller.toggleTrainingDay(selectedDay);
-                  }
-                },
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              _OptionTile(
-                icon: Icons.weekend_rounded,
-                title: '🛋️ Ruhetag',
-                subtitle: 'Ausgleichendes Kalorienziel für die Regeneration',
-                isSelected: isRest,
-                color: colors.secondary,
-                onTap: () async {
-                  Navigator.of(modalContext).pop();
-                  final controller = ref.read(
-                    calorieGoalControllerProvider.notifier,
-                  );
-                  if (isPause) {
-                    await controller.setPauseDay(
-                      day: selectedDay,
-                      isPause: false,
-                    );
-                  }
-                  if (settings.isTrainingDay(selectedDay)) {
-                    await controller.toggleTrainingDay(selectedDay);
-                  }
-                },
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              _OptionTile(
-                icon: Icons.pause_circle_filled_rounded,
-                title: '⏸️ Pausentag',
-                subtitle:
-                    'Neutraler Tag (Urlaub, Krankheit). Kein Streak-Bruch.',
-                isSelected: isPause,
-                color: colors.tertiary,
-                onTap: () async {
-                  Navigator.of(modalContext).pop();
-                  final controller = ref.read(
-                    calorieGoalControllerProvider.notifier,
-                  );
-                  await controller.setPauseDay(
-                    day: selectedDay,
-                    isPause: !isPause,
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      );
-    },
+    builder: (_) => DiaryDayTypeSheet(selectedDay: selectedDay),
   );
 }
 
-class _OptionTile extends StatelessWidget {
-  const _OptionTile({
-    required this.icon,
-    required this.title,
+/// Day type picker for a single diary day.
+class DiaryDayTypeSheet extends ConsumerWidget {
+  /// Creates the day type picker.
+  const DiaryDayTypeSheet({required this.selectedDay, super.key});
+
+  /// Day whose type is changed.
+  final DateTime selectedDay;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(diaryDayTypeStatusProvider(selectedDay));
+    if (status == null) {
+      return const SizedBox.shrink();
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          0,
+          AppSpacing.md,
+          AppSpacing.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.diaryDayTypeSheetTitle,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              l10n.diaryDayTypeSheetBody,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            for (final type in DiaryDayType.values) ...[
+              const SizedBox(height: AppSpacing.xs),
+              _DiaryDayTypeOption(
+                type: type,
+                subtitle: _subtitleFor(type, status, l10n),
+                isSelected: type == status.type,
+                onTap: () => _select(context, ref, type),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _subtitleFor(
+    DiaryDayType type,
+    DiaryDayTypeStatus status,
+    AppLocalizations l10n,
+  ) {
+    return switch (type) {
+      DiaryDayType.training when status.trainingDayKcalOffset > 0 =>
+        l10n.diaryDayTypeTrainingOffsetSubtitle(
+          status.trainingDayKcalOffset.toInt(),
+        ),
+      DiaryDayType.training => l10n.diaryDayTypeTrainingSubtitle,
+      DiaryDayType.rest => l10n.diaryDayTypeRestSubtitle,
+      DiaryDayType.pause => l10n.diaryDayTypePauseSubtitle,
+    };
+  }
+
+  void _select(BuildContext context, WidgetRef ref, DiaryDayType type) {
+    final updater = ref.read(diaryDayTypeUpdaterProvider);
+    Navigator.of(context).pop();
+    unawaited(updater.select(selectedDay, type));
+  }
+}
+
+class _DiaryDayTypeOption extends StatelessWidget {
+  const _DiaryDayTypeOption({
+    required this.type,
     required this.subtitle,
     required this.isSelected,
-    required this.color,
     required this.onTap,
   });
 
-  final IconData icon;
-  final String title;
+  final DiaryDayType type;
   final String subtitle;
   final bool isSelected;
-  final Color color;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
+    final color = switch (type) {
+      DiaryDayType.training => colors.primary,
+      DiaryDayType.rest => colors.secondary,
+      DiaryDayType.pause => colors.tertiary,
+    };
 
     return Material(
       color: isSelected
@@ -176,22 +145,17 @@ class _OptionTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm + 2,
+            vertical: AppSpacing.md,
           ),
           child: Row(
             children: [
-              Icon(
-                icon,
-                size: 22,
-                color: isSelected ? color : colors.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      '${diaryDayTypeEmoji(type)} '
+                      '${diaryDayTypeLabel(type, l10n)}',
                       style: textTheme.bodyMedium?.copyWith(
                         fontWeight: isSelected
                             ? FontWeight.w800
@@ -199,7 +163,7 @@ class _OptionTile extends StatelessWidget {
                         color: isSelected ? color : colors.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       subtitle,
                       style: textTheme.bodySmall?.copyWith(
@@ -210,11 +174,7 @@ class _OptionTile extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                Icon(
-                  Icons.check_circle_rounded,
-                  size: 20,
-                  color: color,
-                ),
+                Icon(Icons.check_circle_rounded, size: 20, color: color),
             ],
           ),
         ),

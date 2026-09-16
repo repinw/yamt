@@ -183,7 +183,7 @@ DateTime _resolveDebugDumpStart({
   required DateTime fallbackStartInclusive,
   required DateTime today,
 }) {
-  final goalStart = _earliestDebugGoalStart(settings);
+  final goalStart = settings.firstGoalStartDay;
   if (goalStart == null) {
     return fallbackStartInclusive;
   }
@@ -191,20 +191,6 @@ DateTime _resolveDebugDumpStart({
     return today;
   }
   return goalStart;
-}
-
-DateTime? _earliestDebugGoalStart(CalorieGoalSettings settings) {
-  DateTime? earliest;
-  for (final entry in settings.sortedGoalHistory) {
-    if (!entry.hasGoal || entry.isWeeklyCheckIn) {
-      continue;
-    }
-    final start = normalizeDiaryDay(entry.effectiveCountingStartDate);
-    if (earliest == null || start.isBefore(earliest)) {
-      earliest = start;
-    }
-  }
-  return earliest;
 }
 
 bool _hasDebugGoalWindows(CalorieGoalSettings settings) {

@@ -80,9 +80,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     if (dashboardState.data != null) {
       _queueDeferredDiarySubscriptions();
     }
-    final calendarController = ref.read(
-      diaryCalendarControllerProvider.notifier,
-    );
     final goalSettings = dashboardState.data == null
         ? null
         : ref.watch(diaryCalorieGoalSettingsProvider).value;
@@ -115,10 +112,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
               sliver: SliverList.list(
                 children: [
                   DiaryPageHeader(
-                    calendarState: calendarState,
+                    selectedDay: calendarState.selectedDay,
                     dashboardData: dashboardState.data,
                     showIntroBanner: showIntroBanner,
-                    onSelectDay: calendarController.selectDay,
                     onOpenIntro: () {
                       final introData = DiaryIntroData.fromSettings(
                         goalSettings!,

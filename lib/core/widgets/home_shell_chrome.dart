@@ -7,8 +7,6 @@ const _compactHomeChromeTextScaleThreshold = 1.15;
 const _bottomNavLabelMinItemWidth = 64.0;
 const _regularHomeTopBarHeight = 76.0;
 const _compactHomeTopBarHeight = 88.0;
-const _regularHomeTopBarWithSubtitleHeight = 86.0;
-const _compactHomeTopBarWithSubtitleHeight = 96.0;
 const _bottomNavTopIndicatorWidth = 20.0;
 const _shellChromeMotionDuration = Duration(milliseconds: 220);
 const double _homeTopBarTextVerticalPadding = AppSpacing.xxl;
@@ -23,23 +21,13 @@ double _effectiveTextScale(
       referenceFontSize;
 }
 
-double _preferredHomeTopBarBaseHeight({
-  required bool compact,
-  required bool hasSubtitle,
-}) {
-  if (hasSubtitle) {
-    return compact
-        ? _compactHomeTopBarWithSubtitleHeight
-        : _regularHomeTopBarWithSubtitleHeight;
-  }
-
+double _preferredHomeTopBarBaseHeight({required bool compact}) {
   return compact ? _compactHomeTopBarHeight : _regularHomeTopBarHeight;
 }
 
 TextStyle? _homeTopBarTitleStyle(
   BuildContext context, {
   required bool compact,
-  required bool hasSubtitle,
   Color? color,
 }) {
   final textTheme = Theme.of(context).textTheme;
@@ -49,16 +37,6 @@ TextStyle? _homeTopBarTitleStyle(
         ? AppFontSizes.homeTabTitleCompact
         : AppFontSizes.homeTabTitle,
     fontWeight: FontWeight.w800,
-    height: hasSubtitle ? 1 : null,
-  );
-}
-
-TextStyle? _homeTopBarSubtitleStyle(BuildContext context) {
-  final colors = Theme.of(context).colorScheme;
-  return Theme.of(context).textTheme.labelLarge?.copyWith(
-    color: colors.onSurfaceVariant,
-    fontSize: AppFontSizes.homeTabSubtitle,
-    fontWeight: FontWeight.w700,
   );
 }
 
@@ -203,11 +181,8 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     required this.actions,
     super.key,
     this.compact = false,
-    this.middle,
     this.preferredHeight,
     this.titleColor,
-    this.titleIcon,
-    this.subtitle,
   });
 
   /// The title.
@@ -219,47 +194,23 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Whether to use compact spacing for tight layouts.
   final bool compact;
 
-  /// Optional widget shown between title and actions.
-  final Widget? middle;
-
   /// Optional precomputed preferred height for context-dependent layouts.
   final double? preferredHeight;
 
   /// The title color.
   final Color? titleColor;
 
-  /// The title icon.
-  final IconData? titleIcon;
-
-  /// Optional subtitle shown below the title.
-  final String? subtitle;
-
   /// Computes a preferred height that accounts for accessibility text scaling.
   static double preferredHeightFor(
     BuildContext context, {
     required bool compact,
-    required bool hasSubtitle,
   }) {
-    final baseHeight = _preferredHomeTopBarBaseHeight(
-      compact: compact,
-      hasSubtitle: hasSubtitle,
-    );
+    final baseHeight = _preferredHomeTopBarBaseHeight(compact: compact);
     final titleHeight = _scaledTextLineHeight(
       context,
-      _homeTopBarTitleStyle(
-        context,
-        compact: compact,
-        hasSubtitle: hasSubtitle,
-      ),
+      _homeTopBarTitleStyle(context, compact: compact),
     );
-    final subtitleHeight = hasSubtitle
-        ? _scaledTextLineHeight(context, _homeTopBarSubtitleStyle(context))
-        : 0.0;
-    final contentHeight =
-        titleHeight +
-        subtitleHeight +
-        (hasSubtitle ? AppSpacing.xxs : 0.0) +
-        _homeTopBarTextVerticalPadding;
+    final contentHeight = titleHeight + _homeTopBarTextVerticalPadding;
 
     return baseHeight < contentHeight ? contentHeight : baseHeight;
   }
@@ -267,31 +218,19 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize {
     return Size.fromHeight(
-      preferredHeight ??
-          _preferredHomeTopBarBaseHeight(
-            compact: compact,
-            hasSubtitle: subtitle != null,
-          ),
+      preferredHeight ?? _preferredHomeTopBarBaseHeight(compact: compact),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final resolvedHeight =
-        preferredHeight ??
-        preferredHeightFor(
-          context,
-          compact: compact,
-          hasSubtitle: subtitle != null,
-        );
+        preferredHeight ?? preferredHeightFor(context, compact: compact);
     final titleStyle = _homeTopBarTitleStyle(
       context,
       compact: compact,
-      hasSubtitle: subtitle != null,
       color: titleColor,
     );
-    final subtitleStyle = _homeTopBarSubtitleStyle(context);
 
     return SafeArea(
       bottom: false,
@@ -304,51 +243,16 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
           child: Row(
             children: [
               Expanded(
-                child: Row(
-                  children: [
-                    if (titleIcon != null) ...[
-                      Icon(
-                        titleIcon,
-                        color: titleColor ?? colors.primary,
-                        size: compact ? 20 : 22,
-                      ),
-                      SizedBox(
-                        width: compact ? AppSpacing.xs : AppSpacing.sm,
-                      ),
-                    ],
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: titleStyle,
-                          ),
-                          if (subtitle != null) ...[
-                            const SizedBox(height: AppSpacing.xxs),
-                            Text(
-                              subtitle!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: subtitleStyle,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: titleStyle,
                 ),
               ),
-              if (middle != null) ...[
-                SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-                middle!,
-              ],
               if (actions.isNotEmpty)
                 SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-              _HomeTopBarActions(actions: actions),
+              HomeTopBarActions(actions: actions),
             ],
           ),
         ),
@@ -357,9 +261,12 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-class _HomeTopBarActions extends StatelessWidget {
-  const _HomeTopBarActions({required this.actions});
+/// Circular icon-button styled actions shown at the end of a home top bar.
+class HomeTopBarActions extends StatelessWidget {
+  /// Creates home top bar actions.
+  const HomeTopBarActions({required this.actions, super.key});
 
+  /// The action widgets, usually icon buttons.
   final List<Widget> actions;
 
   @override

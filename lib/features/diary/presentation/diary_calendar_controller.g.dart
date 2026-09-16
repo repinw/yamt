@@ -60,6 +60,59 @@ final class DiaryCalendarNowProvider
 
 String _$diaryCalendarNowHash() => r'0a95f8fa4884f2d9d20836971fb6f57a092fe245';
 
+/// Selectable range for the current diary calendar state.
+
+@ProviderFor(diaryCalendarBounds)
+final diaryCalendarBoundsProvider = DiaryCalendarBoundsProvider._();
+
+/// Selectable range for the current diary calendar state.
+
+final class DiaryCalendarBoundsProvider
+    extends
+        $FunctionalProvider<
+          DiaryCalendarBounds,
+          DiaryCalendarBounds,
+          DiaryCalendarBounds
+        >
+    with $Provider<DiaryCalendarBounds> {
+  /// Selectable range for the current diary calendar state.
+  DiaryCalendarBoundsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'diaryCalendarBoundsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryCalendarBoundsHash();
+
+  @$internal
+  @override
+  $ProviderElement<DiaryCalendarBounds> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  DiaryCalendarBounds create(Ref ref) {
+    return diaryCalendarBounds(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DiaryCalendarBounds value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DiaryCalendarBounds>(value),
+    );
+  }
+}
+
+String _$diaryCalendarBoundsHash() =>
+    r'803b512a0b06bbc2518fd943cd262b7fbb461955';
+
 /// Stores the diary calendar selection shared by the shell app bar and page.
 
 @ProviderFor(DiaryCalendarController)
@@ -97,7 +150,7 @@ final class DiaryCalendarControllerProvider
 }
 
 String _$diaryCalendarControllerHash() =>
-    r'39782407bddd7f2a15bafe024ad8023e4425fbf0';
+    r'6d61de532bc1bf000a049dca664228c121d2c83a';
 
 /// Stores the diary calendar selection shared by the shell app bar and page.
 

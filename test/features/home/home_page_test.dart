@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -18,6 +18,9 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_calendar_overview_sheet/diary_calendar_overview_sheet.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
 import 'package:yamt/features/home/home_page.dart';
@@ -134,7 +137,6 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
     return DiaryCalendarState(
       today: today,
       selectedDay: normalizeDiaryDay(selectedDay),
-      todayRequest: 0,
     );
   }
 }
@@ -524,12 +526,11 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('diary tab shows selected day date in the shell bar', (
+  testWidgets('diary tab shows only the day navigator in the shell bar', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
-    final today = normalizeDiaryDay(DateTime.now());
 
     await tester.pumpWidget(
       _buildHarness(
@@ -539,12 +540,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.byType(DiaryDayNavigator), findsOneWidget);
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text(formatCalendarHeaderDate(today, 'en')), findsOneWidget);
-    expect(find.text('Week 1 day 7'), findsNothing);
+    expect(find.text('Diary'), findsNothing);
   });
 
-  testWidgets('diary shell Today action returns to the current day', (
+  testWidgets('diary calendar sheet Today action returns to the current day', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -561,10 +562,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(calendarWeekdayFullLabel(oldDay, 'en')), findsOneWidget);
-    expect(find.text('Today'), findsOneWidget);
+    expect(find.text(DateFormat('dd.MM').format(oldDay)), findsOneWidget);
 
-    await tester.tap(find.text('Today'));
+    await tester.tap(find.byKey(DiaryDayNavigatorKeys.label));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryCalendarOverviewKeys.today));
     await tester.pumpAndSettle();
 
     final container = ProviderScope.containerOf(
@@ -572,7 +574,6 @@ void main() {
     );
     final state = container.read(diaryCalendarControllerProvider);
     expect(state.selectedDay, today);
-    expect(state.todayRequest, 1);
   });
 
   testWidgets('secondary tab chrome uses tab titles and empty actions', (
@@ -1058,8 +1059,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final topBar = tester.widget<HomeTopBar>(find.byType(HomeTopBar));
-    expect(topBar.preferredSize.height, greaterThan(96));
+    expect(
+      tester.getSize(find.byType(DiaryDayNavigator)).height,
+      greaterThan(56),
+    );
     expect(tester.takeException(), isNull);
   });
 

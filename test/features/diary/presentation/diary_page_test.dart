@@ -119,7 +119,6 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
     return DiaryCalendarState(
       today: normalizedDay,
       selectedDay: normalizedDay,
-      todayRequest: 0,
     );
   }
 }
@@ -190,10 +189,10 @@ void main() {
     await tester.tap(find.byType(DiaryDayTypeToggle));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tages-Status wählen'), findsOneWidget);
-    expect(find.text('🏋️ Trainingstag'), findsOneWidget);
-    expect(find.text('🛋️ Ruhetag'), findsOneWidget);
-    expect(find.text('⏸️ Pausentag'), findsOneWidget);
+    expect(find.text('Choose day type'), findsOneWidget);
+    expect(find.text('🏋️ Training day'), findsOneWidget);
+    expect(find.text('🛋️ Rest day'), findsOneWidget);
+    expect(find.text('⏸️ Pause day'), findsOneWidget);
   });
 
   test('diary warmup follows today without warming heavy providers', () async {
@@ -1212,7 +1211,6 @@ void main() {
     final state = container.read(diaryCalendarControllerProvider);
     expect(state.today, DateTime(2026, 4, 28));
     expect(state.selectedDay, DateTime(2026, 4, 28));
-    expect(state.todayRequest, 1);
   });
 
   testWidgets('auto-opens weekly check-in after resume into due day', (

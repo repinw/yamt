@@ -27,53 +27,16 @@ void main() {
   });
 
   group('HomeTopBar', () {
-    test('returns subtitle preferred size for regular and compact layouts', () {
-      const regular = HomeTopBar(
-        title: 'Diary',
-        subtitle: 'Mon, Apr 27',
-        actions: <Widget>[],
-      );
+    test('returns preferred size for regular and compact layouts', () {
+      const regular = HomeTopBar(title: 'Diary', actions: <Widget>[]);
       const compact = HomeTopBar(
         title: 'Diary',
-        subtitle: 'Mon, Apr 27',
         compact: true,
         actions: <Widget>[],
       );
 
-      expect(regular.preferredSize.height, 86);
-      expect(compact.preferredSize.height, 96);
-    });
-
-    testWidgets('renders the supplied subtitle', (tester) async {
-      await tester.pumpWidget(
-        _homeTopBarHarness(
-          const HomeTopBar(
-            title: 'Today',
-            subtitle: 'Mon, Apr 27',
-            actions: <Widget>[],
-          ),
-        ),
-      );
-
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text('Mon, Apr 27'), findsOneWidget);
-    });
-
-    testWidgets('renders top bar content without extra decoration', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _homeTopBarHarness(
-          const HomeTopBar(
-            title: 'Today',
-            subtitle: 'Mon, Apr 27',
-            actions: <Widget>[],
-          ),
-        ),
-      );
-
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text('Mon, Apr 27'), findsOneWidget);
+      expect(regular.preferredSize.height, 76);
+      expect(compact.preferredSize.height, 88);
     });
 
     testWidgets('wraps icon actions in circular app bar surfaces', (
@@ -114,32 +77,26 @@ void main() {
       );
     });
 
-    testWidgets('renders title icon with provided title color', (
-      tester,
-    ) async {
+    testWidgets('renders title with provided title color', (tester) async {
       await tester.pumpWidget(
         _homeTopBarHarness(
           const HomeTopBar(
             title: 'Today',
-            titleIcon: Icons.menu_book_rounded,
             titleColor: Colors.red,
             actions: <Widget>[],
           ),
         ),
       );
 
-      final icon = tester.widget<Icon>(find.byIcon(Icons.menu_book_rounded));
-      expect(icon.color, Colors.red);
-      expect(icon.size, 22);
+      final title = tester.widget<Text>(find.text('Today'));
+      expect(title.style?.color, Colors.red);
     });
 
-    testWidgets('keeps long title and subtitle constrained to one line', (
+    testWidgets('keeps a long title constrained to one line', (
       tester,
     ) async {
       const longTitle =
           'A very long diary title that should never force the top bar wider';
-      const longSubtitle =
-          'A very long subtitle date with extra context that should ellipsize';
 
       await tester.binding.setSurfaceSize(const Size(260, 640));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -148,7 +105,6 @@ void main() {
         _homeTopBarHarness(
           const HomeTopBar(
             title: longTitle,
-            subtitle: longSubtitle,
             actions: <Widget>[
               IconButton(
                 onPressed: null,
@@ -160,11 +116,8 @@ void main() {
       );
 
       final titleText = tester.widget<Text>(find.text(longTitle));
-      final subtitleText = tester.widget<Text>(find.text(longSubtitle));
       expect(titleText.maxLines, 1);
       expect(titleText.overflow, TextOverflow.ellipsis);
-      expect(subtitleText.maxLines, 1);
-      expect(subtitleText.overflow, TextOverflow.ellipsis);
       expect(tester.takeException(), isNull);
     });
   });

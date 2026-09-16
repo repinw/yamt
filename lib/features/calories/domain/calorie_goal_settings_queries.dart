@@ -4,6 +4,21 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Goal resolution and querying extension for [CalorieGoalSettings].
 extension CalorieGoalSettingsQueries on CalorieGoalSettings {
+  /// Earliest counting start day of any user-set goal, if a plan exists.
+  DateTime? get firstGoalStartDay {
+    DateTime? earliest;
+    for (final entry in goalHistory) {
+      if (!entry.hasGoal || entry.isWeeklyCheckIn) {
+        continue;
+      }
+      final start = normalizeDiaryDay(entry.effectiveCountingStartDate);
+      if (earliest == null || start.isBefore(earliest)) {
+        earliest = start;
+      }
+    }
+    return earliest;
+  }
+
   /// Learned TDEE entry effective for the given day.
   CalorieGoalHistoryEntry? learnedTdeeEntryForDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);

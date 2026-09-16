@@ -585,7 +585,6 @@ class _StaticDiaryCalendarController extends DiaryCalendarController {
     return DiaryCalendarState(
       today: normalizedDay,
       selectedDay: normalizedDay,
-      todayRequest: 0,
     );
   }
 }

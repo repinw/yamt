@@ -7,19 +7,11 @@ class HomeShellTabTopChrome extends StatelessWidget {
   const HomeShellTabTopChrome({
     required this.title,
     super.key,
-    this.subtitle,
-    this.middle,
     this.actions = const <Widget>[],
   });
 
   /// Top bar title.
   final String title;
-
-  /// Optional subtitle.
-  final String? subtitle;
-
-  /// Optional middle widget between title and actions.
-  final Widget? middle;
 
   /// Optional tab-owned actions.
   final List<Widget> actions;
@@ -31,14 +23,11 @@ class HomeShellTabTopChrome extends StatelessWidget {
     return HomeShellTopSliverChrome(
       child: HomeTopBar(
         title: title,
-        subtitle: subtitle,
-        middle: middle,
         titleColor: colors.primary,
         compact: compact,
         preferredHeight: HomeTopBar.preferredHeightFor(
           context,
           compact: compact,
-          hasSubtitle: subtitle != null,
         ),
         actions: actions,
       ),

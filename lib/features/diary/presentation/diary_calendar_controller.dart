@@ -1,5 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
+import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 
 part 'diary_calendar_controller.g.dart';
 
@@ -9,13 +12,21 @@ DateTime Function() diaryCalendarNow(Ref ref) {
   return DateTime.now;
 }
 
+/// Selectable range for the current diary calendar state.
+@riverpod
+DiaryCalendarBounds diaryCalendarBounds(Ref ref) {
+  return DiaryCalendarBounds.resolve(
+    today: ref.watch(diaryCalendarControllerProvider).today,
+    planStartDay: ref.watch(diaryPlanStartDayProvider),
+  );
+}
+
 /// UI state for the diary calendar.
 class DiaryCalendarState {
   /// Creates diary calendar state.
   const DiaryCalendarState({
     required this.today,
     required this.selectedDay,
-    required this.todayRequest,
   });
 
   /// Today's normalized date.
@@ -24,9 +35,6 @@ class DiaryCalendarState {
   /// The currently selected date.
   final DateTime selectedDay;
 
-  /// Incremented when the app bar asks the calendar to scroll to today.
-  final int todayRequest;
-
   /// Whether the selected date is today.
   bool get isSelectedToday => isSameCalendarDay(selectedDay, today);
 
@@ -34,12 +42,10 @@ class DiaryCalendarState {
   DiaryCalendarState copyWith({
     DateTime? today,
     DateTime? selectedDay,
-    int? todayRequest,
   }) {
     return DiaryCalendarState(
       today: today ?? this.today,
       selectedDay: selectedDay ?? this.selectedDay,
-      todayRequest: todayRequest ?? this.todayRequest,
     );
   }
 }
@@ -53,13 +59,12 @@ class DiaryCalendarController extends _$DiaryCalendarController {
     return DiaryCalendarState(
       today: today,
       selectedDay: today,
-      todayRequest: 0,
     );
   }
 
-  /// Selects [day].
+  /// Selects [day], clamped to the selectable range.
   void selectDay(DateTime day) {
-    final selectedDay = dateOnly(day);
+    final selectedDay = _bounds().clamp(day);
     if (isSameCalendarDay(selectedDay, state.selectedDay)) {
       return;
     }
@@ -67,14 +72,14 @@ class DiaryCalendarController extends _$DiaryCalendarController {
     state = state.copyWith(selectedDay: selectedDay);
   }
 
-  /// Selects today and asks the calendar strip to scroll back to it.
-  void selectToday() {
-    final today = _currentToday();
-    state = state.copyWith(
-      today: today,
-      selectedDay: today,
-      todayRequest: state.todayRequest + 1,
-    );
+  /// Selects the day before the current selection.
+  void selectPreviousDay() {
+    selectDay(previousLocalDay(state.selectedDay));
+  }
+
+  /// Selects the day after the current selection.
+  void selectNextDay() {
+    selectDay(nextLocalDay(state.selectedDay));
   }
 
   /// Refreshes the cached today value after app resume or midnight rollover.
@@ -84,13 +89,16 @@ class DiaryCalendarController extends _$DiaryCalendarController {
       return;
     }
 
-    final wasSelectedToday = state.isSelectedToday;
     state = state.copyWith(
       today: today,
-      selectedDay: wasSelectedToday ? today : state.selectedDay,
-      todayRequest: wasSelectedToday
-          ? state.todayRequest + 1
-          : state.todayRequest,
+      selectedDay: state.isSelectedToday ? today : state.selectedDay,
+    );
+  }
+
+  DiaryCalendarBounds _bounds() {
+    return DiaryCalendarBounds.resolve(
+      today: state.today,
+      planStartDay: ref.read(diaryPlanStartDayProvider),
     );
   }
 
