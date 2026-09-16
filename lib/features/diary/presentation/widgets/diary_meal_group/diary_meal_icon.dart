@@ -22,7 +22,7 @@ class DiaryMealIcon extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: Icon(
-        resolveMealIcon(mealType),
+        _mealIcon(mealType),
         color: accentColors.meal,
         size: 18,
       ),
@@ -30,8 +30,7 @@ class DiaryMealIcon extends StatelessWidget {
   }
 }
 
-/// Resolves an icon for the given meal type.
-IconData resolveMealIcon(MealType mealType) {
+IconData _mealIcon(MealType mealType) {
   return switch (mealType) {
     MealType.breakfast => Icons.coffee_rounded,
     MealType.lunch => Icons.restaurant_rounded,

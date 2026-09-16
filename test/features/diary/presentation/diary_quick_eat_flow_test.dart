@@ -49,7 +49,12 @@ void main() {
 
       expect(find.text('intent:${entry.value.name}'), findsOneWidget);
       expect(find.text('mode:diary'), findsOneWidget);
-      expect(find.text('mealType:lunch'), findsOneWidget);
+      expect(
+        find.text(
+          'mealType:${MealType.defaultForDateTime(DateTime.now()).jsonValue}',
+        ),
+        findsOneWidget,
+      );
       expect(find.text('loggedDay:2026-04-27'), findsOneWidget);
     }
   });
@@ -445,7 +450,6 @@ class _QuickEatRouteLauncher extends StatelessWidget {
             DiaryQuickEatFlow.openSource(
               context: context,
               source: source,
-              mealType: MealType.lunch,
               selectedDay: selectedDay,
             ),
           );
@@ -584,7 +588,6 @@ class _InventoryFlowHarness extends StatelessWidget {
             DiaryQuickEatFlow.openSource(
               context: context,
               source: DiaryQuickEatSource.inventory,
-              mealType: MealType.lunch,
               selectedDay: _inventoryFlowDay,
             ),
           );

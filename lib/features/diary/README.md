@@ -1,7 +1,7 @@
 # Diary Feature
 
-Diary owns the daily log page, date selection, meal sections, nutrition bars,
-and diary-facing Burn Week and weekly check-in composition.
+Diary owns the daily log page, date selection, quick-eat buttons, logged meals,
+nutrition bars, and diary-facing Burn Week and weekly check-in composition.
 
 ## Owns
 
@@ -22,7 +22,8 @@ and diary-facing Burn Week and weekly check-in composition.
 ## Public Edge
 
 - `presentation/diary_page.dart` is the main page.
-- `presentation/widgets/diary_meals_section.dart` owns diary meal cards.
+- `presentation/widgets/diary_meals_section.dart` owns the quick-eat buttons
+  and the meals logged on the selected day.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
   diary-facing daily and weekly calorie balance UI.
 
@@ -45,7 +46,6 @@ Main application adapters and mappers:
 - `application/diary_weekly_checkin_provider.dart`
 - `application/diary_intro_trigger_provider.dart`
 - `application/diary_provider_warmup.dart`
-- `application/diary_food_log_mutation_adapter.dart`
 - `application/diary_quick_eat_inventory_provider.dart`
 - `application/diary_plan_start_day_provider.dart` (earliest selectable diary day)
 - `application/diary_day_type_provider.dart` (training/rest/pause status and

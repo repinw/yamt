@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_food_log_feedback_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars_content.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars_skeleton.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -49,9 +48,6 @@ class DiaryNutritionBars extends ConsumerWidget {
     final dashboardState = ref.watch(
       diaryDayDashboardControllerProvider(normalizedDay),
     );
-    final activeFeedback = ref
-        .watch(diaryFoodLogFeedbackControllerProvider)
-        .firstOrNull;
     final data = dashboardState.data?.nutritionBars;
     final l10n = AppLocalizations.of(context)!;
     final showError = data == null && dashboardState.showError;
@@ -69,14 +65,6 @@ class DiaryNutritionBars extends ConsumerWidget {
           ? DiaryNutritionBarsSkeleton(showTitle: _showTitle)
           : DiaryNutritionBarsContent(
               data: data,
-              feedback:
-                  activeFeedback?.day == normalizedDay &&
-                      activeFeedback?.after?.protein == data.protein &&
-                      activeFeedback?.after?.carbs == data.carbs &&
-                      activeFeedback?.after?.fat == data.fat &&
-                      activeFeedback?.after?.goals == data.goals
-                  ? activeFeedback
-                  : null,
               showTitle: _showTitle,
             ),
     );

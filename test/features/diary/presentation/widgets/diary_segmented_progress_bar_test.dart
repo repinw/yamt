@@ -12,37 +12,6 @@ void main() {
           .toList();
     }
 
-    testWidgets('highlights only the newly filled part of each segment', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SizedBox(
-              width: 350,
-              child: DiarySegmentedProgressBar(
-                progress: 0.75,
-                highlightStart: 0.625,
-                highlightOpacity: 1,
-                color: Colors.orange,
-                trackColor: Colors.grey,
-                isDark: false,
-              ),
-            ),
-          ),
-        ),
-      );
-
-      // Two old segments, the third with its right half highlighted,
-      // then one empty segment.
-      expect(getWidthFactors(tester), [1, 1, 1, 0.5, 0]);
-      final highlighted = find.byWidgetPredicate(
-        (widget) =>
-            widget is Align && widget.alignment == Alignment.centerRight,
-      );
-      expect(highlighted, findsOneWidget);
-    });
-
     Future<void> pumpBar(
       WidgetTester tester, {
       required double progress,

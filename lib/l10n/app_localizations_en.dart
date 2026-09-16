@@ -2051,18 +2051,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDayTypePauseSubtitle => 'Neutral day (vacation, illness). Doesn\'t break your streak.';
 
   @override
-  String get diaryMealsTitle => 'Diary';
-
-  @override
-  String get diaryMealsEmpty => 'Nothing logged yet';
-
-  @override
   String get diaryMealsLoadFailed => 'Meals could not be loaded';
-
-  @override
-  String diaryQuickEatAddTooltip(String meal) {
-    return 'Add to $meal';
-  }
 
   @override
   String get diaryQuickEatSourceInventory => 'Inventory';
@@ -3458,52 +3447,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookflowResumeLabel => 'Resume';
-
-  @override
-  String get diaryMacroProteinEmphasis => 'Protein emphasis';
-
-  @override
-  String get diaryMacroCarbsEmphasis => 'Carbohydrate emphasis';
-
-  @override
-  String get diaryMacroFatEmphasis => 'Fat emphasis';
-
-  @override
-  String get diaryMacroMixedEmphasis => 'Mixed macro profile';
-
-  @override
-  String get diaryMacroProfileExplanation => 'Shares refer to energy from protein (4 kcal/g), carbohydrates (4 kcal/g), and fat (9 kcal/g). The largest share determines the emphasis if it leads the next by at least ten percentage points. Otherwise, we show a mixed macro profile. This describes composition, not a health rating.';
-
-  @override
-  String diaryMacroDailyContribution(String percent) {
-    return '$percent% of your daily target';
-  }
-
-  @override
-  String diaryMacroCurrentTarget(String current, String target, String unit) {
-    return '$current of $target $unit';
-  }
-
-  @override
-  String diaryMacroRemaining(String amount, String unit) {
-    return '$amount $unit remaining';
-  }
-
-  @override
-  String diaryMacroOverTarget(String amount, String unit) {
-    return '$amount $unit above target';
-  }
-
-  @override
-  String get diaryFoodLogged => 'Food logged';
-
-  @override
-  String diaryFoodsLoggedCount(int count) {
-    return '$count foods logged';
-  }
-
-  @override
-  String get diaryFoodFeedbackClose => 'Close nutrition feedback';
 
   @override
   String get caloriesProteinShortLetter => 'P';

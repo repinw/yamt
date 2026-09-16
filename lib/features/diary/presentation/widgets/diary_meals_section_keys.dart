@@ -1,25 +1,22 @@
 import 'package:flutter/widgets.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 
 /// Stable keys for diary meal section tests.
 abstract final class DiaryMealsSectionKeys {
-  /// Card key for a meal section.
-  static Key mealCard(MealType mealType) {
-    return ValueKey<String>('diary-meal-card-${mealType.jsonValue}');
+  /// Group key for a logged meal type.
+  static Key mealGroup(MealType mealType) {
+    return ValueKey<String>('diary-meal-group-${mealType.jsonValue}');
   }
 
-  /// Collapsed empty-state key for a meal section.
-  static Key collapsedEmpty(MealType mealType) {
-    return ValueKey<String>(
-      'diary-meal-collapsed-empty-${mealType.jsonValue}',
-    );
+  /// Row key for a logged entry.
+  static Key entryTile(String entryId) {
+    return ValueKey<String>('diary-meal-entry-$entryId');
   }
 
-  /// Expanded empty-state key for a meal section.
-  static Key expandedEmpty(MealType mealType) {
-    return ValueKey<String>(
-      'diary-meal-expanded-empty-${mealType.jsonValue}',
-    );
+  /// Button key for a quick-eat source.
+  static Key quickEatSource(DiaryQuickEatSource source) {
+    return ValueKey<String>('diary-quick-eat-source-${source.name}');
   }
 
   /// Retry button key.

@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_macro_transition.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
 /// Single macronutrient progress row with remaining value, label,
@@ -17,8 +16,6 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     required this.color,
     required this.numberFormat,
     required this.unit,
-    this.previous,
-    this.startedAt,
     super.key,
   });
 
@@ -40,25 +37,12 @@ class DiaryNutritionMacroRow extends StatelessWidget {
   /// Display unit string (e.g. "g").
   final String unit;
 
-  /// Intake before this confirmed food addition.
-  final double? previous;
-
-  /// Shared start time; null for loading, editing and day changes.
-  final DateTime? startedAt;
-
   @override
-  Widget build(BuildContext context) => DiaryMacroTransition(
-    current: current,
-    previous: previous,
-    startedAt: startedAt,
-    builder: _buildRow,
-  );
-
-  Widget _buildRow(BuildContext context, double value, double highlight) {
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isDark = colors.brightness == Brightness.dark;
-    final progress = target <= 0 ? 0.0 : (value / target).clamp(0.0, 1.0);
-    final remaining = target - value;
+    final progress = target <= 0 ? 0.0 : (current / target).clamp(0.0, 1.0);
+    final remaining = target - current;
     final isOverTarget = remaining < -0.5;
     final roundedRemaining = remaining.round();
     final remainingFormatted = numberFormat.format(
@@ -109,10 +93,6 @@ class DiaryNutritionMacroRow extends StatelessWidget {
               color: color,
               trackColor: trackColor,
               isDark: isDark,
-              highlightStart: target <= 0 || previous == null
-                  ? null
-                  : (previous! / target).clamp(0.0, 1.0),
-              highlightOpacity: highlight,
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
@@ -125,7 +105,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
               text: TextSpan(
                 children: [
                   TextSpan(
-                    text: numberFormat.format(value.round()),
+                    text: numberFormat.format(current.round()),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: colors.onSurface,
                       fontWeight: FontWeight.w800,

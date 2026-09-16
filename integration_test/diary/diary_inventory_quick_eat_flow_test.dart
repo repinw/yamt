@@ -9,6 +9,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
@@ -24,6 +25,8 @@ import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
+import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
@@ -258,30 +261,31 @@ Future<void> _pumpUntilOnScreen(
   );
 }
 
-Future<void> _openBreakfastInventoryQuickAdd(
+Future<void> _openInventoryQuickEat(
   WidgetTester tester,
 ) async {
-  final breakfastAddButton = find.byKey(
-    const Key('diary_quick_add_button_breakfast'),
-  );
-  await tester.ensureVisible(breakfastAddButton);
-  await tester.pump();
-
-  await tester.tap(breakfastAddButton);
   final inventorySource = find.byKey(
-    const Key('diary_quick_add_source_inventory'),
+    DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.inventory),
   );
   await _pumpUntilFound(
     tester,
     inventorySource,
-    description: 'inventory quick-add source',
+    description: 'inventory quick-eat source',
   );
+  await tester.ensureVisible(inventorySource);
+  await tester.pump();
 
   await tester.tap(inventorySource);
   await tester.pump();
 }
 
-Future<_DiaryInventoryQuickEatHarness> _pumpAndOpenBreakfastInventoryQuickAdd(
+/// Meal type the diary preselects for food logged right now.
+MealType _currentMealType() => MealType.defaultForDateTime(DateTime.now());
+
+String _currentMealName() =>
+    _currentMealType().localizedName(lookupAppLocalizations(_locale));
+
+Future<_DiaryInventoryQuickEatHarness> _pumpAndOpenInventoryQuickEat(
   WidgetTester tester, {
   List<InventoryItem>? inventoryItems,
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
@@ -294,7 +298,7 @@ Future<_DiaryInventoryQuickEatHarness> _pumpAndOpenBreakfastInventoryQuickAdd(
   );
   await tester.pumpWidget(harness.app);
   await tester.pump();
-  await _openBreakfastInventoryQuickAdd(tester);
+  await _openInventoryQuickEat(tester);
   return harness;
 }
 
@@ -315,10 +319,10 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('diary breakfast quick add waits for household inventory', (
+  testWidgets('diary quick eat waits for household inventory', (
     tester,
   ) async {
-    final harness = await _pumpAndOpenBreakfastInventoryQuickAdd(tester);
+    final harness = await _pumpAndOpenInventoryQuickEat(tester);
 
     expect(find.text('Aus Vorrat essen'), findsNothing);
     expect(find.text('Brötchen'), findsNothing);
@@ -346,7 +350,7 @@ void main() {
     );
 
     expect(find.text('Brötchen'), findsOneWidget);
-    expect(find.text('Frühstück'), findsWidgets);
+    expect(find.text(_currentMealName()), findsWidgets);
     expect(
       find.byKey(_inventoryItemAmountFieldKey),
       findsOneWidget,
@@ -357,10 +361,10 @@ void main() {
     );
   });
 
-  testWidgets('diary breakfast quick add waits for household prepared meals', (
+  testWidgets('diary quick eat waits for household prepared meals', (
     tester,
   ) async {
-    final harness = await _pumpAndOpenBreakfastInventoryQuickAdd(
+    final harness = await _pumpAndOpenInventoryQuickEat(
       tester,
       inventoryItems: const <InventoryItem>[],
       preparedMeals: [
@@ -394,7 +398,7 @@ void main() {
     );
 
     expect(find.text('Chili sin Carne'), findsOneWidget);
-    expect(find.text('Frühstück'), findsWidgets);
+    expect(find.text(_currentMealName()), findsWidgets);
     expect(
       find.byKey(_preparedMealPortionsFieldKey),
       findsOneWidget,
@@ -421,7 +425,7 @@ void main() {
     expect(harness.householdPreparedMeals.single.remainingPortions, 1);
     expect(harness.logRepository.entries, hasLength(1));
     expect(harness.logRepository.entries.single.name, 'Chili sin Carne');
-    expect(harness.logRepository.entries.single.mealType, MealType.breakfast);
+    expect(harness.logRepository.entries.single.mealType, _currentMealType());
   });
 
   testWidgets(
@@ -429,7 +433,7 @@ void main() {
     (
       tester,
     ) async {
-      final harness = await _pumpAndOpenBreakfastInventoryQuickAdd(
+      final harness = await _pumpAndOpenInventoryQuickEat(
         tester,
         inventoryItems: [
           _inventoryItem(
@@ -459,7 +463,7 @@ void main() {
     (
       tester,
     ) async {
-      final harness = await _pumpAndOpenBreakfastInventoryQuickAdd(
+      final harness = await _pumpAndOpenInventoryQuickEat(
         tester,
         inventoryItems: [
           _inventoryItem(
@@ -511,7 +515,7 @@ void main() {
   testWidgets('diary prepared meal quick add shows save failure snackbar', (
     tester,
   ) async {
-    final harness = await _pumpAndOpenBreakfastInventoryQuickAdd(
+    final harness = await _pumpAndOpenInventoryQuickEat(
       tester,
       inventoryItems: const <InventoryItem>[],
       preparedMeals: [

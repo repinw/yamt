@@ -3983,29 +3983,11 @@ abstract class AppLocalizations {
   /// **'Neutral day (vacation, illness). Doesn\'t break your streak.'**
   String get diaryDayTypePauseSubtitle;
 
-  /// No description provided for @diaryMealsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Diary'**
-  String get diaryMealsTitle;
-
-  /// No description provided for @diaryMealsEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing logged yet'**
-  String get diaryMealsEmpty;
-
   /// No description provided for @diaryMealsLoadFailed.
   ///
   /// In en, this message translates to:
   /// **'Meals could not be loaded'**
   String get diaryMealsLoadFailed;
-
-  /// No description provided for @diaryQuickEatAddTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to {meal}'**
-  String diaryQuickEatAddTooltip(String meal);
 
   /// No description provided for @diaryQuickEatSourceInventory.
   ///
@@ -6664,78 +6646,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resume'**
   String get cookflowResumeLabel;
-
-  /// No description provided for @diaryMacroProteinEmphasis.
-  ///
-  /// In en, this message translates to:
-  /// **'Protein emphasis'**
-  String get diaryMacroProteinEmphasis;
-
-  /// No description provided for @diaryMacroCarbsEmphasis.
-  ///
-  /// In en, this message translates to:
-  /// **'Carbohydrate emphasis'**
-  String get diaryMacroCarbsEmphasis;
-
-  /// No description provided for @diaryMacroFatEmphasis.
-  ///
-  /// In en, this message translates to:
-  /// **'Fat emphasis'**
-  String get diaryMacroFatEmphasis;
-
-  /// No description provided for @diaryMacroMixedEmphasis.
-  ///
-  /// In en, this message translates to:
-  /// **'Mixed macro profile'**
-  String get diaryMacroMixedEmphasis;
-
-  /// No description provided for @diaryMacroProfileExplanation.
-  ///
-  /// In en, this message translates to:
-  /// **'Shares refer to energy from protein (4 kcal/g), carbohydrates (4 kcal/g), and fat (9 kcal/g). The largest share determines the emphasis if it leads the next by at least ten percentage points. Otherwise, we show a mixed macro profile. This describes composition, not a health rating.'**
-  String get diaryMacroProfileExplanation;
-
-  /// No description provided for @diaryMacroDailyContribution.
-  ///
-  /// In en, this message translates to:
-  /// **'{percent}% of your daily target'**
-  String diaryMacroDailyContribution(String percent);
-
-  /// No description provided for @diaryMacroCurrentTarget.
-  ///
-  /// In en, this message translates to:
-  /// **'{current} of {target} {unit}'**
-  String diaryMacroCurrentTarget(String current, String target, String unit);
-
-  /// No description provided for @diaryMacroRemaining.
-  ///
-  /// In en, this message translates to:
-  /// **'{amount} {unit} remaining'**
-  String diaryMacroRemaining(String amount, String unit);
-
-  /// No description provided for @diaryMacroOverTarget.
-  ///
-  /// In en, this message translates to:
-  /// **'{amount} {unit} above target'**
-  String diaryMacroOverTarget(String amount, String unit);
-
-  /// No description provided for @diaryFoodLogged.
-  ///
-  /// In en, this message translates to:
-  /// **'Food logged'**
-  String get diaryFoodLogged;
-
-  /// No description provided for @diaryFoodsLoggedCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} foods logged'**
-  String diaryFoodsLoggedCount(int count);
-
-  /// No description provided for @diaryFoodFeedbackClose.
-  ///
-  /// In en, this message translates to:
-  /// **'Close nutrition feedback'**
-  String get diaryFoodFeedbackClose;
 
   /// No description provided for @caloriesProteinShortLetter.
   ///

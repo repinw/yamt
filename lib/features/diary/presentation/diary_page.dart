@@ -14,12 +14,9 @@ import 'package:yamt/features/diary/presentation/controllers/diary_intro_banner_
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page_intro_coordinator.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_food_log_feedback/diary_food_log_feedback_host.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_page_header.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_page_meals_content.dart';
 import 'package:yamt/features/health/application/'
     'health_connection_actions.dart';
 
@@ -94,60 +91,63 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
         !goalSettings.hasLearnedTdee &&
         DiaryIntroData.canBuildFrom(goalSettings);
 
-    return DiaryFoodLogFeedbackHost(
-      child: ColoredBox(
-        color: colors.surface,
-        child: CustomScrollView(
-          key: DiaryPage.pageKey,
-          cacheExtent: 0,
-          slivers: [
-            if (widget.includeHomeShellChrome) const DiaryHomeShellTopChrome(),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                horizontalPagePadding,
-                AppSpacing.md,
-                horizontalPagePadding,
-                0,
-              ),
-              sliver: SliverList.list(
-                children: [
-                  DiaryPageHeader(
-                    selectedDay: calendarState.selectedDay,
-                    dashboardData: dashboardState.data,
-                    showIntroBanner: showIntroBanner,
-                    onOpenIntro: () {
-                      final introData = DiaryIntroData.fromSettings(
-                        goalSettings!,
-                      );
-                      final healthStatus = ref
-                          .read(healthConnectionStatusProvider)
-                          .value;
-                      unawaited(
-                        runDiaryIntroFlow(
-                          context: context,
-                          ref: ref,
-                          introData: introData,
-                          healthStatus: healthStatus,
-                        ),
-                      );
-                    },
-                    onDismissIntro: () {
-                      final notifier = ref.read(
-                        diaryIntroBannerDismissalControllerProvider.notifier,
-                      );
-                      unawaited(notifier.dismiss());
-                    },
+    return ColoredBox(
+      color: colors.surface,
+      child: CustomScrollView(
+        key: DiaryPage.pageKey,
+        cacheExtent: 0,
+        slivers: [
+          if (widget.includeHomeShellChrome) const DiaryHomeShellTopChrome(),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPagePadding,
+              AppSpacing.md,
+              horizontalPagePadding,
+              bottomPagePadding,
+            ),
+            sliver: SliverList.list(
+              children: [
+                DiaryPageHeader(
+                  selectedDay: calendarState.selectedDay,
+                  dashboardData: dashboardState.data,
+                  showIntroBanner: showIntroBanner,
+                  onOpenIntro: () {
+                    final introData = DiaryIntroData.fromSettings(
+                      goalSettings!,
+                    );
+                    final healthStatus = ref
+                        .read(healthConnectionStatusProvider)
+                        .value;
+                    unawaited(
+                      runDiaryIntroFlow(
+                        context: context,
+                        ref: ref,
+                        introData: introData,
+                        healthStatus: healthStatus,
+                      ),
+                    );
+                  },
+                  onDismissIntro: () {
+                    final notifier = ref.read(
+                      diaryIntroBannerDismissalControllerProvider.notifier,
+                    );
+                    unawaited(notifier.dismiss());
+                  },
+                ),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: AppSizes.narrowContentMaxWidth,
+                    ),
+                    child: DiaryMealsSection(
+                      selectedDay: calendarState.selectedDay,
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            buildDiaryPageMealsContent(
-              selectedDay: calendarState.selectedDay,
-              horizontalPadding: horizontalPagePadding,
-              bottomPadding: bottomPagePadding,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

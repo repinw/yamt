@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/diary/application/'
-    'diary_food_log_mutation_adapter.dart';
-import 'package:yamt/features/diary/domain/diary_food_log_session.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_food_log_feedback_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_quick_eat_inventory_item_flow.dart';
@@ -35,55 +30,22 @@ enum DiaryQuickEatSource {
 class DiaryQuickEatFlow {
   const DiaryQuickEatFlow._();
 
-  /// Open selected quick-eat source.
+  /// Opens [source] for [selectedDay].
+  ///
+  /// The current time sets both the logged time and the preselected meal type.
   static Future<void> openSource({
     required BuildContext context,
     required DiaryQuickEatSource source,
-    required MealType mealType,
     required DateTime selectedDay,
-  }) async {
-    final container = ProviderScope.containerOf(context, listen: false);
-    final loggedAt = _resolveLoggedAt(selectedDay);
-    final session = DiaryFoodLogSession();
-    await _openSourceWithSession(
+  }) {
+    final now = DateTime.now();
+    final day = normalizeLocalDay(selectedDay);
+    return _openSelectedSource(
       context: context,
-      container: container,
-      session: session,
       source: source,
-      mealType: mealType,
-      loggedAt: loggedAt,
+      mealType: MealType.defaultForDateTime(now),
+      loggedAt: DateTime(day.year, day.month, day.day, now.hour, now.minute),
     );
-    if (!context.mounted) {
-      return;
-    }
-    await _enqueueFeedback(
-      context: context,
-      container: container,
-      session: session,
-    );
-  }
-
-  static Future<void> _openSourceWithSession({
-    required BuildContext context,
-    required ProviderContainer container,
-    required DiaryFoodLogSession session,
-    required DiaryQuickEatSource source,
-    required MealType mealType,
-    required DateTime loggedAt,
-  }) async {
-    final subscription = container
-        .read(diaryFoodLogMutationAdapterProvider)
-        .listen(session);
-    try {
-      await _openSelectedSource(
-        context: context,
-        source: source,
-        mealType: mealType,
-        loggedAt: loggedAt,
-      );
-    } finally {
-      await subscription.cancel();
-    }
   }
 
   static Future<void> _openSelectedSource({
@@ -105,20 +67,6 @@ class DiaryQuickEatFlow {
       mealType: mealType,
       loggedAt: loggedAt,
     );
-  }
-
-  static Future<void> _enqueueFeedback({
-    required BuildContext context,
-    required ProviderContainer container,
-    required DiaryFoodLogSession session,
-  }) async {
-    if (!context.mounted || session.dayGroups.isEmpty) {
-      return;
-    }
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    await container
-        .read(diaryFoodLogFeedbackControllerProvider.notifier)
-        .enqueue(session.dayGroups);
   }
 
   static ProductSearchHubInitialIntent _resolveProductSearchIntent(
@@ -196,17 +144,5 @@ class DiaryQuickEatFlow {
           loggedAt: loggedAt,
         );
     }
-  }
-
-  static DateTime _resolveLoggedAt(DateTime selectedDay) {
-    final now = DateTime.now();
-    final normalizedDay = normalizeLocalDay(selectedDay);
-    return DateTime(
-      normalizedDay.year,
-      normalizedDay.month,
-      normalizedDay.day,
-      now.hour,
-      now.minute,
-    );
   }
 }

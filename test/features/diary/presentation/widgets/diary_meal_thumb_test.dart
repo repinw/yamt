@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_meal_media.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_thumb.dart';
 
 void main() {
   const entry = DiaryMealEntry(
@@ -17,12 +17,12 @@ void main() {
     totalFat: 5,
   );
 
-  Widget buildTestWidget({bool compact = false}) {
-    return ProviderScope(
+  Widget buildTestWidget() {
+    return const ProviderScope(
       child: MaterialApp(
         home: Scaffold(
           body: Center(
-            child: MealThumb(entry: entry, compact: compact),
+            child: MealThumb(entry: entry),
           ),
         ),
       ),
@@ -50,31 +50,6 @@ void main() {
       ),
     );
     expect(clipRRect.borderRadius, BorderRadius.circular(AppRadius.md));
-
-    expect(find.text('H'), findsOneWidget);
-  });
-
-  testWidgets('MealThumb renders compact dimensions and initial fallback', (
-    tester,
-  ) async {
-    await tester.pumpWidget(buildTestWidget(compact: true));
-
-    final sizedBox = tester.widget<SizedBox>(
-      find.descendant(
-        of: find.byType(MealThumb),
-        matching: find.byType(SizedBox),
-      ),
-    );
-    expect(sizedBox.width, 34);
-    expect(sizedBox.height, 34);
-
-    final clipRRect = tester.widget<ClipRRect>(
-      find.descendant(
-        of: find.byType(MealThumb),
-        matching: find.byType(ClipRRect),
-      ),
-    );
-    expect(clipRRect.borderRadius, BorderRadius.circular(AppRadius.sm));
 
     expect(find.text('H'), findsOneWidget);
   });

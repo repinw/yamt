@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_meal_card/diary_meal_cards_skeleton.dart';
+    'diary_meal_group/diary_meals_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -16,7 +19,32 @@ import '../../support/diary_dashboard_test_support.dart';
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
-  testWidgets('renders meal categories from provider data', (tester) async {
+  testWidgets('empty day shows only large quick-eat buttons', (tester) async {
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        for (final mealType in MealType.sectionOrder)
+          _mealSection(mealType, const []),
+      ],
+    );
+
+    for (final source in DiaryQuickEatSource.values) {
+      expect(
+        find.byKey(DiaryMealsSectionKeys.quickEatSource(source)),
+        findsOneWidget,
+      );
+    }
+    expect(find.text('Inventory'), findsOneWidget);
+    expect(find.text('Search'), findsOneWidget);
+    expect(find.text('AI'), findsOneWidget);
+    expect(find.text('Barcode'), findsOneWidget);
+    expect(find.byType(DiaryMealGroup), findsNothing);
+  });
+
+  testWidgets('logged meals render groups with readable entry rows', (
+    tester,
+  ) async {
     await _pumpMealsSection(
       tester,
       selectedDay: selectedDay,
@@ -31,6 +59,7 @@ void main() {
             protein: 8,
             carbs: 40,
             fat: 6,
+            amount: 80,
           ),
           _entry(
             id: 'yogurt',
@@ -55,143 +84,59 @@ void main() {
             carbs: 70,
             fat: 16,
           ),
-          _entry(
-            id: 'salad',
-            day: selectedDay,
-            mealType: MealType.dinner,
-            name: 'Salad',
-            kcal: 120,
-            protein: 4,
-            carbs: 9,
-            fat: 8,
-          ),
         ]),
         _mealSection(MealType.snack, const []),
       ],
     );
 
-    expect(find.text('Diary'), findsOneWidget);
+    // Buttons shrink to emoji only once food is logged.
+    expect(find.text('Inventory'), findsNothing);
+    expect(
+      find.byKey(
+        DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.inventory),
+      ),
+      findsOneWidget,
+    );
+
+    expect(
+      find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.breakfast)),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.dinner)),
+      findsOneWidget,
+    );
+    expect(find.text('Lunch'), findsNothing);
+    expect(find.text('Snack'), findsNothing);
+
     expect(find.text('Breakfast'), findsOneWidget);
-    expect(find.text('Lunch'), findsOneWidget);
-    expect(find.text('Dinner'), findsOneWidget);
-    expect(find.text('Snack'), findsOneWidget);
-    expect(find.text('Oats'), findsNothing);
-    expect(find.text('Pasta'), findsNothing);
     expect(find.text('250 kcal'), findsOneWidget);
-    expect(find.text('520 kcal'), findsOneWidget);
+    expect(find.text('P 20g · C 55g · F 10g'), findsOneWidget);
 
-    await tester.tap(find.text('Breakfast'));
-    await tester.pumpAndSettle();
-    expect(find.text('Oats'), findsOneWidget);
+    final oats = find.byKey(DiaryMealsSectionKeys.entryTile('oats'));
     expect(
-      find.byKey(DiaryMealsSectionKeys.collapsedEmpty(MealType.lunch)),
+      find.descendant(of: oats, matching: find.text('Oats')),
       findsOneWidget,
     );
     expect(
-      find.byKey(DiaryMealsSectionKeys.collapsedEmpty(MealType.snack)),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('switches empty meal from collapsed to expanded state', (
-    tester,
-  ) async {
-    await _pumpMealsSection(
-      tester,
-      selectedDay: selectedDay,
-      sections: [
-        for (final mealType in MealType.sectionOrder)
-          _mealSection(mealType, const []),
-      ],
-    );
-
-    expect(
-      find.byKey(DiaryMealsSectionKeys.collapsedEmpty(MealType.lunch)),
+      find.descendant(of: oats, matching: find.text('100 kcal')),
       findsOneWidget,
     );
     expect(
-      find.byKey(DiaryMealsSectionKeys.expandedEmpty(MealType.lunch)),
+      find.descendant(of: oats, matching: find.text('P 8g · C 40g · F 6g')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: oats, matching: find.text('80 g')),
+      findsOneWidget,
+    );
+
+    final yogurt = find.byKey(DiaryMealsSectionKeys.entryTile('yogurt'));
+    expect(
+      find.descendant(of: yogurt, matching: find.textContaining(' g')),
       findsNothing,
     );
-
-    await tester.tap(find.text('Lunch'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(DiaryMealsSectionKeys.collapsedEmpty(MealType.lunch)),
-      findsNothing,
-    );
-    expect(
-      find.byKey(DiaryMealsSectionKeys.expandedEmpty(MealType.lunch)),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('meal add button opens quick menu without expanding card', (
-    tester,
-  ) async {
-    await _pumpMealsSection(
-      tester,
-      selectedDay: selectedDay,
-      sections: [
-        for (final mealType in MealType.sectionOrder)
-          _mealSection(mealType, const []),
-      ],
-    );
-
-    await tester.tap(
-      find.byKey(const Key('diary_quick_add_button_lunch')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Inventory'), findsOneWidget);
-    expect(find.text('Barcode'), findsOneWidget);
-    expect(find.text('Search'), findsOneWidget);
-    expect(find.text('AI'), findsOneWidget);
-    expect(
-      find.byKey(DiaryMealsSectionKeys.expandedEmpty(MealType.lunch)),
-      findsNothing,
-    );
-  });
-
-  testWidgets('expands and collapses meal entry details', (tester) async {
-    await _pumpMealsSection(
-      tester,
-      selectedDay: selectedDay,
-      sections: [
-        _mealSection(MealType.breakfast, [
-          _entry(
-            id: 'ice-cream',
-            day: selectedDay,
-            mealType: MealType.breakfast,
-            name: 'Ice cream',
-            kcal: 100,
-            protein: 2,
-            carbs: 12,
-            fat: 5,
-          ),
-        ]),
-        _mealSection(MealType.lunch, const []),
-        _mealSection(MealType.dinner, const []),
-        _mealSection(MealType.snack, const []),
-      ],
-    );
-
-    expect(find.text('C 12g'), findsNothing);
-
-    await tester.tap(find.text('Breakfast'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('C 12g'), findsOneWidget);
-    expect(find.text('P 2g'), findsOneWidget);
-    expect(find.text('F 5g'), findsOneWidget);
-
-    await tester.tap(find.text('Breakfast'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('C 12g'), findsNothing);
-    expect(find.text('P 2g'), findsNothing);
-    expect(find.text('F 5g'), findsNothing);
+    expect(find.text('Pasta'), findsOneWidget);
   });
 
   testWidgets('shows retry and reloads after meals load error', (
@@ -244,12 +189,10 @@ void main() {
 
     expect(find.text('Meals could not be loaded'), findsNothing);
     expect(find.text('Breakfast'), findsOneWidget);
-    await tester.tap(find.text('Breakfast'));
-    await tester.pumpAndSettle();
     expect(find.text('Oats'), findsOneWidget);
   });
 
-  testWidgets('keeps previous meal cards visible while meals reload', (
+  testWidgets('keeps previous meals visible while meals reload', (
     tester,
   ) async {
     final controller = FakeDiaryDayDashboardController(
@@ -290,8 +233,6 @@ void main() {
     );
 
     expect(find.text('Breakfast'), findsOneWidget);
-    await tester.tap(find.text('Breakfast'));
-    await tester.pumpAndSettle();
     expect(find.text('Oats'), findsOneWidget);
 
     replaceFakeDiaryDashboardState(
@@ -302,7 +243,7 @@ void main() {
 
     expect(find.text('Breakfast'), findsOneWidget);
     expect(find.text('Oats'), findsOneWidget);
-    expect(find.byType(DiaryMealCardsSkeleton), findsNothing);
+    expect(find.byType(DiaryMealsSkeleton), findsNothing);
   });
 }
 
@@ -376,6 +317,7 @@ DiaryMealEntry _entry({
   required double protein,
   required double carbs,
   required double fat,
+  double? amount,
 }) {
   return DiaryMealEntry(
     id: id,
@@ -385,6 +327,8 @@ DiaryMealEntry _entry({
     totalProtein: protein,
     totalCarbs: carbs,
     totalFat: fat,
+    consumedAmount: amount,
+    consumedUnit: amount == null ? null : ConsumedUnit.grams,
   );
 }
 
