@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -15,6 +14,8 @@ import 'package:yamt/features/calories/domain/'
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -24,10 +25,6 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_calorie_bridge_flow.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
 
@@ -95,7 +92,6 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   }
 }
 
-@Dependencies([inventoryBackedCalorieEntrySaveFlow])
 class _SaveDirectEntryButton extends ConsumerWidget {
   const _SaveDirectEntryButton({
     required this.profile,
@@ -190,7 +186,6 @@ InventoryItem _itemWithoutNutrition() {
   );
 }
 
-@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   ProviderContainer container,
 ) {
@@ -203,10 +198,6 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
   return container.listen(calorieEntriesControllerProvider, (_, _) {});
 }
 
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 void main() {
   test('buildProfileFromInventoryItem maps nutrition and barcode fallback', () {
     final item = _amountItemWithNutrition(barcode: null);

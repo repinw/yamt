@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
-import 'package:yamt/features/product_search_hub/data/'
+import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_handler.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
 import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
+import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-export 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_completion_result.dart';
-
-@Dependencies([productSearchHubCompletionHandler])
 /// Completes a product search hub editor result for the active route mode.
 Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   required BuildContext context,
@@ -44,14 +41,14 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   }
   return resolvedHandler.completeResult(
     context: context,
-    args: args,
     sourceKey: sourceKey,
     result: result,
+    preselectedMealType: args.preselectedMealType,
+    preselectedLoggedAt: args.preselectedLoggedAt,
     continueDiaryBatch: continueDiaryBatch,
   );
 }
 
-@Dependencies([productSearchHubCompletionHandler])
 /// Removes a saved hub selection from caller persistence.
 Future<bool> removeProductSearchHubSelection({
   required ProductSearchHubSavedSelection selection,

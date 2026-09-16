@@ -105,7 +105,7 @@ class ReceiptReviewHeader extends StatelessWidget {
                     child: Text(
                       (receipt.storeName == null || receipt.storeName!.isEmpty)
                           ? (l10n?.receiptReviewUnknownStore ??
-                              'Unbekannter Händler')
+                                'Unbekannter Händler')
                           : receipt.storeName!,
                       style: const TextStyle(
                         fontSize: 16,

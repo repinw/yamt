@@ -164,20 +164,34 @@ class _SettingsMacroGoalsSheetState
     final weightKg = _resolveWeightKg(isMale);
     final goalKcal = _resolveGoalKcal();
 
-    final targets = MacroBudgetCalculator.calculate(
-      goalKcal: goalKcal,
-      weightKg: weightKg,
-      proteinGramsPerKg: _proteinMultiplier,
-      fatGramsPerKg: _fatMultiplier,
-    );
-    final proteinGrams = targets.protein.round();
-    final fatGrams = targets.fat.round();
-    final carbsGrams = targets.carbs.round();
+    final rawProteinGrams = (weightKg * _proteinMultiplier).round();
+    final rawFatGrams = (weightKg * _fatMultiplier).round();
+    final rawProteinKcal = rawProteinGrams * 4;
+    final rawFatKcal = rawFatGrams * 9;
+    final isBudgetExceeded = (rawProteinKcal + rawFatKcal) > goalKcal;
+
+    final int proteinGrams;
+    final int fatGrams;
+    final int carbsGrams;
+    if (isBudgetExceeded) {
+      proteinGrams = rawProteinGrams;
+      fatGrams = rawFatGrams;
+      carbsGrams = 0;
+    } else {
+      final targets = MacroBudgetCalculator.calculate(
+        goalKcal: goalKcal,
+        weightKg: weightKg,
+        proteinGramsPerKg: _proteinMultiplier,
+        fatGramsPerKg: _fatMultiplier,
+      );
+      proteinGrams = targets.protein.round();
+      fatGrams = targets.fat.round();
+      carbsGrams = targets.carbs.round();
+    }
     final proteinKcal = proteinGrams * 4;
     final fatKcal = fatGrams * 9;
     final carbsKcal = carbsGrams * 4;
     final totalEffectiveKcal = proteinKcal + fatKcal + carbsKcal;
-    final isBudgetExceeded = (proteinKcal + fatKcal) > goalKcal;
 
     final proteinPct = totalEffectiveKcal > 0
         ? (proteinKcal / totalEffectiveKcal * 100).round()

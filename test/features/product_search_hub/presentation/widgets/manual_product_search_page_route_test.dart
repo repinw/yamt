@@ -4,13 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -22,7 +18,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-@Dependencies([inventoryManualAddQuickEatConfig, productSearchGateway])
 void main() {
   testWidgets('push helper returns typed result without route animation', (
     tester,
@@ -58,7 +53,7 @@ void main() {
     );
     addTearDown(router.dispose);
 
-    await tester.pumpWidget(_wrapRouter(router));
+    await _pumpRouter(tester, router);
 
     await tester.tap(find.byKey(const Key('open_manual_product_route')));
     await tester.pump();
@@ -109,7 +104,7 @@ void main() {
     );
     addTearDown(router.dispose);
 
-    await tester.pumpWidget(_wrapRouter(router));
+    await _pumpRouter(tester, router);
 
     await tester.tap(find.byKey(const Key('open_go_router_route')));
     await tester.pumpAndSettle();
@@ -138,18 +133,17 @@ void main() {
       savedResult = result;
     }
 
-    await tester.pumpWidget(
-      _wrapChild(
-        buildManualProductSearchChild(
-          ManualProductSearchRouteArgs.editor(
-            config: InventoryReceiptManualProductConfig(item: _item()),
-            showEatImmediatelyOption: false,
-            initialAction: InventoryReceiptManualProductAction.addToInventory,
-            closeCurrentEditorOnSave: false,
-            showActionSelector: true,
-            autofocusSearch: true,
-            onSaved: handleSaved,
-          ),
+    await _pumpChild(
+      tester,
+      buildManualProductSearchChild(
+        ManualProductSearchRouteArgs.editor(
+          config: InventoryReceiptManualProductConfig(item: _item()),
+          showEatImmediatelyOption: false,
+          initialAction: InventoryReceiptManualProductAction.addToInventory,
+          closeCurrentEditorOnSave: false,
+          showActionSelector: true,
+          autofocusSearch: true,
+          onSaved: handleSaved,
         ),
       ),
     );
@@ -171,39 +165,42 @@ void main() {
   });
 }
 
-Widget _wrapRouter(GoRouter router) {
-  return ProviderScope(
-    overrides: [
-      inventoryItemRepositoryProvider.overrideWithValue(
-        const _EmptyInventoryItemRepository(),
+Future<void> _pumpRouter(WidgetTester tester, GoRouter router) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(
+          const _EmptyInventoryItemRepository(),
+        ),
+      ],
+      child: MaterialApp.router(
+        locale: const Locale('en'),
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       ),
-    ],
-    child: MaterialApp.router(
-      locale: const Locale('en'),
-      routerConfig: router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
 }
 
-Widget _wrapChild(Widget child) {
-  return ProviderScope(
-    overrides: [
-      inventoryItemRepositoryProvider.overrideWithValue(
-        const _EmptyInventoryItemRepository(),
+Future<void> _pumpChild(WidgetTester tester, Widget child) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(
+          const _EmptyInventoryItemRepository(),
+        ),
+      ],
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: child,
       ),
-    ],
-    child: MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: child,
     ),
   );
 }
 
-@Dependencies([productSearchGateway])
 GoRouter _buildManualProductRouteTestRouter({
   required WidgetBuilder homeBuilder,
 }) {

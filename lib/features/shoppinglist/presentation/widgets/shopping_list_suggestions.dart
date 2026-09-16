@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Recent consumption suggestions, independent of shopping list loading.
-@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
 class ShoppingListSuggestions extends ConsumerStatefulWidget {
   /// Creates the suggestions section.
-  const ShoppingListSuggestions({super.key});
+  const ShoppingListSuggestions({
+    required this.suggestions,
+    this.onRetry,
+    super.key,
+  });
+
+  /// The raw suggestions value to filter and display.
+  final AsyncValue<List<ShoppingSuggestion>> suggestions;
+
+  /// Optional retry action triggered when loading suggestions fails.
+  final VoidCallback? onRetry;
 
   @override
   ConsumerState<ShoppingListSuggestions> createState() =>
@@ -44,7 +52,14 @@ class _ShoppingListSuggestionsState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final history = ref.watch(shoppingSuggestionsProvider);
+    final items = ref.watch(shoppingListControllerProvider).asData?.value ?? [];
+    final filteredHistory = widget.suggestions.whenData(
+      (suggestions) => suggestions
+          .where((suggestion) => !isSuggestionAlreadyListed(items, suggestion))
+          .take(6)
+          .toList(growable: false),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -58,10 +73,10 @@ class _ShoppingListSuggestionsState
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 12),
-        history.when(
+        filteredHistory.when(
           loading: () => const LinearProgressIndicator(),
           error: (_, _) => TextButton.icon(
-            onPressed: ref.watch(shoppingSuggestionRetryProvider),
+            onPressed: widget.onRetry,
             icon: const Icon(Icons.refresh),
             label: Text(l10n.shoppingListSuggestionsRetry),
           ),

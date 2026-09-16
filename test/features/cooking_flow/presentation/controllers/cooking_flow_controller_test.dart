@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/cooking_flow/application/cooking_flow_finalize_models.dart';
 import 'package:yamt/features/cooking_flow/application/cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/data/'
@@ -14,7 +13,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
-@Dependencies([CookingFlowController])
 void main() {
   test('second finalize call fails while first save is running', () async {
     final inventoryRepository = _BlockingInventoryItemRepository();

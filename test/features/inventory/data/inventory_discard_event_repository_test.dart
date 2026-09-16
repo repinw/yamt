@@ -3,7 +3,6 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
@@ -24,7 +23,6 @@ InventoryDiscardEvent _discardEvent({String id = 'event-1'}) {
   );
 }
 
-@Dependencies([inventoryDiscardEventRepository])
 void main() {
   test('readAll skips malformed discard events', () async {
     final firestore = FakeFirebaseFirestore();

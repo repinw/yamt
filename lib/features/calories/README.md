@@ -25,6 +25,8 @@ state, and calorie-owned side effects from health or weight changes.
 
 - `application/calorie_weight_state_refresh.dart` refreshes calorie state after
   health weight changes.
+- `application/calorie_entry_deleter.dart` exposes calorie-entry deletion to
+  integrating application layers without exposing the legacy controller.
 - `application/daily_nutrition_target_resolver_service.dart` provides
   `dailyNutritionTargetResolverProvider` implementing
   `domain/daily_nutrition_target_resolver.dart` to resolve daily nutrition

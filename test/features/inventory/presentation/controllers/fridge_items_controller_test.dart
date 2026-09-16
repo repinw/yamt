@@ -4,7 +4,6 @@ import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/household/application/'
     'household_permission_recovery.dart';
 import 'package:yamt/features/inventory/data/'
@@ -191,7 +190,6 @@ InventoryItem _amountItem(String id) {
   );
 }
 
-@Dependencies([InventoryItemsController])
 Future<void> _waitForItems(
   ProviderContainer container,
   bool Function(List<InventoryItem> items) predicate,
@@ -217,7 +215,6 @@ Future<void> _waitForItems(
   await ready.future.timeout(const Duration(seconds: 1));
 }
 
-@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepControllerAlive(
   ProviderContainer container,
 ) {
@@ -227,7 +224,6 @@ ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepControllerAlive(
   );
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
 void main() {
   test('shouldRecoverFromHouseholdPermissionDenied recovers when the '
       'effective owner differs from the signed-in user', () {

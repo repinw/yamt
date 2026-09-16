@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_logic.dart';
@@ -18,8 +17,6 @@ import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_controller.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_wizard_controller.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_cooking_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_finalize_messages.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -50,12 +47,6 @@ import 'package:yamt/features/recipes/application/template_ingredient_parser.dar
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Main Cookflow shell for a selected meal template.
-@Dependencies([
-  CookingFlowController,
-  CookingFlowWizardController,
-  InventoryItemsController,
-  cookingInstructionSteps,
-])
 class CookingFlowPage extends ConsumerStatefulWidget {
   /// Creates Cookflow page.
   const CookingFlowPage({required this.templateId, super.key});

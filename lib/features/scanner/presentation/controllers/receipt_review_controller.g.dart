@@ -28,11 +28,6 @@ final class ReceiptReviewControllerProvider
          $allTransitiveDependencies: null,
        );
 
-  static final $allTransitiveDependencies0 = receiptProductResolverProvider;
-  static final $allTransitiveDependencies1 = receiptStorageGatewayProvider;
-  static final $allTransitiveDependencies2 =
-      ReceiptStorageGatewayProvider.$allTransitiveDependencies0;
-
   @override
   String debugGetCreateSourceHash() => _$receiptReviewControllerHash();
 
@@ -68,7 +63,7 @@ final class ReceiptReviewControllerProvider
 }
 
 String _$receiptReviewControllerHash() =>
-    r'e438b2dc3cf6669d33a1c2e82cf4fe268ebd0226';
+    r'd9286fa039ebc3de60f970cc27954f6d08486a4a';
 
 /// Controller managing the receipt review flow and modifications.
 
@@ -85,15 +80,8 @@ final class ReceiptReviewControllerFamily extends $Family
     : super(
         retry: null,
         name: r'receiptReviewControllerProvider',
-        dependencies: <ProviderOrFamily>[
-          receiptProductResolverProvider,
-          receiptStorageGatewayProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          ReceiptReviewControllerProvider.$allTransitiveDependencies0,
-          ReceiptReviewControllerProvider.$allTransitiveDependencies1,
-          ReceiptReviewControllerProvider.$allTransitiveDependencies2,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 

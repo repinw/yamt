@@ -13,11 +13,10 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_eat_sheet_models.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'

@@ -8,7 +8,7 @@ import 'package:yamt/features/scanner/presentation/controllers/receipt_review_st
 part 'receipt_review_controller.g.dart';
 
 /// Controller managing the receipt review flow and modifications.
-@Riverpod(dependencies: [receiptProductResolver, receiptStorageGateway])
+@riverpod
 class ReceiptReviewController extends _$ReceiptReviewController {
   @override
   ReceiptReviewState build(ScannedReceipt initialReceipt) {

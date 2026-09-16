@@ -114,10 +114,10 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
     final manualWeightRepository = ref.read(
       manualHealthWeightRepositoryProvider,
     );
-    final healthStatusFuture = ref.read(
+    final healthStatusFuture = ref.watch(
       healthConnectionControllerProvider.future,
     );
-    final settingsFuture = ref.read(calorieGoalControllerProvider.future);
+    final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
 
     try {
       final result = await buildCalorieDebugDump(
@@ -156,7 +156,7 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
   /// Prints calorie settings debug dump.
   Future<CalorieSettingsDebugDumpPrintResult> printSettingsDebugDump() async {
     try {
-      final settings = await ref.read(calorieGoalControllerProvider.future);
+      final settings = await ref.watch(calorieGoalControllerProvider.future);
       final encoded = const JsonEncoder.withIndent(
         '  ',
       ).convert(_jsonDebugValue(settings.toJson()));
@@ -180,7 +180,9 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
   /// Prints calorie weekly check-in debug dump.
   Future<CalorieWeeklyCheckInDebugDumpPrintResult>
   printWeeklyCheckInDebugDump() async {
-    final checkInDataFuture = ref.read(calorieWeeklyCheckInDataProvider.future);
+    final checkInDataFuture = ref.watch(
+      calorieWeeklyCheckInDataProvider.future,
+    );
     try {
       final checkInData = await checkInDataFuture;
       final encoded = const JsonEncoder.withIndent(

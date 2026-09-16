@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -23,9 +22,6 @@ import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_page.dart';
-import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _recipeUrl =
@@ -157,13 +153,6 @@ class _NoopPreparedMealsController extends PreparedMealsController {
   }
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  receiptManualProductPicker
-])
 _RecipeLinkHarness _buildHarness() {
   final importer = _FakeRecipeImporter();
   final templateRepository = _FakePreparedMealTemplateRepository();
@@ -320,13 +309,6 @@ Future<void> _tapBottomSheetButton(
   await tester.pumpAndSettle();
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  receiptManualProductPicker
-])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 

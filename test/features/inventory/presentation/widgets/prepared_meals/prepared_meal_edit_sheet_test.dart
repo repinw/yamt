@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
@@ -20,7 +19,6 @@ import '../../../../../support/fake_local_image_store.dart';
 import '../../../../../support/fake_prepared_meal_image_picker.dart';
 import '../../../../../support/prepared_meal_test_data.dart';
 
-@Dependencies([preparedMealImagePicker])
 class _EditSheetHarness extends StatefulWidget {
   const _EditSheetHarness({required this.meal, required this.inventoryItems});
 

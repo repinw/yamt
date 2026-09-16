@@ -40,21 +40,26 @@ void main() {
       fakePicker = FakeReceiptManualProductPicker();
     });
 
-    Widget buildTestWidget({ScannedReceipt receipt = testReceipt}) {
-      return ProviderScope(
-        overrides: [
-          receiptProductResolverProvider.overrideWithValue(fakeResolver),
-          receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
-          receiptManualProductPickerProvider.overrideWithValue(fakePicker),
-        ],
-        child: MaterialApp(
-          home: ReceiptReviewPage(initialReceipt: receipt),
+    Future<void> pumpTestWidget(
+      WidgetTester tester, {
+      ScannedReceipt receipt = testReceipt,
+    }) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            receiptProductResolverProvider.overrideWithValue(fakeResolver),
+            receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
+            receiptManualProductPickerProvider.overrideWithValue(fakePicker),
+          ],
+          child: MaterialApp(
+            home: ReceiptReviewPage(initialReceipt: receipt),
+          ),
         ),
       );
     }
 
     testWidgets('renders receipt items and header', (tester) async {
-      await tester.pumpWidget(buildTestWidget());
+      await pumpTestWidget(tester);
 
       expect(find.text('Beleg prüfen'), findsOneWidget);
       expect(find.text('Supermarkt'), findsOneWidget);
@@ -65,7 +70,7 @@ void main() {
     testWidgets('save button disabled when item is suggested (unresolved)', (
       tester,
     ) async {
-      await tester.pumpWidget(buildTestWidget());
+      await pumpTestWidget(tester);
 
       final saveButton = tester.widget<FilledButton>(
         find.byKey(const Key('save_receipt_button')),
@@ -77,7 +82,7 @@ void main() {
     testWidgets('confirming suggestion enables save button and saves receipt', (
       tester,
     ) async {
-      await tester.pumpWidget(buildTestWidget());
+      await pumpTestWidget(tester);
 
       // Confirm suggestion via quick button on card
       final confirmBtn = find.byKey(const Key('confirm_item_item-1'));
@@ -126,7 +131,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(buildTestWidget(receipt: receiptWithTwo));
+      await pumpTestWidget(tester, receipt: receiptWithTwo);
 
       // 1 item is open
       expect(find.textContaining('1 Position(en) offen'), findsOneWidget);
@@ -158,7 +163,7 @@ void main() {
           nutritionPer100g: {'kcal': 50, 'protein': 1.5, 'fat': 2.0},
         );
 
-        await tester.pumpWidget(buildTestWidget());
+        await pumpTestWidget(tester);
 
         // Open edit sheet for BIO MILCH
         await tester.tap(find.text('Bio Milch 1L'));

@@ -30,6 +30,17 @@ Other features may consume these public Inventory entry points:
 
 - `InventoryPage`
 - `InventoryShoppingListPage` (finished shopping surface with stock suggestions)
+- `application/inventory_quick_eat_data_providers.dart` for repository-backed
+  quick-eat inventory data used by integrating features.
+- `application/inventory_quick_eat_application.dart` for quick-eat mutations
+  used by integrating features.
+- `application/inventory_quick_eat_picker.dart` for quick-eat picker contract
+  used by integrating features.
+- `presentation/inventory_quick_eat_sheet_picker.dart` for inventory-owned
+  quick-eat sheet picker implementation.
+- `application/inventory_manual_product_eat_flow_contract.dart` and
+  `presentation/inventory_manual_product_eat_coordinator.dart` for manual-product
+  completion from product-search integrations.
 - `InventoryItemsController`
 - `PreparedMealsController`
 - `PreparedMealTemplatesController`

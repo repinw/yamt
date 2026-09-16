@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_entry_mutations.dart';
 import 'package:yamt/features/diary/application/'
-    'diary_quick_eat_inventory_provider.dart';
+    'diary_food_log_mutation_adapter.dart';
 import 'package:yamt/features/diary/domain/diary_food_log_session.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_food_log_feedback_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
-import 'package:yamt/features/diary/presentation/diary_quick_eat_food_flow.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/diary/presentation/'
+    'diary_quick_eat_inventory_item_flow.dart';
+import 'package:yamt/features/diary/presentation/'
+    'diary_quick_eat_prepared_meal_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 
@@ -35,12 +32,6 @@ enum DiaryQuickEatSource {
 }
 
 /// Runs diary quick-eat flows.
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 class DiaryQuickEatFlow {
   const DiaryQuickEatFlow._();
 
@@ -54,52 +45,93 @@ class DiaryQuickEatFlow {
     final container = ProviderScope.containerOf(context, listen: false);
     final loggedAt = _resolveLoggedAt(selectedDay);
     final session = DiaryFoodLogSession();
+    await _openSourceWithSession(
+      context: context,
+      container: container,
+      session: session,
+      source: source,
+      mealType: mealType,
+      loggedAt: loggedAt,
+    );
+    if (!context.mounted) {
+      return;
+    }
+    await _enqueueFeedback(
+      context: context,
+      container: container,
+      session: session,
+    );
+  }
+
+  static Future<void> _openSourceWithSession({
+    required BuildContext context,
+    required ProviderContainer container,
+    required DiaryFoodLogSession session,
+    required DiaryQuickEatSource source,
+    required MealType mealType,
+    required DateTime loggedAt,
+  }) async {
     final subscription = container
-        .read(calorieEntryMutationsProvider)
-        .events
-        .listen(session.record);
+        .read(diaryFoodLogMutationAdapterProvider)
+        .listen(session);
     try {
-      switch (source) {
-        case DiaryQuickEatSource.inventory:
-          await _openInventoryPicker(
-            context: context,
-            mealType: mealType,
-            loggedAt: loggedAt,
-          );
-        case DiaryQuickEatSource.barcode:
-          await _openProductSearchHub(
-            context: context,
-            initialIntent: ProductSearchHubInitialIntent.barcode,
-            mealType: mealType,
-            loggedAt: loggedAt,
-          );
-        case DiaryQuickEatSource.manualSearch:
-          await _openProductSearchHub(
-            context: context,
-            initialIntent: ProductSearchHubInitialIntent.search,
-            mealType: mealType,
-            loggedAt: loggedAt,
-          );
-        case DiaryQuickEatSource.ai:
-          await _openProductSearchHub(
-            context: context,
-            initialIntent: ProductSearchHubInitialIntent.ai,
-            mealType: mealType,
-            loggedAt: loggedAt,
-          );
-      }
+      await _openSelectedSource(
+        context: context,
+        source: source,
+        mealType: mealType,
+        loggedAt: loggedAt,
+      );
     } finally {
       await subscription.cancel();
     }
-    if (context.mounted) {
-      final groups = session.dayGroups;
-      if (groups.isNotEmpty) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        await container
-            .read(diaryFoodLogFeedbackControllerProvider.notifier)
-            .enqueue(groups);
-      }
+  }
+
+  static Future<void> _openSelectedSource({
+    required BuildContext context,
+    required DiaryQuickEatSource source,
+    required MealType mealType,
+    required DateTime loggedAt,
+  }) {
+    if (source == DiaryQuickEatSource.inventory) {
+      return _openInventoryPicker(
+        context: context,
+        mealType: mealType,
+        loggedAt: loggedAt,
+      );
     }
+    return _openProductSearchHub(
+      context: context,
+      initialIntent: _resolveProductSearchIntent(source),
+      mealType: mealType,
+      loggedAt: loggedAt,
+    );
+  }
+
+  static Future<void> _enqueueFeedback({
+    required BuildContext context,
+    required ProviderContainer container,
+    required DiaryFoodLogSession session,
+  }) async {
+    if (!context.mounted || session.dayGroups.isEmpty) {
+      return;
+    }
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    await container
+        .read(diaryFoodLogFeedbackControllerProvider.notifier)
+        .enqueue(session.dayGroups);
+  }
+
+  static ProductSearchHubInitialIntent _resolveProductSearchIntent(
+    DiaryQuickEatSource source,
+  ) {
+    return switch (source) {
+      DiaryQuickEatSource.barcode => ProductSearchHubInitialIntent.barcode,
+      DiaryQuickEatSource.manualSearch => ProductSearchHubInitialIntent.search,
+      DiaryQuickEatSource.ai => ProductSearchHubInitialIntent.ai,
+      DiaryQuickEatSource.inventory => throw StateError(
+        'Inventory source does not use product search.',
+      ),
+    };
   }
 
   static Future<void> _openProductSearchHub({
@@ -134,6 +166,20 @@ class DiaryQuickEatFlow {
     if (!context.mounted || selection == null) {
       return;
     }
+    await _eatInventorySelection(
+      context: context,
+      selection: selection,
+      mealType: mealType,
+      loggedAt: loggedAt,
+    );
+  }
+
+  static Future<void> _eatInventorySelection({
+    required BuildContext context,
+    required DiaryInventoryFoodSelection selection,
+    required MealType mealType,
+    required DateTime loggedAt,
+  }) async {
     switch (selection) {
       case DiaryInventoryItemFoodSelection(:final item):
         await eatDiaryQuickEatInventoryItem(
@@ -154,7 +200,7 @@ class DiaryQuickEatFlow {
 
   static DateTime _resolveLoggedAt(DateTime selectedDay) {
     final now = DateTime.now();
-    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final normalizedDay = normalizeLocalDay(selectedDay);
     return DateTime(
       normalizedDay.year,
       normalizedDay.month,

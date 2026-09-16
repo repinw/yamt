@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
@@ -13,12 +12,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _startupDelay = Duration(seconds: 1);
 
 /// Widget wrapping the app to listen for incoming shared receipt files.
-@Dependencies([
-  navigatorKey,
-  appRouter,
-  SharedReceiptService,
-  receiptScanFlowCoordinator,
-])
 class SharedReceiptListener extends ConsumerStatefulWidget {
   /// Creates a [SharedReceiptListener].
   const SharedReceiptListener({
@@ -129,8 +122,10 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
       if (currentNavContext == null || !currentNavContext.mounted) return;
 
       final coordinator = ref.read(receiptScanFlowCoordinatorProvider);
-      final saved =
-          await coordinator.processFilePaths(currentNavContext, paths);
+      final saved = await coordinator.processFilePaths(
+        currentNavContext,
+        paths,
+      );
       if (saved) {
         widget.onReceiptSaved?.call();
       }

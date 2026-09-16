@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'receipt_camera_supported.g.dart';
 
 /// Returns whether receipt camera capture is supported on current platform.
-@Riverpod(dependencies: [])
+@riverpod
 bool receiptCameraSupported(Ref ref) {
   if (kIsWeb) {
     return false;

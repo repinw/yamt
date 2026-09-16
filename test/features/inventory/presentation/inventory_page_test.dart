@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -19,18 +18,13 @@ import 'package:yamt/features/home/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -39,17 +33,9 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
-import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -386,27 +372,15 @@ ShoppingListItem _shoppingItem(
   );
 }
 
-@Dependencies([
-  inventoryItemRepository,
-  inventoryManualAddQuickEatConfig,
-  InventoryItemsController,
-  PreparedMealsController,
-  preparedMealImagePicker,
-  manualProductRecentItemsService,
-  receiptCameraSupported,
-  receiptScanFlowCoordinator,
-  inventoryActivityEvents,
-  inventoryBackedCalorieEntrySaveFlow,
-  receiptManualProductPicker
-])
-Widget _buildTestApp(
+Future<void> _pumpTestApp(
+  WidgetTester tester,
   InventoryItemRepository repository, {
   List<Override> overrides = const <Override>[],
   GoRoute? calorieEntryRoute,
   InventoryDiscardEventRepository? discardEventRepository,
   bool includeHomeShellChrome = false,
   Widget Function(Widget child)? shellBuilder,
-}) {
+}) async {
   final routes = <RouteBase>[
     GoRoute(
       path: AppRoutes.root,
@@ -426,19 +400,21 @@ Widget _buildTestApp(
     routes.add(calorieEntryRoute);
   }
   final router = GoRouter(routes: routes);
-  return ProviderScope(
-    overrides: <Override>[
-      inventoryItemRepositoryProvider.overrideWithValue(repository),
-      inventoryDiscardEventRepositoryProvider.overrideWithValue(
-        discardEventRepository ?? _FakeInventoryDiscardEventRepository(),
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: <Override>[
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryDiscardEventRepositoryProvider.overrideWithValue(
+          discardEventRepository ?? _FakeInventoryDiscardEventRepository(),
+        ),
+        ...overrides,
+      ],
+      child: MaterialApp.router(
+        routerConfig: router,
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       ),
-      ...overrides,
-    ],
-    child: MaterialApp.router(
-      routerConfig: router,
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
 }
@@ -502,19 +478,6 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-@Dependencies([
-  inventoryItemRepository,
-  inventoryManualAddQuickEatConfig,
-  InventoryItemsController,
-  PreparedMealsController,
-  preparedMealImagePicker,
-  receiptCameraSupported,
-  receiptScanFlowCoordinator,
-  manualProductRecentItemsService,
-  inventoryActivityEvents,
-  inventoryBackedCalorieEntrySaveFlow,
-  receiptManualProductPicker
-])
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {
     final repository = _FakeFridgeItemRepository(
@@ -522,7 +485,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     expect(
@@ -554,8 +517,10 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(
-      _buildTestApp(repository, includeHomeShellChrome: true),
+    await _pumpTestApp(
+      tester,
+      repository,
+      includeHomeShellChrome: true,
     );
     await tester.pumpAndSettle();
 
@@ -577,20 +542,19 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        shellBuilder: (child) {
-          return Scaffold(
-            body: child,
-            floatingActionButton: const SizedBox.square(
-              key: Key('test_inventory_fab'),
-              dimension: 64,
-            ),
-            bottomNavigationBar: const SizedBox(height: 96),
-          );
-        },
-      ),
+    await _pumpTestApp(
+      tester,
+      repository,
+      shellBuilder: (child) {
+        return Scaffold(
+          body: child,
+          floatingActionButton: const SizedBox.square(
+            key: Key('test_inventory_fab'),
+            dimension: 64,
+          ),
+          bottomNavigationBar: const SizedBox(height: 96),
+        );
+      },
     );
     await tester.pumpAndSettle();
 
@@ -616,20 +580,19 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        shellBuilder: (child) {
-          return Scaffold(
-            body: child,
-            floatingActionButton: const SizedBox.square(
-              key: Key('test_inventory_fab'),
-              dimension: 64,
-            ),
-            bottomNavigationBar: const SizedBox(height: 96),
-          );
-        },
-      ),
+    await _pumpTestApp(
+      tester,
+      repository,
+      shellBuilder: (child) {
+        return Scaffold(
+          body: child,
+          floatingActionButton: const SizedBox.square(
+            key: Key('test_inventory_fab'),
+            dimension: 64,
+          ),
+          bottomNavigationBar: const SizedBox(height: 96),
+        );
+      },
     );
     await tester.pumpAndSettle();
 
@@ -669,7 +632,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     expect(find.text('Milk'), findsOneWidget);
@@ -691,7 +654,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     await _selectInventoryListMode(tester, 'By receipt');
@@ -711,7 +674,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     expect(find.text('Receipt #abc123'), findsNothing);
@@ -730,7 +693,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     await _scrollUntilVisible(tester, find.text('Banana'));
@@ -768,7 +731,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     await _scrollUntilVisible(tester, _stockLabel('500g / 1000g'));
@@ -805,14 +768,13 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        overrides: <Override>[
-          globalFoodItemRepositoryProvider.overrideWithValue(globalRepository),
-          globalFoodItemMatcherProvider.overrideWithValue(matcher),
-        ],
-      ),
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        globalFoodItemRepositoryProvider.overrideWithValue(globalRepository),
+        globalFoodItemMatcherProvider.overrideWithValue(matcher),
+      ],
     );
     await tester.pumpAndSettle();
     await _tapVisible(tester, find.text('Milk'));
@@ -846,7 +808,7 @@ void main() {
       );
       addTearDown(repository.dispose);
 
-      await tester.pumpWidget(_buildTestApp(repository));
+      await _pumpTestApp(tester, repository);
       await tester.pumpAndSettle();
       await _tapVisible(tester, find.text('Milk'));
       await _tapInventoryRowAction(tester, 'Swap candidate');
@@ -871,7 +833,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
 
@@ -897,7 +859,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
 
@@ -927,7 +889,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
@@ -962,24 +924,23 @@ void main() {
     when(() => user.uid).thenReturn('user-1');
     when(() => auth.currentUser).thenReturn(user);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        calorieEntryRoute: GoRoute(
-          path: AppRoutes.homeCaloriesEntryCreate,
-          builder: (context, state) {
-            openedArgs = state.extra as CalorieEntryCreateArgs?;
-            return const Scaffold(body: Text('editor'));
-          },
-        ),
-        overrides: <Override>[
-          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-            commitStore,
-          ),
-          firebaseAuthProvider.overrideWithValue(auth),
-        ],
+    await _pumpTestApp(
+      tester,
+      repository,
+      calorieEntryRoute: GoRoute(
+        path: AppRoutes.homeCaloriesEntryCreate,
+        builder: (context, state) {
+          openedArgs = state.extra as CalorieEntryCreateArgs?;
+          return const Scaffold(body: Text('editor'));
+        },
       ),
+      overrides: <Override>[
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+          commitStore,
+        ),
+        firebaseAuthProvider.overrideWithValue(auth),
+      ],
     );
     await tester.pumpAndSettle();
 
@@ -1025,24 +986,23 @@ void main() {
     when(() => user.uid).thenReturn('user-1');
     when(() => auth.currentUser).thenReturn(user);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        calorieEntryRoute: GoRoute(
-          path: AppRoutes.homeCaloriesEntryCreate,
-          builder: (context, state) {
-            openedArgs = state.extra as CalorieEntryCreateArgs?;
-            return const Scaffold(body: Text('editor'));
-          },
-        ),
-        overrides: <Override>[
-          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-            commitStore,
-          ),
-          firebaseAuthProvider.overrideWithValue(auth),
-        ],
+    await _pumpTestApp(
+      tester,
+      repository,
+      calorieEntryRoute: GoRoute(
+        path: AppRoutes.homeCaloriesEntryCreate,
+        builder: (context, state) {
+          openedArgs = state.extra as CalorieEntryCreateArgs?;
+          return const Scaffold(body: Text('editor'));
+        },
       ),
+      overrides: <Override>[
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+          commitStore,
+        ),
+        firebaseAuthProvider.overrideWithValue(auth),
+      ],
     );
     await tester.pumpAndSettle();
 
@@ -1071,13 +1031,12 @@ void main() {
       );
       addTearDown(repository.dispose);
 
-      await tester.pumpWidget(
-        _buildTestApp(
-          repository,
-          overrides: <Override>[
-            inventoryItemsControllerProvider.overrideWith(() => controller),
-          ],
-        ),
+      await _pumpTestApp(
+        tester,
+        repository,
+        overrides: <Override>[
+          inventoryItemsControllerProvider.overrideWith(() => controller),
+        ],
       );
       await tester.pumpAndSettle();
 
@@ -1117,13 +1076,12 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        overrides: <Override>[
-          inventoryItemsControllerProvider.overrideWith(() => controller),
-        ],
-      ),
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        inventoryItemsControllerProvider.overrideWith(() => controller),
+      ],
     );
     await tester.pumpAndSettle();
 
@@ -1170,15 +1128,14 @@ void main() {
       addTearDown(repository.dispose);
       addTearDown(shoppingRepository.dispose);
 
-      await tester.pumpWidget(
-        _buildTestApp(
-          repository,
-          overrides: <Override>[
-            shoppingListRepositoryProvider.overrideWithValue(
-              shoppingRepository,
-            ),
-          ],
-        ),
+      await _pumpTestApp(
+        tester,
+        repository,
+        overrides: <Override>[
+          shoppingListRepositoryProvider.overrideWithValue(
+            shoppingRepository,
+          ),
+        ],
       );
       await tester.pumpAndSettle();
 
@@ -1212,15 +1169,14 @@ void main() {
       addTearDown(repository.dispose);
       addTearDown(shoppingRepository.dispose);
 
-      await tester.pumpWidget(
-        _buildTestApp(
-          repository,
-          overrides: <Override>[
-            shoppingListRepositoryProvider.overrideWithValue(
-              shoppingRepository,
-            ),
-          ],
-        ),
+      await _pumpTestApp(
+        tester,
+        repository,
+        overrides: <Override>[
+          shoppingListRepositoryProvider.overrideWithValue(
+            shoppingRepository,
+          ),
+        ],
       );
       await tester.pumpAndSettle();
       await _toggleFullyConsumedFilter(tester);
@@ -1253,15 +1209,14 @@ void main() {
       addTearDown(repository.dispose);
       addTearDown(shoppingRepository.dispose);
 
-      await tester.pumpWidget(
-        _buildTestApp(
-          repository,
-          overrides: <Override>[
-            shoppingListRepositoryProvider.overrideWithValue(
-              shoppingRepository,
-            ),
-          ],
-        ),
+      await _pumpTestApp(
+        tester,
+        repository,
+        overrides: <Override>[
+          shoppingListRepositoryProvider.overrideWithValue(
+            shoppingRepository,
+          ),
+        ],
       );
       await tester.pumpAndSettle();
       await _toggleFullyConsumedFilter(tester);
@@ -1289,15 +1244,14 @@ void main() {
       addTearDown(repository.dispose);
       addTearDown(shoppingRepository.dispose);
 
-      await tester.pumpWidget(
-        _buildTestApp(
-          repository,
-          overrides: <Override>[
-            shoppingListRepositoryProvider.overrideWithValue(
-              shoppingRepository,
-            ),
-          ],
-        ),
+      await _pumpTestApp(
+        tester,
+        repository,
+        overrides: <Override>[
+          shoppingListRepositoryProvider.overrideWithValue(
+            shoppingRepository,
+          ),
+        ],
       );
       await tester.pumpAndSettle();
       await _toggleFullyConsumedFilter(tester);
@@ -1331,13 +1285,12 @@ void main() {
     addTearDown(repository.dispose);
     addTearDown(shoppingRepository.dispose);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        overrides: <Override>[
-          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
-        ],
-      ),
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+      ],
     );
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
@@ -1364,13 +1317,12 @@ void main() {
     addTearDown(repository.dispose);
     addTearDown(shoppingRepository.dispose);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        overrides: <Override>[
-          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
-        ],
-      ),
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+      ],
     );
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
@@ -1394,7 +1346,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.byTooltip('Eat'));
@@ -1422,7 +1374,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
@@ -1464,11 +1416,10 @@ void main() {
     final discardEventRepository = _FakeInventoryDiscardEventRepository();
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        discardEventRepository: discardEventRepository,
-      ),
+    await _pumpTestApp(
+      tester,
+      repository,
+      discardEventRepository: discardEventRepository,
     );
     await tester.pumpAndSettle();
 
@@ -1503,7 +1454,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
@@ -1541,7 +1492,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
@@ -1578,7 +1529,7 @@ void main() {
       );
       addTearDown(repository.dispose);
 
-      await tester.pumpWidget(_buildTestApp(repository));
+      await _pumpTestApp(tester, repository);
       await tester.pumpAndSettle();
       await _toggleFullyConsumedFilter(tester);
 

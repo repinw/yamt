@@ -117,6 +117,11 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       ..watch(calorieLogRepositoryProvider)
       ..watch(calorieDayControllerProvider)
       ..onDispose(_disposeSubscription);
+    final mutationsSub = ref
+        .read(calorieEntryMutationsProvider)
+        .events
+        .listen(_onEntryMutation);
+    ref.onDispose(mutationsSub.cancel);
     return _restartSubscription();
   }
 
@@ -397,6 +402,37 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     _entriesSubscription = null;
     if (currentSubscription != null) {
       unawaited(currentSubscription.cancel());
+    }
+  }
+
+  void _onEntryMutation(CalorieEntryMutation mutation) {
+    final selectedDay = ref.read(calorieDayControllerProvider);
+    final currentVal = state.value;
+    if (currentVal == null) {
+      return;
+    }
+
+    switch (mutation.kind) {
+      case CalorieEntryMutationKind.created:
+      case CalorieEntryMutationKind.updated:
+        final entry = mutation.entry;
+        if (entry != null) {
+          final nextEntries = _applySavedEntry(
+            previousEntries: currentVal,
+            entry: entry,
+            selectedDay: selectedDay,
+          );
+          if (!listEquals(currentVal, nextEntries) && ref.mounted) {
+            state = AsyncData(nextEntries);
+          }
+        }
+      case CalorieEntryMutationKind.deleted:
+        final nextEntries = currentVal
+            .where((entry) => entry.id != mutation.entryId)
+            .toList(growable: false);
+        if (!listEquals(currentVal, nextEntries) && ref.mounted) {
+          state = AsyncData(nextEntries);
+        }
     }
   }
 

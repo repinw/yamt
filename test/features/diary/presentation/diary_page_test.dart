@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -72,12 +71,6 @@ import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
@@ -131,13 +124,6 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
   }
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
@@ -157,24 +143,15 @@ void main() {
   testWidgets('does not warm quick-eat inventory providers on diary open', (
     tester,
   ) async {
-    var inventoryBuildCount = 0;
-    var preparedMealsBuildCount = 0;
     final providerObserver = _RecordingProviderObserver();
 
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
       providerObservers: [providerObserver],
-      onInventoryBuild: () {
-        inventoryBuildCount += 1;
-      },
-      onPreparedMealsBuild: () {
-        preparedMealsBuildCount += 1;
-      },
     );
 
-    expect(inventoryBuildCount, 0);
-    expect(preparedMealsBuildCount, 0);
+    expect(providerObserver.diaryQuickEatInventoryAddCount, 0);
     expect(providerObserver.calorieEntryDeleteFlowAddCount, 0);
   });
 
@@ -247,12 +224,6 @@ void main() {
         burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
         burnWeekRunStateRepositoryProvider.overrideWithValue(
           _FakeBurnWeekRunStateRepository(),
-        ),
-        inventoryItemsControllerProvider.overrideWith(
-          _StaticInventoryItemsController.new,
-        ),
-        preparedMealsControllerProvider.overrideWith(
-          _StaticPreparedMealsController.new,
         ),
         diaryBalanceSourceProvider(firstDay).overrideWith((ref) {
           firstBalanceBuilds += 1;
@@ -1279,13 +1250,6 @@ void main() {
   });
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 Future<ProviderContainer> _pumpDiaryPage(
   WidgetTester tester, {
   required DateTime selectedDay,
@@ -1300,8 +1264,6 @@ Future<ProviderContainer> _pumpDiaryPage(
   DiaryDayDashboardState? dashboardState,
   Map<String, DiaryHealthDayData> healthDataByDay =
       const <String, DiaryHealthDayData>{},
-  VoidCallback? onInventoryBuild,
-  VoidCallback? onPreparedMealsBuild,
   List<ProviderObserver> providerObservers = const [],
   List<Override> overrides = const [],
   bool overrideWeeklyCheckInProvider = true,
@@ -1366,12 +1328,6 @@ Future<ProviderContainer> _pumpDiaryPage(
         _FakeBurnWeekRunStateRepository(
           state: burnWeekRunState ?? const BurnWeekRunState.initial(),
         ),
-      ),
-      inventoryItemsControllerProvider.overrideWith(
-        () => _StaticInventoryItemsController(onBuild: onInventoryBuild),
-      ),
-      preparedMealsControllerProvider.overrideWith(
-        () => _StaticPreparedMealsController(onBuild: onPreparedMealsBuild),
       ),
       diaryCalendarControllerProvider.overrideWith(
         () => _TestDiaryCalendarController(selectedDay),
@@ -1503,36 +1459,16 @@ Future<void> _tapDiaryCardAction(WidgetTester tester, Finder finder) async {
 
 final class _RecordingProviderObserver extends ProviderObserver {
   int calorieEntryDeleteFlowAddCount = 0;
+  int diaryQuickEatInventoryAddCount = 0;
 
   @override
   void didAddProvider(ProviderObserverContext context, Object? value) {
     if (context.provider == calorieEntryDeleteFlowProvider) {
       calorieEntryDeleteFlowAddCount += 1;
     }
-  }
-}
-
-class _StaticInventoryItemsController extends InventoryItemsController {
-  _StaticInventoryItemsController({this.onBuild});
-
-  final VoidCallback? onBuild;
-
-  @override
-  FutureOr<List<InventoryItem>> build() async {
-    onBuild?.call();
-    return const <InventoryItem>[];
-  }
-}
-
-class _StaticPreparedMealsController extends PreparedMealsController {
-  _StaticPreparedMealsController({this.onBuild});
-
-  final VoidCallback? onBuild;
-
-  @override
-  FutureOr<List<PreparedMeal>> build() async {
-    onBuild?.call();
-    return const <PreparedMeal>[];
+    if (context.provider == diaryQuickEatInventoryProvider) {
+      diaryQuickEatInventoryAddCount += 1;
+    }
   }
 }
 

@@ -6,8 +6,9 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
+import 'package:yamt/features/health/application/'
+    'health_connection_actions.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
 /// Resolves the health permission callback action for diary intro dialogs.
 DiaryIntroHealthAction? resolveDiaryIntroHealthAction(
@@ -20,16 +21,16 @@ DiaryIntroHealthAction? resolveDiaryIntroHealthAction(
   final hasConnectionError = status.errorMessage != null;
   final needsAppPermissionSettings =
       status.errorMessage == healthActivityRecognitionPermissionErrorMessage;
-  final controller = ref.read(healthConnectionControllerProvider.notifier);
+  final actions = ref.read(healthConnectionActionsProvider);
   final action = switch (status.accessState) {
     HealthDataAccessState.permissionRequired ||
     HealthDataAccessState.historyRequired =>
       hasConnectionError
           ? needsAppPermissionSettings
-                ? controller.openAppPermissionSettings
-                : controller.openHealthPermissionSettings
-          : controller.connect,
-    HealthDataAccessState.installRequired => controller.installHealthConnect,
+                ? actions.openAppPermissionSettings
+                : actions.openHealthPermissionSettings
+          : actions.connect,
+    HealthDataAccessState.installRequired => actions.installHealthConnect,
     HealthDataAccessState.ready || HealthDataAccessState.unsupported => null,
   };
   if (action == null) {

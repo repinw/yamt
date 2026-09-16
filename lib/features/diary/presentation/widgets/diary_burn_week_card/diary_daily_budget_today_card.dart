@@ -103,9 +103,7 @@ class DiaryDailyBudgetTodayCard extends StatelessWidget {
                 : formatDiaryKcal(numberFormat, data.dayLeftKcal, unit),
             isBold: true,
             isHighlight: true,
-            valueColor: data.isPauseDay
-                ? colors.onSurfaceVariant
-                : primary,
+            valueColor: data.isPauseDay ? colors.onSurfaceVariant : primary,
           ),
         ],
       ),

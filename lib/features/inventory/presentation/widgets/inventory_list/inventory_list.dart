@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -13,18 +12,12 @@ import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -60,13 +53,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
 /// Defines inventory list.
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-  inventoryItemRepository,
-  InventoryItemsController,
-  preparedMealImagePicker,
-  manualProductRecentItemsService,
-])
 class InventoryList extends ConsumerStatefulWidget {
   /// The inventory list.
   const InventoryList({

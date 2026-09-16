@@ -1,13 +1,11 @@
 import 'dart:async' show unawaited;
 
 import 'package:flutter/material.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -24,7 +22,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-@Dependencies([productSearchGateway])
 /// Launches the barcode scanner flow and dispatches candidate actions.
 Future<void> launchEditorBarcodeScanner({
   required BuildContext context,

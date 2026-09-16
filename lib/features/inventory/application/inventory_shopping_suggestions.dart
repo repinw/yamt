@@ -7,12 +7,12 @@ import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 part 'inventory_shopping_suggestions.g.dart';
 
 /// Live stock input owned by inventory.
-@Riverpod(dependencies: [inventoryItemRepository])
+@riverpod
 Stream<List<InventoryItem>> inventoryShoppingStock(Ref ref) =>
     ref.watch(inventoryItemRepositoryProvider).watchAll();
 
 /// Adapts inventory facts to the shopping feature's public suggestion model.
-@Riverpod(dependencies: [inventoryShoppingStock])
+@riverpod
 AsyncValue<List<ShoppingSuggestion>> inventoryShoppingSuggestions(Ref ref) =>
     ref
         .watch(inventoryShoppingStockProvider)

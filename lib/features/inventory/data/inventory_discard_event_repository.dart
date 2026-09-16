@@ -164,7 +164,7 @@ class _UnavailableInventoryDiscardEventRepository
 }
 
 /// The inventory discard event repository provider.
-@Riverpod(dependencies: [])
+@riverpod
 InventoryDiscardEventRepository inventoryDiscardEventRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
   final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);

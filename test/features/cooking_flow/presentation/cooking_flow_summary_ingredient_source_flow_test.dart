@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
@@ -15,10 +14,11 @@ import 'package:yamt/features/cooking_flow/presentation/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 
-@Dependencies([InventoryItemsController])
 void main() {
   testWidgets('manual source opens product hub and returns new ingredient', (
     tester,
@@ -74,7 +74,6 @@ void main() {
   });
 }
 
-@Dependencies([InventoryItemsController])
 GoRouter _buildRouter({
   required ProviderContainer container,
   required ValueChanged<Object?> onHubArgs,

@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -9,9 +6,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_barcode_scanner_view.dart';
 
 /// Defines inventory barcode scanner page with an app bar and scanner view.
-@Dependencies([
-  productSearchGateway,
-])
 class InventoryBarcodeScannerPage extends StatelessWidget {
   /// The inventory barcode scanner page.
   const InventoryBarcodeScannerPage({

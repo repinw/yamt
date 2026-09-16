@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -17,13 +17,7 @@ part 'inventory_calorie_entry_delete_flow.g.dart';
 const _inventoryDeleteFlowLogName = 'InventoryCalorieEntryDeleteFlow';
 
 /// Inventory-enabled calorie entry delete flow.
-@Riverpod(
-  dependencies: [
-    InventoryItemsController,
-    PreparedMealsController,
-    inventoryItemRepository,
-  ],
-)
+@riverpod
 CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
   ref.keepAlive();
   final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
@@ -113,7 +107,6 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
   );
 }
 
-@Dependencies([InventoryItemsController])
 Future<T> _withInventoryController<T>({
   required Ref ref,
   required String operationName,
@@ -126,7 +119,10 @@ Future<T> _withInventoryController<T>({
     fireImmediately: true,
   );
   try {
-    await ref.read(inventoryItemsControllerProvider.future);
+    if (!ref.mounted) {
+      return fallbackValue;
+    }
+    await _waitForRefProvider(ref, inventoryItemsControllerProvider);
     if (!ref.mounted) {
       return fallbackValue;
     }
@@ -144,7 +140,6 @@ Future<T> _withInventoryController<T>({
   }
 }
 
-@Dependencies([PreparedMealsController])
 Future<T> _withPreparedMealsController<T>({
   required Ref ref,
   required String operationName,
@@ -157,7 +152,10 @@ Future<T> _withPreparedMealsController<T>({
     fireImmediately: true,
   );
   try {
-    await ref.read(preparedMealsControllerProvider.future);
+    if (!ref.mounted) {
+      return fallbackValue;
+    }
+    await _waitForRefProvider(ref, preparedMealsControllerProvider);
     if (!ref.mounted) {
       return fallbackValue;
     }
@@ -172,6 +170,27 @@ Future<T> _withPreparedMealsController<T>({
     return fallbackValue;
   } finally {
     subscription.close();
+  }
+}
+
+Future<void> _waitForRefProvider<T>(
+  Ref ref,
+  ProviderListenable<AsyncValue<T>> provider,
+) async {
+  final current = ref.read(provider);
+  if (current is! AsyncLoading) {
+    return;
+  }
+  final completer = Completer<void>();
+  final sub = ref.listen<AsyncValue<T>>(provider, (_, next) {
+    if (next is! AsyncLoading && !completer.isCompleted) {
+      completer.complete();
+    }
+  });
+  try {
+    await completer.future;
+  } finally {
+    sub.close();
   }
 }
 

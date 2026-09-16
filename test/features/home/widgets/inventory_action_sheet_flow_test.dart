@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/home/widgets/'
     'inventory_action_sheet_flow.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _ActionSheetFlowTestAction {
@@ -21,11 +19,6 @@ enum _ActionSheetFlowTestAction {
   actionSheet,
 }
 
-@Dependencies([
-  InventoryItemsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-])
 class _ActionSheetFlowHost extends ConsumerWidget {
   const _ActionSheetFlowHost({required this.action});
 
@@ -67,16 +60,12 @@ class _ActionSheetFlowHost extends ConsumerWidget {
   }
 }
 
-@Dependencies([
-  InventoryItemsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-])
-Widget _buildHarness({
+Future<void> _pumpHarness(
+  WidgetTester tester, {
   required _ActionSheetFlowTestAction action,
   bool isCameraSupported = true,
   ValueChanged<Object?>? onHubRouteExtra,
-}) {
+}) async {
   final router = GoRouter(
     routes: [
       GoRoute(
@@ -105,24 +94,21 @@ Widget _buildHarness({
     ],
   );
 
-  return ProviderScope(
-    overrides: [
-      receiptCameraSupportedProvider.overrideWithValue(isCameraSupported),
-    ],
-    child: MaterialApp.router(
-      routerConfig: router,
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        receiptCameraSupportedProvider.overrideWithValue(isCameraSupported),
+      ],
+      child: MaterialApp.router(
+        routerConfig: router,
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
     ),
   );
 }
 
-@Dependencies([
-  InventoryItemsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-])
 void main() {
   group('InventoryActionSheetFlow', () {
     testWidgets('manual search opens hub search intent', (
@@ -130,11 +116,10 @@ void main() {
     ) async {
       Object? routeExtra;
 
-      await tester.pumpWidget(
-        _buildHarness(
-          action: _ActionSheetFlowTestAction.manualSearch,
-          onHubRouteExtra: (extra) => routeExtra = extra,
-        ),
+      await _pumpHarness(
+        tester,
+        action: _ActionSheetFlowTestAction.manualSearch,
+        onHubRouteExtra: (extra) => routeExtra = extra,
       );
 
       await tester.tap(
@@ -158,11 +143,10 @@ void main() {
       }.entries) {
         Object? routeExtra;
 
-        await tester.pumpWidget(
-          _buildHarness(
-            action: entry.key,
-            onHubRouteExtra: (extra) => routeExtra = extra,
-          ),
+        await _pumpHarness(
+          tester,
+          action: entry.key,
+          onHubRouteExtra: (extra) => routeExtra = extra,
         );
 
         await tester.tap(
@@ -181,12 +165,11 @@ void main() {
     ) async {
       Object? routeExtra;
 
-      await tester.pumpWidget(
-        _buildHarness(
-          action: _ActionSheetFlowTestAction.actionSheet,
-          isCameraSupported: false,
-          onHubRouteExtra: (extra) => routeExtra = extra,
-        ),
+      await _pumpHarness(
+        tester,
+        action: _ActionSheetFlowTestAction.actionSheet,
+        isCameraSupported: false,
+        onHubRouteExtra: (extra) => routeExtra = extra,
       );
 
       await tester.tap(

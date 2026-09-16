@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -23,7 +20,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 const _productSearchHubSelectionOverlayClearance = 92.0;
 
 /// Layout shell for product search hub.
-@Dependencies([productSearchGateway])
 class ProductSearchHubScaffold extends StatelessWidget {
   /// Creates product search hub scaffold.
   const ProductSearchHubScaffold({
@@ -126,7 +122,6 @@ class ProductSearchHubScaffold extends StatelessWidget {
   }
 }
 
-@Dependencies([productSearchGateway])
 class _ProductSearchHubNestedContent extends StatelessWidget {
   const _ProductSearchHubNestedContent({
     required this.bottomClearance,

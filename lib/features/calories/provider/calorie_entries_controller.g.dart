@@ -38,7 +38,7 @@ final class CalorieEntriesControllerProvider
 }
 
 String _$calorieEntriesControllerHash() =>
-    r'504a6dfb42b444e9b63ed7e8a10a7036f2798f33';
+    r'ce46e932f143de39f457f9ded82caf520032e7ac';
 
 /// Defines calorie entries controller.
 

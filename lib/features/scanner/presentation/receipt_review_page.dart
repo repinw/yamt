@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -16,7 +15,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Screen for reviewing and editing scanned receipt items before
 /// inventory import.
-@Dependencies([ReceiptReviewController, receiptManualProductPicker])
 class ReceiptReviewPage extends ConsumerStatefulWidget {
   /// Creates a [ReceiptReviewPage].
   const ReceiptReviewPage({

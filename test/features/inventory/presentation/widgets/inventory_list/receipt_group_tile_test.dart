@@ -4,19 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -77,12 +71,6 @@ InventoryReceiptGroup _group() {
   ]);
 }
 
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-  inventoryItemRepository,
-  InventoryItemsController,
-  manualProductRecentItemsService,
-])
 Widget _buildHarness({
   required ThemeData theme,
   required InventoryReceiptGroup group,
@@ -149,12 +137,6 @@ Widget _buildHarness({
   );
 }
 
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-  inventoryItemRepository,
-  InventoryItemsController,
-  manualProductRecentItemsService,
-])
 Future<void> _pump(WidgetTester tester, {required ThemeData theme}) async {
   await tester.pumpWidget(_buildHarness(theme: theme, group: _group()));
   await tester.pumpAndSettle();
@@ -165,12 +147,6 @@ Future<void> _toggleExpansion(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-  inventoryItemRepository,
-  InventoryItemsController,
-  manualProductRecentItemsService,
-])
 void main() {
   final lightTheme = AppTheme.light();
   final darkTheme = AppTheme.dark();

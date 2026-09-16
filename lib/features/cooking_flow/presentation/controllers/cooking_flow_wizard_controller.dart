@@ -25,11 +25,7 @@ part 'cooking_flow_wizard_controller.g.dart';
 const _textListEquality = ListEquality<String>();
 
 /// Controls cookflow wizard state and session persistence.
-@Riverpod(
-  dependencies: [
-    CookingFlowController,
-  ],
-)
+@riverpod
 class CookingFlowWizardController extends _$CookingFlowWizardController {
   @override
   CookingFlowWizardState build() {

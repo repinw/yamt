@@ -102,7 +102,8 @@ class _ReceiptProductSearchDialogState
                 controller: _controller,
                 autofocus: true,
                 decoration: InputDecoration(
-                  hintText: l10n?.receiptReviewSearchProductHint ??
+                  hintText:
+                      l10n?.receiptReviewSearchProductHint ??
                       'Produktname eingeben...',
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: IconButton(

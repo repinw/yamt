@@ -2,12 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -17,8 +13,6 @@ import 'package:yamt/features/inventory/presentation/constants/'
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_amount_unit_l10n.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -48,12 +42,6 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item row.
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-  inventoryItemRepository,
-  InventoryItemsController,
-  manualProductRecentItemsService,
-])
 class InventoryItemRow extends ConsumerStatefulWidget {
   /// The inventory item row.
   const InventoryItemRow({

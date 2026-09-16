@@ -2,16 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _deleteUndoSnackBarDuration = Duration(seconds: 5);
 
 /// Handles item deletion with undo SnackBar feedback.
-@Dependencies([
-  InventoryItemsController,
-])
 class InventoryItemDeleteFlow {
   const InventoryItemDeleteFlow._();
 

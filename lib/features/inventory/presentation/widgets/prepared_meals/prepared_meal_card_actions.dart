@@ -6,11 +6,9 @@ import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -27,7 +25,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const preparedMealCardLogName = 'PreparedMealCard';
 
-@Dependencies([InventoryItemsController, preparedMealImagePicker])
 mixin PreparedMealCardActions<T extends ConsumerStatefulWidget>
     on ConsumerState<T> {
   bool get expandedState;

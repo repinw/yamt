@@ -19,15 +19,17 @@ activity data, health weight samples, and manual fallback weight entries.
 
 ## Public Edge
 
+- `application/health_connection_actions.dart` for connection status and
+  permission actions used by integrating features.
 - `presentation/controllers/health_connection_controller.dart`
 - `presentation/controllers/manual_health_weight_entries_controller.dart`
 - Service providers in `data/` for health connection, diary health data, health
   weight samples, and manual weight fallback storage.
 - Domain models in `domain/` used by Activity, Calories, Diary, and Settings.
 
-Other features may consume these public controllers, providers, services, and
-domain types directly. Calorie-owned side effects from health changes belong in
-the consuming calorie or activity application layer.
+Other features should use the application connection facade instead of wiring
+the Health connection controller directly. Calorie-owned side effects from
+health changes belong in the consuming calorie or activity application layer.
 
 ## Providers
 

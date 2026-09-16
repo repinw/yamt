@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -26,8 +25,6 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -115,10 +112,6 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
   }
 }
 
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 class _CompleteEatFlowButton extends ConsumerWidget {
   const _CompleteEatFlowButton({
     required this.item,
@@ -233,7 +226,6 @@ Widget routerAppWithContainer({
   );
 }
 
-@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   ProviderContainer container,
 ) {
@@ -246,10 +238,6 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
   return container.listen(calorieEntriesControllerProvider, (_, _) {});
 }
 
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 class _DirectSaveFlowHarness {
   _DirectSaveFlowHarness._({
     required this.item,
@@ -349,10 +337,6 @@ class _DirectSaveFlowHarness {
   }
 }
 
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 void main() {
   test('shouldAwaitCompletion mirrors direct-save policy', () {
     final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');

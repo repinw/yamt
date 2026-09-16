@@ -7,7 +7,7 @@ import 'package:yamt/firebase_options.dart';
 part 'google_sign_in_provider.g.dart';
 
 /// Google sign-in client.
-@riverpod
+@Riverpod(keepAlive: true)
 Future<GoogleSignIn> googleSignIn(Ref ref) async {
   final clientId = kIsWeb
       ? GoogleSignInConfig.webClientId

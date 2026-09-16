@@ -31,8 +31,8 @@ final class InventoryItemRepositoryProvider
         retry: null,
         name: r'inventoryItemRepositoryProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -59,4 +59,4 @@ final class InventoryItemRepositoryProvider
 }
 
 String _$inventoryItemRepositoryHash() =>
-    r'2ad65192f1088f675b9d14ab543d3fb72fcbad27';
+    r'd13da9f736408ff98a83d2c89a3937cf9e834a4c';

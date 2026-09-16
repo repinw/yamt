@@ -32,21 +32,9 @@ final class ReceiptScanFlowCoordinatorProvider
         retry: null,
         name: r'receiptScanFlowCoordinatorProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          receiptStructuredParserProvider,
-          receiptTextExtractorProvider,
-          receiptProductResolverProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          ReceiptScanFlowCoordinatorProvider.$allTransitiveDependencies0,
-          ReceiptScanFlowCoordinatorProvider.$allTransitiveDependencies1,
-          ReceiptScanFlowCoordinatorProvider.$allTransitiveDependencies2,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = receiptStructuredParserProvider;
-  static final $allTransitiveDependencies1 = receiptTextExtractorProvider;
-  static final $allTransitiveDependencies2 = receiptProductResolverProvider;
 
   @override
   String debugGetCreateSourceHash() => _$receiptScanFlowCoordinatorHash();
@@ -72,4 +60,4 @@ final class ReceiptScanFlowCoordinatorProvider
 }
 
 String _$receiptScanFlowCoordinatorHash() =>
-    r'c33af3a123b882cda60bcbe94add9fc55fe5af2f';
+    r'cc8b06bee4e0b5c415301d5fcbbc500f80250b9f';

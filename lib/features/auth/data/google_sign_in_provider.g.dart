@@ -30,7 +30,7 @@ final class GoogleSignInProvider
         argument: null,
         retry: null,
         name: r'googleSignInProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -50,4 +50,4 @@ final class GoogleSignInProvider
   }
 }
 
-String _$googleSignInHash() => r'a5688287353588b36651deca7a83b5a5fd2598ad';
+String _$googleSignInHash() => r'ec3d6f257d95fb5ce9958ee2b9033b9418c0a11e';

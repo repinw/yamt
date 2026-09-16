@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../support/fake_shopping_list_repository.dart';
 
-@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
 Future<ProviderContainer> _pump(WidgetTester tester) async {
   final repository = FakeShoppingListRepository();
   final container = ProviderContainer(
@@ -43,7 +40,6 @@ Future<void> _menu(WidgetTester tester, String action) async {
   await tester.pumpAndSettle();
 }
 
-@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
 void main() {
   testWidgets('favorite can be set from menu, removed from list and re-added', (
     tester,

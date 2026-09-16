@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
@@ -199,7 +198,6 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   }
 }
 
-@Dependencies([appRouter])
 class _RouterHarness extends ConsumerWidget {
   const _RouterHarness();
 
@@ -219,7 +217,6 @@ const _routerTransitionDuration = Duration(milliseconds: 350);
 const _visibleStepDuration = Duration(milliseconds: 400);
 const _userId = 'uid-visible-onboarding';
 
-@Dependencies([appRouter])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
@@ -346,7 +343,6 @@ void main() {
   });
 }
 
-@Dependencies([appRouter])
 Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
   WidgetTester tester,
 ) async {
@@ -425,7 +421,6 @@ _MockUser _authenticatedUser({
   return user;
 }
 
-@Dependencies([appRouter])
 String _currentRoute(_CalorieOnboardingIntegrationHarness harness) {
   return harness.container.read(appRouterProvider).state.uri.path;
 }
@@ -511,7 +506,6 @@ Future<void> _finishOnboarding(WidgetTester tester) async {
   await _pumpRouterTransition(tester);
 }
 
-@Dependencies([appRouter])
 void _expectHomeDiary(
   _CalorieOnboardingIntegrationHarness harness,
 ) {

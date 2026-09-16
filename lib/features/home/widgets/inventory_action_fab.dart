@@ -2,26 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/home/widgets/inventory_expanded_fab_actions.dart';
 import 'package:yamt/features/home/widgets/inventory_expanded_fab_menu.dart';
 import 'package:yamt/features/home/widgets/inventory_fab_action_sheet_launcher.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_main_fab_button.dart';
-import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory action fab.
-@Dependencies([
-  InventoryItemsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  receiptManualProductPicker
-])
 class InventoryActionFab extends ConsumerStatefulWidget {
   /// The inventory action fab for the shell Scaffold slot.
   const InventoryActionFab({super.key}) : embedded = false;

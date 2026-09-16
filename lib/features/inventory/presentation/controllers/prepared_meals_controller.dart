@@ -40,14 +40,7 @@ part 'prepared_meals_controller.g.dart';
 const _preparedMealsControllerLogName = 'PreparedMealsController';
 
 /// Defines prepared meals controller.
-@Riverpod(
-  dependencies: [
-    inventoryActivityEventRepository,
-    inventoryDiscardEventRepository,
-    inventoryItemRepository,
-    preparedMealCalorieLogBridge,
-  ],
-)
+@riverpod
 class PreparedMealsController extends _$PreparedMealsController {
   // Subscription is cancelled by `_disposeSubscription`.
   // ignore: cancel_subscriptions

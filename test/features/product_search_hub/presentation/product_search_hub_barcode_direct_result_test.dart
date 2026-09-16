@@ -6,8 +6,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart'
     as manual_product_models;
-import 'package:yamt/features/product_search_hub/presentation/'
-    'models/product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_barcode_direct_result.dart';
 

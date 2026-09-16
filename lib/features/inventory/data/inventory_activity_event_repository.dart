@@ -155,7 +155,7 @@ class _UnavailableInventoryActivityEventRepository
 }
 
 /// Inventory activity event repository provider.
-@Riverpod(dependencies: [])
+@riverpod
 InventoryActivityEventRepository inventoryActivityEventRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
   final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
@@ -196,7 +196,7 @@ InventoryActivityActor? inventoryActivityActor(Ref ref) {
 }
 
 /// Recent inventory activity events.
-@Riverpod(dependencies: [inventoryActivityEventRepository])
+@riverpod
 Stream<List<InventoryActivityEvent>> inventoryActivityEvents(Ref ref) {
   return ref.watch(inventoryActivityEventRepositoryProvider).watchRecent();
 }

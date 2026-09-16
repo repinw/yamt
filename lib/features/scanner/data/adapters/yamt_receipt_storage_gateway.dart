@@ -59,36 +59,39 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
     List<ReceiptLineItem> items,
     DateTime now,
   ) {
-    return items.map((item) {
-      final product = item.matchedProduct;
-      final nutrition = _buildNutrition(product?.nutritionPer100g);
-      final amount = _resolveInventoryAmount(item, product?.packageSize);
-      final unitPrice = item.unitPrice ??
-          (item.quantity > 0
-              ? (item.totalPrice / item.quantity)
-              : item.totalPrice);
+    return items
+        .map((item) {
+          final product = item.matchedProduct;
+          final nutrition = _buildNutrition(product?.nutritionPer100g);
+          final amount = _resolveInventoryAmount(item, product?.packageSize);
+          final unitPrice =
+              item.unitPrice ??
+              (item.quantity > 0
+                  ? (item.totalPrice / item.quantity)
+                  : item.totalPrice);
 
-      return InventoryItem.create(
-        id: _idGenerator(),
-        name: item.displayName,
-        storeName: receipt.storeName ?? '',
-        entryDate: receipt.dateTime ?? now,
-        quantity: amount.quantity,
-        initialQuantity: amount.quantity,
-        unitPrice: unitPrice,
-        currencyCode: receipt.currency,
-        weight: amount.weight,
-        barcode: product?.barcode,
-        brand: product?.brand,
-        category: product?.category,
-        imageUrl: product?.imageUrl,
-        nutrition: nutrition,
-        ocrName: item.rawName,
-        receiptId: receipt.id,
-        receiptDate: receipt.dateTime,
-        globalFoodItemId: product?.id,
-      ).withDerivedAmount(weight: amount.weight, quantity: amount.quantity);
-    }).toList(growable: false);
+          return InventoryItem.create(
+            id: _idGenerator(),
+            name: item.displayName,
+            storeName: receipt.storeName ?? '',
+            entryDate: receipt.dateTime ?? now,
+            quantity: amount.quantity,
+            initialQuantity: amount.quantity,
+            unitPrice: unitPrice,
+            currencyCode: receipt.currency,
+            weight: amount.weight,
+            barcode: product?.barcode,
+            brand: product?.brand,
+            category: product?.category,
+            imageUrl: product?.imageUrl,
+            nutrition: nutrition,
+            ocrName: item.rawName,
+            receiptId: receipt.id,
+            receiptDate: receipt.dateTime,
+            globalFoodItemId: product?.id,
+          ).withDerivedAmount(weight: amount.weight, quantity: amount.quantity);
+        })
+        .toList(growable: false);
   }
 
   Map<String, GlobalFoodItem> _buildGlobalItems(

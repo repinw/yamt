@@ -31,27 +31,10 @@ final class InventoryBackedCalorieEntrySaveFlowProvider
         argument: null,
         retry: null,
         name: r'inventoryBackedCalorieEntrySaveFlowProvider',
-        isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[inventoryItemsControllerProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          InventoryBackedCalorieEntrySaveFlowProvider
-              .$allTransitiveDependencies0,
-          InventoryBackedCalorieEntrySaveFlowProvider
-              .$allTransitiveDependencies1,
-          InventoryBackedCalorieEntrySaveFlowProvider
-              .$allTransitiveDependencies2,
-          InventoryBackedCalorieEntrySaveFlowProvider
-              .$allTransitiveDependencies3,
-        },
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies2;
 
   @override
   String debugGetCreateSourceHash() =>
@@ -80,4 +63,4 @@ final class InventoryBackedCalorieEntrySaveFlowProvider
 }
 
 String _$inventoryBackedCalorieEntrySaveFlowHash() =>
-    r'724e56738add32b0f13fe00287e302c1014c7b70';
+    r'5f0f35aed5466655f9b5ef0b2cab9d3a1c910078';

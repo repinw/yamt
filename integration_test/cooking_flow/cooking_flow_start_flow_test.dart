@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/cooking_flow/data/'
@@ -13,10 +12,6 @@ import 'package:yamt/features/cooking_flow/data/'
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_controller.dart';
-import 'package:yamt/features/cooking_flow/presentation/controllers/'
-    'cooking_flow_wizard_controller.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_cooking_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -33,9 +28,6 @@ import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
     'kitchen_utensils_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_page.dart';
-import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _CookingFlowStartHarness {
@@ -133,16 +125,6 @@ class _StaticKitchenUtensilsController extends KitchenUtensilsController {
   }
 }
 
-@Dependencies([
-  CookingFlowController,
-  CookingFlowWizardController,
-  InventoryItemsController,
-  PreparedMealsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  cookingInstructionSteps,
-  receiptManualProductPicker
-])
 _CookingFlowStartHarness _buildHarness() {
   final sessionStore = _FakeCookingFlowSessionLocalStore();
   final templates = <PreparedMeal>[_recipeTemplate()];
@@ -427,16 +409,6 @@ Future<void> _assignInventoryIngredient({
   );
 }
 
-@Dependencies([
-  CookingFlowController,
-  CookingFlowWizardController,
-  InventoryItemsController,
-  PreparedMealsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  cookingInstructionSteps,
-  receiptManualProductPicker
-])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 

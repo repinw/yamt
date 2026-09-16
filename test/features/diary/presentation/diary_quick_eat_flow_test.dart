@@ -5,35 +5,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod/src/framework.dart' show Override;
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_quick_eat_application.dart';
+import 'package:yamt/features/inventory/application/inventory_quick_eat_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/inventory/presentation/inventory_quick_eat_sheet_picker.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/diary_dashboard_test_support.dart';
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 void main() {
   testWidgets('manual quick-eat sources push hub with diary route args', (
     tester,
@@ -376,12 +368,6 @@ final _inventoryFlowDay = DateTime(2026, 4, 27);
 int _stageCallCount = 0;
 final _discardedPendingIds = <String>[];
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 class _RouteHarness extends StatelessWidget {
   const _RouteHarness({
     required this.source,
@@ -440,12 +426,6 @@ class _RouteHarness extends StatelessWidget {
   }
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 class _QuickEatRouteLauncher extends StatelessWidget {
   const _QuickEatRouteLauncher({
     required this.source,
@@ -510,17 +490,23 @@ Future<void> _pumpInventoryFlowHarness(
           _inventoryFlowDay,
           onRetry: onDashboardRetry,
         ),
-        inventoryItemsControllerProvider.overrideWith(
-          () => _TestInventoryItemsController(
-            inventoryItems,
+        diaryQuickEatInventoryProvider.overrideWith(
+          (ref) => _diaryQuickEatInventoryData(inventoryItems, preparedMeals),
+        ),
+        diaryQuickEatInventoryActionsProvider.overrideWithValue(
+          _TestDiaryQuickEatInventoryActions(
+            failConsume: failPreparedMealConsume,
             failStage: failInventoryStage,
           ),
         ),
-        preparedMealsControllerProvider.overrideWith(
-          () => _TestPreparedMealsController(
-            preparedMeals,
+        inventoryQuickEatActionsProvider.overrideWithValue(
+          _TestDiaryQuickEatInventoryActions(
             failConsume: failPreparedMealConsume,
+            failStage: failInventoryStage,
           ),
+        ),
+        inventoryQuickEatPickerProvider.overrideWithValue(
+          const InventoryQuickEatSheetPicker(),
         ),
       ],
       child: const MaterialApp(
@@ -545,17 +531,19 @@ Future<void> _pumpDelayedInventoryFlowHarness(
     ProviderScope(
       overrides: [
         _dashboardOverrideFor(_inventoryFlowDay),
-        inventoryItemsControllerProvider.overrideWith(
-          () => _DelayedInventoryItemsController(
-            inventoryItems,
-            gate: inventoryGate,
-          ),
+        diaryQuickEatInventoryProvider.overrideWith((ref) async {
+          await inventoryGate.future;
+          await mealsGate.future;
+          return _diaryQuickEatInventoryData(inventoryItems, preparedMeals);
+        }),
+        diaryQuickEatInventoryActionsProvider.overrideWithValue(
+          const _TestDiaryQuickEatInventoryActions(),
         ),
-        preparedMealsControllerProvider.overrideWith(
-          () => _DelayedPreparedMealsController(
-            preparedMeals,
-            gate: mealsGate,
-          ),
+        inventoryQuickEatActionsProvider.overrideWithValue(
+          const _TestDiaryQuickEatInventoryActions(),
+        ),
+        inventoryQuickEatPickerProvider.overrideWithValue(
+          const InventoryQuickEatSheetPicker(),
         ),
       ],
       child: const MaterialApp(
@@ -569,12 +557,20 @@ Future<void> _pumpDelayedInventoryFlowHarness(
   await tester.pumpAndSettle();
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  inventoryBackedCalorieEntrySaveFlow,
-])
+DiaryQuickEatInventoryData _diaryQuickEatInventoryData(
+  List<InventoryItem> inventoryItems,
+  List<PreparedMeal> preparedMeals,
+) {
+  return DiaryQuickEatInventoryData(
+    items: inventoryItems
+        .where(canDiaryQuickEatInventoryItem)
+        .toList(growable: false),
+    meals: preparedMeals
+        .where((meal) => !meal.isDepleted)
+        .toList(growable: false),
+  );
+}
+
 class _InventoryFlowHarness extends StatelessWidget {
   const _InventoryFlowHarness();
 
@@ -603,7 +599,7 @@ Override _dashboardOverrideFor(
   DateTime day, {
   DiaryDayDashboardState? Function(int retryCount)? onRetry,
 }) {
-  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedDay = normalizeLocalDay(day);
   return diaryDayDashboardControllerProvider(normalizedDay).overrideWith(
     () => FakeDiaryDayDashboardController(
       diaryDashboardLoadedStateForTest(selectedDay: normalizedDay),
@@ -612,62 +608,33 @@ Override _dashboardOverrideFor(
   );
 }
 
-class _TestInventoryItemsController extends InventoryItemsController {
-  _TestInventoryItemsController(this._items, {required this.failStage});
+class _TestDiaryQuickEatInventoryActions
+    implements DiaryQuickEatInventoryActions, InventoryQuickEatActions {
+  const _TestDiaryQuickEatInventoryActions({
+    this.failConsume = false,
+    this.failStage = false,
+  });
 
-  final List<InventoryItem> _items;
+  final bool failConsume;
   final bool failStage;
 
   @override
-  FutureOr<List<InventoryItem>> build() async {
-    return _items;
-  }
-
-  @override
-  Future<PendingInventoryConsumption?> stagePendingConsumption(
-    String itemId,
-    int amount,
-  ) async {
+  Future<String?> stageInventoryItemConsumption({
+    required String itemId,
+    required int amount,
+  }) async {
     _stageCallCount += 1;
     if (failStage) {
       return null;
     }
-    return PendingInventoryConsumption(
-      id: 'pending-$itemId',
-      itemId: itemId,
-      amount: amount,
-    );
+    return 'pending-$itemId';
   }
 
   @override
-  Future<bool> discardPendingConsumption(String draftId) async {
-    _discardedPendingIds.add(draftId);
-    return true;
-  }
-}
-
-class _DelayedInventoryItemsController extends InventoryItemsController {
-  _DelayedInventoryItemsController(this._items, {required this.gate});
-
-  final List<InventoryItem> _items;
-  final Completer<void> gate;
-
-  @override
-  FutureOr<List<InventoryItem>> build() async {
-    await gate.future;
-    return _items;
-  }
-}
-
-class _TestPreparedMealsController extends PreparedMealsController {
-  _TestPreparedMealsController(this._meals, {required this.failConsume});
-
-  final List<PreparedMeal> _meals;
-  final bool failConsume;
-
-  @override
-  FutureOr<List<PreparedMeal>> build() async {
-    return _meals;
+  Future<void> discardInventoryItemConsumption(
+    String pendingConsumptionId,
+  ) async {
+    _discardedPendingIds.add(pendingConsumptionId);
   }
 
   @override
@@ -675,22 +642,9 @@ class _TestPreparedMealsController extends PreparedMealsController {
     required String mealId,
     required num consumedPortions,
     required MealType mealType,
-    DateTime? loggedDay,
+    required DateTime loggedDay,
   }) async {
     return !failConsume;
-  }
-}
-
-class _DelayedPreparedMealsController extends PreparedMealsController {
-  _DelayedPreparedMealsController(this._meals, {required this.gate});
-
-  final List<PreparedMeal> _meals;
-  final Completer<void> gate;
-
-  @override
-  FutureOr<List<PreparedMeal>> build() async {
-    await gate.future;
-    return _meals;
   }
 }
 

@@ -4,8 +4,8 @@ import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_con
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/onboarding_selectable_card.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/onboarding_step_content.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/step_training_days_cycling_preview.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/step_training_days_weekday_selector.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/'
+    'step_training_days_details.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Onboarding step to configure training days and calorie cycling offset.
@@ -62,7 +62,7 @@ class StepTrainingDays extends StatelessWidget {
             }
           },
           child: hasFixedDays
-              ? _FixedTrainingDaysDetails(
+              ? StepTrainingDaysDetails(
                   state: state,
                   hasExtraKcal: hasExtraKcal,
                   baseGoal: baseGoal,
@@ -180,73 +180,6 @@ class _TrainingChoiceCard extends StatelessWidget {
           ],
         ],
       ),
-    );
-  }
-}
-
-class _FixedTrainingDaysDetails extends StatelessWidget {
-  const _FixedTrainingDaysDetails({
-    required this.state,
-    required this.hasExtraKcal,
-    required this.baseGoal,
-    required this.onToggleWeekday,
-    required this.onToggleExtraKcal,
-  });
-
-  final CalorieGoalCalculatorFormState state;
-  final bool hasExtraKcal;
-  final double baseGoal;
-  final ValueChanged<int> onToggleWeekday;
-  final ValueChanged<bool> onToggleExtraKcal;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(height: 1),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          l10n.onboardingTrainingDaysQuestion,
-          style: textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        StepTrainingDaysWeekdaySelector(
-          selectedWeekdays: state.trainingWeekdays,
-          onToggleWeekday: onToggleWeekday,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        SwitchListTile.adaptive(
-          contentPadding: EdgeInsets.zero,
-          value: hasExtraKcal,
-          onChanged: onToggleExtraKcal,
-          title: Text(
-            l10n.onboardingTrainingDaysExtraKcalLabel,
-            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          subtitle: Text(
-            l10n.onboardingTrainingDaysExtraKcalSubtitle,
-            style: textTheme.bodySmall?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ),
-        if (hasExtraKcal &&
-            baseGoal > 0 &&
-            state.trainingWeekdays.isNotEmpty &&
-            state.trainingWeekdays.length < 7) ...[
-          const SizedBox(height: AppSpacing.sm),
-          StepTrainingDaysCyclingPreview(
-            baseGoalKcal: baseGoal,
-            trainingDaysCount: state.trainingWeekdays.length,
-            offsetKcal: state.trainingDayKcalOffset,
-          ),
-        ],
-      ],
     );
   }
 }

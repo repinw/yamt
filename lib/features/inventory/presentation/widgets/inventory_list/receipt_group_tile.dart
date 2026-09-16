@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -80,12 +74,6 @@ class ReceiptGroupSelectionOptions {
 }
 
 /// Defines receipt group tile.
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-  inventoryItemRepository,
-  InventoryItemsController,
-  manualProductRecentItemsService,
-])
 class ReceiptGroupTile extends StatefulWidget {
   /// The receipt group tile.
   const ReceiptGroupTile({

@@ -3,13 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'composite_product_search_adapter.dart';
+import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -34,7 +32,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Focused product search route for the product search hub.
-@Dependencies([productSearchGateway])
 class ProductSearchHubSearchPage extends ConsumerStatefulWidget {
   /// Creates a focused product search page.
   const ProductSearchHubSearchPage({

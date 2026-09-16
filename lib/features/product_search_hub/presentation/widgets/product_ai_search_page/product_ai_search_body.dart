@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
@@ -25,8 +23,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Body for the AI manual product search page.
-@Dependencies([inventoryManualAddQuickEatConfig])
-class ManualProductAiSearchBody extends ConsumerWidget {
+class ManualProductAiSearchBody extends StatelessWidget {
   /// Creates an AI manual product search body.
   const ManualProductAiSearchBody({
     required this.draft,
@@ -45,8 +42,12 @@ class ManualProductAiSearchBody extends ConsumerWidget {
     required this.onWeightChanged,
     required this.onPer100KcalChanged,
     required this.onSave,
+    this.quickEatConfig = InventoryManualAddQuickEatConfig.standard,
     super.key,
   });
+
+  /// Quick-eat settings.
+  final InventoryManualAddQuickEatConfig quickEatConfig;
 
   /// Current AI draft.
   final ProductAiSearchDraft? draft;
@@ -97,11 +98,8 @@ class ManualProductAiSearchBody extends ConsumerWidget {
   final VoidCallback? onSave;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final quickEatConfig = ref.watch(
-      inventoryManualAddQuickEatConfigProvider,
-    );
     final colors = Theme.of(context).colorScheme;
     final resolvedDraft = draft;
     final resolvedSelection = selection;

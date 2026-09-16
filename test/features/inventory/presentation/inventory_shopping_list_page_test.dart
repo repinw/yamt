@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/inventory/application/inventory_shopping_suggestions.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
@@ -37,7 +35,6 @@ class _StockRepository implements InventoryItemRepository {
   Future<bool> appendAll(List<InventoryItem> items) async => true;
 }
 
-@Dependencies([inventoryShoppingSuggestions])
 Future<FakeShoppingListRepository> _pump(
   WidgetTester tester,
   _StockRepository stock,
@@ -67,7 +64,6 @@ Future<FakeShoppingListRepository> _pump(
   return repository;
 }
 
-@Dependencies([inventoryShoppingSuggestions])
 void main() {
   testWidgets(
     'integrated page reads inventory and adds a low-stock suggestion',

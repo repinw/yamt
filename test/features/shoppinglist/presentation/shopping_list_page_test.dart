@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -11,32 +9,28 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_page_keys.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_stats_card.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_suggestions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../support/fake_shopping_list_repository.dart';
 
-@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
-Widget _wrap(ProviderContainer container) {
+Widget _wrap(ProviderContainer container, {Widget? suggestionsSection}) {
   return UncontrolledProviderScope(
     container: container,
-    child: const MaterialApp(
-      locale: Locale('en'),
+    child: MaterialApp(
+      locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: ShoppingListPage(),
+      home: ShoppingListPage(suggestionsSection: suggestionsSection),
     ),
   );
 }
 
 ProviderContainer _createContainer(
-  FakeShoppingListRepository repository, {
-  List<ShoppingSuggestion> suggestions = const [],
-}) {
+  FakeShoppingListRepository repository,
+) {
   final container = ProviderContainer(
     overrides: [
       shoppingListRepositoryProvider.overrideWithValue(repository),
-      shoppingSuggestionSourceProvider.overrideWith(
-        (ref) => AsyncData(suggestions),
-      ),
     ],
   );
   addTearDown(container.dispose);
@@ -59,19 +53,23 @@ Future<void> _addItem(
   await controller.addItem(name: name, brand: brand, quantity: quantity);
 }
 
-@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
 void main() {
   testWidgets('adds a purchase suggestion once and hides it', (
     tester,
   ) async {
     final repository = FakeShoppingListRepository();
-    final container = _createContainer(
-      repository,
-      suggestions: const [
-        ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
-      ],
+    final container = _createContainer(repository);
+    await tester.pumpWidget(
+      _wrap(
+        container,
+        suggestionsSection: const ShoppingListSuggestions(
+          key: ValueKey('shopping-suggestions'),
+          suggestions: AsyncData([
+            ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
+          ]),
+        ),
+      ),
     );
-    await tester.pumpWidget(_wrap(container));
     await tester.pumpAndSettle();
     expect(find.textContaining('Purchased 2 times'), findsOneWidget);
     await tester.tap(
@@ -93,13 +91,18 @@ void main() {
     final repository = FakeShoppingListRepository()
       ..saveAllShouldFail = true
       ..saveDelay = const Duration(milliseconds: 500);
-    final container = _createContainer(
-      repository,
-      suggestions: const [
-        ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
-      ],
+    final container = _createContainer(repository);
+    await tester.pumpWidget(
+      _wrap(
+        container,
+        suggestionsSection: const ShoppingListSuggestions(
+          key: ValueKey('shopping-suggestions'),
+          suggestions: AsyncData([
+            ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
+          ]),
+        ),
+      ),
     );
-    await tester.pumpWidget(_wrap(container));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byWidgetPredicate(

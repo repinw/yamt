@@ -1,13 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/diary/application/diary_quick_eat_inventory_provider.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
-@Dependencies([diaryQuickEatInventory])
 void main() {
   test(
     'filters selectable inventory items and depleted prepared meals',
@@ -31,17 +29,17 @@ void main() {
       final depletedMeal = _meal(id: 'depleted-meal', remainingPortions: 0);
       final container = ProviderContainer(
         overrides: [
-          inventoryItemsControllerProvider.overrideWith(
-            () => _StaticInventoryItemsController([
-              availableItem,
-              emptyItem,
-              amountItem,
-              depletedAmountItem,
-            ]),
-          ),
-          preparedMealsControllerProvider.overrideWith(
-            () => _StaticPreparedMealsController([readyMeal, depletedMeal]),
-          ),
+          inventoryQuickEatInventoryProvider.overrideWith((ref) async {
+            return InventoryQuickEatInventoryData(
+              items: [
+                availableItem,
+                emptyItem,
+                amountItem,
+                depletedAmountItem,
+              ],
+              meals: [readyMeal, depletedMeal],
+            );
+          }),
         ],
       );
       addTearDown(container.dispose);
@@ -126,22 +124,4 @@ PreparedMeal _meal({required String id, required num remainingPortions}) {
     updatedAt: DateTime(2026, 4, 27),
     components: const <PreparedMealComponent>[],
   );
-}
-
-class _StaticInventoryItemsController extends InventoryItemsController {
-  _StaticInventoryItemsController(this.items);
-
-  final List<InventoryItem> items;
-
-  @override
-  Future<List<InventoryItem>> build() async => items;
-}
-
-class _StaticPreparedMealsController extends PreparedMealsController {
-  _StaticPreparedMealsController(this.meals);
-
-  final List<PreparedMeal> meals;
-
-  @override
-  Future<List<PreparedMeal>> build() async => meals;
 }

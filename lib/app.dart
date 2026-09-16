@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 
@@ -9,20 +8,10 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/scanner/presentation/shared/shared_receipt_listener.dart';
-import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Root application widget.
-@Dependencies([
-  navigatorKey,
-  appRouter,
-  InventoryItemsController,
-  PreparedMealsController,
-  SharedReceiptService,
-  receiptScanFlowCoordinator,
-])
 class YAMT extends ConsumerStatefulWidget {
   /// Creates app root.
   const YAMT({super.key}); // coverage:ignore-line
@@ -73,8 +62,6 @@ class _YAMTState extends ConsumerState<YAMT> {
       supportedLocales: AppLocalizations.supportedLocales,
     );
   }
-
-
 
   void _startInventoryWarmup() {
     _inventoryWarmupSubscription ??= ref

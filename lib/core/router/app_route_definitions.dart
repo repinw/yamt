@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/home_shell_routes.dart';
@@ -12,32 +11,8 @@ import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.da
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/pages/tdee_analytics_page.dart';
-import 'package:yamt/features/cooking_flow/presentation/controllers/'
-    'cooking_flow_controller.dart';
-import 'package:yamt/features/cooking_flow/presentation/controllers/'
-    'cooking_flow_wizard_controller.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_cooking_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
-import 'package:yamt/features/diary/application/'
-    'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_shopping_suggestions.dart';
-import 'package:yamt/features/inventory/application/'
-    'manual_product_recent_items_service.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_activity_event_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/'
     'kitchen_utensils_page.dart';
@@ -47,10 +22,6 @@ import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_page.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'composite_product_search_adapter.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'models/product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -59,40 +30,11 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
-import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
-import 'package:yamt/features/scanner/presentation/controllers/'
-    'receipt_review_controller.dart';
-import 'package:yamt/features/scanner/presentation/flow/'
-    'receipt_camera_supported.dart';
-import 'package:yamt/features/scanner/presentation/flow/'
-    'receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 
 /// Builds the complete route tree for `GoRouter`.
-@Dependencies([
-  productSearchGateway,
-  productSearchHubCompletionHandler,
-  manualProductRecentItemsService,
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-  ReceiptReviewController,
-  receiptManualProductPicker,
-  CookingFlowController,
-  CookingFlowWizardController,
-  cookingInstructionSteps,
-  preparedMealImagePicker,
-  inventoryShoppingSuggestions,
-  PreparedMealsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  inventoryManualAddQuickEatConfig,
-  inventoryItemRepository,
-  inventoryActivityEvents,
-  diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
-])
 List<RouteBase> buildAppRoutes(Ref ref) {
   return [
     GoRoute(

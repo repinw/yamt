@@ -32,16 +32,9 @@ final class PreparedMealCalorieLogBridgeProvider
         retry: null,
         name: r'preparedMealCalorieLogBridgeProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          preparedMealCalorieEntryCommitStoreProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          PreparedMealCalorieLogBridgeProvider.$allTransitiveDependencies0,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 =
-      preparedMealCalorieEntryCommitStoreProvider;
 
   @override
   String debugGetCreateSourceHash() => _$preparedMealCalorieLogBridgeHash();
@@ -67,4 +60,4 @@ final class PreparedMealCalorieLogBridgeProvider
 }
 
 String _$preparedMealCalorieLogBridgeHash() =>
-    r'67bc47e032de20c4652a0c9caa70833fa737b414';
+    r'd94bd9b017551a2cac8cac64433edeb165f02ba4';

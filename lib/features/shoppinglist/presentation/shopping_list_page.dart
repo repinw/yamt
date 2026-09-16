@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_content/shopping_list_content.dart';
@@ -16,10 +14,12 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list page.
-@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
 class ShoppingListPage extends ConsumerStatefulWidget {
   /// The shopping list page.
-  const ShoppingListPage({super.key});
+  const ShoppingListPage({this.suggestionsSection, super.key});
+
+  /// Optional widget slot for suggestions.
+  final Widget? suggestionsSection;
 
   @override
   ConsumerState<ShoppingListPage> createState() => _ShoppingListPageState();
@@ -80,6 +80,7 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
           controller: controller,
           l10n: l10n,
           currency: currency,
+          suggestionsSection: widget.suggestionsSection,
         ),
         loading: () => const AppLoadingView(),
         error: (error, stackTrace) => AppErrorRetryView(

@@ -32,8 +32,8 @@ final class PreparedMealCalorieEntryCommitStoreProvider
         retry: null,
         name: r'preparedMealCalorieEntryCommitStoreProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -62,4 +62,4 @@ final class PreparedMealCalorieEntryCommitStoreProvider
 }
 
 String _$preparedMealCalorieEntryCommitStoreHash() =>
-    r'7f8861be71a2b0d0b38fd6626f443870dded3aa2';
+    r'fce637f1c39d99c6a131d20f9decb3e544ed3975';

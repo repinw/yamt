@@ -20,7 +20,7 @@ part 'receipt_gateway_providers.g.dart';
 /// Provider for [ReceiptProductResolver].
 ///
 /// Uses [YamtReceiptProductResolver] by default in production.
-@Riverpod(dependencies: [])
+@riverpod
 ReceiptProductResolver receiptProductResolver(Ref ref) {
   return YamtReceiptProductResolver(
     matcher: ref.watch(globalFoodItemMatcherProvider),
@@ -31,11 +31,7 @@ ReceiptProductResolver receiptProductResolver(Ref ref) {
 /// Provider for [ReceiptStorageGateway].
 ///
 /// Uses [YamtReceiptStorageGateway] by default in production.
-@Riverpod(
-  dependencies: [
-    inventoryItemRepository,
-  ],
-)
+@riverpod
 ReceiptStorageGateway receiptStorageGateway(Ref ref) {
   return YamtReceiptStorageGateway(
     inventoryItemRepository: ref.watch(inventoryItemRepositoryProvider),
@@ -50,7 +46,7 @@ ReceiptStorageGateway receiptStorageGateway(Ref ref) {
 ///
 /// Uses [MlKitReceiptTextExtractor] for on-device OCR by default.
 /// Disposes native resources on provider disposal.
-@Riverpod(dependencies: [])
+@riverpod
 ReceiptTextExtractor receiptTextExtractor(Ref ref) {
   final extractor = MlKitReceiptTextExtractor();
   ref.onDispose(extractor.dispose);
@@ -60,7 +56,7 @@ ReceiptTextExtractor receiptTextExtractor(Ref ref) {
 /// Provider for [ReceiptStructuredParser].
 ///
 /// Uses [GoogleAiReceiptParser] powered by the Google AI API (Gemini Flash).
-@Riverpod(dependencies: [])
+@riverpod
 ReceiptStructuredParser receiptStructuredParser(Ref ref) {
   const apiKey = String.fromEnvironment('GEMINI_API_KEY');
   if (apiKey.isEmpty) {
@@ -76,7 +72,7 @@ ReceiptStructuredParser receiptStructuredParser(Ref ref) {
 /// Provider for [ReceiptManualProductPicker].
 ///
 /// Uses [YamtReceiptManualProductPicker] by default in production.
-@Riverpod(dependencies: [])
+@riverpod
 ReceiptManualProductPicker receiptManualProductPicker(Ref ref) {
   return const YamtReceiptManualProductPicker();
 }

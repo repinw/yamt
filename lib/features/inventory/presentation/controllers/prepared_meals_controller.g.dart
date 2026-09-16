@@ -25,30 +25,9 @@ final class PreparedMealsControllerProvider
         retry: null,
         name: r'preparedMealsControllerProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryActivityEventRepositoryProvider,
-          inventoryDiscardEventRepositoryProvider,
-          inventoryItemRepositoryProvider,
-          preparedMealCalorieLogBridgeProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          PreparedMealsControllerProvider.$allTransitiveDependencies0,
-          PreparedMealsControllerProvider.$allTransitiveDependencies1,
-          PreparedMealsControllerProvider.$allTransitiveDependencies2,
-          PreparedMealsControllerProvider.$allTransitiveDependencies3,
-          PreparedMealsControllerProvider.$allTransitiveDependencies4,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 =
-      inventoryActivityEventRepositoryProvider;
-  static final $allTransitiveDependencies1 =
-      inventoryDiscardEventRepositoryProvider;
-  static final $allTransitiveDependencies2 = inventoryItemRepositoryProvider;
-  static final $allTransitiveDependencies3 =
-      preparedMealCalorieLogBridgeProvider;
-  static final $allTransitiveDependencies4 =
-      PreparedMealCalorieLogBridgeProvider.$allTransitiveDependencies0;
 
   @override
   String debugGetCreateSourceHash() => _$preparedMealsControllerHash();
@@ -59,7 +38,7 @@ final class PreparedMealsControllerProvider
 }
 
 String _$preparedMealsControllerHash() =>
-    r'1b77f000b74638c2e899c4ac06bdbd8db8b19c4e';
+    r'40864f806a581f74d37165a34148c41ff3550009';
 
 /// Defines prepared meals controller.
 

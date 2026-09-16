@@ -38,7 +38,7 @@ final class CalorieDebugActionControllerProvider
 }
 
 String _$calorieDebugActionControllerHash() =>
-    r'cc8cf6aa149c888388da2cd41105bd1dceac232c';
+    r'01f471cd0f4de3ffcb3b2be2a1417d7ac297ab4d';
 
 /// Handles calorie debug actions that need providers.
 

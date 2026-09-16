@@ -268,7 +268,8 @@ class ReceiptReviewItemCard extends StatelessWidget {
               icon: const Icon(Icons.check_rounded, color: Colors.green),
               iconSize: 20,
               onPressed: onConfirmSuggestion,
-              tooltip: l10n?.receiptReviewConfirmSuggestionTooltip ??
+              tooltip:
+                  l10n?.receiptReviewConfirmSuggestionTooltip ??
                   'Vorschlag übernehmen',
               visualDensity: VisualDensity.compact,
             ),

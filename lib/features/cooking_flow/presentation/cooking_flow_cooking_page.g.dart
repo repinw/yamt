@@ -37,14 +37,6 @@ final class CookingInstructionStepsProvider
          $allTransitiveDependencies: null,
        );
 
-  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies2;
-
   @override
   String debugGetCreateSourceHash() => _$cookingInstructionStepsHash();
 
@@ -80,7 +72,7 @@ final class CookingInstructionStepsProvider
 }
 
 String _$cookingInstructionStepsHash() =>
-    r'9102dd2823e4030ea300dcc014f7dd6b58819a01';
+    r'c53ffeec6f81deb0113ed3af209d6ee211cd1a3c';
 
 /// Builds cooking instruction steps for the current recipe and inventory.
 
@@ -94,13 +86,8 @@ final class CookingInstructionStepsFamily extends $Family
     : super(
         retry: null,
         name: r'cookingInstructionStepsProvider',
-        dependencies: <ProviderOrFamily>[inventoryItemsControllerProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          CookingInstructionStepsProvider.$allTransitiveDependencies0,
-          CookingInstructionStepsProvider.$allTransitiveDependencies1,
-          CookingInstructionStepsProvider.$allTransitiveDependencies2,
-          CookingInstructionStepsProvider.$allTransitiveDependencies3,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 

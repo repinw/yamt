@@ -1,8 +1,12 @@
 import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 
 part 'inventory_manual_product_search_launcher.g.dart';
 
@@ -38,4 +42,19 @@ InventoryManualProductSearchLauncher inventoryManualProductSearchLauncher(
   Ref ref,
 ) {
   return ({required context, required request}) async => null;
+}
+
+/// Builds the inventory-owned adapter to the reusable product-search hub.
+InventoryManualProductSearchLauncher
+buildInventoryProductSearchHubManualProductSearchLauncher() {
+  return ({required context, required request}) {
+    return context.push<InventoryReceiptManualProductResult>(
+      AppRoutes.homeProductSearchHub,
+      extra: ProductSearchHubRouteArgs.selection(
+        item: request.item,
+        includeStoreInSearch: request.includeStoreInSearch,
+        includeWeightInSearch: request.includeWeightInSearch,
+      ),
+    );
+  };
 }

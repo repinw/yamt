@@ -33,33 +33,9 @@ final class DiaryQuickEatInventoryProvider
         retry: null,
         name: r'diaryQuickEatInventoryProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryItemsControllerProvider,
-          preparedMealsControllerProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          DiaryQuickEatInventoryProvider.$allTransitiveDependencies0,
-          DiaryQuickEatInventoryProvider.$allTransitiveDependencies1,
-          DiaryQuickEatInventoryProvider.$allTransitiveDependencies2,
-          DiaryQuickEatInventoryProvider.$allTransitiveDependencies3,
-          DiaryQuickEatInventoryProvider.$allTransitiveDependencies4,
-          DiaryQuickEatInventoryProvider.$allTransitiveDependencies5,
-          DiaryQuickEatInventoryProvider.$allTransitiveDependencies6,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies2;
-  static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies5 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies3;
-  static final $allTransitiveDependencies6 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$diaryQuickEatInventoryHash();
@@ -77,7 +53,7 @@ final class DiaryQuickEatInventoryProvider
 }
 
 String _$diaryQuickEatInventoryHash() =>
-    r'063e107b310280afbc8b3d3bb0f79cdc0b5413b0';
+    r'f432e977c673dd6979fd129d2a031ae06cad5a21';
 
 /// Provides inventory mutations used by diary quick-eat.
 
@@ -103,33 +79,9 @@ final class DiaryQuickEatInventoryActionsProvider
         retry: null,
         name: r'diaryQuickEatInventoryActionsProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryItemsControllerProvider,
-          preparedMealsControllerProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies0,
-          DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies1,
-          DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies2,
-          DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies3,
-          DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies4,
-          DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies5,
-          DiaryQuickEatInventoryActionsProvider.$allTransitiveDependencies6,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies2;
-  static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies5 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies3;
-  static final $allTransitiveDependencies6 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$diaryQuickEatInventoryActionsHash();
@@ -157,4 +109,4 @@ final class DiaryQuickEatInventoryActionsProvider
 }
 
 String _$diaryQuickEatInventoryActionsHash() =>
-    r'1dbb3053f6509b7069316d09fc6f8e6afce3ed83';
+    r'efdb869e96d0034ccf58d9013b8a79e5f1e7a0ed';

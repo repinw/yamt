@@ -31,19 +31,9 @@ final class ProductSearchGatewayProvider
         retry: null,
         name: r'productSearchGatewayProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          manualProductRecentItemsServiceProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          ProductSearchGatewayProvider.$allTransitiveDependencies0,
-          ProductSearchGatewayProvider.$allTransitiveDependencies1,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 =
-      manualProductRecentItemsServiceProvider;
-  static final $allTransitiveDependencies1 =
-      ManualProductRecentItemsServiceProvider.$allTransitiveDependencies0;
 
   @override
   String debugGetCreateSourceHash() => _$productSearchGatewayHash();
@@ -69,4 +59,4 @@ final class ProductSearchGatewayProvider
 }
 
 String _$productSearchGatewayHash() =>
-    r'68fe57e4e93ebf980bcf776cca91c10f4d659e9a';
+    r'ae3039efa005157c772ad1ea2a340b4b8849869f';

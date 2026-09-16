@@ -1,4 +1,3 @@
-
 /// Contract for extracting raw text from receipt files locally on-device.
 abstract interface class ReceiptTextExtractor {
   /// Extracts raw text from the specified receipt [filePaths].

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/data/'
@@ -13,7 +12,6 @@ import 'package:yamt/features/inventory/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Inventory activity timeline.
-@Dependencies([inventoryActivityEvents])
 class InventoryActivityTimeline extends ConsumerWidget {
   /// Creates timeline.
   const InventoryActivityTimeline({

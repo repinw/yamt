@@ -37,8 +37,8 @@ class DiaryCalendarDayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final activeTextColor =
         ThemeData.estimateBrightnessForColor(activeColor) == Brightness.dark
-            ? Colors.white
-            : const Color(0xFF0F172A);
+        ? Colors.white
+        : const Color(0xFF0F172A);
     final textColor = isActive ? activeTextColor : inactiveTextColor;
     final localeName = Localizations.localeOf(context).toLanguageTag();
 

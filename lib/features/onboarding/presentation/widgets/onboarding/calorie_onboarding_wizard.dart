@@ -192,8 +192,7 @@ class _CalorieOnboardingWizardState
     final finishFlow = ref.watch(calorieGoalOnboardingFinishFlowProvider);
     final wizardState = ref.watch(calorieOnboardingWizardControllerProvider);
     final l10n = AppLocalizations.of(context)!;
-    final nextLabel =
-        wizardState.currentStep == CalorieOnboardingStep.info
+    final nextLabel = wizardState.currentStep == CalorieOnboardingStep.info
         ? l10n.onboardingNextActionStep5
         : l10n.onboardingNextAction;
 

@@ -55,8 +55,11 @@ class ReceiptItemLeadingAvatar extends StatelessWidget {
 
   Widget _buildIcon(ColorScheme colors, {required double size}) =>
       switch (status) {
-        ReceiptItemStatus.confirmed =>
-          Icon(Icons.check_circle_rounded, color: Colors.green, size: size),
+        ReceiptItemStatus.confirmed => Icon(
+          Icons.check_circle_rounded,
+          color: Colors.green,
+          size: size,
+        ),
         ReceiptItemStatus.suggested => Icon(
           Icons.auto_awesome_rounded,
           color: Colors.amber.shade700,

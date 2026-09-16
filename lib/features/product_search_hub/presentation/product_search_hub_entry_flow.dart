@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
 import 'package:yamt/features/product_search_hub/presentation/models/'

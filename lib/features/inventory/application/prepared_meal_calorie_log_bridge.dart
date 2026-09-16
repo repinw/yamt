@@ -23,9 +23,7 @@ typedef PreparedMealSaveCallback =
     );
 
 /// The prepared meal calorie log bridge provider.
-@Riverpod(
-  dependencies: [preparedMealCalorieEntryCommitStore],
-)
+@riverpod
 PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
   final commitStore = ref.watch(preparedMealCalorieEntryCommitStoreProvider);
   final calorieEntriesController = ref.read(

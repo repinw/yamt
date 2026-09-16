@@ -25,23 +25,9 @@ final class InventoryItemsControllerProvider
         retry: null,
         name: r'inventoryItemsControllerProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryActivityEventRepositoryProvider,
-          inventoryDiscardEventRepositoryProvider,
-          inventoryItemRepositoryProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          InventoryItemsControllerProvider.$allTransitiveDependencies0,
-          InventoryItemsControllerProvider.$allTransitiveDependencies1,
-          InventoryItemsControllerProvider.$allTransitiveDependencies2,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 =
-      inventoryActivityEventRepositoryProvider;
-  static final $allTransitiveDependencies1 =
-      inventoryDiscardEventRepositoryProvider;
-  static final $allTransitiveDependencies2 = inventoryItemRepositoryProvider;
 
   @override
   String debugGetCreateSourceHash() => _$inventoryItemsControllerHash();
@@ -52,7 +38,7 @@ final class InventoryItemsControllerProvider
 }
 
 String _$inventoryItemsControllerHash() =>
-    r'af2ed6a65bdcb710169fa474363783ed9c7c6fa1';
+    r'f3c1b356372b455dcf3bc1cfe991a3a7905cb18d';
 
 /// Defines inventory items controller.
 

@@ -4,8 +4,9 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
+import 'package:yamt/features/health/application/'
+    'health_connection_actions.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
 part 'diary_intro_trigger_provider.g.dart';
 
@@ -34,7 +35,7 @@ DiaryIntroTrigger? diaryIntroTrigger(Ref ref) {
     return null;
   }
 
-  final healthConnectionState = ref.watch(healthConnectionControllerProvider);
+  final healthConnectionState = ref.watch(healthConnectionStatusProvider);
   if (healthConnectionState.isLoading) {
     return null;
   }

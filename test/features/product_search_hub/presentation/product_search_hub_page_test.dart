@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/diary/presentation/'
+    'diary_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -17,14 +18,18 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_receipt_manual_product_models.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'composite_product_search_adapter.dart';
-import 'package:yamt/features/product_search_hub/data/'
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_product_eat_coordinator.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_product_search_hub_completion_handler.dart';
+import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -36,35 +41,30 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-@Dependencies([
-  productSearchGateway,
-  productSearchHubCompletionHandler,
-])
-Widget _buildHarness({
+Future<void> _pumpHarness(
+  WidgetTester tester, {
   List<InventoryItem> recentItems = const <InventoryItem>[],
   Widget child = const ProductSearchHubPage(),
-}) {
-  return ProviderScope(
-    overrides: [
-      inventoryItemRepositoryProvider.overrideWithValue(
-        _FakeInventoryItemRepository(recentItems),
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(
+          _FakeInventoryItemRepository(recentItems),
+        ),
+      ],
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: child,
       ),
-    ],
-    child: MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: child,
     ),
   );
 }
 
-@Dependencies([
-  InventoryItemsController,
-  productSearchGateway,
-  productSearchHubCompletionHandler,
-])
-Widget _buildRouteHarness({
+Future<void> _pumpRouteHarness(
+  WidgetTester tester, {
   required ProductSearchHubRouteArgs args,
   List<InventoryItem> recentItems = const <InventoryItem>[],
   OffProductSearchResult? searchRouteProductResult,
@@ -75,7 +75,7 @@ Widget _buildRouteHarness({
   InventoryCalorieEntryCommitStore? commitStore,
   ValueChanged<ProductSearchHubRouteArgs>? onSearchRouteArgs,
   ValueChanged<ManualProductSearchRouteArgs>? onChildRouteArgs,
-}) {
+}) async {
   var searchRouteProductResultIndex = 0;
 
   Object? nextSearchRouteResult() {
@@ -143,46 +143,61 @@ Widget _buildRouteHarness({
     ],
   );
 
-  return ProviderScope(
-    overrides: [
-      inventoryItemRepositoryProvider.overrideWithValue(
-        _FakeInventoryItemRepository(recentItems),
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(
+          _FakeInventoryItemRepository(recentItems),
+        ),
+        if (inventoryController != null)
+          inventoryItemsControllerProvider.overrideWith(
+            () => inventoryController,
+          ),
+        if (firebaseAuth != null)
+          firebaseAuthProvider.overrideWithValue(firebaseAuth),
+        if (commitStore != null)
+          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+            commitStore,
+          ),
+        productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
+          final container = ref.container;
+          return (mode) => switch (mode) {
+            ProductSearchHubMode.inventory =>
+              InventoryProductSearchHubCompletionHandler(
+                container: container,
+              ),
+            ProductSearchHubMode.diary =>
+              DiaryProductSearchHubCompletionHandler(
+                container: container,
+                eatCoordinator: container.read(
+                  inventoryManualProductEatCoordinatorProvider,
+                ),
+              ),
+            ProductSearchHubMode.selection =>
+              const SelectionProductSearchHubCompletionHandler(),
+          };
+        }),
+      ],
+      child: Consumer(
+        builder: (context, ref, _) {
+          if (inventoryController != null) {
+            ref.watch(inventoryItemsControllerProvider);
+          }
+          return MaterialApp.router(
+            routerConfig: router,
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          );
+        },
       ),
-      if (inventoryController != null)
-        inventoryItemsControllerProvider.overrideWith(
-          () => inventoryController,
-        ),
-      if (firebaseAuth != null)
-        firebaseAuthProvider.overrideWithValue(firebaseAuth),
-      if (commitStore != null)
-        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-          commitStore,
-        ),
-    ],
-    child: Consumer(
-      builder: (context, ref, _) {
-        if (inventoryController != null) {
-          ref.watch(inventoryItemsControllerProvider);
-        }
-        return MaterialApp.router(
-          routerConfig: router,
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-        );
-      },
     ),
   );
 }
 
-@Dependencies([
-  InventoryItemsController,
-  productSearchGateway,
-  productSearchHubCompletionHandler,
-])
 void main() {
   testWidgets('renders product search hub shell', (tester) async {
-    await tester.pumpWidget(_buildHarness());
+    await _pumpHarness(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Add to inventory'), findsOneWidget);
@@ -232,11 +247,10 @@ void main() {
   testWidgets('diary mode renders diary title and source actions', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      _buildHarness(
-        child: const ProductSearchHubPage(
-          args: ProductSearchHubRouteArgs.diary(),
-        ),
+    await _pumpHarness(
+      tester,
+      child: const ProductSearchHubPage(
+        args: ProductSearchHubRouteArgs.diary(),
       ),
     );
     await tester.pumpAndSettle();
@@ -274,12 +288,11 @@ void main() {
   testWidgets('selection mode renders generic title without source actions', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      _buildHarness(
-        child: ProductSearchHubPage(
-          args: ProductSearchHubRouteArgs.selection(
-            item: _item(id: 'item-1', name: 'Milk'),
-          ),
+    await _pumpHarness(
+      tester,
+      child: ProductSearchHubPage(
+        args: ProductSearchHubRouteArgs.selection(
+          item: _item(id: 'item-1', name: 'Milk'),
         ),
       ),
     );
@@ -301,17 +314,16 @@ void main() {
   });
 
   testWidgets('renders recently selected products', (tester) async {
-    await tester.pumpWidget(
-      _buildHarness(
-        recentItems: [
-          _item(
-            id: 'recent-yogurt',
-            name: 'Greek yogurt',
-            brand: 'Dairy Co',
-            weight: '500 g',
-          ),
-        ],
-      ),
+    await _pumpHarness(
+      tester,
+      recentItems: [
+        _item(
+          id: 'recent-yogurt',
+          name: 'Greek yogurt',
+          brand: 'Dairy Co',
+          weight: '500 g',
+        ),
+      ],
     );
     await tester.pumpAndSettle();
 
@@ -326,7 +338,7 @@ void main() {
   });
 
   testWidgets('renders recently selected tab', (tester) async {
-    await tester.pumpWidget(_buildHarness());
+    await _pumpHarness(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Recently selected'), findsOneWidget);
@@ -337,13 +349,12 @@ void main() {
   ) async {
     ProductSearchHubRouteArgs? searchArgs;
 
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: const ProductSearchHubRouteArgs.inventory(
-          initialIntent: ProductSearchHubInitialIntent.search,
-        ),
-        onSearchRouteArgs: (args) => searchArgs = args,
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
       ),
+      onSearchRouteArgs: (args) => searchArgs = args,
     );
     await tester.pumpAndSettle();
 
@@ -358,17 +369,16 @@ void main() {
     final inventoryController = _RecordingInventoryItemsController();
     ManualProductSearchRouteArgs? childArgs;
 
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: ProductSearchHubRouteArgs.diary(
-          initialIntent: ProductSearchHubInitialIntent.search,
-          preselectedMealType: MealType.lunch,
-          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-        ),
-        searchRouteProductResult: _searchProduct(),
-        inventoryController: inventoryController,
-        onChildRouteArgs: (args) => childArgs = args,
+    await _pumpRouteHarness(
+      tester,
+      args: ProductSearchHubRouteArgs.diary(
+        initialIntent: ProductSearchHubInitialIntent.search,
+        preselectedMealType: MealType.lunch,
+        preselectedLoggedAt: DateTime(2026, 4, 13, 12),
       ),
+      searchRouteProductResult: _searchProduct(),
+      inventoryController: inventoryController,
+      onChildRouteArgs: (args) => childArgs = args,
     );
     await tester.pumpAndSettle();
 
@@ -392,21 +402,20 @@ void main() {
     when(() => user.uid).thenReturn('user-1');
     when(() => firebaseAuth.currentUser).thenReturn(user);
 
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: ProductSearchHubRouteArgs.diary(
-          initialIntent: ProductSearchHubInitialIntent.search,
-          preselectedMealType: MealType.lunch,
-          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-        ),
-        searchRouteEditedResult: ProductSearchHubEditedResult(
-          sourceKey: 'manual-source',
-          result: _diaryEatResult(),
-        ),
-        inventoryController: inventoryController,
-        firebaseAuth: firebaseAuth,
-        commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+    await _pumpRouteHarness(
+      tester,
+      args: ProductSearchHubRouteArgs.diary(
+        initialIntent: ProductSearchHubInitialIntent.search,
+        preselectedMealType: MealType.lunch,
+        preselectedLoggedAt: DateTime(2026, 4, 13, 12),
       ),
+      searchRouteEditedResult: ProductSearchHubEditedResult(
+        sourceKey: 'manual-source',
+        result: _diaryEatResult(),
+      ),
+      inventoryController: inventoryController,
+      firebaseAuth: firebaseAuth,
+      commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
     );
     await tester.pumpAndSettle();
 
@@ -420,11 +429,6 @@ void main() {
       findsNothing,
     );
     expect(inventoryController.addedItems, hasLength(1));
-    expect(inventoryController.finalizedDraftIds, hasLength(1));
-    expect(
-      inventoryController.finalizedDraftIds.single,
-      startsWith('pending-'),
-    );
   });
 
   testWidgets('diary add-more eat stays in hub with overlay', (tester) async {
@@ -434,18 +438,17 @@ void main() {
     when(() => user.uid).thenReturn('user-1');
     when(() => firebaseAuth.currentUser).thenReturn(user);
 
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: ProductSearchHubRouteArgs.diary(
-          initialIntent: ProductSearchHubInitialIntent.search,
-          preselectedMealType: MealType.lunch,
-          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-        ),
-        searchRouteProductResult: _searchProduct(),
-        inventoryController: inventoryController,
-        firebaseAuth: firebaseAuth,
-        commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+    await _pumpRouteHarness(
+      tester,
+      args: ProductSearchHubRouteArgs.diary(
+        initialIntent: ProductSearchHubInitialIntent.search,
+        preselectedMealType: MealType.lunch,
+        preselectedLoggedAt: DateTime(2026, 4, 13, 12),
       ),
+      searchRouteProductResult: _searchProduct(),
+      inventoryController: inventoryController,
+      firebaseAuth: firebaseAuth,
+      commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
     );
     await tester.pumpAndSettle();
 
@@ -472,7 +475,6 @@ void main() {
       findsOneWidget,
     );
     expect(inventoryController.addedItems, hasLength(1));
-    expect(inventoryController.finalizedDraftIds, hasLength(1));
   });
 
   testWidgets('diary batch mode makes next add continue to overlay', (
@@ -484,27 +486,26 @@ void main() {
     when(() => user.uid).thenReturn('user-1');
     when(() => firebaseAuth.currentUser).thenReturn(user);
 
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: ProductSearchHubRouteArgs.diary(
-          initialIntent: ProductSearchHubInitialIntent.search,
-          preselectedMealType: MealType.lunch,
-          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-        ),
-        searchRouteResults: [
-          ProductSearchHubEditedResult(
-            sourceKey: 'manual-source-1',
-            result: _diarySheetResult(id: 'manual-item-1', name: 'Milk'),
-          ),
-          ProductSearchHubEditedResult(
-            sourceKey: 'manual-source-2',
-            result: _diarySheetResult(id: 'manual-item-2', name: 'Bread'),
-          ),
-        ],
-        inventoryController: inventoryController,
-        firebaseAuth: firebaseAuth,
-        commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+    await _pumpRouteHarness(
+      tester,
+      args: ProductSearchHubRouteArgs.diary(
+        initialIntent: ProductSearchHubInitialIntent.search,
+        preselectedMealType: MealType.lunch,
+        preselectedLoggedAt: DateTime(2026, 4, 13, 12),
       ),
+      searchRouteResults: [
+        ProductSearchHubEditedResult(
+          sourceKey: 'manual-source-1',
+          result: _diarySheetResult(id: 'manual-item-1', name: 'Milk'),
+        ),
+        ProductSearchHubEditedResult(
+          sourceKey: 'manual-source-2',
+          result: _diarySheetResult(id: 'manual-item-2', name: 'Bread'),
+        ),
+      ],
+      inventoryController: inventoryController,
+      firebaseAuth: firebaseAuth,
+      commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
     );
     await tester.pumpAndSettle();
 
@@ -551,12 +552,10 @@ void main() {
     await tester.pump();
     await _pumpUntil(
       tester,
-      () =>
-          inventoryController.finalizedDraftIds.length == 2 &&
-          find
-              .byKey(const Key('product_search_hub_selection_overlay'))
-              .evaluate()
-              .isNotEmpty,
+      () => find
+          .byKey(const Key('product_search_hub_selection_overlay'))
+          .evaluate()
+          .isNotEmpty,
     );
 
     expect(find.text('focused search route'), findsNothing);
@@ -572,7 +571,6 @@ void main() {
       findsOneWidget,
     );
     expect(inventoryController.addedItems, hasLength(2));
-    expect(inventoryController.finalizedDraftIds, hasLength(2));
   });
 
   testWidgets('inventory search result still opens product editor', (
@@ -580,14 +578,13 @@ void main() {
   ) async {
     ManualProductSearchRouteArgs? childArgs;
 
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: const ProductSearchHubRouteArgs.inventory(
-          initialIntent: ProductSearchHubInitialIntent.search,
-        ),
-        searchRouteProductResult: _searchProduct(),
-        onChildRouteArgs: (args) => childArgs = args,
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
       ),
+      searchRouteProductResult: _searchProduct(),
+      onChildRouteArgs: (args) => childArgs = args,
     );
     await tester.pumpAndSettle();
 
@@ -601,13 +598,12 @@ void main() {
   testWidgets('AI initial intent opens AI child route', (tester) async {
     ManualProductSearchRouteArgs? childArgs;
 
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: const ProductSearchHubRouteArgs.inventory(
-          initialIntent: ProductSearchHubInitialIntent.ai,
-        ),
-        onChildRouteArgs: (args) => childArgs = args,
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.ai,
       ),
+      onChildRouteArgs: (args) => childArgs = args,
     );
     await tester.pumpAndSettle();
 
@@ -619,11 +615,10 @@ void main() {
   testWidgets('barcode initial intent opens barcode scanner sheet', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: const ProductSearchHubRouteArgs.inventory(
-          initialIntent: ProductSearchHubInitialIntent.barcode,
-        ),
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.barcode,
       ),
     );
     await tester.pumpAndSettle();
@@ -637,17 +632,16 @@ void main() {
       ManualProductSearchRouteArgs? childArgs;
       final inventoryController = _SuccessfulInventoryItemsController();
 
-      await tester.pumpWidget(
-        _buildRouteHarness(
-          args: ProductSearchHubRouteArgs.diary(
-            initialIntent: ProductSearchHubInitialIntent.search,
-            preselectedMealType: MealType.lunch,
-            preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-          ),
-          searchRouteResults: [ProductSearchHubCopyResult(_searchProduct())],
-          inventoryController: inventoryController,
-          onChildRouteArgs: (args) => childArgs = args,
+      await _pumpRouteHarness(
+        tester,
+        args: ProductSearchHubRouteArgs.diary(
+          initialIntent: ProductSearchHubInitialIntent.search,
+          preselectedMealType: MealType.lunch,
+          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
         ),
+        searchRouteResults: [ProductSearchHubCopyResult(_searchProduct())],
+        inventoryController: inventoryController,
+        onChildRouteArgs: (args) => childArgs = args,
       );
       await tester.pumpAndSettle();
 
@@ -664,20 +658,19 @@ void main() {
     ManualProductSearchRouteArgs? childArgs;
     final inventoryController = _SuccessfulInventoryItemsController();
 
-    await tester.pumpWidget(
-      _buildRouteHarness(
-        args: const ProductSearchHubRouteArgs.inventory(),
-        recentItems: [
-          _item(
-            id: 'recent-yogurt',
-            name: 'Greek yogurt',
-            brand: 'Dairy Co',
-            weight: '500 g',
-          ),
-        ],
-        inventoryController: inventoryController,
-        onChildRouteArgs: (args) => childArgs = args,
-      ),
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(),
+      recentItems: [
+        _item(
+          id: 'recent-yogurt',
+          name: 'Greek yogurt',
+          brand: 'Dairy Co',
+          weight: '500 g',
+        ),
+      ],
+      inventoryController: inventoryController,
+      onChildRouteArgs: (args) => childArgs = args,
     );
     await tester.pumpAndSettle();
 
@@ -768,8 +761,6 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
 
 class _SuccessfulInventoryItemsController
     extends _RecordingInventoryItemsController {
-  final finalizedDraftIds = <String>[];
-
   @override
   Future<PendingInventoryConsumption?> stagePendingConsumption(
     String itemId,
@@ -780,18 +771,6 @@ class _SuccessfulInventoryItemsController
       itemId: itemId,
       amount: amount,
     );
-  }
-
-  @override
-  Future<bool> finalizeCommittedPendingConsumption({
-    required String draftId,
-    required String itemId,
-    required int quantity,
-    required int currentAmount,
-    DateTime? consumedAt,
-  }) async {
-    finalizedDraftIds.add(draftId);
-    return true;
   }
 }
 

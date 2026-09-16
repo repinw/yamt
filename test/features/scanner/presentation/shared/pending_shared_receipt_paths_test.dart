@@ -16,9 +16,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(pendingSharedReceiptPathsProvider.notifier)
-          .setPaths([' /path/one.pdf ', ' ', '/path/two.jpg']);
+      container.read(pendingSharedReceiptPathsProvider.notifier).setPaths([
+        ' /path/one.pdf ',
+        ' ',
+        '/path/two.jpg',
+      ]);
 
       expect(container.read(pendingSharedReceiptPathsProvider), [
         '/path/one.pdf',
@@ -30,9 +32,10 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(pendingSharedReceiptPathsProvider.notifier)
-          .setPaths([' ', '']);
+      container.read(pendingSharedReceiptPathsProvider.notifier).setPaths([
+        ' ',
+        '',
+      ]);
 
       expect(container.read(pendingSharedReceiptPathsProvider), isNull);
     });
@@ -41,9 +44,9 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final notifier = container
-          .read(pendingSharedReceiptPathsProvider.notifier)
-        ..setPaths(['/receipt.pdf']);
+      final notifier = container.read(
+        pendingSharedReceiptPathsProvider.notifier,
+      )..setPaths(['/receipt.pdf']);
       expect(container.read(pendingSharedReceiptPathsProvider), isNotNull);
 
       notifier.consume();

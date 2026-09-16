@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
@@ -26,7 +27,9 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
   Future<bool> syncPendingWeeklyCheckIn(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   ) async {
-    final settings = await ref.read(calorieGoalControllerProvider.future);
+    final settings = await ref
+        .read(calorieSettingsRepositoryProvider)
+        .readSettings();
     if (!ref.mounted) {
       return false;
     }
@@ -120,7 +123,9 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       lowConfidence: checkInData.lowConfidence,
       inputHash: checkInData.inputHash,
     );
-    final settings = await ref.read(calorieGoalControllerProvider.future);
+    final settings = await ref
+        .read(calorieSettingsRepositoryProvider)
+        .readSettings();
     if (!ref.mounted) {
       return false;
     }
@@ -226,7 +231,9 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     }
 
     final goalController = ref.read(calorieGoalControllerProvider.notifier);
-    final settings = await ref.read(calorieGoalControllerProvider.future);
+    final settings = await ref
+        .read(calorieSettingsRepositoryProvider)
+        .readSettings();
     if (!ref.mounted) {
       return false;
     }

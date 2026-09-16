@@ -12,6 +12,8 @@ import 'package:yamt/features/household/application/'
 import 'package:yamt/features/household/application/'
     'household_permission_recovery.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -225,24 +227,18 @@ typedef InventoryItemDiscardResult = ({
 });
 
 /// Defines inventory items controller.
-@Riverpod(
-  dependencies: [
-    inventoryActivityEventRepository,
-    inventoryDiscardEventRepository,
-    inventoryItemRepository,
-  ],
-)
+@riverpod
 class InventoryItemsController extends _$InventoryItemsController {
   static const _uuid = Uuid();
 
   // Subscription is cancelled by _disposeRealtimeSubscription.
   // ignore: cancel_subscriptions
   StreamSubscription<List<InventoryItem>>? _itemsSubscription;
+  StreamSubscription<InventoryPendingConsumptionFinalized>?
+  _pendingFinalizationSubscription;
   int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
   _PendingDeletedInventoryItem? _pendingDeletedItem;
-  final Map<String, PendingInventoryConsumption> _pendingConsumptionsById =
-      <String, PendingInventoryConsumption>{};
   List<InventoryItem>? _persistedItems;
   int _pendingConsumptionDraftCounter = 0;
   String? _currentDataOwnerUserId;
@@ -255,7 +251,14 @@ class InventoryItemsController extends _$InventoryItemsController {
       ..watch(inventoryItemRepositoryProvider)
       ..onDispose(() {
         unawaited(_disposeRealtimeSubscription());
+        unawaited(
+          _pendingFinalizationSubscription?.cancel() ?? Future<void>.value(),
+        );
       });
+    _pendingFinalizationSubscription ??= ref
+        .watch(inventoryPendingConsumptionStoreProvider)
+        .finalizations
+        .listen(_onPendingConsumptionFinalized);
     await waitForHouseholdDataOwnerProfile(ref);
     if (!ref.mounted) {
       return const <InventoryItem>[];
@@ -286,7 +289,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     await _disposeRealtimeSubscription();
     _persistedItems = null;
     _pendingDeletedItem = null;
-    _pendingConsumptionsById.clear();
 
     _itemsSubscription = repository.watchAll().listen(
       (items) {
@@ -344,6 +346,43 @@ class InventoryItemsController extends _$InventoryItemsController {
       return;
     }
     state = AsyncError(error, stackTrace);
+  }
+
+  void _onPendingConsumptionFinalized(
+    InventoryPendingConsumptionFinalized event,
+  ) {
+    if (!ref.mounted) {
+      return;
+    }
+    final currentItems = _persistedItems;
+    if (currentItems == null) {
+      return;
+    }
+    final itemIndex = currentItems.indexWhere(
+      (item) => item.id == event.itemId,
+    );
+    if (itemIndex < 0) {
+      return;
+    }
+
+    final currentItem = currentItems[itemIndex];
+    final nextLastConsumedAt = event.consumedAt == null
+        ? currentItem.lastConsumedAt
+        : currentItem.latestConsumedAtOr(event.consumedAt!);
+    if (currentItem.quantity == event.quantity &&
+        currentItem.currentAmount == event.currentAmount &&
+        currentItem.lastConsumedAt == nextLastConsumedAt) {
+      return;
+    }
+
+    final nextItems = List<InventoryItem>.from(currentItems);
+    nextItems[itemIndex] = currentItem.copyWith(
+      quantity: event.quantity,
+      currentAmount: event.currentAmount,
+      lastConsumedAt: nextLastConsumedAt,
+    );
+    _persistedItems = nextItems;
+    _publishVisibleItems();
   }
 
   bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
@@ -951,24 +990,25 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   /// Pending consumption by id.
   PendingInventoryConsumption? pendingConsumptionById(String draftId) {
-    return _pendingConsumptionsById[draftId];
+    return ref
+        .read(inventoryPendingConsumptionStoreProvider)
+        .pendingConsumptionById(draftId);
   }
 
   /// Has pending consumption.
   bool hasPendingConsumption(String draftId) {
-    return _pendingConsumptionsById.containsKey(draftId);
+    return pendingConsumptionById(draftId) != null;
   }
 
   /// Discard pending consumption.
   Future<bool> discardPendingConsumption(String draftId) {
     return _runSerializedTask<bool>(
       operation: () async {
-        final removed = _pendingConsumptionsById.remove(draftId);
-        if (removed == null) {
-          return false;
-        }
+        final removed = await ref
+            .read(inventoryPendingConsumptionStoreProvider)
+            .discard(draftId);
         _publishVisibleItems();
-        return true;
+        return removed;
       },
       fallbackValue: false,
     );
@@ -984,34 +1024,18 @@ class InventoryItemsController extends _$InventoryItemsController {
   }) {
     return _runSerializedTask<bool>(
       operation: () async {
-        final draft = _pendingConsumptionsById.remove(draftId);
-        if (draft == null) {
+        final finalized = await ref
+            .read(inventoryPendingConsumptionStoreProvider)
+            .finalize(
+              id: draftId,
+              itemId: itemId,
+              quantity: quantity,
+              currentAmount: currentAmount,
+              consumedAt: consumedAt,
+            );
+        if (!finalized) {
           return false;
         }
-
-        final currentItems = _persistedItems;
-        if (currentItems == null) {
-          _publishVisibleItems();
-          return false;
-        }
-
-        final nextItems = List<InventoryItem>.from(currentItems);
-        final itemIndex = nextItems.indexWhere((item) => item.id == itemId);
-        if (itemIndex < 0) {
-          _publishVisibleItems();
-          return false;
-        }
-
-        final currentItem = nextItems[itemIndex];
-        nextItems[itemIndex] = currentItem.copyWith(
-          quantity: quantity,
-          currentAmount: currentAmount,
-          lastConsumedAt: consumedAt == null
-              ? currentItem.lastConsumedAt
-              : currentItem.latestConsumedAtOr(consumedAt),
-        );
-        _persistedItems = nextItems;
-        _publishVisibleItems();
         return true;
       },
       fallbackValue: false,
@@ -1232,7 +1256,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       itemId: itemId,
       amount: effectiveAmount,
     );
-    _pendingConsumptionsById[draft.id] = draft;
+    ref.read(inventoryPendingConsumptionStoreProvider).stage(draft);
     return draft;
   }
 

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
@@ -55,19 +54,22 @@ class ManualProductAiSearchResult {
 }
 
 /// Read-only AI food creation page with limited user adjustments.
-@Dependencies([inventoryManualAddQuickEatConfig])
 class ManualProductAiSearchPage extends ConsumerStatefulWidget {
   /// Creates the page.
   const ManualProductAiSearchPage({
     required this.item,
     super.key,
     this.initialPrompt = '',
+    this.quickEatConfig = InventoryManualAddQuickEatConfig.standard,
     this.showEatImmediatelyOption = false,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
   });
 
   /// Base item to build from.
   final InventoryItem item;
+
+  /// Quick-eat settings.
+  final InventoryManualAddQuickEatConfig quickEatConfig;
 
   /// Initial prompt text.
   final String initialPrompt;
@@ -104,7 +106,7 @@ class _ManualProductAiSearchPageState
   void initState() {
     super.initState();
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
-    final quickEatConfig = ref.read(inventoryManualAddQuickEatConfigProvider);
+    final quickEatConfig = widget.quickEatConfig;
     if (quickEatConfig.quickEatOnly) {
       _selectedAction = InventoryReceiptManualProductAction.eatNow;
     }
@@ -189,6 +191,7 @@ class _ManualProductAiSearchPageState
           errorText: _errorText,
           weightController: _weightController,
           weightErrorText: weightErrorText,
+          quickEatConfig: widget.quickEatConfig,
           selectedAction: _selectedAction,
           showEatImmediatelyOption: widget.showEatImmediatelyOption,
           isLoggedAtToday: isLoggedAtToday,

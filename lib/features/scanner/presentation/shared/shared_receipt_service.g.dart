@@ -74,8 +74,8 @@ final class SharedReceiptServiceProvider
         retry: null,
         name: r'sharedReceiptServiceProvider',
         isAutoDispose: false,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -87,7 +87,7 @@ final class SharedReceiptServiceProvider
 }
 
 String _$sharedReceiptServiceHash() =>
-    r'5909128c403255967dd7df572aa34efd3ddf0e5b';
+    r'f5539e02c4109773550274017570c008b92ffaf9';
 
 /// Service that monitors platform file share intents and pushes valid paths
 /// to [PendingSharedReceiptPaths].

@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/diary/presentation/'
+    'diary_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -20,20 +22,27 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_receipt_manual_product_models.dart';
-import 'package:yamt/features/product_search_hub/data/product_search_hub_completion_providers.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_product_eat_coordinator.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_product_search_hub_completion_handler.dart';
+import 'package:yamt/features/product_search_hub/application/product_search_hub_completion_providers.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_completion_result.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'models/product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-@Dependencies([productSearchHubCompletionHandler])
 void main() {
   late _MockFirebaseAuth firebaseAuth;
   late _MockUser user;
@@ -303,11 +312,6 @@ void main() {
     expect(inventoryController.addedItems, hasLength(1));
     expect(selection.item.id, inventoryController.addedItems.single.id);
     expect(inventoryController.stagedConsumptions, hasLength(1));
-    expect(inventoryController.finalizedDraftIds, hasLength(1));
-    expect(
-      inventoryController.finalizedDraftIds.single,
-      inventoryController.stagedConsumptions.single.id,
-    );
   });
 
   testWidgets('diary mode add-more eat returns overlay selection', (
@@ -354,11 +358,6 @@ void main() {
     expect(selection.sourceKey, '4006381333931');
     expect(inventoryController.addedItems, hasLength(1));
     expect(inventoryController.stagedConsumptions, hasLength(1));
-    expect(inventoryController.finalizedDraftIds, hasLength(1));
-    expect(
-      inventoryController.finalizedDraftIds.single,
-      inventoryController.stagedConsumptions.single.id,
-    );
     expect(selection.item.id, inventoryController.addedItems.single.id);
     expect(selection.calorieEntryId, isNotNull);
     expect(selection.calorieEntryId, isNotEmpty);
@@ -368,15 +367,23 @@ void main() {
     'removing diary selection deletes diary entry and inventory item',
     () async {
       final inventoryController = _RecordingInventoryItemsController();
-      final calorieEntriesController = _RecordingCalorieEntriesController();
+      final calorieRepository = _RecordingCalorieLogRepository();
       final container = ProviderContainer(
         overrides: [
           inventoryItemsControllerProvider.overrideWith(
             () => inventoryController,
           ),
-          calorieEntriesControllerProvider.overrideWith(
-            () => calorieEntriesController,
-          ),
+          productSearchHubCompletionHandlerFactoryProvider.overrideWith((
+            ref,
+          ) {
+            return (_) => DiaryProductSearchHubCompletionHandler(
+              container: ref.container,
+              eatCoordinator: ref.container.read(
+                inventoryManualProductEatCoordinatorProvider,
+              ),
+            );
+          }),
+          calorieLogRepositoryProvider.overrideWithValue(calorieRepository),
         ],
       );
       addTearDown(container.dispose);
@@ -391,7 +398,7 @@ void main() {
       );
 
       expect(deleted, isTrue);
-      expect(calorieEntriesController.deletedEntryIds, ['entry-1']);
+      expect(calorieRepository.deletedEntryIds, ['entry-1']);
       expect(inventoryController.deletedItemIds, ['manual-item']);
     },
   );
@@ -566,6 +573,23 @@ Widget _buildCompletionHarness({
       inventoryItemsControllerProvider.overrideWith(
         () => inventoryController,
       ),
+      productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
+        final container = ref.container;
+        return (mode) => switch (mode) {
+          ProductSearchHubMode.inventory =>
+            InventoryProductSearchHubCompletionHandler(
+              container: container,
+            ),
+          ProductSearchHubMode.diary => DiaryProductSearchHubCompletionHandler(
+            container: container,
+            eatCoordinator: container.read(
+              inventoryManualProductEatCoordinatorProvider,
+            ),
+          ),
+          ProductSearchHubMode.selection =>
+            const SelectionProductSearchHubCompletionHandler(),
+        };
+      }),
       globalBarcodeCandidateRepositoryProvider.overrideWithValue(
         barcodeRepository,
       ),
@@ -671,7 +695,6 @@ class _DelayedBuildInventoryItemsController
 class _SuccessfulInventoryItemsController
     extends _RecordingInventoryItemsController {
   final stagedConsumptions = <PendingInventoryConsumption>[];
-  final finalizedDraftIds = <String>[];
 
   @override
   Future<PendingInventoryConsumption?> stagePendingConsumption(
@@ -686,32 +709,53 @@ class _SuccessfulInventoryItemsController
     stagedConsumptions.add(pendingConsumption);
     return pendingConsumption;
   }
-
-  @override
-  Future<bool> finalizeCommittedPendingConsumption({
-    required String draftId,
-    required String itemId,
-    required int quantity,
-    required int currentAmount,
-    DateTime? consumedAt,
-  }) async {
-    finalizedDraftIds.add(draftId);
-    return true;
-  }
 }
 
-class _RecordingCalorieEntriesController extends CalorieEntriesController {
+class _RecordingCalorieLogRepository implements CalorieLogRepositoryContract {
   final deletedEntryIds = <String>[];
 
   @override
-  Future<List<CalorieEntry>> build() async {
+  Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day) {
+    return Stream<List<CalorieEntry>>.value(const <CalorieEntry>[]);
+  }
+
+  @override
+  Future<List<CalorieEntry>> readEntriesForDay(DateTime day) async {
     return const <CalorieEntry>[];
+  }
+
+  @override
+  Future<List<CalorieEntry>> readEntriesInRange({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    return const <CalorieEntry>[];
+  }
+
+  @override
+  Future<DateTime?> readFirstEntryDate() async {
+    return null;
+  }
+
+  @override
+  Future<bool> saveEntry(CalorieEntry entry) async {
+    return false;
+  }
+
+  @override
+  Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
+    return false;
   }
 
   @override
   Future<bool> deleteEntry(String entryId) async {
     deletedEntryIds.add(entryId);
     return true;
+  }
+
+  @override
+  Future<CalorieEntry?> getById(String entryId) async {
+    return null;
   }
 }
 

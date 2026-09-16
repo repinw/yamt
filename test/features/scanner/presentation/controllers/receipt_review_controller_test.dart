@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -10,7 +9,6 @@ import 'package:yamt/features/scanner/presentation/controllers/receipt_review_co
 import '../../fakes/fake_receipt_product_resolver.dart';
 import '../../fakes/fake_receipt_storage_gateway.dart';
 
-@Dependencies([ReceiptReviewController])
 void main() {
   group('ReceiptReviewController', () {
     late FakeReceiptProductResolver fakeResolver;

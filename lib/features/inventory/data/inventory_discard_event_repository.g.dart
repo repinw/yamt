@@ -32,8 +32,8 @@ final class InventoryDiscardEventRepositoryProvider
         retry: null,
         name: r'inventoryDiscardEventRepositoryProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -62,4 +62,4 @@ final class InventoryDiscardEventRepositoryProvider
 }
 
 String _$inventoryDiscardEventRepositoryHash() =>
-    r'376f962d2d4b98377025628544a605e86539679b';
+    r'4c0922316ff682326a37e438270fb48e40fba6d7';

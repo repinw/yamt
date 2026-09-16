@@ -43,31 +43,34 @@ PreparedMeal _template({
   );
 }
 
-Widget _buildHarness({
+Future<void> _pumpHarness(
+  WidgetTester tester, {
   required PreparedMeal template,
   required TextEditingController adjustmentController,
   CookingFlowIntroDraft? introDraft,
   List<InventoryItem> inventoryItems = const <InventoryItem>[],
   Locale locale = const Locale('de'),
-}) {
-  return ProviderScope(
-    overrides: [
-      inventoryItemsControllerProvider.overrideWith(
-        () => _StaticInventoryItemsController(inventoryItems),
-      ),
-    ],
-    child: MaterialApp(
-      locale: locale,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: CookingFlowCookingPage(
-          template: template,
-          introDraft: introDraft,
-          adjustmentController: adjustmentController,
-          adjustments: const <String>[],
-          onAddPressed: () {},
-          onRemovePressed: (_) {},
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        inventoryItemsControllerProvider.overrideWith(
+          () => _StaticInventoryItemsController(inventoryItems),
+        ),
+      ],
+      child: MaterialApp(
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: CookingFlowCookingPage(
+            template: template,
+            introDraft: introDraft,
+            adjustmentController: adjustmentController,
+            adjustments: const <String>[],
+            onAddPressed: () {},
+            onRemovePressed: (_) {},
+          ),
         ),
       ),
     ),
@@ -136,16 +139,15 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        template: _template(
-          recipeInstructions: const <String>[
-            'Wasche die Linsen gründlich.',
-            'Koche alles 45 Minuten.',
-          ],
-        ),
-        adjustmentController: controller,
+    await _pumpHarness(
+      tester,
+      template: _template(
+        recipeInstructions: const <String>[
+          'Wasche die Linsen gründlich.',
+          'Koche alles 45 Minuten.',
+        ],
       ),
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 
@@ -159,16 +161,15 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        template: _template(
-          recipeIngredients: const <String>[
-            '300g Linsen',
-            '500g Kartoffeln',
-          ],
-        ),
-        adjustmentController: controller,
+    await _pumpHarness(
+      tester,
+      template: _template(
+        recipeIngredients: const <String>[
+          '300g Linsen',
+          '500g Kartoffeln',
+        ],
       ),
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 
@@ -183,41 +184,40 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        template: _template(
-          recipeIngredients: const <String>[
-            '2 Zwiebeln',
-            'Hackfleisch',
-          ],
-          recipeInstructions: const <String>[
-            'Zwiebeln und Hackfleisch anbraten.',
-          ],
-        ),
-        introDraft: const CookingFlowIntroDraft(
-          rowStates: <CookingFlowIntroRowDraft>[
-            CookingFlowIntroRowDraft(
-              rawIngredient: '2 Zwiebeln',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'onions'),
-              ],
-            ),
-            CookingFlowIntroRowDraft(
-              rawIngredient: 'Hackfleisch',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'mince'),
-              ],
-            ),
-          ],
-        ),
-        inventoryItems: <InventoryItem>[
-          _inventoryItem(id: 'onions', name: 'Zwiebeln', currentAmount: 180),
-          _inventoryItem(id: 'mince', name: 'Hackfleisch', currentAmount: 400),
+    await _pumpHarness(
+      tester,
+      template: _template(
+        recipeIngredients: const <String>[
+          '2 Zwiebeln',
+          'Hackfleisch',
         ],
-        adjustmentController: controller,
+        recipeInstructions: const <String>[
+          'Zwiebeln und Hackfleisch anbraten.',
+        ],
       ),
+      introDraft: const CookingFlowIntroDraft(
+        rowStates: <CookingFlowIntroRowDraft>[
+          CookingFlowIntroRowDraft(
+            rawIngredient: '2 Zwiebeln',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'onions'),
+            ],
+          ),
+          CookingFlowIntroRowDraft(
+            rawIngredient: 'Hackfleisch',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'mince'),
+            ],
+          ),
+        ],
+      ),
+      inventoryItems: <InventoryItem>[
+        _inventoryItem(id: 'onions', name: 'Zwiebeln', currentAmount: 180),
+        _inventoryItem(id: 'mince', name: 'Hackfleisch', currentAmount: 400),
+      ],
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 
@@ -237,41 +237,40 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        template: _template(
-          recipeIngredients: const <String>[
-            '500 g Hackfleisch',
-            '2 Zwiebeln',
-          ],
-          recipeInstructions: const <String>[
-            '500g Hackfleisch und 2 Zwiebeln anbraten.',
-          ],
-        ),
-        introDraft: const CookingFlowIntroDraft(
-          rowStates: <CookingFlowIntroRowDraft>[
-            CookingFlowIntroRowDraft(
-              rawIngredient: '500 g Hackfleisch',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'mince'),
-              ],
-            ),
-            CookingFlowIntroRowDraft(
-              rawIngredient: '2 Zwiebeln',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'onions'),
-              ],
-            ),
-          ],
-        ),
-        inventoryItems: <InventoryItem>[
-          _inventoryItem(id: 'mince', name: 'Hackfleisch', currentAmount: 400),
-          _inventoryItem(id: 'onions', name: 'Zwiebeln', currentAmount: 180),
+    await _pumpHarness(
+      tester,
+      template: _template(
+        recipeIngredients: const <String>[
+          '500 g Hackfleisch',
+          '2 Zwiebeln',
         ],
-        adjustmentController: controller,
+        recipeInstructions: const <String>[
+          '500g Hackfleisch und 2 Zwiebeln anbraten.',
+        ],
       ),
+      introDraft: const CookingFlowIntroDraft(
+        rowStates: <CookingFlowIntroRowDraft>[
+          CookingFlowIntroRowDraft(
+            rawIngredient: '500 g Hackfleisch',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'mince'),
+            ],
+          ),
+          CookingFlowIntroRowDraft(
+            rawIngredient: '2 Zwiebeln',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'onions'),
+            ],
+          ),
+        ],
+      ),
+      inventoryItems: <InventoryItem>[
+        _inventoryItem(id: 'mince', name: 'Hackfleisch', currentAmount: 400),
+        _inventoryItem(id: 'onions', name: 'Zwiebeln', currentAmount: 180),
+      ],
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 
@@ -289,32 +288,31 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        template: _template(
-          recipeIngredients: const <String>[
-            '2 stück Zwiebeln',
-          ],
-          recipeInstructions: const <String>[
-            '2 stück Zwiebeln anbraten.',
-          ],
-        ),
-        introDraft: const CookingFlowIntroDraft(
-          rowStates: <CookingFlowIntroRowDraft>[
-            CookingFlowIntroRowDraft(
-              rawIngredient: '2 stück Zwiebeln',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'onions'),
-              ],
-            ),
-          ],
-        ),
-        inventoryItems: <InventoryItem>[
-          _inventoryItem(id: 'onions', name: 'Zwiebeln', currentAmount: 180),
+    await _pumpHarness(
+      tester,
+      template: _template(
+        recipeIngredients: const <String>[
+          '2 stück Zwiebeln',
         ],
-        adjustmentController: controller,
+        recipeInstructions: const <String>[
+          '2 stück Zwiebeln anbraten.',
+        ],
       ),
+      introDraft: const CookingFlowIntroDraft(
+        rowStates: <CookingFlowIntroRowDraft>[
+          CookingFlowIntroRowDraft(
+            rawIngredient: '2 stück Zwiebeln',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'onions'),
+            ],
+          ),
+        ],
+      ),
+      inventoryItems: <InventoryItem>[
+        _inventoryItem(id: 'onions', name: 'Zwiebeln', currentAmount: 180),
+      ],
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 
@@ -330,37 +328,36 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        locale: const Locale('en'),
-        template: _template(
-          recipeIngredients: const <String>[
-            '2 pieces onions',
-          ],
-          recipeInstructions: const <String>[
-            'Add the onions to the pan.',
-          ],
-        ),
-        introDraft: const CookingFlowIntroDraft(
-          rowStates: <CookingFlowIntroRowDraft>[
-            CookingFlowIntroRowDraft(
-              rawIngredient: '2 pieces onions',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'onions'),
-              ],
-            ),
-          ],
-        ),
-        inventoryItems: <InventoryItem>[
-          _quantityInventoryItem(
-            id: 'onions',
-            name: 'onions',
-            quantity: 2,
+    await _pumpHarness(
+      tester,
+      locale: const Locale('en'),
+      template: _template(
+        recipeIngredients: const <String>[
+          '2 pieces onions',
+        ],
+        recipeInstructions: const <String>[
+          'Add the onions to the pan.',
+        ],
+      ),
+      introDraft: const CookingFlowIntroDraft(
+        rowStates: <CookingFlowIntroRowDraft>[
+          CookingFlowIntroRowDraft(
+            rawIngredient: '2 pieces onions',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'onions'),
+            ],
           ),
         ],
-        adjustmentController: controller,
       ),
+      inventoryItems: <InventoryItem>[
+        _quantityInventoryItem(
+          id: 'onions',
+          name: 'onions',
+          quantity: 2,
+        ),
+      ],
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 
@@ -376,36 +373,35 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        template: _template(
-          recipeIngredients: const <String>[
-            'm.-große Zwiebeln',
-          ],
-          recipeInstructions: const <String>[
-            'Die Zwiebeln abziehen.',
-          ],
-        ),
-        introDraft: const CookingFlowIntroDraft(
-          rowStates: <CookingFlowIntroRowDraft>[
-            CookingFlowIntroRowDraft(
-              rawIngredient: 'm.-große Zwiebeln',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'onions'),
-              ],
-            ),
-          ],
-        ),
-        inventoryItems: <InventoryItem>[
-          _quantityInventoryItem(
-            id: 'onions',
-            name: 'Zwiebeln',
-            quantity: 2,
+    await _pumpHarness(
+      tester,
+      template: _template(
+        recipeIngredients: const <String>[
+          'm.-große Zwiebeln',
+        ],
+        recipeInstructions: const <String>[
+          'Die Zwiebeln abziehen.',
+        ],
+      ),
+      introDraft: const CookingFlowIntroDraft(
+        rowStates: <CookingFlowIntroRowDraft>[
+          CookingFlowIntroRowDraft(
+            rawIngredient: 'm.-große Zwiebeln',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'onions'),
+            ],
           ),
         ],
-        adjustmentController: controller,
       ),
+      inventoryItems: <InventoryItem>[
+        _quantityInventoryItem(
+          id: 'onions',
+          name: 'Zwiebeln',
+          quantity: 2,
+        ),
+      ],
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 
@@ -421,36 +417,35 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        template: _template(
-          recipeIngredients: const <String>[
-            'gr Dose/n Tomaten, stückig (ca 800g)',
-          ],
-          recipeInstructions: const <String>[
-            'Die Tomaten in den Topf geben.',
-          ],
-        ),
-        introDraft: const CookingFlowIntroDraft(
-          rowStates: <CookingFlowIntroRowDraft>[
-            CookingFlowIntroRowDraft(
-              rawIngredient: 'gr Dose/n Tomaten, stückig (ca 800g)',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'tomatoes'),
-              ],
-            ),
-          ],
-        ),
-        inventoryItems: <InventoryItem>[
-          _inventoryItem(
-            id: 'tomatoes',
-            name: 'Tomaten, stückig',
-            currentAmount: 800,
+    await _pumpHarness(
+      tester,
+      template: _template(
+        recipeIngredients: const <String>[
+          'gr Dose/n Tomaten, stückig (ca 800g)',
+        ],
+        recipeInstructions: const <String>[
+          'Die Tomaten in den Topf geben.',
+        ],
+      ),
+      introDraft: const CookingFlowIntroDraft(
+        rowStates: <CookingFlowIntroRowDraft>[
+          CookingFlowIntroRowDraft(
+            rawIngredient: 'gr Dose/n Tomaten, stückig (ca 800g)',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'tomatoes'),
+            ],
           ),
         ],
-        adjustmentController: controller,
       ),
+      inventoryItems: <InventoryItem>[
+        _inventoryItem(
+          id: 'tomatoes',
+          name: 'Tomaten, stückig',
+          currentAmount: 800,
+        ),
+      ],
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 
@@ -466,36 +461,35 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        template: _template(
-          recipeIngredients: const <String>[
-            '1 Dose Tomaten, passiert (ca 800g)',
-          ],
-          recipeInstructions: const <String>[
-            'Die Tomaten in den Topf geben.',
-          ],
-        ),
-        introDraft: const CookingFlowIntroDraft(
-          rowStates: <CookingFlowIntroRowDraft>[
-            CookingFlowIntroRowDraft(
-              rawIngredient: '1 Dose Tomaten, passiert (ca 800g)',
-              action: CookingFlowIntroRowAction.assigned,
-              selections: <CookingFlowIntroSelectionDraft>[
-                CookingFlowIntroSelectionDraft(itemId: 'tomatoes'),
-              ],
-            ),
-          ],
-        ),
-        inventoryItems: <InventoryItem>[
-          _inventoryItem(
-            id: 'tomatoes',
-            name: 'Tomaten, passiert',
-            currentAmount: 800,
+    await _pumpHarness(
+      tester,
+      template: _template(
+        recipeIngredients: const <String>[
+          '1 Dose Tomaten, passiert (ca 800g)',
+        ],
+        recipeInstructions: const <String>[
+          'Die Tomaten in den Topf geben.',
+        ],
+      ),
+      introDraft: const CookingFlowIntroDraft(
+        rowStates: <CookingFlowIntroRowDraft>[
+          CookingFlowIntroRowDraft(
+            rawIngredient: '1 Dose Tomaten, passiert (ca 800g)',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'tomatoes'),
+            ],
           ),
         ],
-        adjustmentController: controller,
       ),
+      inventoryItems: <InventoryItem>[
+        _inventoryItem(
+          id: 'tomatoes',
+          name: 'Tomaten, passiert',
+          currentAmount: 800,
+        ),
+      ],
+      adjustmentController: controller,
     );
     await _pumpInstructionSteps(tester);
 

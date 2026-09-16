@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_sections.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_content/shopping_list_empty_state.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_content/shopping_list_entries_section.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_saved_products.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_stats_card.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_suggestions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list content.
-@Dependencies([shoppingSuggestions, shoppingSuggestionRetry])
 class ShoppingListContent extends StatelessWidget {
   /// The shopping list content.
   const ShoppingListContent({
@@ -21,6 +17,7 @@ class ShoppingListContent extends StatelessWidget {
     required this.controller,
     required this.l10n,
     required this.currency,
+    this.suggestionsSection,
     super.key,
   });
 
@@ -35,6 +32,9 @@ class ShoppingListContent extends StatelessWidget {
 
   /// The currency.
   final NumberFormat currency;
+
+  /// Optional widget slot for rendering suggestions.
+  final Widget? suggestionsSection;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +54,7 @@ class ShoppingListContent extends StatelessWidget {
       key: const ValueKey('saved-products'),
       items: sections.saved,
     ),
-    const ShoppingListSuggestions(key: ValueKey('shopping-suggestions')),
+    ?suggestionsSection,
     if (sections.done.isNotEmpty) _entries(sections.done, completed: true),
   ];
 

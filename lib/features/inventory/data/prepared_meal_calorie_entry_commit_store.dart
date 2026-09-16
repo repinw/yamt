@@ -20,7 +20,7 @@ const _calorieEntriesCollection = 'calorie_entries';
 const _preparedMealsCollection = 'prepared_meals';
 
 /// The prepared meal calorie entry commit store provider.
-@Riverpod(dependencies: [])
+@riverpod
 PreparedMealCalorieEntryCommitStore? preparedMealCalorieEntryCommitStore(
   Ref ref,
 ) {

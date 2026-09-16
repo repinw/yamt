@@ -1,11 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -28,11 +26,6 @@ class _PendingPreparedMealEditSelection {
 }
 
 /// Coordinates prepared meal edit and ingredient selection flows.
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  preparedMealImagePicker,
-])
 class InventoryPreparedMealEditCoordinator {
   _PendingPreparedMealEditSelection? _pendingEditSelection;
   VoidCallback? _onFocusRequested;

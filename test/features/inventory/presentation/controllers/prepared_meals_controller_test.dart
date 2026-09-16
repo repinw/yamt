@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -211,14 +210,12 @@ const _testActor = InventoryActivityActor(
   displayName: 'Alex',
 );
 
-@Dependencies([PreparedMealsController])
 ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepControllerAlive(
   ProviderContainer container,
 ) {
   return container.listen(preparedMealsControllerProvider, (previous, next) {});
 }
 
-@Dependencies([PreparedMealsController])
 Future<void> _waitForMeals(
   ProviderContainer container,
   bool Function(List<PreparedMeal> meals) predicate,
@@ -309,7 +306,6 @@ PreparedMeal _meal({
   );
 }
 
-@Dependencies([PreparedMealsController])
 void main() {
   test('stale repository errors are ignored after repository swap', () async {
     var usesSharedRepository = true;

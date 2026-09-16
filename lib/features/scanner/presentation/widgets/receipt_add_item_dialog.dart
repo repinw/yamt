@@ -77,7 +77,8 @@ class _ReceiptAddItemDialogState extends State<ReceiptAddItemDialog> {
               decoration: InputDecoration(
                 labelText:
                     l10n?.receiptReviewItemNameLabel ?? 'Artikelbezeichnung',
-                hintText: l10n?.receiptReviewItemNameHint ??
+                hintText:
+                    l10n?.receiptReviewItemNameHint ??
                     'z. B. Hafermilch Barista',
               ),
             ),

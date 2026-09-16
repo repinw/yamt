@@ -31,8 +31,8 @@ final class NavigatorKeyProvider
         retry: null,
         name: r'navigatorKeyProvider',
         isAutoDispose: false,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -58,7 +58,7 @@ final class NavigatorKeyProvider
   }
 }
 
-String _$navigatorKeyHash() => r'bd0bca3cd68c5a6268917ad1bacdc7beb17654bd';
+String _$navigatorKeyHash() => r'cca063af6cdf1e440f6eeb4ad84cf0449235735f';
 
 /// Provides listenable used to refresh router redirects.
 
@@ -134,113 +134,9 @@ final class AppRouterProvider
         retry: null,
         name: r'appRouterProvider',
         isAutoDispose: false,
-        dependencies: <ProviderOrFamily>[
-          navigatorKeyProvider,
-          inventoryItemRepositoryProvider,
-          inventoryManualAddQuickEatConfigProvider,
-          diaryQuickEatInventoryProvider,
-          diaryQuickEatInventoryActionsProvider,
-          cookingFlowControllerProvider,
-          cookingFlowWizardControllerProvider,
-          cookingInstructionStepsProvider,
-          inventoryItemsControllerProvider,
-          preparedMealsControllerProvider,
-          inventoryBackedCalorieEntrySaveFlowProvider,
-          manualProductRecentItemsServiceProvider,
-          preparedMealImagePickerProvider,
-          receiptScanFlowCoordinatorProvider,
-          receiptCameraSupportedProvider,
-          inventoryActivityEventsProvider,
-          inventoryShoppingSuggestionsProvider,
-          receiptReviewControllerProvider,
-          receiptManualProductPickerProvider,
-          productSearchGatewayProvider,
-          productSearchHubCompletionHandlerProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          AppRouterProvider.$allTransitiveDependencies0,
-          AppRouterProvider.$allTransitiveDependencies1,
-          AppRouterProvider.$allTransitiveDependencies2,
-          AppRouterProvider.$allTransitiveDependencies3,
-          AppRouterProvider.$allTransitiveDependencies4,
-          AppRouterProvider.$allTransitiveDependencies5,
-          AppRouterProvider.$allTransitiveDependencies6,
-          AppRouterProvider.$allTransitiveDependencies7,
-          AppRouterProvider.$allTransitiveDependencies8,
-          AppRouterProvider.$allTransitiveDependencies9,
-          AppRouterProvider.$allTransitiveDependencies10,
-          AppRouterProvider.$allTransitiveDependencies11,
-          AppRouterProvider.$allTransitiveDependencies12,
-          AppRouterProvider.$allTransitiveDependencies13,
-          AppRouterProvider.$allTransitiveDependencies14,
-          AppRouterProvider.$allTransitiveDependencies15,
-          AppRouterProvider.$allTransitiveDependencies16,
-          AppRouterProvider.$allTransitiveDependencies17,
-          AppRouterProvider.$allTransitiveDependencies18,
-          AppRouterProvider.$allTransitiveDependencies19,
-          AppRouterProvider.$allTransitiveDependencies20,
-          AppRouterProvider.$allTransitiveDependencies21,
-          AppRouterProvider.$allTransitiveDependencies22,
-          AppRouterProvider.$allTransitiveDependencies23,
-          AppRouterProvider.$allTransitiveDependencies24,
-          AppRouterProvider.$allTransitiveDependencies25,
-          AppRouterProvider.$allTransitiveDependencies26,
-          AppRouterProvider.$allTransitiveDependencies27,
-          AppRouterProvider.$allTransitiveDependencies28,
-          AppRouterProvider.$allTransitiveDependencies29,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = navigatorKeyProvider;
-  static final $allTransitiveDependencies1 = inventoryItemRepositoryProvider;
-  static final $allTransitiveDependencies2 =
-      inventoryManualAddQuickEatConfigProvider;
-  static final $allTransitiveDependencies3 = diaryQuickEatInventoryProvider;
-  static final $allTransitiveDependencies4 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies5 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies6 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies2;
-  static final $allTransitiveDependencies7 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies4;
-  static final $allTransitiveDependencies8 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies5;
-  static final $allTransitiveDependencies9 =
-      DiaryQuickEatInventoryProvider.$allTransitiveDependencies6;
-  static final $allTransitiveDependencies10 =
-      diaryQuickEatInventoryActionsProvider;
-  static final $allTransitiveDependencies11 = cookingFlowControllerProvider;
-  static final $allTransitiveDependencies12 =
-      cookingFlowWizardControllerProvider;
-  static final $allTransitiveDependencies13 = cookingInstructionStepsProvider;
-  static final $allTransitiveDependencies14 =
-      inventoryBackedCalorieEntrySaveFlowProvider;
-  static final $allTransitiveDependencies15 =
-      manualProductRecentItemsServiceProvider;
-  static final $allTransitiveDependencies16 = preparedMealImagePickerProvider;
-  static final $allTransitiveDependencies17 =
-      receiptScanFlowCoordinatorProvider;
-  static final $allTransitiveDependencies18 =
-      ReceiptScanFlowCoordinatorProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies19 =
-      ReceiptScanFlowCoordinatorProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies20 =
-      ReceiptScanFlowCoordinatorProvider.$allTransitiveDependencies2;
-  static final $allTransitiveDependencies21 = receiptCameraSupportedProvider;
-  static final $allTransitiveDependencies22 = inventoryActivityEventsProvider;
-  static final $allTransitiveDependencies23 =
-      inventoryShoppingSuggestionsProvider;
-  static final $allTransitiveDependencies24 =
-      InventoryShoppingSuggestionsProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies25 = receiptReviewControllerProvider;
-  static final $allTransitiveDependencies26 =
-      ReceiptReviewControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies27 =
-      receiptManualProductPickerProvider;
-  static final $allTransitiveDependencies28 = productSearchGatewayProvider;
-  static final $allTransitiveDependencies29 =
-      productSearchHubCompletionHandlerProvider;
 
   @override
   String debugGetCreateSourceHash() => _$appRouterHash();
@@ -264,4 +160,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'fd0ff40aeb1d58314b96a88ca60eab3c477e24b4';
+String _$appRouterHash() => r'2a67a32855d95439aee7357364be65051d20abcd';

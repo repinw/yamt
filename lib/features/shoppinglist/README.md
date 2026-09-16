@@ -34,14 +34,12 @@ list page.
 ## Recommendations and Saved Products
 
 - `domain/shopping_suggestion.dart` is the public, inventory-independent input
-  model. `shoppingSuggestionSourceProvider` and `shoppingSuggestionRetryProvider`
-  in `application/shopping_suggestions.dart` are scoped injection points.
-- The generated `shoppingSuggestionsProvider` removes already-listed products
-  and limits the visible result to six. Widgets display the resulting state;
-  they do not read inventory repositories or aggregate consumption/purchases.
-- Inventory owns stock/purchase interpretation and exposes the finished
-  `InventoryShoppingListPage`. The router composes that page; dependency
-  direction remains `inventory -> shoppinglist`.
+  model. `presentation/widgets/shopping_list_suggestions.dart` renders suggestions
+  and filters out already-listed products.
+- `ShoppingListPage` exposes a `suggestionsSection` slot.
+- Inventory owns stock/purchase interpretation and composes the finished
+  `InventoryShoppingListPage` by passing `ShoppingListSuggestions` into that slot.
+  Dependency direction remains `inventory -> shoppinglist`.
 - Favorites and schedules are stored on existing `shopping_list_items` documents.
   Missing fields in older documents default to an ordinary list entry.
 - Removing or clearing a saved product archives its list entry, retaining the

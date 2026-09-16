@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -34,7 +33,6 @@ InventoryItem _item({required String id, required String name}) {
   );
 }
 
-@Dependencies([preparedMealCalorieLogBridge])
 void main() {
   test(
     'bridge writes prepared meal bundles with precise portion snapshots',

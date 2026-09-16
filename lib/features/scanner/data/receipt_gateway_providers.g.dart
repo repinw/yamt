@@ -37,8 +37,8 @@ final class ReceiptProductResolverProvider
         retry: null,
         name: r'receiptProductResolverProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -65,7 +65,7 @@ final class ReceiptProductResolverProvider
 }
 
 String _$receiptProductResolverHash() =>
-    r'5d0a689ca4ba271f85b30ca95a0ccd9cc6e6e1a6';
+    r'f4f76ebde30b73466fd13119a43892bd5873a3ee';
 
 /// Provider for [ReceiptStorageGateway].
 ///
@@ -96,13 +96,9 @@ final class ReceiptStorageGatewayProvider
         retry: null,
         name: r'receiptStorageGatewayProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[inventoryItemRepositoryProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          ReceiptStorageGatewayProvider.$allTransitiveDependencies0,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
 
   @override
   String debugGetCreateSourceHash() => _$receiptStorageGatewayHash();
@@ -128,7 +124,7 @@ final class ReceiptStorageGatewayProvider
 }
 
 String _$receiptStorageGatewayHash() =>
-    r'0969eb3ef4b6fb51824153e791b0310adc8626ec';
+    r'633f43be1e565d9714b336cc859b25bb55a79dba';
 
 /// Provider for [ReceiptTextExtractor].
 ///
@@ -162,8 +158,8 @@ final class ReceiptTextExtractorProvider
         retry: null,
         name: r'receiptTextExtractorProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -190,7 +186,7 @@ final class ReceiptTextExtractorProvider
 }
 
 String _$receiptTextExtractorHash() =>
-    r'5aa7dc91d1470d7918dd0b86cdcad6c1f44645de';
+    r'd0fddae4dd48b351fe1ce6d158d40ffb5a64d7ec';
 
 /// Provider for [ReceiptStructuredParser].
 ///
@@ -221,8 +217,8 @@ final class ReceiptStructuredParserProvider
         retry: null,
         name: r'receiptStructuredParserProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -249,7 +245,7 @@ final class ReceiptStructuredParserProvider
 }
 
 String _$receiptStructuredParserHash() =>
-    r'a9c5c0f2d6b6335d1effe5b607f9766789f8d4cb';
+    r'14c05444e2393c61c1b1e8a698e97828cc3b6e26';
 
 /// Provider for [ReceiptManualProductPicker].
 ///
@@ -281,8 +277,8 @@ final class ReceiptManualProductPickerProvider
         retry: null,
         name: r'receiptManualProductPickerProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -309,4 +305,4 @@ final class ReceiptManualProductPickerProvider
 }
 
 String _$receiptManualProductPickerHash() =>
-    r'0fe8c91b5d90416d5c7e35f38840d1fdac43dd96';
+    r'd149c58a94f5f29b49e51fc7386d1013ef6569e6';

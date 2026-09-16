@@ -95,7 +95,7 @@ class GoogleAuthController extends _$GoogleAuthController {
   }
 
   Future<AuthCredential> _buildGoogleCredential() async {
-    final googleSignIn = await ref.read(googleSignInProvider.future);
+    final googleSignIn = await ref.watch(googleSignInProvider.future);
     final googleUser = await googleSignIn.authenticate();
     final googleAuth = googleUser.authentication;
     final idToken = googleAuth.idToken;

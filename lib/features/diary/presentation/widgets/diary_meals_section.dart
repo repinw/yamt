@@ -3,34 +3,20 @@ import 'dart:async' show unawaited;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/'
-    'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_card/diary_meal_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_card/diary_meal_cards_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Collapsible meal cards for the diary page.
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 class DiaryMealsSection extends ConsumerStatefulWidget {
   /// Creates diary meal cards.
   const DiaryMealsSection({required this.selectedDay, super.key});
@@ -47,7 +33,7 @@ class _DiaryMealsSectionState extends ConsumerState<DiaryMealsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final normalizedDay = normalizeDiaryDay(widget.selectedDay);
+    final normalizedDay = normalizeLocalDay(widget.selectedDay);
     final dashboardState = ref.watch(
       diaryDayDashboardControllerProvider(normalizedDay),
     );

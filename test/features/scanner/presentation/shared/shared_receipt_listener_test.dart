@@ -3,14 +3,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_review_controller.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 import 'package:yamt/features/scanner/presentation/shared/pending_shared_receipt_paths.dart';
 import 'package:yamt/features/scanner/presentation/shared/shared_receipt_listener.dart';
@@ -18,7 +15,6 @@ import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../fakes/fake_receipt_product_resolver.dart';
-import '../../fakes/fake_receipt_storage_gateway.dart';
 import '../../fakes/fake_receipt_structured_parser.dart';
 import '../../fakes/fake_receipt_text_extractor.dart';
 
@@ -27,28 +23,17 @@ class _FakeSharedReceiptService extends SharedReceiptService {
   Future<void> build() async {}
 }
 
-@Dependencies([
-  navigatorKey,
-  appRouter,
-  SharedReceiptService,
-  receiptScanFlowCoordinator,
-  ReceiptReviewController,
-  receiptManualProductPicker,
-])
 void main() {
   late FakeReceiptStructuredParser fakeParser;
   late FakeReceiptTextExtractor fakeExtractor;
   late FakeReceiptProductResolver fakeResolver;
-  late FakeReceiptStorageGateway fakeGateway;
 
   setUp(() {
     fakeParser = FakeReceiptStructuredParser();
     fakeExtractor = FakeReceiptTextExtractor();
     fakeResolver = FakeReceiptProductResolver();
-    fakeGateway = FakeReceiptStorageGateway();
   });
 
-  @Dependencies([ReceiptReviewController, receiptManualProductPicker])
   GoRouter createRouter(GlobalKey<NavigatorState> navigatorKey) {
     return GoRouter(
       navigatorKey: navigatorKey,
@@ -71,50 +56,7 @@ void main() {
     );
   }
 
-  Widget buildApp({
-    required GoRouter router,
-    required GlobalKey<NavigatorState> navigatorKey,
-    VoidCallback? onReceiptSaved,
-  }) {
-    return ProviderScope(
-      overrides: [
-        appRouterProvider.overrideWithValue(router),
-        navigatorKeyProvider.overrideWithValue(navigatorKey),
-        sharedReceiptServiceProvider.overrideWith(
-          _FakeSharedReceiptService.new,
-        ),
-        receiptStructuredParserProvider.overrideWithValue(fakeParser),
-        receiptTextExtractorProvider.overrideWithValue(fakeExtractor),
-        receiptProductResolverProvider.overrideWithValue(fakeResolver),
-        receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
-      ],
-      child: MaterialApp.router(
-        routerConfig: router,
-        builder: (context, child) => SharedReceiptListener(
-          onReceiptSaved: onReceiptSaved,
-          child: child ?? const SizedBox.shrink(),
-        ),
-        locale: const Locale('de'),
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-      ),
-    );
-  }
-
   group('SharedReceiptListener', () {
-    @Dependencies([
-      navigatorKey,
-      appRouter,
-      SharedReceiptService,
-      receiptScanFlowCoordinator,
-      ReceiptReviewController,
-      receiptManualProductPicker,
-    ])
     Future<ProviderContainer> pumpHarness(
       WidgetTester tester, {
       VoidCallback? onReceiptSaved,
@@ -124,10 +66,32 @@ void main() {
       addTearDown(router.dispose);
 
       await tester.pumpWidget(
-        buildApp(
-          router: router,
-          navigatorKey: key,
-          onReceiptSaved: onReceiptSaved,
+        ProviderScope(
+          overrides: [
+            appRouterProvider.overrideWithValue(router),
+            navigatorKeyProvider.overrideWithValue(key),
+            sharedReceiptServiceProvider.overrideWith(
+              _FakeSharedReceiptService.new,
+            ),
+            receiptStructuredParserProvider.overrideWithValue(fakeParser),
+            receiptTextExtractorProvider.overrideWithValue(fakeExtractor),
+            receiptProductResolverProvider.overrideWithValue(fakeResolver),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            builder: (context, child) => SharedReceiptListener(
+              onReceiptSaved: onReceiptSaved,
+              child: child ?? const SizedBox.shrink(),
+            ),
+            locale: const Locale('de'),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
         ),
       );
       await tester.pumpAndSettle();

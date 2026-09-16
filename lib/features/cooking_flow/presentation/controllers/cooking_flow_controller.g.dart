@@ -25,30 +25,9 @@ final class CookingFlowControllerProvider
         retry: null,
         name: r'cookingFlowControllerProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryItemRepositoryProvider,
-          preparedMealsControllerProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          CookingFlowControllerProvider.$allTransitiveDependencies0,
-          CookingFlowControllerProvider.$allTransitiveDependencies1,
-          CookingFlowControllerProvider.$allTransitiveDependencies2,
-          CookingFlowControllerProvider.$allTransitiveDependencies3,
-          CookingFlowControllerProvider.$allTransitiveDependencies4,
-          CookingFlowControllerProvider.$allTransitiveDependencies5,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
-  static final $allTransitiveDependencies1 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies2 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies3 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies4 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies3;
-  static final $allTransitiveDependencies5 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$cookingFlowControllerHash();
@@ -67,7 +46,7 @@ final class CookingFlowControllerProvider
 }
 
 String _$cookingFlowControllerHash() =>
-    r'910363c5505b0515e84483217cb66636ec7bfe98';
+    r'b36bca0bbf2284569bd4486c8f3726cec5195860';
 
 /// Controls cookflow business actions.
 

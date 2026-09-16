@@ -33,13 +33,9 @@ final class InventoryShoppingStockProvider
         retry: null,
         name: r'inventoryShoppingStockProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[inventoryItemRepositoryProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          InventoryShoppingStockProvider.$allTransitiveDependencies0,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
 
   @override
   String debugGetCreateSourceHash() => _$inventoryShoppingStockHash();
@@ -57,7 +53,7 @@ final class InventoryShoppingStockProvider
 }
 
 String _$inventoryShoppingStockHash() =>
-    r'b5a2b9fda1cbcb4fb776d55d8bc6a79613cff3b4';
+    r'1993b1c6398648a54e67959730f5c6c9e54bf2c3';
 
 /// Adapts inventory facts to the shopping feature's public suggestion model.
 
@@ -83,16 +79,9 @@ final class InventoryShoppingSuggestionsProvider
         retry: null,
         name: r'inventoryShoppingSuggestionsProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[inventoryShoppingStockProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          InventoryShoppingSuggestionsProvider.$allTransitiveDependencies0,
-          InventoryShoppingSuggestionsProvider.$allTransitiveDependencies1,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryShoppingStockProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryShoppingStockProvider.$allTransitiveDependencies0;
 
   @override
   String debugGetCreateSourceHash() => _$inventoryShoppingSuggestionsHash();
@@ -119,4 +108,4 @@ final class InventoryShoppingSuggestionsProvider
 }
 
 String _$inventoryShoppingSuggestionsHash() =>
-    r'455104a0a87b6a03c861d52abcb0bb488dc95b1a';
+    r'c38cb70171abf04a1df05460f4a8c158d7c594ae';

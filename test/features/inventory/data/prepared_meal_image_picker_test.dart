@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 
 const int _maxPreparedMealImageBytes = 350 * 1024;
@@ -30,7 +29,6 @@ class _FakePreparedMealImageFilePicker {
   }
 }
 
-@Dependencies([preparedMealImagePicker])
 void main() {
   test(
     'preparedMealImagePickerProvider exposes platform camera support',

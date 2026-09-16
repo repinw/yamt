@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -187,7 +186,6 @@ CalorieEntry _bundleEntry({
   );
 }
 
-@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   ProviderContainer container,
 ) {
@@ -200,18 +198,12 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
   return container.listen(calorieEntriesControllerProvider, (_, _) {});
 }
 
-@Dependencies([PreparedMealsController])
 ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepPreparedMealsAlive(
   ProviderContainer container,
 ) {
   return container.listen(preparedMealsControllerProvider, (_, _) {});
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  inventoryCalorieEntryDeleteFlow,
-])
 class _DeleteFlowHarness {
   const _DeleteFlowHarness({
     required this.container,
@@ -259,11 +251,6 @@ class _DeleteFlowHarness {
   }
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  inventoryCalorieEntryDeleteFlow,
-])
 _DeleteFlowHarness _buildDeleteFlowHarness({
   required List<CalorieEntry> entries,
   List<InventoryItem>? inventoryItems,
@@ -350,11 +337,6 @@ CalorieEntryDeleteFlow _deleteFlow({
   );
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  inventoryCalorieEntryDeleteFlow,
-])
 void main() {
   test(
     'delete flow restores inventory amount before deleting diary entry',

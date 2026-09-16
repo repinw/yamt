@@ -20,7 +20,7 @@ FileShareIntent fileShareIntent(Ref ref) {
 
 /// Service that monitors platform file share intents and pushes valid paths
 /// to [PendingSharedReceiptPaths].
-@Riverpod(keepAlive: true, dependencies: [])
+@Riverpod(keepAlive: true)
 class SharedReceiptService extends _$SharedReceiptService {
   StreamSubscription<List<SharedMediaFile>>? _mediaSubscription;
 

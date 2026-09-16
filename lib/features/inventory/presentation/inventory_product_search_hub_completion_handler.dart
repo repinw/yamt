@@ -1,26 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_save_flow.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_handler.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
-import 'package:yamt/features/product_search_hub/presentation/models/'
-    'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Inventory completion handler for product search hub.
-@Dependencies([
-  InventoryItemsController,
-])
+
 class InventoryProductSearchHubCompletionHandler
     implements ProductSearchHubCompletionHandler {
   /// Creates an inventory completion handler.
@@ -33,9 +29,10 @@ class InventoryProductSearchHubCompletionHandler
   @override
   Future<ProductSearchHubCompletionResult> completeResult({
     required BuildContext context,
-    required ProductSearchHubRouteArgs args,
     required String sourceKey,
     required InventoryReceiptManualProductResult result,
+    MealType? preselectedMealType,
+    DateTime? preselectedLoggedAt,
     bool continueDiaryBatch = false,
   }) async {
     final l10n = AppLocalizations.of(context)!;

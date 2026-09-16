@@ -6,6 +6,7 @@ import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
+import 'package:architecture_lints/rules/avoid_unlistened_read_future_rule.dart';
 
 /// The entrypoint instance for the plugin.
 final plugin = ArchitectureLintsPlugin();
@@ -17,7 +18,9 @@ class ArchitectureLintsPlugin extends Plugin {
 
   @override
   void register(PluginRegistry registry) {
-    registry.registerWarningRule(MaxFileLinesRule());
+    registry
+      ..registerWarningRule(MaxFileLinesRule())
+      ..registerWarningRule(AvoidUnlistenedReadFutureRule());
   }
 }
 

@@ -5,11 +5,13 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_copy_factory.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'

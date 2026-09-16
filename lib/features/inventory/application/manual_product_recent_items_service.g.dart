@@ -32,13 +32,9 @@ final class ManualProductRecentItemsServiceProvider
         retry: null,
         name: r'manualProductRecentItemsServiceProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[inventoryItemRepositoryProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          ManualProductRecentItemsServiceProvider.$allTransitiveDependencies0,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
 
   @override
   String debugGetCreateSourceHash() => _$manualProductRecentItemsServiceHash();
@@ -66,4 +62,4 @@ final class ManualProductRecentItemsServiceProvider
 }
 
 String _$manualProductRecentItemsServiceHash() =>
-    r'551d3ab48924ea15d887efbcd4c93a3971c229c5';
+    r'90d83b592d7222abdcb665edd8559d398be49d8a';

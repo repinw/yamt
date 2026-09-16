@@ -2,31 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/diary/application/'
-    'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_card/diary_meal_cards_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../support/diary_dashboard_test_support.dart';
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
@@ -320,13 +306,6 @@ void main() {
   });
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 Future<void> _pumpMealsSection(
   WidgetTester tester, {
   required DateTime selectedDay,
@@ -348,13 +327,6 @@ Future<void> _pumpMealsSection(
   );
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  diaryQuickEatInventory,
-  diaryQuickEatInventoryActions,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 Future<void> _pumpMealsSectionWithContainer(
   WidgetTester tester, {
   required ProviderContainer container,

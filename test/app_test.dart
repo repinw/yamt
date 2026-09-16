@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -10,16 +9,9 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
-import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 
 import 'features/calories/support/fake_calories_repositories.dart';
 
-@Dependencies([
-  navigatorKey,
-  SharedReceiptService,
-  receiptScanFlowCoordinator,
-])
 void main() {
   testWidgets('YAMT builds router app from provider', (tester) async {
     final router = GoRouter(

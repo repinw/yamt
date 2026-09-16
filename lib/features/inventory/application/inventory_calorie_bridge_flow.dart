@@ -1,24 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 
 /// Defines inventory calorie bridge flow.
-@Dependencies([inventoryBackedCalorieEntrySaveFlow])
 class InventoryCalorieBridgeFlow {
   const InventoryCalorieBridgeFlow._();
 
@@ -125,7 +122,6 @@ class InventoryCalorieBridgeFlow {
     required DateTime loggedAt,
     required MealType mealType,
     PendingInventoryConsumption? pendingConsumption,
-    InventoryItemsController? inventoryController,
     void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
   }) async {
     final user = container.read(firebaseAuthProvider).currentUser;
@@ -154,24 +150,21 @@ class InventoryCalorieBridgeFlow {
       updatedAt: now,
     );
 
-    final saved = await container
-        .read(calorieEntriesControllerProvider.notifier)
-        .saveEntry(
-          entry,
-          isNewEntry: true,
-          inventoryContext: inventoryContext,
-          scannedSourceRef: scannedSourceRef,
-          persistEntry: (entry) {
-            return container
-                .read(inventoryBackedCalorieEntrySaveFlowProvider)
-                .saveEntry(
-                  entry: entry,
-                  pendingConsumptionId: inventoryContext.pendingConsumptionId,
-                  pendingConsumption: pendingConsumption,
-                  inventoryController: inventoryController,
-                );
-          },
-        );
+    final saved = await container.read(calorieEntrySaverProvider)(
+      entry,
+      isNewEntry: true,
+      inventoryContext: inventoryContext,
+      scannedSourceRef: scannedSourceRef,
+      persistEntry: (entry) {
+        return container
+            .read(inventoryBackedCalorieEntrySaveFlowProvider)
+            .saveEntry(
+              entry: entry,
+              pendingConsumptionId: inventoryContext.pendingConsumptionId,
+              pendingConsumption: pendingConsumption,
+            );
+      },
+    );
     if (saved) {
       onDirectCalorieEntrySaved?.call(entry.id);
     }

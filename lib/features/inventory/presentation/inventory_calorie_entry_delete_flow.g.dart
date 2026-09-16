@@ -32,34 +32,9 @@ final class InventoryCalorieEntryDeleteFlowProvider
         retry: null,
         name: r'inventoryCalorieEntryDeleteFlowProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryItemsControllerProvider,
-          preparedMealsControllerProvider,
-          inventoryItemRepositoryProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          InventoryCalorieEntryDeleteFlowProvider.$allTransitiveDependencies0,
-          InventoryCalorieEntryDeleteFlowProvider.$allTransitiveDependencies1,
-          InventoryCalorieEntryDeleteFlowProvider.$allTransitiveDependencies2,
-          InventoryCalorieEntryDeleteFlowProvider.$allTransitiveDependencies3,
-          InventoryCalorieEntryDeleteFlowProvider.$allTransitiveDependencies4,
-          InventoryCalorieEntryDeleteFlowProvider.$allTransitiveDependencies5,
-          InventoryCalorieEntryDeleteFlowProvider.$allTransitiveDependencies6,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies2;
-  static final $allTransitiveDependencies4 = preparedMealsControllerProvider;
-  static final $allTransitiveDependencies5 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies3;
-  static final $allTransitiveDependencies6 =
-      PreparedMealsControllerProvider.$allTransitiveDependencies4;
 
   @override
   String debugGetCreateSourceHash() => _$inventoryCalorieEntryDeleteFlowHash();
@@ -85,4 +60,4 @@ final class InventoryCalorieEntryDeleteFlowProvider
 }
 
 String _$inventoryCalorieEntryDeleteFlowHash() =>
-    r'caf64c55dc7702c3a81f750dd5a058efb44977f7';
+    r'6de3b43a4fbe54fe70f9d8bc4690480b58609e80';

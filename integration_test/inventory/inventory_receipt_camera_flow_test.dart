@@ -3,16 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/home/widgets/inventory_action_fab.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
-import 'package:yamt/features/scanner/presentation/controllers/'
-    'receipt_review_controller.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
@@ -23,13 +19,6 @@ import '../../test/features/scanner/fakes/fake_receipt_storage_gateway.dart';
 import '../../test/features/scanner/fakes/fake_receipt_structured_parser.dart';
 import '../../test/features/scanner/fakes/fake_receipt_text_extractor.dart';
 
-@Dependencies([
-  InventoryItemsController,
-  ReceiptReviewController,
-  receiptCameraSupported,
-  receiptScanFlowCoordinator,
-  receiptManualProductPicker
-])
 Widget _buildHarness({
   required FakeReceiptStructuredParser fakeParser,
 }) {
@@ -97,13 +86,6 @@ Future<void> _pumpVisibleStep(
   await tester.pump();
 }
 
-@Dependencies([
-  InventoryItemsController,
-  ReceiptReviewController,
-  receiptCameraSupported,
-  receiptScanFlowCoordinator,
-  receiptManualProductPicker
-])
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;

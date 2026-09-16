@@ -31,13 +31,7 @@ typedef ReceiptReviewLauncher =
     );
 
 /// Provider for [ReceiptScanFlowCoordinator].
-@Riverpod(
-  dependencies: [
-    receiptStructuredParser,
-    receiptTextExtractor,
-    receiptProductResolver,
-  ],
-)
+@riverpod
 ReceiptScanFlowCoordinator receiptScanFlowCoordinator(Ref ref) {
   return ReceiptScanFlowCoordinator(
     parser: ref.watch(receiptStructuredParserProvider),

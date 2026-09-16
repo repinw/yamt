@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -10,7 +9,6 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'product_ai_search_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -198,7 +196,6 @@ Future<void> _cancelLoggedAtDateChange(
   await tester.pumpAndSettle();
 }
 
-@Dependencies([productSearchGateway])
 GoRouter _buildAiPageRouter({
   required ManualProductSearchRouteArgs args,
   required ValueChanged<ManualProductAiSearchResult?> onResult,
@@ -235,10 +232,6 @@ GoRouter _buildAiPageRouter({
   );
 }
 
-@Dependencies([
-  inventoryManualAddQuickEatConfig,
-  productSearchGateway,
-])
 void main() {
   testWidgets('ai page shows error when generation fails', (tester) async {
     final repository = _FakeProductAiSearchRepository(
@@ -249,9 +242,6 @@ void main() {
       ProviderScope(
         overrides: [
           productAiSearchRepositoryProvider.overrideWithValue(repository),
-          inventoryManualAddQuickEatConfigProvider.overrideWithValue(
-            const InventoryManualAddQuickEatConfig(quickEatOnly: true),
-          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -263,6 +253,9 @@ void main() {
               entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
               storeName: 'Rewe',
               quantity: 1,
+            ),
+            quickEatConfig: const InventoryManualAddQuickEatConfig(
+              quickEatOnly: true,
             ),
             initialPrompt: 'pelmeni',
           ),
@@ -339,9 +332,6 @@ void main() {
       ProviderScope(
         overrides: [
           productAiSearchRepositoryProvider.overrideWithValue(repository),
-          inventoryManualAddQuickEatConfigProvider.overrideWithValue(
-            const InventoryManualAddQuickEatConfig(quickEatOnly: true),
-          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -349,6 +339,9 @@ void main() {
           home: ManualProductAiSearchPage(
             item: _placeholderItem(),
             initialPrompt: 'doener',
+            quickEatConfig: const InventoryManualAddQuickEatConfig(
+              quickEatOnly: true,
+            ),
             showEatImmediatelyOption: true,
             initialAction: InventoryReceiptManualProductAction.eatNow,
           ),

@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
-import 'package:yamt/features/scanner/presentation/controllers/receipt_review_controller.dart';
 
 import '../../fakes/receipt_scan_flow_test_harness.dart';
 
-@Dependencies([
-  ReceiptReviewController,
-  receiptManualProductPicker
-])
 void main() {
   late ReceiptScanFlowTestHarness harness;
 
@@ -47,16 +40,15 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(
-        harness.build(
-          builder: (context, ref) => ElevatedButton(
-            onPressed: () async {
-              await harness
-                  .createCoordinator()
-                  .processFilePaths(context, ['/tmp/rewe.png']);
-            },
-            child: const Text('Scan'),
-          ),
+      await harness.pump(
+        tester,
+        builder: (context, ref) => ElevatedButton(
+          onPressed: () async {
+            await harness.createCoordinator().processFilePaths(context, [
+              '/tmp/rewe.png',
+            ]);
+          },
+          child: const Text('Scan'),
         ),
       );
 
@@ -76,16 +68,15 @@ void main() {
         items: [ReceiptLineItem(id: '1', rawName: 'BUTTER', totalPrice: 2.29)],
       );
 
-      await tester.pumpWidget(
-        harness.build(
-          builder: (context, ref) => ElevatedButton(
-            onPressed: () async {
-              await harness
-                  .createCoordinator()
-                  .processFilePaths(context, ['/tmp/edeka.png']);
-            },
-            child: const Text('Scan'),
-          ),
+      await harness.pump(
+        tester,
+        builder: (context, ref) => ElevatedButton(
+          onPressed: () async {
+            await harness.createCoordinator().processFilePaths(context, [
+              '/tmp/edeka.png',
+            ]);
+          },
+          child: const Text('Scan'),
         ),
       );
 

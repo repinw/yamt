@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -23,7 +22,6 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 import '../../../shoppinglist/support/fake_shopping_list_repository.dart';
 
-@Dependencies([CookingFlowController, CookingFlowWizardController])
 void main() {
   test('moves through preparation, cooking, summary, and finalize steps', () {
     final container = _container();

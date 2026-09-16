@@ -185,8 +185,7 @@ class CalorieLearnedTdeeGoalCalculation {
     required this.newGoalKcal,
     double? calculatedBaseTdeeKcal,
     double? newBaseGoalKcal,
-  }) : calculatedBaseTdeeKcal =
-           calculatedBaseTdeeKcal ?? calculatedTdeeKcal,
+  }) : calculatedBaseTdeeKcal = calculatedBaseTdeeKcal ?? calculatedTdeeKcal,
        newBaseGoalKcal = newBaseGoalKcal ?? newGoalKcal;
 
   /// The measured TDEE calculation.

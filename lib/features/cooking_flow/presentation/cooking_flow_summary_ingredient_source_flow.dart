@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -12,13 +11,13 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_summary_page.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 
 /// Resolves an add-ingredient source into a summary ingredient draft.
-@Dependencies([InventoryItemsController])
 Future<CookingFlowSummaryIngredientDraft?>
 resolveCookingFlowSummaryIngredientSource({
   required BuildContext context,
@@ -52,7 +51,6 @@ resolveCookingFlowSummaryIngredientSource({
   };
 }
 
-@Dependencies([InventoryItemsController])
 Future<CookingFlowSummaryIngredientDraft?> _pickSummaryInventoryIngredient({
   required BuildContext context,
   required ProviderContainer container,
@@ -86,7 +84,6 @@ Future<CookingFlowSummaryIngredientDraft?> _pickSummaryInventoryIngredient({
   );
 }
 
-@Dependencies([InventoryItemsController])
 Future<CookingFlowSummaryIngredientDraft?> _openSummaryManualAddSource({
   required BuildContext context,
   required ProviderContainer container,
@@ -134,7 +131,6 @@ Future<CookingFlowSummaryIngredientDraft?> _openSummaryManualAddSource({
   );
 }
 
-@Dependencies([InventoryItemsController])
 Set<String> _currentInventoryItemIds(ProviderContainer container) {
   final inventoryItems = container
       .read(inventoryItemsControllerProvider)
@@ -145,7 +141,6 @@ Set<String> _currentInventoryItemIds(ProviderContainer container) {
       .toSet();
 }
 
-@Dependencies([InventoryItemsController])
 Future<List<InventoryItem>> _loadInventoryItems(
   ProviderContainer container,
 ) async {
@@ -156,7 +151,7 @@ Future<List<InventoryItem>> _loadInventoryItems(
   if (currentItems != null) {
     return currentItems;
   }
-  return container.read(inventoryItemsControllerProvider.future);
+  return container.read(inventoryItemRepositoryProvider).readAll();
 }
 
 InventoryItem? _newSummaryInventoryItem({

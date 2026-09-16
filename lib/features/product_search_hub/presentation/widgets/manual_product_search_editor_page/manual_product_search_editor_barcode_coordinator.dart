@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
@@ -8,7 +7,6 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -33,9 +31,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_barcode_scanner_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-@Dependencies([
-  productSearchGateway,
-])
 /// Opens the barcode scanner bottom sheet and processes the resulting
 /// selection.
 Future<void> openEditorBarcodeScanner({

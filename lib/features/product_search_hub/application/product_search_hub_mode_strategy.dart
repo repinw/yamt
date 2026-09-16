@@ -1,7 +1,7 @@
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
-import 'package:yamt/features/product_search_hub/presentation/models/'
-    'product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Strategy defining mode-specific presentation behavior for the Product

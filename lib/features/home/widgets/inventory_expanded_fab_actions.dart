@@ -2,14 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/home/widgets/inventory_action_sheet_flow.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_fab_menu_action.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Runs one expanded inventory FAB action.
@@ -17,11 +12,6 @@ typedef InventoryFabActionRunner =
     void Function(Future<void> Function() action);
 
 /// Builds expanded inventory FAB actions.
-@Dependencies([
-  InventoryItemsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-])
 List<Widget> buildInventoryExpandedFabActions({
   required BuildContext context,
   required WidgetRef ref,

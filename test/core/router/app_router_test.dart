@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -30,21 +29,11 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'composite_product_search_adapter.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -57,8 +46,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_ai_search_page/product_ai_search_page.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
-import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
 import '../../helpers/memory_app_preferences.dart';
@@ -195,17 +182,6 @@ const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
   ),
 );
 
-@Dependencies([
-  navigatorKey,
-  appRouter,
-  inventoryManualAddQuickEatConfig,
-  productSearchGateway,
-  productSearchHubCompletionHandler,
-  InventoryItemsController,
-  PreparedMealsController,
-  SharedReceiptService,
-  receiptScanFlowCoordinator,
-])
 void main() {
   testWidgets('shows splash while auth state is loading', (tester) async {
     final container = _createContainerWithAuth(

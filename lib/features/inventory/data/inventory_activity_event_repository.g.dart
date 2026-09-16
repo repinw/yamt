@@ -32,8 +32,8 @@ final class InventoryActivityEventRepositoryProvider
         retry: null,
         name: r'inventoryActivityEventRepositoryProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -62,7 +62,7 @@ final class InventoryActivityEventRepositoryProvider
 }
 
 String _$inventoryActivityEventRepositoryHash() =>
-    r'a4be00ce28d522cb3dc6e96c716da2e78ea96ca3';
+    r'3802846e87f7a0ff30848c855c5c2656ec9ca290';
 
 /// Current inventory activity actor.
 
@@ -142,16 +142,9 @@ final class InventoryActivityEventsProvider
         retry: null,
         name: r'inventoryActivityEventsProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[
-          inventoryActivityEventRepositoryProvider,
-        ],
-        $allTransitiveDependencies: <ProviderOrFamily>[
-          InventoryActivityEventsProvider.$allTransitiveDependencies0,
-        ],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 =
-      inventoryActivityEventRepositoryProvider;
 
   @override
   String debugGetCreateSourceHash() => _$inventoryActivityEventsHash();
@@ -169,4 +162,4 @@ final class InventoryActivityEventsProvider
 }
 
 String _$inventoryActivityEventsHash() =>
-    r'7677714a09ef4e9b357a1b5492348b5e9edc6400';
+    r'7237326b667e77d3fe09b4d1ad7142981dd1889e';

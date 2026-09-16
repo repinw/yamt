@@ -26,31 +26,9 @@ final class CookingFlowWizardControllerProvider
         retry: null,
         name: r'cookingFlowWizardControllerProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[cookingFlowControllerProvider],
-        $allTransitiveDependencies: <ProviderOrFamily>{
-          CookingFlowWizardControllerProvider.$allTransitiveDependencies0,
-          CookingFlowWizardControllerProvider.$allTransitiveDependencies1,
-          CookingFlowWizardControllerProvider.$allTransitiveDependencies2,
-          CookingFlowWizardControllerProvider.$allTransitiveDependencies3,
-          CookingFlowWizardControllerProvider.$allTransitiveDependencies4,
-          CookingFlowWizardControllerProvider.$allTransitiveDependencies5,
-          CookingFlowWizardControllerProvider.$allTransitiveDependencies6,
-        },
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
-
-  static final $allTransitiveDependencies0 = cookingFlowControllerProvider;
-  static final $allTransitiveDependencies1 =
-      CookingFlowControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies2 =
-      CookingFlowControllerProvider.$allTransitiveDependencies1;
-  static final $allTransitiveDependencies3 =
-      CookingFlowControllerProvider.$allTransitiveDependencies2;
-  static final $allTransitiveDependencies4 =
-      CookingFlowControllerProvider.$allTransitiveDependencies3;
-  static final $allTransitiveDependencies5 =
-      CookingFlowControllerProvider.$allTransitiveDependencies4;
-  static final $allTransitiveDependencies6 =
-      CookingFlowControllerProvider.$allTransitiveDependencies5;
 
   @override
   String debugGetCreateSourceHash() => _$cookingFlowWizardControllerHash();
@@ -69,7 +47,7 @@ final class CookingFlowWizardControllerProvider
 }
 
 String _$cookingFlowWizardControllerHash() =>
-    r'0fa1e280f14ec44ae9073765677a4c23e2217cbd';
+    r'cab527c6d989dc0e223716ae72df366e4ba81d5d';
 
 /// Controls cookflow wizard state and session persistence.
 

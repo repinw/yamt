@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -110,7 +107,6 @@ class PreparedMealSectionActions {
 }
 
 /// Defines inventory prepared meals section.
-@Dependencies([InventoryItemsController, preparedMealImagePicker])
 class InventoryPreparedMealsSection extends StatelessWidget {
   /// The inventory prepared meals section.
   const InventoryPreparedMealsSection({
@@ -211,7 +207,6 @@ class InventoryPreparedMealsSection extends StatelessWidget {
   }
 }
 
-@Dependencies([InventoryItemsController, preparedMealImagePicker])
 class _PreparedMealList extends StatelessWidget {
   const _PreparedMealList({
     required this.meals,
@@ -243,7 +238,6 @@ class _PreparedMealList extends StatelessWidget {
   }
 }
 
-@Dependencies([InventoryItemsController, preparedMealImagePicker])
 class _PreparedMealTiles extends StatelessWidget {
   const _PreparedMealTiles({
     required this.meals,
@@ -280,7 +274,6 @@ class _PreparedMealTiles extends StatelessWidget {
   }
 }
 
-@Dependencies([InventoryItemsController, preparedMealImagePicker])
 class _PreparedMealEntry extends StatelessWidget {
   const _PreparedMealEntry({
     required this.meal,

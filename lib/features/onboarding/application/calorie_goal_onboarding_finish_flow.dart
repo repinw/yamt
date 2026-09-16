@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -16,7 +17,8 @@ part 'calorie_goal_onboarding_finish_flow.g.dart';
 CalorieGoalOnboardingFinishFlow calorieGoalOnboardingFinishFlow(Ref ref) {
   final goalController = ref.watch(calorieGoalControllerProvider.notifier);
   return CalorieGoalOnboardingFinishFlow(
-    readSettings: () => ref.read(calorieGoalControllerProvider.future),
+    readSettings: () =>
+        ref.read(calorieSettingsRepositoryProvider).readSettings(),
     goalController: goalController,
     burnWeekController: ref.read(burnWeekRunControllerProvider.notifier),
     catchUpPlaceholderWriter: CalorieGoalOnboardingCatchUpPlaceholderWriter(

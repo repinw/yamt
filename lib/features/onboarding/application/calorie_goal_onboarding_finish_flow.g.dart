@@ -62,4 +62,4 @@ final class CalorieGoalOnboardingFinishFlowProvider
 }
 
 String _$calorieGoalOnboardingFinishFlowHash() =>
-    r'89bb74726ed14627e5c0f053fd23bddb13244ad9';
+    r'581d61bff7d1eae715bf43fa02308756db5405b7';

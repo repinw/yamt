@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome_visibility_controller.dart';
 import 'package:yamt/features/home/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -19,13 +15,6 @@ const _cookbookBranchIndex = 2;
 const _settingsBranchIndex = 3;
 
 /// Shell page that hosts the main app tabs and shared home chrome.
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  receiptManualProductPicker
-])
 class HomePage extends ConsumerStatefulWidget {
   /// The home page.
   const HomePage({required this.navigationShell, super.key});

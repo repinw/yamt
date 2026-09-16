@@ -9,7 +9,7 @@ part 'manual_product_recent_items_service.g.dart';
 const _manualProductRecentItemLimit = 6;
 
 /// Application service for recent manual product candidates.
-@Riverpod(dependencies: [inventoryItemRepository])
+@riverpod
 ManualProductRecentItemsService manualProductRecentItemsService(Ref ref) {
   return ManualProductRecentItemsService(
     ref.read(inventoryItemRepositoryProvider),

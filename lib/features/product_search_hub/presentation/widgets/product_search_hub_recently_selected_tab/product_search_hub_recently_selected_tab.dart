@@ -3,7 +3,6 @@ import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -18,7 +17,6 @@ const _productSearchHubRecentlySelectedLogName =
     'ProductSearchHubRecentlySelectedTab';
 
 /// Recently selected manual products for the product search hub.
-@Dependencies([productSearchGateway])
 class ProductSearchHubRecentlySelectedTab extends ConsumerStatefulWidget {
   /// Creates recently selected product tab.
   const ProductSearchHubRecentlySelectedTab({

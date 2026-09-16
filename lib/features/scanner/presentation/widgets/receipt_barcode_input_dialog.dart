@@ -39,16 +39,14 @@ class _ReceiptBarcodeInputDialogState extends State<ReceiptBarcodeInputDialog> {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(
-        l10n?.receiptReviewBarcodeDialogTitle ??
-            'Barcode eingeben / scannen',
+        l10n?.receiptReviewBarcodeDialogTitle ?? 'Barcode eingeben / scannen',
       ),
       content: TextField(
         controller: _controller,
         keyboardType: TextInputType.number,
         autofocus: true,
         decoration: InputDecoration(
-          labelText:
-              l10n?.receiptReviewBarcodeDialogLabel ?? 'Barcode (EAN)',
+          labelText: l10n?.receiptReviewBarcodeDialogLabel ?? 'Barcode (EAN)',
         ),
         onSubmitted: (val) => Navigator.of(context).pop(val.trim()),
       ),

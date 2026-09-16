@@ -281,8 +281,7 @@ class CalorieGoalSettings {
       trainingWeekdays: trainingWeekdays ?? this.trainingWeekdays,
       trainingDayKcalOffset:
           trainingDayKcalOffset ?? this.trainingDayKcalOffset,
-      trainingDayOverrides:
-          trainingDayOverrides ?? this.trainingDayOverrides,
+      trainingDayOverrides: trainingDayOverrides ?? this.trainingDayOverrides,
       pauseDayKeys: pauseDayKeys ?? this.pauseDayKeys,
     );
   }

@@ -83,7 +83,8 @@ class ReceiptItemMatchedProductCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.close_rounded, size: 18),
                   onPressed: onClearProduct,
-                  tooltip: l10n?.receiptReviewClearProductMatchTooltip ??
+                  tooltip:
+                      l10n?.receiptReviewClearProductMatchTooltip ??
                       'Zuordnung aufheben',
                 ),
             ],
@@ -99,9 +100,9 @@ class ReceiptItemMatchedProductCard extends StatelessWidget {
               label: Text(
                 product != null
                     ? (l10n?.receiptReviewSwitchProductAction ??
-                        'Produkt wechseln')
+                          'Produkt wechseln')
                     : (l10n?.receiptReviewSearchProductAction ??
-                        'Produkt suchen'),
+                          'Produkt suchen'),
               ),
               onPressed: onSearchProduct,
               style: TextButton.styleFrom(visualDensity: VisualDensity.compact),

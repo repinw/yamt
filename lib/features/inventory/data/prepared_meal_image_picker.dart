@@ -86,7 +86,7 @@ Future<FilePickerResult?> _pickPreparedMealImageFile({
 }
 
 /// Prepared meal image picker.
-@Riverpod(dependencies: [])
+@riverpod
 PreparedMealImagePicker preparedMealImagePicker(Ref ref) {
   final filePicker = ref.watch(preparedMealImageFilePickerProvider);
   return _DevicePreparedMealImagePicker(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'composite_product_search_adapter.dart';
@@ -46,7 +45,6 @@ class InventoryBarcodeCandidateSelection {
 }
 
 /// Resolves learned and OpenFoodFacts candidates for [barcode].
-@Dependencies([productSearchGateway])
 Future<List<InventoryBarcodeLookupCandidate>>
 resolveInventoryBarcodeCandidates({
   required WidgetRef ref,

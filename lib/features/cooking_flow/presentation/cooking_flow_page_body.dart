@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
@@ -25,13 +24,10 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_summary_page.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Builds the active cookflow step body.
-@Dependencies([InventoryItemsController, cookingInstructionSteps])
 class CookingFlowPageBody extends StatelessWidget {
   /// Creates cookflow body.
   const CookingFlowPageBody({

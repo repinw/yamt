@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -28,7 +24,6 @@ ManualProductSearchRoutePayloadStore manualProductSearchRoutePayloadStore(
   return store;
 }
 
-@Dependencies([productSearchGateway])
 /// Builds a product-search child route page from URL state.
 Page<Object?> buildManualProductSearchRoutePage(
   BuildContext context,
@@ -50,42 +45,36 @@ Page<Object?> buildManualProductSearchRoutePage(
   );
 }
 
-@Dependencies([productSearchGateway])
 /// Builds the product-search child widget from parsed route args.
 Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
-  return ProviderScope(
-    overrides: [
-      inventoryManualAddQuickEatConfigProvider.overrideWithValue(
-        args.quickEatConfig,
-      ),
-    ],
-    child: switch (args.flow) {
-      ManualProductSearchChildFlow.editor =>
-        InventoryReceiptManualProductEditorPage(
-          config: InventoryReceiptManualProductConfig(
-            item: args.item,
-            selectedProduct: args.selectedProduct,
-            includeStoreInSearch: args.includeStoreInSearch,
-            includeWeightInSearch: args.includeWeightInSearch,
-          ),
-          showEatImmediatelyOption: args.showEatImmediatelyOption,
-          initialAction: args.initialAction,
-          closeCurrentEditorOnSave: args.closeCurrentEditorOnSave,
-          showActionSelector: args.showActionSelector,
-          autofocusSearch: args.autofocusSearch,
-          initialStartVoiceSearch: args.initialStartVoiceSearch,
-          initialRecentItem: args.initialRecentItem,
-          initialInfoMessage: args.initialInfoMessage,
-          onSaved: args.onSaved,
+  return switch (args.flow) {
+    ManualProductSearchChildFlow.editor =>
+      InventoryReceiptManualProductEditorPage(
+        config: InventoryReceiptManualProductConfig(
+          item: args.item,
+          selectedProduct: args.selectedProduct,
+          includeStoreInSearch: args.includeStoreInSearch,
+          includeWeightInSearch: args.includeWeightInSearch,
         ),
-      ManualProductSearchChildFlow.aiSearch => ManualProductAiSearchPage(
-        item: args.item,
-        initialPrompt: args.initialPrompt ?? '',
+        quickEatConfig: args.quickEatConfig,
         showEatImmediatelyOption: args.showEatImmediatelyOption,
         initialAction: args.initialAction,
+        closeCurrentEditorOnSave: args.closeCurrentEditorOnSave,
+        showActionSelector: args.showActionSelector,
+        autofocusSearch: args.autofocusSearch,
+        initialStartVoiceSearch: args.initialStartVoiceSearch,
+        initialRecentItem: args.initialRecentItem,
+        initialInfoMessage: args.initialInfoMessage,
+        onSaved: args.onSaved,
       ),
-    },
-  );
+    ManualProductSearchChildFlow.aiSearch => ManualProductAiSearchPage(
+      item: args.item,
+      quickEatConfig: args.quickEatConfig,
+      initialPrompt: args.initialPrompt ?? '',
+      showEatImmediatelyOption: args.showEatImmediatelyOption,
+      initialAction: args.initialAction,
+    ),
+  };
 }
 
 /// Redirect target for invalid product-search child URLs.

@@ -7,17 +7,18 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_search_launcher.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_launcher.dart';
 
 void main() {
   testWidgets('manual product launcher opens hub in selection mode', (
     tester,
   ) async {
     ProductSearchHubRouteArgs? capturedArgs;
-    final launcher = buildProductSearchHubManualProductSearchLauncher();
+    final launcher =
+        buildInventoryProductSearchHubManualProductSearchLauncher();
     final router = _buildRouter(
       launcher: launcher,
       onHubArgs: (args) {

@@ -37,12 +37,7 @@ class CookingFlowControllerState {
 }
 
 /// Controls cookflow business actions.
-@Riverpod(
-  dependencies: [
-    inventoryItemRepository,
-    PreparedMealsController,
-  ],
-)
+@riverpod
 class CookingFlowController extends _$CookingFlowController {
   @override
   CookingFlowControllerState build() {

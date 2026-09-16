@@ -2,17 +2,16 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
   _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
@@ -103,17 +102,12 @@ CalorieEntry _entry() {
   );
 }
 
-@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   ProviderContainer container,
 ) {
   return container.listen(inventoryItemsControllerProvider, (_, _) {});
 }
 
-@Dependencies([
-  InventoryItemsController,
-  inventoryBackedCalorieEntrySaveFlow,
-])
 void main() {
   test(
     'save flow commits pending inventory consumption and finalizes state',

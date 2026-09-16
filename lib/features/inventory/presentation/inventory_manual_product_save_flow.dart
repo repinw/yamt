@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_manual_add_product_factory.dart';
@@ -10,12 +10,12 @@ import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_dialogs.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualProductSaveItemId = Uuid();
@@ -79,9 +79,7 @@ class InventoryManualProductSaveOutcome {
 }
 
 /// Saves edited manual product result using inventory persistence rules.
-@Dependencies([
-  InventoryItemsController,
-])
+
 Future<InventoryManualProductSaveOutcome> saveManualProductResultToInventory({
   required BuildContext context,
   required ProviderContainer container,
@@ -106,9 +104,6 @@ Future<InventoryManualProductSaveOutcome> saveManualProductResultToInventory({
   }
 }
 
-@Dependencies([
-  InventoryItemsController,
-])
 Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
   required BuildContext context,
   required ProviderContainer container,
@@ -132,13 +127,13 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
     fireImmediately: true,
   );
   try {
-    final inventoryItemsController = container.read(
-      inventoryItemsControllerProvider.notifier,
-    );
-    await container.read(inventoryItemsControllerProvider.future);
+    await _waitForInitializedInventory(container);
     if (!context.mounted) {
       return const InventoryManualProductSaveOutcome.canceled();
     }
+    final inventoryItemsController = container.read(
+      inventoryItemsControllerProvider.notifier,
+    );
     return await _saveManualProductWithReadyInventory(
       container: container,
       l10n: l10n,
@@ -149,6 +144,27 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
     );
   } finally {
     inventorySubscription.close();
+  }
+}
+
+Future<void> _waitForInitializedInventory(ProviderContainer container) async {
+  final current = container.read(inventoryItemsControllerProvider);
+  if (current is! AsyncLoading) {
+    return;
+  }
+  final completer = Completer<void>();
+  final sub = container.listen<AsyncValue<List<InventoryItem>>>(
+    inventoryItemsControllerProvider,
+    (_, next) {
+      if (next is! AsyncLoading && !completer.isCompleted) {
+        completer.complete();
+      }
+    },
+  );
+  try {
+    await completer.future;
+  } finally {
+    sub.close();
   }
 }
 

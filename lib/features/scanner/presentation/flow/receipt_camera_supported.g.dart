@@ -26,8 +26,8 @@ final class ReceiptCameraSupportedProvider
         retry: null,
         name: r'receiptCameraSupportedProvider',
         isAutoDispose: true,
-        dependencies: <ProviderOrFamily>[],
-        $allTransitiveDependencies: <ProviderOrFamily>[],
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
   @override
@@ -53,4 +53,4 @@ final class ReceiptCameraSupportedProvider
 }
 
 String _$receiptCameraSupportedHash() =>
-    r'9e7853865ad9298cfebaa3177c2b9754647ad17e';
+    r'77e6d32f51011696e5c36aaaf145c26a6168aa86';

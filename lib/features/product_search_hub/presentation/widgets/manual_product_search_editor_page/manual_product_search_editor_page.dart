@@ -2,14 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -29,7 +27,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 
 /// Full manual product editor for search, product details, and nutrition input.
-@Dependencies([inventoryManualAddQuickEatConfig, productSearchGateway])
 class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   /// Creates a manual product editor page.
   const InventoryReceiptManualProductEditorPage({
@@ -37,6 +34,7 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     required this.showEatImmediatelyOption,
     required this.initialAction,
     required this.closeCurrentEditorOnSave,
+    this.quickEatConfig = InventoryManualAddQuickEatConfig.standard,
     this.showActionSelector = true,
     this.onSaved,
     this.autofocusSearch = false,
@@ -48,6 +46,9 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
 
   /// Product search configuration.
   final InventoryReceiptManualProductConfig config;
+
+  /// Quick-eat settings.
+  final InventoryManualAddQuickEatConfig quickEatConfig;
 
   /// Whether the user can complete the flow as an immediate eat action.
   final bool showEatImmediatelyOption;
@@ -104,7 +105,7 @@ class _InventoryReceiptManualProductEditorPageState
   void initState() {
     super.initState();
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
-    if (ref.read(inventoryManualAddQuickEatConfigProvider).quickEatOnly) {
+    if (widget.quickEatConfig.quickEatOnly) {
       _selectedAction = InventoryReceiptManualProductAction.eatNow;
     }
     _searchController = TextEditingController();
@@ -161,7 +162,6 @@ class _InventoryReceiptManualProductEditorPageState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
-    final quickEatConfig = ref.watch(inventoryManualAddQuickEatConfigProvider);
     final canSave = canSaveManualProduct(
       state: state,
       selectedAction: _selectedAction,
@@ -174,7 +174,7 @@ class _InventoryReceiptManualProductEditorPageState
       searchController: _searchController,
       voiceSearchController: _voiceSearchController,
       voiceSearchService: _voiceSearchService,
-      quickEatConfig: quickEatConfig,
+      quickEatConfig: widget.quickEatConfig,
       selectedAction: _selectedAction,
       showActionSelector: _showActionSelector,
       showEatImmediatelyOption: widget.showEatImmediatelyOption,
@@ -226,7 +226,7 @@ class _InventoryReceiptManualProductEditorPageState
     unawaited(
       launchEditorSearchResultAction(
         context: context,
-        quickEatConfig: ref.read(inventoryManualAddQuickEatConfigProvider),
+        quickEatConfig: widget.quickEatConfig,
         product: product,
         action: action,
         config: widget.config,
@@ -243,7 +243,7 @@ class _InventoryReceiptManualProductEditorPageState
 
   Future<void> _openBarcodeScanner() => launchEditorBarcodeScanner(
     context: context,
-    quickEatConfig: ref.read(inventoryManualAddQuickEatConfigProvider),
+    quickEatConfig: widget.quickEatConfig,
     config: widget.config,
     controller: _controller,
     voiceSearchController: _voiceSearchController,
@@ -267,7 +267,7 @@ class _InventoryReceiptManualProductEditorPageState
 
   Future<void> _openAiSearchPage() => launchEditorAiSearchPage(
     context: context,
-    quickEatConfig: ref.read(inventoryManualAddQuickEatConfigProvider),
+    quickEatConfig: widget.quickEatConfig,
     config: widget.config,
     voiceSearchController: _voiceSearchController,
     searchQuery: _searchController.text,

@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
@@ -36,9 +35,10 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_home_shell_top_chrome.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
-import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_product_resolver.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_structured_parser.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_text_extractor.dart';
@@ -360,13 +360,6 @@ void _dispatchHomeShellScrollEnd(
   ).dispatch(context);
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  receiptManualProductPicker
-])
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   String initialLocation = AppRoutes.homeCalories,
@@ -515,13 +508,6 @@ Widget _buildHarness({
   );
 }
 
-@Dependencies([
-  InventoryItemsController,
-  PreparedMealsController,
-  receiptScanFlowCoordinator,
-  receiptCameraSupported,
-  receiptManualProductPicker
-])
 void main() {
   testWidgets('diary tab does not show the context fab', (tester) async {
     final repository = FakeCalorieSettingsRepository();

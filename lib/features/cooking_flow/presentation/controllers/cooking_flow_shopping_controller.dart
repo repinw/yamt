@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cooking_flow/application/cooking_flow_wizard_state.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
@@ -121,7 +122,7 @@ class CookingFlowShoppingController extends _$CookingFlowShoppingController {
       return currentItems;
     }
     try {
-      return await ref.read(shoppingListControllerProvider.future);
+      return await ref.read(shoppingListRepositoryProvider).readAll();
     } on Object catch (error, stackTrace) {
       developer.log(
         'Failed to read shopping list items for cookflow.',

@@ -1,20 +1,9 @@
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/models/'
+import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Product search hub launch mode.
-enum ProductSearchHubMode {
-  /// Add selected products to inventory.
-  inventory,
-
-  /// Eat selected products from diary flows.
-  diary,
-
-  /// Return edited product result to the caller without persistence.
-  selection,
-}
 
 /// Optional action to start immediately after the hub opens.
 enum ProductSearchHubInitialIntent {

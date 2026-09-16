@@ -45,6 +45,7 @@ Main application adapters and mappers:
 - `application/diary_weekly_checkin_provider.dart`
 - `application/diary_intro_trigger_provider.dart`
 - `application/diary_provider_warmup.dart`
+- `application/diary_food_log_mutation_adapter.dart`
 - `application/diary_quick_eat_inventory_provider.dart`
 - `data/diary_day_dashboard_cache_store.dart`
 - `presentation/controllers/diary_day_dashboard_controller.dart`
@@ -56,9 +57,11 @@ Main application adapters and mappers:
   the Activity-owned weight tracking flow.
 - `features/calories` for calorie log data, goal settings, Burn Week state, and
   weekly check-in behavior through Diary application adapters.
-- `features/health` for connection status needed by intro flows.
-- `features/inventory` for quick-eat inventory and prepared-meal flows through
-  Inventory's public presentation flow APIs and Diary application adapters.
+- `features/health` for connection status and connection actions through
+  `health_connection_actions.dart`.
+- `features/inventory` for repository-backed quick-eat data and the public
+  Inventory presentation flows used to complete inventory and manual-product
+  entries.
 - `core/widgets` for optional shell chrome when the diary page is embedded.
 
 Keep these dependencies at page, application adapter, or complete-section

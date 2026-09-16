@@ -21,11 +21,7 @@ part 'composite_product_search_adapter.g.dart';
 const _productSearchHubSearchLogName = 'ProductSearchHubSearchPage';
 
 /// Provides the composite search adapter as a [ProductSearchGateway].
-@Riverpod(
-  dependencies: [
-    manualProductRecentItemsService,
-  ],
-)
+@riverpod
 ProductSearchGateway productSearchGateway(Ref ref) {
   return CompositeProductSearchAdapter(
     offRepository: ref.watch(offProductSearchRepositoryProvider),
