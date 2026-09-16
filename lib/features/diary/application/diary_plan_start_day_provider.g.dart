@@ -25,7 +25,7 @@ final class DiaryPlanStartDayProvider
         argument: null,
         retry: null,
         name: r'diaryPlanStartDayProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -52,4 +52,4 @@ final class DiaryPlanStartDayProvider
   }
 }
 
-String _$diaryPlanStartDayHash() => r'78dac2181711ddaa40058b86f91f85fde0662bca';
+String _$diaryPlanStartDayHash() => r'966e597784c7b698b2a57d8d6342404a09156800';

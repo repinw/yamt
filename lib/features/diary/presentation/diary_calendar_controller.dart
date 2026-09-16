@@ -51,7 +51,7 @@ class DiaryCalendarState {
 }
 
 /// Stores the diary calendar selection shared by the shell app bar and page.
-@Riverpod(keepAlive: true)
+@riverpod
 class DiaryCalendarController extends _$DiaryCalendarController {
   @override
   DiaryCalendarState build() {

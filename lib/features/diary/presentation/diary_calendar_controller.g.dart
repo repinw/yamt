@@ -128,7 +128,7 @@ final class DiaryCalendarControllerProvider
         argument: null,
         retry: null,
         name: r'diaryCalendarControllerProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -150,7 +150,7 @@ final class DiaryCalendarControllerProvider
 }
 
 String _$diaryCalendarControllerHash() =>
-    r'6d61de532bc1bf000a049dca664228c121d2c83a';
+    r'd60ab3785bdd094c4b3a0764901dccf1a283a91e';
 
 /// Stores the diary calendar selection shared by the shell app bar and page.
 

@@ -5,7 +5,7 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
 part 'diary_plan_start_day_provider.g.dart';
 
 /// First day of the user's plan, or `null` while no plan exists.
-@Riverpod(keepAlive: true)
+@riverpod
 DateTime? diaryPlanStartDay(Ref ref) {
   return ref.watch(diaryCalorieGoalSettingsProvider).value?.firstGoalStartDay;
 }
