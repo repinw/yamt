@@ -18,7 +18,7 @@ if (keystorePropertiesFile.exists()) {
 dependencies {
 
   // Import the Firebase BoM
-  implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
+  implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
 
 
   // TODO: Add the dependencies for Firebase products you want to use
@@ -33,16 +33,12 @@ dependencies {
 
 android {
     namespace = "de.yamt.app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -71,6 +67,12 @@ android {
         release {
             signingConfig = signingConfigs.getByName("release")
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
