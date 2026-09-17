@@ -27,11 +27,7 @@ abstract interface class AiChefImageStorageClient {
 /// Firebase Storage-backed generated image upload client.
 class FirebaseAiChefImageStorageClient implements AiChefImageStorageClient {
   /// Creates Firebase image storage client.
-  const FirebaseAiChefImageStorageClient({
-    FirebaseStorage? storage,
-    FirebaseAuth? auth,
-  }) : _storage = storage,
-       _auth = auth;
+  const new({this._storage, this._auth});
 
   final FirebaseStorage? _storage;
   final FirebaseAuth? _auth;
@@ -65,10 +61,7 @@ class FirebaseAiChefImageStorageClient implements AiChefImageStorageClient {
     );
     final uploadResult = await storage
         .ref(storagePath)
-        .putData(
-          imageBytes,
-          SettableMetadata(contentType: 'image/jpeg'),
-        );
+        .putData(imageBytes, SettableMetadata(contentType: 'image/jpeg'));
 
     final imageUrl = await uploadResult.ref.getDownloadURL();
     log('Image uploaded successfully: $imageUrl', name: _imageLogName);
@@ -79,13 +72,12 @@ class FirebaseAiChefImageStorageClient implements AiChefImageStorageClient {
 /// Generates AI Chef cover images and stores them in Firebase Storage.
 class AiChefImageGenerator {
   /// Creates image generator.
-  AiChefImageGenerator({
+  new({
     FirebaseStorage? storage,
     FirebaseAuth? auth,
-    AiChefImageBytesClient? imageBytesClient,
+    this._imageBytesClient,
     AiChefImageStorageClient? imageStorageClient,
-  }) : _imageBytesClient = imageBytesClient,
-       _imageStorageClient =
+  }) : _imageStorageClient =
            imageStorageClient ??
            FirebaseAiChefImageStorageClient(storage: storage, auth: auth);
 
@@ -111,7 +103,7 @@ class AiChefImageGenerator {
         return null;
       }
 
-      return _imageStorageClient.uploadJpeg(
+      return await _imageStorageClient.uploadJpeg(
         mealId: mealId,
         imageBytes: imageBytes,
       );
@@ -132,13 +124,10 @@ class AiChefImageGenerator {
       return imageBytesClient(imagePrompt).timeout(_imageTimeout);
     }
 
-    final model = FirebaseAI.vertexAI(location: _location).generativeModel(
+    final model = FirebaseAI.agentPlatform(location: _location).generativeModel(
       model: 'gemini-3.1-flash-image',
       generationConfig: GenerationConfig(
-        responseModalities: [
-          ResponseModalities.text,
-          ResponseModalities.image,
-        ],
+        responseModalities: [ResponseModalities.text, ResponseModalities.image],
       ),
     );
 

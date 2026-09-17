@@ -46,9 +46,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
 
     if (currentWeekStartDayKey == null) {
       if (closedWeekCount == 0) {
-        next = current.copyWith(
-          currentWeekStartDayKey: weekStartDayKey,
-        );
+        next = current.copyWith(currentWeekStartDayKey: weekStartDayKey);
       } else {
         next = current.copyWith(
           currentWeekStartDayKey: diaryDayKey(
@@ -85,15 +83,11 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       );
     } else if (currentWeekStartDate != null &&
         currentWeekStartDate.isAfter(normalizedWeekStartDate)) {
-      next = current.copyWith(
-        currentWeekStartDayKey: weekStartDayKey,
-      );
+      next = current.copyWith(currentWeekStartDayKey: weekStartDayKey);
     } else if (currentWeekStartDayKey != weekStartDayKey) {
       next = current;
       if (current.currentWeekStartDayKey != currentWeekStartDayKey) {
-        next = next.copyWith(
-          currentWeekStartDayKey: currentWeekStartDayKey,
-        );
+        next = next.copyWith(currentWeekStartDayKey: currentWeekStartDayKey);
       }
       next = _advanceToSyncedWeek(
         current: next,
@@ -102,15 +96,11 @@ class BurnWeekRunController extends _$BurnWeekRunController {
         missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
       );
     } else if (current.currentWeekStartDayKey != weekStartDayKey) {
-      next = current.copyWith(
-        currentWeekStartDayKey: weekStartDayKey,
-      );
+      next = current.copyWith(currentWeekStartDayKey: weekStartDayKey);
     }
 
     if (next.missedTrackingThisWeek != missedTrackingThisWeek) {
-      next = next.copyWith(
-        missedTrackingThisWeek: missedTrackingThisWeek,
-      );
+      next = next.copyWith(missedTrackingThisWeek: missedTrackingThisWeek);
     }
     if (next.lastActiveDayKey != currentDayKey) {
       next = next.copyWith(lastActiveDayKey: currentDayKey);
@@ -138,9 +128,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       if (currentLoopWeekStartDate == null ||
           !currentLoopWeekStartDate.isBefore(normalizedWeekStartDate) ||
           advancedWeekCount >= _maxWeekSyncAdvances) {
-        return next.copyWith(
-          currentWeekStartDayKey: weekStartDayKey,
-        );
+        return next.copyWith(currentWeekStartDayKey: weekStartDayKey);
       }
       final closingWeekMissedTracking = switch (advancedWeekCount) {
         _
@@ -166,10 +154,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
   /// Resets whole Burn Week run back to fresh state.
   Future<void> resetRun() {
     final current = state.asData?.value;
-    return _save(
-      const BurnWeekRunState.initial(),
-      previous: current,
-    );
+    return _save(const BurnWeekRunState.initial(), previous: current);
   }
 
   /// Restarts Burn Week run from given fresh day.
@@ -211,10 +196,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       return;
     }
     await _save(
-      current.copyWith(
-        starBrokeThisWeek: true,
-        runLimitWarningThisWeek: true,
-      ),
+      current.copyWith(starBrokeThisWeek: true, runLimitWarningThisWeek: true),
       previous: current,
     );
   }
@@ -222,9 +204,8 @@ class BurnWeekRunController extends _$BurnWeekRunController {
   /// Refills hearts after the user completes a weekly check-in.
   Future<void> refillHeartsForWeeklyCheckIn() async {
     final current = await future;
-    final minimumHearts = resolveBurnWeekMockDifficulty(
-      current.starCount,
-    ).minimumHearts;
+    final minimumHearts = resolveBurnWeekMockDifficulty(current.starCount)
+        .minimumHearts;
     final nextHeartCount = math.max(current.heartCount, minimumHearts);
     if (nextHeartCount == current.heartCount) {
       return;
@@ -263,9 +244,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       return currentWeekStartDayKey;
     }
     return diaryDayKey(
-      currentWeekStartDate.add(
-        const Duration(days: burnWeekDaysPerWeek),
-      ),
+      currentWeekStartDate.add(const Duration(days: burnWeekDaysPerWeek)),
     );
   }
 

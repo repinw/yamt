@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
 /// Text-only auth action button with loading state.
 class AuthGhostTextButton extends StatelessWidget {
   /// Creates a ghost auth text button.
-  const AuthGhostTextButton({
+  const new({
     required this.buttonKey,
     required this.label,
     required this.minimumHeight,
@@ -53,9 +53,8 @@ class AuthGhostTextButton extends StatelessWidget {
             )
           : Text(
               label,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: colors.onSurfaceVariant),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(color: colors.onSurfaceVariant),
             ),
     );
   }

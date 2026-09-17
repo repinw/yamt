@@ -6,9 +6,7 @@ part 'calorie_weekly_checkin_provider.g.dart';
 
 /// Calorie weekly check in data.
 @riverpod
-Future<CalorieWeeklyCheckInData> calorieWeeklyCheckInData(
-  Ref ref,
-) {
+Future<CalorieWeeklyCheckInData> calorieWeeklyCheckInData(Ref ref) {
   return buildCalorieWeeklyCheckInData(ref);
 }
 

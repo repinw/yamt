@@ -24,7 +24,7 @@ abstract interface class BurnWeekRunStateRepository {
 
 class _UnavailableBurnWeekRunStateRepository
     implements BurnWeekRunStateRepository {
-  const _UnavailableBurnWeekRunStateRepository();
+  const new();
 
   @override
   Future<BurnWeekRunState> readState() async {
@@ -41,11 +41,7 @@ class _UnavailableBurnWeekRunStateRepository
 class FirestoreBurnWeekRunStateRepository
     implements BurnWeekRunStateRepository {
   /// Creates repository.
-  const FirestoreBurnWeekRunStateRepository({
-    required FirebaseFirestore firestore,
-    required String? currentUserId,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId;
+  const new({required this._firestore, required this._currentUserId});
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
@@ -87,13 +83,10 @@ class FirestoreBurnWeekRunStateRepository
     }
 
     try {
-      await _document(userId).set(
-        <String, dynamic>{
-          'uid': userId,
-          _burnWeekRunStateField: state.toJson(),
-        },
-        SetOptions(merge: true),
-      );
+      await _document(userId).set(<String, dynamic>{
+        'uid': userId,
+        _burnWeekRunStateField: state.toJson(),
+      }, SetOptions(merge: true));
       return true;
     } on Object catch (error, stackTrace) {
       log(

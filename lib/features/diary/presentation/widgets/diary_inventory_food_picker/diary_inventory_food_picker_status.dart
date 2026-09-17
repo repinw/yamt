@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Loading state for the diary inventory food picker.
 class DiaryInventoryFoodPickerLoading extends StatelessWidget {
   /// Creates a loading state.
-  const DiaryInventoryFoodPickerLoading({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class DiaryInventoryFoodPickerLoading extends StatelessWidget {
 /// Error state for the diary inventory food picker.
 class DiaryInventoryFoodPickerError extends StatelessWidget {
   /// Creates an error state.
-  const DiaryInventoryFoodPickerError({required this.onRetry, super.key});
+  const new({required this.onRetry, super.key});
 
   /// Retries loading picker data.
   final VoidCallback onRetry;
@@ -36,10 +36,7 @@ class DiaryInventoryFoodPickerError extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                l10n.inventoryLoadFailed,
-                textAlign: TextAlign.center,
-              ),
+              Text(l10n.inventoryLoadFailed, textAlign: TextAlign.center),
               const SizedBox(height: AppSpacing.md),
               TextButton.icon(
                 onPressed: onRetry,

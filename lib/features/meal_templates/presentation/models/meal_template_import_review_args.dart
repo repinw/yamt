@@ -3,7 +3,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart'
 /// Defines meal template import review args.
 class MealTemplateImportReviewArgs {
   /// The meal template import review args.
-  const MealTemplateImportReviewArgs({
+  const new({
     required this.importedRecipe,
     required this.preferredName,
     required this.preferredPortions,

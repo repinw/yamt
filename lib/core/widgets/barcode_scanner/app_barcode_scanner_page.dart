@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
@@ -17,7 +17,7 @@ typedef AppBarcodeScanCallback = FutureOr<bool> Function(String barcode);
 /// Generic, feature-independent full-screen or modal barcode scanner page.
 class AppBarcodeScannerPage extends StatefulWidget {
   /// Creates an [AppBarcodeScannerPage].
-  const AppBarcodeScannerPage({
+  const new({
     required this.title,
     required this.onBarcodeScanned,
     this.actions,
@@ -76,17 +76,14 @@ class _AppBarcodeScannerPageState extends State<AppBarcodeScannerPage> {
   Widget build(BuildContext context) {
     if (!isMobileBarcodeScanSupported()) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-          actions: widget.actions,
-        ),
+        appBar: AppBar(title: Text(widget.title), actions: widget.actions),
         body: Center(
           child: Padding(
             padding: AppInsets.page,
             child: Text(
               widget.unsupportedMessage ??
                   'Barcode-Scannen wird auf dieser Plattform nicht '
-                  'unterstützt.',
+                      'unterstützt.',
               textAlign: TextAlign.center,
             ),
           ),
@@ -95,17 +92,11 @@ class _AppBarcodeScannerPageState extends State<AppBarcodeScannerPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: widget.actions,
-      ),
+      appBar: AppBar(title: Text(widget.title), actions: widget.actions),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          MobileScanner(
-            controller: _scannerController,
-            onDetect: _onDetect,
-          ),
+          MobileScanner(controller: _scannerController, onDetect: _onDetect),
           BarcodeScannerOverlay(
             isLocked: _isLocked,
             isTorchOn: _isTorchOn,

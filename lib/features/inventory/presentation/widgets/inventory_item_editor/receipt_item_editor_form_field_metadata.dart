@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/presentation/models/receipt_item_editor_draft.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

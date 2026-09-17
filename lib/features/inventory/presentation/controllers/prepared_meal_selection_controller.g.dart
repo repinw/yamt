@@ -59,7 +59,7 @@ abstract class _$PreparedMealSelectionController
   PreparedMealSelectionState build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<PreparedMealSelectionState, PreparedMealSelectionState>;
@@ -74,6 +74,6 @@ abstract class _$PreparedMealSelectionController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

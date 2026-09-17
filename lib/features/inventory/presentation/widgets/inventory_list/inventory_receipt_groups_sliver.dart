@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -15,7 +15,7 @@ const double _inventoryReceiptGroupsBottomPadding =
 /// Defines inventory receipt groups sliver.
 class InventoryReceiptGroupsSliver extends StatelessWidget {
   /// The inventory receipt groups sliver.
-  const InventoryReceiptGroupsSliver({
+  const new({
     required this.groups,
     required this.dateFormat,
     required this.activeShoppingListItemKeys,

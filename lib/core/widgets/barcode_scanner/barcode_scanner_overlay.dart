@@ -2,8 +2,8 @@ import 'dart:async' show unawaited;
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_guidance_hint_pill.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay_painter.dart';
@@ -23,7 +23,7 @@ const Size defaultBarcodeScanWindowSize = Size(290, 140);
 /// - Contextual guidance hint below the reticle.
 class BarcodeScannerOverlay extends StatefulWidget {
   /// Creates a barcode scanner overlay.
-  const BarcodeScannerOverlay({
+  const new({
     super.key,
     this.isLocked = false,
     this.isTorchOn = false,
@@ -112,12 +112,12 @@ class _BarcodeScannerOverlayState extends State<BarcodeScannerOverlay>
       // Barcode newly locked
       unawaited(HapticFeedback.mediumImpact());
       _laserController.stop();
-      unawaited(_lockController.forward(from: 0));
+      _lockController.forward(from: 0);
     } else if (!widget.isLocked && oldWidget.isLocked) {
       // Unlocked / resumed scanning
-      unawaited(_lockController.reverse());
+      _lockController.reverse();
       if (_shouldLoopLaser) {
-        unawaited(_laserController.repeat(reverse: true));
+        _laserController.repeat(reverse: true);
       }
     }
   }
@@ -138,7 +138,7 @@ class _BarcodeScannerOverlayState extends State<BarcodeScannerOverlay>
       return;
     }
     if (!widget.isLocked && !_laserController.isAnimating) {
-      unawaited(_laserController.repeat(reverse: true));
+      _laserController.repeat(reverse: true);
     }
   }
 

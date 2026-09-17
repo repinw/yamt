@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
@@ -32,7 +32,7 @@ enum InventoryUnifiedFilterSection {
 /// Unified inventory filter sheet for meals and foods.
 class InventoryUnifiedFilterSheet extends StatefulWidget {
   /// Creates unified inventory filter sheet.
-  const InventoryUnifiedFilterSheet({
+  const new({
     required this.initialSection,
     required this.initialViewMode,
     required this.initialListMode,
@@ -278,7 +278,7 @@ class _InventoryUnifiedFilterSheetState
 }
 
 class _InventoryViewModeSection extends StatelessWidget {
-  const _InventoryViewModeSection({
+  const new({
     required this.viewMode,
     required this.listMode,
     required this.enabled,
@@ -366,7 +366,7 @@ class _InventoryViewModeSection extends StatelessWidget {
 }
 
 class _InventoryFilterSectionTabs extends StatelessWidget {
-  const _InventoryFilterSectionTabs({
+  const new({
     required this.section,
     required this.enabled,
     required this.onChanged,

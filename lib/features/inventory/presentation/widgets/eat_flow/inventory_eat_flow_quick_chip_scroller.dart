@@ -1,13 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared horizontal quick chip scroller.
 class InventoryEatFlowQuickChipScroller extends StatelessWidget {
   /// Creates quick chip scroller.
-  const InventoryEatFlowQuickChipScroller({
-    required this.children,
-    super.key,
-  });
+  const new({required this.children, super.key});
 
   /// Children.
   final List<Widget> children;

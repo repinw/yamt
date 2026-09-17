@@ -57,15 +57,11 @@ enum CookingFlowSummaryIngredientKind {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CookingFlowIntroSelectionDraft {
   /// Creates selection draft.
-  const CookingFlowIntroSelectionDraft({
-    required this.itemId,
-    this.isAdditionalIngredient = false,
-  });
+  const new({required this.itemId, this.isAdditionalIngredient = false});
 
   /// Restores selection draft from json.
-  factory CookingFlowIntroSelectionDraft.fromJson(
-    Map<String, dynamic> json,
-  ) => _$CookingFlowIntroSelectionDraftFromJson(json);
+  factory fromJson(Map<String, dynamic> json) =>
+      _$CookingFlowIntroSelectionDraftFromJson(json);
 
   /// Selected inventory item id.
   final String itemId;
@@ -81,7 +77,7 @@ class CookingFlowIntroSelectionDraft {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CookingFlowIntroRowDraft {
   /// Creates row draft.
-  const CookingFlowIntroRowDraft({
+  const new({
     required this.rawIngredient,
     this.action,
     this.selections = const <CookingFlowIntroSelectionDraft>[],
@@ -91,7 +87,7 @@ class CookingFlowIntroRowDraft {
   });
 
   /// Restores row draft from json.
-  factory CookingFlowIntroRowDraft.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$CookingFlowIntroRowDraftFromJson(json);
 
   /// Source ingredient label.
@@ -120,12 +116,10 @@ class CookingFlowIntroRowDraft {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CookingFlowIntroDraft {
   /// Creates intro draft.
-  const CookingFlowIntroDraft({
-    this.rowStates = const <CookingFlowIntroRowDraft>[],
-  });
+  const new({this.rowStates = const <CookingFlowIntroRowDraft>[]});
 
   /// Restores intro draft from json.
-  factory CookingFlowIntroDraft.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$CookingFlowIntroDraftFromJson(json);
 
   /// Persisted row states.
@@ -139,7 +133,7 @@ class CookingFlowIntroDraft {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CookingFlowSummaryIngredientSessionDraft {
   /// Creates summary ingredient draft.
-  const CookingFlowSummaryIngredientSessionDraft({
+  const new({
     required this.key,
     required this.name,
     required this.amount,
@@ -150,9 +144,8 @@ class CookingFlowSummaryIngredientSessionDraft {
   });
 
   /// Restores draft from json.
-  factory CookingFlowSummaryIngredientSessionDraft.fromJson(
-    Map<String, dynamic> json,
-  ) => _$CookingFlowSummaryIngredientSessionDraftFromJson(json);
+  factory fromJson(Map<String, dynamic> json) =>
+      _$CookingFlowSummaryIngredientSessionDraftFromJson(json);
 
   /// Stable row key.
   final String key;
@@ -184,7 +177,7 @@ class CookingFlowSummaryIngredientSessionDraft {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CookingFlowStorageContainerSessionDraft {
   /// Creates storage container draft.
-  const CookingFlowStorageContainerSessionDraft({
+  const new({
     required this.id,
     required this.label,
     required this.taraText,
@@ -194,9 +187,8 @@ class CookingFlowStorageContainerSessionDraft {
   });
 
   /// Restores draft from json.
-  factory CookingFlowStorageContainerSessionDraft.fromJson(
-    Map<String, dynamic> json,
-  ) => _$CookingFlowStorageContainerSessionDraftFromJson(json);
+  factory fromJson(Map<String, dynamic> json) =>
+      _$CookingFlowStorageContainerSessionDraftFromJson(json);
 
   /// Stable container id.
   final String id;
@@ -225,7 +217,7 @@ class CookingFlowStorageContainerSessionDraft {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CookingFlowSession {
   /// Creates session.
-  const CookingFlowSession({
+  const new({
     required this.templateId,
     required this.step,
     required this.taraText,
@@ -245,7 +237,7 @@ class CookingFlowSession {
   });
 
   /// Restores session from json.
-  factory CookingFlowSession.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$CookingFlowSessionFromJson(json);
 
   /// Current template id.

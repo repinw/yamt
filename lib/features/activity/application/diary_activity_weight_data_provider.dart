@@ -36,13 +36,11 @@ Future<DiaryActivityWeightData> diaryActivityWeightData(
     }
     final calculatorProfile = goalState.value?.calculatorProfile;
 
-    return service.load(
+    return await service.load(
       day: selectedDay,
       profile: calculatorProfile == null
           ? null
-          : DiaryActivityWeightProfile(
-              weightKg: calculatorProfile.weightKg,
-            ),
+          : DiaryActivityWeightProfile(weightKg: calculatorProfile.weightKg),
       healthStatus: status,
       manualEntries: manualEntries,
       healthWeightService: healthWeightService,

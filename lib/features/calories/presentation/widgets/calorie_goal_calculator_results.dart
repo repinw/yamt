@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -9,10 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Result card showing BMR, TDEE, and the final daily target.
 class CalorieGoalCalculatorResultsCard extends StatelessWidget {
   /// The calorie goal calculator results card.
-  const CalorieGoalCalculatorResultsCard({
-    required this.calculation,
-    super.key,
-  });
+  const new({required this.calculation, super.key});
 
   /// The calculation.
   final CalorieGoalCalculationResult calculation;
@@ -39,9 +36,8 @@ class CalorieGoalCalculatorResultsCard extends StatelessWidget {
           children: [
             Text(
               l10n.caloriesCalculatorResultsTitle,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.md),
             _ResultRow(
@@ -74,7 +70,7 @@ class CalorieGoalCalculatorResultsCard extends StatelessWidget {
 /// Warning card shown when the calculated target is clamped for safety.
 class CalorieGoalCalculatorWarningCard extends StatelessWidget {
   /// The calorie goal calculator warning card.
-  const CalorieGoalCalculatorWarningCard({required this.message, super.key});
+  const new({required this.message, super.key});
 
   /// The message.
   final String message;
@@ -115,7 +111,7 @@ class CalorieGoalCalculatorWarningCard extends StatelessWidget {
 /// Defines calorie goal calculator goal start card.
 class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
   /// The calorie goal calculator goal start card.
-  const CalorieGoalCalculatorGoalStartCard({
+  const new({
     required this.goalStartDate,
     required this.onChangeRequested,
     super.key,
@@ -144,9 +140,8 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
         Text(
           dateFormat.format(goalStartDate),
           key: CalorieGoalCalculatorSheetKeys.goalStartValue,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.xs),
         _GoalStartCardHint(text: l10n.caloriesCalculatorGoalStartHint),
@@ -163,11 +158,7 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
 }
 
 class _GoalStartCardShell extends StatelessWidget {
-  const _GoalStartCardShell({
-    required this.title,
-    required this.children,
-    super.key,
-  });
+  const new({required this.title, required this.children, super.key});
 
   final String title;
   final List<Widget> children;
@@ -188,9 +179,8 @@ class _GoalStartCardShell extends StatelessWidget {
           children: [
             Text(
               title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.md),
             ...children,
@@ -202,7 +192,7 @@ class _GoalStartCardShell extends StatelessWidget {
 }
 
 class _GoalStartCardHint extends StatelessWidget {
-  const _GoalStartCardHint({required this.text});
+  const new({required this.text});
 
   final String text;
 
@@ -211,15 +201,14 @@ class _GoalStartCardHint extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return Text(
       text,
-      style: Theme.of(
-        context,
-      ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+      style: Theme.of(context).textTheme.bodySmall
+          ?.copyWith(color: colors.onSurfaceVariant),
     );
   }
 }
 
 class _ResultRow extends StatelessWidget {
-  const _ResultRow({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -231,16 +220,14 @@ class _ResultRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
         Text(
           value,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(fontWeight: FontWeight.w800),
         ),
       ],
     );

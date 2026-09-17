@@ -35,10 +35,7 @@ const _incompleteNutrition = GlobalFoodNutrition(
 
 void main() {
   test('gradeOffProductNutrition separates completeness from verification', () {
-    expect(
-      gradeOffProductNutrition(null),
-      OffProductNutritionGrade.missing,
-    );
+    expect(gradeOffProductNutrition(null), OffProductNutritionGrade.missing);
     expect(
       gradeOffProductNutrition(
         const GlobalFoodNutrition(

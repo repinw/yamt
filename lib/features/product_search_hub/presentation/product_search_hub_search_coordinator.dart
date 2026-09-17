@@ -13,10 +13,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
 /// Coordinates debounce, request lifecycle, and execution for hub search.
 class ProductSearchHubSearchCoordinator {
   /// Creates a search coordinator.
-  ProductSearchHubSearchCoordinator({
-    required this.onStateChanged,
-    required this.searchLookup,
-  });
+  new({required this.onStateChanged, required this.searchLookup});
 
   /// Callback to notify host widget of state changes.
   final VoidCallback onStateChanged;

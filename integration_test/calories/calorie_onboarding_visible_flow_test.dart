@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -29,14 +30,14 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/helpers/memory_app_preferences.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
-class _MockUserMetadata extends Mock implements UserMetadata {}
+class _MockUserMetadata extends Mock implements UserMetadata;
 
 class _CalorieOnboardingIntegrationHarness {
-  const _CalorieOnboardingIntegrationHarness({
+  const new({
     required this.container,
     required this.preferences,
     required this.settingsRepository,
@@ -52,8 +53,7 @@ class _CalorieOnboardingIntegrationHarness {
 }
 
 class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
-  _FakeCalorieSettingsRepository()
-    : _settings = const CalorieGoalSettings.empty();
+  new() : _settings = const CalorieGoalSettings.empty();
 
   CalorieGoalSettings _settings;
   final _controller = StreamController<CalorieGoalSettings>.broadcast();
@@ -184,7 +184,7 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 }
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  _FakeBurnWeekRunStateRepository(this.state);
+  new(this.state);
 
   BurnWeekRunState state;
 
@@ -199,7 +199,7 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 }
 
 class _RouterHarness extends ConsumerWidget {
-  const _RouterHarness();
+  const new();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -207,7 +207,7 @@ class _RouterHarness extends ConsumerWidget {
     return MaterialApp.router(
       locale: const Locale('en'),
       routerConfig: router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     );
   }
@@ -361,9 +361,7 @@ Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
   return harness;
 }
 
-_CalorieOnboardingIntegrationHarness _buildHarness({
-  String userId = _userId,
-}) {
+_CalorieOnboardingIntegrationHarness _buildHarness({String userId = _userId}) {
   final user = _authenticatedUser(uid: userId);
   final authStream = Stream<User?>.value(user).asBroadcastStream();
   final firebaseAuth = _MockFirebaseAuth();
@@ -410,9 +408,8 @@ _MockUser _authenticatedUser({
   final metadata = _MockUserMetadata();
   final createdAt = DateTime.utc(2026, 1, 1, 9);
   when(() => metadata.creationTime).thenReturn(createdAt);
-  when(() => metadata.lastSignInTime).thenReturn(
-    createdAt.add(const Duration(days: 7)),
-  );
+  when(() => metadata.lastSignInTime)
+      .thenReturn(createdAt.add(const Duration(days: 7)));
   when(() => user.uid).thenReturn(uid);
   when(() => user.isAnonymous).thenReturn(false);
   when(() => user.displayName).thenReturn(displayName);
@@ -506,9 +503,7 @@ Future<void> _finishOnboarding(WidgetTester tester) async {
   await _pumpRouterTransition(tester);
 }
 
-void _expectHomeDiary(
-  _CalorieOnboardingIntegrationHarness harness,
-) {
+void _expectHomeDiary(_CalorieOnboardingIntegrationHarness harness) {
   expect(_currentRoute(harness), AppRoutes.homeDiary);
   expect(find.byKey(const ValueKey<String>('diary-page')), findsOneWidget);
 }
@@ -539,13 +534,9 @@ Future<void> _expectStartTodaySaved(
   );
 }
 
-void _expectOnboardingCompleted(
-  _CalorieOnboardingIntegrationHarness harness,
-) {
+void _expectOnboardingCompleted(_CalorieOnboardingIntegrationHarness harness) {
   expect(
-    harness.preferences.getStringSync(
-      calorieGoalOnboardingKeyForUser(_userId),
-    ),
+    harness.preferences.getStringSync(calorieGoalOnboardingKeyForUser(_userId)),
     calorieGoalOnboardingCompletedValue,
   );
 }

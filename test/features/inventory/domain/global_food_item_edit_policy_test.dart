@@ -92,10 +92,7 @@ void main() {
       category: 'Dairy',
     );
 
-    final kind = classifyGlobalFoodItemEdit(
-      currentItem: item,
-      name: 'Milk',
-    );
+    final kind = classifyGlobalFoodItemEdit(currentItem: item, name: 'Milk');
 
     expect(kind, GlobalFoodItemEditKind.createNewCandidate);
   });

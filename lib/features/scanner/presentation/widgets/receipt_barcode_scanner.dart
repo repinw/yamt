@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/barcode_scanner/app_barcode_scanner_page.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'

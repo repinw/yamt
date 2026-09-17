@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/presentation/widgets/receipt_review_item_card.dart';

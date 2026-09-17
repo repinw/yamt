@@ -45,7 +45,7 @@ bool isPendingGlobalFoodItemId(String? value) {
 @immutable
 class InventoryItem {
   /// The inventory item.
-  const InventoryItem({
+  const new({
     required this.id,
     required this.globalFoodItemId,
     required this.productSnapshot,
@@ -72,7 +72,7 @@ class InventoryItem {
   });
 
   /// Creates a [InventoryItem] for create.
-  factory InventoryItem.create({
+  factory create({
     required String id,
     required String name,
     required DateTime entryDate,
@@ -150,7 +150,7 @@ class InventoryItem {
   }
 
   /// Creates a [InventoryItem] for from json.
-  factory InventoryItem.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final productSnapshot = InventoryItemProductSnapshot.fromJson(
       _readMap(json['product_snapshot']),
     );
@@ -192,11 +192,7 @@ class InventoryItem {
     );
   }
 
-  static ({
-    int initialAmount,
-    int currentAmount,
-    int amountScale,
-  })
+  static ({int initialAmount, int currentAmount, int amountScale})
   _resolvePersistedAmountData({
     required InventoryAmountUnit? amountUnit,
     required int storedInitialAmount,
@@ -607,7 +603,7 @@ class InventoryItem {
 }
 
 class _ConsumptionProgress {
-  const _ConsumptionProgress({required this.initial, required this.remaining});
+  const new({required this.initial, required this.remaining});
 
   final int initial;
   final int remaining;

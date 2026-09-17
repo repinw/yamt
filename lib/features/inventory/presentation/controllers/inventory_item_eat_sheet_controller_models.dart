@@ -3,7 +3,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 /// Parsed portion input.
 class InventoryItemEatPortionInput {
   /// The parsed portion input.
-  const InventoryItemEatPortionInput({
+  const new({
     required this.count,
     required this.baseAmount,
     required this.totalAmount,
@@ -26,7 +26,7 @@ class InventoryItemEatPortionInput {
 /// Submit validation data for the eat sheet.
 class InventoryItemEatSubmissionDraft {
   /// The submit validation data.
-  const InventoryItemEatSubmissionDraft({
+  const new({
     required this.inventoryAmount,
     required this.portionCount,
     required this.portionBaseAmount,

@@ -13,10 +13,7 @@ export 'package:yamt/features/cooking_flow/application/'
 
 class CookingFlowParsedIngredient {
   /// Creates parsed ingredient.
-  const CookingFlowParsedIngredient({
-    required this.name,
-    required this.amountLabel,
-  });
+  const new({required this.name, required this.amountLabel});
 
   /// Ingredient name without amount.
   final String name;
@@ -54,10 +51,7 @@ CookingFlowParsedIngredient? parseCookingFlowIngredient(
         : null;
     return CookingFlowParsedIngredient(
       amountLabel:
-          fractionalPieceAmount ??
-          _requirementAmountLabel(
-            requirement,
-          ),
+          fractionalPieceAmount ?? _requirementAmountLabel(requirement),
       name: requirement.name,
     );
   }
@@ -76,9 +70,8 @@ CookingFlowParsedIngredient? parseCookingFlowIngredient(
     );
   }
 
-  final amountOnlyMatch = RegExp(
-    r'^(\d+(?:[.,]\d+)?)\s+(.+)$',
-  ).firstMatch(trimmed);
+  final amountOnlyMatch = RegExp(r'^(\d+(?:[.,]\d+)?)\s+(.+)$')
+      .firstMatch(trimmed);
   if (amountOnlyMatch != null) {
     return CookingFlowParsedIngredient(
       amountLabel: amountOnlyMatch.group(1)!.trim(),
@@ -97,9 +90,8 @@ String? _fractionalPieceAmountLabel({
   if (selectedPortions < 1 || basePortions < 1) {
     return null;
   }
-  final match = RegExp(
-    r'^(\d+(?:[.,]\d+)?|\d+/\d+|\d+\s+\d+/\d+)\s+',
-  ).firstMatch(ingredient.trim());
+  final match = RegExp(r'^(\d+(?:[.,]\d+)?|\d+/\d+|\d+\s+\d+/\d+)\s+')
+      .firstMatch(ingredient.trim());
   final rawAmount = match?.group(1);
   if (rawAmount == null) {
     return null;

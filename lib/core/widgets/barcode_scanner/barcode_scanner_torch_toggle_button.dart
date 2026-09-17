@@ -1,15 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Circular button to toggle the camera torch (flashlight).
 class BarcodeScannerTorchToggleButton extends StatelessWidget {
   /// Creates a torch toggle button.
-  const BarcodeScannerTorchToggleButton({
-    required this.isTorchOn,
-    required this.onPressed,
-    super.key,
-  });
+  const new({required this.isTorchOn, required this.onPressed, super.key});
 
   /// Whether the torch is currently enabled.
   final bool isTorchOn;

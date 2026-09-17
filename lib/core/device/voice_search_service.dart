@@ -23,10 +23,7 @@ enum VoiceSearchFailure {
 /// One speech recognition update emitted to listeners.
 class VoiceSearchRecognition {
   /// Creates voice recognition update.
-  const VoiceSearchRecognition({
-    required this.transcript,
-    required this.isFinal,
-  });
+  const new({required this.transcript, required this.isFinal});
 
   /// Recognized speech transcript.
   final String transcript;
@@ -62,7 +59,7 @@ final voiceSearchServiceProvider = Provider<VoiceSearchService>(
 /// `speech_to_text`-backed voice search service.
 class SpeechToTextVoiceSearchService implements VoiceSearchService {
   /// Creates speech-to-text voice search service.
-  SpeechToTextVoiceSearchService({SpeechToText? speechToText})
+  new({SpeechToText? speechToText})
     : _speechToText = speechToText ?? SpeechToText();
 
   final SpeechToText _speechToText;
@@ -92,9 +89,9 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
     try {
       await _speechToText.listen(
         onResult: _handleResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 4),
         listenOptions: SpeechListenOptions(
+          listenFor: const Duration(seconds: 30),
+          pauseFor: const Duration(seconds: 4),
           cancelOnError: true,
           listenMode: ListenMode.search,
         ),

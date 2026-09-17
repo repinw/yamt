@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_item_row_constants.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
 /// Defines inventory item row expand section.
 class InventoryItemRowExpandSection extends StatelessWidget {
   /// The inventory item row expand section.
-  const InventoryItemRowExpandSection({
+  const new({
     required this.isExpanded,
     required this.viewData,
     required this.colorScheme,
@@ -84,7 +84,7 @@ class InventoryItemRowExpandSection extends StatelessWidget {
 }
 
 class _InventoryItemActionPanel extends StatelessWidget {
-  const _InventoryItemActionPanel({
+  const new({
     required this.viewData,
     required this.colorScheme,
     required this.editLabel,
@@ -188,7 +188,7 @@ class _InventoryItemActionPanel extends StatelessWidget {
 }
 
 class _InventoryItemActionButton extends StatelessWidget {
-  const _InventoryItemActionButton({
+  const new({
     required this.label,
     required this.icon,
     required this.foregroundColor,
@@ -241,10 +241,7 @@ class _InventoryItemActionButton extends StatelessWidget {
 }
 
 class _InventoryItemActionColors {
-  const _InventoryItemActionColors({
-    required this.backgroundColor,
-    required this.iconColor,
-  });
+  const new({required this.backgroundColor, required this.iconColor});
 
   final Color backgroundColor;
   final Color iconColor;

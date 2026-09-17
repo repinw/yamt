@@ -40,7 +40,7 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import '../support/fake_calories_repositories.dart';
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  const _FakeBurnWeekRunStateRepository(this.state);
+  const new(this.state);
 
   final BurnWeekRunState state;
 
@@ -242,10 +242,15 @@ void main() {
     );
 
     expect(diaryHealthService.loadDayDataCallCount, 0);
-    expect(
-      checkInData.days.map((day) => day.activeKcal),
-      <int>[0, 0, 0, 0, 0, 0, 0],
-    );
+    expect(checkInData.days.map((day) => day.activeKcal), <int>[
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+    ]);
     expect(checkInData.calculation?.lastWeekAverageActiveKcal, 0.0);
     expect(checkInData.calculation?.todayActiveKcal, 0);
   });
@@ -315,10 +320,7 @@ void main() {
       expect(pauseWindowDay.hasEntries, isFalse);
       expect(pauseWindowDay.loggedIntakeKcal, 0);
       expect(pauseWindowDay.resolvedIntakeKcal, 2100.0);
-      expect(
-        checkInData.calculation?.averageIntakeKcal,
-        closeTo(2100.0, 0.01),
-      );
+      expect(checkInData.calculation?.averageIntakeKcal, closeTo(2100.0, 0.01));
     },
   );
 
@@ -568,10 +570,7 @@ void main() {
       checkInData.blockedReason,
       CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
     );
-    expect(
-      checkInData.missingWeightDays,
-      <DateTime>[DateTime(2026, 4, 14)],
-    );
+    expect(checkInData.missingWeightDays, <DateTime>[DateTime(2026, 4, 14)]);
   });
 
   test(
@@ -687,10 +686,7 @@ void main() {
           recordedAt: DateTime(2026, 4, 12, 7),
           weightKg: 83.65,
         ),
-        HealthWeightSample(
-          recordedAt: DateTime(2026, 4, 13, 7),
-          weightKg: 83,
-        ),
+        HealthWeightSample(recordedAt: DateTime(2026, 4, 13, 7), weightKg: 83),
         HealthWeightSample(
           recordedAt: DateTime(2026, 4, 14, 7),
           weightKg: 83.5,
@@ -732,69 +728,58 @@ void main() {
     },
   );
 
-  test(
-    'uses due-day health weight as end boundary for first window',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final goalStart = DateTime(2026, 4, 8);
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2400,
-          calculatorProfile: null,
-          effectiveDate: goalStart,
-        ),
-      );
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          for (var index = 0; index < 7; index += 1)
-            _entry(
-              'entry-$index',
-              goalStart.add(Duration(days: index, hours: 8)),
-              2100 + (index * 10),
-            ),
-        ],
-      );
-      final healthWeightService = FakeHealthWeightService(
-        <HealthWeightSample>[
-          HealthWeightSample(
-            recordedAt: DateTime(2026, 4, 8, 7),
-            weightKg: 82,
+  test('uses due-day health weight as end boundary for first window', () async {
+    final today = DateTime(2026, 4, 15);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2400,
+        calculatorProfile: null,
+        effectiveDate: goalStart,
+      ),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 7; index += 1)
+          _entry(
+            'entry-$index',
+            goalStart.add(Duration(days: index, hours: 8)),
+            2100 + (index * 10),
           ),
-          HealthWeightSample(
-            recordedAt: DateTime(2026, 4, 15, 7),
-            weightKg: 81.4,
-          ),
-        ],
-      );
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+      ],
+    );
+    final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
+      HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 82),
+      HealthWeightSample(recordedAt: DateTime(2026, 4, 15, 7), weightKg: 81.4),
+    ]);
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-        healthConnectionService: FakeHealthConnectionService(_readyStatus),
-        healthWeightService: healthWeightService,
-        diaryHealthService: FakeDiaryHealthService(
-          const <String, DiaryHealthDayData>{},
-        ),
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+      healthConnectionService: FakeHealthConnectionService(_readyStatus),
+      healthWeightService: healthWeightService,
+      diaryHealthService: FakeDiaryHealthService(
+        const <String, DiaryHealthDayData>{},
+      ),
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(checkInData.isReady, isTrue);
-      expect(checkInData.missingWeightDays, isEmpty);
-      expect(checkInData.days.first.weightKg, 82);
-      expect(checkInData.days.last.weightKg, 81.4);
-    },
-  );
+    expect(checkInData.isReady, isTrue);
+    expect(checkInData.missingWeightDays, isEmpty);
+    expect(checkInData.days.first.weightKg, 82);
+    expect(checkInData.days.last.weightKg, 81.4);
+  });
 
   test(
     'uses available trend weights when exact start weight is missing',
@@ -818,18 +803,13 @@ void main() {
             ),
         ],
       );
-      final healthWeightService = FakeHealthWeightService(
-        <HealthWeightSample>[
-          HealthWeightSample(
-            recordedAt: DateTime(2026, 4, 9, 7),
-            weightKg: 82,
-          ),
-          HealthWeightSample(
-            recordedAt: DateTime(2026, 4, 14, 7),
-            weightKg: 81.4,
-          ),
-        ],
-      );
+      final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
+        HealthWeightSample(recordedAt: DateTime(2026, 4, 9, 7), weightKg: 82),
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 4, 14, 7),
+          weightKg: 81.4,
+        ),
+      ]);
       final manualRepository = FakeManualHealthWeightRepository(
         <ManualHealthWeightEntry>[],
       );
@@ -902,22 +882,14 @@ void main() {
             ),
         ],
       );
-      final healthWeightService = FakeHealthWeightService(
-        <HealthWeightSample>[
-          HealthWeightSample(
-            recordedAt: DateTime(2026, 4, 8, 7),
-            weightKg: 82.6,
-          ),
-          HealthWeightSample(
-            recordedAt: DateTime(2026, 4, 14, 7),
-            weightKg: 82,
-          ),
-          HealthWeightSample(
-            recordedAt: DateTime(2026, 4, 22, 7),
-            weightKg: 81.4,
-          ),
-        ],
-      );
+      final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
+        HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 82.6),
+        HealthWeightSample(recordedAt: DateTime(2026, 4, 14, 7), weightKg: 82),
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 4, 22, 7),
+          weightKg: 81.4,
+        ),
+      ]);
       final manualRepository = FakeManualHealthWeightRepository(
         <ManualHealthWeightEntry>[],
       );
@@ -981,428 +953,407 @@ void main() {
     },
   );
 
-  test(
-    'dismissed pending window is treated as already seen',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final goalStart = DateTime(2026, 4, 8);
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings:
-            CalorieGoalSettings.single(
-              dailyKcalGoal: 2400,
-              calculatorProfile: null,
-              effectiveDate: goalStart,
-            ).copyWithPendingWeeklyCheckIn(
-              PendingCalorieGoalWeeklyCheckIn(
-                windowStartDate: DateTime(2026, 4, 8),
-                windowEndDate: DateTime(2026, 4, 14),
-                dueDate: DateTime(2026, 4, 15),
-                dismissedAt: DateTime(2026, 4, 15, 10),
-              ),
+  test('dismissed pending window is treated as already seen', () async {
+    final today = DateTime(2026, 4, 15);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings:
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+            effectiveDate: goalStart,
+          ).copyWithPendingWeeklyCheckIn(
+            PendingCalorieGoalWeeklyCheckIn(
+              windowStartDate: DateTime(2026, 4, 8),
+              windowEndDate: DateTime(2026, 4, 14),
+              dueDate: DateTime(2026, 4, 15),
+              dismissedAt: DateTime(2026, 4, 15, 10),
             ),
-      );
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          for (var index = 0; index < 7; index += 1)
-            _entry(
-              'entry-$index',
-              goalStart.add(Duration(days: index, hours: 8)),
-              2100 + (index * 10),
-            ),
-        ],
-      );
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: goalStart, weightKg: 82),
-          ManualHealthWeightEntry(
-            day: goalStart.add(const Duration(days: 6)),
-            weightKg: 81.4,
           ),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 7; index += 1)
+          _entry(
+            'entry-$index',
+            goalStart.add(Duration(days: index, hours: 8)),
+            2100 + (index * 10),
+          ),
+      ],
+    );
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+        ManualHealthWeightEntry(
+          day: goalStart.add(const Duration(days: 6)),
+          weightKg: 81.4,
+        ),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(checkInData.hasPending, isTrue);
-      expect(checkInData.shouldAutoOpen, isFalse);
-      expect(checkInData.showDiaryHint, isFalse);
-    },
-  );
+    expect(checkInData.hasPending, isTrue);
+    expect(checkInData.shouldAutoOpen, isFalse);
+    expect(checkInData.showDiaryHint, isFalse);
+  });
 
-  test(
-    'dismissed summary without cache skips hidden sync',
-    () async {
-      final today = DateTime(2026, 4, 22);
-      final goalStart = DateTime(2026, 4, 8);
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings:
-            CalorieGoalSettings.single(
-              dailyKcalGoal: 2400,
-              calculatorProfile: null,
-              effectiveDate: goalStart,
-            ).copyWithPendingWeeklyCheckIn(
-              PendingCalorieGoalWeeklyCheckIn(
-                windowStartDate: DateTime(2026, 4, 8),
-                windowEndDate: DateTime(2026, 4, 14),
-                dueDate: DateTime(2026, 4, 15),
-                dismissedAt: DateTime(2026, 4, 15, 10),
-              ),
+  test('dismissed summary without cache skips hidden sync', () async {
+    final today = DateTime(2026, 4, 22);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings:
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+            effectiveDate: goalStart,
+          ).copyWithPendingWeeklyCheckIn(
+            PendingCalorieGoalWeeklyCheckIn(
+              windowStartDate: DateTime(2026, 4, 8),
+              windowEndDate: DateTime(2026, 4, 14),
+              dueDate: DateTime(2026, 4, 15),
+              dismissedAt: DateTime(2026, 4, 15, 10),
             ),
-      );
-      var rangeReadCount = 0;
-      final logRepository =
-          FakeCalorieLogRepository(
-              initialEntries: <CalorieEntry>[
-                for (var index = 0; index < 14; index += 1)
-                  _entry(
-                    'entry-$index',
-                    goalStart.add(Duration(days: index, hours: 8)),
-                    3000,
-                  ),
-              ],
-            )
-            ..onReadEntriesInRange = (startInclusive, endExclusive) async {
-              rangeReadCount += 1;
-              return const <CalorieEntry>[];
-            };
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: goalStart, weightKg: 80),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+          ),
+    );
+    var rangeReadCount = 0;
+    final logRepository =
+        FakeCalorieLogRepository(
+            initialEntries: <CalorieEntry>[
+              for (var index = 0; index < 14; index += 1)
+                _entry(
+                  'entry-$index',
+                  goalStart.add(Duration(days: index, hours: 8)),
+                  3000,
+                ),
+            ],
+          )
+          ..onReadEntriesInRange = (startInclusive, endExclusive) async {
+            rangeReadCount += 1;
+            return const <CalorieEntry>[];
+          };
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 80),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(
-        checkInData.pendingWeeklyCheckIn?.windowStartDate,
-        DateTime(2026, 4, 8),
-      );
-      expect(
-        checkInData.pendingWeeklyCheckIn?.windowEndDate,
-        DateTime(2026, 4, 14),
-      );
-      expect(checkInData.isReady, isFalse);
-      expect(checkInData.calculation, isNull);
-      expect(checkInData.shouldAutoOpen, isFalse);
-      expect(checkInData.showDiaryHint, isFalse);
-      expect(rangeReadCount, 0);
-    },
-  );
+    expect(
+      checkInData.pendingWeeklyCheckIn?.windowStartDate,
+      DateTime(2026, 4, 8),
+    );
+    expect(
+      checkInData.pendingWeeklyCheckIn?.windowEndDate,
+      DateTime(2026, 4, 14),
+    );
+    expect(checkInData.isReady, isFalse);
+    expect(checkInData.calculation, isNull);
+    expect(checkInData.shouldAutoOpen, isFalse);
+    expect(checkInData.showDiaryHint, isFalse);
+    expect(rangeReadCount, 0);
+  });
 
-  test(
-    'saved summary seeds cascade from pre-window tdee',
-    () async {
-      final today = DateTime(2026, 4, 22);
-      final goalStart = DateTime(2026, 4, 8);
-      final weekOneSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-        windowStartDate: DateTime(2026, 4, 8),
-        windowEndDate: DateTime(2026, 4, 14),
-        trendWeightChangePerDay: 0,
-        calculatedTdeeKcal: 2580,
-        lowConfidence: false,
-      );
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings:
-            CalorieGoalSettings.single(
-              dailyKcalGoal: 2400,
-              calculatorProfile: null,
-              effectiveDate: goalStart,
-            ).applyGoalChange(
-              changedAt: DateTime(2026, 4, 15),
-              dailyKcalGoal: 2580,
-              calculatorProfile: null,
-              source: CalorieGoalSource.weeklyCheckIn,
-              weeklyCheckInSnapshot: weekOneSnapshot,
-            ),
-      );
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          for (var index = 0; index < 14; index += 1)
-            _entry(
-              'entry-$index',
-              goalStart.add(Duration(days: index, hours: 8)),
-              3000,
-            ),
-        ],
-      );
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: goalStart, weightKg: 80),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
-
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
-
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
-
-      expect(
-        checkInData.pendingWeeklyCheckIn?.windowStartDate,
-        DateTime(2026, 4, 15),
-      );
-      expect(checkInData.isReady, isTrue);
-      expect(
-        checkInData.calculation?.calculatedTrueTdeeKcal,
-        closeTo(2706, 0.01),
-      );
-      expect(checkInData.calculation?.newGoalKcal, closeTo(2706, 0.01));
-    },
-  );
-
-  test(
-    'previous snapshot does not limit next check-in source data',
-    () async {
-      final today = DateTime(2026, 4, 22);
-      final goalStart = DateTime(2026, 4, 8);
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings:
-            CalorieGoalSettings.single(
-              dailyKcalGoal: 2400,
-              calculatorProfile: null,
-              effectiveDate: goalStart,
-            ).applyGoalChange(
-              changedAt: DateTime(2026, 4, 15),
-              dailyKcalGoal: 2580,
-              calculatorProfile: null,
-              source: CalorieGoalSource.weeklyCheckIn,
-              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-                windowStartDate: goalStart,
-                windowEndDate: DateTime(2026, 4, 14),
-                trendWeightChangePerDay: 0,
-                calculatedTdeeKcal: 2580,
-                lowConfidence: false,
-                inputHash: 'v1:week-one',
-              ),
-            ),
-      );
-      DateTime? rangeStart;
-      DateTime? rangeEnd;
-      final entries = <CalorieEntry>[
+  test('saved summary seeds cascade from pre-window tdee', () async {
+    final today = DateTime(2026, 4, 22);
+    final goalStart = DateTime(2026, 4, 8);
+    final weekOneSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: DateTime(2026, 4, 8),
+      windowEndDate: DateTime(2026, 4, 14),
+      trendWeightChangePerDay: 0,
+      calculatedTdeeKcal: 2580,
+      lowConfidence: false,
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings:
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+            effectiveDate: goalStart,
+          ).applyGoalChange(
+            changedAt: DateTime(2026, 4, 15),
+            dailyKcalGoal: 2580,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: weekOneSnapshot,
+          ),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
         for (var index = 0; index < 14; index += 1)
           _entry(
             'entry-$index',
             goalStart.add(Duration(days: index, hours: 8)),
             3000,
           ),
-      ];
-      final logRepository =
-          FakeCalorieLogRepository(
-              initialEntries: entries,
-            )
-            ..onReadEntriesInRange = (startInclusive, endExclusive) async {
-              rangeStart = startInclusive;
-              rangeEnd = endExclusive;
-              return entries
-                  .where((entry) {
-                    return !entry.loggedAt.isBefore(startInclusive) &&
-                        entry.loggedAt.isBefore(endExclusive);
-                  })
-                  .toList(growable: false);
-            };
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+      ],
+    );
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 80),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(checkInData.isReady, isTrue);
-      expect(rangeStart, DateTime(2026, 4, 8));
-      expect(rangeEnd, DateTime(2026, 4, 22));
-      expect(checkInData.inputHash, startsWith('v2:'));
-      expect(checkInData.calculation?.averageIntakeKcal, closeTo(3000, 0.01));
-    },
-  );
+    expect(
+      checkInData.pendingWeeklyCheckIn?.windowStartDate,
+      DateTime(2026, 4, 15),
+    );
+    expect(checkInData.isReady, isTrue);
+    expect(
+      checkInData.calculation?.calculatedTrueTdeeKcal,
+      closeTo(2706, 0.01),
+    );
+    expect(checkInData.calculation?.newGoalKcal, closeTo(2706, 0.01));
+  });
 
-  test(
-    'dirty snapshot becomes the next unresolved weekly check-in',
-    () async {
-      final today = DateTime(2026, 4, 22);
-      final goalStart = DateTime(2026, 4, 8);
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings:
-            CalorieGoalSettings.single(
-              dailyKcalGoal: 2400,
-              calculatorProfile: null,
-              effectiveDate: goalStart,
-            ).applyGoalChange(
-              changedAt: DateTime(2026, 4, 15),
-              dailyKcalGoal: 2580,
-              calculatorProfile: null,
-              source: CalorieGoalSource.weeklyCheckIn,
-              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-                windowStartDate: goalStart,
-                windowEndDate: DateTime(2026, 4, 14),
-                trendWeightChangePerDay: 0,
-                calculatedTdeeKcal: 2580,
-                lowConfidence: false,
-                invalidatedAt: DateTime(2026, 4, 20),
-              ),
+  test('previous snapshot does not limit next check-in source data', () async {
+    final today = DateTime(2026, 4, 22);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings:
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+            effectiveDate: goalStart,
+          ).applyGoalChange(
+            changedAt: DateTime(2026, 4, 15),
+            dailyKcalGoal: 2580,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: goalStart,
+              windowEndDate: DateTime(2026, 4, 14),
+              trendWeightChangePerDay: 0,
+              calculatedTdeeKcal: 2580,
+              lowConfidence: false,
+              inputHash: 'v1:week-one',
             ),
-      );
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          for (var index = 0; index < 7; index += 1)
-            _entry(
-              'entry-$index',
-              goalStart.add(Duration(days: index, hours: 8)),
-              3000,
+          ),
+    );
+    DateTime? rangeStart;
+    DateTime? rangeEnd;
+    final entries = <CalorieEntry>[
+      for (var index = 0; index < 14; index += 1)
+        _entry(
+          'entry-$index',
+          goalStart.add(Duration(days: index, hours: 8)),
+          3000,
+        ),
+    ];
+    final logRepository = FakeCalorieLogRepository(initialEntries: entries)
+      ..onReadEntriesInRange = (startInclusive, endExclusive) async {
+        rangeStart = startInclusive;
+        rangeEnd = endExclusive;
+        return entries
+            .where((entry) {
+              return !entry.loggedAt.isBefore(startInclusive) &&
+                  entry.loggedAt.isBefore(endExclusive);
+            })
+            .toList(growable: false);
+      };
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
+
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
+
+    expect(checkInData.isReady, isTrue);
+    expect(rangeStart, DateTime(2026, 4, 8));
+    expect(rangeEnd, DateTime(2026, 4, 22));
+    expect(checkInData.inputHash, startsWith('v2:'));
+    expect(checkInData.calculation?.averageIntakeKcal, closeTo(3000, 0.01));
+  });
+
+  test('dirty snapshot becomes the next unresolved weekly check-in', () async {
+    final today = DateTime(2026, 4, 22);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings:
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+            effectiveDate: goalStart,
+          ).applyGoalChange(
+            changedAt: DateTime(2026, 4, 15),
+            dailyKcalGoal: 2580,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: goalStart,
+              windowEndDate: DateTime(2026, 4, 14),
+              trendWeightChangePerDay: 0,
+              calculatedTdeeKcal: 2580,
+              lowConfidence: false,
+              invalidatedAt: DateTime(2026, 4, 20),
             ),
-        ],
-      );
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: goalStart, weightKg: 80),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+          ),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 7; index += 1)
+          _entry(
+            'entry-$index',
+            goalStart.add(Duration(days: index, hours: 8)),
+            3000,
+          ),
+      ],
+    );
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 80),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(checkInData.hasPending, isTrue);
-      expect(checkInData.pendingWeeklyCheckIn?.windowStartDate, goalStart);
-      expect(
-        checkInData.pendingWeeklyCheckIn?.windowEndDate,
-        DateTime(2026, 4, 14),
-      );
-      expect(checkInData.isReady, isTrue);
-      expect(checkInData.inputHash, startsWith('v2:'));
-    },
-  );
+    expect(checkInData.hasPending, isTrue);
+    expect(checkInData.pendingWeeklyCheckIn?.windowStartDate, goalStart);
+    expect(
+      checkInData.pendingWeeklyCheckIn?.windowEndDate,
+      DateTime(2026, 4, 14),
+    );
+    expect(checkInData.isReady, isTrue);
+    expect(checkInData.inputHash, startsWith('v2:'));
+  });
 
-  test(
-    'fresh completed window skips hidden cache sync',
-    () async {
-      final today = DateTime(2026, 4, 16);
-      final goalStart = DateTime(2026, 4, 8);
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings:
-            CalorieGoalSettings.single(
-              dailyKcalGoal: 2400,
-              calculatorProfile: null,
-              effectiveDate: goalStart,
-            ).applyGoalChange(
-              changedAt: DateTime(2026, 4, 15),
-              dailyKcalGoal: 2500,
-              calculatorProfile: null,
-              source: CalorieGoalSource.weeklyCheckIn,
-              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-                windowStartDate: goalStart,
-                windowEndDate: DateTime(2026, 4, 14),
-                trendWeightChangePerDay: 0,
-                calculatedTdeeKcal: 2500,
-                lowConfidence: false,
-              ),
+  test('fresh completed window skips hidden cache sync', () async {
+    final today = DateTime(2026, 4, 16);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings:
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+            effectiveDate: goalStart,
+          ).applyGoalChange(
+            changedAt: DateTime(2026, 4, 15),
+            dailyKcalGoal: 2500,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: goalStart,
+              windowEndDate: DateTime(2026, 4, 14),
+              trendWeightChangePerDay: 0,
+              calculatedTdeeKcal: 2500,
+              lowConfidence: false,
             ),
-      );
-      var rangeReadCount = 0;
-      final logRepository =
-          FakeCalorieLogRepository(
-              initialEntries: <CalorieEntry>[
-                for (var index = 0; index < 7; index += 1)
-                  _entry(
-                    'entry-$index',
-                    goalStart.add(Duration(days: index, hours: 8)),
-                    3000,
-                  ),
-              ],
-            )
-            ..onReadEntriesInRange = (startInclusive, endExclusive) async {
-              rangeReadCount += 1;
-              return const <CalorieEntry>[];
-            };
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: goalStart, weightKg: 80),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+          ),
+    );
+    var rangeReadCount = 0;
+    final logRepository =
+        FakeCalorieLogRepository(
+            initialEntries: <CalorieEntry>[
+              for (var index = 0; index < 7; index += 1)
+                _entry(
+                  'entry-$index',
+                  goalStart.add(Duration(days: index, hours: 8)),
+                  3000,
+                ),
+            ],
+          )
+          ..onReadEntriesInRange = (startInclusive, endExclusive) async {
+            rangeReadCount += 1;
+            return const <CalorieEntry>[];
+          };
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 80),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(checkInData.hasPending, isFalse);
-      expect(checkInData.pendingWeeklyCheckIn, isNull);
-      expect(checkInData.cacheWeeklyCheckIn, isNull);
-      expect(checkInData.calculation, isNull);
-      expect(checkInData.showDiaryHint, isFalse);
-      expect(rangeReadCount, 0);
-    },
-  );
+    expect(checkInData.hasPending, isFalse);
+    expect(checkInData.pendingWeeklyCheckIn, isNull);
+    expect(checkInData.cacheWeeklyCheckIn, isNull);
+    expect(checkInData.calculation, isNull);
+    expect(checkInData.showDiaryHint, isFalse);
+    expect(rangeReadCount, 0);
+  });
 
   test(
     'freshness becomes urgent after 28 days without learned refresh',
@@ -1502,165 +1453,159 @@ void main() {
     },
   );
 
-  test(
-    'stale learned TDEE refreshes latest completed cache window',
-    () async {
-      final today = DateTime(2026, 4, 28);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: DateTime(2026, 4),
-            dailyKcalGoal: 2400,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: DateTime(2026, 4, 8),
-            dailyKcalGoal: 2350,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: DateTime(2026, 4),
-              windowEndDate: DateTime(2026, 4, 7),
-              trendWeightChangePerDay: -0.05,
-              calculatedTdeeKcal: 2400,
-              lowConfidence: false,
-            ),
-          )
-          .applyGoalChange(
-            changedAt: DateTime(2026, 4, 14),
-            dailyKcalGoal: 2380,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: DateTime(2026, 4, 8),
-              windowEndDate: DateTime(2026, 4, 14),
-              trendWeightChangePerDay: -0.04,
-              calculatedTdeeKcal: 2380,
-              lowConfidence: false,
-            ),
-          )
-          .applyGoalChange(
-            changedAt: DateTime(2026, 4, 14, 10),
-            dailyKcalGoal: 2360,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: DateTime(2026, 4, 15),
-              windowEndDate: DateTime(2026, 4, 21),
-              trendWeightChangePerDay: -0.03,
-              calculatedTdeeKcal: 2360,
-              lowConfidence: false,
-            ),
-          );
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: settings,
-      );
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          for (var index = 0; index < 7; index += 1)
-            _entry(
-              'entry-$index',
-              DateTime(2026, 4, 15).add(Duration(days: index, hours: 8)),
-              2100 + (index * 10),
-            ),
-        ],
-      );
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 15), weightKg: 82),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 81.4),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+  test('stale learned TDEE refreshes latest completed cache window', () async {
+    final today = DateTime(2026, 4, 28);
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 4),
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+        )
+        .applyGoalChange(
+          changedAt: DateTime(2026, 4, 8),
+          dailyKcalGoal: 2350,
+          calculatorProfile: null,
+          source: CalorieGoalSource.weeklyCheckIn,
+          weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+            windowStartDate: DateTime(2026, 4),
+            windowEndDate: DateTime(2026, 4, 7),
+            trendWeightChangePerDay: -0.05,
+            calculatedTdeeKcal: 2400,
+            lowConfidence: false,
+          ),
+        )
+        .applyGoalChange(
+          changedAt: DateTime(2026, 4, 14),
+          dailyKcalGoal: 2380,
+          calculatorProfile: null,
+          source: CalorieGoalSource.weeklyCheckIn,
+          weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+            windowStartDate: DateTime(2026, 4, 8),
+            windowEndDate: DateTime(2026, 4, 14),
+            trendWeightChangePerDay: -0.04,
+            calculatedTdeeKcal: 2380,
+            lowConfidence: false,
+          ),
+        )
+        .applyGoalChange(
+          changedAt: DateTime(2026, 4, 14, 10),
+          dailyKcalGoal: 2360,
+          calculatorProfile: null,
+          source: CalorieGoalSource.weeklyCheckIn,
+          weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+            windowStartDate: DateTime(2026, 4, 15),
+            windowEndDate: DateTime(2026, 4, 21),
+            trendWeightChangePerDay: -0.03,
+            calculatedTdeeKcal: 2360,
+            lowConfidence: false,
+          ),
+        );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: settings,
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 7; index += 1)
+          _entry(
+            'entry-$index',
+            DateTime(2026, 4, 15).add(Duration(days: index, hours: 8)),
+            2100 + (index * 10),
+          ),
+      ],
+    );
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 15), weightKg: 82),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 81.4),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(checkInData.pendingWeeklyCheckIn, isNull);
-      expect(
-        checkInData.cacheWeeklyCheckIn?.windowStartDate,
-        DateTime(2026, 4, 15),
-      );
-      expect(
-        checkInData.cacheWeeklyCheckIn?.windowEndDate,
-        DateTime(2026, 4, 21),
-      );
-      expect(checkInData.freshness, CalorieLearnedTdeeFreshness.stale);
-      expect(checkInData.days, isNotEmpty);
-    },
-  );
+    expect(checkInData.pendingWeeklyCheckIn, isNull);
+    expect(
+      checkInData.cacheWeeklyCheckIn?.windowStartDate,
+      DateTime(2026, 4, 15),
+    );
+    expect(
+      checkInData.cacheWeeklyCheckIn?.windowEndDate,
+      DateTime(2026, 4, 21),
+    );
+    expect(checkInData.freshness, CalorieLearnedTdeeFreshness.stale);
+    expect(checkInData.days, isNotEmpty);
+  });
 
-  test(
-    'dismissed pending summary skips heavy window calculation',
-    () async {
-      final today = DateTime(2026, 4, 22);
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: DateTime(2026, 4),
-            dailyKcalGoal: 2400,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: DateTime(2026, 4, 8),
-            dailyKcalGoal: 2350,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: DateTime(2026, 4),
-              windowEndDate: DateTime(2026, 4, 7),
-              trendWeightChangePerDay: -0.05,
-              calculatedTdeeKcal: 2400,
-              lowConfidence: false,
-            ),
-          )
-          .copyWithPendingWeeklyCheckIn(
-            PendingCalorieGoalWeeklyCheckIn(
-              windowStartDate: DateTime(2026, 4, 8),
-              windowEndDate: DateTime(2026, 4, 14),
-              dueDate: DateTime(2026, 4, 15),
-              dismissedAt: DateTime(2026, 4, 15, 10),
-            ),
-          );
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: settings,
-      );
-      final logRepository = FakeCalorieLogRepository();
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+  test('dismissed pending summary skips heavy window calculation', () async {
+    final today = DateTime(2026, 4, 22);
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 4),
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+        )
+        .applyGoalChange(
+          changedAt: DateTime(2026, 4, 8),
+          dailyKcalGoal: 2350,
+          calculatorProfile: null,
+          source: CalorieGoalSource.weeklyCheckIn,
+          weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+            windowStartDate: DateTime(2026, 4),
+            windowEndDate: DateTime(2026, 4, 7),
+            trendWeightChangePerDay: -0.05,
+            calculatedTdeeKcal: 2400,
+            lowConfidence: false,
+          ),
+        )
+        .copyWithPendingWeeklyCheckIn(
+          PendingCalorieGoalWeeklyCheckIn(
+            windowStartDate: DateTime(2026, 4, 8),
+            windowEndDate: DateTime(2026, 4, 14),
+            dueDate: DateTime(2026, 4, 15),
+            dismissedAt: DateTime(2026, 4, 15, 10),
+          ),
+        );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: settings,
+    );
+    final logRepository = FakeCalorieLogRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(checkInData.hasPending, isTrue);
-      expect(checkInData.pendingWeeklyCheckIn?.isDismissed, isTrue);
-      expect(checkInData.isBlocked, isFalse);
-      expect(checkInData.days, isEmpty);
-      expect(checkInData.calculation, isNull);
-      expect(checkInData.freshness, CalorieLearnedTdeeFreshness.stale);
-      expect(checkInData.showDiaryHint, isFalse);
-    },
-  );
+    expect(checkInData.hasPending, isTrue);
+    expect(checkInData.pendingWeeklyCheckIn?.isDismissed, isTrue);
+    expect(checkInData.isBlocked, isFalse);
+    expect(checkInData.days, isEmpty);
+    expect(checkInData.calculation, isNull);
+    expect(checkInData.freshness, CalorieLearnedTdeeFreshness.stale);
+    expect(checkInData.showDiaryHint, isFalse);
+  });
 
   test(
     'first unresolved overdue window stays pending when multiple exist',
@@ -1923,59 +1868,56 @@ void main() {
     },
   );
 
-  test(
-    'skipped intake day uses average of logged days in the window and '
-    'still allows calculation',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final goalStart = DateTime(2026, 4, 8);
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2400,
-          calculatorProfile: null,
-          effectiveDate: goalStart,
-        ).setSkippedIntakeDay(day: DateTime(2026, 4, 11), isSkipped: true),
-      );
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _entry('entry-0', DateTime(2026, 4, 8, 8), 2100),
-          _entry('entry-1', DateTime(2026, 4, 9, 8), 2200),
-          _entry('entry-2', DateTime(2026, 4, 10, 8), 2300),
-          _entry('entry-4', DateTime(2026, 4, 12, 8), 2400),
-          _entry('entry-5', DateTime(2026, 4, 13, 8), 2500),
-          _entry('entry-6', DateTime(2026, 4, 14, 8), 2600),
-        ],
-      );
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: goalStart, weightKg: 82),
-          ManualHealthWeightEntry(
-            day: goalStart.add(const Duration(days: 6)),
-            weightKg: 81.4,
-          ),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+  test('skipped intake day uses average of logged days in the window and '
+      'still allows calculation', () async {
+    final today = DateTime(2026, 4, 15);
+    final goalStart = DateTime(2026, 4, 8);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2400,
+        calculatorProfile: null,
+        effectiveDate: goalStart,
+      ).setSkippedIntakeDay(day: DateTime(2026, 4, 11), isSkipped: true),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry('entry-0', DateTime(2026, 4, 8, 8), 2100),
+        _entry('entry-1', DateTime(2026, 4, 9, 8), 2200),
+        _entry('entry-2', DateTime(2026, 4, 10, 8), 2300),
+        _entry('entry-4', DateTime(2026, 4, 12, 8), 2400),
+        _entry('entry-5', DateTime(2026, 4, 13, 8), 2500),
+        _entry('entry-6', DateTime(2026, 4, 14, 8), 2600),
+      ],
+    );
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+        ManualHealthWeightEntry(
+          day: goalStart.add(const Duration(days: 6)),
+          weightKg: 81.4,
+        ),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      final container = _createContainer(
-        today: today,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        manualRepository: manualRepository,
-      );
-      addTearDown(container.dispose);
+    final container = _createContainer(
+      today: today,
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      manualRepository: manualRepository,
+    );
+    addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+    final checkInData = await container.read(
+      calorieWeeklyCheckInDataProvider.future,
+    );
 
-      expect(checkInData.isReady, isTrue);
-      final skippedDay = checkInData.days.firstWhere(
-        (day) => day.day == DateTime(2026, 4, 11),
-      );
-      expect(skippedDay.isSkippedIntakeDay, isTrue);
-      expect(skippedDay.resolvedIntakeKcal, closeTo(2350, 0.01));
-    },
-  );
+    expect(checkInData.isReady, isTrue);
+    final skippedDay = checkInData.days.firstWhere(
+      (day) => day.day == DateTime(2026, 4, 11),
+    );
+    expect(skippedDay.isSkippedIntakeDay, isTrue);
+    expect(skippedDay.resolvedIntakeKcal, closeTo(2350, 0.01));
+  });
 }

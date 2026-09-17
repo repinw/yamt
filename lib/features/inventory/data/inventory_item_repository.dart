@@ -46,8 +46,7 @@ InventoryItemStore _resolveStore(Ref ref) {
 }
 
 class _CurrentInventoryUserSession implements InventoryUserSession {
-  const _CurrentInventoryUserSession({required String? currentUserId})
-    : _currentUserId = currentUserId;
+  const new({required this._currentUserId});
 
   final String? _currentUserId;
 
@@ -57,7 +56,7 @@ class _CurrentInventoryUserSession implements InventoryUserSession {
 
 class _UnavailableInventoryItemStore
     implements InventoryItemStore, InventoryItemRecentManualStore {
-  const _UnavailableInventoryItemStore();
+  const new();
 
   @override
   bool get supportsLimitedRecentManualQuery => true;

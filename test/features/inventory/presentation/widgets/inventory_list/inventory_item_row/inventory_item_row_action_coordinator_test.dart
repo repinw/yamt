@@ -113,7 +113,7 @@ void main() {
 }
 
 class _CoordinatorHarness {
-  _CoordinatorHarness({this.working = false});
+  new({this.working = false});
 
   final events = <String>[];
   bool working = false;

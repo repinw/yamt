@@ -29,7 +29,7 @@ const _entriesControllerLogName = 'CalorieEntriesController';
 /// Defines calorie day summary.
 class CalorieDaySummary {
   /// The calorie day summary.
-  const CalorieDaySummary({
+  const new({
     required this.entryCount,
     required this.totalKcal,
     required this.totalProtein,
@@ -56,7 +56,7 @@ class CalorieDaySummary {
 /// Defines calorie meal section.
 class CalorieMealSection {
   /// The calorie meal section.
-  const CalorieMealSection({
+  const new({
     required this.mealType,
     required this.entries,
     required this.totalKcal,
@@ -75,7 +75,7 @@ class CalorieMealSection {
 /// Defines calorie day view data.
 class CalorieDayViewData {
   /// The calorie day view data.
-  const CalorieDayViewData({
+  const new({
     required this.selectedDay,
     required this.summary,
     required this.sections,

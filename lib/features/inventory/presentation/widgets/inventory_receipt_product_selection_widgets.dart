@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
@@ -7,11 +7,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 /// Compact nutrition badges shown for a selected or suggested product.
 class InventoryReceiptNutritionChips extends StatelessWidget {
   /// The inventory receipt nutrition chips.
-  const InventoryReceiptNutritionChips({
-    required this.nutrition,
-    super.key,
-    this.leadingLabel,
-  });
+  const new({required this.nutrition, super.key, this.leadingLabel});
 
   /// The nutrition.
   final GlobalFoodNutrition nutrition;
@@ -61,7 +57,7 @@ class InventoryReceiptNutritionChips extends StatelessWidget {
 }
 
 class _NutritionChip extends StatelessWidget {
-  const _NutritionChip({required this.label, this.emphasized = false});
+  const new({required this.label, this.emphasized = false});
 
   final String label;
   final bool emphasized;
@@ -101,7 +97,7 @@ class _NutritionChip extends StatelessWidget {
 /// Thumbnail that only shows the image already present on the selected product.
 class InventoryReceiptSelectionThumbnail extends StatelessWidget {
   /// The inventory receipt selection thumbnail.
-  const InventoryReceiptSelectionThumbnail({
+  const new({
     required this.imageUrl,
     super.key,
     this.icon = Icons.inventory_2_outlined,

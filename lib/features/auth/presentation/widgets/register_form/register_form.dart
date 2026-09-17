@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines register form.
 class RegisterForm extends ConsumerStatefulWidget {
   /// The register form.
-  const RegisterForm({super.key});
+  const new({super.key});
 
   @override
   ConsumerState<RegisterForm> createState() => _RegisterFormState();

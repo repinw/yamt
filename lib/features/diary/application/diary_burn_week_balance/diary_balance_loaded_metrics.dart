@@ -9,7 +9,7 @@ import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_we
 /// Derived values needed to render the loaded Burn Week balance card.
 class DiaryBalanceLoadedMetrics {
   /// Creates resolved loaded-card metrics.
-  const DiaryBalanceLoadedMetrics({
+  const new({
     required this.selectedDay,
     required this.daily,
     required this.weekly,
@@ -36,7 +36,7 @@ class DiaryBalanceLoadedMetrics {
 /// Loaded card display state that is not specific to daily or weekly metrics.
 class DiaryBalanceLoadedState {
   /// Creates loaded-card display state.
-  const DiaryBalanceLoadedState({
+  const new({
     required this.isPauseDay,
     required this.showGameControls,
     required this.runWeekNumber,

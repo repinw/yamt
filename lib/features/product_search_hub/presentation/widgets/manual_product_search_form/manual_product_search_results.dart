@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -15,7 +15,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Search result list for manual product search.
 class ManualProductSearchResults extends StatelessWidget {
   /// Creates search results.
-  const ManualProductSearchResults({
+  const new({
     required this.results,
     required this.onSelect,
     super.key,
@@ -56,9 +56,8 @@ class ManualProductSearchResults extends StatelessWidget {
                 imageUrl: result.imageUrl,
                 packageWeight: result.packageWeight,
                 nutrition: result.nutrition,
-                statusLabel: gradeOffProductNutrition(
-                  result.nutrition,
-                ).localizedLabel(l10n),
+                statusLabel: gradeOffProductNutrition(result.nutrition)
+                    .localizedLabel(l10n),
                 onTap: () => onSelect(result),
                 trailing: onEatSelect != null
                     ? _ManualProductSearchActions(
@@ -79,11 +78,7 @@ class ManualProductSearchResults extends StatelessWidget {
 }
 
 class _ManualProductSearchActions extends StatelessWidget {
-  const _ManualProductSearchActions({
-    required this.result,
-    required this.onEat,
-    this.onStore,
-  });
+  const new({required this.result, required this.onEat, this.onStore});
 
   final OffProductSearchResult result;
   final ValueChanged<OffProductSearchResult> onEat;

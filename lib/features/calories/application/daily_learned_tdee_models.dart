@@ -9,7 +9,7 @@ const _storedGoalListEquality = ListEquality<double>();
 /// Weekly learned TDEE target that is stable until the next boundary.
 class DailyLearnedTdeeGoalData {
   /// Creates learned TDEE goal data.
-  const DailyLearnedTdeeGoalData({
+  const new({
     required this.measured,
     required this.calculatedBaseTdeeKcal,
     required this.newBaseGoalKcal,
@@ -42,10 +42,7 @@ class DailyLearnedTdeeGoalData {
 @immutable
 class DailyLearnedTdeeGoalDayRequest {
   /// Creates request for one day.
-  const DailyLearnedTdeeGoalDayRequest({
-    required this.day,
-    required this.storedGoalKcal,
-  });
+  const new({required this.day, required this.storedGoalKcal});
 
   /// Diary day.
   final DateTime day;
@@ -71,7 +68,7 @@ class DailyLearnedTdeeGoalDayRequest {
 @immutable
 class DailyLearnedTdeeGoalDaysRequest {
   /// Creates request from day goals.
-  factory DailyLearnedTdeeGoalDaysRequest({
+  factory({
     required DateTime today,
     required Iterable<DailyLearnedTdeeGoalDayRequest> days,
   }) {
@@ -95,12 +92,7 @@ class DailyLearnedTdeeGoalDaysRequest {
     );
   }
 
-  const DailyLearnedTdeeGoalDaysRequest._(
-    this.today,
-    this.days,
-    this._dayKeys,
-    this._storedGoals,
-  );
+  const new _(this.today, this.days, this._dayKeys, this._storedGoals);
 
   /// Normalized today.
   final DateTime today;

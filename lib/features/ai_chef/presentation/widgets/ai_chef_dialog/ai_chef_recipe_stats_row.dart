@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Displays generated recipe nutrition and portions.
 class AiChefRecipeStatsRow extends StatelessWidget {
   /// Creates recipe stats row.
-  const AiChefRecipeStatsRow({required this.recipe, super.key});
+  const new({required this.recipe, super.key});
 
   /// Generated recipe.
   final PreparedMeal recipe;
@@ -52,7 +52,7 @@ class AiChefRecipeStatsRow extends StatelessWidget {
 }
 
 class _StatBadge extends StatelessWidget {
-  const _StatBadge({
+  const new({
     required this.label,
     required this.color,
     required this.textColor,

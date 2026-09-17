@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -17,7 +17,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Summary step for cookflow.
 class CookingFlowSummaryPage extends StatelessWidget {
   /// Creates summary step.
-  const CookingFlowSummaryPage({
+  const new({
     required this.ingredients,
     required this.inventoryItems,
     required this.adjustments,
@@ -86,9 +86,8 @@ class CookingFlowSummaryPage extends StatelessWidget {
                 padding: AppInsets.card,
                 child: Text(
                   l10n.cookflowSummaryIngredientsTitle,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
               Divider(
@@ -121,16 +120,12 @@ class CookingFlowSummaryPage extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxxxl),
           Row(
             children: <Widget>[
-              const Icon(
-                Icons.warning_amber_rounded,
-                color: Color(0xFFE65100),
-              ),
+              const Icon(Icons.warning_amber_rounded, color: Color(0xFFE65100)),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 l10n.cookflowSummaryAdjustmentsTitle,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -184,17 +179,12 @@ Future<InventoryItem?> showCookingFlowSummaryInventoryIngredientPicker({
 }
 
 class _SummaryIngredientAddMenu extends StatelessWidget {
-  const _SummaryIngredientAddMenu.row({
-    required this.onSelected,
-    super.key,
-  }) : label = null,
-       style = _SummaryIngredientAddMenuStyle.row;
+  const new row({required this.onSelected, super.key})
+    : label = null,
+      style = _SummaryIngredientAddMenuStyle.row;
 
-  const _SummaryIngredientAddMenu.button({
-    required this.label,
-    required this.onSelected,
-    super.key,
-  }) : style = _SummaryIngredientAddMenuStyle.button;
+  const new button({required this.label, required this.onSelected, super.key})
+    : style = _SummaryIngredientAddMenuStyle.button;
 
   final String? label;
   final _SummaryIngredientAddMenuStyle style;
@@ -264,7 +254,7 @@ class _SummaryIngredientAddMenu extends StatelessWidget {
 enum _SummaryIngredientAddMenuStyle { button, row }
 
 class _SummaryIngredientAddMenuRow extends StatelessWidget {
-  const _SummaryIngredientAddMenuRow({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -306,7 +296,7 @@ class _SummaryIngredientAddMenuRow extends StatelessWidget {
 }
 
 class _SummaryIngredientAddMenuButton extends StatelessWidget {
-  const _SummaryIngredientAddMenuButton({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -351,7 +341,7 @@ class _SummaryIngredientAddMenuButton extends StatelessWidget {
 }
 
 class _SummaryInventoryIngredientPicker extends StatelessWidget {
-  const _SummaryInventoryIngredientPicker({required this.inventoryItems});
+  const new({required this.inventoryItems});
 
   final List<InventoryItem> inventoryItems;
 
@@ -361,9 +351,8 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final sortedItems = List<InventoryItem>.from(inventoryItems)
       ..sort(
-        (left, right) => left.name.toLowerCase().compareTo(
-          right.name.toLowerCase(),
-        ),
+        (left, right) =>
+            left.name.toLowerCase().compareTo(right.name.toLowerCase()),
       );
 
     return Align(
@@ -419,28 +408,31 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
                               itemCount: sortedItems.length,
                               itemBuilder: (context, index) {
                                 final item = sortedItems[index];
-                                return ListTile(
-                                  key: Key(
-                                    'cookflow_summary_inventory_item_'
-                                    '${item.id}',
-                                  ),
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: PreparedMealCover(
-                                    label: item.name,
-                                    imageBytes: null,
-                                    imageUrl: item.imageUrl,
-                                    size: 40,
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadius.md,
+                                return Material(
+                                  type: MaterialType.transparency,
+                                  child: ListTile(
+                                    key: Key(
+                                      'cookflow_summary_inventory_item_'
+                                      '${item.id}',
                                     ),
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: PreparedMealCover(
+                                      label: item.name,
+                                      imageBytes: null,
+                                      imageUrl: item.imageUrl,
+                                      size: 40,
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.md,
+                                      ),
+                                    ),
+                                    title: Text(item.name),
+                                    subtitle: Text(
+                                      _summaryInventoryPickerAmountLabel(item),
+                                    ),
+                                    onTap: () {
+                                      Navigator.of(context).pop(item);
+                                    },
                                   ),
-                                  title: Text(item.name),
-                                  subtitle: Text(
-                                    _summaryInventoryPickerAmountLabel(item),
-                                  ),
-                                  onTap: () {
-                                    Navigator.of(context).pop(item);
-                                  },
                                 );
                               },
                             ),
@@ -464,7 +456,7 @@ String _summaryInventoryPickerAmountLabel(InventoryItem item) {
 }
 
 class _SummaryIngredientsTable extends StatelessWidget {
-  const _SummaryIngredientsTable({
+  const new({
     required this.ingredients,
     required this.inventoryItems,
     required this.onAmountChanged,
@@ -522,7 +514,7 @@ class _SummaryIngredientsTable extends StatelessWidget {
 }
 
 class _SummaryIngredientsEmptyRow extends StatelessWidget {
-  const _SummaryIngredientsEmptyRow({required this.message});
+  const new({required this.message});
 
   final String message;
 
@@ -539,9 +531,8 @@ class _SummaryIngredientsEmptyRow extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           message,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: colors.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: colors.onSurfaceVariant),
         ),
       ),
     );
@@ -549,7 +540,7 @@ class _SummaryIngredientsEmptyRow extends StatelessWidget {
 }
 
 class _SummaryIngredientDivider extends StatelessWidget {
-  const _SummaryIngredientDivider({required this.colors});
+  const new({required this.colors});
 
   final ColorScheme colors;
 
@@ -564,7 +555,7 @@ class _SummaryIngredientDivider extends StatelessWidget {
 }
 
 class _SummaryIngredientContainerSection extends StatelessWidget {
-  const _SummaryIngredientContainerSection({
+  const new({
     required this.ingredients,
     required this.containers,
     required this.assignments,
@@ -597,17 +588,15 @@ class _SummaryIngredientContainerSection extends StatelessWidget {
           children: <Widget>[
             Text(
               l10n.cookflowIngredientContainerTitle,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.lg),
             if (assignableIngredients.isEmpty)
               Text(
                 l10n.cookflowIngredientContainerEmpty,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: colors.onSurfaceVariant),
               )
             else
               for (final ingredient in assignableIngredients) ...<Widget>[
@@ -627,7 +616,7 @@ class _SummaryIngredientContainerSection extends StatelessWidget {
 }
 
 class _SummaryIngredientContainerRow extends StatelessWidget {
-  const _SummaryIngredientContainerRow({
+  const new({
     required this.ingredient,
     required this.containers,
     required this.selectedContainerId,
@@ -657,9 +646,8 @@ class _SummaryIngredientContainerRow extends StatelessWidget {
             children: <Widget>[
               Text(
                 ingredient.name,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               Text('${ingredient.amount} ${ingredient.unitCode}'),
             ],
@@ -671,19 +659,13 @@ class _SummaryIngredientContainerRow extends StatelessWidget {
           child: AppDropdownButtonFormField<String>(
             initialValue: resolvedValue,
             isExpanded: true,
-            decoration: InputDecoration(
-              labelText: l10n.cookflowContainerLabel,
-            ),
+            decoration: InputDecoration(labelText: l10n.cookflowContainerLabel),
             items: <DropdownMenuItem<String>>[
               for (var index = 0; index < containers.length; index++)
                 DropdownMenuItem<String>(
                   value: containers[index].id,
                   child: Text(
-                    _summaryContainerLabel(
-                      l10n,
-                      containers[index],
-                      index,
-                    ),
+                    _summaryContainerLabel(l10n, containers[index], index),
                   ),
                 ),
             ],
@@ -713,7 +695,7 @@ String _summaryContainerLabel(
 }
 
 class _SummaryIngredientRow extends StatelessWidget {
-  const _SummaryIngredientRow({
+  const new({
     required super.key,
     required this.ingredient,
     required this.inventoryItems,
@@ -766,9 +748,8 @@ class _SummaryIngredientRow extends StatelessWidget {
                         ingredient.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -804,9 +785,8 @@ class _SummaryIngredientRow extends StatelessWidget {
                             ),
                           ),
                         ),
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
@@ -974,10 +954,7 @@ String _formatSummaryInventoryAmount({
 }
 
 class _SummaryInventoryRequirement {
-  const _SummaryInventoryRequirement({
-    required this.amount,
-    required this.unitCode,
-  });
+  const new({required this.amount, required this.unitCode});
 
   final int amount;
   final String unitCode;
@@ -986,10 +963,7 @@ class _SummaryInventoryRequirement {
 const String _summaryPieceUnitCode = 'pc';
 
 class _UnresolvedAdjustmentCard extends StatelessWidget {
-  const _UnresolvedAdjustmentCard({
-    required this.adjustment,
-    required this.onSourceSelected,
-  });
+  const new({required this.adjustment, required this.onSourceSelected});
 
   final String adjustment;
   final ValueChanged<CookingFlowSummaryIngredientAddSource> onSourceSelected;
@@ -1012,9 +986,8 @@ class _UnresolvedAdjustmentCard extends StatelessWidget {
           children: <Widget>[
             Text(
               '"$adjustment"',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: Theme.of(context).textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: AppSpacing.xl),
             SizedBox(

@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Premium animated loading view for AI recipe generator.
 class AiChefLoadingView extends StatefulWidget {
   /// Creates a loading view.
-  const AiChefLoadingView({super.key});
+  const new({super.key});
 
   @override
   State<AiChefLoadingView> createState() => _AiChefLoadingViewState();
@@ -119,10 +119,7 @@ class _AiChefLoadingViewState extends State<AiChefLoadingView>
 }
 
 class _AnimatedStarsIcon extends StatelessWidget {
-  const _AnimatedStarsIcon({
-    required this.rotationController,
-    required this.colors,
-  });
+  const new({required this.rotationController, required this.colors});
 
   final AnimationController rotationController;
   final ColorScheme colors;
@@ -150,9 +147,9 @@ class _AnimatedStarsIcon extends StatelessWidget {
         RotationTransition(
           turns: rotationController,
           child: ShaderMask(
-            shaderCallback: (bounds) => LinearGradient(
-              colors: [colors.primary, colors.primary],
-            ).createShader(bounds),
+            shaderCallback: (bounds) =>
+                LinearGradient(colors: [colors.primary, colors.primary])
+                    .createShader(bounds),
             child: const Icon(
               Icons.auto_awesome_rounded,
               size: 48,

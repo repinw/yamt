@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -41,9 +41,8 @@ void main() {
       routes: [
         GoRoute(
           path: AppRoutes.root,
-          builder: (context, state) => const Scaffold(
-            body: Center(child: Text('App Content')),
-          ),
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('App Content'))),
         ),
         GoRoute(
           path: AppRoutes.homeInventoryReceiptReview,
@@ -84,12 +83,7 @@ void main() {
               child: child ?? const SizedBox.shrink(),
             ),
             locale: const Locale('de'),
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
           ),
         ),

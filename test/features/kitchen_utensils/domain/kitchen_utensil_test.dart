@@ -14,10 +14,7 @@ void main() {
 
     expect(utensil.id, 'pot-1');
     expect(utensil.name, 'Cooking pot');
-    expect(
-      utensil.imageStoragePath,
-      'users/u/kitchen_utensils/p/images/a.jpg',
-    );
+    expect(utensil.imageStoragePath, 'users/u/kitchen_utensils/p/images/a.jpg');
     expect(utensil.weightGrams, 420);
     expect(utensil.hasIdentity, isTrue);
   });

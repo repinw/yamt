@@ -1,7 +1,7 @@
 // Internal split widgets/helpers are public only for sibling imports.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
@@ -21,7 +21,7 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CookingFlowInventoryCheckRow extends StatelessWidget {
-  const CookingFlowInventoryCheckRow({
+  const new({
     required this.row,
     required this.selectedAction,
     required this.selectedSelections,
@@ -111,10 +111,7 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
           ? BoxDecoration(
               color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: successColors.borderColor,
-                width: 1.4,
-              ),
+              border: Border.all(color: successColors.borderColor, width: 1.4),
             )
           : BoxDecoration(
               color: colors.surfaceContainerLow,
@@ -194,7 +191,7 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
 }
 
 class CookingFlowInventoryCheckRowText extends StatelessWidget {
-  const CookingFlowInventoryCheckRowText({
+  const new({
     required this.row,
     required this.amountLabel,
     required this.selectedAction,
@@ -236,9 +233,8 @@ class CookingFlowInventoryCheckRowText extends StatelessWidget {
           titleText,
           maxLines: 3,
           overflow: TextOverflow.visible,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.xs),
         Row(
@@ -263,10 +259,7 @@ class CookingFlowInventoryCheckRowText extends StatelessWidget {
               iconSize: 14,
               padding: EdgeInsets.zero,
               visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints.tightFor(
-                width: 24,
-                height: 24,
-              ),
+              constraints: const BoxConstraints.tightFor(width: 24, height: 24),
             ),
           ],
         ),
@@ -296,16 +289,14 @@ class CookingFlowInventoryCheckRowText extends StatelessWidget {
             spacing: AppSpacing.xs,
             runSpacing: AppSpacing.xs,
             children: additionalItems
-                .map(
-                  (item) {
-                    final amountLabel = cookingFlowInventoryAmountLabel(item);
-                    return _AdditionalAssignedInventoryPill(
-                      imageLabel: item.name,
-                      imageUrl: item.imageUrl,
-                      label: '+ ${item.name} $amountLabel',
-                    );
-                  },
-                )
+                .map((item) {
+                  final amountLabel = cookingFlowInventoryAmountLabel(item);
+                  return _AdditionalAssignedInventoryPill(
+                    imageLabel: item.name,
+                    imageUrl: item.imageUrl,
+                    label: '+ ${item.name} $amountLabel',
+                  );
+                })
                 .toList(growable: false),
           ),
         ],
@@ -322,7 +313,7 @@ String cookingFlowSelectedInventoryTitle(List<InventoryItem> selectedItems) {
 }
 
 class _AdditionalAssignedInventoryPill extends StatelessWidget {
-  const _AdditionalAssignedInventoryPill({
+  const new({
     required this.imageLabel,
     required this.imageUrl,
     required this.label,
@@ -344,9 +335,7 @@ class _AdditionalAssignedInventoryPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

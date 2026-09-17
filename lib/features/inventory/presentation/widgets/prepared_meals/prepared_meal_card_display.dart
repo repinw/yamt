@@ -1,7 +1,7 @@
 // Internal split file. Public names are imported only by sibling widgets.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, formatInventoryAmountValue;
@@ -23,7 +23,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 enum PreparedMealDisplayMode { perHundred, perPortion, total }
 
 class PreparedMealDisplayModeToggle extends StatelessWidget {
-  const PreparedMealDisplayModeToggle({
+  const new({
     required this.selectedMode,
     required this.availableModes,
     required this.onModeChanged,
@@ -59,10 +59,7 @@ class PreparedMealDisplayModeToggle extends StatelessWidget {
 }
 
 class PreparedMealPrimaryActionButton extends StatelessWidget {
-  const PreparedMealPrimaryActionButton({
-    required this.label,
-    required this.onPressed,
-  });
+  const new({required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback? onPressed;
@@ -90,7 +87,7 @@ class PreparedMealPrimaryActionButton extends StatelessWidget {
 }
 
 class PreparedMealPriceCard extends StatelessWidget {
-  const PreparedMealPriceCard({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -109,9 +106,7 @@ class PreparedMealPriceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(
           InventoryItemRowConstants.nutritionStripRadius,
         ),
-        border: Border.all(
-          color: colors.outlineVariant,
-        ),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -234,9 +229,7 @@ String preparedMealProgressLabel({
   required PreparedMeal meal,
 }) {
   if (_isGramTrackedPreparedMeal(meal)) {
-    return '${_formatPreparedMealGramAmount(
-      meal.remainingPortions,
-    )} / ${_formatPreparedMealGramAmount(meal.totalPortions)}';
+    return '${_formatPreparedMealGramAmount(meal.remainingPortions)} / ${_formatPreparedMealGramAmount(meal.totalPortions)}';
   }
   final portionLabel = l10n.preparedMealPortionsRemaining(
     formatPreparedMealPortions(
@@ -260,10 +253,7 @@ bool _isGramTrackedPreparedMeal(PreparedMeal meal) {
 }
 
 String _formatPreparedMealGramAmount(num amount) {
-  return '${formatInventoryAmountValue(
-    amount: amount.round(),
-    unit: InventoryAmountUnit.gram,
-  )}g';
+  return '${formatInventoryAmountValue(amount: amount.round(), unit: InventoryAmountUnit.gram)}g';
 }
 
 String? _preparedMealGramProgressLabel(PreparedMeal meal) {
@@ -272,7 +262,5 @@ String? _preparedMealGramProgressLabel(PreparedMeal meal) {
   if (finalNetWeight == null || remainingNetWeight == null) {
     return null;
   }
-  return '${_formatPreparedMealGramAmount(
-    remainingNetWeight,
-  )} / ${_formatPreparedMealGramAmount(finalNetWeight)}';
+  return '${_formatPreparedMealGramAmount(remainingNetWeight)} / ${_formatPreparedMealGramAmount(finalNetWeight)}';
 }

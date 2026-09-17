@@ -6,11 +6,7 @@ import 'package:flutter/foundation.dart';
 @immutable
 class MacroCalculationResult {
   /// Creates balanced macro targets result.
-  const MacroCalculationResult({
-    required this.carbs,
-    required this.protein,
-    required this.fat,
-  });
+  const new({required this.carbs, required this.protein, required this.fat});
 
   /// Carbs in grams.
   final double carbs;
@@ -162,10 +158,7 @@ abstract final class MacroBudgetCalculator {
     );
     final initialFatKcal = targetFatGrams * standardFatKcalPerGram;
     final fatFloorKcal = fatFloorGrams * standardFatKcalPerGram;
-    final maxFatReduction = math.max<double>(
-      0,
-      initialFatKcal - fatFloorKcal,
-    );
+    final maxFatReduction = math.max<double>(0, initialFatKcal - fatFloorKcal);
     final fatReductionKcal = math.min<double>(deficitKcal, maxFatReduction);
     final finalFatGrams =
         targetFatGrams - (fatReductionKcal / standardFatKcalPerGram);

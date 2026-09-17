@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_header/auth_header.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_layout_metrics/auth_layout_metrics.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -17,7 +18,7 @@ const _metrics = AuthLayoutMetrics(
 
 Widget _wrapWithApp(Widget child) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: child),
   );
@@ -28,11 +29,7 @@ void main() {
     testWidgets('renders centered login copy on narrow layout', (tester) async {
       await tester.pumpWidget(
         _wrapWithApp(
-          const AuthHeader(
-            isLoginMode: true,
-            isWide: false,
-            metrics: _metrics,
-          ),
+          const AuthHeader(isLoginMode: true, isWide: false, metrics: _metrics),
         ),
       );
 
@@ -48,11 +45,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrapWithApp(
-          const AuthHeader(
-            isLoginMode: false,
-            isWide: true,
-            metrics: _metrics,
-          ),
+          const AuthHeader(isLoginMode: false, isWide: true, metrics: _metrics),
         ),
       );
 

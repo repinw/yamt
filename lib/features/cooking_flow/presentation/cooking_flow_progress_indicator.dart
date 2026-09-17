@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 /// Stable finder key for cookflow phase progress.
@@ -9,7 +9,7 @@ const Key cookingFlowProgressIndicatorKey = ValueKey<String>(
 /// Dot progress indicator for cookflow phases.
 class CookingFlowProgressIndicator extends StatelessWidget {
   /// Creates progress indicator.
-  const CookingFlowProgressIndicator({
+  const new({
     required this.activeIndex,
     required this.semanticLabel,
     this.count = 4,

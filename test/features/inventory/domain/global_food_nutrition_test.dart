@@ -64,16 +64,13 @@ void main() {
     expect(nutrition.hasAnyNutritionValue, isTrue);
   });
 
-  test(
-    'fromJson converts kJ to kcal and sodium to salt when missing',
-    () {
-      final fromKj = GlobalFoodNutrition.fromJson(const <String, dynamic>{
-        'energy_kj_100ml': 418.4,
-        'sodium_100g': 0.4,
-      });
+  test('fromJson converts kJ to kcal and sodium to salt when missing', () {
+    final fromKj = GlobalFoodNutrition.fromJson(const <String, dynamic>{
+      'energy_kj_100ml': 418.4,
+      'sodium_100g': 0.4,
+    });
 
-      expect(fromKj.per100Kcal, closeTo(100.0, 0.01));
-      expect(fromKj.per100Salt, closeTo(1.0, 0.01));
-    },
-  );
+    expect(fromKj.per100Kcal, closeTo(100.0, 0.01));
+    expect(fromKj.per100Salt, closeTo(1.0, 0.01));
+  });
 }

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
@@ -8,11 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Practice-day state shown before official Burn Week counting starts.
 class DiaryBalancePracticeDayCard extends StatelessWidget {
   /// Creates a practice-day card.
-  const DiaryBalancePracticeDayCard({
-    required this.startDate,
-    required this.futureGoalKcal,
-    super.key,
-  });
+  const new({required this.startDate, required this.futureGoalKcal, super.key});
 
   /// First official counting day.
   final DateTime startDate;
@@ -37,19 +33,13 @@ class DiaryBalancePracticeDayCard extends StatelessWidget {
       child: Column(
         key: DiaryBalanceCardKeys.practiceDay,
         children: [
-          Icon(
-            Icons.hourglass_top_rounded,
-            color: colors.primary,
-            size: 34,
-          ),
+          Icon(Icons.hourglass_top_rounded, color: colors.primary, size: 34),
           const SizedBox(height: AppSpacing.md),
           Text(
             l10n.burnWeekPracticeDayTitle,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: colors.primary,
-              fontWeight: FontWeight.w900,
-            ),
+            style: Theme.of(context).textTheme.titleLarge
+                ?.copyWith(color: colors.primary, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(

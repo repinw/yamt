@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Previews training day and rest day calorie targets with cycling offset.
 class StepTrainingDaysCyclingPreview extends StatelessWidget {
   /// Creates a cycling preview card.
-  const StepTrainingDaysCyclingPreview({
+  const new({
     required this.baseGoalKcal,
     required this.trainingDaysCount,
     required this.offsetKcal,
@@ -58,7 +58,7 @@ class StepTrainingDaysCyclingPreview extends StatelessWidget {
 }
 
 class _ResultRow extends StatelessWidget {
-  const _ResultRow({
+  const new({
     required this.label,
     required this.value,
     required this.textTheme,

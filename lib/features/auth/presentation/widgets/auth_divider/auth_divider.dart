@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
 /// Divider with centered auth section label.
 class AuthDivider extends StatelessWidget {
   /// Creates an auth divider.
-  const AuthDivider({required this.label, super.key});
+  const new({required this.label, super.key});
 
   /// Center label text.
   final String label;
@@ -26,9 +26,8 @@ class AuthDivider extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: Text(
             label.toUpperCase(),
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall?.copyWith(color: colors.outlineVariant),
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: colors.outlineVariant),
           ),
         ),
         Expanded(

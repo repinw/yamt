@@ -10,13 +10,9 @@ import 'package:yamt/features/calories/presentation/controllers/'
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 
 class _FakeCalorieEntriesController extends CalorieEntriesController {
-  _FakeCalorieEntriesController({
-    Future<bool> Function(
-      CalorieEntry entry,
-      Future<bool> Function(CalorieEntry)? persistEntry,
-    )?
-    onSaveEntry,
-  }) : _onSaveEntry = onSaveEntry;
+  new({
+    this._onSaveEntry,
+  });
 
   final Future<bool> Function(
     CalorieEntry entry,
@@ -129,10 +125,7 @@ void main() {
 
       expect(result, isTrue);
       expect(savedEntry?.id, 'entry-1');
-      expect(
-        container.read(calorieEntryEditorControllerProvider),
-        isFalse,
-      );
+      expect(container.read(calorieEntryEditorControllerProvider), isFalse);
     });
 
     test('saveEntry delegates to saveHandler when pending exists', () async {
@@ -142,12 +135,13 @@ void main() {
           calorieEntriesControllerProvider.overrideWith(
             () => entriesController,
           ),
-          calorieInventoryEntrySaveHandlerProvider.overrideWithValue(
-            ({required entry, required pendingConsumptionId}) async {
-              saveHandlerCalled = true;
-              return true;
-            },
-          ),
+          calorieInventoryEntrySaveHandlerProvider.overrideWithValue(({
+            required entry,
+            required pendingConsumptionId,
+          }) async {
+            saveHandlerCalled = true;
+            return true;
+          }),
         ],
       );
       addTearDown(customContainer.dispose);

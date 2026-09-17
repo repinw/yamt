@@ -72,9 +72,7 @@ void main() {
   test('load returns null for json array', () async {
     final store = AppPreferencesCookingFlowSessionLocalStore(
       preferences: MemoryAppPreferences(
-        initialStrings: <String, String>{
-          cookingFlowSessionPreferenceKey: '[]',
-        },
+        initialStrings: <String, String>{cookingFlowSessionPreferenceKey: '[]'},
       ),
     );
 
@@ -132,8 +130,6 @@ CookingFlowSession _session() {
         portionCount: 4,
       ),
     ],
-    ingredientContainerAssignments: <String, String>{
-      'row-rice': 'container-1',
-    },
+    ingredientContainerAssignments: <String, String>{'row-rice': 'container-1'},
   );
 }

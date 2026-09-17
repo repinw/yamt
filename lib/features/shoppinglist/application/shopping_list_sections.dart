@@ -3,7 +3,7 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 /// Presentation-ready partitions and totals of persisted shopping records.
 class ShoppingListSections {
   /// Computes visible and saved sections once.
-  ShoppingListSections(List<ShoppingListItem> items) {
+  new(List<ShoppingListItem> items) {
     for (final item in items) {
       if (item.isSaved) saved.add(item);
       if (item.isArchived) continue;

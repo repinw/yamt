@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Finalize step for cookflow.
 class CookingFlowFinalizePage extends StatelessWidget {
   /// Creates finalize step.
-  const CookingFlowFinalizePage({
+  const new({
     required this.storageContainers,
     required this.isWeightValid,
     required this.nutritionPreview,
@@ -95,9 +95,8 @@ class CookingFlowFinalizePage extends StatelessWidget {
                     Expanded(
                       child: Text(
                         l10n.cookflowSplitIntoPortionsLabel,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -118,9 +117,8 @@ class CookingFlowFinalizePage extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xxl),
                   Text(
                     l10n.cookflowHowManyPortions,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
@@ -183,7 +181,7 @@ class CookingFlowFinalizePage extends StatelessWidget {
 }
 
 class _FinalizeStorageContainersSection extends StatelessWidget {
-  const _FinalizeStorageContainersSection({
+  const new({
     required this.containers,
     required this.validationMessage,
     required this.isWeightValid,
@@ -215,9 +213,8 @@ class _FinalizeStorageContainersSection extends StatelessWidget {
               children: <Widget>[
                 Text(
                   l10n.cookflowStorageContainersTitle,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -250,7 +247,7 @@ class _FinalizeStorageContainersSection extends StatelessWidget {
 }
 
 class _FinalizeStorageContainerCard extends StatelessWidget {
-  const _FinalizeStorageContainerCard({
+  const new({
     required this.container,
     required this.index,
     required this.isWeightValid,
@@ -302,9 +299,8 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
                     _containerLabel(l10n, container, index),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
               ],
@@ -314,9 +310,8 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
               children: <Widget>[
                 Text(
                   l10n.cookflowContainerTaraLabel,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(color: colors.onSurfaceVariant),
                 ),
                 const Spacer(),
                 Text(
@@ -348,9 +343,8 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
               children: <Widget>[
                 Text(
                   l10n.cookflowNetWeightLabel,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
                 Text(

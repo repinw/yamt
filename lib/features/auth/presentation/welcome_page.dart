@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/auth/presentation/auth_error_message_mapper.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
@@ -15,7 +15,7 @@ enum _AuthFormMode { login, register }
 /// Defines welcome page.
 class WelcomePage extends ConsumerStatefulWidget {
   /// The welcome page.
-  const WelcomePage({super.key});
+  const new({super.key});
 
   @override
   ConsumerState<WelcomePage> createState() => _WelcomePageState();

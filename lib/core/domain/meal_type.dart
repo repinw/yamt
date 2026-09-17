@@ -13,10 +13,9 @@ enum MealType {
   dinner('dinner'),
 
   /// Snack.
-  snack('snack')
-  ;
+  snack('snack');
 
-  const MealType(this.jsonValue);
+  new(this.jsonValue);
 
   /// The json value.
   final String jsonValue;

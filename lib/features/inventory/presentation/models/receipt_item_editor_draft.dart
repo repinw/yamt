@@ -32,7 +32,7 @@ enum ReceiptItemEditorDraftField {
 /// Defines receipt item editor draft.
 class ReceiptItemEditorDraft {
   /// The receipt item editor draft.
-  const ReceiptItemEditorDraft({
+  const new({
     required this.name,
     required this.storeName,
     required this.quantityText,
@@ -44,7 +44,7 @@ class ReceiptItemEditorDraft {
   });
 
   /// Creates a [ReceiptItemEditorDraft] for from item.
-  factory ReceiptItemEditorDraft.fromItem(InventoryItem item) {
+  factory fromItem(InventoryItem item) {
     return ReceiptItemEditorDraft(
       name: item.name,
       storeName: item.storeName,

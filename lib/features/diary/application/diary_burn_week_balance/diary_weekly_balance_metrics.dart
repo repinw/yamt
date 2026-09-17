@@ -12,7 +12,7 @@ import 'package:yamt/features/diary/application/diary_burn_week_balance/'
 /// Derived values for the weekly Burn Week pacing card.
 class DiaryWeeklyBalanceMetrics {
   /// Creates weekly balance metrics.
-  const DiaryWeeklyBalanceMetrics({
+  const new({
     required this.pacing,
     required this.targetKcal,
     required this.goalKcal,
@@ -122,29 +122,29 @@ double _resolveProgressWeeklyGoalKcal({
   final fallbackDailyGoalKcal = resolveBurnWeekMockGoalKcal(
     selectedDayOverview.baseGoalKcal,
   );
-  final visibleCurrentWeekBaseGoalKcal = weekOverview.days.fold<double>(
-    0,
-    (sum, day) {
-      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-        return sum;
-      }
-      return sum + day.baseGoalKcal;
-    },
-  );
+  final visibleCurrentWeekBaseGoalKcal = weekOverview.days.fold<double>(0, (
+    sum,
+    day,
+  ) {
+    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+      return sum;
+    }
+    return sum + day.baseGoalKcal;
+  });
   final baseWeeklyGoalKcal = math.max<double>(
     fallbackDailyGoalKcal * burnWeekDaysPerWeek,
     visibleCurrentWeekBaseGoalKcal,
   );
 
-  final currentWeekActivityBonus = weekOverview.days.fold<double>(
-    0,
-    (sum, day) {
-      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-        return sum;
-      }
-      return sum + day.activityBonusKcal;
-    },
-  );
+  final currentWeekActivityBonus = weekOverview.days.fold<double>(0, (
+    sum,
+    day,
+  ) {
+    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+      return sum;
+    }
+    return sum + day.activityBonusKcal;
+  });
 
   return baseWeeklyGoalKcal + currentWeekActivityBonus;
 }

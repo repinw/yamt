@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Displays result dialog action buttons.
 class AiChefActionButtonsRow extends StatelessWidget {
   /// Creates action buttons row.
-  const AiChefActionButtonsRow({
+  const new({
     required this.onClose,
     required this.onSave,
     required this.isSaving,
@@ -64,7 +64,7 @@ class AiChefActionButtonsRow extends StatelessWidget {
 }
 
 class _SaveButtonContent extends StatelessWidget {
-  const _SaveButtonContent({required this.isSaving, required this.l10n});
+  const new({required this.isSaving, required this.l10n});
 
   final bool isSaving;
   final AppLocalizations l10n;

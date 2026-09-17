@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Expanded section shown when start-today is selected.
 class Step6TodayTrackingSection extends StatelessWidget {
   /// Creates today tracking section.
-  const Step6TodayTrackingSection({
+  const new({
     required this.todayMode,
     required this.catchUpEstimate,
     required this.onTodayModeChanged,
@@ -51,18 +51,16 @@ class Step6TodayTrackingSection extends StatelessWidget {
             key: CalorieGoalOnboardingKeys.todayTrackingExactOption,
             title: l10n.onboardingStartDateNowExact,
             isSelected: todayMode == CalorieGoalOnboardingTodayTracking.exact,
-            onTap: () => onTodayModeChanged(
-              CalorieGoalOnboardingTodayTracking.exact,
-            ),
+            onTap: () =>
+                onTodayModeChanged(CalorieGoalOnboardingTodayTracking.exact),
           ),
           const SizedBox(height: AppSpacing.sm),
           Step6TodayTrackingOption(
             key: CalorieGoalOnboardingKeys.todayTrackingEstimateOption,
             title: l10n.onboardingStartDateNowEstimate,
             isSelected: isEstimate,
-            onTap: () => onTodayModeChanged(
-              CalorieGoalOnboardingTodayTracking.estimate,
-            ),
+            onTap: () =>
+                onTodayModeChanged(CalorieGoalOnboardingTodayTracking.estimate),
           ),
           if (isEstimate) ...[
             const SizedBox(height: AppSpacing.md),
@@ -80,7 +78,7 @@ class Step6TodayTrackingSection extends StatelessWidget {
 /// Selectable option for today's tracking mode.
 class Step6TodayTrackingOption extends StatelessWidget {
   /// Creates today tracking option.
-  const Step6TodayTrackingOption({
+  const new({
     required this.title,
     required this.isSelected,
     required this.onTap,
@@ -158,7 +156,7 @@ class Step6TodayTrackingOption extends StatelessWidget {
 /// Low/normal/high catch-up estimate selector.
 class Step6CatchUpEstimateSelector extends StatelessWidget {
   /// Creates catch-up estimate selector.
-  const Step6CatchUpEstimateSelector({
+  const new({
     required this.catchUpEstimate,
     required this.onChanged,
     super.key,
@@ -194,9 +192,8 @@ class Step6CatchUpEstimateSelector extends StatelessWidget {
                 title: l10n.caloriesCalculatorOnboardingCatchUpLowAction,
                 isSelected:
                     catchUpEstimate == CalorieGoalOnboardingCatchUpEstimate.low,
-                onTap: () => onChanged(
-                  CalorieGoalOnboardingCatchUpEstimate.low,
-                ),
+                onTap: () =>
+                    onChanged(CalorieGoalOnboardingCatchUpEstimate.low),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -207,9 +204,8 @@ class Step6CatchUpEstimateSelector extends StatelessWidget {
                 isSelected:
                     catchUpEstimate ==
                     CalorieGoalOnboardingCatchUpEstimate.normal,
-                onTap: () => onChanged(
-                  CalorieGoalOnboardingCatchUpEstimate.normal,
-                ),
+                onTap: () =>
+                    onChanged(CalorieGoalOnboardingCatchUpEstimate.normal),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -220,9 +216,8 @@ class Step6CatchUpEstimateSelector extends StatelessWidget {
                 isSelected:
                     catchUpEstimate ==
                     CalorieGoalOnboardingCatchUpEstimate.high,
-                onTap: () => onChanged(
-                  CalorieGoalOnboardingCatchUpEstimate.high,
-                ),
+                onTap: () =>
+                    onChanged(CalorieGoalOnboardingCatchUpEstimate.high),
               ),
             ),
           ],
@@ -235,7 +230,7 @@ class Step6CatchUpEstimateSelector extends StatelessWidget {
 /// Selectable catch-up estimate button.
 class Step6CatchUpEstimateButton extends StatelessWidget {
   /// Creates estimate button.
-  const Step6CatchUpEstimateButton({
+  const new({
     required this.title,
     required this.isSelected,
     required this.onTap,

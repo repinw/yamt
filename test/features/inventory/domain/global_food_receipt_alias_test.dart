@@ -93,21 +93,18 @@ void main() {
     },
   );
 
-  test(
-    'buildGlobalFoodReceiptAliasSearchTokens filters short, '
-    'numeric, and noise tokens',
-    () {
-      final tokens = buildGlobalFoodReceiptAliasSearchTokens(
-        'FRISCHKAESE B 200G',
-      );
+  test('buildGlobalFoodReceiptAliasSearchTokens filters short, '
+      'numeric, and noise tokens', () {
+    final tokens = buildGlobalFoodReceiptAliasSearchTokens(
+      'FRISCHKAESE B 200G',
+    );
 
-      expect(tokens, contains('frischkaese b 200g'));
-      expect(tokens, contains('frischkaeseb200g'));
-      expect(tokens, contains('frischkaese'));
-      expect(tokens, contains('200g'));
-      expect(tokens, isNot(contains('b')));
-      expect(tokens.every((token) => token.length >= 3), isTrue);
-      expect(tokens.any((token) => RegExp(r'^\d+$').hasMatch(token)), isFalse);
-    },
-  );
+    expect(tokens, contains('frischkaese b 200g'));
+    expect(tokens, contains('frischkaeseb200g'));
+    expect(tokens, contains('frischkaese'));
+    expect(tokens, contains('200g'));
+    expect(tokens, isNot(contains('b')));
+    expect(tokens.every((token) => token.length >= 3), isTrue);
+    expect(tokens.any((token) => RegExp(r'^\d+$').hasMatch(token)), isFalse);
+  });
 }

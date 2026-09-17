@@ -14,7 +14,7 @@ enum CalorieCalculatorFieldError {
 /// Defines calorie goal calculator form state.
 class CalorieGoalCalculatorFormState {
   /// The calorie goal calculator form state.
-  const CalorieGoalCalculatorFormState({
+  const new({
     required this.sexError,
     required this.weightKgText,
     required this.targetWeightKgText,
@@ -37,7 +37,7 @@ class CalorieGoalCalculatorFormState {
   });
 
   /// Creates a [CalorieGoalCalculatorFormState] for initial.
-  factory CalorieGoalCalculatorFormState.initial(
+  factory initial(
     CalorieCalculatorProfile? initialProfile, {
     bool useEmptyDefaults = false,
   }) {
@@ -67,7 +67,7 @@ class CalorieGoalCalculatorFormState {
     );
   }
 
-  factory CalorieGoalCalculatorFormState._create({
+  factory _create({
     required String weightKgText,
     required String targetWeightKgText,
     required String heightCmText,

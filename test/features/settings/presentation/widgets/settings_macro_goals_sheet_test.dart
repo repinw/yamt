@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -19,16 +20,12 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(preferences),
-        ],
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
         child: const MaterialApp(
           locale: Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: SettingsMacroGoalsSheet(),
-          ),
+          home: Scaffold(body: SettingsMacroGoalsSheet()),
         ),
       ),
     );
@@ -79,9 +76,7 @@ void main() {
 
   testWidgets(
     'displays budget exceeded warning and 0g carbs when goal is exceeded',
-    (
-      tester,
-    ) async {
+    (tester) async {
       // 1000 kcal goal with 80kg male:
       // 2.0 P * 80kg = 160g (640 kcal)
       // 1.0 F * 80kg = 80g (720 kcal)
@@ -111,11 +106,9 @@ void main() {
           ],
           child: const MaterialApp(
             locale: Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-              body: SettingsMacroGoalsSheet(),
-            ),
+            home: Scaffold(body: SettingsMacroGoalsSheet()),
           ),
         ),
       );
@@ -146,16 +139,12 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(preferences),
-        ],
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
         child: const MaterialApp(
           locale: Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: SettingsMacroGoalsSheet(),
-          ),
+          home: Scaffold(body: SettingsMacroGoalsSheet()),
         ),
       ),
     );
@@ -168,7 +157,7 @@ void main() {
 }
 
 class _FakeCalorieGoalController extends CalorieGoalController {
-  _FakeCalorieGoalController(this._settings);
+  new(this._settings);
 
   final CalorieGoalSettings _settings;
 

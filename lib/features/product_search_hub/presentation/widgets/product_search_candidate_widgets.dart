@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/presentation/widgets/'
 /// Reusable candidate row for manual search and barcode pickers.
 class InventoryProductCandidateTile extends StatelessWidget {
   /// The candidate tile.
-  const InventoryProductCandidateTile({
+  const new({
     required this.name,
     required this.imageUrl,
     super.key,
@@ -124,11 +124,7 @@ class InventoryProductCandidateTile extends StatelessWidget {
 }
 
 class _InventoryCandidateCopyButton extends StatelessWidget {
-  const _InventoryCandidateCopyButton({
-    required this.tooltip,
-    required this.onPressed,
-    this.buttonKey,
-  });
+  const new({required this.tooltip, required this.onPressed, this.buttonKey});
 
   final String tooltip;
   final VoidCallback onPressed;
@@ -147,9 +143,7 @@ class _InventoryCandidateCopyButton extends StatelessWidget {
           fixedSize: const Size.square(42),
           backgroundColor: colors.surfaceContainerHigh,
           foregroundColor: colors.onSurfaceVariant,
-          side: BorderSide(
-            color: colors.outlineVariant.withValues(alpha: 0.7),
-          ),
+          side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.7)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
@@ -160,7 +154,7 @@ class _InventoryCandidateCopyButton extends StatelessWidget {
 }
 
 class _InventoryProductCandidateDetails extends StatelessWidget {
-  const _InventoryProductCandidateDetails({
+  const new({
     required this.name,
     required this.brand,
     required this.packageWeight,
@@ -238,7 +232,7 @@ class _InventoryProductCandidateDetails extends StatelessWidget {
 }
 
 class _InventoryProductCandidateTag extends StatelessWidget {
-  const _InventoryProductCandidateTag({required this.label});
+  const new({required this.label});
 
   final String label;
 

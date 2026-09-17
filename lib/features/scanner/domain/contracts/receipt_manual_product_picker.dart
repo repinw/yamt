@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 
 /// Contract for launching external product search, AI estimation, or custom

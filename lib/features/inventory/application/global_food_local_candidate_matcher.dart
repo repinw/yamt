@@ -8,7 +8,7 @@ const int _globalFoodQueryTokenLimit = 10;
 /// Scores local global-food products against an inventory item.
 class GlobalFoodLocalCandidateMatcher {
   /// Creates a local candidate matcher.
-  const GlobalFoodLocalCandidateMatcher();
+  const new();
 
   /// Builds normalized local matching input for [item].
   LocalMatchInput buildLocalMatchInput(InventoryItem item) {
@@ -169,15 +169,16 @@ class GlobalFoodLocalCandidateMatcher {
   }
 
   List<String> _queryNameTokensFor(String name) {
-    return (buildGlobalFoodSearchTokens(
-          name: name,
-        ).toSet().toList(growable: false)..sort((left, right) {
-          final lengthCompare = right.length.compareTo(left.length);
-          if (lengthCompare != 0) {
-            return lengthCompare;
-          }
-          return left.compareTo(right);
-        }))
+    return (buildGlobalFoodSearchTokens(name: name)
+            .toSet()
+            .toList(growable: false)
+          ..sort((left, right) {
+            final lengthCompare = right.length.compareTo(left.length);
+            if (lengthCompare != 0) {
+              return lengthCompare;
+            }
+            return left.compareTo(right);
+          }))
         .take(_globalFoodQueryTokenLimit)
         .toList(growable: false);
   }
@@ -201,7 +202,7 @@ class GlobalFoodLocalCandidateMatcher {
 /// Query fields passed to the global food repository.
 class GlobalFoodMatcherQuery {
   /// Creates global food matcher query fields.
-  const GlobalFoodMatcherQuery({
+  const new({
     required this.normalizedName,
     required this.normalizedStoreName,
     required this.barcode,
@@ -228,7 +229,7 @@ class GlobalFoodMatcherQuery {
 /// Normalized inventory item fields used for local candidate matching.
 class LocalMatchInput {
   /// Creates normalized local match input.
-  const LocalMatchInput({
+  const new({
     required this.normalizedName,
     required this.normalizedBrand,
     required this.normalizedCategory,

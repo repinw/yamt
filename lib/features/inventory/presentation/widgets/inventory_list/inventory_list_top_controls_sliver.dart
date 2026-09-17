@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines inventory list top controls sliver.
 class InventoryListTopControlsSliver extends StatelessWidget {
   /// The inventory list top controls sliver.
-  const InventoryListTopControlsSliver({
+  const new({
     required this.showSearch,
     required this.searchController,
     required this.enabled,
@@ -83,7 +83,7 @@ class InventoryListTopControlsSliver extends StatelessWidget {
 }
 
 class _InventorySearchSettingsButton extends StatelessWidget {
-  const _InventorySearchSettingsButton({
+  const new({
     required this.enabled,
     required this.tooltip,
     required this.onPressed,

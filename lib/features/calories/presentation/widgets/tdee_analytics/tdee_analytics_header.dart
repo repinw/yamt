@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 
@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 /// and date range.
 class TdeeAnalyticsHeader extends StatelessWidget {
   /// Creates the analytics header.
-  const TdeeAnalyticsHeader({
+  const new({
     required this.summary,
     required this.startDate,
     required this.endDate,
@@ -140,11 +140,7 @@ class TdeeAnalyticsHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        Container(
-          width: 12,
-          height: 3,
-          color: colorScheme.primary,
-        ),
+        Container(width: 12, height: 3, color: colorScheme.primary),
         const SizedBox(width: 6),
         Text(
           'Verbrauch (TDEE)',

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Modal bottom sheet to inspect and edit a receipt line item.
 class ReceiptItemEditSheet extends StatelessWidget {
   /// Creates a [ReceiptItemEditSheet].
-  const ReceiptItemEditSheet({
+  const new({
     required this.item,
     required this.onUpdateQuantity,
     required this.onUpdatePrice,

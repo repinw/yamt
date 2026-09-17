@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Fixed footer for calorie entry details actions.
 class CalorieEntryDetailsSheetFooter extends StatelessWidget {
   /// Creates a details sheet footer.
-  const CalorieEntryDetailsSheetFooter({
+  const new({
     required this.canReturn,
     required this.isSaving,
     required this.hasPendingChanges,
@@ -38,11 +38,7 @@ class CalorieEntryDetailsSheetFooter extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
-        border: Border(
-          top: BorderSide(
-            color: colors.outlineVariant,
-          ),
-        ),
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
       ),
       child: SafeArea(
         top: false,
@@ -65,9 +61,7 @@ class CalorieEntryDetailsSheetFooter extends StatelessWidget {
                     visualDensity: VisualDensity.compact,
                     foregroundColor: colors.onSurfaceVariant,
                   ),
-                  label: Text(
-                    l10n.caloriesRemoveEntryAction,
-                  ),
+                  label: Text(l10n.caloriesRemoveEntryAction),
                 ),
                 const SizedBox(height: AppSpacing.sm),
               ],
@@ -101,9 +95,8 @@ class CalorieEntryDetailsSheetFooter extends StatelessWidget {
                   ),
                   label: Text(
                     l10n.caloriesSaveEntryAction,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
               ),

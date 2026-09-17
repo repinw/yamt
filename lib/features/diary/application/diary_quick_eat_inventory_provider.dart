@@ -14,10 +14,7 @@ part 'diary_quick_eat_inventory_provider.g.dart';
 @immutable
 class DiaryQuickEatInventoryData {
   /// Creates quick-eat inventory data.
-  const DiaryQuickEatInventoryData({
-    required this.items,
-    required this.meals,
-  });
+  const new({required this.items, required this.meals});
 
   /// Inventory items that can be eaten from the diary.
   final List<InventoryItem> items;
@@ -76,7 +73,7 @@ abstract interface class DiaryQuickEatInventoryActions {
 
 class _DiaryQuickEatInventoryActions implements DiaryQuickEatInventoryActions {
   /// Creates inventory actions.
-  const _DiaryQuickEatInventoryActions(this._actions);
+  const new(this._actions);
 
   final InventoryQuickEatActions _actions;
 

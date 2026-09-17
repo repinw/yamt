@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -9,7 +9,7 @@ const _deleteUndoSnackBarDuration = Duration(seconds: 5);
 
 /// Handles item deletion with undo SnackBar feedback.
 class InventoryItemDeleteFlow {
-  const InventoryItemDeleteFlow._();
+  const new _();
 
   /// Deletes an inventory item and shows an undo snackbar.
   static Future<bool> deleteWithUndo({
@@ -61,8 +61,6 @@ class InventoryItemDeleteFlow {
     }
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.inventoryItemActionFailed)),
-      );
+      ..showSnackBar(SnackBar(content: Text(l10n.inventoryItemActionFailed)));
   }
 }

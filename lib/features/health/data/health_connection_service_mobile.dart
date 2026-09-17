@@ -16,13 +16,9 @@ const _iosHealthConnectionEnabledPreferenceKey =
 const _iosConnectionEnabledValue = '1';
 const _iosConnectionDisabledValue = '0';
 
-const _androidAuthorizationTypes = <HealthDataType>[
-  HealthDataType.WEIGHT,
-];
+const _androidAuthorizationTypes = <HealthDataType>[HealthDataType.WEIGHT];
 
-const _iosAuthorizationTypes = <HealthDataType>[
-  HealthDataType.WEIGHT,
-];
+const _iosAuthorizationTypes = <HealthDataType>[HealthDataType.WEIGHT];
 const _iosPermissionStatusTypes = <HealthDataType>[HealthDataType.WEIGHT];
 const _iosPermissionStatusPermissions = <HealthDataAccess>[
   HealthDataAccess.WRITE,
@@ -48,21 +44,17 @@ HealthConnectionService createHealthConnectionService({
 /// Defines mobile health connection service.
 class MobileHealthConnectionService implements HealthConnectionService {
   /// Creates an instance.
-  MobileHealthConnectionService({
+  new({
     Health? health,
-    AppPreferences? preferences,
+    this._preferences,
     bool? isAndroid,
     bool? isIOS,
-    Future<String> Function()? packageNameLoader,
-    Future<bool> Function(AndroidIntent intent)? androidIntentLauncher,
-    Future<void> Function()? appSettingsLauncher,
+    this._packageNameLoader,
+    this._androidIntentLauncher,
+    this._appSettingsLauncher,
   }) : _health = health ?? Health(),
-       _preferences = preferences,
        _isAndroid = isAndroid ?? Platform.isAndroid,
-       _isIOS = isIOS ?? Platform.isIOS,
-       _packageNameLoader = packageNameLoader,
-       _androidIntentLauncher = androidIntentLauncher,
-       _appSettingsLauncher = appSettingsLauncher;
+       _isIOS = isIOS ?? Platform.isIOS;
 
   final Health _health;
   final AppPreferences? _preferences;

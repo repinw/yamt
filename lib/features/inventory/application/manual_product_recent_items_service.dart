@@ -19,7 +19,7 @@ ManualProductRecentItemsService manualProductRecentItemsService(Ref ref) {
 /// Reads and prepares recent manual product items.
 class ManualProductRecentItemsService {
   /// Creates a recent item service.
-  const ManualProductRecentItemsService(this._repository);
+  const new(this._repository);
 
   final InventoryItemRepository _repository;
 

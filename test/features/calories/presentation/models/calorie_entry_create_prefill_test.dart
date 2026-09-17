@@ -137,26 +137,23 @@ void main() {
     expect(first.initializationKey, isNot(second.initializationKey));
   });
 
-  test(
-    'initialization key changes with inventory context '
-    'even without a profile',
-    () {
-      final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
+  test('initialization key changes with inventory context '
+      'even without a profile', () {
+    final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
 
-      final first = CalorieEntryCreatePrefill.fromArgs(
-        prefilledProfile: null,
-        inventoryContext: _inventoryContext(),
-        preselectedMealType: MealType.lunch,
-        preselectedLoggedAt: loggedAt,
-      );
-      final second = CalorieEntryCreatePrefill.fromArgs(
-        prefilledProfile: null,
-        inventoryContext: _inventoryContext(pendingConsumptionId: 'pending-2'),
-        preselectedMealType: MealType.lunch,
-        preselectedLoggedAt: loggedAt,
-      );
+    final first = CalorieEntryCreatePrefill.fromArgs(
+      prefilledProfile: null,
+      inventoryContext: _inventoryContext(),
+      preselectedMealType: MealType.lunch,
+      preselectedLoggedAt: loggedAt,
+    );
+    final second = CalorieEntryCreatePrefill.fromArgs(
+      prefilledProfile: null,
+      inventoryContext: _inventoryContext(pendingConsumptionId: 'pending-2'),
+      preselectedMealType: MealType.lunch,
+      preselectedLoggedAt: loggedAt,
+    );
 
-      expect(first.initializationKey, isNot(second.initializationKey));
-    },
-  );
+    expect(first.initializationKey, isNot(second.initializationKey));
+  });
 }

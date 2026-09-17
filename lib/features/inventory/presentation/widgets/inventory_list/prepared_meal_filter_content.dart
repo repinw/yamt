@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
@@ -15,7 +15,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Meal-specific content for the unified inventory filter sheet.
 class PreparedMealFilterContent extends StatefulWidget {
   /// Creates prepared meal filter content.
-  const PreparedMealFilterContent({
+  const new({
     required this.initialCompletionFilter,
     required this.initialConsumptionFilter,
     required this.initialSortMode,
@@ -279,7 +279,7 @@ class _PreparedMealFilterContentState extends State<PreparedMealFilterContent> {
 }
 
 class _PreparedMealSortOptionConfig {
-  const _PreparedMealSortOptionConfig({
+  const new({
     required this.criterion,
     required this.optionKey,
     required this.directionButtonKey,

@@ -1,11 +1,12 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -20,7 +21,7 @@ import '../../../../../support/fake_prepared_meal_image_picker.dart';
 import '../../../../../support/prepared_meal_test_data.dart';
 
 class _EditSheetHarness extends StatefulWidget {
-  const _EditSheetHarness({required this.meal, required this.inventoryItems});
+  const new({required this.meal, required this.inventoryItems});
 
   final PreparedMeal meal;
   final List<InventoryItem> inventoryItems;
@@ -82,7 +83,7 @@ Future<void> _pumpEditSheetHarness(
       ],
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _EditSheetHarness(
           meal: meal,
@@ -109,7 +110,7 @@ void main() {
           rootObserver: rootObserver,
           nestedObserver: nestedObserver,
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           child: _EditSheetHarness(
             meal: _meal(),
@@ -295,7 +296,7 @@ void main() {
         ],
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: _EditSheetHarness(
             meal: meal,
@@ -323,10 +324,7 @@ void main() {
 }
 
 PreparedMeal _meal() {
-  return preparedMealTestData(
-    imageAssetId: 'asset-meal-1',
-    totalPortions: 2,
-  );
+  return preparedMealTestData(imageAssetId: 'asset-meal-1', totalPortions: 2);
 }
 
 PreparedMeal _consumedMeal() {

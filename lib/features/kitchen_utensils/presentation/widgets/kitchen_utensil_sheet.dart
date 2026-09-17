@@ -1,8 +1,8 @@
 import 'dart:developer' show log;
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -17,7 +17,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Kitchen utensil sheet result.
 class KitchenUtensilSheetResult {
   /// Creates result.
-  const KitchenUtensilSheetResult({
+  const new({
     required this.name,
     required this.imageBytes,
     required this.imageChanged,
@@ -56,7 +56,7 @@ Future<KitchenUtensilSheetResult?> showKitchenUtensilSheet({
 /// Kitchen utensil add/edit sheet.
 class KitchenUtensilSheet extends ConsumerStatefulWidget {
   /// Creates sheet.
-  const KitchenUtensilSheet({super.key, this.initialUtensil});
+  const new({super.key, this.initialUtensil});
 
   /// Initial utensil for edit.
   final KitchenUtensil? initialUtensil;
@@ -101,9 +101,7 @@ class _KitchenUtensilSheetState extends ConsumerState<KitchenUtensilSheet> {
         : ref.watch(kitchenUtensilImageUrlProvider(imagePath)).asData?.value;
     final visibleImageUrl = _imageChanged ? null : existingImageUrl;
     final supportsCamera = ref
-        .read(
-          preparedMealImagePickerProvider,
-        )
+        .read(preparedMealImagePickerProvider)
         .supportsCamera;
 
     return PreparedMealSheetContainer(
@@ -113,17 +111,14 @@ class _KitchenUtensilSheetState extends ConsumerState<KitchenUtensilSheet> {
           initialUtensil == null
               ? l10n.kitchenUtensilAddTitle
               : l10n.kitchenUtensilEditTitle,
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.titleLarge
+              ?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: _nameController,
           textInputAction: TextInputAction.next,
-          decoration: InputDecoration(
-            labelText: l10n.kitchenUtensilNameLabel,
-          ),
+          decoration: InputDecoration(labelText: l10n.kitchenUtensilNameLabel),
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(

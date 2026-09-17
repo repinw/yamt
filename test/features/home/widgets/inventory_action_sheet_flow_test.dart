@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/home/widgets/'
     'inventory_action_sheet_flow.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -20,7 +21,7 @@ enum _ActionSheetFlowTestAction {
 }
 
 class _ActionSheetFlowHost extends ConsumerWidget {
-  const _ActionSheetFlowHost({required this.action});
+  const new({required this.action});
 
   final _ActionSheetFlowTestAction action;
 
@@ -102,7 +103,7 @@ Future<void> _pumpHarness(
       child: MaterialApp.router(
         routerConfig: router,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),
@@ -111,9 +112,7 @@ Future<void> _pumpHarness(
 
 void main() {
   group('InventoryActionSheetFlow', () {
-    testWidgets('manual search opens hub search intent', (
-      tester,
-    ) async {
+    testWidgets('manual search opens hub search intent', (tester) async {
       Object? routeExtra;
 
       await _pumpHarness(

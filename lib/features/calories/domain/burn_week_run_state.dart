@@ -18,7 +18,7 @@ const int burnWeekRunStateSchemaVersion = 1;
 @JsonSerializable(fieldRename: FieldRename.snake)
 class BurnWeekRunState {
   /// Creates Burn Week run state.
-  const BurnWeekRunState({
+  const new({
     required this.currentWeekStartDayKey,
     required this.runWeekNumber,
     required this.starCount,
@@ -31,7 +31,7 @@ class BurnWeekRunState {
   });
 
   /// Initial real Burn Week run state.
-  const BurnWeekRunState.initial()
+  const new initial()
     : currentWeekStartDayKey = null,
       lastActiveDayKey = null,
       runWeekNumber = burnWeekLearningRunWeekNumber,
@@ -43,7 +43,7 @@ class BurnWeekRunState {
       runLimitWarningThisWeek = false;
 
   /// Decodes from persisted json.
-  factory BurnWeekRunState.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     if (!hasCurrentBurnWeekRunStateSchema(json)) {
       return const BurnWeekRunState.initial();
     }

@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 
 /// Shared top chrome rendered inside a home tab scroll view.
 class HomeShellTabTopChrome extends StatelessWidget {
   /// The home tab top chrome.
-  const HomeShellTabTopChrome({
-    required this.title,
-    super.key,
-    this.actions = const <Widget>[],
-  });
+  const new({required this.title, super.key, this.actions = const <Widget>[]});
 
   /// Top bar title.
   final String title;

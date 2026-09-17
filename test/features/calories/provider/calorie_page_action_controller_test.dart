@@ -52,10 +52,7 @@ _CaloriePageActionHarness _createHarness({
 }
 
 class _CaloriePageActionHarness {
-  _CaloriePageActionHarness({
-    required this.container,
-    required this.settingsRepository,
-  });
+  new({required this.container, required this.settingsRepository});
 
   final ProviderContainer container;
   final FakeCalorieSettingsRepository settingsRepository;

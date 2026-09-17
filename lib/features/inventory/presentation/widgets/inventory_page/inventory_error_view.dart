@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_home_shell_top_chrome.dart';
 
 /// Error view for inventory page.
 class InventoryErrorView extends StatelessWidget {
   /// Creates an inventory error view.
-  const InventoryErrorView({
+  const new({
     required this.onRetry,
     required this.message,
     required this.retryLabel,

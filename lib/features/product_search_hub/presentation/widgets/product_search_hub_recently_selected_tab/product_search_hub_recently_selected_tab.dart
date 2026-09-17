@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -19,7 +19,7 @@ const _productSearchHubRecentlySelectedLogName =
 /// Recently selected manual products for the product search hub.
 class ProductSearchHubRecentlySelectedTab extends ConsumerStatefulWidget {
   /// Creates recently selected product tab.
-  const ProductSearchHubRecentlySelectedTab({
+  const new({
     required this.selectedProductKeys,
     required this.onProductPressed,
     this.onProductCopied,
@@ -122,7 +122,7 @@ class _ProductSearchHubRecentlySelectedTabState
 }
 
 class _ProductSearchHubRecentlySelectedLoading extends StatelessWidget {
-  const _ProductSearchHubRecentlySelectedLoading({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -140,7 +140,7 @@ class _ProductSearchHubRecentlySelectedLoading extends StatelessWidget {
 }
 
 class _ProductSearchHubRecentlySelectedError extends StatelessWidget {
-  const _ProductSearchHubRecentlySelectedError({
+  const new({
     required this.message,
     required this.retryLabel,
     required this.onRetry,
@@ -164,9 +164,7 @@ class _ProductSearchHubRecentlySelectedError extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           FilledButton.icon(
-            key: const Key(
-              'product_search_hub_recently_selected_retry_button',
-            ),
+            key: const Key('product_search_hub_recently_selected_retry_button'),
             onPressed: onRetry,
             icon: const Icon(Icons.refresh_rounded),
             label: Text(retryLabel),
@@ -178,7 +176,7 @@ class _ProductSearchHubRecentlySelectedError extends StatelessWidget {
 }
 
 class _ProductSearchHubRecentlySelectedEmpty extends StatelessWidget {
-  const _ProductSearchHubRecentlySelectedEmpty({required this.message});
+  const new({required this.message});
 
   final String message;
 
@@ -196,7 +194,7 @@ class _ProductSearchHubRecentlySelectedEmpty extends StatelessWidget {
 }
 
 class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
-  const _ProductSearchHubRecentlySelectedList({
+  const new({
     required this.items,
     required this.selectedProductKeys,
     required this.onProductPressed,

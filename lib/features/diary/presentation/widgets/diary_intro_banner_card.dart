@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -7,11 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// and adaptation.
 class DiaryIntroBannerCard extends StatelessWidget {
   /// Creates the week 1 intro banner card.
-  const DiaryIntroBannerCard({
-    required this.onOpenIntro,
-    required this.onDismiss,
-    super.key,
-  });
+  const new({required this.onOpenIntro, required this.onDismiss, super.key});
 
   /// Action when tapping to view the intro.
   final VoidCallback onOpenIntro;

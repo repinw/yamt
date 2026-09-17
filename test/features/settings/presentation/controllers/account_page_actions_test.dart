@@ -1,21 +1,22 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
-class _FakeCredential extends Fake implements AuthCredential {}
+class _FakeCredential extends Fake implements AuthCredential;
 
 class _FakeAccountController extends AccountController {
-  _FakeAccountController({
+  new({
     this.onSignOut,
     this.onLinkGuestWithGoogle,
     this.onLinkGuestWithEmailPassword,
@@ -95,7 +96,7 @@ Widget _wrap({
   return UncontrolledProviderScope(
     container: container,
     child: const MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: AccountPage(),
     ),

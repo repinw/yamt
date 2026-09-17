@@ -26,7 +26,7 @@ enum GlobalFoodMatchReason {
 @immutable
 class GlobalFoodMatchCandidate {
   /// The global food match candidate.
-  const GlobalFoodMatchCandidate({
+  const new({
     required this.item,
     required this.score,
     required this.reason,

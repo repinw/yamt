@@ -7,16 +7,13 @@ void main() {
   test(
     'decodeUserProfileDocument falls back to document id and trims strings',
     () {
-      final profile = decodeUserProfileDocument(
-        const <String, dynamic>{
-          'uid': '  ',
-          'householdId': ' household-1 ',
-          'email': ' jane@example.com ',
-          'displayName': ' Jane ',
-          'isAnonymous': true,
-        },
-        'user-1',
-      );
+      final profile = decodeUserProfileDocument(const <String, dynamic>{
+        'uid': '  ',
+        'householdId': ' household-1 ',
+        'email': ' jane@example.com ',
+        'displayName': ' Jane ',
+        'isAnonymous': true,
+      }, 'user-1');
 
       expect(profile.uid, 'user-1');
       expect(profile.householdId, 'household-1');

@@ -17,17 +17,11 @@ const String _votesCollection = 'global_barcode_candidate_votes';
 class FirestoreGlobalBarcodeCandidateRepository
     implements GlobalBarcodeCandidateRepository {
   /// The firestore global barcode candidate repository.
-  const FirestoreGlobalBarcodeCandidateRepository({
-    required FirebaseFirestore firestore,
-    required String? currentUserId,
-    Future<List<GlobalBarcodeCandidate>> Function(
-      String normalizedBarcode,
-      int limit,
-    )?
-    indexedReaderOverride,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId,
-       _indexedReaderOverride = indexedReaderOverride;
+  const new({
+    required this._firestore,
+    required this._currentUserId,
+    this._indexedReaderOverride,
+  });
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
@@ -65,7 +59,7 @@ class FirestoreGlobalBarcodeCandidateRepository
         stackTrace: stackTrace,
       );
       try {
-        return _readCandidatesWithFallback(
+        return await _readCandidatesWithFallback(
           normalizedBarcode: normalizedBarcode,
           limit: safeLimit,
         );
@@ -164,9 +158,8 @@ class FirestoreGlobalBarcodeCandidateRepository
       );
       final currentItemJson = readJsonMap(currentData['global_food_item']);
       final candidateItem = currentItemJson != null
-          ? GlobalFoodItem.fromJson(
-              currentItemJson,
-            ).copyWith(id: globalFoodItemId)
+          ? GlobalFoodItem.fromJson(currentItemJson)
+                .copyWith(id: globalFoodItemId)
           : patchItem;
       final candidate = GlobalBarcodeCandidate(
         id: candidateId,

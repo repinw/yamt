@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_store.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  const _FakeInventoryUserSession({this.currentUserId});
+  const new({this.currentUserId});
 
   @override
   final String? currentUserId;

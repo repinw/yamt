@@ -7,7 +7,7 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 @immutable
 class GlobalBarcodeCandidate {
   /// The global barcode candidate.
-  const GlobalBarcodeCandidate({
+  const new({
     required this.id,
     required this.barcode,
     required this.globalFoodItemId,
@@ -20,7 +20,7 @@ class GlobalBarcodeCandidate {
   });
 
   /// Creates a [GlobalBarcodeCandidate] for from json.
-  factory GlobalBarcodeCandidate.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final globalFoodItemId =
         _readOptionalString(json['global_food_item_id']) ??
         _readOptionalString(json['id']) ??
@@ -33,9 +33,8 @@ class GlobalBarcodeCandidate {
       productJson['id'] = globalFoodItemId;
     }
 
-    final globalFoodItem = GlobalFoodItem.fromJson(
-      productJson,
-    ).copyWith(id: globalFoodItemId);
+    final globalFoodItem = GlobalFoodItem.fromJson(productJson)
+        .copyWith(id: globalFoodItemId);
     final updatedAt = readJsonDateTime(json['updated_at']) ?? DateTime.now();
     return GlobalBarcodeCandidate(
       id:

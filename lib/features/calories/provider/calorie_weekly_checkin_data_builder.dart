@@ -43,9 +43,7 @@ import 'package:yamt/features/health/presentation/controllers/'
 const _weeklyCheckInProviderLogName = 'CalorieWeeklyCheckInProvider';
 
 /// Build calorie weekly check-in data.
-Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
-  Ref ref,
-) async {
+Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(Ref ref) async {
   // Trigger recompute when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
 

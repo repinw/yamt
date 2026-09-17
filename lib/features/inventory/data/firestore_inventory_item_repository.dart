@@ -13,13 +13,11 @@ const String _repositoryLogName = 'FirestoreInventoryItemRepository';
 class FirestoreInventoryItemRepository
     implements InventoryItemRepository, InventoryItemRecentManualReader {
   /// Creates an instance.
-  FirestoreInventoryItemRepository({
-    required InventoryUserSession session,
-    required SessionShutdownSignal sessionShutdownSignal,
-    required InventoryItemStore store,
-  }) : _session = session,
-       _sessionShutdownSignal = sessionShutdownSignal,
-       _store = store;
+  new({
+    required this._session,
+    required this._sessionShutdownSignal,
+    required this._store,
+  });
 
   final InventoryUserSession _session;
   final SessionShutdownSignal _sessionShutdownSignal;

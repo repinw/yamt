@@ -66,79 +66,50 @@ const Set<String> germanFuzzyShortIngredientTokens = <String>{
 };
 
 /// Irregular German ingredient variants.
-const Map<String, List<String>> germanIrregularIngredientVariants =
-    <String, List<String>>{
-      'ei': <String>['ei', 'eier'],
-      'eier': <String>['eier', 'ei'],
-      'knoblauch': <String>[
-        'knoblauch',
-        'knoblauchzehe',
-        'knoblauchzehen',
-      ],
-      'knoblauchzehe': <String>[
-        'knoblauchzehe',
-        'knoblauchzehen',
-        'knoblauch',
-      ],
-      'knoblauchzehen': <String>[
-        'knoblauchzehen',
-        'knoblauchzehe',
-        'knoblauch',
-      ],
-      'apfel': <String>['apfel', 'äpfel'],
-      'äpfel': <String>['äpfel', 'apfel'],
-      'nuss': <String>['nuss', 'nüsse'],
-      'nüsse': <String>['nüsse', 'nuss'],
-      'kraut': <String>['kraut', 'kräuter'],
-      'kräuter': <String>['kräuter', 'kraut'],
-      'pilz': <String>['pilz', 'pilze'],
-      'pilze': <String>['pilze', 'pilz'],
-      'lauch': <String>['lauch', 'lauchstange', 'lauchstangen'],
-      'lauchstange': <String>['lauchstange', 'lauchstangen', 'lauch'],
-      'lauchstangen': <String>['lauchstangen', 'lauchstange', 'lauch'],
-      'frühlingszwiebel': <String>[
-        'frühlingszwiebel',
-        'frühlingszwiebeln',
-        'lauchzwiebel',
-        'lauchzwiebeln',
-      ],
-      'frühlingszwiebeln': <String>[
-        'frühlingszwiebeln',
-        'frühlingszwiebel',
-        'lauchzwiebel',
-        'lauchzwiebeln',
-      ],
-      'paprika': <String>[
-        'paprika',
-        'paprikas',
-        'paprikaschote',
-        'paprikaschoten',
-      ],
-      'paprikas': <String>[
-        'paprikas',
-        'paprika',
-        'paprikaschote',
-        'paprikaschoten',
-      ],
-      'paprikaschote': <String>[
-        'paprikaschote',
-        'paprikaschoten',
-        'paprika',
-      ],
-      'paprikaschoten': <String>[
-        'paprikaschoten',
-        'paprikaschote',
-        'paprika',
-      ],
-      'hackfleisch': <String>[
-        'hackfleisch',
-        'hack',
-        'rinderhackfleisch',
-        'gemischtes hackfleisch',
-      ],
-      'rinderhackfleisch': <String>[
-        'rinderhackfleisch',
-        'hackfleisch',
-        'hack',
-      ],
-    };
+const Map<String, List<String>>
+germanIrregularIngredientVariants = <String, List<String>>{
+  'ei': <String>['ei', 'eier'],
+  'eier': <String>['eier', 'ei'],
+  'knoblauch': <String>['knoblauch', 'knoblauchzehe', 'knoblauchzehen'],
+  'knoblauchzehe': <String>['knoblauchzehe', 'knoblauchzehen', 'knoblauch'],
+  'knoblauchzehen': <String>['knoblauchzehen', 'knoblauchzehe', 'knoblauch'],
+  'apfel': <String>['apfel', 'äpfel'],
+  'äpfel': <String>['äpfel', 'apfel'],
+  'nuss': <String>['nuss', 'nüsse'],
+  'nüsse': <String>['nüsse', 'nuss'],
+  'kraut': <String>['kraut', 'kräuter'],
+  'kräuter': <String>['kräuter', 'kraut'],
+  'pilz': <String>['pilz', 'pilze'],
+  'pilze': <String>['pilze', 'pilz'],
+  'lauch': <String>['lauch', 'lauchstange', 'lauchstangen'],
+  'lauchstange': <String>['lauchstange', 'lauchstangen', 'lauch'],
+  'lauchstangen': <String>['lauchstangen', 'lauchstange', 'lauch'],
+  'frühlingszwiebel': <String>[
+    'frühlingszwiebel',
+    'frühlingszwiebeln',
+    'lauchzwiebel',
+    'lauchzwiebeln',
+  ],
+  'frühlingszwiebeln': <String>[
+    'frühlingszwiebeln',
+    'frühlingszwiebel',
+    'lauchzwiebel',
+    'lauchzwiebeln',
+  ],
+  'paprika': <String>['paprika', 'paprikas', 'paprikaschote', 'paprikaschoten'],
+  'paprikas': <String>[
+    'paprikas',
+    'paprika',
+    'paprikaschote',
+    'paprikaschoten',
+  ],
+  'paprikaschote': <String>['paprikaschote', 'paprikaschoten', 'paprika'],
+  'paprikaschoten': <String>['paprikaschoten', 'paprikaschote', 'paprika'],
+  'hackfleisch': <String>[
+    'hackfleisch',
+    'hack',
+    'rinderhackfleisch',
+    'gemischtes hackfleisch',
+  ],
+  'rinderhackfleisch': <String>['rinderhackfleisch', 'hackfleisch', 'hack'],
+};

@@ -7,7 +7,7 @@ import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 /// Auth layout sizing values derived from current constraints.
 class AuthLayoutMetrics {
   /// Creates auth layout metrics.
-  const AuthLayoutMetrics({
+  const new({
     required this.heroBadgeSize,
     required this.heroIconSize,
     required this.cardPadding,
@@ -19,7 +19,7 @@ class AuthLayoutMetrics {
   });
 
   /// Creates responsive metrics from the available auth page constraints.
-  factory AuthLayoutMetrics.fromConstraints({
+  factory fromConstraints({
     required double maxWidth,
     required double maxHeight,
     required bool isWide,

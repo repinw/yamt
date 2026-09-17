@@ -1,7 +1,7 @@
 /// Defines shopping list item.
 class ShoppingListItem {
   /// The shopping list item.
-  const ShoppingListItem({
+  const new({
     required this.id,
     required this.name,
     required this.normalizedName,
@@ -17,7 +17,7 @@ class ShoppingListItem {
   });
 
   /// Creates a [ShoppingListItem] for from json.
-  factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return ShoppingListItem(
       id: _stringValue(json['id']),
       name: _stringValue(json['name']),

@@ -29,7 +29,7 @@ enum InventoryReceiptManualProductAction {
 /// Defines inventory receipt manual product result.
 class InventoryReceiptManualProductResult {
   /// The inventory receipt manual product result.
-  const InventoryReceiptManualProductResult({
+  const new({
     required this.item,
     required this.action,
     this.selectedProduct,

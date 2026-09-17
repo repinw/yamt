@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -37,7 +38,7 @@ Widget _buildHarness({
     container: container,
     child: MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Builder(
@@ -141,7 +142,7 @@ void main() {
           rootObserver: rootObserver,
           nestedObserver: nestedObserver,
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           child: Scaffold(
             body: Builder(
@@ -178,9 +179,7 @@ void main() {
     );
   });
 
-  testWidgets('reset sheet opens on root navigator by default', (
-    tester,
-  ) async {
+  testWidgets('reset sheet opens on root navigator by default', (tester) async {
     final rootObserver = RecordingNavigatorObserver();
     final nestedObserver = RecordingNavigatorObserver();
 
@@ -190,7 +189,7 @@ void main() {
           rootObserver: rootObserver,
           nestedObserver: nestedObserver,
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           child: Scaffold(
             body: Builder(
@@ -531,45 +530,44 @@ void main() {
     );
   });
 
-  testWidgets(
-    'save keeps future official start for existing sandbox goal',
-    (tester) async {
-      final repository = FakeCalorieSettingsRepository();
-      final futureGoalStart = DateTime.now().add(const Duration(days: 2));
-      addTearDown(repository.dispose);
+  testWidgets('save keeps future official start for existing sandbox goal', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    final futureGoalStart = DateTime.now().add(const Duration(days: 2));
+    addTearDown(repository.dispose);
 
-      await tester.pumpWidget(
-        _buildHarness(
-          settingsRepository: repository,
-          initialSettings: CalorieGoalSettings.single(
-            dailyKcalGoal: 1680,
-            calculatorProfile: const CalorieCalculatorProfile.defaults(),
-            effectiveDate: DateTime.now(),
-            countingStartDate: futureGoalStart,
-            source: CalorieGoalSource.calculator,
-          ),
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 1680,
+          calculatorProfile: const CalorieCalculatorProfile.defaults(),
+          effectiveDate: DateTime.now(),
+          countingStartDate: futureGoalStart,
+          source: CalorieGoalSource.calculator,
         ),
-      );
-      await _openSheet(tester);
-      await _goToResultsWithDefaults(tester);
-      await _ensureSaveButtonVisible(tester);
+      ),
+    );
+    await _openSheet(tester);
+    await _goToResultsWithDefaults(tester);
+    await _ensureSaveButtonVisible(tester);
 
-      await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+    await tester.pumpAndSettle();
 
-      expect(
-        find.text('Could not save the calculated calorie target.'),
-        findsNothing,
-      );
-      final settings = await repository.readSettings();
-      expect(
-        settings.latestGoalEntry?.effectiveCountingStartDate,
-        DateTime(
-          futureGoalStart.year,
-          futureGoalStart.month,
-          futureGoalStart.day,
-        ),
-      );
-    },
-  );
+    expect(
+      find.text('Could not save the calculated calorie target.'),
+      findsNothing,
+    );
+    final settings = await repository.readSettings();
+    expect(
+      settings.latestGoalEntry?.effectiveCountingStartDate,
+      DateTime(
+        futureGoalStart.year,
+        futureGoalStart.month,
+        futureGoalStart.day,
+      ),
+    );
+  });
 }

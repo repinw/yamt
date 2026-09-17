@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -36,7 +37,7 @@ InventoryItem _item({
 }
 
 class _CreationSheetHarness extends StatefulWidget {
-  const _CreationSheetHarness({required this.items});
+  const new({required this.items});
 
   final List<InventoryItem> items;
 
@@ -90,7 +91,7 @@ Future<void> _pumpCreationSheetHarness(
       ],
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _CreationSheetHarness(items: items),
       ),
@@ -116,7 +117,7 @@ void main() {
           rootObserver: rootObserver,
           nestedObserver: nestedObserver,
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           child: _CreationSheetHarness(
             items: <InventoryItem>[_item(id: 'rice', name: 'Rice')],
@@ -184,9 +185,7 @@ void main() {
     expect(find.text('created:Lunch Box:3:2:false'), findsOneWidget);
   });
 
-  testWidgets('returns picked file image on happy path submit', (
-    tester,
-  ) async {
+  testWidgets('returns picked file image on happy path submit', (tester) async {
     await _pumpCreationSheetHarness(
       tester,
       items: <InventoryItem>[_item(id: 'rice', name: 'Rice')],

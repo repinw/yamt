@@ -41,9 +41,7 @@ void main() {
     );
     await _primeIntroDependencies(container);
 
-    final trigger = container.read(
-      diaryIntroTriggerProvider,
-    );
+    final trigger = container.read(diaryIntroTriggerProvider);
 
     expect(trigger, isNotNull);
     expect(trigger?.preferences, same(preferences));
@@ -144,7 +142,7 @@ Future<void> _primeIntroDependencies(
 }
 
 class _CountingHealthConnectionService extends FakeHealthConnectionService {
-  _CountingHealthConnectionService(super.status);
+  new(super.status);
 
   int loadStatusCallCount = 0;
 

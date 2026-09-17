@@ -16,9 +16,7 @@ void main() {
         HealthDataType.WORKOUT: <HealthDataPoint>[],
         HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
       },
-      totalStepsResponses: <String, int?>{
-        _intervalKey(day, dayEnd): 6772,
-      },
+      totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6772},
     );
     final service = MobileDiaryHealthService(
       health: fakeHealth,
@@ -45,9 +43,7 @@ void main() {
         HealthDataType.WORKOUT: <HealthDataPoint>[],
         HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
       },
-      totalStepsResponses: <String, int?>{
-        _intervalKey(day, dayEnd): 6772,
-      },
+      totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6772},
     );
     final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -57,10 +53,7 @@ void main() {
 
     expect(fakeHealth.configureCalls, 1);
     configureCompleter.complete();
-    final reads = await Future.wait([
-      firstRead,
-      secondRead,
-    ]);
+    final reads = await Future.wait([firstRead, secondRead]);
 
     expect(reads, hasLength(2));
     expect(fakeHealth.requestedStepIntervals, <String>[
@@ -678,9 +671,7 @@ void main() {
         HealthDataType.WORKOUT: <HealthDataPoint>[],
         HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
       },
-      totalStepsResponses: <String, int?>{
-        _intervalKey(day, dayEnd): 6772,
-      },
+      totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6772},
     );
     final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -706,9 +697,7 @@ void main() {
     final day = DateTime(2026, 4, 27);
     final dayEnd = day.add(const Duration(days: 1));
     var now = DateTime(2026, 4, 27, 12);
-    final totalStepsResponses = <String, int?>{
-      _intervalKey(day, dayEnd): 6772,
-    };
+    final totalStepsResponses = <String, int?>{_intervalKey(day, dayEnd): 6772};
     final fakeHealth = _FakeHealth(
       healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
         HealthDataType.WORKOUT: <HealthDataPoint>[],
@@ -741,9 +730,7 @@ void main() {
     final day = DateTime(2026, 4, 17);
     final dayEnd = day.add(const Duration(days: 1));
     var now = DateTime(2026, 4, 27, 12);
-    final totalStepsResponses = <String, int?>{
-      _intervalKey(day, dayEnd): 6772,
-    };
+    final totalStepsResponses = <String, int?>{_intervalKey(day, dayEnd): 6772};
     final fakeHealth = _FakeHealth(
       healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
         HealthDataType.WORKOUT: <HealthDataPoint>[],
@@ -786,9 +773,7 @@ void main() {
         ],
         HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
       },
-      totalStepsResponses: <String, int?>{
-        _intervalKey(day, dayEnd): 6772,
-      },
+      totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6772},
     );
     final service = MobileDiaryHealthService(
       health: fakeHealth,
@@ -802,9 +787,7 @@ void main() {
         HealthDataType.WORKOUT: <HealthDataPoint>[],
         HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
       },
-      totalStepsResponses: <String, int?>{
-        _intervalKey(day, dayEnd): 8123,
-      },
+      totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 8123},
     );
     final cachedService = MobileDiaryHealthService(
       health: cachedHealth,
@@ -840,9 +823,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 6772,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6772},
       );
       final service = MobileDiaryHealthService(
         health: fakeHealth,
@@ -856,9 +837,7 @@ void main() {
           HealthDataType.WORKOUT: <HealthDataPoint>[],
           HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): null,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): null},
       );
       final deletedService = MobileDiaryHealthService(
         health: deletedHealth,
@@ -882,55 +861,48 @@ void main() {
     },
   );
 
-  test(
-    'loadDayData drops stale cache after hard stale age',
-    () async {
-      final day = DateTime(2026, 4, 17);
-      final dayEnd = day.add(const Duration(days: 1));
-      var now = DateTime(2026, 4, 27, 12);
-      final fakeHealth = _FakeHealth(
-        healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
-          HealthDataType.WORKOUT: <HealthDataPoint>[],
-          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
-        },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 6772,
-        },
-      );
-      final service = MobileDiaryHealthService(
-        health: fakeHealth,
-        now: () => now,
-      );
+  test('loadDayData drops stale cache after hard stale age', () async {
+    final day = DateTime(2026, 4, 17);
+    final dayEnd = day.add(const Duration(days: 1));
+    var now = DateTime(2026, 4, 27, 12);
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6772},
+    );
+    final service = MobileDiaryHealthService(
+      health: fakeHealth,
+      now: () => now,
+    );
 
-      final firstRead = await service.loadDayData(day: day);
-      fakeHealth.healthDataFailuresRemaining = 1;
-      now = now.add(const Duration(days: 8));
+    final firstRead = await service.loadDayData(day: day);
+    fakeHealth.healthDataFailuresRemaining = 1;
+    now = now.add(const Duration(days: 8));
 
-      await expectLater(
-        service.loadDayData(day: day),
-        throwsA(isA<StateError>()),
-      );
+    await expectLater(
+      service.loadDayData(day: day),
+      throwsA(isA<StateError>()),
+    );
 
-      expect(firstRead.totalSteps, 6772);
-      expect(fakeHealth.requestedStepIntervals, <String>[
-        _intervalKey(day, dayEnd),
-        _intervalKey(day, dayEnd),
-      ]);
-      expect(fakeHealth.requestedHealthDataTypes, <List<HealthDataType>>[
-        <HealthDataType>[HealthDataType.WORKOUT],
-        <HealthDataType>[HealthDataType.ACTIVE_ENERGY_BURNED],
-        <HealthDataType>[HealthDataType.WORKOUT],
-      ]);
-    },
-  );
+    expect(firstRead.totalSteps, 6772);
+    expect(fakeHealth.requestedStepIntervals, <String>[
+      _intervalKey(day, dayEnd),
+      _intervalKey(day, dayEnd),
+    ]);
+    expect(fakeHealth.requestedHealthDataTypes, <List<HealthDataType>>[
+      <HealthDataType>[HealthDataType.WORKOUT],
+      <HealthDataType>[HealthDataType.ACTIVE_ENERGY_BURNED],
+      <HealthDataType>[HealthDataType.WORKOUT],
+    ]);
+  });
 
   test('loadDayData keeps stale cache after empty refresh', () async {
     final day = DateTime(2026, 4, 17);
     final dayEnd = day.add(const Duration(days: 1));
     var now = DateTime(2026, 4, 27, 12);
-    final totalStepsResponses = <String, int?>{
-      _intervalKey(day, dayEnd): 6772,
-    };
+    final totalStepsResponses = <String, int?>{_intervalKey(day, dayEnd): 6772};
     final fakeHealth = _FakeHealth(
       healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
         HealthDataType.WORKOUT: <HealthDataPoint>[],
@@ -967,9 +939,7 @@ void main() {
         HealthDataType.WORKOUT: <HealthDataPoint>[],
         HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
       },
-      totalStepsResponses: <String, int?>{
-        _intervalKey(day, dayEnd): 6772,
-      },
+      totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6772},
     );
     final service = MobileDiaryHealthService(
       health: fakeHealth,
@@ -1061,9 +1031,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 6772,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6772},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1099,9 +1067,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 6700,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6700},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1137,9 +1103,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 6700,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6700},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1174,9 +1138,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 6700,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6700},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1211,9 +1173,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 10000,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 10000},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1242,9 +1202,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 5000,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 5000},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1273,9 +1231,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 7000,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 7000},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1314,9 +1270,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 4000,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 4000},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1329,40 +1283,35 @@ void main() {
     },
   );
 
-  test(
-    'loadDayData converts mile distance before estimating steps',
-    () async {
-      final day = DateTime(2026, 4, 17);
-      final dayEnd = day.add(const Duration(days: 1));
-      final workoutStart = day.add(const Duration(hours: 7));
-      final workoutEnd = day.add(const Duration(hours: 8));
-      final fakeHealth = _FakeHealth(
-        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
-          HealthDataType.WORKOUT: <HealthDataPoint>[
-            _buildWorkoutPoint(
-              start: workoutStart,
-              end: workoutEnd,
-              totalCalories: 350,
-              totalDistance: 1,
-              totalDistanceUnit: HealthDataUnit.MILE,
-            ),
-          ],
-          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
-        },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 2500,
-        },
-      );
-      final service = MobileDiaryHealthService(health: fakeHealth);
+  test('loadDayData converts mile distance before estimating steps', () async {
+    final day = DateTime(2026, 4, 17);
+    final dayEnd = day.add(const Duration(days: 1));
+    final workoutStart = day.add(const Duration(hours: 7));
+    final workoutEnd = day.add(const Duration(hours: 8));
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[
+          _buildWorkoutPoint(
+            start: workoutStart,
+            end: workoutEnd,
+            totalCalories: 350,
+            totalDistance: 1,
+            totalDistanceUnit: HealthDataUnit.MILE,
+          ),
+        ],
+        HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+      },
+      totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 2500},
+    );
+    final service = MobileDiaryHealthService(health: fakeHealth);
 
-      final dayData = await service.loadDayData(day: day);
-      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+    final dayData = await service.loadDayData(day: day);
+    final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
 
-      expect(dayData.workouts.single.totalSteps, 1893);
-      expect(summary.stepsDuringWorkouts, 1893);
-      expect(summary.stepsOutsideWorkouts, 607);
-    },
-  );
+    expect(dayData.workouts.single.totalSteps, 1893);
+    expect(summary.stepsDuringWorkouts, 1893);
+    expect(summary.stepsOutsideWorkouts, 607);
+  });
 
   test(
     'loadDayData leaves workout steps null when distance unit is missing',
@@ -1385,9 +1334,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 2500,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 2500},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1419,9 +1366,7 @@ void main() {
           ],
           HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 2500,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 2500},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1437,51 +1382,46 @@ void main() {
     },
   );
 
-  test(
-    'loadDayData keeps unassigned active energy out of workouts',
-    () async {
-      final day = DateTime(2026, 4, 17);
-      final dayEnd = day.add(const Duration(days: 1));
-      final energyStart = day.add(const Duration(hours: 15));
-      final energyEnd = day.add(const Duration(hours: 16));
-      final fakeHealth = _FakeHealth(
-        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
-          HealthDataType.WORKOUT: const <HealthDataPoint>[],
-          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
-            _buildActiveEnergyPoint(
-              start: energyStart,
-              end: energyEnd,
-              calories: 500,
-            ),
-          ],
-        },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 4000,
-          _intervalKey(energyStart, energyEnd): 1000,
-        },
-      );
-      final service = MobileDiaryHealthService(health: fakeHealth);
+  test('loadDayData keeps unassigned active energy out of workouts', () async {
+    final day = DateTime(2026, 4, 17);
+    final dayEnd = day.add(const Duration(days: 1));
+    final energyStart = day.add(const Duration(hours: 15));
+    final energyEnd = day.add(const Duration(hours: 16));
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: const <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+          _buildActiveEnergyPoint(
+            start: energyStart,
+            end: energyEnd,
+            calories: 500,
+          ),
+        ],
+      },
+      totalStepsResponses: <String, int?>{
+        _intervalKey(day, dayEnd): 4000,
+        _intervalKey(energyStart, energyEnd): 1000,
+      },
+    );
+    final service = MobileDiaryHealthService(health: fakeHealth);
 
-      final dayData = await service.loadDayData(day: day);
-      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
-      final burnedCalories = calculateDiaryBurnedCalories(
-        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
-        workoutCalories: summary.workouts.map(
-          (workout) => workout.totalCalories,
-        ),
-        unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
-      );
+    final dayData = await service.loadDayData(day: day);
+    final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+    final burnedCalories = calculateDiaryBurnedCalories(
+      stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+      workoutCalories: summary.workouts.map((workout) => workout.totalCalories),
+      unassignedActiveEnergySegments: summary.unassignedActiveEnergySegments,
+    );
 
-      expect(dayData.workouts, isEmpty);
-      expect(dayData.unassignedActiveEnergySegments, hasLength(1));
-      expect(dayData.unassignedActiveEnergySegments.single.totalCalories, 500);
-      expect(dayData.unassignedActiveEnergySegments.single.totalSteps, 1000);
-      expect(summary.stepsDuringWorkouts, 0);
-      expect(summary.stepsDuringUnassignedActiveEnergy, 1000);
-      expect(summary.stepsOutsideWorkouts, 3000);
-      expect(burnedCalories, 160);
-    },
-  );
+    expect(dayData.workouts, isEmpty);
+    expect(dayData.unassignedActiveEnergySegments, hasLength(1));
+    expect(dayData.unassignedActiveEnergySegments.single.totalCalories, 500);
+    expect(dayData.unassignedActiveEnergySegments.single.totalSteps, 1000);
+    expect(summary.stepsDuringWorkouts, 0);
+    expect(summary.stepsDuringUnassignedActiveEnergy, 1000);
+    expect(summary.stepsOutsideWorkouts, 3000);
+    expect(burnedCalories, 160);
+  });
 
   test(
     'loadDayData does not duplicate active energy already covered by workout',
@@ -1508,9 +1448,7 @@ void main() {
             ),
           ],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 6700,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 6700},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1591,9 +1529,7 @@ void main() {
       final secondWorkoutStart = day.add(
         const Duration(hours: 10, minutes: 30),
       );
-      final secondWorkoutEnd = day.add(
-        const Duration(hours: 11, minutes: 30),
-      );
+      final secondWorkoutEnd = day.add(const Duration(hours: 11, minutes: 30));
       final fakeHealth = _FakeHealth(
         healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
           HealthDataType.WORKOUT: <HealthDataPoint>[
@@ -1618,9 +1554,7 @@ void main() {
             ),
           ],
         },
-        totalStepsResponses: <String, int?>{
-          _intervalKey(day, dayEnd): 0,
-        },
+        totalStepsResponses: <String, int?>{_intervalKey(day, dayEnd): 0},
       );
       final service = MobileDiaryHealthService(health: fakeHealth);
 
@@ -1726,7 +1660,7 @@ void main() {
 }
 
 class _FakeHealth extends Health {
-  _FakeHealth({
+  new({
     required this.healthDataPoints,
     required this.totalStepsResponses,
     this.intervalDataPoints = const <HealthDataPoint>[],

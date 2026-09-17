@@ -1,8 +1,8 @@
 import 'dart:async' show unawaited;
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
@@ -22,7 +22,7 @@ const _scannerLogName = 'InventoryBarcodeScannerView';
 /// Defines inventory barcode scanner view.
 class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
   /// The inventory barcode scanner view.
-  const InventoryBarcodeScannerView({
+  const new({
     super.key,
     this.onBarcodeScanned,
     this.onProductSelected,

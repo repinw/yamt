@@ -86,7 +86,7 @@ enum HealthDisconnectResult {
 /// Defines health connection status.
 class HealthConnectionStatus {
   /// The health connection status.
-  const HealthConnectionStatus({
+  const new({
     required this.platform,
     required this.healthConnectAvailability,
     required this.permissionState,
@@ -95,7 +95,7 @@ class HealthConnectionStatus {
   });
 
   /// Creates a [HealthConnectionStatus] for unsupported.
-  const HealthConnectionStatus.unsupported()
+  const new unsupported()
     : platform = HealthPlatform.unsupported,
       healthConnectAvailability = HealthConnectAvailability.notApplicable,
       permissionState = HealthPermissionState.notGranted,

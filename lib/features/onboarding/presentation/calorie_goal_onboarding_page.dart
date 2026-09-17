@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/calorie_onboarding_wizard.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/features/onboarding/presentation/widgets/onboarding/calorie
 /// Defines calorie goal onboarding page.
 class CalorieGoalOnboardingPage extends ConsumerWidget {
   /// The calorie goal onboarding page.
-  const CalorieGoalOnboardingPage({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

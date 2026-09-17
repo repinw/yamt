@@ -13,8 +13,9 @@ const Duration _defaultTimeout = Duration(seconds: 30);
 const Uuid _uuid = Uuid();
 
 /// Function signature for generating AI content (used for test fakes/mocks).
-typedef GenerateContentHandler =
-    Future<String?> Function(Iterable<Content> content);
+typedef GenerateContentHandler = Future<String?> Function(
+  Iterable<Content> content,
+);
 
 /// Implementation of [ReceiptStructuredParser] using the Google AI API
 /// (Gemini Flash).
@@ -24,13 +25,12 @@ class GoogleAiReceiptParser implements ReceiptStructuredParser {
   /// If [apiKey] is not provided, falls back to the `GEMINI_API_KEY`
   /// environment definition.
   /// For tests, [contentHandler] can be provided to bypass network requests.
-  GoogleAiReceiptParser({
+  new({
     String? apiKey,
     String modelName = _defaultModelName,
-    Duration requestTimeout = _defaultTimeout,
+    this._requestTimeout = _defaultTimeout,
     GenerateContentHandler? contentHandler,
-  }) : _requestTimeout = requestTimeout,
-       _contentHandler = contentHandler,
+  }) : _contentHandler = contentHandler,
        _model = contentHandler == null
            ? _createModel(
                apiKey ?? const String.fromEnvironment('GEMINI_API_KEY'),
@@ -78,9 +78,7 @@ class GoogleAiReceiptParser implements ReceiptStructuredParser {
   }
 
   @override
-  Future<ScannedReceipt> parsePdf({
-    required String pdfFilePath,
-  }) async {
+  Future<ScannedReceipt> parsePdf({required String pdfFilePath}) async {
     final file = File(pdfFilePath);
     if (!file.existsSync()) {
       throw FileSystemException('PDF file does not exist', pdfFilePath);

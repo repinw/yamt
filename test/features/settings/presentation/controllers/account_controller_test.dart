@@ -9,20 +9,20 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
-class _MockUserCredential extends Mock implements UserCredential {}
+class _MockUserCredential extends Mock implements UserCredential;
 
-class _MockAuthCredential extends Mock implements AuthCredential {}
+class _MockAuthCredential extends Mock implements AuthCredential;
 
-class _MockFirebaseApp extends Mock implements FirebaseApp {}
+class _MockFirebaseApp extends Mock implements FirebaseApp;
 
-class _MockSecondaryAuthClient extends Mock implements SecondaryAuthClient {}
+class _MockSecondaryAuthClient extends Mock implements SecondaryAuthClient;
 
 class _FakeGoogleAuthController extends GoogleAuthController {
-  _FakeGoogleAuthController({required this.onLink});
+  new({required this.onLink});
 
   final Future<void> Function() onLink;
 
@@ -231,9 +231,8 @@ void main() {
       when(() => guestUser.isAnonymous).thenReturn(true);
       when(() => linkedUser.isAnonymous).thenReturn(false);
       when(() => linkedCredential.user).thenReturn(linkedUser);
-      when(
-        () => guestUser.linkWithCredential(any()),
-      ).thenAnswer((_) async => linkedCredential);
+      when(() => guestUser.linkWithCredential(any()))
+          .thenAnswer((_) async => linkedCredential);
 
       final container = ProviderContainer(
         overrides: [firebaseAuthProvider.overrideWithValue(auth)],
@@ -294,14 +293,13 @@ void main() {
       final capturedCredentials = <AuthCredential>[];
       when(() => auth.currentUser).thenReturn(guestUser);
       when(() => guestUser.isAnonymous).thenReturn(true);
-      when(() => guestUser.linkWithCredential(captureAny())).thenAnswer((
-        invocation,
-      ) async {
-        capturedCredentials.add(
-          invocation.positionalArguments.first as AuthCredential,
-        );
-        throw FirebaseAuthException(code: 'email-already-in-use');
-      });
+      when(() => guestUser.linkWithCredential(captureAny()))
+          .thenAnswer((invocation) async {
+            capturedCredentials.add(
+              invocation.positionalArguments.first as AuthCredential,
+            );
+            throw FirebaseAuthException(code: 'email-already-in-use');
+          });
 
       final container = ProviderContainer(
         overrides: [firebaseAuthProvider.overrideWithValue(auth)],
@@ -343,14 +341,12 @@ void main() {
       when(() => guestUser.isAnonymous).thenReturn(true);
       when(() => secondaryClient.createApp(any())).thenAnswer((_) async => app);
       when(() => secondaryClient.authForApp(app)).thenReturn(secondaryAuth);
-      when(
-        () => secondaryAuth.signInWithCredential(credential),
-      ).thenAnswer((_) async => secondaryCredential);
+      when(() => secondaryAuth.signInWithCredential(credential))
+          .thenAnswer((_) async => secondaryCredential);
       when(() => secondaryCredential.user).thenReturn(existingUser);
       when(existingUser.delete).thenAnswer((_) async {});
-      when(
-        () => guestUser.linkWithCredential(credential),
-      ).thenAnswer((_) async => _MockUserCredential());
+      when(() => guestUser.linkWithCredential(credential))
+          .thenAnswer((_) async => _MockUserCredential());
       when(() => secondaryClient.disposeApp(app)).thenAnswer((_) async {});
 
       final container = ProviderContainer(
@@ -407,96 +403,83 @@ void main() {
     },
   );
 
-  test(
-    'overwriteExistingGoogleAccountWithGuest throws when secondary '
-    'user missing',
-    () async {
-      final auth = _MockFirebaseAuth();
-      final guestUser = _MockUser();
-      final credential = _MockAuthCredential();
-      final app = _MockFirebaseApp();
-      final secondaryAuth = _MockFirebaseAuth();
-      final secondaryCredential = _MockUserCredential();
-      final secondaryClient = _MockSecondaryAuthClient();
+  test('overwriteExistingGoogleAccountWithGuest throws when secondary '
+      'user missing', () async {
+    final auth = _MockFirebaseAuth();
+    final guestUser = _MockUser();
+    final credential = _MockAuthCredential();
+    final app = _MockFirebaseApp();
+    final secondaryAuth = _MockFirebaseAuth();
+    final secondaryCredential = _MockUserCredential();
+    final secondaryClient = _MockSecondaryAuthClient();
 
-      when(() => auth.currentUser).thenReturn(guestUser);
-      when(() => guestUser.isAnonymous).thenReturn(true);
-      when(
-        () => secondaryClient.createApp(any()),
-      ).thenAnswer((_) async => app);
-      when(() => secondaryClient.authForApp(app)).thenReturn(secondaryAuth);
-      when(
-        () => secondaryAuth.signInWithCredential(credential),
-      ).thenAnswer((_) async => secondaryCredential);
-      when(() => secondaryCredential.user).thenReturn(null);
-      when(() => secondaryClient.disposeApp(app)).thenAnswer((_) async {});
+    when(() => auth.currentUser).thenReturn(guestUser);
+    when(() => guestUser.isAnonymous).thenReturn(true);
+    when(() => secondaryClient.createApp(any())).thenAnswer((_) async => app);
+    when(() => secondaryClient.authForApp(app)).thenReturn(secondaryAuth);
+    when(() => secondaryAuth.signInWithCredential(credential))
+        .thenAnswer((_) async => secondaryCredential);
+    when(() => secondaryCredential.user).thenReturn(null);
+    when(() => secondaryClient.disposeApp(app)).thenAnswer((_) async {});
 
-      final container = ProviderContainer(
-        overrides: [
-          firebaseAuthProvider.overrideWithValue(auth),
-          secondaryAuthClientProvider.overrideWithValue(secondaryClient),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        firebaseAuthProvider.overrideWithValue(auth),
+        secondaryAuthClientProvider.overrideWithValue(secondaryClient),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await expectLater(
-        container
-            .read(accountControllerProvider.notifier)
-            .overwriteExistingGoogleAccountWithGuest(credential),
-        throwsA(
-          isA<FirebaseAuthException>().having(
-            (e) => e.code,
-            'code',
-            'link-not-completed',
-          ),
+    await expectLater(
+      container
+          .read(accountControllerProvider.notifier)
+          .overwriteExistingGoogleAccountWithGuest(credential),
+      throwsA(
+        isA<FirebaseAuthException>().having(
+          (e) => e.code,
+          'code',
+          'link-not-completed',
         ),
-      );
-      verify(() => secondaryClient.disposeApp(app)).called(1);
-      expect(container.read(accountControllerProvider).hasError, isTrue);
-    },
-  );
+      ),
+    );
+    verify(() => secondaryClient.disposeApp(app)).called(1);
+    expect(container.read(accountControllerProvider).hasError, isTrue);
+  });
 
-  test(
-    'overwriteExistingGoogleAccountWithGuest stores AsyncError on '
-    'sign-in failure',
-    () async {
-      final auth = _MockFirebaseAuth();
-      final guestUser = _MockUser();
-      final credential = _MockAuthCredential();
-      final app = _MockFirebaseApp();
-      final secondaryAuth = _MockFirebaseAuth();
-      final secondaryClient = _MockSecondaryAuthClient();
-      final error = FirebaseAuthException(code: 'network-request-failed');
+  test('overwriteExistingGoogleAccountWithGuest stores AsyncError on '
+      'sign-in failure', () async {
+    final auth = _MockFirebaseAuth();
+    final guestUser = _MockUser();
+    final credential = _MockAuthCredential();
+    final app = _MockFirebaseApp();
+    final secondaryAuth = _MockFirebaseAuth();
+    final secondaryClient = _MockSecondaryAuthClient();
+    final error = FirebaseAuthException(code: 'network-request-failed');
 
-      when(() => auth.currentUser).thenReturn(guestUser);
-      when(() => guestUser.isAnonymous).thenReturn(true);
-      when(
-        () => secondaryClient.createApp(any()),
-      ).thenAnswer((_) async => app);
-      when(() => secondaryClient.authForApp(app)).thenReturn(secondaryAuth);
-      when(
-        () => secondaryAuth.signInWithCredential(credential),
-      ).thenThrow(error);
-      when(() => secondaryClient.disposeApp(app)).thenAnswer((_) async {});
+    when(() => auth.currentUser).thenReturn(guestUser);
+    when(() => guestUser.isAnonymous).thenReturn(true);
+    when(() => secondaryClient.createApp(any())).thenAnswer((_) async => app);
+    when(() => secondaryClient.authForApp(app)).thenReturn(secondaryAuth);
+    when(() => secondaryAuth.signInWithCredential(credential)).thenThrow(error);
+    when(() => secondaryClient.disposeApp(app)).thenAnswer((_) async {});
 
-      final container = ProviderContainer(
-        overrides: [
-          firebaseAuthProvider.overrideWithValue(auth),
-          secondaryAuthClientProvider.overrideWithValue(secondaryClient),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        firebaseAuthProvider.overrideWithValue(auth),
+        secondaryAuthClientProvider.overrideWithValue(secondaryClient),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await expectLater(
-        container
-            .read(accountControllerProvider.notifier)
-            .overwriteExistingGoogleAccountWithGuest(credential),
-        throwsA(isA<FirebaseAuthException>()),
-      );
-      expect(container.read(accountControllerProvider).hasError, isTrue);
-      verify(() => secondaryClient.disposeApp(app)).called(1);
-    },
-  );
+    await expectLater(
+      container
+          .read(accountControllerProvider.notifier)
+          .overwriteExistingGoogleAccountWithGuest(credential),
+      throwsA(isA<FirebaseAuthException>()),
+    );
+    expect(container.read(accountControllerProvider).hasError, isTrue);
+    verify(() => secondaryClient.disposeApp(app)).called(1);
+  });
 
   test(
     'deleteGuestAndSignInWithGoogleCredential signs in with credential',
@@ -507,9 +490,8 @@ void main() {
       when(() => auth.currentUser).thenReturn(guestUser);
       when(() => guestUser.isAnonymous).thenReturn(true);
       when(guestUser.delete).thenAnswer((_) async {});
-      when(
-        () => auth.signInWithCredential(credential),
-      ).thenAnswer((_) async => _MockUserCredential());
+      when(() => auth.signInWithCredential(credential))
+          .thenAnswer((_) async => _MockUserCredential());
 
       final container = ProviderContainer(
         overrides: [firebaseAuthProvider.overrideWithValue(auth)],
@@ -529,31 +511,28 @@ void main() {
     },
   );
 
-  test(
-    'deleteGuestAndSignInWithGoogleCredential throws when guest '
-    'session missing',
-    () async {
-      final auth = _MockFirebaseAuth();
-      final credential = _MockAuthCredential();
-      when(() => auth.currentUser).thenReturn(null);
+  test('deleteGuestAndSignInWithGoogleCredential throws when guest '
+      'session missing', () async {
+    final auth = _MockFirebaseAuth();
+    final credential = _MockAuthCredential();
+    when(() => auth.currentUser).thenReturn(null);
 
-      final container = ProviderContainer(
-        overrides: [firebaseAuthProvider.overrideWithValue(auth)],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [firebaseAuthProvider.overrideWithValue(auth)],
+    );
+    addTearDown(container.dispose);
 
-      await expectLater(
-        container
-            .read(accountControllerProvider.notifier)
-            .deleteGuestAndSignInWithGoogleCredential(credential),
-        throwsA(
-          isA<FirebaseAuthException>().having(
-            (e) => e.code,
-            'code',
-            'guest-session-required',
-          ),
+    await expectLater(
+      container
+          .read(accountControllerProvider.notifier)
+          .deleteGuestAndSignInWithGoogleCredential(credential),
+      throwsA(
+        isA<FirebaseAuthException>().having(
+          (e) => e.code,
+          'code',
+          'guest-session-required',
         ),
-      );
-    },
-  );
+      ),
+    );
+  });
 }

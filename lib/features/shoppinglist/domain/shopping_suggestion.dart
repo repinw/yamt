@@ -1,7 +1,7 @@
 /// A product proposed by a data-owning feature.
 class ShoppingSuggestion {
   /// Creates a shopping suggestion without coupling to inventory models.
-  const ShoppingSuggestion({
+  const new({
     required this.name,
     this.brand,
     this.purchaseCount = 0,

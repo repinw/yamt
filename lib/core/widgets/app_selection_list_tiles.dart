@@ -2,13 +2,13 @@
 // ignore_for_file: deprecated_member_use, public_member_api_docs
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 
 /// App-standard [CheckboxListTile] with Material feedback disabled centrally.
 class AppCheckboxListTile extends StatelessWidget {
   /// Creates an app checkbox list tile.
-  const AppCheckboxListTile({
+  const new({
     required this.value,
     required this.onChanged,
     this.mouseCursor,
@@ -91,46 +91,49 @@ class AppCheckboxListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CheckboxListTile(
-      enableFeedback: false,
-      value: value,
-      onChanged: AppHapticFeedback.wrapValueChanged<bool?>(onChanged),
-      mouseCursor: mouseCursor,
-      activeColor: activeColor,
-      fillColor: fillColor,
-      checkColor: checkColor,
-      hoverColor: hoverColor,
-      overlayColor: overlayColor,
-      splashRadius: splashRadius,
-      materialTapTargetSize: materialTapTargetSize,
-      visualDensity: visualDensity,
-      focusNode: focusNode,
-      autofocus: autofocus,
-      shape: shape,
-      side: side,
-      isError: isError,
-      enabled: enabled,
-      tileColor: tileColor,
-      title: title,
-      subtitle: subtitle,
-      isThreeLine: isThreeLine,
-      dense: dense,
-      secondary: secondary,
-      selected: selected,
-      controlAffinity: controlAffinity,
-      contentPadding: contentPadding,
-      tristate: tristate,
-      checkboxShape: checkboxShape,
-      selectedTileColor: selectedTileColor,
-      onFocusChange: onFocusChange,
-      horizontalTitleGap: horizontalTitleGap,
-      minVerticalPadding: minVerticalPadding,
-      minLeadingWidth: minLeadingWidth,
-      minTileHeight: minTileHeight,
-      checkboxSemanticLabel: checkboxSemanticLabel,
-      checkboxScaleFactor: checkboxScaleFactor,
-      titleAlignment: titleAlignment,
-      internalAddSemanticForOnTap: internalAddSemanticForOnTap,
+    return Material(
+      type: MaterialType.transparency,
+      child: CheckboxListTile(
+        enableFeedback: false,
+        value: value,
+        onChanged: AppHapticFeedback.wrapValueChanged<bool?>(onChanged),
+        mouseCursor: mouseCursor,
+        activeColor: activeColor,
+        fillColor: fillColor,
+        checkColor: checkColor,
+        hoverColor: hoverColor,
+        overlayColor: overlayColor,
+        splashRadius: splashRadius,
+        materialTapTargetSize: materialTapTargetSize,
+        visualDensity: visualDensity,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        shape: shape,
+        side: side,
+        isError: isError,
+        enabled: enabled,
+        tileColor: tileColor,
+        title: title,
+        subtitle: subtitle,
+        isThreeLine: isThreeLine,
+        dense: dense,
+        secondary: secondary,
+        selected: selected,
+        controlAffinity: controlAffinity,
+        contentPadding: contentPadding,
+        tristate: tristate,
+        checkboxShape: checkboxShape,
+        selectedTileColor: selectedTileColor,
+        onFocusChange: onFocusChange,
+        horizontalTitleGap: horizontalTitleGap,
+        minVerticalPadding: minVerticalPadding,
+        minLeadingWidth: minLeadingWidth,
+        minTileHeight: minTileHeight,
+        checkboxSemanticLabel: checkboxSemanticLabel,
+        checkboxScaleFactor: checkboxScaleFactor,
+        titleAlignment: titleAlignment,
+        internalAddSemanticForOnTap: internalAddSemanticForOnTap,
+      ),
     );
   }
 }
@@ -138,7 +141,7 @@ class AppCheckboxListTile extends StatelessWidget {
 /// App-standard [SwitchListTile] with Material feedback disabled centrally.
 class AppSwitchListTile extends StatelessWidget {
   /// Creates an app switch list tile.
-  const AppSwitchListTile({
+  const new({
     required this.value,
     required this.onChanged,
     this.activeColor,
@@ -185,7 +188,7 @@ class AppSwitchListTile extends StatelessWidget {
        applyCupertinoTheme = null;
 
   /// Creates an adaptive app switch list tile.
-  const AppSwitchListTile.adaptive({
+  const new adaptive({
     required this.value,
     required this.onChanged,
     this.activeColor,
@@ -278,7 +281,59 @@ class AppSwitchListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_adaptive) {
-      return SwitchListTile.adaptive(
+      return Material(
+        type: MaterialType.transparency,
+        child: SwitchListTile.adaptive(
+          enableFeedback: false,
+          value: value,
+          onChanged: AppHapticFeedback.wrapValueChanged<bool>(onChanged),
+          activeColor: activeColor,
+          activeThumbColor: activeThumbColor,
+          activeTrackColor: activeTrackColor,
+          inactiveThumbColor: inactiveThumbColor,
+          inactiveTrackColor: inactiveTrackColor,
+          activeThumbImage: activeThumbImage,
+          onActiveThumbImageError: onActiveThumbImageError,
+          inactiveThumbImage: inactiveThumbImage,
+          onInactiveThumbImageError: onInactiveThumbImageError,
+          thumbColor: thumbColor,
+          trackColor: trackColor,
+          trackOutlineColor: trackOutlineColor,
+          thumbIcon: thumbIcon,
+          materialTapTargetSize: materialTapTargetSize,
+          dragStartBehavior: dragStartBehavior,
+          mouseCursor: mouseCursor,
+          overlayColor: overlayColor,
+          splashRadius: splashRadius,
+          focusNode: focusNode,
+          onFocusChange: onFocusChange,
+          autofocus: autofocus,
+          applyCupertinoTheme: applyCupertinoTheme,
+          tileColor: tileColor,
+          title: title,
+          subtitle: subtitle,
+          isThreeLine: isThreeLine,
+          dense: dense,
+          contentPadding: contentPadding,
+          secondary: secondary,
+          selected: selected,
+          controlAffinity: controlAffinity,
+          shape: shape,
+          selectedTileColor: selectedTileColor,
+          visualDensity: visualDensity,
+          horizontalTitleGap: horizontalTitleGap,
+          minVerticalPadding: minVerticalPadding,
+          minLeadingWidth: minLeadingWidth,
+          minTileHeight: minTileHeight,
+          hoverColor: hoverColor,
+          internalAddSemanticForOnTap: internalAddSemanticForOnTap,
+        ),
+      );
+    }
+
+    return Material(
+      type: MaterialType.transparency,
+      child: SwitchListTile(
         enableFeedback: false,
         value: value,
         onChanged: AppHapticFeedback.wrapValueChanged<bool>(onChanged),
@@ -303,7 +358,6 @@ class AppSwitchListTile extends StatelessWidget {
         focusNode: focusNode,
         onFocusChange: onFocusChange,
         autofocus: autofocus,
-        applyCupertinoTheme: applyCupertinoTheme,
         tileColor: tileColor,
         title: title,
         subtitle: subtitle,
@@ -322,52 +376,7 @@ class AppSwitchListTile extends StatelessWidget {
         minTileHeight: minTileHeight,
         hoverColor: hoverColor,
         internalAddSemanticForOnTap: internalAddSemanticForOnTap,
-      );
-    }
-
-    return SwitchListTile(
-      enableFeedback: false,
-      value: value,
-      onChanged: AppHapticFeedback.wrapValueChanged<bool>(onChanged),
-      activeColor: activeColor,
-      activeThumbColor: activeThumbColor,
-      activeTrackColor: activeTrackColor,
-      inactiveThumbColor: inactiveThumbColor,
-      inactiveTrackColor: inactiveTrackColor,
-      activeThumbImage: activeThumbImage,
-      onActiveThumbImageError: onActiveThumbImageError,
-      inactiveThumbImage: inactiveThumbImage,
-      onInactiveThumbImageError: onInactiveThumbImageError,
-      thumbColor: thumbColor,
-      trackColor: trackColor,
-      trackOutlineColor: trackOutlineColor,
-      thumbIcon: thumbIcon,
-      materialTapTargetSize: materialTapTargetSize,
-      dragStartBehavior: dragStartBehavior,
-      mouseCursor: mouseCursor,
-      overlayColor: overlayColor,
-      splashRadius: splashRadius,
-      focusNode: focusNode,
-      onFocusChange: onFocusChange,
-      autofocus: autofocus,
-      tileColor: tileColor,
-      title: title,
-      subtitle: subtitle,
-      isThreeLine: isThreeLine,
-      dense: dense,
-      contentPadding: contentPadding,
-      secondary: secondary,
-      selected: selected,
-      controlAffinity: controlAffinity,
-      shape: shape,
-      selectedTileColor: selectedTileColor,
-      visualDensity: visualDensity,
-      horizontalTitleGap: horizontalTitleGap,
-      minVerticalPadding: minVerticalPadding,
-      minLeadingWidth: minLeadingWidth,
-      minTileHeight: minTileHeight,
-      hoverColor: hoverColor,
-      internalAddSemanticForOnTap: internalAddSemanticForOnTap,
+      ),
     );
   }
 }

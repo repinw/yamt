@@ -50,11 +50,7 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
         operationName: 'rollback restored inventory item',
         fallbackValue: false,
         operation: (controller) {
-          return controller.eatItem(
-            itemId,
-            amount,
-            consumedAt: consumedAt,
-          );
+          return controller.eatItem(itemId, amount, consumedAt: consumedAt);
         },
       );
     },

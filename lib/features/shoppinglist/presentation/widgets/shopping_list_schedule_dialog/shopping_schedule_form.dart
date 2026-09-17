@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Recurrence input fields; the owning dialog manages their lifecycle.
 class ShoppingScheduleForm extends StatelessWidget {
   /// Creates the schedule form.
-  const ShoppingScheduleForm({
+  const new({
     required this.formKey,
     required this.days,
     required this.quantity,

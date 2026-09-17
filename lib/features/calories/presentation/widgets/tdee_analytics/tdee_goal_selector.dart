@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 
 /// Goal cycle dropdown selector for TDEE analytics.
 class TdeeGoalSelector extends StatelessWidget {
   /// Creates the goal cycle selector.
-  const TdeeGoalSelector({
+  const new({
     required this.selectedCycle,
     required this.availableCycles,
     required this.onSelectCycle,

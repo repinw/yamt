@@ -1,13 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_hero_image.dart';
 
 /// Shared hero for inventory eat flows.
 class InventoryEatFlowHero extends StatelessWidget {
   /// Creates shared eat flow hero.
-  const InventoryEatFlowHero({
+  const new({
     required this.title,
     required this.eyebrow,
     required this.cancelButtonKey,
@@ -92,10 +92,8 @@ class InventoryEatFlowHero extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      height: 1.12,
-                    ),
+                    style: Theme.of(context).textTheme.headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.w800, height: 1.12),
                   ),
                 ],
               ),

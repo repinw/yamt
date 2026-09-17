@@ -3,9 +3,8 @@ import 'package:yamt/core/utils/flexible_decimal_parser.dart';
 /// Parses decimals, simple fractions, and mixed fractions.
 double? parseCookingFlowQuantity(String rawValue) {
   final normalized = rawValue.trim();
-  final mixedFractionMatch = RegExp(
-    r'^(\d+)\s+(\d+)/(\d+)$',
-  ).firstMatch(normalized);
+  final mixedFractionMatch = RegExp(r'^(\d+)\s+(\d+)/(\d+)$')
+      .firstMatch(normalized);
   if (mixedFractionMatch != null) {
     final whole = _parseCookingFlowNumber(mixedFractionMatch.group(1)!);
     final numerator = _parseCookingFlowNumber(mixedFractionMatch.group(2)!);

@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  _FakeBurnWeekRunStateRepository(this.state);
+  new(this.state);
 
   BurnWeekRunState state;
 
@@ -21,9 +21,7 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 }
 
 void main() {
-  ProviderContainer buildContainer(
-    _FakeBurnWeekRunStateRepository repository,
-  ) {
+  ProviderContainer buildContainer(_FakeBurnWeekRunStateRepository repository) {
     final container = ProviderContainer(
       overrides: [
         burnWeekRunStateRepositoryProvider.overrideWithValue(repository),
@@ -281,45 +279,36 @@ void main() {
     },
   );
 
-  test(
-    'syncForWeek stops safely when the advance cap is reached',
-    () async {
-      final repository = _FakeBurnWeekRunStateRepository(
-        buildState(
-          currentWeekStartDayKey: '2026-4-1',
-          runWeekNumber: 1,
-          starCount: 0,
-          heartCount: 3,
-        ),
-      );
-      final container = buildContainer(repository);
-      final cappedWeekStartDate =
-          DateTime(
-            2026,
-            4,
-          ).add(
-            const Duration(days: burnWeekDaysPerWeek * 1001),
-          );
+  test('syncForWeek stops safely when the advance cap is reached', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-4-1',
+        runWeekNumber: 1,
+        starCount: 0,
+        heartCount: 3,
+      ),
+    );
+    final container = buildContainer(repository);
+    final cappedWeekStartDate = DateTime(
+      2026,
+      4,
+    ).add(const Duration(days: burnWeekDaysPerWeek * 1001));
 
-      await syncWeek(
-        container,
-        currentDay: cappedWeekStartDate,
-        weekStartDate: cappedWeekStartDate,
-        missedTrackingThisWeek: false,
-        missedTrackingForClosedWeeks: List<bool>.filled(1001, false),
-      );
+    await syncWeek(
+      container,
+      currentDay: cappedWeekStartDate,
+      weekStartDate: cappedWeekStartDate,
+      missedTrackingThisWeek: false,
+      missedTrackingForClosedWeeks: List<bool>.filled(1001, false),
+    );
 
-      expect(
-        repository.state.currentWeekStartDayKey,
-        diaryDayKey(cappedWeekStartDate),
-      );
-      expect(
-        repository.state.lastActiveDayKey,
-        diaryDayKey(cappedWeekStartDate),
-      );
-      expect(repository.state.runWeekNumber, 1001);
-    },
-  );
+    expect(
+      repository.state.currentWeekStartDayKey,
+      diaryDayKey(cappedWeekStartDate),
+    );
+    expect(repository.state.lastActiveDayKey, diaryDayKey(cappedWeekStartDate));
+    expect(repository.state.runWeekNumber, 1001);
+  });
 
   test('bootstrapRunFrom seeds a fresh onboarding position', () async {
     final repository = _FakeBurnWeekRunStateRepository(
@@ -385,9 +374,7 @@ void main() {
   test(
     'syncForWeek scores the closing week from missed-tracking state',
     () async {
-      final state = await syncClosingWeek(
-        missedTrackingForClosedWeek: false,
-      );
+      final state = await syncClosingWeek(missedTrackingForClosedWeek: false);
 
       expect(state.currentWeekStartDayKey, '2026-4-21');
       expect(state.lastActiveDayKey, '2026-4-21');
@@ -397,9 +384,7 @@ void main() {
   );
 
   test('syncForWeek honors a missed closed week from diary data', () async {
-    final state = await syncClosingWeek(
-      missedTrackingForClosedWeek: true,
-    );
+    final state = await syncClosingWeek(missedTrackingForClosedWeek: true);
 
     expect(state.currentWeekStartDayKey, '2026-4-21');
     expect(state.lastActiveDayKey, '2026-4-21');

@@ -4,7 +4,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 /// Defines off product search result.
 class OffProductSearchResult {
   /// The off product search result.
-  const OffProductSearchResult({
+  const new({
     required this.code,
     required this.name,
     required this.score,
@@ -19,10 +19,7 @@ class OffProductSearchResult {
   });
 
   /// Creates a search result from a Firestore global food item.
-  factory OffProductSearchResult.fromGlobalFoodItem(
-    GlobalFoodItem item, {
-    double score = 1.0,
-  }) {
+  factory fromGlobalFoodItem(GlobalFoodItem item, {double score = 1.0}) {
     return OffProductSearchResult(
       code: item.barcode ?? item.id,
       name: item.name,

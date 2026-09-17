@@ -15,7 +15,7 @@ import 'package:yamt/features/onboarding/provider/'
 
 import '../../../helpers/memory_app_preferences.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 final _markCompletionProvider = FutureProvider<void>(
   markCalorieGoalOnboardingCompleted,
@@ -281,7 +281,7 @@ User _user(String uid) {
 }
 
 class _StaticCalorieSettingsRepository implements CalorieSettingsRepository {
-  const _StaticCalorieSettingsRepository(this.settings);
+  const new(this.settings);
 
   final CalorieGoalSettings settings;
 
@@ -304,7 +304,7 @@ class _StaticCalorieSettingsRepository implements CalorieSettingsRepository {
 }
 
 class _ThrowingCalorieSettingsRepository implements CalorieSettingsRepository {
-  const _ThrowingCalorieSettingsRepository();
+  const new();
 
   @override
   Stream<CalorieGoalSettings> watchSettings() {

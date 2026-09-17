@@ -3,7 +3,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 /// Scoped quick-eat settings for manual inventory add flows.
 class InventoryManualAddQuickEatConfig {
   /// Creates quick-eat settings.
-  const InventoryManualAddQuickEatConfig({
+  const new({
     this.quickEatOnly = false,
     this.preselectedMealType,
     this.preselectedLoggedAt,

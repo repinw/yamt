@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 
@@ -6,11 +6,7 @@ import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 /// and status dot.
 class ReceiptItemLeadingAvatar extends StatelessWidget {
   /// Creates a [ReceiptItemLeadingAvatar].
-  const ReceiptItemLeadingAvatar({
-    required this.status,
-    this.imageUrl,
-    super.key,
-  });
+  const new({required this.status, this.imageUrl, super.key});
 
   /// The product image URL if available.
   final String? imageUrl;

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';

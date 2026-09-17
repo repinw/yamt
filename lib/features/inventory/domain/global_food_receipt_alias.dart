@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 @immutable
 class GlobalFoodReceiptAlias {
   /// The global food receipt alias.
-  const GlobalFoodReceiptAlias({
+  const new({
     required this.id,
     required this.globalFoodItemId,
     required this.storeName,
@@ -25,7 +25,7 @@ class GlobalFoodReceiptAlias {
   });
 
   /// Creates a [GlobalFoodReceiptAlias] for from json.
-  factory GlobalFoodReceiptAlias.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final globalFoodItemId = (json['global_food_item_id'] as String? ?? '')
         .trim();
     final globalFoodItemJson = _readMap(json['global_food_item']);
@@ -37,9 +37,8 @@ class GlobalFoodReceiptAlias {
       globalFoodItemJson['id'] = globalFoodItemId;
     }
 
-    final globalFoodItem = GlobalFoodItem.fromJson(
-      globalFoodItemJson,
-    ).copyWith(id: globalFoodItemId);
+    final globalFoodItem = GlobalFoodItem.fromJson(globalFoodItemJson)
+        .copyWith(id: globalFoodItemId);
     final storeName = normalizeStoreName(json['store_name'] as String?);
     final receiptName = (json['receipt_name'] as String? ?? '').trim();
     final normalizedStoreName =

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Shared scaffold for creating and editing calorie entries.
 class CalorieEntryEditorFormScaffold extends StatelessWidget {
   /// Creates calorie entry form scaffold.
-  const CalorieEntryEditorFormScaffold({
+  const new({
     required this.formKey,
     required this.isEditing,
     required this.isSaving,
@@ -155,7 +155,7 @@ class CalorieEntryEditorFormScaffold extends StatelessWidget {
 }
 
 class _CalorieEntryIdentitySection extends StatelessWidget {
-  const _CalorieEntryIdentitySection({
+  const new({
     required this.nameController,
     required this.brandController,
     required this.selectedMealType,
@@ -215,7 +215,7 @@ class _CalorieEntryIdentitySection extends StatelessWidget {
 }
 
 class _CalorieEntryAmountSection extends StatelessWidget {
-  const _CalorieEntryAmountSection({
+  const new({
     required this.amountController,
     required this.selectedConsumedUnit,
     required this.onConsumedUnitChanged,
@@ -271,7 +271,7 @@ class _CalorieEntryAmountSection extends StatelessWidget {
 }
 
 class _CalorieEntryNutritionSection extends StatelessWidget {
-  const _CalorieEntryNutritionSection({
+  const new({
     required this.per100KcalController,
     required this.per100ProteinController,
     required this.per100CarbsController,
@@ -321,9 +321,7 @@ class _CalorieEntryNutritionSection extends StatelessWidget {
           key: CalorieEntryEditorKeys.per100CarbsField,
           controller: per100CarbsController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            labelText: l10n.caloriesPer100CarbsLabel,
-          ),
+          decoration: InputDecoration(labelText: l10n.caloriesPer100CarbsLabel),
           validator: nonNegativeNumberValidator,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -340,7 +338,7 @@ class _CalorieEntryNutritionSection extends StatelessWidget {
 }
 
 class _CalorieEntryLoggedAtSection extends StatelessWidget {
-  const _CalorieEntryLoggedAtSection({
+  const new({
     required this.loggedAt,
     required this.onPickDate,
     required this.onPickTime,

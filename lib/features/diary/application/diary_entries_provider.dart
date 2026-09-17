@@ -15,7 +15,5 @@ Stream<List<CalorieEntry>> diaryEntriesForDay(Ref ref, DateTime day) {
   final normalizedDay = normalizeDiaryDay(day);
   return ref
       .watch(calorieLogRepositoryProvider)
-      .watchEntriesForDay(
-        normalizedDay,
-      );
+      .watchEntriesForDay(normalizedDay);
 }

@@ -37,11 +37,10 @@ final kitchenUtensilMutationServiceProvider =
 /// Saves, updates, and deletes kitchen utensils.
 class KitchenUtensilMutationService {
   /// Creates mutation service.
-  const KitchenUtensilMutationService({
-    required KitchenUtensilRepository repository,
-    required KitchenUtensilIdGenerator createId,
-  }) : _repository = repository,
-       _createId = createId;
+  const new({
+    required this._repository,
+    required this._createId,
+  });
 
   final KitchenUtensilRepository _repository;
   final KitchenUtensilIdGenerator _createId;

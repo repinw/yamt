@@ -24,9 +24,7 @@ class ReceiptReviewController extends _$ReceiptReviewController {
 
   /// Updates receipt date and time.
   void updateDateTime(DateTime newDate) {
-    state = state.copyWith(
-      receipt: state.receipt.copyWith(dateTime: newDate),
-    );
+    state = state.copyWith(receipt: state.receipt.copyWith(dateTime: newDate));
   }
 
   /// Replaces an existing receipt line item completely
@@ -166,17 +164,11 @@ class ReceiptReviewController extends _$ReceiptReviewController {
       final gateway = ref.read(receiptStorageGatewayProvider);
       final savable = state.receipt.savableItems;
 
-      await gateway.saveReceipt(
-        receipt: state.receipt,
-        items: savable,
-      );
+      await gateway.saveReceipt(receipt: state.receipt, items: savable);
 
       if (!ref.mounted) return false;
 
-      state = state.copyWith(
-        isSaving: false,
-        saveSuccess: true,
-      );
+      state = state.copyWith(isSaving: false, saveSuccess: true);
       return true;
     } on Object catch (error) {
       if (!ref.mounted) return false;

@@ -113,10 +113,7 @@ void main() {
 
     test('distributes 100% to breakfast before 11:00', () {
       final morning = DateTime(2026, 5, 7, 9);
-      final result = distributeKcalAcrossMeals(
-        totalKcal: 500,
-        now: morning,
-      );
+      final result = distributeKcalAcrossMeals(totalKcal: 500, now: morning);
       expect(result.keys, [MealType.breakfast]);
       expect(result[MealType.breakfast], closeTo(500, 0.01));
     });
@@ -150,10 +147,7 @@ void main() {
 
     test('splits across four meals after 19:00', () {
       final evening = DateTime(2026, 5, 7, 21);
-      final result = distributeKcalAcrossMeals(
-        totalKcal: 1000,
-        now: evening,
-      );
+      final result = distributeKcalAcrossMeals(totalKcal: 1000, now: evening);
       expect(result.keys.toSet(), {
         MealType.breakfast,
         MealType.lunch,

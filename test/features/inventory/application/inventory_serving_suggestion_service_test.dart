@@ -200,10 +200,7 @@ void main() {
     );
 
     expect(repository.recordCalls, isEmpty);
-    expect(
-      loggedMessage,
-      'Failed to record inventory serving suggestion.',
-    );
+    expect(loggedMessage, 'Failed to record inventory serving suggestion.');
     expect(loggedName, 'InventoryServingSuggestionService');
     expect(loggedError, same(failure));
     expect(loggedStackTrace, isNotNull);

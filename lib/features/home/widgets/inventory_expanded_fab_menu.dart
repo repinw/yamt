@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Animated expanded inventory FAB menu.
 class InventoryExpandedFabMenu extends StatelessWidget {
   /// Creates expanded inventory FAB menu.
-  const InventoryExpandedFabMenu({
-    required this.actions,
-    required this.closeButton,
-    super.key,
-  });
+  const new({required this.actions, required this.closeButton, super.key});
 
   /// Action buttons shown above the close button.
   final List<Widget> actions;

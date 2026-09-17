@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Redesigned, visual-first prepared meal template card.
 class PreparedMealTemplateCard extends ConsumerWidget {
   /// The prepared meal template card.
-  const PreparedMealTemplateCard({
+  const new({
     required this.template,
     required this.onOpenPressed,
     required this.onEditPressed,
@@ -177,7 +177,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
 enum _PreparedMealTemplateCardAction { edit, delete }
 
 class _PreparedMealTemplateMenuButton extends StatelessWidget {
-  const _PreparedMealTemplateMenuButton({
+  const new({
     required this.template,
     required this.onEditPressed,
     required this.onDeletePressed,
@@ -209,11 +209,7 @@ class _PreparedMealTemplateMenuButton extends StatelessWidget {
         tooltip: MaterialLocalizations.of(context).showMenuTooltip,
         useRootNavigator: true,
         padding: EdgeInsets.zero,
-        icon: Icon(
-          Icons.more_vert_rounded,
-          size: 18,
-          color: colors.onSurface,
-        ),
+        icon: Icon(Icons.more_vert_rounded, size: 18, color: colors.onSurface),
         onSelected: (action) {
           switch (action) {
             case _PreparedMealTemplateCardAction.edit:
@@ -241,7 +237,7 @@ class _PreparedMealTemplateMenuButton extends StatelessWidget {
 }
 
 class _ResumeCookflowButton extends StatelessWidget {
-  const _ResumeCookflowButton({required this.onPressed});
+  const new({required this.onPressed});
 
   final VoidCallback onPressed;
 
@@ -255,9 +251,7 @@ class _ResumeCookflowButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.xs,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: [colors.primary, colors.primary]),
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -280,10 +274,8 @@ class _ResumeCookflowButton extends StatelessWidget {
             const SizedBox(width: AppSpacing.xs),
             Text(
               l10n.cookflowResumeLabel,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-              ),
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: Colors.white, fontWeight: FontWeight.w900),
             ),
           ],
         ),

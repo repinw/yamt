@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -29,7 +29,7 @@ abstract interface class InventoryManualProductEatCoordinator {
 /// Result returned by the manual product eat presentation flow.
 class InventoryManualProductEatOutcome {
   /// Creates an outcome.
-  const InventoryManualProductEatOutcome({
+  const new({
     required this.status,
     this.item,
     this.calorieEntryId,

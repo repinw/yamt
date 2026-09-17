@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_metric_value_text.dart';
 
 /// Small label/value metric used inside diary balance cards.
 class DiaryBalanceMetricTile extends StatelessWidget {
-  const DiaryBalanceMetricTile._({
+  const new _({
     required this.label,
     required this.value,
     required this.labelColor,
@@ -24,7 +24,7 @@ class DiaryBalanceMetricTile extends StatelessWidget {
   });
 
   /// Creates a large daily balance metric.
-  const DiaryBalanceMetricTile.daily({
+  const new daily({
     required String label,
     required String value,
     required Color labelColor,
@@ -55,7 +55,7 @@ class DiaryBalanceMetricTile extends StatelessWidget {
        );
 
   /// Creates a compact weekly summary metric.
-  const DiaryBalanceMetricTile.weekly({
+  const new weekly({
     required String label,
     required String value,
     required Color labelColor,

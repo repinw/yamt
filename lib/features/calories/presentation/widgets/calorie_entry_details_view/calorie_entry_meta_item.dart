@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Icon and label pair used in the calorie entry overview.
 class CalorieEntryMetaItem extends StatelessWidget {
   /// Creates a compact metadata item.
-  const CalorieEntryMetaItem({
+  const new({
     required this.icon,
     required this.label,
     this.valueKey,

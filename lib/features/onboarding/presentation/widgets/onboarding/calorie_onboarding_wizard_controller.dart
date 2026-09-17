@@ -39,7 +39,7 @@ enum CalorieOnboardingStep {
 @immutable
 class CalorieOnboardingWizardState {
   /// Creates wizard state.
-  const CalorieOnboardingWizardState({
+  const new({
     this.step = 0,
     this.showErrors = false,
     this.allowRouteExit = false,

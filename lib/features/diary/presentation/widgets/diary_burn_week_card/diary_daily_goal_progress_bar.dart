@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 /// Daily kcal progress bar with an activity extension segment.
 class DiaryDailyGoalProgressBar extends StatelessWidget {
   /// Creates a daily goal progress bar.
-  const DiaryDailyGoalProgressBar({
+  const new({
     required this.eatenKcal,
     required this.targetKcal,
     required this.activitySegmentKcal,
@@ -138,7 +138,7 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
 }
 
 class _ActivitySegmentPill extends StatelessWidget {
-  const _ActivitySegmentPill({
+  const new({
     required this.label,
     required this.color,
     required this.textColor,

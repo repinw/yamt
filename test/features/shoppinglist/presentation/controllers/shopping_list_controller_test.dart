@@ -7,6 +7,7 @@ import 'package:yamt/features/shoppinglist/data/'
     'shopping_list_repository_contract.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
+
 import '../../support/fake_shopping_list_repository.dart';
 
 ShoppingListItem _item(
@@ -373,9 +374,7 @@ void main() {
 
   test('save failure rolls back optimistic quantity update', () async {
     final repository =
-        FakeShoppingListRepository(
-            initialItems: <ShoppingListItem>[_item('a')],
-          )
+        FakeShoppingListRepository(initialItems: <ShoppingListItem>[_item('a')])
           ..saveAllShouldFail = true
           ..emitRealtimeOnSave = false;
     final container = await _createContainer(repository);

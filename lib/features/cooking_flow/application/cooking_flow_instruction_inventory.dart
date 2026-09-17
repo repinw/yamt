@@ -15,7 +15,7 @@ export 'cooking_flow_instruction_inventory_requirements.dart';
 /// Resolved ingredient reference with display labels and search terms.
 class CookingIngredientReference {
   /// Creates an ingredient reference.
-  const CookingIngredientReference({
+  const new({
     required this.rawIngredient,
     required this.name,
     required this.displayAmountLabel,

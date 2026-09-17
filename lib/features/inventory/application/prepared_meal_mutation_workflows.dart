@@ -21,7 +21,7 @@ import 'package:yamt/features/recipes/application/template_ingredient_parser.dar
 /// Runs prepared meal business workflows outside the controller.
 class PreparedMealMutationWorkflows {
   /// Creates prepared meal mutation workflows.
-  PreparedMealMutationWorkflows({
+  new({
     required this.loadMeals,
     required this.saveMeals,
     required this.restoreInventory,
@@ -69,9 +69,7 @@ class PreparedMealMutationWorkflows {
     required String? imageAssetId,
     required InventoryItemRepository inventoryRepository,
   }) {
-    return PreparedMealCreationWorkflows(
-      context: _context,
-    ).createPreparedMeal(
+    return PreparedMealCreationWorkflows(context: _context).createPreparedMeal(
       name: name,
       totalPortions: totalPortions,
       items: items,
@@ -94,19 +92,18 @@ class PreparedMealMutationWorkflows {
     int? finalNetWeight,
     Map<String, String> sourceKeysByIngredient = const <String, String>{},
   }) {
-    return PreparedMealCreationWorkflows(
-      context: _context,
-    ).createPreparedMealFromTemplate(
-      template: template,
-      totalPortions: totalPortions,
-      recipeIngredientAssignments: recipeIngredientAssignments,
-      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-      inventoryRepository: inventoryRepository,
-      ingredientParser: ingredientParser,
-      additionalItems: additionalItems,
-      finalNetWeight: finalNetWeight,
-      sourceKeysByIngredient: sourceKeysByIngredient,
-    );
+    return PreparedMealCreationWorkflows(context: _context)
+        .createPreparedMealFromTemplate(
+          template: template,
+          totalPortions: totalPortions,
+          recipeIngredientAssignments: recipeIngredientAssignments,
+          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
+          inventoryRepository: inventoryRepository,
+          ingredientParser: ingredientParser,
+          additionalItems: additionalItems,
+          finalNetWeight: finalNetWeight,
+          sourceKeysByIngredient: sourceKeysByIngredient,
+        );
   }
 
   /// Creates multiple prepared meals from one saved recipe template.
@@ -123,19 +120,18 @@ class PreparedMealMutationWorkflows {
     List<PreparedMealItemInput> additionalItems =
         const <PreparedMealItemInput>[],
   }) {
-    return PreparedMealCreationWorkflows(
-      context: _context,
-    ).createPreparedMealsFromTemplateContainers(
-      template: template,
-      totalPortions: totalPortions,
-      recipeIngredientAssignments: recipeIngredientAssignments,
-      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-      inventoryRepository: inventoryRepository,
-      ingredientParser: ingredientParser,
-      containers: containers,
-      sourceKeysByIngredient: sourceKeysByIngredient,
-      additionalItems: additionalItems,
-    );
+    return PreparedMealCreationWorkflows(context: _context)
+        .createPreparedMealsFromTemplateContainers(
+          template: template,
+          totalPortions: totalPortions,
+          recipeIngredientAssignments: recipeIngredientAssignments,
+          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
+          inventoryRepository: inventoryRepository,
+          ingredientParser: ingredientParser,
+          containers: containers,
+          sourceKeysByIngredient: sourceKeysByIngredient,
+          additionalItems: additionalItems,
+        );
   }
 
   /// Updates a prepared meal's editable details.
@@ -148,17 +144,16 @@ class PreparedMealMutationWorkflows {
     List<PreparedMealItemInput>? items,
     InventoryItemRepository? inventoryRepository,
   }) {
-    return PreparedMealEditingWorkflows(
-      context: _context,
-    ).updatePreparedMealDetails(
-      mealId: mealId,
-      name: name,
-      imageChanged: imageChanged,
-      imageAssetId: imageAssetId,
-      totalPortions: totalPortions,
-      items: items,
-      inventoryRepository: inventoryRepository,
-    );
+    return PreparedMealEditingWorkflows(context: _context)
+        .updatePreparedMealDetails(
+          mealId: mealId,
+          name: name,
+          imageChanged: imageChanged,
+          imageAssetId: imageAssetId,
+          totalPortions: totalPortions,
+          items: items,
+          inventoryRepository: inventoryRepository,
+        );
   }
 
   /// Fills one pending template ingredient with inventory.
@@ -169,15 +164,14 @@ class PreparedMealMutationWorkflows {
     required InventoryItemRepository inventoryRepository,
     required TemplateIngredientParser ingredientParser,
   }) {
-    return PreparedMealEditingWorkflows(
-      context: _context,
-    ).fillPreparedMealPendingIngredient(
-      mealId: mealId,
-      ingredient: ingredient,
-      inventoryItemIds: inventoryItemIds,
-      inventoryRepository: inventoryRepository,
-      ingredientParser: ingredientParser,
-    );
+    return PreparedMealEditingWorkflows(context: _context)
+        .fillPreparedMealPendingIngredient(
+          mealId: mealId,
+          ingredient: ingredient,
+          inventoryItemIds: inventoryItemIds,
+          inventoryRepository: inventoryRepository,
+          ingredientParser: ingredientParser,
+        );
   }
 
   /// Marks one pending ingredient as intentionally ignored.
@@ -185,12 +179,11 @@ class PreparedMealMutationWorkflows {
     required String mealId,
     required String ingredient,
   }) {
-    return PreparedMealEditingWorkflows(
-      context: _context,
-    ).ignorePreparedMealPendingIngredient(
-      mealId: mealId,
-      ingredient: ingredient,
-    );
+    return PreparedMealEditingWorkflows(context: _context)
+        .ignorePreparedMealPendingIngredient(
+          mealId: mealId,
+          ingredient: ingredient,
+        );
   }
 
   /// Consumes prepared meal portions and forwards calorie logging.
@@ -201,15 +194,14 @@ class PreparedMealMutationWorkflows {
     required DateTime? loggedDay,
     required PreparedMealCalorieLogBridge calorieLogBridge,
   }) {
-    return PreparedMealConsumptionWorkflows(
-      context: _context,
-    ).consumePreparedMeal(
-      mealId: mealId,
-      consumedPortions: consumedPortions,
-      mealType: mealType,
-      loggedDay: loggedDay,
-      calorieLogBridge: calorieLogBridge,
-    );
+    return PreparedMealConsumptionWorkflows(context: _context)
+        .consumePreparedMeal(
+          mealId: mealId,
+          consumedPortions: consumedPortions,
+          mealType: mealType,
+          loggedDay: loggedDay,
+          calorieLogBridge: calorieLogBridge,
+        );
   }
 
   /// Discards prepared meal portions and persists a discard event.
@@ -219,14 +211,13 @@ class PreparedMealMutationWorkflows {
     required InventoryDiscardReason reason,
     required InventoryDiscardEventRepository discardEventRepository,
   }) {
-    return PreparedMealConsumptionWorkflows(
-      context: _context,
-    ).throwAwayPreparedMeal(
-      mealId: mealId,
-      discardedPortions: discardedPortions,
-      reason: reason,
-      discardEventRepository: discardEventRepository,
-    );
+    return PreparedMealConsumptionWorkflows(context: _context)
+        .throwAwayPreparedMeal(
+          mealId: mealId,
+          discardedPortions: discardedPortions,
+          reason: reason,
+          discardEventRepository: discardEventRepository,
+        );
   }
 
   /// Restores previously removed prepared meal portions.
@@ -234,9 +225,8 @@ class PreparedMealMutationWorkflows {
     required String mealId,
     required num portions,
   }) {
-    return PreparedMealEditingWorkflows(
-      context: _context,
-    ).restorePreparedMealPortions(mealId: mealId, portions: portions);
+    return PreparedMealEditingWorkflows(context: _context)
+        .restorePreparedMealPortions(mealId: mealId, portions: portions);
   }
 
   /// Restores all remaining ingredients from a prepared meal back to inventory.
@@ -244,9 +234,7 @@ class PreparedMealMutationWorkflows {
     required String mealId,
     required InventoryItemRepository inventoryRepository,
   }) {
-    return PreparedMealEditingWorkflows(
-      context: _context,
-    ).unbundlePreparedMeal(
+    return PreparedMealEditingWorkflows(context: _context).unbundlePreparedMeal(
       mealId: mealId,
       inventoryRepository: inventoryRepository,
     );

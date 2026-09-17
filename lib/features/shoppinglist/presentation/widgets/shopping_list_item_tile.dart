@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_product_menu.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines shopping list item tile.
 class ShoppingListItemTile extends StatelessWidget {
   /// The shopping list item tile.
-  const ShoppingListItemTile({
+  const new({
     required this.item,
     required this.l10n,
     required this.currency,
@@ -153,7 +153,7 @@ class ShoppingListItemTile extends StatelessWidget {
 }
 
 class _ShoppingListQuantityStepper extends StatelessWidget {
-  const _ShoppingListQuantityStepper({
+  const new({
     required this.quantity,
     required this.isCrossedOff,
     required this.onIncrement,

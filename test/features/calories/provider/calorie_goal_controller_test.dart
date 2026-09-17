@@ -84,10 +84,7 @@ void main() {
 
       final saved = await container
           .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(
-            profile,
-            goalStartDate: goalStartDate,
-          );
+          .saveCalculatedGoal(profile, goalStartDate: goalStartDate);
 
       expect(saved, isTrue);
       final settings = await repository.readSettings();
@@ -184,9 +181,7 @@ void main() {
       effectiveDate: DateTime(2026, 4, 8),
     );
     final repository =
-        FakeCalorieSettingsRepository(
-            initialSettings: previousSettings,
-          )
+        FakeCalorieSettingsRepository(initialSettings: previousSettings)
           ..onSaveSettings = (settings) async {
             throw StateError('save failed');
           };
@@ -438,54 +433,51 @@ void main() {
     },
   );
 
-  test(
-    'saveCalculatedGoal seeds initial calculator weight '
-    'into weight history',
-    () async {
-      final repository = FakeCalorieSettingsRepository();
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[],
-      );
-      addTearDown(repository.dispose);
+  test('saveCalculatedGoal seeds initial calculator weight '
+      'into weight history', () async {
+    final repository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    addTearDown(repository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(repository),
-          healthConnectionServiceProvider.overrideWithValue(
-            FakeHealthConnectionService(
-              const HealthConnectionStatus.unsupported(),
-            ),
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        healthConnectionServiceProvider.overrideWithValue(
+          FakeHealthConnectionService(
+            const HealthConnectionStatus.unsupported(),
           ),
-          manualHealthWeightRepositoryProvider.overrideWithValue(
-            manualRepository,
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+        ),
+        manualHealthWeightRepositoryProvider.overrideWithValue(
+          manualRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
 
-      const profile = CalorieCalculatorProfile(
-        sex: CalorieCalculatorSex.male,
-        weightKg: 80,
-        heightCm: 180,
-        ageYears: 30,
-        activityLevel: 1.2,
-        goalMode: CalorieGoalMode.maintain,
-        goalSpeedKgPerWeek: 0,
-      );
-      final goalStartDate = DateTime(2026, 4, 8, 16, 30);
+    const profile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.male,
+      weightKg: 80,
+      heightCm: 180,
+      ageYears: 30,
+      activityLevel: 1.2,
+      goalMode: CalorieGoalMode.maintain,
+      goalSpeedKgPerWeek: 0,
+    );
+    final goalStartDate = DateTime(2026, 4, 8, 16, 30);
 
-      final saved = await container
-          .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(profile, goalStartDate: goalStartDate);
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveCalculatedGoal(profile, goalStartDate: goalStartDate);
 
-      expect(saved, isTrue);
-      expect(manualRepository.entries, hasLength(1));
-      expect(manualRepository.entries.single.day, DateTime(2026, 4, 8));
-      expect(manualRepository.entries.single.weightKg, 80);
-    },
-  );
+    expect(saved, isTrue);
+    expect(manualRepository.entries, hasLength(1));
+    expect(manualRepository.entries.single.day, DateTime(2026, 4, 8));
+    expect(manualRepository.entries.single.weightKg, 80);
+  });
 
   test(
     'saveCalculatedGoal skips seed when Health already has start weight',
@@ -494,11 +486,9 @@ void main() {
       final manualRepository = FakeManualHealthWeightRepository(
         <ManualHealthWeightEntry>[],
       );
-      final healthWeightService = FakeHealthWeightService(
-        <HealthWeightSample>[
-          HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 80),
-        ],
-      );
+      final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
+        HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 80),
+      ]);
       addTearDown(repository.dispose);
 
       final container = ProviderContainer(
@@ -536,75 +526,65 @@ void main() {
 
       final saved = await container
           .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(
-            profile,
-            goalStartDate: DateTime(2026, 4, 8, 16),
-          );
+          .saveCalculatedGoal(profile, goalStartDate: DateTime(2026, 4, 8, 16));
 
       expect(saved, isTrue);
       expect(manualRepository.entries, isEmpty);
     },
   );
 
-  test(
-    'saveCalculatedGoal with unchanged date updates window only '
-    'and preserves pending dismissal',
-    () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final dismissedAt = today.add(const Duration(hours: 9));
-      final pending = PendingCalorieGoalWeeklyCheckIn(
-        windowStartDate: today.subtract(
-          const Duration(days: weeklyCheckInWindowLengthDays),
-        ),
-        windowEndDate: today.subtract(const Duration(days: 1)),
-        dueDate: today,
-        dismissedAt: dismissedAt,
-      );
-      const profile = CalorieCalculatorProfile(
-        sex: CalorieCalculatorSex.male,
-        weightKg: 80,
-        heightCm: 180,
-        ageYears: 30,
-        activityLevel: 1.2,
-        goalMode: CalorieGoalMode.maintain,
-        goalSpeedKgPerWeek: 0,
-      );
-      final calculatedGoal = CalorieGoalCalculator.calculate(
-        profile,
-      ).finalGoalKcal;
-      final repository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: calculatedGoal,
-          calculatorProfile: profile.copyWith(),
-          effectiveDate: today,
-          source: CalorieGoalSource.calculator,
-        ).copyWithPendingWeeklyCheckIn(pending),
-      );
-      addTearDown(repository.dispose);
+  test('saveCalculatedGoal with unchanged date updates window only '
+      'and preserves pending dismissal', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final dismissedAt = today.add(const Duration(hours: 9));
+    final pending = PendingCalorieGoalWeeklyCheckIn(
+      windowStartDate: today.subtract(
+        const Duration(days: weeklyCheckInWindowLengthDays),
+      ),
+      windowEndDate: today.subtract(const Duration(days: 1)),
+      dueDate: today,
+      dismissedAt: dismissedAt,
+    );
+    const profile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.male,
+      weightKg: 80,
+      heightCm: 180,
+      ageYears: 30,
+      activityLevel: 1.2,
+      goalMode: CalorieGoalMode.maintain,
+      goalSpeedKgPerWeek: 0,
+    );
+    final calculatedGoal = CalorieGoalCalculator.calculate(profile)
+        .finalGoalKcal;
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: calculatedGoal,
+        calculatorProfile: profile.copyWith(),
+        effectiveDate: today,
+        source: CalorieGoalSource.calculator,
+      ).copyWithPendingWeeklyCheckIn(pending),
+    );
+    addTearDown(repository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
 
-      final saved = await container
-          .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(
-            profile,
-            goalStartDate: today,
-          );
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveCalculatedGoal(profile, goalStartDate: today);
 
-      expect(saved, isTrue);
-      final settings = await repository.readSettings();
-      expect(settings.goalHistory, hasLength(1));
-      expect(settings.pendingWeeklyCheckIn?.windowKey, pending.windowKey);
-      expect(settings.pendingWeeklyCheckIn?.dismissedAt, dismissedAt);
-    },
-  );
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.goalHistory, hasLength(1));
+    expect(settings.pendingWeeklyCheckIn?.windowKey, pending.windowKey);
+    expect(settings.pendingWeeklyCheckIn?.dismissedAt, dismissedAt);
+  });
 
   test(
     'saveCalculatedGoal refreshes expected activity when profile unchanged',
@@ -654,72 +634,66 @@ void main() {
     },
   );
 
-  test(
-    'saveCalculatedGoal drops copied learned snapshot '
-    'on same-day calculator edits',
-    () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-        windowStartDate: DateTime(2026, 4, 8),
-        windowEndDate: DateTime(2026, 4, 14),
-        trendWeightChangePerDay: -0.08,
-        calculatedTdeeKcal: 2450,
-        lowConfidence: false,
-      );
-      const initialProfile = CalorieCalculatorProfile(
-        sex: CalorieCalculatorSex.female,
-        weightKg: 65,
-        heightCm: 170,
-        ageYears: 28,
-        activityLevel: 1.7,
-        goalMode: CalorieGoalMode.maintain,
-        goalSpeedKgPerWeek: 0,
-      );
-      const updatedProfile = CalorieCalculatorProfile(
-        sex: CalorieCalculatorSex.female,
-        weightKg: 65,
-        heightCm: 170,
-        ageYears: 28,
-        activityLevel: 1.7,
-        goalMode: CalorieGoalMode.lose,
-        goalSpeedKgPerWeek: 0.5,
-      );
-      final repository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: learnedSnapshot.calculatedTdeeKcal,
-          calculatorProfile: initialProfile,
-          effectiveDate: today,
-          source: CalorieGoalSource.calculator,
-          weeklyCheckInSnapshot: learnedSnapshot,
-        ),
-      );
-      addTearDown(repository.dispose);
+  test('saveCalculatedGoal drops copied learned snapshot '
+      'on same-day calculator edits', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: DateTime(2026, 4, 8),
+      windowEndDate: DateTime(2026, 4, 14),
+      trendWeightChangePerDay: -0.08,
+      calculatedTdeeKcal: 2450,
+      lowConfidence: false,
+    );
+    const initialProfile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.female,
+      weightKg: 65,
+      heightCm: 170,
+      ageYears: 28,
+      activityLevel: 1.7,
+      goalMode: CalorieGoalMode.maintain,
+      goalSpeedKgPerWeek: 0,
+    );
+    const updatedProfile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.female,
+      weightKg: 65,
+      heightCm: 170,
+      ageYears: 28,
+      activityLevel: 1.7,
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: learnedSnapshot.calculatedTdeeKcal,
+        calculatorProfile: initialProfile,
+        effectiveDate: today,
+        source: CalorieGoalSource.calculator,
+        weeklyCheckInSnapshot: learnedSnapshot,
+      ),
+    );
+    addTearDown(repository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
 
-      final saved = await container
-          .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(
-            updatedProfile,
-            goalStartDate: today,
-          );
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveCalculatedGoal(updatedProfile, goalStartDate: today);
 
-      expect(saved, isTrue);
-      final settings = await repository.readSettings();
-      expect(settings.goalHistory, hasLength(1));
-      expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
-      expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNull);
-      expect(settings.hasLearnedTdee, isFalse);
-      expect(settings.latestLearnedTdeeKcal, isNull);
-    },
-  );
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.goalHistory, hasLength(1));
+    expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
+    expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNull);
+    expect(settings.hasLearnedTdee, isFalse);
+    expect(settings.latestLearnedTdeeKcal, isNull);
+  });
 
   test('saveCalculatedGoal can count same-day start as tracked', () async {
     final today = normalizeDiaryDay(DateTime.now());
@@ -797,68 +771,62 @@ void main() {
     expect(isSameDiaryDay(settings.goalHistory.single.changedAt!, today), true);
   });
 
-  test(
-    'saveCalculatedGoal does not reattach stale learned snapshot '
-    'from older history',
-    () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-        windowStartDate: DateTime(2026, 4, 8),
-        windowEndDate: DateTime(2026, 4, 14),
-        trendWeightChangePerDay: -0.08,
-        calculatedTdeeKcal: 2450,
-        lowConfidence: false,
-      );
-      const profile = CalorieCalculatorProfile(
-        sex: CalorieCalculatorSex.female,
-        weightKg: 65,
-        heightCm: 170,
-        ageYears: 28,
-        activityLevel: 1.7,
-        goalMode: CalorieGoalMode.lose,
-        goalSpeedKgPerWeek: 0.5,
-      );
-      final initialSettings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: today.subtract(const Duration(days: 7)),
-            dailyKcalGoal: learnedSnapshot.calculatedTdeeKcal,
-            calculatorProfile: profile,
-            source: CalorieGoalSource.calculator,
-            weeklyCheckInSnapshot: learnedSnapshot,
-          )
-          .applyGoalChange(
-            changedAt: today,
-            dailyKcalGoal: 2100,
-            calculatorProfile: null,
-          );
-      final repository = FakeCalorieSettingsRepository(
-        initialSettings: initialSettings,
-      );
-      addTearDown(repository.dispose);
+  test('saveCalculatedGoal does not reattach stale learned snapshot '
+      'from older history', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: DateTime(2026, 4, 8),
+      windowEndDate: DateTime(2026, 4, 14),
+      trendWeightChangePerDay: -0.08,
+      calculatedTdeeKcal: 2450,
+      lowConfidence: false,
+    );
+    const profile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.female,
+      weightKg: 65,
+      heightCm: 170,
+      ageYears: 28,
+      activityLevel: 1.7,
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+    );
+    final initialSettings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: today.subtract(const Duration(days: 7)),
+          dailyKcalGoal: learnedSnapshot.calculatedTdeeKcal,
+          calculatorProfile: profile,
+          source: CalorieGoalSource.calculator,
+          weeklyCheckInSnapshot: learnedSnapshot,
+        )
+        .applyGoalChange(
+          changedAt: today,
+          dailyKcalGoal: 2100,
+          calculatorProfile: null,
+        );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    addTearDown(repository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
 
-      final saved = await container
-          .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(
-            profile,
-            goalStartDate: today,
-          );
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveCalculatedGoal(profile, goalStartDate: today);
 
-      expect(saved, isTrue);
-      final settings = await repository.readSettings();
-      expect(settings.goalHistory, hasLength(2));
-      expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
-      expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNull);
-    },
-  );
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.goalHistory, hasLength(2));
+    expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
+    expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNull);
+  });
 
   test(
     'shiftGoalStart moves the active goal start and keeps the goal',
@@ -947,120 +915,110 @@ void main() {
     );
   });
 
-  test(
-    'shiftGoalStart allows future counting start',
-    () async {
-      final today = DateTime.now();
-      final initialSettings = CalorieGoalSettings.single(
-        dailyKcalGoal: 1900,
-        calculatorProfile: null,
-        effectiveDate: today,
-      );
-      final repository = FakeCalorieSettingsRepository(
-        initialSettings: initialSettings,
-      );
-      addTearDown(repository.dispose);
+  test('shiftGoalStart allows future counting start', () async {
+    final today = DateTime.now();
+    final initialSettings = CalorieGoalSettings.single(
+      dailyKcalGoal: 1900,
+      calculatorProfile: null,
+      effectiveDate: today,
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    addTearDown(repository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
 
-      final futureGoalStart = today.add(const Duration(days: 2));
-      final saved = await container
-          .read(calorieGoalControllerProvider.notifier)
-          .shiftGoalStart(
-            goalStartDate: futureGoalStart,
-          );
+    final futureGoalStart = today.add(const Duration(days: 2));
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .shiftGoalStart(goalStartDate: futureGoalStart);
 
-      expect(saved, isTrue);
-      final settings = await repository.readSettings();
-      expect(settings.goalHistory, hasLength(1));
-      expect(
-        isSameDiaryDay(settings.goalHistory.single.changedAt!, today),
-        isTrue,
-      );
-      expect(
-        settings.goalHistory.single.effectiveCountingStartDate,
-        normalizeDiaryDay(futureGoalStart),
-      );
-      expect(
-        settings.nextGoalStartAfterDay(today),
-        normalizeDiaryDay(futureGoalStart),
-      );
-    },
-  );
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.goalHistory, hasLength(1));
+    expect(
+      isSameDiaryDay(settings.goalHistory.single.changedAt!, today),
+      isTrue,
+    );
+    expect(
+      settings.goalHistory.single.effectiveCountingStartDate,
+      normalizeDiaryDay(futureGoalStart),
+    );
+    expect(
+      settings.nextGoalStartAfterDay(today),
+      normalizeDiaryDay(futureGoalStart),
+    );
+  });
 
-  test(
-    'shiftGoalStart drops copied weekly check in metadata',
-    () async {
-      final today = DateTime.now();
-      final weeklyCheckInSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-        windowStartDate: today.subtract(const Duration(days: 7)),
-        windowEndDate: today.subtract(const Duration(days: 1)),
-        trendWeightChangePerDay: -0.08,
-        calculatedTdeeKcal: 2315,
-        lowConfidence: false,
-      );
-      final initialSettings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: today.subtract(const Duration(days: 14)),
-            dailyKcalGoal: 2200,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: today.subtract(const Duration(days: 1)),
-            dailyKcalGoal: 2300,
-            calculatorProfile: const CalorieCalculatorProfile(
-              sex: CalorieCalculatorSex.female,
-              weightKg: 65,
-              heightCm: 170,
-              ageYears: 28,
-              activityLevel: 1.7,
-              goalMode: CalorieGoalMode.maintain,
-              goalSpeedKgPerWeek: 0,
-            ),
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: weeklyCheckInSnapshot,
-          );
-      final repository = FakeCalorieSettingsRepository(
-        initialSettings: initialSettings,
-      );
-      addTearDown(repository.dispose);
+  test('shiftGoalStart drops copied weekly check in metadata', () async {
+    final today = DateTime.now();
+    final weeklyCheckInSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: today.subtract(const Duration(days: 7)),
+      windowEndDate: today.subtract(const Duration(days: 1)),
+      trendWeightChangePerDay: -0.08,
+      calculatedTdeeKcal: 2315,
+      lowConfidence: false,
+    );
+    final initialSettings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: today.subtract(const Duration(days: 14)),
+          dailyKcalGoal: 2200,
+          calculatorProfile: null,
+        )
+        .applyGoalChange(
+          changedAt: today.subtract(const Duration(days: 1)),
+          dailyKcalGoal: 2300,
+          calculatorProfile: const CalorieCalculatorProfile(
+            sex: CalorieCalculatorSex.female,
+            weightKg: 65,
+            heightCm: 170,
+            ageYears: 28,
+            activityLevel: 1.7,
+            goalMode: CalorieGoalMode.maintain,
+            goalSpeedKgPerWeek: 0,
+          ),
+          source: CalorieGoalSource.weeklyCheckIn,
+          weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+        );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    addTearDown(repository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
 
-      final saved = await container
-          .read(calorieGoalControllerProvider.notifier)
-          .shiftGoalStart(
-            goalStartDate: today.subtract(const Duration(days: 2)),
-          );
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .shiftGoalStart(goalStartDate: today.subtract(const Duration(days: 2)));
 
-      expect(saved, isTrue);
-      final settings = await repository.readSettings();
-      expect(settings.latestGoalEntry?.dailyKcalGoal, 2200);
-      expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
-      expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNull);
-      expect(settings.hasLearnedTdee, isFalse);
-      expect(settings.latestLearnedTdeeKcal, isNull);
-      expect(
-        settings.goalKcalForDay(today.subtract(const Duration(days: 3))),
-        2200,
-      );
-      expect(settings.goalKcalForDay(today), 2200);
-    },
-  );
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.latestGoalEntry?.dailyKcalGoal, 2200);
+    expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
+    expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNull);
+    expect(settings.hasLearnedTdee, isFalse);
+    expect(settings.latestLearnedTdeeKcal, isNull);
+    expect(
+      settings.goalKcalForDay(today.subtract(const Duration(days: 3))),
+      2200,
+    );
+    expect(settings.goalKcalForDay(today), 2200);
+  });
 
   test('shiftGoalStart returns false without a goal', () async {
     final repository = FakeCalorieSettingsRepository();
@@ -1355,10 +1313,7 @@ void main() {
         (entry) => !entry.isWeeklyCheckIn,
       );
       expect(calculatorEntry.weeklyCheckInSnapshot?.inputHash, 'v1:old');
-      expect(
-        calculatorEntry.weeklyCheckInSnapshot?.calculatedTdeeKcal,
-        2315,
-      );
+      expect(calculatorEntry.weeklyCheckInSnapshot?.calculatedTdeeKcal, 2315);
       expect(
         settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot,
         newSnapshot,
@@ -1735,75 +1690,72 @@ void main() {
     },
   );
 
-  test(
-    'saveLearnedTdeeGoal with unchanged date updates window only '
-    'and preserves pending dismissal',
-    () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final dismissedAt = today.add(const Duration(hours: 9));
-      final pending = PendingCalorieGoalWeeklyCheckIn(
-        windowStartDate: today.subtract(
-          const Duration(days: weeklyCheckInWindowLengthDays),
-        ),
-        windowEndDate: today.subtract(const Duration(days: 1)),
-        dueDate: today,
-        dismissedAt: dismissedAt,
-      );
-      final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-        windowStartDate: DateTime(2026, 4, 8),
-        windowEndDate: DateTime(2026, 4, 14),
-        trendWeightChangePerDay: -0.08,
-        calculatedTdeeKcal: 2450,
-        lowConfidence: false,
-      );
-      const profile = CalorieCalculatorProfile(
-        sex: CalorieCalculatorSex.female,
-        weightKg: 65,
-        heightCm: 170,
-        ageYears: 28,
-        activityLevel: 1.7,
-        goalMode: CalorieGoalMode.lose,
-        goalSpeedKgPerWeek: 0.5,
-      );
-      final repository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal:
-              CalorieWeeklyCheckInCalculator.calculateGoalFromLearnedTdee(
-                learnedTdeeKcal: learnedSnapshot.calculatedTdeeKcal,
-                goalSpeedKgPerWeek: 0.5,
-                isLosing: true,
-                isGaining: false,
-              ),
-          calculatorProfile: profile,
-          effectiveDate: today,
-          source: CalorieGoalSource.calculator,
-          weeklyCheckInSnapshot: learnedSnapshot,
-        ).copyWithPendingWeeklyCheckIn(pending),
-      );
-      addTearDown(repository.dispose);
+  test('saveLearnedTdeeGoal with unchanged date updates window only '
+      'and preserves pending dismissal', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final dismissedAt = today.add(const Duration(hours: 9));
+    final pending = PendingCalorieGoalWeeklyCheckIn(
+      windowStartDate: today.subtract(
+        const Duration(days: weeklyCheckInWindowLengthDays),
+      ),
+      windowEndDate: today.subtract(const Duration(days: 1)),
+      dueDate: today,
+      dismissedAt: dismissedAt,
+    );
+    final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: DateTime(2026, 4, 8),
+      windowEndDate: DateTime(2026, 4, 14),
+      trendWeightChangePerDay: -0.08,
+      calculatedTdeeKcal: 2450,
+      lowConfidence: false,
+    );
+    const profile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.female,
+      weightKg: 65,
+      heightCm: 170,
+      ageYears: 28,
+      activityLevel: 1.7,
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal:
+            CalorieWeeklyCheckInCalculator.calculateGoalFromLearnedTdee(
+              learnedTdeeKcal: learnedSnapshot.calculatedTdeeKcal,
+              goalSpeedKgPerWeek: 0.5,
+              isLosing: true,
+              isGaining: false,
+            ),
+        calculatorProfile: profile,
+        effectiveDate: today,
+        source: CalorieGoalSource.calculator,
+        weeklyCheckInSnapshot: learnedSnapshot,
+      ).copyWithPendingWeeklyCheckIn(pending),
+    );
+    addTearDown(repository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
 
-      final saved = await container
-          .read(calorieGoalControllerProvider.notifier)
-          .saveLearnedTdeeGoal(
-            goalMode: CalorieGoalMode.lose,
-            goalSpeedKgPerWeek: 0.5,
-            goalStartDate: today,
-          );
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveLearnedTdeeGoal(
+          goalMode: CalorieGoalMode.lose,
+          goalSpeedKgPerWeek: 0.5,
+          goalStartDate: today,
+        );
 
-      expect(saved, isTrue);
-      final settings = await repository.readSettings();
-      expect(settings.goalHistory, hasLength(1));
-      expect(settings.pendingWeeklyCheckIn?.windowKey, pending.windowKey);
-      expect(settings.pendingWeeklyCheckIn?.dismissedAt, dismissedAt);
-    },
-  );
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.goalHistory, hasLength(1));
+    expect(settings.pendingWeeklyCheckIn?.windowKey, pending.windowKey);
+    expect(settings.pendingWeeklyCheckIn?.dismissedAt, dismissedAt);
+  });
 }

@@ -20,7 +20,7 @@ import 'package:yamt/features/kitchen_utensils/data/'
 import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_store.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  const _FakeInventoryUserSession({required this.currentUserId});
+  const new({required this.currentUserId});
 
   @override
   final String? currentUserId;
@@ -28,9 +28,7 @@ class _FakeInventoryUserSession implements InventoryUserSession {
 
 class _FakeKitchenUtensilStore implements KitchenUtensilStore {
   @override
-  Future<List<KitchenUtensilDocument>> readAll({
-    required String userId,
-  }) async {
+  Future<List<KitchenUtensilDocument>> readAll({required String userId}) async {
     return const <KitchenUtensilDocument>[];
   }
 
@@ -116,10 +114,7 @@ void main() {
       ),
       isFalse,
     );
-    expect(
-      await store.delete(userId: 'owner-1', utensilId: 'pot-1'),
-      isFalse,
-    );
+    expect(await store.delete(userId: 'owner-1', utensilId: 'pot-1'), isFalse);
   });
 
   test('image store provider falls back to unavailable image store', () async {

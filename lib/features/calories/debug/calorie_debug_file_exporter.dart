@@ -12,13 +12,13 @@ part 'calorie_debug_file_exporter.g.dart';
 /// Result from saving a calorie debug text file.
 sealed class CalorieDebugFileExportResult {
   /// Creates export result.
-  const CalorieDebugFileExportResult();
+  const new();
 }
 
 /// Debug text was saved or downloaded.
 class CalorieDebugFileExportSaved extends CalorieDebugFileExportResult {
   /// Creates saved result.
-  const CalorieDebugFileExportSaved({required this.path});
+  const new({required this.path});
 
   /// Saved path, when the platform exposes one.
   final String? path;
@@ -27,7 +27,7 @@ class CalorieDebugFileExportSaved extends CalorieDebugFileExportResult {
 /// User canceled the save dialog.
 class CalorieDebugFileExportCanceled extends CalorieDebugFileExportResult {
   /// Creates canceled result.
-  const CalorieDebugFileExportCanceled();
+  const new();
 }
 
 /// Saves debug text to a user-chosen file.
@@ -41,16 +41,13 @@ abstract class CalorieDebugFileExporter {
 }
 
 /// Save-file callback used by [FilePickerCalorieDebugFileExporter].
-typedef CalorieDebugSaveFileCallback =
-    Future<String?> Function({
-      String? dialogTitle,
-      String? fileName,
-      String? initialDirectory,
-      FileType type,
-      List<String>? allowedExtensions,
-      Uint8List? bytes,
-      bool lockParentWindow,
-    });
+typedef CalorieDebugSaveFileCallback = Future<Uri?> Function({
+  required String fileName,
+  required Uint8List bytes,
+  String? dialogTitle,
+  FileType type,
+  List<String>? allowedExtensions,
+});
 
 /// Provides the calorie debug file exporter.
 @riverpod
@@ -61,9 +58,7 @@ CalorieDebugFileExporter calorieDebugFileExporter(Ref ref) {
 /// `file_picker` implementation for debug text export.
 class FilePickerCalorieDebugFileExporter implements CalorieDebugFileExporter {
   /// Creates file-picker exporter.
-  const FilePickerCalorieDebugFileExporter({
-    CalorieDebugSaveFileCallback? saveFile,
-  }) : _saveFile = saveFile;
+  const new({this._saveFile});
 
   final CalorieDebugSaveFileCallback? _saveFile;
 
@@ -74,7 +69,7 @@ class FilePickerCalorieDebugFileExporter implements CalorieDebugFileExporter {
     required String text,
   }) async {
     final saveFile = _saveFile ?? FilePicker.saveFile;
-    final path = await saveFile(
+    final uri = await saveFile(
       dialogTitle: dialogTitle,
       fileName: fileName,
       type: FileType.custom,
@@ -82,9 +77,11 @@ class FilePickerCalorieDebugFileExporter implements CalorieDebugFileExporter {
       bytes: Uint8List.fromList(utf8.encode(text)),
     );
 
-    if (path == null && !kIsWeb) {
+    if (uri == null) {
       return const CalorieDebugFileExportCanceled();
     }
-    return CalorieDebugFileExportSaved(path: path);
+    return CalorieDebugFileExportSaved(
+      path: uri.isScheme('file') ? uri.toFilePath() : uri.toString(),
+    );
   }
 }

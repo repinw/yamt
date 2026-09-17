@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 /// Compile-time Google Sign-In client IDs used by the app.
 class GoogleSignInConfig {
-  GoogleSignInConfig._();
+  new _();
 
   /// Web OAuth client ID, or `null` when no ID was configured.
   static String get webClientId {

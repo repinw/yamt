@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/'
     'global_food_serving_suggestion_repository.dart';
@@ -211,7 +212,7 @@ InventoryItem _fractionalPieceAmountItem() {
 }
 
 class _OpenEatSheetButton extends StatelessWidget {
-  const _OpenEatSheetButton({
+  const new({
     required this.item,
     required this.maxAmount,
     required this.onResult,
@@ -262,7 +263,7 @@ Widget _buildTestApp({
     ],
     child: MaterialApp(
       locale: locale,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Center(
@@ -424,11 +425,7 @@ void main() {
 
   testWidgets('shows the available inventory amount', (tester) async {
     await tester.pumpWidget(
-      _buildTestApp(
-        item: _amountItem(),
-        maxAmount: 1000,
-        onResult: (_) {},
-      ),
+      _buildTestApp(item: _amountItem(), maxAmount: 1000, onResult: (_) {}),
     );
 
     await _openSheet(tester);
@@ -436,9 +433,7 @@ void main() {
     expect(find.text('Available in inventory: 1000 g'), findsOneWidget);
   });
 
-  testWidgets('shows the localized available inventory amount', (
-    tester,
-  ) async {
+  testWidgets('shows the localized available inventory amount', (tester) async {
     await tester.pumpWidget(
       _buildTestApp(
         item: _amountItem(),
@@ -875,9 +870,7 @@ void main() {
     expect(result?.portionLabel, 'Scheibe');
   });
 
-  testWidgets('persists a new portion as soon as it is saved', (
-    tester,
-  ) async {
+  testWidgets('persists a new portion as soon as it is saved', (tester) async {
     final item = _slicedCheeseItem().copyWith(
       globalFoodItemId: 'off-sliced-cheese',
     );

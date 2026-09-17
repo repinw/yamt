@@ -12,17 +12,13 @@ import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart
 /// Loads and caches aggregate activity trend days for mobile Health.
 class DiaryHealthMobileActivityTrendLoader {
   /// Creates an aggregate activity trend loader.
-  DiaryHealthMobileActivityTrendLoader({
-    required DiaryHealthMobileHealthReader healthReader,
-    required DateTime Function() now,
-    required Duration todayCacheTtl,
-    required Duration historicalCacheTtl,
-    DiaryHealthActivityTrendDayCacheStore? cacheStore,
-  }) : _healthReader = healthReader,
-       _now = now,
-       _todayCacheTtl = todayCacheTtl,
-       _historicalCacheTtl = historicalCacheTtl,
-       _cacheStore = cacheStore;
+  new({
+    required this._healthReader,
+    required this._now,
+    required this._todayCacheTtl,
+    required this._historicalCacheTtl,
+    this._cacheStore,
+  });
 
   final DiaryHealthMobileHealthReader _healthReader;
   final DateTime Function() _now;
@@ -49,10 +45,7 @@ class DiaryHealthMobileActivityTrendLoader {
       return const <DiaryHealthActivityTrendDay>[];
     }
 
-    final cacheKey = _rangeCacheKey(
-      startInclusive: start,
-      endExclusive: end,
-    );
+    final cacheKey = _rangeCacheKey(startInclusive: start, endExclusive: end);
     final cachedDays = _cachedRangeDays(cacheKey);
     if (cachedDays != null) {
       return cachedDays;
@@ -108,10 +101,7 @@ class DiaryHealthMobileActivityTrendLoader {
       return const <DiaryHealthActivityTrendDay>[];
     }
 
-    final cacheKey = _rangeCacheKey(
-      startInclusive: start,
-      endExclusive: end,
-    );
+    final cacheKey = _rangeCacheKey(startInclusive: start, endExclusive: end);
     final refreshCacheKey = '$cacheKey:refresh';
     final pendingDays = _inFlightByKey[refreshCacheKey];
     if (pendingDays != null) {
@@ -536,14 +526,10 @@ class DiaryHealthMobileActivityTrendLoader {
       return;
     }
 
-    final entriesByAge =
-        _rangeCacheByKey.entries.toList(
-          growable: false,
-        )..sort(
-          (left, right) => left.value.loadedAt.compareTo(
-            right.value.loadedAt,
-          ),
-        );
+    final entriesByAge = _rangeCacheByKey.entries.toList(growable: false)
+      ..sort(
+        (left, right) => left.value.loadedAt.compareTo(right.value.loadedAt),
+      );
     final entriesToRemove =
         _rangeCacheByKey.length - maxActivityTrendCacheEntries;
     for (final entry in entriesByAge.take(entriesToRemove)) {
@@ -561,14 +547,14 @@ class DiaryHealthMobileActivityTrendLoader {
 }
 
 class _LocalDayRange {
-  const _LocalDayRange(this.startInclusive, this.endExclusive);
+  const new(this.startInclusive, this.endExclusive);
 
   final DateTime startInclusive;
   final DateTime endExclusive;
 }
 
 class _ActivityTrendCacheRange {
-  const _ActivityTrendCacheRange({
+  const new({
     required this.cachedDays,
     required this.missingRanges,
     required this.hasExpiredDays,

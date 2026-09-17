@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Main inventory floating action button.
 class InventoryMainFabButton extends StatelessWidget {
   /// Creates main inventory floating action button.
-  const InventoryMainFabButton({
+  const new({
     required this.isBusy,
     required this.icon,
     required this.tooltip,
@@ -68,7 +68,7 @@ class InventoryMainFabButton extends StatelessWidget {
 }
 
 class _InventoryMainFabIcon extends StatelessWidget {
-  const _InventoryMainFabIcon({
+  const new({
     required this.isBusy,
     required this.icon,
     required this.foregroundColor,

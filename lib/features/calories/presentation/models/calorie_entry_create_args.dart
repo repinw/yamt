@@ -5,7 +5,7 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 /// Defines calorie entry create args.
 class CalorieEntryCreateArgs {
   /// The calorie entry create args.
-  const CalorieEntryCreateArgs({
+  const new({
     required this.prefilledProfile,
     this.scannedSourceRef,
     this.inventoryContext,

@@ -10,11 +10,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/di
 /// needed.
 class DiaryMacroStripTrigger extends StatefulWidget {
   /// Creates the trigger sliver.
-  const DiaryMacroStripTrigger({
-    required this.anchors,
-    required this.stage,
-    super.key,
-  });
+  const new({required this.anchors, required this.stage, super.key});
 
   /// Keys of the daily card parts.
   final DiaryMacroStripAnchors anchors;

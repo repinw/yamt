@@ -16,13 +16,14 @@ const manualProductSearchFlowParam = 'flow';
 const manualProductSearchPayloadParam = 'payload';
 
 /// Handles a save result emitted by a product-search route.
-typedef ManualProductSearchRouteSaveHandler =
-    Future<void> Function(InventoryReceiptManualProductResult result);
+typedef ManualProductSearchRouteSaveHandler = Future<void> Function(
+  InventoryReceiptManualProductResult result,
+);
 
 /// Stores transient route payloads behind short URL-safe ids.
 class ManualProductSearchRoutePayloadStore {
   /// Creates a route payload store.
-  ManualProductSearchRoutePayloadStore();
+  new();
 
   final _payloads = <String, ManualProductSearchRouteArgs>{};
   var _nextPayloadId = 0;
@@ -69,10 +70,9 @@ enum ManualProductSearchChildFlow {
   editor('editor'),
 
   /// AI search page.
-  aiSearch('ai-search')
-  ;
+  aiSearch('ai-search');
 
-  const ManualProductSearchChildFlow(this.pathSegment);
+  new(this.pathSegment);
 
   /// Stable path segment.
   final String pathSegment;
@@ -90,7 +90,7 @@ enum ManualProductSearchChildFlow {
 
 /// Serializable route arguments for a product-search child flow.
 class ManualProductSearchRouteArgs {
-  const ManualProductSearchRouteArgs._({
+  const new _({
     required this.flow,
     required this.item,
     required this.includeStoreInSearch,
@@ -110,7 +110,7 @@ class ManualProductSearchRouteArgs {
   });
 
   /// Creates manual editor route args.
-  factory ManualProductSearchRouteArgs.editor({
+  factory editor({
     required InventoryReceiptManualProductConfig config,
     required bool showEatImmediatelyOption,
     required InventoryReceiptManualProductAction initialAction,
@@ -144,7 +144,7 @@ class ManualProductSearchRouteArgs {
   }
 
   /// Creates AI search route args.
-  factory ManualProductSearchRouteArgs.aiSearch({
+  factory aiSearch({
     required InventoryItem item,
     required String initialPrompt,
     required bool showEatImmediatelyOption,
@@ -169,15 +169,13 @@ class ManualProductSearchRouteArgs {
   }
 
   /// Parses route args from a go_router state.
-  factory ManualProductSearchRouteArgs.fromState(
+  factory fromState(
     GoRouterState state,
     ManualProductSearchRoutePayloadStore payloadStore,
   ) {
     final args = ManualProductSearchRouteArgs.tryParse(state, payloadStore);
     if (args == null) {
-      throw FormatException(
-        'Invalid product-search child route: ${state.uri}',
-      );
+      throw FormatException('Invalid product-search child route: ${state.uri}');
     }
     return args;
   }
@@ -249,9 +247,7 @@ class ManualProductSearchRouteArgs {
 
   /// Concrete URL location for this route payload.
   String locationForPayload(String payloadId) {
-    final query = <String, String>{
-      manualProductSearchPayloadParam: payloadId,
-    };
+    final query = <String, String>{manualProductSearchPayloadParam: payloadId};
     return Uri(
       path: AppRoutes.productSearchChildFlowPath(flow.pathSegment),
       queryParameters: query,

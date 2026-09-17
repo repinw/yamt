@@ -1,15 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/home/widgets/inventory_action_sheet_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_fab_menu_action.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Runs one expanded inventory FAB action.
-typedef InventoryFabActionRunner =
-    void Function(Future<void> Function() action);
+typedef InventoryFabActionRunner = void Function(
+  Future<void> Function() action,
+);
 
 /// Builds expanded inventory FAB actions.
 List<Widget> buildInventoryExpandedFabActions({
@@ -26,9 +27,7 @@ List<Widget> buildInventoryExpandedFabActions({
       icon: Icons.add_shopping_cart_rounded,
       label: l10n.productSearchHubTitle,
       onPressed: () => runAction(
-        () => InventoryActionSheetFlow.openProductSearchHub(
-          context: context,
-        ),
+        () => InventoryActionSheetFlow.openProductSearchHub(context: context),
       ),
     ),
     InventoryFabMenuAction(

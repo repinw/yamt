@@ -211,7 +211,7 @@ int quantityForCurrentAmount({
 }
 
 class _PendingDeletedInventoryItem {
-  const _PendingDeletedInventoryItem({required this.item, required this.index});
+  const new({required this.item, required this.index});
 
   final InventoryItem item;
   final int index;
@@ -434,10 +434,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     log(
       'Permission denied while watching inventory. '
       'shouldRecover=$shouldRecover '
-      '${_buildScopeDebugDetails(
-        actualDataOwnerUserId: actualDataOwnerUserId,
-        effectiveDataOwnerUserId: effectiveDataOwnerUserId,
-      )}',
+      '${_buildScopeDebugDetails(actualDataOwnerUserId: actualDataOwnerUserId, effectiveDataOwnerUserId: effectiveDataOwnerUserId)}',
       name: _controllerLogName,
     );
   }
@@ -446,12 +443,7 @@ class InventoryItemsController extends _$InventoryItemsController {
   void onSkippedHouseholdAccessRecovery() {
     log(
       'Inventory access recovery had no owner swap candidate. '
-      '${_buildScopeDebugDetails(
-        actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider),
-        effectiveDataOwnerUserId: ref.read(
-          effectiveHouseholdDataOwnerUserIdProvider,
-        ),
-      )}',
+      '${_buildScopeDebugDetails(actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider), effectiveDataOwnerUserId: ref.read(effectiveHouseholdDataOwnerUserIdProvider))}',
       name: _controllerLogName,
     );
   }
@@ -626,9 +618,11 @@ class InventoryItemsController extends _$InventoryItemsController {
     int amount,
     InventoryDiscardReason reason,
   ) {
-    return throwAwayItemDetailed(itemId, amount, reason).then(
-      (result) => result != null,
-    );
+    return throwAwayItemDetailed(
+      itemId,
+      amount,
+      reason,
+    ).then((result) => result != null);
   }
 
   /// Throw away item and return the actual discarded amount.

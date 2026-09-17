@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 
 /// Interactive horizontal radio-tuner dial wheel for numeric selection.
 class HorizontalDialWheel extends StatefulWidget {
   /// Creates horizontal dial wheel.
-  const HorizontalDialWheel({
+  const new({
     required this.value,
     required this.minValue,
     required this.maxValue,
@@ -183,7 +183,7 @@ class _HorizontalDialWheelState extends State<HorizontalDialWheel> {
 }
 
 class _DialRuler extends StatelessWidget {
-  const _DialRuler({
+  const new({
     required this.scrollController,
     required this.itemCount,
     required this.itemWidth,
@@ -229,11 +229,7 @@ class _DialRuler extends StatelessWidget {
 }
 
 class _DialTickItem extends StatelessWidget {
-  const _DialTickItem({
-    required this.value,
-    required this.isMajor,
-    required this.width,
-  });
+  const new({required this.value, required this.isMajor, required this.width});
 
   final int value;
   final bool isMajor;
@@ -280,7 +276,7 @@ class _DialTickItem extends StatelessWidget {
 }
 
 class _DialCenterNeedle extends StatelessWidget {
-  const _DialCenterNeedle();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +319,7 @@ class _DialCenterNeedle extends StatelessWidget {
 }
 
 class _DialEdgeFades extends StatelessWidget {
-  const _DialEdgeFades({required this.backgroundColor});
+  const new({required this.backgroundColor});
 
   final Color backgroundColor;
 
@@ -337,18 +333,14 @@ class _DialEdgeFades extends StatelessWidget {
           Container(
             width: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [backgroundColor, transparent],
-              ),
+              gradient: LinearGradient(colors: [backgroundColor, transparent]),
             ),
           ),
           const Spacer(),
           Container(
             width: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [transparent, backgroundColor],
-              ),
+              gradient: LinearGradient(colors: [transparent, backgroundColor]),
             ),
           ),
         ],

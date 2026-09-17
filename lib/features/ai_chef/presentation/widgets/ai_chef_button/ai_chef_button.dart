@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
     'ai_chef_dialog/ai_chef_dialog.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// App Bar action button for launching the AI Chef generator.
 class AiChefButton extends StatelessWidget {
   /// Creates an AI Chef button.
-  const AiChefButton({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +32,7 @@ class AiChefButton extends StatelessWidget {
           ),
         );
       },
-      icon: Icon(
-        Icons.auto_awesome_rounded,
-        color: colors.primary,
-      ),
+      icon: Icon(Icons.auto_awesome_rounded, color: colors.primary),
     );
   }
 }

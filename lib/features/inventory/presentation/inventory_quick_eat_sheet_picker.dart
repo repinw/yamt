@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prep
 /// Presentation implementation that opens inventory-owned picker sheets.
 class InventoryQuickEatSheetPicker implements InventoryQuickEatPicker {
   /// Creates the inventory-owned quick-eat sheet picker.
-  const InventoryQuickEatSheetPicker();
+  const new();
 
   @override
   Future<InventoryItemEatRequest?> pickItem({

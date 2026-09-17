@@ -18,7 +18,7 @@ enum TdeeAnalyticsTimeRange {
   /// Entire duration of selected cycle or all cycles.
   all('Alles', null);
 
-  const TdeeAnalyticsTimeRange(this.label, this.dayCount);
+  new(this.label, this.dayCount);
 
   /// Short display label for chips/pills.
   final String label;

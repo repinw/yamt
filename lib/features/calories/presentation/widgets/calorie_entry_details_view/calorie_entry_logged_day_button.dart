@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -9,7 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Logged day picker button in the calorie entry details sheet.
 class CalorieEntryLoggedDayButton extends StatelessWidget {
   /// Creates a logged day picker button.
-  const CalorieEntryLoggedDayButton({
+  const new({
     required this.loggedAt,
     required this.isEnabled,
     required this.onPressed,

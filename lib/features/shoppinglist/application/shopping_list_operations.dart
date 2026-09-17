@@ -11,13 +11,12 @@ typedef ShoppingListItemMatchKey = ({
 });
 
 /// Defines shopping list add item typedef.
-typedef ShoppingListAddItem =
-    Future<bool> Function({
-      required String name,
-      String? brand,
-      int quantity,
-      double estimatedUnitPrice,
-    });
+typedef ShoppingListAddItem = Future<bool> Function({
+  required String name,
+  String? brand,
+  int quantity,
+  double estimatedUnitPrice,
+});
 
 /// Defines item data needed by shopping-list operations.
 typedef ShoppingListSourceItem = ({

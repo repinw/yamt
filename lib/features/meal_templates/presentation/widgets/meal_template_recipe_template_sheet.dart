@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_url_parser.dart';
@@ -14,7 +14,7 @@ const _preparedMealRecipeTemplateSheetLogName =
 /// Defines prepared meal recipe template draft.
 class PreparedMealRecipeTemplateDraft {
   /// The prepared meal recipe template draft.
-  const PreparedMealRecipeTemplateDraft({
+  const new({
     required this.recipeUrl,
     required this.name,
     required this.totalPortions,
@@ -52,11 +52,7 @@ Future<PreparedMealRecipeTemplateDraft?> showPreparedMealRecipeTemplateSheet(
 }
 
 class _PreparedMealRecipeTemplateSheet extends StatefulWidget {
-  const _PreparedMealRecipeTemplateSheet({
-    this.initialDraft,
-    this.title,
-    this.submitLabel,
-  });
+  const new({this.initialDraft, this.title, this.submitLabel});
 
   final PreparedMealRecipeTemplateDraft? initialDraft;
   final String? title;
@@ -248,9 +244,7 @@ class _PreparedMealRecipeTemplateSheetState
                       if (value.text.isNotEmpty) {
                         return const SizedBox.shrink();
                       }
-                      return _ClipboardPasteCard(
-                        onTap: _handleClipboardPaste,
-                      );
+                      return _ClipboardPasteCard(onTap: _handleClipboardPaste);
                     },
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -341,7 +335,7 @@ class _PreparedMealRecipeTemplateSheetState
 
 /// A subtle handle bar at the top of the modal bottom sheet.
 class _SheetHandleIndicator extends StatelessWidget {
-  const _SheetHandleIndicator({required this.colors});
+  const new({required this.colors});
 
   final ColorScheme colors;
 
@@ -363,7 +357,7 @@ class _SheetHandleIndicator extends StatelessWidget {
 
 /// Standardized top title bar for the sheet.
 class _SheetHeader extends StatelessWidget {
-  const _SheetHeader({
+  const new({
     required this.title,
     required this.subtitle,
     required this.onClose,
@@ -419,7 +413,7 @@ class _SheetHeader extends StatelessWidget {
 
 /// A compact, warm welcome card replacing bulky banners.
 class _WelcomeHeaderCard extends StatelessWidget {
-  const _WelcomeHeaderCard({required this.message});
+  const new({required this.message});
 
   final String message;
 
@@ -436,16 +430,11 @@ class _WelcomeHeaderCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.primary.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
-          const Text(
-            '🍳',
-            style: TextStyle(fontSize: 22),
-          ),
+          const Text('🍳', style: TextStyle(fontSize: 22)),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -464,9 +453,7 @@ class _WelcomeHeaderCard extends StatelessWidget {
 
 /// A beautiful magic card prompting the user to paste their clipboard.
 class _ClipboardPasteCard extends StatelessWidget {
-  const _ClipboardPasteCard({
-    required this.onTap,
-  });
+  const new({required this.onTap});
 
   final VoidCallback onTap;
 
@@ -489,9 +476,7 @@ class _ClipboardPasteCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
             color: colors.primary.withValues(alpha: 0.05),
@@ -561,7 +546,7 @@ class _ClipboardPasteCard extends StatelessWidget {
 
 /// An elegant expandable panel for advanced template configuration.
 class _AdvancedOptionsPanel extends StatelessWidget {
-  const _AdvancedOptionsPanel({
+  const new({
     required this.isExpanded,
     required this.nameController,
     required this.portionsController,
@@ -663,11 +648,7 @@ class _AdvancedOptionsPanel extends StatelessWidget {
 
 /// Action buttons for confirming or canceling template creation.
 class _ActionButtonsRow extends StatelessWidget {
-  const _ActionButtonsRow({
-    required this.onCancel,
-    required this.onSubmit,
-    this.submitLabel,
-  });
+  const new({required this.onCancel, required this.onSubmit, this.submitLabel});
 
   final VoidCallback onCancel;
   final VoidCallback onSubmit;

@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 /// Filters inventory content with tolerant text matching.
 class InventorySearchService {
   /// The inventory search service.
-  const InventorySearchService();
+  const new();
 
   /// Filter items.
   List<InventoryItem> filterItems({

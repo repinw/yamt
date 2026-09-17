@@ -8,7 +8,7 @@ const _usersCollection = 'users';
 const _shoppingListCollection = 'shopping_list_items';
 
 class _HookedFakeFirebaseFirestore extends FakeFirebaseFirestore {
-  _HookedFakeFirebaseFirestore({required this.onBeforeRunTransaction});
+  new({required this.onBeforeRunTransaction});
 
   final Future<void> Function() onBeforeRunTransaction;
 

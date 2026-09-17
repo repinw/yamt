@@ -9,12 +9,10 @@ class MlKitReceiptTextExtractor implements ReceiptTextExtractor {
   /// Creates an [MlKitReceiptTextExtractor].
   ///
   /// For tests, [fileProcessor] can be provided to avoid native platform calls.
-  MlKitReceiptTextExtractor({
-    ImageFileTextProcessor? fileProcessor,
-    TextRecognizer? textRecognizer,
-  }) : _fileProcessor = fileProcessor,
-       _recognizer = textRecognizer,
-       _ownsRecognizer = textRecognizer == null && fileProcessor == null;
+  new({ImageFileTextProcessor? fileProcessor, TextRecognizer? textRecognizer})
+    : _fileProcessor = fileProcessor,
+      _recognizer = textRecognizer,
+      _ownsRecognizer = textRecognizer == null && fileProcessor == null;
 
   final ImageFileTextProcessor? _fileProcessor;
   TextRecognizer? _recognizer;

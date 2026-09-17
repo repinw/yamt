@@ -30,11 +30,7 @@ abstract interface class InventoryDiscardEventRepository {
 class FirestoreInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
   /// Creates an instance.
-  FirestoreInventoryDiscardEventRepository({
-    required FirebaseFirestore firestore,
-    required String? currentUserId,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId;
+  new({required this._firestore, required this._currentUserId});
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
@@ -47,9 +43,9 @@ class FirestoreInventoryDiscardEventRepository
     }
 
     try {
-      final snapshot = await _collection(
-        userId,
-      ).orderBy('discarded_at', descending: true).get();
+      final snapshot = await _collection(userId)
+          .orderBy('discarded_at', descending: true)
+          .get();
       return _decodeSnapshot(snapshot);
     } on Object catch (error, stackTrace) {
       log(
@@ -145,7 +141,7 @@ class FirestoreInventoryDiscardEventRepository
 
 class _UnavailableInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
-  const _UnavailableInventoryDiscardEventRepository();
+  const new();
 
   @override
   Future<List<InventoryDiscardEvent>> readAll() async {

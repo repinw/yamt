@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/presentation/widgets/product_candidate_thumbnail.dart';
@@ -9,11 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Dialog enabling the user to search products in the catalog.
 class ReceiptProductSearchDialog extends StatefulWidget {
   /// Creates a [ReceiptProductSearchDialog].
-  const ReceiptProductSearchDialog({
-    required this.onSearch,
-    super.key,
-    this.initialQuery = '',
-  });
+  const new({required this.onSearch, super.key, this.initialQuery = ''});
 
   /// The search function to execute.
   final Future<List<ProductCandidate>> Function(String query) onSearch;

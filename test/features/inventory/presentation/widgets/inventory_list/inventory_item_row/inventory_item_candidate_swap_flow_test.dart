@@ -180,11 +180,7 @@ void main() {
   });
 }
 
-InventoryItem _item({
-  String name = 'Milk',
-  String? brand,
-  String? weight,
-}) {
+InventoryItem _item({String name = 'Milk', String? brand, String? weight}) {
   return InventoryItem.create(
     id: 'item-1',
     name: name,

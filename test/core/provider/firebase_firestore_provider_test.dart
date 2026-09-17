@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 
-class _MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+class _MockFirebaseFirestore extends Mock implements FirebaseFirestore;
 
 void main() {
   tearDown(resetFirebaseFirestoreProviderDebugHooks);

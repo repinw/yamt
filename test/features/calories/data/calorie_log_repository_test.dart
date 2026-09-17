@@ -7,7 +7,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
 class _FakeCalorieLogUserSession implements CalorieLogUserSession {
-  _FakeCalorieLogUserSession({this.currentUserId});
+  new({this.currentUserId});
 
   @override
   final String? currentUserId;

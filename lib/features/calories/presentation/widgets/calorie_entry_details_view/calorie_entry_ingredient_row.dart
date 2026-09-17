@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 /// Single ingredient row in a bundle calorie entry.
 class CalorieEntryIngredientRow extends StatelessWidget {
   /// Creates an ingredient row.
-  const CalorieEntryIngredientRow({
+  const new({
     required this.component,
     required this.index,
     required this.accentColor,
@@ -43,18 +43,16 @@ class CalorieEntryIngredientRow extends StatelessWidget {
                 Text(
                   component.name,
                   key: CalorieEntryDetailKeys.ingredientNameCell(index),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 if (brand != null && brand.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: AppSpacing.xxs),
                     child: Text(
                       brand,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
+                      style: Theme.of(context).textTheme.labelSmall
+                          ?.copyWith(color: colors.onSurfaceVariant),
                     ),
                   ),
               ],

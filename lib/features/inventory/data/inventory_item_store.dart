@@ -10,7 +10,7 @@ const String _inventoryItemsCollection = 'inventory_items';
 /// Defines inventory item document.
 class InventoryItemDocument {
   /// The inventory item document.
-  const InventoryItemDocument({required this.id, required this.data});
+  const new({required this.id, required this.data});
 
   /// The id.
   final String id;
@@ -56,8 +56,7 @@ abstract interface class InventoryItemRecentManualStore {
 class FirestoreInventoryItemStore
     implements InventoryItemStore, InventoryItemRecentManualStore {
   /// The firestore inventory item store.
-  const FirestoreInventoryItemStore({required FirebaseFirestore firestore})
-    : _firestore = firestore;
+  const new({required this._firestore});
 
   final FirebaseFirestore _firestore;
 

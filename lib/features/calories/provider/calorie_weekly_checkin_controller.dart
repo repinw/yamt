@@ -153,9 +153,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
   }
 
   /// Apply weekly check in.
-  Future<bool> applyWeeklyCheckIn(
-    CalorieWeeklyCheckInData checkInData,
-  ) async {
+  Future<bool> applyWeeklyCheckIn(CalorieWeeklyCheckInData checkInData) async {
     final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
     final calculation = checkInData.calculation;
     if (pendingWeeklyCheckIn == null ||
@@ -206,9 +204,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
   }
 
   /// Reject weekly check in.
-  Future<bool> rejectWeeklyCheckIn(
-    CalorieWeeklyCheckInData checkInData,
-  ) async {
+  Future<bool> rejectWeeklyCheckIn(CalorieWeeklyCheckInData checkInData) async {
     final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
     final calculation = checkInData.calculation;
     if (pendingWeeklyCheckIn == null ||
@@ -305,10 +301,7 @@ bool _hasRejectedWeeklyCheckInSnapshot({
           snapshot.windowStartDate,
           weeklyCheckIn.windowStartDate,
         ) &&
-        isSameDiaryDay(
-          snapshot.windowEndDate,
-          weeklyCheckIn.windowEndDate,
-        ) &&
+        isSameDiaryDay(snapshot.windowEndDate, weeklyCheckIn.windowEndDate) &&
         snapshot.isRejected) {
       return true;
     }

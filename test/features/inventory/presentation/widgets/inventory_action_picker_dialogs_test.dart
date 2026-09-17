@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -70,9 +71,7 @@ void main() {
 
   testWidgets(
     'discard reason dialog uses foreground icon color in light theme',
-    (
-      tester,
-    ) async {
+    (tester) async {
       final theme = ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
       );
@@ -81,10 +80,7 @@ void main() {
         _DialogHarness(
           theme: theme,
           openDialog: (context) {
-            return showInventoryDiscardReasonDialog(
-              context,
-              itemName: 'Milk',
-            );
+            return showInventoryDiscardReasonDialog(context, itemName: 'Milk');
           },
           triggerLabel: 'Open discard reason',
         ),
@@ -100,9 +96,7 @@ void main() {
 
   testWidgets(
     'discard reason dialog uses background icon color in dark theme',
-    (
-      tester,
-    ) async {
+    (tester) async {
       final theme = ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.teal,
@@ -114,10 +108,7 @@ void main() {
         _DialogHarness(
           theme: theme,
           openDialog: (context) {
-            return showInventoryDiscardReasonDialog(
-              context,
-              itemName: 'Milk',
-            );
+            return showInventoryDiscardReasonDialog(context, itemName: 'Milk');
           },
           triggerLabel: 'Open discard reason',
         ),
@@ -136,7 +127,7 @@ void main() {
 }
 
 class _DialogHarness extends StatelessWidget {
-  const _DialogHarness({
+  const new({
     required this.theme,
     required this.openDialog,
     required this.triggerLabel,
@@ -151,7 +142,7 @@ class _DialogHarness extends StatelessWidget {
     return MaterialApp(
       theme: theme,
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Builder(
         builder: (context) {

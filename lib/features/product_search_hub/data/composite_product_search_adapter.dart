@@ -36,15 +36,12 @@ ProductSearchGateway productSearchGateway(Ref ref) {
 /// Adapter combining Firebase global food items and Open Food Facts.
 class CompositeProductSearchAdapter implements ProductSearchGateway {
   /// Creates a composite product search adapter.
-  const CompositeProductSearchAdapter({
-    required OffProductSearchRepository offRepository,
-    GlobalFoodItemRepository? globalFoodItemRepository,
-    GlobalBarcodeCandidateRepository? barcodeCandidateRepository,
-    ManualProductRecentItemsService? recentItemsService,
-  }) : _offRepository = offRepository,
-       _globalFoodItemRepository = globalFoodItemRepository,
-       _barcodeCandidateRepository = barcodeCandidateRepository,
-       _recentItemsService = recentItemsService;
+  const new({
+    required this._offRepository,
+    this._globalFoodItemRepository,
+    this._barcodeCandidateRepository,
+    this._recentItemsService,
+  });
 
   final OffProductSearchRepository _offRepository;
   final GlobalFoodItemRepository? _globalFoodItemRepository;
@@ -175,10 +172,7 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubProducts({
 
     final globalResults = resultsList[0];
     final offResults = resultsList[1];
-    final combined = <OffProductSearchResult>[
-      ...globalResults,
-      ...offResults,
-    ];
+    final combined = <OffProductSearchResult>[...globalResults, ...offResults];
 
     return ProductSearchHubSearchLookupResult.success(
       collapseDominatedOffProductSearchResults(combined),
@@ -206,10 +200,7 @@ Future<List<OffProductSearchResult>> _lookupGlobalFoodItems({
   }
   try {
     final items = barcode != null
-        ? await repository.searchCandidates(
-            barcode: barcode,
-            limit: limit,
-          )
+        ? await repository.searchCandidates(barcode: barcode, limit: limit)
         : await repository.searchCandidates(
             normalizedName: normalizeGlobalFoodText(query),
             normalizedStoreName: store != null

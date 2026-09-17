@@ -22,7 +22,7 @@ const _debugDumpFallbackDays = 30;
 /// Result for debug calorie dump.
 class CalorieDebugDumpResult {
   /// Creates result.
-  const CalorieDebugDumpResult({
+  const new({
     required this.table,
     required this.rowCount,
     required this.startInclusive,
@@ -358,11 +358,7 @@ CalorieDebugDumpRow _dailyWeightRow({
 }) {
   final weightKg = manualWeightKg ?? CalorieDomainMath.median(healthWeightsKg);
   final source = manualWeightKg == null ? 'health' : 'manual_fallback';
-  return _weightRow(
-    sortAt: day,
-    source: source,
-    weightKg: weightKg,
-  );
+  return _weightRow(sortAt: day, source: source, weightKg: weightKg);
 }
 
 List<CalorieDebugDumpRow> _goalWeekRows({
@@ -617,9 +613,7 @@ CalorieDebugWeekTdeeData _weekTdeeData({
     final snapshotWindow =
         '${diaryDayKey(learnedSnapshot.windowStartDate)}'
         '..${diaryDayKey(learnedSnapshot.windowEndDate)}';
-    final measuredTotalTdee = _formatNumber(
-      learnedSnapshot.measuredTdeeKcal,
-    );
+    final measuredTotalTdee = _formatNumber(learnedSnapshot.measuredTdeeKcal);
     final newTarget = _formatNumber(learnedSnapshot.baseGoalKcal);
     final trendPerDay = learnedSnapshot.trendWeightChangePerDay.toStringAsFixed(
       5,
@@ -650,10 +644,7 @@ CalorieDebugWeekTdeeData _weekTdeeData({
   }
 
   final dailyGoal =
-      goalEntry.dailyKcalGoal ??
-      settings.goalKcalForDay(
-        weekStart,
-      );
+      goalEntry.dailyKcalGoal ?? settings.goalKcalForDay(weekStart);
   return CalorieDebugWeekTdeeData(
     source: 'manual_goal',
     tdeeKcal: dailyGoal,
@@ -706,10 +697,7 @@ Map<String, double> _dailyRowWeightByDay(List<CalorieDebugDumpRow> rows) {
   return weightByDay;
 }
 
-double _sumDailyValues(
-  List<DateTime> days,
-  Map<String, double> valuesByDay,
-) {
+double _sumDailyValues(List<DateTime> days, Map<String, double> valuesByDay) {
   return days.fold<double>(
     0,
     (sum, day) => sum + (valuesByDay[diaryDayKey(day)] ?? 0),
@@ -743,10 +731,7 @@ String _buildMarkdownTable(
   List<CalorieDebugDumpRow> rows, {
   required Set<String> separatorDays,
 }) {
-  return buildCalorieDebugMarkdownTable(
-    rows,
-    separatorDays: separatorDays,
-  );
+  return buildCalorieDebugMarkdownTable(rows, separatorDays: separatorDays);
 }
 
 String _formatNumber(num? value) {

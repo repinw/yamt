@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/home/widgets/inventory_action_sheet_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_action_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -24,9 +24,7 @@ Future<void> showInventoryFabActionSheet({
         isCameraEnabled: isCameraEnabled,
         onProductSearchHub: () => _closeAndRun(
           sheetContext,
-          () => InventoryActionSheetFlow.openProductSearchHub(
-            context: context,
-          ),
+          () => InventoryActionSheetFlow.openProductSearchHub(context: context),
         ),
         onManualSearch: () => _closeAndRun(
           sheetContext,
@@ -70,10 +68,7 @@ Future<void> showInventoryFabActionSheet({
   );
 }
 
-void _closeAndRun(
-  BuildContext sheetContext,
-  Future<void> Function() action,
-) {
+void _closeAndRun(BuildContext sheetContext, Future<void> Function() action) {
   sheetContext.pop();
   unawaited(action());
 }

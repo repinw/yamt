@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 
 /// Card showing expenditure changes and goal anticipation insights.
 class TdeeInsightsCard extends StatelessWidget {
   /// Creates the insights card.
-  const TdeeInsightsCard({
+  const new({
     required this.summary,
     this.anticipation,
     this.showAnticipation = true,
@@ -98,8 +98,8 @@ class TdeeInsightsCard extends StatelessWidget {
     final icon = !hasData
         ? Icons.remove_rounded
         : (isPositive
-            ? Icons.trending_up_rounded
-            : Icons.trending_down_rounded);
+              ? Icons.trending_up_rounded
+              : Icons.trending_down_rounded);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,9 +144,7 @@ class TdeeInsightsCard extends StatelessWidget {
     } else if (proj.isMovingAway) {
       content = Text(
         '⚠️ Aktueller Trend weicht vom Ziel ($targetStr) ab.',
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: colorScheme.error,
-        ),
+        style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.error),
       );
     } else {
       final date = proj.projectedDate!;

@@ -33,7 +33,7 @@ abstract interface class AuthRepository {
 /// Defines firebase auth repository.
 class FirebaseAuthRepository implements AuthRepository {
   /// The firebase auth repository.
-  const FirebaseAuthRepository(this._auth);
+  const new(this._auth);
 
   final FirebaseAuth _auth;
 

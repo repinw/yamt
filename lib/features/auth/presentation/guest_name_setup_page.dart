@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/presentation/auth_error_message_mapper.dart';
 import 'package:yamt/features/auth/presentation/controllers/guest_name_setup_controller.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines guest name setup page.
 class GuestNameSetupPage extends ConsumerStatefulWidget {
   /// The guest name setup page.
-  const GuestNameSetupPage({super.key});
+  const new({super.key});
 
   @override
   ConsumerState<GuestNameSetupPage> createState() => _GuestNameSetupPageState();

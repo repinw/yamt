@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_buffer_badge.dart';
@@ -13,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Daily calories, macros, and pacing balance card.
 class DiaryDailyBalanceCard extends StatelessWidget {
   /// Creates the daily balance card.
-  const DiaryDailyBalanceCard({
+  const new({
     required this.data,
     this.kcalBarKey,
     this.macroBarsKey,
@@ -64,9 +64,7 @@ class DiaryDailyBalanceCard extends StatelessWidget {
           ),
           if (data.bufferAdjustmentLabel != null) ...[
             const SizedBox(height: AppSpacing.xs),
-            DiaryBalanceBufferBadge(
-              label: data.bufferAdjustmentLabel!,
-            ),
+            DiaryBalanceBufferBadge(label: data.bufferAdjustmentLabel!),
           ],
           const SizedBox(height: AppSpacing.md),
           Divider(

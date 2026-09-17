@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Defines inventory item row view data.
 class InventoryItemRowViewData {
   /// The inventory item row view data.
-  const InventoryItemRowViewData({
+  const new({
     required this.rowBorderColor,
     required this.expandedRowBorderColor,
     required this.nameTextStyle,
@@ -122,7 +122,7 @@ class InventoryItemRowViewData {
 /// Defines inventory nutrition metric.
 class InventoryNutritionMetric {
   /// The inventory nutrition metric.
-  const InventoryNutritionMetric({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   /// The label.
   final String label;

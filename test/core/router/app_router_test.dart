@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
@@ -50,15 +50,15 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import '../../features/calories/support/fake_calories_repositories.dart';
 import '../../helpers/memory_app_preferences.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
-class _MockUserCredential extends Mock implements UserCredential {}
+class _MockUserCredential extends Mock implements UserCredential;
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 const _routerTransitionDuration = Duration(milliseconds: 350);
 
-class _MockUserMetadata extends Mock implements UserMetadata {}
+class _MockUserMetadata extends Mock implements UserMetadata;
 
 Future<void> _pumpRouterTransition(WidgetTester tester) async {
   await tester.pump();
@@ -108,9 +108,8 @@ ProviderContainer _createContainerWithAuth(
   final firebaseAuth = _MockFirebaseAuth();
   when(() => firebaseAuth.currentUser).thenReturn(null);
   if (onSignInAnonymously != null) {
-    when(
-      firebaseAuth.signInAnonymously,
-    ).thenAnswer((_) => onSignInAnonymously());
+    when(firebaseAuth.signInAnonymously)
+        .thenAnswer((_) => onSignInAnonymously());
   }
   final container = ProviderContainer(
     overrides: [
@@ -657,10 +656,7 @@ void main() {
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeShopping);
     expect(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.text('Shopping'),
-      ),
+      find.descendant(of: find.byType(AppBar), matching: find.text('Shopping')),
       findsOneWidget,
     );
     expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
@@ -764,9 +760,7 @@ void main() {
 
   testWidgets(
     'inventory-backed create opens a page and details route opens a sheet',
-    (
-      tester,
-    ) async {
+    (tester) async {
       final container = _createContainerWithAuth(
         Stream<User?>.value(_authenticatedUser()),
         completedProfileSetupUserIds: {'uid-123'},
@@ -827,9 +821,7 @@ void main() {
     expect(find.byType(ProductSearchHubPage), findsOneWidget);
     expect(find.text('Add to inventory'), findsOneWidget);
     expect(
-      find.byKey(
-        const Key('product_search_hub_recently_selected_empty_state'),
-      ),
+      find.byKey(const Key('product_search_hub_recently_selected_empty_state')),
       findsOneWidget,
     );
   });
@@ -908,9 +900,7 @@ void main() {
       payloadStore.remove(payloadId);
     });
 
-    unawaited(
-      router.push<void>(args.locationForPayload(payloadId)),
-    );
+    unawaited(router.push<void>(args.locationForPayload(payloadId)));
     await _pumpRouterTransition(tester);
 
     expect(find.byType(ManualProductAiSearchPage), findsOneWidget);
@@ -1027,10 +1017,7 @@ void main() {
     await tester.tap(find.textContaining('Log in here'));
     await _pumpRouterTransition(tester);
 
-    expect(
-      container.read(appRouterProvider).state.uri.path,
-      AppRoutes.welcome,
-    );
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
 
     authController.add(_authenticatedUser(uid: 'uid-existing'));
     await tester.pump();
@@ -1042,96 +1029,83 @@ void main() {
     );
   });
 
-  testWidgets(
-    'cold start with unauthenticated state triggers auto guest login '
-    'and routes to onboarding',
-    (tester) async {
-      final guestSignInCompleter = Completer<UserCredential>();
-      final authController = StreamController<User?>();
-      final container = _createContainerWithAuth(
-        authController.stream,
-        onSignInAnonymously: () => guestSignInCompleter.future,
-      );
-      addTearDown(() {
-        unawaited(authController.close());
-      });
+  testWidgets('cold start with unauthenticated state triggers auto guest login '
+      'and routes to onboarding', (tester) async {
+    final guestSignInCompleter = Completer<UserCredential>();
+    final authController = StreamController<User?>();
+    final container = _createContainerWithAuth(
+      authController.stream,
+      onSignInAnonymously: () => guestSignInCompleter.future,
+    );
+    addTearDown(() {
+      unawaited(authController.close());
+    });
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(container: container, child: const YAMT()),
-      );
-      await tester.pump();
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pump();
 
-      expect(
-        container.read(appRouterProvider).state.uri.path,
-        AppRoutes.splash,
-      );
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.splash);
 
-      authController.add(null);
-      await tester.pump();
+    authController.add(null);
+    await tester.pump();
 
-      expect(
-        container.read(appRouterProvider).state.uri.path,
-        AppRoutes.splash,
-      );
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.splash);
 
-      final credential = _MockUserCredential();
-      final guestUser = _guestUser();
-      when(() => credential.user).thenReturn(guestUser);
-      guestSignInCompleter.complete(credential);
-      authController.add(guestUser);
+    final credential = _MockUserCredential();
+    final guestUser = _guestUser();
+    when(() => credential.user).thenReturn(guestUser);
+    guestSignInCompleter.complete(credential);
+    authController.add(guestUser);
 
-      await tester.pump();
-      await _pumpRouterTransition(tester);
-      await _pumpRouterTransition(tester);
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
 
-      expect(
-        container.read(appRouterProvider).state.uri.path,
-        AppRoutes.calorieGoalSetup,
-      );
-      expect(find.text('Glad you are here!'), findsOneWidget);
-    },
-  );
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+    expect(find.text('Glad you are here!'), findsOneWidget);
+  });
 
-  testWidgets(
-    'guest sign-in on welcome page routes to onboarding',
-    (tester) async {
-      final authController = StreamController<User?>();
-      final container = _createContainerWithAuth(authController.stream);
-      addTearDown(() {
-        unawaited(authController.close());
-      });
+  testWidgets('guest sign-in on welcome page routes to onboarding', (
+    tester,
+  ) async {
+    final authController = StreamController<User?>();
+    final container = _createContainerWithAuth(authController.stream);
+    addTearDown(() {
+      unawaited(authController.close());
+    });
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(container: container, child: const YAMT()),
-      );
-      await tester.pump();
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pump();
 
-      authController.add(null);
-      await tester.pump();
-      await _pumpRouterTransition(tester);
+    authController.add(null);
+    await tester.pump();
+    await _pumpRouterTransition(tester);
 
-      expect(
-        container.read(appRouterProvider).state.uri.path,
-        AppRoutes.welcome,
-      );
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
 
-      authController.add(_guestUser());
-      await tester.pump();
-      await _pumpRouterTransition(tester);
-      await _pumpRouterTransition(tester);
+    authController.add(_guestUser());
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
 
-      expect(
-        container.read(appRouterProvider).state.uri.path,
-        AppRoutes.calorieGoalSetup,
-      );
-      expect(find.text('Glad you are here!'), findsOneWidget);
-    },
-  );
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+    expect(find.text('Glad you are here!'), findsOneWidget);
+  });
 }
 
 class _FakeInventoryItemRepository
     implements InventoryItemRepository, InventoryItemRecentManualReader {
-  const _FakeInventoryItemRepository();
+  const new();
 
   @override
   bool get supportsLimitedRecentManualReads => true;
@@ -1161,7 +1135,7 @@ class _FakeInventoryItemRepository
 }
 
 class _FakePreparedMealRepository implements PreparedMealRepository {
-  const _FakePreparedMealRepository();
+  const new();
 
   @override
   Future<List<PreparedMeal>> readAll() async {

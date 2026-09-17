@@ -1,13 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Dialog to edit the price of a receipt item.
 class ReceiptPriceEditDialog extends StatefulWidget {
   /// Creates a [ReceiptPriceEditDialog].
-  const ReceiptPriceEditDialog({
-    required this.initialPrice,
-    super.key,
-  });
+  const new({required this.initialPrice, super.key});
 
   /// The current price of the item.
   final double initialPrice;
@@ -55,9 +52,7 @@ class _ReceiptPriceEditDialogState extends State<ReceiptPriceEditDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            l10n?.inventoryReceiptReviewCancelAction ?? 'Abbrechen',
-          ),
+          child: Text(l10n?.inventoryReceiptReviewCancelAction ?? 'Abbrechen'),
         ),
         FilledButton(
           onPressed: () {

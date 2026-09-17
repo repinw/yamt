@@ -15,11 +15,7 @@ extension InventoryItemConsumptionExtension on InventoryItem {
 /// Defines pending inventory consumption.
 class PendingInventoryConsumption {
   /// The pending inventory consumption.
-  const PendingInventoryConsumption({
-    required this.id,
-    required this.itemId,
-    required this.amount,
-  });
+  const new({required this.id, required this.itemId, required this.amount});
 
   /// The id.
   final String id;

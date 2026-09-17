@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/presentation/calorie_page_actions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -19,7 +20,7 @@ Future<BuildContext> _pumpSnackBarHarness(WidgetTester tester) async {
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Builder(

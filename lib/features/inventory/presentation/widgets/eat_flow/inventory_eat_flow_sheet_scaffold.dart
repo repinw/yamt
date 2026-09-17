@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_footer.dart';
 
 /// Shared bottom sheet chrome for inventory eat flows.
 class InventoryEatFlowSheetScaffold extends StatelessWidget {
   /// Creates shared eat flow sheet scaffold.
-  const InventoryEatFlowSheetScaffold({
+  const new({
     required this.viewInsetsBottom,
     required this.hero,
     required this.children,
@@ -66,9 +66,7 @@ class InventoryEatFlowSheetScaffold extends StatelessWidget {
               maxHeight: MediaQuery.sizeOf(context).height * 0.92,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(
-                AppRadius.xl,
-              ),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: colors.surfaceContainerLow,

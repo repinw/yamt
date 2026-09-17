@@ -11,7 +11,5 @@ abstract final class DiaryWeightDialogKeys {
   );
 
   /// Save button.
-  static const weightDialogSaveButton = Key(
-    'diary_weight_dialog_save_button',
-  );
+  static const weightDialogSaveButton = Key('diary_weight_dialog_save_button');
 }

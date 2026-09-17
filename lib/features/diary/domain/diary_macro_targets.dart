@@ -35,14 +35,10 @@ typedef DiaryMacroCarryoverDelta = MacroCarryoverDelta;
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMacroTargets {
   /// Creates resolved diary macro targets.
-  const DiaryMacroTargets({
-    required this.carbs,
-    required this.protein,
-    required this.fat,
-  });
+  const new({required this.carbs, required this.protein, required this.fat});
 
   /// Derives macro targets from a calorie goal using fixed percentages.
-  factory DiaryMacroTargets.fromGoalKcal(double goalKcal) {
+  factory fromGoalKcal(double goalKcal) {
     final positiveGoalKcal = goalKcal > 0 ? goalKcal : 0.0;
     return DiaryMacroTargets(
       carbs: positiveGoalKcal * 0.45 / 4,
@@ -53,7 +49,7 @@ class DiaryMacroTargets {
 
   /// Calculates macro targets based on body weight multipliers and remaining
   /// calories for carbs, guaranteeing at least 100g carbs when possible.
-  factory DiaryMacroTargets.calculate({
+  factory calculate({
     required double goalKcal,
     required double weightKg,
     required double proteinGramsPerKg,
@@ -73,7 +69,7 @@ class DiaryMacroTargets {
   }
 
   /// Creates data from persisted JSON.
-  factory DiaryMacroTargets.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$DiaryMacroTargetsFromJson(json);
 
   /// Converts data to persisted JSON.

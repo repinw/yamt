@@ -112,9 +112,8 @@ InventoryAmountParseResult? _parseWeightAmount({
   if (RegExp(r'(^|\s|\d)(l|liter|litres?)\b').hasMatch(normalized)) {
     return (unit: InventoryAmountUnit.milliliter, multiplier: 1000);
   }
-  if (RegExp(r'(^|\s|\d)(kg|kilo|kilogramm?|kilograms?)\b').hasMatch(
-    normalized,
-  )) {
+  if (RegExp(r'(^|\s|\d)(kg|kilo|kilogramm?|kilograms?)\b')
+      .hasMatch(normalized)) {
     return (unit: InventoryAmountUnit.gram, multiplier: 1000);
   }
   if (RegExp(r'(^|\s|\d)(mg|milligramm?|milligrams?)\b').hasMatch(normalized)) {

@@ -14,7 +14,7 @@ const _cacheVersion = 2;
 /// Stores last good diary dashboard snapshots for instant startup.
 class DiaryDayDashboardCacheStore {
   /// Creates diary dashboard cache store.
-  const DiaryDayDashboardCacheStore();
+  const new();
 
   /// Reads cached data synchronously.
   DiaryDayDashboardData? readSync({
@@ -71,10 +71,7 @@ class DiaryDayDashboardCacheStore {
       'day_key': dayKey,
       'data': data.toJson(),
     });
-    return preferences.setString(
-      _key(userId: userId, dayKey: dayKey),
-      encoded,
-    );
+    return preferences.setString(_key(userId: userId, dayKey: dayKey), encoded);
   }
 
   String _key({required String userId, required String dayKey}) {

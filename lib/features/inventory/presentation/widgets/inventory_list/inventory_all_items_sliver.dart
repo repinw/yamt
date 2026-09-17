@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -26,7 +26,7 @@ const double _inventoryListBottomPadding =
 /// Defines inventory all items sliver.
 class InventoryAllItemsSliver extends StatefulWidget {
   /// The inventory all items sliver.
-  const InventoryAllItemsSliver({
+  const new({
     required this.items,
     required this.l10n,
 
@@ -151,10 +151,8 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
     return SliverList.builder(
       key: const Key('inventory_items_list_view'),
       itemCount: _sortedItems.length,
-      itemBuilder: (context, index) => _buildItemEntry(
-        _sortedItems[index],
-        bottomSpacing: AppSpacing.xl,
-      ),
+      itemBuilder: (context, index) =>
+          _buildItemEntry(_sortedItems[index], bottomSpacing: AppSpacing.xl),
     );
   }
 
@@ -168,10 +166,8 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
         mainAxisExtent: AppInventoryClosedTile.inventoryGridMainAxisExtent,
       ),
       delegate: SliverChildBuilderDelegate(
-        (context, index) => _buildItemEntry(
-          _sortedItems[index],
-          bottomSpacing: 0,
-        ),
+        (context, index) =>
+            _buildItemEntry(_sortedItems[index], bottomSpacing: 0),
         childCount: _sortedItems.length,
       ),
     );

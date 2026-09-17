@@ -167,9 +167,7 @@ _CaloriePageActionHarness _createHarness({
       ),
       diaryHealthServiceProvider.overrideWithValue(FakeDiaryHealthService({})),
       healthConnectionServiceProvider.overrideWithValue(
-        FakeHealthConnectionService(
-          const HealthConnectionStatus.unsupported(),
-        ),
+        FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
       ),
       healthWeightServiceProvider.overrideWithValue(
         FakeHealthWeightService([]),
@@ -191,7 +189,7 @@ _CaloriePageActionHarness _createHarness({
 }
 
 class _CaloriePageActionHarness {
-  _CaloriePageActionHarness({
+  new({
     required this.container,
     required this.logRepository,
     required this.settingsRepository,
@@ -213,7 +211,7 @@ class _CaloriePageActionHarness {
 }
 
 class _FakeCalorieDebugFileExporter implements CalorieDebugFileExporter {
-  _FakeCalorieDebugFileExporter({
+  new({
     this.result = const CalorieDebugFileExportSaved(
       path: '/tmp/yamt_diary_debug.txt',
     ),

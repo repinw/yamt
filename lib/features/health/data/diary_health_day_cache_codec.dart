@@ -13,7 +13,7 @@ const _cacheVersion = 1;
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryHealthDayCacheSnapshot {
   /// Creates a persisted diary health day snapshot.
-  const DiaryHealthDayCacheSnapshot({
+  const new({
     required this.version,
     required this.cacheKey,
     required this.dayStart,
@@ -24,7 +24,7 @@ class DiaryHealthDayCacheSnapshot {
   });
 
   /// Creates a snapshot from domain data.
-  factory DiaryHealthDayCacheSnapshot.fromDomain({
+  factory fromDomain({
     required String cacheKey,
     required DateTime dayStart,
     required DateTime loadedAt,
@@ -46,7 +46,7 @@ class DiaryHealthDayCacheSnapshot {
   }
 
   /// Creates a persisted diary health day snapshot from JSON.
-  factory DiaryHealthDayCacheSnapshot.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$DiaryHealthDayCacheSnapshotFromJson(json);
   }
 
@@ -79,9 +79,7 @@ class DiaryHealthDayCacheSnapshot {
         workouts.map((workout) => workout.toDomain()),
       ),
       unassignedActiveEnergySegments: List<HealthEnergySegment>.unmodifiable(
-        unassignedActiveEnergySegments.map(
-          (segment) => segment.toDomain(),
-        ),
+        unassignedActiveEnergySegments.map((segment) => segment.toDomain()),
       ),
     );
   }
@@ -117,7 +115,7 @@ class DiaryHealthDayCacheSnapshot {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class DiaryHealthWorkoutCacheDto {
   /// Creates a persisted workout session DTO.
-  const DiaryHealthWorkoutCacheDto({
+  const new({
     required this.id,
     required this.start,
     required this.endExclusive,
@@ -129,9 +127,7 @@ class DiaryHealthWorkoutCacheDto {
   });
 
   /// Creates DTO from domain workout.
-  factory DiaryHealthWorkoutCacheDto.fromDomain(
-    HealthWorkoutSession workout,
-  ) {
+  factory fromDomain(HealthWorkoutSession workout) {
     return DiaryHealthWorkoutCacheDto(
       id: workout.id,
       start: workout.start,
@@ -145,7 +141,7 @@ class DiaryHealthWorkoutCacheDto {
   }
 
   /// Creates DTO from JSON.
-  factory DiaryHealthWorkoutCacheDto.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$DiaryHealthWorkoutCacheDtoFromJson(json);
   }
 
@@ -195,7 +191,7 @@ class DiaryHealthWorkoutCacheDto {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class DiaryHealthEnergySegmentCacheDto {
   /// Creates a persisted unassigned energy segment DTO.
-  const DiaryHealthEnergySegmentCacheDto({
+  const new({
     required this.id,
     required this.start,
     required this.endExclusive,
@@ -206,9 +202,7 @@ class DiaryHealthEnergySegmentCacheDto {
   });
 
   /// Creates DTO from domain segment.
-  factory DiaryHealthEnergySegmentCacheDto.fromDomain(
-    HealthEnergySegment segment,
-  ) {
+  factory fromDomain(HealthEnergySegment segment) {
     return DiaryHealthEnergySegmentCacheDto(
       id: segment.id,
       start: segment.start,
@@ -221,9 +215,7 @@ class DiaryHealthEnergySegmentCacheDto {
   }
 
   /// Creates DTO from JSON.
-  factory DiaryHealthEnergySegmentCacheDto.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$DiaryHealthEnergySegmentCacheDtoFromJson(json);
   }
 

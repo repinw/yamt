@@ -50,10 +50,7 @@ void main() {
     await store.save(memory, preferences);
     final restored = store.readSync(memory);
 
-    expect(
-      restored.viewMode,
-      InventoryListViewMode.tiles,
-    );
+    expect(restored.viewMode, InventoryListViewMode.tiles);
     expect(
       restored.inventoryItemSortMode,
       InventoryItemSortMode.alphabeticalDescending,

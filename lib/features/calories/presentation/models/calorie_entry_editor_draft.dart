@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -22,7 +22,7 @@ typedef CalorieEntryEditorParsedDraft = ({
 /// Owns calorie entry editor form controllers and parsed draft values.
 class CalorieEntryEditorDraft {
   /// Creates draft with default amount.
-  CalorieEntryEditorDraft();
+  new();
 
   /// Form key for editor.
   final formKey = GlobalKey<FormState>();

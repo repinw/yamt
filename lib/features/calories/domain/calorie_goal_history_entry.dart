@@ -11,7 +11,7 @@ part 'calorie_goal_history_entry.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieGoalHistoryEntry {
   /// The calorie goal history entry.
-  const CalorieGoalHistoryEntry({
+  const new({
     required this.dailyKcalGoal,
     required this.calculatorProfile,
     required this.effectiveDate,
@@ -23,7 +23,7 @@ class CalorieGoalHistoryEntry {
   });
 
   /// Creates a [CalorieGoalHistoryEntry] from json.
-  factory CalorieGoalHistoryEntry.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$CalorieGoalHistoryEntryFromJson(json);
 
   /// The daily kcal goal.

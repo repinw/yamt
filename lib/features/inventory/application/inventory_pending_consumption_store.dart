@@ -8,7 +8,7 @@ part 'inventory_pending_consumption_store.g.dart';
 /// Describes a committed inventory consumption for application observers.
 final class InventoryPendingConsumptionFinalized {
   /// Creates a pending-consumption finalization event.
-  const InventoryPendingConsumptionFinalized({
+  const new({
     required this.id,
     required this.itemId,
     required this.quantity,

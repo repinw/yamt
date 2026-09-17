@@ -6,7 +6,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 /// Defines serving suggestion resolution.
 class ServingSuggestionResolution {
   /// The serving suggestion resolution.
-  const ServingSuggestionResolution({
+  const new({
     required this.inventoryServingOptions,
     required this.manualServingSuggestions,
     required this.portionSuggestions,
@@ -37,7 +37,7 @@ class ServingSuggestionResolution {
 /// Inventory amount quick option.
 class InventoryServingOption {
   /// The inventory serving option.
-  const InventoryServingOption({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   /// User-facing label.
   final String label;
@@ -49,7 +49,7 @@ class InventoryServingOption {
 /// Portion suggestion with display and learning metadata.
 class PortionSuggestion {
   /// The portion suggestion.
-  const PortionSuggestion({
+  const new({
     required this.label,
     required this.amount,
     required this.unit,
@@ -70,7 +70,7 @@ class PortionSuggestion {
 }
 
 class _InventoryServingCandidate {
-  const _InventoryServingCandidate({
+  const new({
     required this.label,
     required this.amount,
     required this.unit,
@@ -84,7 +84,7 @@ class _InventoryServingCandidate {
 }
 
 class _ServingAmount {
-  const _ServingAmount({required this.amount, required this.unit});
+  const new({required this.amount, required this.unit});
 
   final double amount;
   final InventoryAmountUnit unit;
@@ -93,7 +93,7 @@ class _ServingAmount {
 /// Defines serving suggestion resolver.
 class ServingSuggestionResolver {
   /// The serving suggestion resolver.
-  const ServingSuggestionResolver();
+  const new();
 
   static const _servingAmountParser = InventoryAmountParser();
 
@@ -541,10 +541,7 @@ class ServingSuggestionResolver {
     };
   }
 
-  bool _canUsePortionSuggestionForItem(
-    InventoryItem item,
-    ConsumedUnit unit,
-  ) {
+  bool _canUsePortionSuggestionForItem(InventoryItem item, ConsumedUnit unit) {
     if (!item.usesAmountProgress) {
       return true;
     }

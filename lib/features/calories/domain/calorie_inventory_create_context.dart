@@ -3,7 +3,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 /// Defines calorie inventory create context.
 class CalorieInventoryCreateContext {
   /// The calorie inventory create context.
-  const CalorieInventoryCreateContext({
+  const new({
     required this.inventoryItemId,
     required this.foodFingerprint,
     required this.globalFoodItemId,

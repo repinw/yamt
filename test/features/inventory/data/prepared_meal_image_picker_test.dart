@@ -3,71 +3,81 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 
 const int _maxPreparedMealImageBytes = 350 * 1024;
 
 class _FakePreparedMealImageFilePicker {
-  _FakePreparedMealImageFilePicker({required this.onPickFiles});
+  new({required this.onPickFiles});
 
-  final Future<FilePickerResult?> Function({
-    required bool withData,
-    required FileType type,
-  })
-  onPickFiles;
+  final Future<PlatformFile?> Function({required FileType type}) onPickFiles;
 
-  bool? lastWithData;
   FileType? lastType;
 
-  Future<FilePickerResult?> pickFiles({
-    required bool withData,
-    required FileType type,
-  }) async {
-    lastWithData = withData;
+  Future<PlatformFile?> pickFile({required FileType type}) async {
     lastType = type;
-    return onPickFiles(withData: withData, type: type);
+    return await onPickFiles(type: type);
   }
 }
 
+base class _FakePlatformFile extends PlatformFile {
+  new({required this.name, required this.bytes});
+
+  @override
+  final String name;
+
+  final Uint8List bytes;
+
+  @override
+  Uri get uri => Uri.parse('memory:$name');
+
+  @override
+  XFile get xFile => XFile.fromData(bytes, name: name);
+
+  @override
+  int? lengthSync() => bytes.length;
+
+  @override
+  Future<int?> length() async => bytes.length;
+
+  @override
+  Future<Uint8List> readAsBytes() async => bytes;
+
+  @override
+  Stream<Uint8List> readAsByteStream() => Stream.value(bytes);
+}
+
 void main() {
-  test(
-    'preparedMealImagePickerProvider exposes platform camera support',
-    () {
-      debugDefaultTargetPlatformOverride = TargetPlatform.android;
-      addTearDown(() {
-        debugDefaultTargetPlatformOverride = null;
-      });
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+  test('preparedMealImagePickerProvider exposes platform camera support', () {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() {
+      debugDefaultTargetPlatformOverride = null;
+    });
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
 
-      final picker = container.read(preparedMealImagePickerProvider);
+    final picker = container.read(preparedMealImagePickerProvider);
 
-      expect(picker.supportsCamera, isTrue);
+    expect(picker.supportsCamera, isTrue);
 
-      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
 
-      expect(picker.supportsCamera, isFalse);
-    },
-  );
+    expect(picker.supportsCamera, isFalse);
+  });
 
   test('pickFromFile returns bytes when image file is selected', () async {
     final originalImage = _createNoisyImage(width: 32, height: 32);
     final originalBytes = Uint8List.fromList(img.encodePng(originalImage));
     final filePicker = _FakePreparedMealImageFilePicker(
-      onPickFiles: ({required withData, required type}) async {
-        return FilePickerResult([
-          PlatformFile(
-            name: 'meal.png',
-            size: originalBytes.length,
-            bytes: originalBytes,
-          ),
-        ]);
+      onPickFiles: ({required type}) async {
+        return _FakePlatformFile(name: 'meal.png', bytes: originalBytes);
       },
     );
     final container = ProviderContainer(
       overrides: [
         preparedMealImageFilePickerProvider.overrideWithValue(
-          filePicker.pickFiles,
+          filePicker.pickFile,
         ),
       ],
     );
@@ -78,7 +88,6 @@ void main() {
         .pickFromFile();
 
     expect(bytes, orderedEquals(originalBytes));
-    expect(filePicker.lastWithData, isTrue);
     expect(filePicker.lastType, FileType.image);
   });
 
@@ -86,14 +95,14 @@ void main() {
     'pickFromFile returns null when image file picking is canceled',
     () async {
       final filePicker = _FakePreparedMealImageFilePicker(
-        onPickFiles: ({required withData, required type}) async {
+        onPickFiles: ({required type}) async {
           return null;
         },
       );
       final container = ProviderContainer(
         overrides: [
           preparedMealImageFilePickerProvider.overrideWithValue(
-            filePicker.pickFiles,
+            filePicker.pickFile,
           ),
         ],
       );
@@ -104,21 +113,20 @@ void main() {
           .pickFromFile();
 
       expect(bytes, isNull);
-      expect(filePicker.lastWithData, isTrue);
       expect(filePicker.lastType, FileType.image);
     },
   );
 
   test('pickFromFile throws filePickFailed when picker crashes', () async {
     final filePicker = _FakePreparedMealImageFilePicker(
-      onPickFiles: ({required withData, required type}) async {
+      onPickFiles: ({required type}) async {
         throw StateError('picker-boom');
       },
     );
     final container = ProviderContainer(
       overrides: [
         preparedMealImageFilePickerProvider.overrideWithValue(
-          filePicker.pickFiles,
+          filePicker.pickFile,
         ),
       ],
     );
@@ -134,7 +142,6 @@ void main() {
         ),
       ),
     );
-    expect(filePicker.lastWithData, isTrue);
     expect(filePicker.lastType, FileType.image);
   });
 
@@ -165,34 +172,25 @@ void main() {
     expect(optimizedBytes, orderedEquals(originalBytes));
   });
 
-  test(
-    'optimizePreparedMealImageBytes shrinks oversized dimensions '
-    'even when bytes already fit',
-    () async {
-      final originalImage = img.Image(width: 2400, height: 1800);
-      img.fill(originalImage, color: img.ColorRgb8(180, 120, 90));
-      final originalBytes = Uint8List.fromList(img.encodeJpg(originalImage));
-      expect(originalBytes.length, lessThan(_maxPreparedMealImageBytes));
+  test('optimizePreparedMealImageBytes shrinks oversized dimensions '
+      'even when bytes already fit', () async {
+    final originalImage = img.Image(width: 2400, height: 1800);
+    img.fill(originalImage, color: img.ColorRgb8(180, 120, 90));
+    final originalBytes = Uint8List.fromList(img.encodeJpg(originalImage));
+    expect(originalBytes.length, lessThan(_maxPreparedMealImageBytes));
 
-      final optimizedBytes = await optimizePreparedMealImageBytes(
-        originalBytes,
-      );
-      final optimizedImage = img.decodeImage(optimizedBytes);
+    final optimizedBytes = await optimizePreparedMealImageBytes(originalBytes);
+    final optimizedImage = img.decodeImage(optimizedBytes);
 
-      expect(optimizedImage, isNotNull);
-      expect(optimizedImage!.width, lessThanOrEqualTo(1600));
-      expect(optimizedImage.height, lessThanOrEqualTo(1600));
-    },
-  );
+    expect(optimizedImage, isNotNull);
+    expect(optimizedImage!.width, lessThanOrEqualTo(1600));
+    expect(optimizedImage.height, lessThanOrEqualTo(1600));
+  });
 
   test(
     'optimizePreparedMealImageBytes keeps alpha images as png while resizing',
     () async {
-      final originalImage = img.Image(
-        width: 1800,
-        height: 16,
-        numChannels: 4,
-      );
+      final originalImage = img.Image(width: 1800, height: 16, numChannels: 4);
       img.fill(originalImage, color: img.ColorRgba8(180, 120, 90, 96));
       final originalBytes = Uint8List.fromList(img.encodePng(originalImage));
 

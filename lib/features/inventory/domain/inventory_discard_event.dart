@@ -14,8 +14,7 @@ enum InventoryDiscardReason {
   cookedTooMuch,
 
   /// Documented member.
-  other
-  ;
+  other;
 
   /// Localized label.
   String localizedLabel(AppLocalizations l10n) {
@@ -41,7 +40,7 @@ enum InventoryDiscardSourceType {
 /// Defines inventory discard event.
 class InventoryDiscardEvent {
   /// The inventory discard event.
-  const InventoryDiscardEvent({
+  const new({
     required this.id,
     required this.sourceType,
     required this.sourceId,
@@ -54,7 +53,7 @@ class InventoryDiscardEvent {
   });
 
   /// Creates a [InventoryDiscardEvent] for from json.
-  factory InventoryDiscardEvent.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return InventoryDiscardEvent(
       id: _readString(json['id']),
       sourceType: _readSourceType(json['source_type']),
@@ -69,7 +68,7 @@ class InventoryDiscardEvent {
   }
 
   /// Creates a [InventoryDiscardEvent] for from inventory item.
-  factory InventoryDiscardEvent.fromInventoryItem({
+  factory fromInventoryItem({
     required String id,
     required InventoryItem item,
     required int discardedAmount,
@@ -90,7 +89,7 @@ class InventoryDiscardEvent {
   }
 
   /// Creates a [InventoryDiscardEvent] for from prepared meal.
-  factory InventoryDiscardEvent.fromPreparedMeal({
+  factory fromPreparedMeal({
     required String id,
     required PreparedMeal meal,
     required num discardedPortions,
@@ -215,9 +214,7 @@ DateTime _readDateTime(Object? value) {
     }
   }
 
-  throw FormatException(
-    'Invalid discarded_at value: ${value.runtimeType}',
-  );
+  throw FormatException('Invalid discarded_at value: ${value.runtimeType}');
 }
 
 num _readNum(Object? value) {

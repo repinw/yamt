@@ -42,11 +42,10 @@ abstract final class NutritionLabelOcrErrorCodes {
 typedef NutritionLabelTemplateConfigClient = Future<String> Function();
 
 /// Generates nutrition label template content.
-typedef NutritionLabelTemplateModelClient =
-    Future<String?> Function({
-      required String templateId,
-      required Map<String, Object?> inputs,
-    });
+typedef NutritionLabelTemplateModelClient = Future<String?> Function({
+  required String templateId,
+  required Map<String, Object?> inputs,
+});
 
 /// Receives captured nutrition label image bytes before model processing.
 typedef NutritionLabelImageCaptured = void Function(Uint8List imageBytes);
@@ -77,9 +76,8 @@ NutritionLabelTemplateConfigClient nutritionLabelTemplateConfigClient(Ref ref) {
 /// Nutrition label template model client.
 @riverpod
 NutritionLabelTemplateModelClient nutritionLabelTemplateModelClient(Ref ref) {
-  final model = FirebaseAI.vertexAI(
-    location: _vertexLocation,
-  ).templateGenerativeModel();
+  final model = FirebaseAI.agentPlatform(location: _vertexLocation)
+      .templateGenerativeModel();
   return ({
     required String templateId,
     required Map<String, Object?> inputs,
@@ -92,13 +90,11 @@ NutritionLabelTemplateModelClient nutritionLabelTemplateModelClient(Ref ref) {
 /// Scans nutrition labels with Firebase AI.
 class NutritionLabelOcrRepository {
   /// Creates nutrition label OCR repository.
-  NutritionLabelOcrRepository({
-    required ImagePicker imagePicker,
-    required NutritionLabelTemplateConfigClient configClient,
-    required NutritionLabelTemplateModelClient modelClient,
-  }) : _imagePicker = imagePicker,
-       _configClient = configClient,
-       _modelClient = modelClient;
+  new({
+    required this._imagePicker,
+    required this._configClient,
+    required this._modelClient,
+  });
 
   final ImagePicker _imagePicker;
   final NutritionLabelTemplateConfigClient _configClient;
@@ -385,10 +381,7 @@ class NutritionLabelOcrRepository {
     return double.tryParse(normalized);
   }
 
-  String _detectMimeType({
-    required String fileName,
-    required Uint8List bytes,
-  }) {
+  String _detectMimeType({required String fileName, required Uint8List bytes}) {
     return lookupMimeType(fileName, headerBytes: bytes) ?? _defaultMimeType;
   }
 }

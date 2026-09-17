@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
@@ -52,10 +53,7 @@ void main() {
     var didLogin = false;
     await _pumpLocalized(
       tester,
-      Step0Welcome(
-        onNext: () {},
-        onLogin: () => didLogin = true,
-      ),
+      Step0Welcome(onNext: () {}, onLogin: () => didLogin = true),
     );
 
     expect(find.textContaining('Already registered?'), findsOneWidget);
@@ -348,9 +346,7 @@ void main() {
 
     expect(find.text('When should your goal start?'), findsOneWidget);
 
-    await tester.tap(
-      find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
-    );
+    await tester.tap(find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption));
     await tester.pumpAndSettle();
     expect(
       find.byKey(CalorieGoalOnboardingKeys.todayTrackingExactOption),
@@ -386,10 +382,7 @@ void main() {
   testWidgets('start-date step shows future date and change action', (
     tester,
   ) async {
-    await _pumpLocalized(
-      tester,
-      const _StartDateHarness(startNow: false),
-    );
+    await _pumpLocalized(tester, const _StartDateHarness(startNow: false));
 
     expect(
       find.byKey(CalorieGoalOnboardingKeys.goalStartValue),
@@ -470,7 +463,7 @@ Future<void> _pumpLocalized(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: child),
     ),
@@ -478,10 +471,7 @@ Future<void> _pumpLocalized(WidgetTester tester, Widget child) async {
 }
 
 class _StartDateHarness extends StatefulWidget {
-  const _StartDateHarness({
-    this.startNow,
-    this.showErrors = false,
-  });
+  const new({this.startNow, this.showErrors = false});
 
   final bool? startNow;
   final bool showErrors;

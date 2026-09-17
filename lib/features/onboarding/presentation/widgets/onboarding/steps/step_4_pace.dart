@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
@@ -9,11 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Onboarding step for weight-change pace.
 class Step4Pace extends StatelessWidget {
   /// Creates pace onboarding step.
-  const Step4Pace({
-    required this.state,
-    required this.notifier,
-    super.key,
-  });
+  const new({required this.state, required this.notifier, super.key});
 
   /// Current calculator form state.
   final CalorieGoalCalculatorFormState state;
@@ -73,9 +69,9 @@ class Step4Pace extends StatelessWidget {
                         border: Border.all(
                           color: isSelected
                               ? theme.colorScheme.primary
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
+                              : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest,
                           width: isSelected ? 6 : 2,
                         ),
                       ),

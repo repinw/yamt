@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/data/'
@@ -14,7 +14,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Inventory activity timeline.
 class InventoryActivityTimeline extends ConsumerWidget {
   /// Creates timeline.
-  const InventoryActivityTimeline({
+  const new({
     required this.includeHomeShellChrome,
     required this.topChromeActions,
     super.key,
@@ -118,10 +118,7 @@ class InventoryActivityTimeline extends ConsumerWidget {
               ),
               if (actionLabel != null && onAction != null) ...[
                 const SizedBox(height: AppSpacing.md),
-                FilledButton(
-                  onPressed: onAction,
-                  child: Text(actionLabel),
-                ),
+                FilledButton(onPressed: onAction, child: Text(actionLabel)),
               ],
             ],
           ),
@@ -132,7 +129,7 @@ class InventoryActivityTimeline extends ConsumerWidget {
 }
 
 class _InventoryActivityDayGroup extends StatelessWidget {
-  const _InventoryActivityDayGroup({
+  const new({
     required this.title,
     required this.timeFormat,
     required this.events,
@@ -178,7 +175,7 @@ class _InventoryActivityDayGroup extends StatelessWidget {
 }
 
 class _InventoryActivityTile extends StatelessWidget {
-  const _InventoryActivityTile({
+  const new({
     required this.event,
     required this.timeFormat,
     required this.l10n,
@@ -203,7 +200,7 @@ class _InventoryActivityTile extends StatelessWidget {
 }
 
 class _InventoryActivityDay {
-  const _InventoryActivityDay({required this.day, required this.events});
+  const new({required this.day, required this.events});
 
   final DateTime day;
   final List<InventoryActivityEvent> events;
@@ -236,10 +233,7 @@ IconData _iconForType(InventoryActivityEventType type) {
   };
 }
 
-String _titleForEvent(
-  AppLocalizations l10n,
-  InventoryActivityEvent event,
-) {
+String _titleForEvent(AppLocalizations l10n, InventoryActivityEvent event) {
   final actor = event.actorDisplayName ?? l10n.inventoryActivityActorFallback;
   final amount = _amountLabel(l10n, event);
   return switch (event.type) {
@@ -274,10 +268,7 @@ String _titleForEvent(
   };
 }
 
-String _amountLabel(
-  AppLocalizations l10n,
-  InventoryActivityEvent event,
-) {
+String _amountLabel(AppLocalizations l10n, InventoryActivityEvent event) {
   final unit = event.itemAmountUnit;
   if (unit == null) {
     return l10n.inventoryActivityPieceAmount(event.amount);

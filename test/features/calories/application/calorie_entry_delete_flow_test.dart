@@ -20,7 +20,7 @@ import 'package:yamt/features/inventory/presentation/'
 import '../support/fake_calories_repositories.dart';
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+  new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
   final StreamController<List<InventoryItem>> _controller =
@@ -61,7 +61,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
 }
 
 class _FakePreparedMealRepository implements PreparedMealRepository {
-  _FakePreparedMealRepository({required List<PreparedMeal> initialMeals})
+  new({required List<PreparedMeal> initialMeals})
     : _meals = List<PreparedMeal>.from(initialMeals);
 
   final StreamController<List<PreparedMeal>> _controller =
@@ -205,10 +205,7 @@ ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepPreparedMealsAlive(
 }
 
 class _DeleteFlowHarness {
-  const _DeleteFlowHarness({
-    required this.container,
-    required this.calorieRepository,
-  });
+  const new({required this.container, required this.calorieRepository});
 
   final ProviderContainer container;
   final FakeCalorieLogRepository calorieRepository;
@@ -489,9 +486,7 @@ void main() {
           consumedPortions: 1,
         ),
       ],
-      preparedMeals: <PreparedMeal>[
-        _meal(id: 'meal-1', remainingPortions: 1),
-      ],
+      preparedMeals: <PreparedMeal>[_meal(id: 'meal-1', remainingPortions: 1)],
     );
 
     await harness.load(includePreparedMeals: true);
@@ -562,16 +557,15 @@ void main() {
     'delete flow reports missing source when prepared meal is gone',
     () async {
       final result =
-          await _deleteFlow(
-            sourcePreparedMealExists: (mealId) async => false,
-          ).deleteEntry(
-            entry: _bundleEntry(
-              id: 'entry-1',
-              sourceMealId: 'missing-meal',
-              consumedPortions: 1,
-            ),
-            restoreToInventory: true,
-          );
+          await _deleteFlow(sourcePreparedMealExists: (mealId) async => false)
+              .deleteEntry(
+                entry: _bundleEntry(
+                  id: 'entry-1',
+                  sourceMealId: 'missing-meal',
+                  consumedPortions: 1,
+                ),
+                restoreToInventory: true,
+              );
 
       expect(result.isSuccess, isFalse);
       expect(
@@ -642,56 +636,45 @@ void main() {
     },
   );
 
-  test(
-    'transient read of overridden calorieEntryDeleteFlowProvider succeeds '
-    'without disposed Ref error',
-    () async {
-      final entry = _entry(
-        id: 'entry-1',
-        sourceInventoryItemId: 'inventory-1',
-        sourceInventoryAmountToRestore: 250,
-      );
-      final calorieRepository = FakeCalorieLogRepository(
-        initialEntries: [entry],
-      );
-      final settingsRepository = FakeCalorieSettingsRepository();
-      final inventoryRepository = _FakeInventoryItemRepository(
-        initialItems: [_inventoryItem()],
-      );
+  test('transient read of overridden calorieEntryDeleteFlowProvider succeeds '
+      'without disposed Ref error', () async {
+    final entry = _entry(
+      id: 'entry-1',
+      sourceInventoryItemId: 'inventory-1',
+      sourceInventoryAmountToRestore: 250,
+    );
+    final calorieRepository = FakeCalorieLogRepository(initialEntries: [entry]);
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [_inventoryItem()],
+    );
 
-      addTearDown(calorieRepository.dispose);
-      addTearDown(settingsRepository.dispose);
-      addTearDown(inventoryRepository.dispose);
+    addTearDown(calorieRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+    addTearDown(inventoryRepository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieLogRepositoryProvider.overrideWithValue(calorieRepository),
-          calorieSettingsRepositoryProvider.overrideWithValue(
-            settingsRepository,
-          ),
-          inventoryItemRepositoryProvider.overrideWithValue(
-            inventoryRepository,
-          ),
-          calorieEntryDeleteFlowProvider.overrideWith(
-            (ref) => ref.watch(inventoryCalorieEntryDeleteFlowProvider),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(calorieRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        calorieEntryDeleteFlowProvider.overrideWith(
+          (ref) => ref.watch(inventoryCalorieEntryDeleteFlowProvider),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      final deleteFlow = container.read(calorieEntryDeleteFlowProvider);
-      final result = await deleteFlow.deleteEntry(
-        entry: entry,
-        restoreToInventory: true,
-      );
+    final deleteFlow = container.read(calorieEntryDeleteFlowProvider);
+    final result = await deleteFlow.deleteEntry(
+      entry: entry,
+      restoreToInventory: true,
+    );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.restoredToInventory, isTrue);
-      expect(calorieRepository.entries, isEmpty);
-      final items = await container.read(
-        inventoryItemsControllerProvider.future,
-      );
-      expect(items.single.currentAmount, 1000);
-    },
-  );
+    expect(result.isSuccess, isTrue);
+    expect(result.restoredToInventory, isTrue);
+    expect(calorieRepository.entries, isEmpty);
+    final items = await container.read(inventoryItemsControllerProvider.future);
+    expect(items.single.currentAmount, 1000);
+  });
 }

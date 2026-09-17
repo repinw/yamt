@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 @immutable
 class AiChefRecipeDraft {
   /// Creates parsed AI Chef recipe response data.
-  const AiChefRecipeDraft({
+  const new({
     required this.name,
     required this.portions,
     required this.kcal,

@@ -46,7 +46,7 @@ abstract class _$CalorieGoalController
   FutureOr<CalorieGoalSettings> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<CalorieGoalSettings>, CalorieGoalSettings>;
     final element =
@@ -57,6 +57,6 @@ abstract class _$CalorieGoalController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

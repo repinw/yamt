@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 
 /// Shared nutrition summary card.
 class NutritionProfileCard extends StatelessWidget {
   /// Creates nutrition profile card.
-  const NutritionProfileCard({
+  const new({
     required this.kcal,
     required this.kcalUnitLabel,
     required this.protein,
@@ -187,7 +187,7 @@ class NutritionProfileCard extends StatelessWidget {
 }
 
 class _NutritionDivider extends StatelessWidget {
-  const _NutritionDivider({required this.colors});
+  const new({required this.colors});
 
   final ColorScheme colors;
 
@@ -205,7 +205,7 @@ class _NutritionDivider extends StatelessWidget {
 }
 
 class _NutritionMetricCell extends StatelessWidget {
-  const _NutritionMetricCell({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   final String label;
   final String value;

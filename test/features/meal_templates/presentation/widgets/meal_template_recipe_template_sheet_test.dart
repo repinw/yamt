@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_template_recipe_template_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -27,7 +28,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: Scaffold(
           body: Builder(
@@ -71,7 +72,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: Scaffold(
           body: Builder(
@@ -130,7 +131,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: Scaffold(
           body: Builder(
@@ -222,7 +223,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: Scaffold(
           body: Builder(
@@ -297,10 +298,7 @@ void main() {
       find.text(l10n.preparedMealTemplateCreateFromRecipeAction),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.text(l10n.preparedMealInvalidPortionsRange),
-      findsOneWidget,
-    );
+    expect(find.text(l10n.preparedMealInvalidPortionsRange), findsOneWidget);
 
     // Enter portion -5
     await tester.enterText(portionsFinder, '-5');
@@ -308,10 +306,7 @@ void main() {
       find.text(l10n.preparedMealTemplateCreateFromRecipeAction),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.text(l10n.preparedMealInvalidPortionsRange),
-      findsOneWidget,
-    );
+    expect(find.text(l10n.preparedMealInvalidPortionsRange), findsOneWidget);
 
     // Enter non-numeric portion
     await tester.enterText(portionsFinder, 'abc');
@@ -319,10 +314,7 @@ void main() {
       find.text(l10n.preparedMealTemplateCreateFromRecipeAction),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.text(l10n.preparedMealInvalidPortionsRange),
-      findsOneWidget,
-    );
+    expect(find.text(l10n.preparedMealInvalidPortionsRange), findsOneWidget);
 
     // Fill valid name and portions and submit
     await tester.enterText(nameFinder, 'My Recipe');
@@ -339,9 +331,7 @@ void main() {
     expect(submittedDraft?.totalPortions, 4);
   });
 
-  testWidgets('recipe template sheet cancel button works', (
-    tester,
-  ) async {
+  testWidgets('recipe template sheet cancel button works', (tester) async {
     final rootObserver = RecordingNavigatorObserver();
     final nestedObserver = RecordingNavigatorObserver();
     var dismissed = false;
@@ -351,7 +341,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: Scaffold(
           body: Builder(
@@ -420,7 +410,7 @@ Future<AppLocalizations> _openRecipeTemplateSheet(WidgetTester tester) async {
       rootObserver: rootObserver,
       nestedObserver: nestedObserver,
       locale: const Locale('de'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       child: Scaffold(
         body: Builder(

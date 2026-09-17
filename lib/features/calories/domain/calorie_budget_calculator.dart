@@ -6,10 +6,7 @@ const minimumDailyCalorieBudgetKcal = 1200.0;
 /// One finished day used for carryover math.
 class CalorieCarryoverDay {
   /// Creates a carryover day.
-  const CalorieCarryoverDay({
-    required this.goalKcal,
-    required this.consumedKcal,
-  });
+  const new({required this.goalKcal, required this.consumedKcal});
 
   /// The canonical goal for this day.
   final double goalKcal;
@@ -21,7 +18,7 @@ class CalorieCarryoverDay {
 /// Result for a stored goal after activity and minimum floor are applied.
 class CalorieResolvedGoalBreakdown {
   /// Creates resolved goal breakdown.
-  const CalorieResolvedGoalBreakdown({
+  const new({
     required this.storedGoalKcal,
     required this.activityDeltaKcal,
     required this.goalBeforeMinimumKcal,
@@ -48,7 +45,7 @@ class CalorieResolvedGoalBreakdown {
 /// Classic tab budget after optional view toggles.
 class CalorieClassicBudgetBreakdown {
   /// Creates classic budget breakdown.
-  const CalorieClassicBudgetBreakdown({
+  const new({
     required this.baseGoalKcal,
     required this.activityDeltaKcal,
     required this.carryoverKcal,

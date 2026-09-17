@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -24,10 +24,7 @@ typedef ProductSearchHubEntryOpener =
 /// Edited product entry result with stable source key.
 class ProductSearchHubEditedResult {
   /// Creates edited result.
-  const ProductSearchHubEditedResult({
-    required this.sourceKey,
-    required this.result,
-  });
+  const new({required this.sourceKey, required this.result});
 
   /// Key used for duplicate prevention.
   final String sourceKey;
@@ -39,7 +36,7 @@ class ProductSearchHubEditedResult {
 /// Search result copied as a template for a new product.
 class ProductSearchHubCopyResult {
   /// Creates a copied search result.
-  const ProductSearchHubCopyResult(this.product);
+  const new(this.product);
 
   /// The product template that was copied.
   final OffProductSearchResult product;

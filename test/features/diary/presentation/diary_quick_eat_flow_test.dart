@@ -1,13 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -38,10 +39,7 @@ void main() {
 
     for (final entry in cases.entries) {
       await tester.pumpWidget(
-        _RouteHarness(
-          source: entry.key,
-          selectedDay: DateTime(2026, 4, 27),
-        ),
+        _RouteHarness(source: entry.key, selectedDay: DateTime(2026, 4, 27)),
       );
 
       await tester.tap(find.byKey(_openFlowButtonKey));
@@ -83,9 +81,7 @@ void main() {
 
   testWidgets(
     'inventory picker shows empty state without shrink-wrapping list',
-    (
-      tester,
-    ) async {
+    (tester) async {
       await _pumpPickerHarness(
         tester,
         items: const <InventoryItem>[],
@@ -272,9 +268,7 @@ void main() {
 
   testWidgets(
     'inventory quick eat uses staged consumption from page container',
-    (
-      tester,
-    ) async {
+    (tester) async {
       _stageCallCount = 0;
       _discardedPendingIds.clear();
       await _pumpInventoryFlowHarness(
@@ -321,9 +315,7 @@ void main() {
     await _pumpInventoryFlowHarness(
       tester,
       inventoryItems: const <InventoryItem>[],
-      preparedMeals: [
-        _preparedMeal(id: 'meal-1', name: 'Failure Meal'),
-      ],
+      preparedMeals: [_preparedMeal(id: 'meal-1', name: 'Failure Meal')],
       failPreparedMealConsume: true,
     );
 
@@ -345,9 +337,7 @@ void main() {
     await _pumpInventoryFlowHarness(
       tester,
       inventoryItems: const <InventoryItem>[],
-      preparedMeals: [
-        _preparedMeal(id: 'meal-1', name: 'Refresh Meal'),
-      ],
+      preparedMeals: [_preparedMeal(id: 'meal-1', name: 'Refresh Meal')],
       onDashboardRetry: (_) {
         dashboardRetryCount += 1;
         return null;
@@ -374,10 +364,7 @@ int _stageCallCount = 0;
 final _discardedPendingIds = <String>[];
 
 class _RouteHarness extends StatelessWidget {
-  const _RouteHarness({
-    required this.source,
-    required this.selectedDay,
-  });
+  const new({required this.source, required this.selectedDay});
 
   final DiaryQuickEatSource source;
   final DateTime selectedDay;
@@ -389,10 +376,8 @@ class _RouteHarness extends StatelessWidget {
       routes: [
         GoRoute(
           path: AppRoutes.root,
-          builder: (context, state) => _QuickEatRouteLauncher(
-            source: source,
-            selectedDay: selectedDay,
-          ),
+          builder: (context, state) =>
+              _QuickEatRouteLauncher(source: source, selectedDay: selectedDay),
         ),
         GoRoute(
           path: AppRoutes.homeProductSearchHub,
@@ -424,7 +409,7 @@ class _RouteHarness extends StatelessWidget {
       child: MaterialApp.router(
         routerConfig: router,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),
     );
@@ -432,10 +417,7 @@ class _RouteHarness extends StatelessWidget {
 }
 
 class _QuickEatRouteLauncher extends StatelessWidget {
-  const _QuickEatRouteLauncher({
-    required this.source,
-    required this.selectedDay,
-  });
+  const new({required this.source, required this.selectedDay});
 
   final DiaryQuickEatSource source;
   final DateTime selectedDay;
@@ -470,7 +452,7 @@ Future<void> _pumpPickerHarness(
     ProviderScope(
       child: MaterialApp(
         locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _PickerHarness(items: items, meals: meals),
       ),
@@ -490,10 +472,7 @@ Future<void> _pumpInventoryFlowHarness(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        _dashboardOverrideFor(
-          _inventoryFlowDay,
-          onRetry: onDashboardRetry,
-        ),
+        _dashboardOverrideFor(_inventoryFlowDay, onRetry: onDashboardRetry),
         diaryQuickEatInventoryProvider.overrideWith(
           (ref) => _diaryQuickEatInventoryData(inventoryItems, preparedMeals),
         ),
@@ -515,7 +494,7 @@ Future<void> _pumpInventoryFlowHarness(
       ],
       child: const MaterialApp(
         locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _InventoryFlowHarness(),
       ),
@@ -552,7 +531,7 @@ Future<void> _pumpDelayedInventoryFlowHarness(
       ],
       child: const MaterialApp(
         locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _InventoryFlowHarness(),
       ),
@@ -576,7 +555,7 @@ DiaryQuickEatInventoryData _diaryQuickEatInventoryData(
 }
 
 class _InventoryFlowHarness extends StatelessWidget {
-  const _InventoryFlowHarness();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -613,10 +592,7 @@ Override _dashboardOverrideFor(
 
 class _TestDiaryQuickEatInventoryActions
     implements DiaryQuickEatInventoryActions, InventoryQuickEatActions {
-  const _TestDiaryQuickEatInventoryActions({
-    this.failConsume = false,
-    this.failStage = false,
-  });
+  const new({this.failConsume = false, this.failStage = false});
 
   final bool failConsume;
   final bool failStage;
@@ -652,10 +628,7 @@ class _TestDiaryQuickEatInventoryActions
 }
 
 class _PickerHarness extends StatefulWidget {
-  const _PickerHarness({
-    required this.items,
-    required this.meals,
-  });
+  const new({required this.items, required this.meals});
 
   final List<InventoryItem> items;
   final List<PreparedMeal> meals;
@@ -688,10 +661,8 @@ class _PickerHarnessState extends State<_PickerHarness> {
   Future<void> _openPicker() async {
     final selection = await showModalBottomSheet<DiaryInventoryFoodSelection>(
       context: context,
-      builder: (context) => DiaryInventoryFoodPicker(
-        items: widget.items,
-        meals: widget.meals,
-      ),
+      builder: (context) =>
+          DiaryInventoryFoodPicker(items: widget.items, meals: widget.meals),
     );
     if (!mounted || selection == null) {
       return;

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'user_profile.dart';
@@ -9,6 +9,7 @@ part of 'user_profile.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $UserProfileCopyWith<UserProfile> get copyWith => _$UserProfileCopyWithImpl<User
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.householdId, householdId) || other.householdId == householdId)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous));
+  final _this = this as UserProfile;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.uid, _this.uid) || other.uid == _this.uid)&&(identical(other.householdId, _this.householdId) || other.householdId == _this.householdId)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.displayName, _this.displayName) || other.displayName == _this.displayName)&&(identical(other.isAnonymous, _this.isAnonymous) || other.isAnonymous == _this.isAnonymous));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,householdId,email,displayName,isAnonymous);
+int get hashCode {
+  final _this = this as UserProfile;
+  return Object.hash(runtimeType,_this.uid,_this.householdId,_this.email,_this.displayName,_this.isAnonymous);
+}
 
 @override
 String toString() {
-  return 'UserProfile(uid: $uid, householdId: $householdId, email: $email, displayName: $displayName, isAnonymous: $isAnonymous)';
+  final _this = this as UserProfile;
+  return 'UserProfile(uid: ${_this.uid}, householdId: ${_this.householdId}, email: ${_this.email}, displayName: ${_this.displayName}, isAnonymous: ${_this.isAnonymous})';
 }
 
 
@@ -66,7 +72,7 @@ class _$UserProfileCopyWithImpl<$Res>
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? householdId = freezed,Object? email = freezed,Object? displayName = freezed,Object? isAnonymous = null,}) {
-  return _then(_self.copyWith(
+  return _then(UserProfile(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,householdId: freezed == householdId ? _self.householdId : householdId // ignore: cast_nullable_to_non_nullable
 as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -235,16 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.householdId, householdId) || other.householdId == householdId)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.householdId, householdId) || other.householdId == householdId)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,householdId,email,displayName,isAnonymous);
+int get hashCode {
+    return Object.hash(runtimeType,uid,householdId,email,displayName,isAnonymous);
+}
 
 @override
 String toString() {
-  return 'UserProfile(uid: $uid, householdId: $householdId, email: $email, displayName: $displayName, isAnonymous: $isAnonymous)';
+    return 'UserProfile(uid: $uid, householdId: $householdId, email: $email, displayName: $displayName, isAnonymous: $isAnonymous)';
 }
 
 

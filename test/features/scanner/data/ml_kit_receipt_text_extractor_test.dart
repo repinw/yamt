@@ -46,10 +46,7 @@ void main() {
         '/images/slice2.jpg',
       ]);
 
-      expect(
-        result,
-        'REWE MARKT\nTop Part\nBottom Part\nSUMME 12.34',
-      );
+      expect(result, 'REWE MARKT\nTop Part\nBottom Part\nSUMME 12.34');
       expect(processedPaths, <String>[
         '/images/slice1.jpg',
         '/images/slice2.jpg',

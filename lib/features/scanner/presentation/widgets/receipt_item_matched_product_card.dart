@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
@@ -9,7 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// and switch action.
 class ReceiptItemMatchedProductCard extends StatelessWidget {
   /// Creates a [ReceiptItemMatchedProductCard].
-  const ReceiptItemMatchedProductCard({
+  const new({
     required this.product,
     required this.onClearProduct,
     required this.onSearchProduct,

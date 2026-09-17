@@ -16,7 +16,7 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
 class _FakeFridgeItemRepository implements InventoryItemRepository {
-  _FakeFridgeItemRepository({required this.onReadAll});
+  new({required this.onReadAll});
 
   final Future<List<InventoryItem>> Function() onReadAll;
   final StreamController<List<InventoryItem>> _watchController =
@@ -584,10 +584,7 @@ void main() {
       expect(shoppingListController._addItemInput!.name, 'Milk');
       expect(shoppingListController._addItemInput!.brand, 'Acme');
       expect(shoppingListController._addItemInput!.quantity, 1);
-      expect(
-        shoppingListController._addItemInput!.estimatedUnitPrice,
-        2.5,
-      );
+      expect(shoppingListController._addItemInput!.estimatedUnitPrice, 2.5);
     },
   );
 
@@ -911,9 +908,8 @@ void main() {
           .stagePendingConsumption('a', 2);
 
       repository.emitWatchItems(<InventoryItem>[
-        _item(
-          'a',
-        ).copyWith(quantity: 7, initialQuantity: 7, brand: 'Fresh brand'),
+        _item('a')
+            .copyWith(quantity: 7, initialQuantity: 7, brand: 'Fresh brand'),
       ]);
       await _waitForItems(
         container,

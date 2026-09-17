@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.dart';
@@ -17,7 +17,7 @@ import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/s
 /// Page list for the calorie onboarding wizard.
 class CalorieOnboardingStepPages extends StatelessWidget {
   /// Creates onboarding step pages.
-  const CalorieOnboardingStepPages({
+  const new({
     required this.pageController,
     required this.formState,
     required this.formNotifier,
@@ -80,32 +80,20 @@ class CalorieOnboardingStepPages extends StatelessWidget {
       controller: pageController,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        Step0Welcome(
-          onNext: onNext,
-          onLogin: onLogin,
-        ),
+        Step0Welcome(onNext: onNext, onLogin: onLogin),
         Step1PersonalInfo(
           state: formState,
           notifier: formNotifier,
           showErrors: showErrors,
         ),
-        Step2Activity(
-          state: formState,
-          notifier: formNotifier,
-        ),
+        Step2Activity(state: formState, notifier: formNotifier),
         Step3GoalWeight(
           state: formState,
           notifier: formNotifier,
           showErrors: showErrors,
         ),
-        Step4Pace(
-          state: formState,
-          notifier: formNotifier,
-        ),
-        StepTrainingDays(
-          state: formState,
-          notifier: formNotifier,
-        ),
+        Step4Pace(state: formState, notifier: formNotifier),
+        StepTrainingDays(state: formState, notifier: formNotifier),
         const Step5Info(),
         Step6StartDate(
           startNow: startDateController.startNowChoice,

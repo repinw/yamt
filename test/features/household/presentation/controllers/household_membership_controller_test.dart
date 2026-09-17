@@ -14,7 +14,7 @@ import '../../../../helpers/fake_auth_repository.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 
 class _TestHouseholdInviteCodeController extends HouseholdInviteCodeController {
-  _TestHouseholdInviteCodeController({required this.initialCode});
+  new({required this.initialCode});
 
   final String? initialCode;
 

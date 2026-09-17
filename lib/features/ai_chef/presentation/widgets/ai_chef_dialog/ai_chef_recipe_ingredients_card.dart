@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Displays generated recipe ingredients.
 class AiChefRecipeIngredientsCard extends StatelessWidget {
   /// Creates recipe ingredients card.
-  const AiChefRecipeIngredientsCard({
+  const new({
     required this.recipe,
     required this.inventoryIngredients,
     super.key,
@@ -55,10 +55,7 @@ class AiChefRecipeIngredientsCard extends StatelessWidget {
 }
 
 class _IngredientRow extends StatelessWidget {
-  const _IngredientRow({
-    required this.ingredient,
-    required this.isFromInventory,
-  });
+  const new({required this.ingredient, required this.isFromInventory});
 
   final String ingredient;
   final bool isFromInventory;
@@ -94,7 +91,7 @@ class _IngredientRow extends StatelessWidget {
 }
 
 class _IngredientBullet extends StatelessWidget {
-  const _IngredientBullet({required this.isFromInventory});
+  const new({required this.isFromInventory});
 
   final bool isFromInventory;
 
@@ -114,7 +111,7 @@ class _IngredientBullet extends StatelessWidget {
 }
 
 class _InventoryMatchBadge extends StatelessWidget {
-  const _InventoryMatchBadge();
+  const new();
 
   @override
   Widget build(BuildContext context) {

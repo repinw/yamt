@@ -27,7 +27,7 @@ const minimumFatCalorieFraction = 0.20;
 @immutable
 class MacroCarryoverDelta {
   /// Creates a carryover delta result.
-  const MacroCarryoverDelta({
+  const new({
     required this.proteinGrams,
     required this.carbsGrams,
     required this.fatGrams,

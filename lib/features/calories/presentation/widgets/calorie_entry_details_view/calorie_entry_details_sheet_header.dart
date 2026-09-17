@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Header for the calorie entry details sheet chrome.
 class CalorieEntryDetailsSheetHeader extends StatelessWidget {
   /// Creates a details sheet header.
-  const CalorieEntryDetailsSheetHeader({
+  const new({
     required this.title,
     required this.closeTooltip,
     required this.isSaving,
@@ -51,10 +51,8 @@ class CalorieEntryDetailsSheetHeader extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800, letterSpacing: 0),
                 ),
               ),
               IconButton.filledTonal(

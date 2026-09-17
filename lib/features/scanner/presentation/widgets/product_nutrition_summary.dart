@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,11 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Prominent nutrition overview for comparing 100 g/ml values with a package.
 class ProductNutritionSummary extends StatelessWidget {
   /// Creates a nutrition summary for [product].
-  const ProductNutritionSummary({
-    required this.product,
-    super.key,
-    this.packageSize,
-  });
+  const new({required this.product, super.key, this.packageSize});
 
   /// Product whose nutrition values are displayed.
   final ProductCandidate product;
@@ -121,7 +117,7 @@ class ProductNutritionSummary extends StatelessWidget {
 }
 
 class _NutritionValue extends StatelessWidget {
-  const _NutritionValue({
+  const new({
     required this.label,
     required this.value,
     this.emphasized = false,

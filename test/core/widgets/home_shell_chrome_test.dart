@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 
@@ -47,10 +47,7 @@ void main() {
           const HomeTopBar(
             title: 'Today',
             actions: <Widget>[
-              IconButton(
-                onPressed: null,
-                icon: Icon(Icons.more_horiz),
-              ),
+              IconButton(onPressed: null, icon: Icon(Icons.more_horiz)),
             ],
           ),
         ),
@@ -92,9 +89,7 @@ void main() {
       expect(title.style?.color, Colors.red);
     });
 
-    testWidgets('keeps a long title constrained to one line', (
-      tester,
-    ) async {
+    testWidgets('keeps a long title constrained to one line', (tester) async {
       const longTitle =
           'A very long diary title that should never force the top bar wider';
 
@@ -106,10 +101,7 @@ void main() {
           const HomeTopBar(
             title: longTitle,
             actions: <Widget>[
-              IconButton(
-                onPressed: null,
-                icon: Icon(Icons.more_horiz),
-              ),
+              IconButton(onPressed: null, icon: Icon(Icons.more_horiz)),
             ],
           ),
         ),
@@ -124,7 +116,7 @@ void main() {
 }
 
 class _ZeroHeightAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ZeroHeightAppBar();
+  const new();
 
   @override
   Size get preferredSize => Size.zero;
@@ -137,9 +129,6 @@ class _ZeroHeightAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 Widget _homeTopBarHarness(PreferredSizeWidget appBar) {
   return MaterialApp(
-    home: Scaffold(
-      appBar: appBar,
-      body: const SizedBox.shrink(),
-    ),
+    home: Scaffold(appBar: appBar, body: const SizedBox.shrink()),
   );
 }

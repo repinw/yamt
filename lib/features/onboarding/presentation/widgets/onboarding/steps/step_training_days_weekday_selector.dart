@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Renders a row of selectable weekday chips (Monday-Sunday).
 class StepTrainingDaysWeekdaySelector extends StatelessWidget {
   /// Creates a weekday selector row.
-  const StepTrainingDaysWeekdaySelector({
+  const new({
     required this.selectedWeekdays,
     required this.onToggleWeekday,
     super.key,
@@ -44,7 +44,7 @@ class StepTrainingDaysWeekdaySelector extends StatelessWidget {
 }
 
 class _WeekdayChip extends StatelessWidget {
-  const _WeekdayChip({
+  const new({
     required this.label,
     required this.isSelected,
     required this.onTap,

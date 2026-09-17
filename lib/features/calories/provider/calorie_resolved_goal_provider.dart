@@ -15,7 +15,7 @@ const _dayKeyListEquality = ListEquality<String>();
 /// Defines resolved calorie goal data.
 class ResolvedCalorieGoalData {
   /// The resolved calorie goal data.
-  const ResolvedCalorieGoalData({
+  const new({
     required this.day,
     required this.storedGoalKcal,
     required this.goalKcal,
@@ -83,7 +83,7 @@ class ResolvedCalorieGoalData {
 @immutable
 class ResolvedCalorieGoalDaysRequest {
   /// Creates request from diary days.
-  factory ResolvedCalorieGoalDaysRequest.fromDays(
+  factory fromDays(
     Iterable<DateTime> days, {
     bool forceDetailedActivity = false,
   }) {
@@ -99,11 +99,7 @@ class ResolvedCalorieGoalDaysRequest {
     );
   }
 
-  const ResolvedCalorieGoalDaysRequest._(
-    this.days,
-    this._dayKeys,
-    this.forceDetailedActivity,
-  );
+  const new _(this.days, this._dayKeys, this.forceDetailedActivity);
 
   /// Normalized days to resolve.
   final List<DateTime> days;

@@ -1,7 +1,7 @@
 // Internal split file. Public names are imported only by sibling widgets.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
@@ -12,7 +12,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class PreparedMealPendingIngredientRow extends StatelessWidget {
-  const PreparedMealPendingIngredientRow({
+  const new({
     required this.ingredient,
     required this.suggestions,
     this.onAssignPressed,
@@ -54,9 +54,8 @@ class PreparedMealPendingIngredientRow extends StatelessWidget {
                     suggestions.isEmpty
                         ? l10n.preparedMealPendingIngredientUnassigned
                         : suggestionNames,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -80,7 +79,7 @@ class PreparedMealPendingIngredientRow extends StatelessWidget {
 }
 
 class _PendingIngredientPreview extends StatelessWidget {
-  const _PendingIngredientPreview({this.imageUrl});
+  const new({this.imageUrl});
 
   final String? imageUrl;
 
@@ -164,9 +163,7 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
                     const SizedBox(height: AppSpacing.lg),
                     Expanded(
                       child: sortedItems.isEmpty
-                          ? Center(
-                              child: Text(emptySelectionMessage),
-                            )
+                          ? Center(child: Text(emptySelectionMessage))
                           : ListView.builder(
                               itemCount: sortedItems.length,
                               itemBuilder: (context, index) {
@@ -207,9 +204,9 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         FilledButton(
-                          onPressed: () => Navigator.of(
-                            dialogContext,
-                          ).pop(draftSelection.toList(growable: false)),
+                          onPressed: () =>
+                              Navigator.of(dialogContext)
+                                  .pop(draftSelection.toList(growable: false)),
                           child: Text(
                             l10n.inventoryReceiptReviewManualDataSaveAction,
                           ),
@@ -229,11 +226,7 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
 
 String _pendingIngredientInventoryAmount(InventoryItem item) {
   if (item.usesAmountProgress && item.amountUnit != null) {
-    return '${formatInventoryAmountValue(
-      amount: item.currentAmount,
-      unit: item.amountUnit!,
-      scale: item.amountScale,
-    )} ${item.amountUnit!.code}';
+    return '${formatInventoryAmountValue(amount: item.currentAmount, unit: item.amountUnit!, scale: item.amountScale)} ${item.amountUnit!.code}';
   }
   return '${item.quantity}x';
 }

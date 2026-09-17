@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Sticky bottom bar displaying readiness status and save action.
 class ReceiptReviewBottomBar extends StatelessWidget {
   /// Creates a [ReceiptReviewBottomBar].
-  const ReceiptReviewBottomBar({
+  const new({
     required this.receipt,
     required this.isSaving,
     required this.onSave,

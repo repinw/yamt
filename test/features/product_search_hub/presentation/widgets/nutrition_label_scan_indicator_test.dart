@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'nutrition_label_scan_indicator/nutrition_label_scan_indicator.dart';
 
@@ -25,10 +25,7 @@ void main() {
       ),
     );
 
-    expect(
-      find.byKey(const Key('nutrition_label_scan_image')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('nutrition_label_scan_image')), findsOneWidget);
     expect(find.text('Reading nutrition label…'), findsOneWidget);
     expect(
       find.bySemanticsLabel('Captured nutrition label is being scanned'),

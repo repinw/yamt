@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
@@ -33,7 +33,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Result returned from the AI food creation page.
 class ManualProductAiSearchResult {
   /// Creates a result.
-  const ManualProductAiSearchResult({
+  const new({
     required this.item,
     required this.action,
     required this.globalPackageWeight,
@@ -56,7 +56,7 @@ class ManualProductAiSearchResult {
 /// Read-only AI food creation page with limited user adjustments.
 class ManualProductAiSearchPage extends ConsumerStatefulWidget {
   /// Creates the page.
-  const ManualProductAiSearchPage({
+  const new({
     required this.item,
     super.key,
     this.initialPrompt = '',
@@ -115,9 +115,7 @@ class _ManualProductAiSearchPageState
     _selectedLoggedAt = quickEatConfig.preselectedLoggedAt ?? DateTime.now();
     _selectedMealType =
         quickEatConfig.preselectedMealType ??
-        MealType.defaultForDateTime(
-          _selectedLoggedAt,
-        );
+        MealType.defaultForDateTime(_selectedLoggedAt);
   }
 
   @override
@@ -138,9 +136,7 @@ class _ManualProductAiSearchPageState
     final isLoggedAtToday = _isLoggedAtToday();
     final loggedAtLabel = isLoggedAtToday
         ? null
-        : MaterialLocalizations.of(context).formatMediumDate(
-            _selectedLoggedAt,
-          );
+        : MaterialLocalizations.of(context).formatMediumDate(_selectedLoggedAt);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,

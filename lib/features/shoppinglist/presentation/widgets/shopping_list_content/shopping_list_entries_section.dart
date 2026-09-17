@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Displays the open or completed entries with their section controls.
 class ShoppingListEntriesSection extends StatelessWidget {
   /// Creates an entry section.
-  const ShoppingListEntriesSection({
+  const new({
     required this.items,
     required this.controller,
     required this.currency,

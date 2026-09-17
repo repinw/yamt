@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list stats card keys.
 class ShoppingListStatsCardKeys {
-  const ShoppingListStatsCardKeys._();
+  const new _();
 
   /// The entries value.
   static const entriesValue = Key('shopping_list_stats_entries_value');
@@ -16,7 +16,7 @@ class ShoppingListStatsCardKeys {
 /// Defines shopping list stats card.
 class ShoppingListStatsCard extends StatelessWidget {
   /// The shopping list stats card.
-  const ShoppingListStatsCard({
+  const new({
     required this.entryCount,
     required this.totalQuantity,
     required this.estimatedTotal,

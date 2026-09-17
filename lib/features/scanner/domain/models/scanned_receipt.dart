@@ -7,7 +7,7 @@ part 'scanned_receipt.freezed.dart';
 @freezed
 abstract class ScannedReceipt with _$ScannedReceipt {
   /// Creates an instance of [ScannedReceipt].
-  const factory ScannedReceipt({
+  const factory({
     /// Unique ID for this scan session.
     required String id,
 
@@ -40,7 +40,7 @@ abstract class ScannedReceipt with _$ScannedReceipt {
     @Default(<ReceiptLineItem>[]) List<ReceiptLineItem> items,
   }) = _ScannedReceipt;
 
-  const ScannedReceipt._();
+  const new _();
 
   /// Primary source file path of the receipt (if available).
   String? get primarySourceFilePath => sourceFilePaths.firstOrNull;

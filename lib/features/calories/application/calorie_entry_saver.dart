@@ -17,14 +17,13 @@ part 'calorie_entry_saver.g.dart';
 const _entrySaverLogName = 'CalorieEntrySaver';
 
 /// Saves a calorie entry through the Calories application boundary.
-typedef CalorieEntrySaver =
-    Future<bool> Function(
-      CalorieEntry entry, {
-      bool isNewEntry,
-      CalorieInventoryCreateContext? inventoryContext,
-      CalorieScannedSourceRef? scannedSourceRef,
-      Future<bool> Function(CalorieEntry entry)? persistEntry,
-    });
+typedef CalorieEntrySaver = Future<bool> Function(
+  CalorieEntry entry, {
+  bool isNewEntry,
+  CalorieInventoryCreateContext? inventoryContext,
+  CalorieScannedSourceRef? scannedSourceRef,
+  Future<bool> Function(CalorieEntry entry)? persistEntry,
+});
 
 /// Provides calorie-entry persistence without exposing the Calories controller.
 @riverpod

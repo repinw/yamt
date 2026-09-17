@@ -29,11 +29,10 @@ abstract interface class InventoryActivityEventRepository {
 class FirestoreInventoryActivityEventRepository
     implements InventoryActivityEventRepository {
   /// Creates repository.
-  const FirestoreInventoryActivityEventRepository({
-    required FirebaseFirestore firestore,
-    required String? currentUserId,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId;
+  const new({
+    required this._firestore,
+    required this._currentUserId,
+  });
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
@@ -137,7 +136,7 @@ int _chunkEnd({required int start, required int itemCount}) {
 
 class _UnavailableInventoryActivityEventRepository
     implements InventoryActivityEventRepository {
-  const _UnavailableInventoryActivityEventRepository();
+  const new();
 
   @override
   Future<bool> appendAll(List<InventoryActivityEvent> events) async {
@@ -189,10 +188,7 @@ InventoryActivityActor? inventoryActivityActor(Ref ref) {
     profile?.email,
     user.email,
   );
-  return InventoryActivityActor(
-    userId: user.uid,
-    displayName: displayName,
-  );
+  return InventoryActivityActor(userId: user.uid, displayName: displayName);
 }
 
 /// Recent inventory activity events.

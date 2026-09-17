@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
@@ -17,7 +17,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Renders the generated recipe result card.
 class AiChefResultView extends StatelessWidget {
   /// Creates a recipe result view.
-  const AiChefResultView({
+  const new({
     required this.recipe,
     required this.inventoryIngredients,
     required this.onSave,

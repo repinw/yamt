@@ -13,10 +13,9 @@ enum CalorieActivityLevelOption {
   high(1.725),
 
   /// Extreme.
-  extreme(1.9)
-  ;
+  extreme(1.9);
 
-  const CalorieActivityLevelOption(this.palValue);
+  new(this.palValue);
 
   /// The pal value.
   final double palValue;

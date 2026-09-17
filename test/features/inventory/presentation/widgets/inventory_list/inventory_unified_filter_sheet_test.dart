@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -35,7 +36,7 @@ Widget _buildTestApp({
       PreparedMealSortMode.addedDescending,
 }) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: InventoryUnifiedFilterSheet(
@@ -236,9 +237,7 @@ void main() {
     );
     expect(
       tester
-          .widget<SegmentedButton<InventoryListViewMode>>(
-            findViewModeControl(),
-          )
+          .widget<SegmentedButton<InventoryListViewMode>>(findViewModeControl())
           .selected,
       {InventoryListViewMode.list},
     );
@@ -264,9 +263,7 @@ void main() {
     );
     expect(
       tester
-          .widget<SegmentedButton<InventoryListViewMode>>(
-            findViewModeControl(),
-          )
+          .widget<SegmentedButton<InventoryListViewMode>>(findViewModeControl())
           .selected,
       {InventoryListViewMode.tiles},
     );

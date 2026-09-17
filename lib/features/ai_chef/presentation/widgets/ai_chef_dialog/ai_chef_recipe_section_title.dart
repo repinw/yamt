@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Displays a recipe section heading with an icon.
 class AiChefRecipeSectionTitle extends StatelessWidget {
   /// Creates recipe section title.
-  const AiChefRecipeSectionTitle({
-    required this.title,
-    required this.icon,
-    super.key,
-  });
+  const new({required this.title, required this.icon, super.key});
 
   /// Heading text.
   final String title;

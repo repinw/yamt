@@ -13,10 +13,7 @@ export 'package:yamt/features/cooking_flow/application/'
 @immutable
 class CookingFlowInventoryRequirement {
   /// Creates an inventory requirement.
-  const CookingFlowInventoryRequirement({
-    required this.amount,
-    required this.unitCode,
-  });
+  const new({required this.amount, required this.unitCode});
 
   /// Required amount or quantity.
   final num amount;
@@ -63,9 +60,8 @@ CookingFlowInventoryRequirement? cookingFlowParseInventoryRequirement(
   final effectiveParserLocale =
       parserLocale ?? CookingFlowParserLocale.forLocaleCode(localeCode);
 
-  final match = RegExp(
-    r'^([\d.,\s/]+)(?:\s*([a-zA-ZäöüÄÖÜß]+))?$',
-  ).firstMatch(trimmed);
+  final match = RegExp(r'^([\d.,\s/]+)(?:\s*([a-zA-ZäöüÄÖÜß]+))?$')
+      .firstMatch(trimmed);
   if (match == null) {
     return null;
   }
@@ -88,10 +84,7 @@ CookingFlowInventoryRequirement? cookingFlowParseInventoryRequirement(
       amount: rawAmount,
       unitCode: cookingFlowPieceUnitCode,
     ),
-    'g' => CookingFlowInventoryRequirement(
-      amount: rawAmount,
-      unitCode: 'g',
-    ),
+    'g' => CookingFlowInventoryRequirement(amount: rawAmount, unitCode: 'g'),
     'kg' => CookingFlowInventoryRequirement(
       amount: rawAmount * 1000,
       unitCode: 'g',
@@ -100,10 +93,7 @@ CookingFlowInventoryRequirement? cookingFlowParseInventoryRequirement(
       amount: rawAmount / 1000,
       unitCode: 'g',
     ),
-    'ml' => CookingFlowInventoryRequirement(
-      amount: rawAmount,
-      unitCode: 'ml',
-    ),
+    'ml' => CookingFlowInventoryRequirement(amount: rawAmount, unitCode: 'ml'),
     'cl' => CookingFlowInventoryRequirement(
       amount: rawAmount * 10,
       unitCode: 'ml',

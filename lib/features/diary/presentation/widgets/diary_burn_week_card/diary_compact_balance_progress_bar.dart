@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progres
 /// Compact 7-segment Burn Week progress bar matching macro bars.
 class DiaryCompactBalanceProgressBar extends StatelessWidget {
   /// Creates a compact diary balance progress bar.
-  const DiaryCompactBalanceProgressBar({
+  const new({
     required this.actualConsumedKcal,
     required this.targetKcal,
     required this.weeklyGoalKcal,

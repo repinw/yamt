@@ -35,7 +35,7 @@ GlobalFoodItemStore _resolveStore() {
 }
 
 class _UnavailableGlobalFoodItemStore implements GlobalFoodItemStore {
-  const _UnavailableGlobalFoodItemStore();
+  const new();
 
   @override
   Future<List<GlobalFoodItemDocument>> readAll() async {

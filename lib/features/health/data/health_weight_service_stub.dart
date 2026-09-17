@@ -7,7 +7,7 @@ HealthWeightService createHealthWeightService() {
 }
 
 class _UnsupportedHealthWeightService implements HealthWeightService {
-  const _UnsupportedHealthWeightService();
+  const new();
 
   @override
   Future<List<HealthWeightSample>> loadWeightSamples({

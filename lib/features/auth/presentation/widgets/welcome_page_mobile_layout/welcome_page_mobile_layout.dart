@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_card/auth_card.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_footer_prompt/auth_footer_prompt.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_header/auth_header.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Narrow auth welcome layout.
 class MobileAuthLayout extends StatelessWidget {
   /// Creates the narrow auth welcome layout.
-  const MobileAuthLayout({
+  const new({
     required this.isLoginMode,
     required this.onShowLoginMode,
     required this.onShowRegisterMode,

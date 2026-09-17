@@ -7,7 +7,7 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 /// Defines calorie entry create prefill.
 class CalorieEntryCreatePrefill {
   /// The calorie entry create prefill.
-  const CalorieEntryCreatePrefill({
+  const new({
     required this.initializationKey,
     required this.name,
     required this.brand,
@@ -22,7 +22,7 @@ class CalorieEntryCreatePrefill {
   });
 
   /// Creates a [CalorieEntryCreatePrefill] for from args.
-  factory CalorieEntryCreatePrefill.fromArgs({
+  factory fromArgs({
     required CalorieProductProfile? prefilledProfile,
     required CalorieInventoryCreateContext? inventoryContext,
     required MealType? preselectedMealType,

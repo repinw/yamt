@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -11,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// On-the-fly cookflow note input.
 class CookingFlowOnTheFlyAdjustmentCard extends ConsumerStatefulWidget {
   /// Creates on-the-fly note input.
-  const CookingFlowOnTheFlyAdjustmentCard({
+  const new({
     required this.adjustmentController,
     required this.adjustments,
     required this.onAddPressed,
@@ -221,7 +221,7 @@ class _CookingFlowOnTheFlyAdjustmentCardState
 }
 
 class _CookingFlowOnTheFlyHeader extends StatelessWidget {
-  const _CookingFlowOnTheFlyHeader({required this.l10n});
+  const new({required this.l10n});
 
   final AppLocalizations l10n;
 
@@ -245,7 +245,7 @@ class _CookingFlowOnTheFlyHeader extends StatelessWidget {
 }
 
 class _CookingFlowOnTheFlyInputRow extends StatelessWidget {
-  const _CookingFlowOnTheFlyInputRow({
+  const new({
     required this.controller,
     required this.isListeningToSpeech,
     required this.onVoicePressed,
@@ -305,10 +305,7 @@ class _CookingFlowOnTheFlyInputRow extends StatelessWidget {
 }
 
 class _CookingFlowVoiceInputButton extends StatelessWidget {
-  const _CookingFlowVoiceInputButton({
-    required this.isListeningToSpeech,
-    required this.onPressed,
-  });
+  const new({required this.isListeningToSpeech, required this.onPressed});
 
   final bool isListeningToSpeech;
   final VoidCallback onPressed;
@@ -337,7 +334,7 @@ class _CookingFlowVoiceInputButton extends StatelessWidget {
 }
 
 class _CookingFlowOnTheFlyRecentAdjustments extends StatelessWidget {
-  const _CookingFlowOnTheFlyRecentAdjustments({
+  const new({
     required this.adjustments,
     required this.startIndex,
     required this.onRemovePressed,
@@ -370,10 +367,7 @@ class _CookingFlowOnTheFlyRecentAdjustments extends StatelessWidget {
 }
 
 class _CookingFlowOnTheFlyAdjustmentChip extends StatelessWidget {
-  const _CookingFlowOnTheFlyAdjustmentChip({
-    required this.adjustment,
-    required this.onRemovePressed,
-  });
+  const new({required this.adjustment, required this.onRemovePressed});
 
   final String adjustment;
   final VoidCallback onRemovePressed;

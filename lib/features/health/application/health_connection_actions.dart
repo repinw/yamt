@@ -35,7 +35,7 @@ abstract interface class HealthConnectionActions {
 }
 
 class _HealthConnectionActions implements HealthConnectionActions {
-  const _HealthConnectionActions(this._ref);
+  const new(this._ref);
 
   final Ref _ref;
 

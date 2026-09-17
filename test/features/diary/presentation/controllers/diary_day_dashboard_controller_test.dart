@@ -21,9 +21,9 @@ import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 import '../../support/diary_dashboard_test_support.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 void main() {
   const userId = 'user-1';
@@ -147,10 +147,7 @@ void main() {
       final refreshed = await _waitForDashboardRefresh(container, selectedDay);
 
       expect(weekOverviewReadCount, greaterThanOrEqualTo(2));
-      expect(
-        refreshed.data?.weekOverview.days.last.activityBonusKcal,
-        674.25,
-      );
+      expect(refreshed.data?.weekOverview.days.last.activityBonusKcal, 674.25);
     },
   );
 
@@ -341,9 +338,7 @@ void main() {
 
       expect(weekOverviewReadCount, 2);
 
-      completer.complete(
-        diaryWeekOverviewForTest(selectedDay: selectedDay),
-      );
+      completer.complete(diaryWeekOverviewForTest(selectedDay: selectedDay));
 
       final results = await Future.wait([first, second]);
       expect(weekOverviewReadCount, 2);
@@ -482,7 +477,7 @@ CalorieEntry _entry(DateTime selectedDay, {required String name}) {
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
-  _FakeBurnWeekRunController(this.initialState);
+  new(this.initialState);
 
   final BurnWeekRunState initialState;
 

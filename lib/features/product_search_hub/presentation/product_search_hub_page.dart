@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -36,7 +36,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Unified product search hub page.
 class ProductSearchHubPage extends StatefulWidget {
   /// Creates a product search hub page.
-  const ProductSearchHubPage({
+  const new({
     super.key,
     this.args = const ProductSearchHubRouteArgs.inventory(),
   });

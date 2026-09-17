@@ -18,7 +18,7 @@ part 'product_search_hub_completion_providers.g.dart';
 class SelectionProductSearchHubCompletionHandler
     implements ProductSearchHubCompletionHandler {
   /// Creates a selection completion handler.
-  const SelectionProductSearchHubCompletionHandler();
+  const new();
 
   @override
   Future<ProductSearchHubCompletionResult> completeResult({

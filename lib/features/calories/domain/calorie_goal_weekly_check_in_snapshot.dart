@@ -9,7 +9,7 @@ const _keepValue = Object();
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CalorieGoalWeeklyCheckInSnapshot {
   /// The calorie goal weekly check in snapshot.
-  const CalorieGoalWeeklyCheckInSnapshot({
+  const new({
     required this.windowStartDate,
     required this.windowEndDate,
     required this.trendWeightChangePerDay,
@@ -23,9 +23,8 @@ class CalorieGoalWeeklyCheckInSnapshot {
   });
 
   /// Creates a [CalorieGoalWeeklyCheckInSnapshot] from json.
-  factory CalorieGoalWeeklyCheckInSnapshot.fromJson(
-    Map<String, dynamic> json,
-  ) => _$CalorieGoalWeeklyCheckInSnapshotFromJson(json);
+  factory fromJson(Map<String, dynamic> json) =>
+      _$CalorieGoalWeeklyCheckInSnapshotFromJson(json);
 
   /// The window start date.
   @FlexibleDateTimeConverter()
@@ -73,7 +72,6 @@ class CalorieGoalWeeklyCheckInSnapshot {
 
   /// Whether this snapshot can seed later weekly calculations directly.
   bool get isInputTrusted => inputHash != null && !isInputDirty;
-
 
   /// Copy with.
   CalorieGoalWeeklyCheckInSnapshot copyWith({

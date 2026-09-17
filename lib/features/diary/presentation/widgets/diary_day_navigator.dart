@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
@@ -30,7 +30,7 @@ abstract final class DiaryDayNavigatorKeys {
 /// Centered single-day pill with previous/next arrows and trailing actions.
 class DiaryDayNavigator extends StatefulWidget {
   /// Creates a diary day navigator.
-  const DiaryDayNavigator({
+  const new({
     required this.selectedDay,
     required this.today,
     required this.canGoBack,

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared labeled input for calorie-goal onboarding numeric fields.
 class OnboardingLabeledTextField extends StatelessWidget {
   /// Creates a labeled onboarding text field.
-  const OnboardingLabeledTextField({
+  const new({
     required this.label,
     required this.hintText,
     required this.initialValue,

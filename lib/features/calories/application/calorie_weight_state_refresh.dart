@@ -10,9 +10,7 @@ const _logName = 'CalorieWeightStateRefresh';
 
 /// Refreshes calorie-owned state that depends on weight changes.
 @riverpod
-CalorieWeightStateRefresh calorieWeightStateRefresh(
-  Ref ref,
-) {
+CalorieWeightStateRefresh calorieWeightStateRefresh(Ref ref) {
   return ({required DateTime day}) async {
     try {
       await ref
@@ -34,7 +32,6 @@ CalorieWeightStateRefresh calorieWeightStateRefresh(
 }
 
 /// Refresh callback for calorie-owned weight dependents.
-typedef CalorieWeightStateRefresh =
-    Future<void> Function({
-      required DateTime day,
-    });
+typedef CalorieWeightStateRefresh = Future<void> Function({
+  required DateTime day,
+});

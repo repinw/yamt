@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
@@ -25,7 +25,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Body for the AI manual product search page.
 class ManualProductAiSearchBody extends StatelessWidget {
   /// Creates an AI manual product search body.
-  const ManualProductAiSearchBody({
+  const new({
     required this.draft,
     required this.selection,
     required this.errorText,
@@ -109,17 +109,15 @@ class ManualProductAiSearchBody extends StatelessWidget {
       children: [
         Text(
           l10n.inventoryManualAddAiSearchReadOnlyHint,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: colors.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: colors.onSurfaceVariant),
         ),
         if (errorText case final String message) ...[
           const SizedBox(height: AppSpacing.md),
           Text(
             message,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: colors.error),
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: colors.error),
           ),
         ],
         if (resolvedDraft != null && resolvedSelection != null) ...[

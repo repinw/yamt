@@ -19,7 +19,7 @@ enum ReceiptItemEditorApplyError {
 /// Defines receipt item editor form data.
 class ReceiptItemEditorFormData {
   /// The receipt item editor form data.
-  const ReceiptItemEditorFormData({
+  const new({
     required this.name,
     required this.entryDate,
     required this.storeName,
@@ -73,13 +73,13 @@ class ReceiptItemEditorFormData {
 
 /// Defines receipt item editor apply result.
 sealed class ReceiptItemEditorApplyResult {
-  const ReceiptItemEditorApplyResult();
+  const new();
 }
 
 /// Defines receipt item editor apply success.
 final class ReceiptItemEditorApplySuccess extends ReceiptItemEditorApplyResult {
   /// The receipt item editor apply success.
-  const ReceiptItemEditorApplySuccess(this.item);
+  const new(this.item);
 
   /// The item.
   final InventoryItem item;
@@ -88,7 +88,7 @@ final class ReceiptItemEditorApplySuccess extends ReceiptItemEditorApplyResult {
 /// Defines receipt item editor apply failure.
 final class ReceiptItemEditorApplyFailure extends ReceiptItemEditorApplyResult {
   /// The receipt item editor apply failure.
-  const ReceiptItemEditorApplyFailure(this.error);
+  const new(this.error);
 
   /// The error.
   final ReceiptItemEditorApplyError error;
@@ -97,9 +97,9 @@ final class ReceiptItemEditorApplyFailure extends ReceiptItemEditorApplyResult {
 /// Defines receipt item editor updater.
 class ReceiptItemEditorUpdater {
   /// The receipt item editor updater.
-  const ReceiptItemEditorUpdater({
-    ReceiptItemInputParser inputParser = const ReceiptItemInputParser(),
-  }) : _inputParser = inputParser;
+  const new({
+    this._inputParser = const ReceiptItemInputParser(),
+  });
 
   final ReceiptItemInputParser _inputParser;
 

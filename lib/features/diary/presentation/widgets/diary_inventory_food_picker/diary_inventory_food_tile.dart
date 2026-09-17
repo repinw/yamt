@@ -1,13 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_image.dart';
 
 /// A selectable inventory food row.
 class DiaryInventoryFoodTile extends StatelessWidget {
   /// Creates an inventory food row.
-  const DiaryInventoryFoodTile({
+  const new({
     required this.fallbackIcon,
     required this.title,
     required this.subtitle,
@@ -37,18 +37,21 @@ class DiaryInventoryFoodTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: DiaryInventoryFoodImage(
-        fallbackIcon: fallbackIcon,
-        imageUrl: imageUrl,
-        imageBytes: imageBytes,
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: DiaryInventoryFoodImage(
+          fallbackIcon: fallbackIcon,
+          imageUrl: imageUrl,
+          imageBytes: imageBytes,
+        ),
+        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        subtitle: subtitle == null || subtitle!.trim().isEmpty
+            ? null
+            : Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: onTap,
       ),
-      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: subtitle == null || subtitle!.trim().isEmpty
-          ? null
-          : Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
-      trailing: const Icon(Icons.chevron_right_rounded),
-      onTap: onTap,
     );
   }
 }

@@ -1,18 +1,16 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_actions/product_search_hub_search_actions.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_bar/product_search_hub_search_bar.dart';
 
-const _productSearchHubSearchActionsAppearDuration = Duration(
-  milliseconds: 90,
-);
+const _productSearchHubSearchActionsAppearDuration = Duration(milliseconds: 90);
 
 /// Animated action section displayed when no search query is active.
 class ProductSearchHubSearchActionSection extends StatelessWidget {
   /// Creates the search action section.
-  const ProductSearchHubSearchActionSection({
+  const new({
     required this.isVisible,
     required this.onBarcodePressed,
     required this.onAiPressed,
@@ -39,7 +37,7 @@ class ProductSearchHubSearchActionSection extends StatelessWidget {
       transitionBuilder: (child, animation) {
         return SizeTransition(
           sizeFactor: animation,
-          axisAlignment: -1,
+          alignment: AlignmentDirectional.topStart,
           child: FadeTransition(opacity: animation, child: child),
         );
       },
@@ -64,10 +62,7 @@ class ProductSearchHubSearchActionSection extends StatelessWidget {
 /// Hero placeholder for the search bar when transitioning.
 class ProductSearchHubSearchHeroField extends StatelessWidget {
   /// Creates the search hero field.
-  const ProductSearchHubSearchHeroField({
-    required this.isVisible,
-    super.key,
-  });
+  const new({required this.isVisible, super.key});
 
   /// Whether the hero field is visible.
   final bool isVisible;
@@ -93,10 +88,7 @@ class ProductSearchHubSearchHeroField extends StatelessWidget {
 /// Blank tap catcher for dismissals.
 class ProductSearchHubSearchBlank extends StatelessWidget {
   /// Creates the blank tap detector.
-  const ProductSearchHubSearchBlank({
-    required this.onTap,
-    super.key,
-  });
+  const new({required this.onTap, super.key});
 
   /// Tap callback.
   final VoidCallback onTap;

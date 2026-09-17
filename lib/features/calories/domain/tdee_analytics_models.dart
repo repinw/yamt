@@ -4,7 +4,7 @@ import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 /// One day of analytics data combining TDEE, intake, and weight.
 class TdeeAnalyticsPoint {
   /// Creates one daily analytics point.
-  const TdeeAnalyticsPoint({
+  const new({
     required this.day,
     this.learnedBaseTdeeKcal,
     this.totalTdeeKcal,
@@ -46,10 +46,7 @@ class TdeeAnalyticsPoint {
 /// Single point along a projected future trendline.
 class TdeeProjectionPoint {
   /// Creates a projection point.
-  const TdeeProjectionPoint({
-    required this.day,
-    required this.weightKg,
-  });
+  const new({required this.day, required this.weightKg});
 
   /// Calendar day.
   final DateTime day;
@@ -61,7 +58,7 @@ class TdeeProjectionPoint {
 /// Projection details for reaching target weight.
 class TdeeAnticipationProjection {
   /// Creates an anticipation projection.
-  const TdeeAnticipationProjection({
+  const new({
     required this.currentWeightKg,
     required this.targetWeightKg,
     required this.trendSpeedKgPerWeek,
@@ -104,7 +101,7 @@ class TdeeAnticipationProjection {
 /// Summary metrics shown in the header and insights card.
 class TdeeAnalyticsSummary {
   /// Creates analytics summary.
-  const TdeeAnalyticsSummary({
+  const new({
     required this.averageTdeeKcal,
     required this.tdeeDifferenceKcal,
     this.threeDayDeltaKcal,
@@ -143,7 +140,7 @@ class TdeeAnalyticsSummary {
 /// State object combining all analytics data for the view.
 class TdeeAnalyticsState {
   /// Creates the analytics state.
-  const TdeeAnalyticsState({
+  const new({
     required this.selectedCycle,
     required this.availableCycles,
     required this.timeRange,

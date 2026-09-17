@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
@@ -83,7 +83,7 @@ Future<InventoryItemEatSheetResult?> showInventoryItemEatSheetResult({
 }
 
 class _InventoryItemEatSheet extends ConsumerStatefulWidget {
-  const _InventoryItemEatSheet({
+  const new({
     required this.item,
     required this.maxAmount,
     required this.invalidAmountMessage,
@@ -186,9 +186,7 @@ class _InventoryItemEatSheetState
   }
 
   int get _defaultInventoryAmount {
-    return _eatController.defaultInventoryAmount(
-      widget.initialInventoryAmount,
-    );
+    return _eatController.defaultInventoryAmount(widget.initialInventoryAmount);
   }
 
   @override
@@ -197,9 +195,7 @@ class _InventoryItemEatSheetState
     _selectedLoggedAt = widget.initialLoggedAt ?? DateTime.now();
     _selectedMealType =
         widget.initialMealType ??
-        MealType.defaultForDateTime(
-          _selectedLoggedAt,
-        );
+        MealType.defaultForDateTime(_selectedLoggedAt);
     _eatController = InventoryItemEatSheetController(
       item: widget.item,
       maxAmount: widget.maxAmount,
@@ -256,14 +252,8 @@ class _InventoryItemEatSheetState
     final unitLabel = _inventoryUnitLabel(l10n);
     final servingResolution = _resolveServingResolution();
     final portionSuggestions = servingResolution.portionSuggestions;
-    final amountModeOptions = _buildAmountModeOptions(
-      l10n,
-      portionSuggestions,
-    );
-    final selectedAmountModeId = _selectedAmountModeId(
-      l10n,
-      amountModeOptions,
-    );
+    final amountModeOptions = _buildAmountModeOptions(l10n, portionSuggestions);
+    final selectedAmountModeId = _selectedAmountModeId(l10n, amountModeOptions);
     final quickOptions = _usesPortionMode
         ? _buildPortionCountQuickOptions(l10n)
         : _buildQuickOptions(
@@ -389,11 +379,7 @@ class _InventoryItemEatSheetState
                   unit: _inventoryAmountUnit,
                   scale: _inventoryAmountScale,
                 )
-              : '${formatInventoryAmountValue(
-                  amount: value,
-                  unit: _inventoryAmountUnit,
-                  scale: _inventoryAmountScale,
-                )} $unitLabel';
+              : '${formatInventoryAmountValue(amount: value, unit: _inventoryAmountUnit, scale: _inventoryAmountScale)} $unitLabel';
           options.add(InventoryServingOption(label: label, value: value));
         }
         return options;
@@ -635,25 +621,19 @@ class _InventoryItemEatSheetState
         (
           label: l10n.inventoryNutritionCarbsShortLabel,
           value:
-              '${formatInventoryNutritionValue(
-                nutrition!.per100Carbs! * factor,
-              )}g',
+              '${formatInventoryNutritionValue(nutrition!.per100Carbs! * factor)}g',
         ),
       if (nutrition?.per100Protein != null)
         (
           label: l10n.caloriesProteinLabel,
           value:
-              '${formatInventoryNutritionValue(
-                nutrition!.per100Protein! * factor,
-              )}g',
+              '${formatInventoryNutritionValue(nutrition!.per100Protein! * factor)}g',
         ),
       if (nutrition?.per100Fat != null)
         (
           label: l10n.caloriesFatLabel,
           value:
-              '${formatInventoryNutritionValue(
-                nutrition!.per100Fat! * factor,
-              )}g',
+              '${formatInventoryNutritionValue(nutrition!.per100Fat! * factor)}g',
         ),
     ];
   }
@@ -1028,9 +1008,7 @@ class _InventoryItemEatSheetState
     );
   }
 
-  void _applySubmitValidationErrors(
-    InventoryItemEatSubmissionDraft draft,
-  ) {
+  void _applySubmitValidationErrors(InventoryItemEatSubmissionDraft draft) {
     final l10n = AppLocalizations.of(context)!;
     _updateState(() {
       if (draft.hasInvalidInventoryAmount) {

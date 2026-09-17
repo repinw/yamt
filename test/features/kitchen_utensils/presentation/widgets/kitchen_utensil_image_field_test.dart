@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_image_field.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -13,7 +14,7 @@ Widget _buildHarness({
 }) {
   return MaterialApp(
     locale: const Locale('en'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: KitchenUtensilImageField(
@@ -56,10 +57,10 @@ void main() {
     await tester.tap(find.text('Remove photo'));
     await tester.pump();
 
-    expect(
-      pickedSources,
-      [KitchenUtensilImageSource.camera, KitchenUtensilImageSource.file],
-    );
+    expect(pickedSources, [
+      KitchenUtensilImageSource.camera,
+      KitchenUtensilImageSource.file,
+    ]);
     expect(clearCount, 1);
   });
 

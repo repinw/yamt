@@ -70,10 +70,7 @@ void main() {
 
   test('a full second batch prevents a false low-stock suggestion', () {
     expect(
-      inventoryReplenishment([
-        _item('1', remaining: 50),
-        _item('2'),
-      ], _now),
+      inventoryReplenishment([_item('1', remaining: 50), _item('2')], _now),
       isEmpty,
     );
   });
@@ -88,12 +85,7 @@ void main() {
   });
   test('a matching stocked variant removes the out-of-stock reason', () {
     final result = inventoryReplenishment([
-      _item(
-        '1',
-        name: 'Eiweißbrot - Proteinkorn',
-        receipt: 'a',
-        remaining: 0,
-      ),
+      _item('1', name: 'Eiweißbrot - Proteinkorn', receipt: 'a', remaining: 0),
       _item('2', name: 'EIWEISSBROT', receipt: 'b', daysAgo: 2),
     ], _now).single;
     expect(result.purchaseCount, 2);

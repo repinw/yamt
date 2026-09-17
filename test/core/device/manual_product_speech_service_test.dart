@@ -6,7 +6,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 
 class _FakeSpeechToText extends SpeechToText {
-  _FakeSpeechToText() : super.withMethodChannel();
+  new() : super.withMethodChannel();
 
   Object? initializeThrowable;
   Object? listenThrowable;
@@ -84,7 +84,7 @@ class _FakeSpeechToText extends SpeechToText {
     _resultListener?.call(
       SpeechRecognitionResult(<SpeechRecognitionWords>[
         SpeechRecognitionWords(transcript, null, -1),
-      ], isFinal),
+      ], isFinal ? ResultType.finalResult.value : ResultType.partial.value),
     );
   }
 }

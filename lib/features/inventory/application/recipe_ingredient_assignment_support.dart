@@ -7,11 +7,7 @@ import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dar
 /// Defines recipe ingredient effective requirement.
 class RecipeIngredientEffectiveRequirement {
   /// The recipe ingredient effective requirement.
-  const RecipeIngredientEffectiveRequirement({
-    required this.amount,
-    required this.unit,
-    required this.name,
-  });
+  const new({required this.amount, required this.unit, required this.name});
 
   /// The amount.
   final int amount;

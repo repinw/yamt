@@ -236,10 +236,7 @@ CalorieWeekOverview _weekOverview({
     0,
     (sum, day) => sum + day.totalKcal,
   );
-  final totalGoalKcal = days.fold<double>(
-    0,
-    (sum, day) => sum + day.goalKcal,
-  );
+  final totalGoalKcal = days.fold<double>(0, (sum, day) => sum + day.goalKcal);
   return CalorieWeekOverview(
     days: days,
     totalConsumedKcal: totalConsumedKcal,
@@ -260,9 +257,9 @@ CalorieWeekDayOverview _dayOverview({
   required List<double> baseGoals,
   required List<double> dayTotals,
 }) {
-  final currentWeekIndex = normalizeDiaryDay(
-    date,
-  ).difference(normalizeDiaryDay(currentWeekStartDate)).inDays;
+  final currentWeekIndex = normalizeDiaryDay(date)
+      .difference(normalizeDiaryDay(currentWeekStartDate))
+      .inDays;
   final isCurrentWeekDay =
       currentWeekIndex >= 0 && currentWeekIndex < baseGoals.length;
   final baseGoalKcal = isCurrentWeekDay ? baseGoals[currentWeekIndex] : 0.0;

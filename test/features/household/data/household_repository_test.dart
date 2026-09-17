@@ -7,7 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
 import 'package:yamt/features/household/domain/household_sharing_exceptions.dart';
 
-class _MockRandom extends Mock implements Random {}
+class _MockRandom extends Mock implements Random;
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -51,9 +51,8 @@ void main() {
         ),
       });
       final sequence = <int>[123456, 654321];
-      when(
-        () => random.nextInt(1000000),
-      ).thenAnswer((_) => sequence.removeAt(0));
+      when(() => random.nextInt(1000000))
+          .thenAnswer((_) => sequence.removeAt(0));
 
       final repository = HouseholdRepository(
         firestore: firestore,
@@ -81,9 +80,8 @@ void main() {
         ),
       });
       final sequence = List<int>.filled(10, 123456, growable: true);
-      when(
-        () => random.nextInt(1000000),
-      ).thenAnswer((_) => sequence.removeAt(0));
+      when(() => random.nextInt(1000000))
+          .thenAnswer((_) => sequence.removeAt(0));
 
       final repository = HouseholdRepository(
         firestore: firestore,

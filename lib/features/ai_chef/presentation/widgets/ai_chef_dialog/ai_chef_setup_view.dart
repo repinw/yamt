@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Lets the user configure AI recipe generation.
 class AiChefSetupView extends StatelessWidget {
   /// Creates setup view.
-  const AiChefSetupView({
+  const new({
     required this.wishesController,
     required this.includeInventory,
     required this.onIncludeInventoryChanged,

@@ -19,15 +19,12 @@ import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 /// [GlobalFoodReceiptAliasRepository].
 class YamtReceiptStorageGateway implements ReceiptStorageGateway {
   /// Creates a [YamtReceiptStorageGateway].
-  YamtReceiptStorageGateway({
-    required InventoryItemRepository inventoryItemRepository,
-    required GlobalFoodItemRepository globalFoodItemRepository,
-    required GlobalFoodReceiptAliasRepository globalFoodReceiptAliasRepository,
+  new({
+    required this._inventoryItemRepository,
+    required this._globalFoodItemRepository,
+    required this._globalFoodReceiptAliasRepository,
     String Function()? idGenerator,
-  }) : _inventoryItemRepository = inventoryItemRepository,
-       _globalFoodItemRepository = globalFoodItemRepository,
-       _globalFoodReceiptAliasRepository = globalFoodReceiptAliasRepository,
-       _idGenerator = idGenerator ?? const Uuid().v4;
+  }) : _idGenerator = idGenerator ?? const Uuid().v4;
 
   final InventoryItemRepository _inventoryItemRepository;
   final GlobalFoodItemRepository _globalFoodItemRepository;
@@ -153,10 +150,7 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
       storeName: storeName,
       barcode: product.barcode,
       imageUrl: product.imageUrl,
-      packageWeight: _firstNonEmpty(
-        item.packageWeight,
-        product.packageSize,
-      ),
+      packageWeight: _firstNonEmpty(item.packageWeight, product.packageSize),
       nutrition: _buildNutrition(product.nutritionPer100g),
     );
   }

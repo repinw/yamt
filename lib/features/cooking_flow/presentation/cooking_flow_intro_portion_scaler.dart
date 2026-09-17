@@ -1,12 +1,12 @@
 // Internal split widget is public only for sibling imports.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CookingFlowIntroPortionScaler extends StatefulWidget {
-  const CookingFlowIntroPortionScaler({
+  const new({
     required this.originalPortions,
     required this.targetPortions,
     required this.onChanged,
@@ -77,16 +77,14 @@ class _CookingFlowIntroPortionScalerState
           children: <Widget>[
             Text(
               l10n.cookflowPortionScalerTitle,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               l10n.cookflowOriginalPortionsLabel(resolvedOriginalPortions),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: colors.onSurfaceVariant),
             ),
             const SizedBox(height: AppSpacing.xl),
             Row(
@@ -129,23 +127,18 @@ class _CookingFlowIntroPortionScalerState
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(AppRadius.md),
-                        borderSide: BorderSide(
-                          color: colors.primary,
-                          width: 2,
-                        ),
+                        borderSide: BorderSide(color: colors.primary, width: 2),
                       ),
                     ),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 IconButton.outlined(
                   tooltip: l10n.inventoryItemEatSheetIncreasePortionCountAction,
-                  onPressed: () => widget.onChanged(
-                    (resolvedTargetPortions + 1).toDouble(),
-                  ),
+                  onPressed: () =>
+                      widget.onChanged((resolvedTargetPortions + 1).toDouble()),
                   icon: const Icon(Icons.add_rounded),
                 ),
               ],

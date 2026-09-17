@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_picker_sheet.dart';
 
@@ -71,9 +71,7 @@ void main() {
     expect(tapCount, 1);
   });
 
-  testWidgets('InventoryActionPickerOptionTile applies colors', (
-    tester,
-  ) async {
+  testWidgets('InventoryActionPickerOptionTile applies colors', (tester) async {
     const foregroundColor = Colors.deepPurple;
     const backgroundColor = Color(0xFFEDE7F6);
 

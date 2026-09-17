@@ -4,7 +4,7 @@ import 'package:yamt/features/inventory/domain/inventory_product_matcher.dart';
 /// Aggregated purchase and stock facts for one product.
 class InventoryReplenishment {
   /// Creates replenishment facts.
-  const InventoryReplenishment({
+  const new({
     required this.name,
     required this.brand,
     required this.purchaseCount,

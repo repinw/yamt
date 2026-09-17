@@ -14,10 +14,7 @@ enum InventoryItemEatSheetIntent {
 @immutable
 class InventoryItemEatSheetResult {
   /// Creates eat sheet result.
-  const InventoryItemEatSheetResult({
-    required this.request,
-    required this.intent,
-  });
+  const new({required this.request, required this.intent});
 
   /// Eat request.
   final InventoryItemEatRequest request;

@@ -78,9 +78,7 @@ void main() {
     expect(
       container
           .read(diaryCalendarBoundsProvider)
-          .canGoBack(
-            DateTime(2026, 4, 27),
-          ),
+          .canGoBack(DateTime(2026, 4, 27)),
       isFalse,
     );
   });

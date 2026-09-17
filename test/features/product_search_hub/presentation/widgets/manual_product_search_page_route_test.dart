@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -34,9 +35,7 @@ void main() {
                 pushManualProductSearchPage<String>(
                   context: context,
                   args: ManualProductSearchRouteArgs.editor(
-                    config: InventoryReceiptManualProductConfig(
-                      item: _item(),
-                    ),
+                    config: InventoryReceiptManualProductConfig(item: _item()),
                     showEatImmediatelyOption: false,
                     initialAction:
                         InventoryReceiptManualProductAction.addToInventory,
@@ -86,9 +85,7 @@ void main() {
               pushManualProductSearchPage<String>(
                 context: context,
                 args: ManualProductSearchRouteArgs.editor(
-                  config: InventoryReceiptManualProductConfig(
-                    item: _item(),
-                  ),
+                  config: InventoryReceiptManualProductConfig(item: _item()),
                   showEatImmediatelyOption: false,
                   initialAction:
                       InventoryReceiptManualProductAction.addToInventory,
@@ -123,13 +120,9 @@ void main() {
     expect(find.byKey(const Key('open_go_router_route')), findsOneWidget);
   });
 
-  testWidgets('editor route uses route-local save handler', (
-    tester,
-  ) async {
+  testWidgets('editor route uses route-local save handler', (tester) async {
     InventoryReceiptManualProductResult? savedResult;
-    Future<void> handleSaved(
-      InventoryReceiptManualProductResult result,
-    ) async {
+    Future<void> handleSaved(InventoryReceiptManualProductResult result) async {
       savedResult = result;
     }
 
@@ -176,7 +169,7 @@ Future<void> _pumpRouter(WidgetTester tester, GoRouter router) async {
       child: MaterialApp.router(
         locale: const Locale('en'),
         routerConfig: router,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),
@@ -193,7 +186,7 @@ Future<void> _pumpChild(WidgetTester tester, Widget child) async {
       ],
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: child,
       ),
@@ -227,7 +220,7 @@ InventoryItem _item() {
 
 class _EmptyInventoryItemRepository
     implements InventoryItemRepository, InventoryItemRecentManualReader {
-  const _EmptyInventoryItemRepository();
+  const new();
 
   @override
   bool get supportsLimitedRecentManualReads => true;

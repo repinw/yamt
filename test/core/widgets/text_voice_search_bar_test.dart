@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -73,7 +74,7 @@ Widget _buildTestApp({
   bool useCompactSurface = false,
 }) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: Padding(
@@ -193,17 +194,11 @@ void main() {
     final fieldFinder = find.byKey(const Key('shared_search_field'));
     final initialHeight = tester.getSize(fieldFinder).height;
 
-    await tester.enterText(
-      fieldFinder,
-      List.filled(20, 'breakfast').join(' '),
-    );
+    await tester.enterText(fieldFinder, List.filled(20, 'breakfast').join(' '));
     await tester.pump();
     final threeLineHeight = tester.getSize(fieldFinder).height;
 
-    await tester.enterText(
-      fieldFinder,
-      List.filled(60, 'breakfast').join(' '),
-    );
+    await tester.enterText(fieldFinder, List.filled(60, 'breakfast').join(' '));
     await tester.pump();
 
     expect(threeLineHeight, greaterThan(initialHeight));

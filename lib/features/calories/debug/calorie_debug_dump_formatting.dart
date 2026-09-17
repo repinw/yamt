@@ -4,7 +4,7 @@
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 class CalorieDebugDumpRow {
-  const CalorieDebugDumpRow({
+  const new({
     required this.sortAt,
     required this.typeOrder,
     required this.cells,

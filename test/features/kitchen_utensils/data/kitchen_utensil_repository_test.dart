@@ -14,7 +14,7 @@ import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_store.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  const _FakeInventoryUserSession({this.currentUserId});
+  const new({this.currentUserId});
 
   @override
   final String? currentUserId;
@@ -29,9 +29,7 @@ class _FakeKitchenUtensilStore implements KitchenUtensilStore {
   bool shouldWriteSucceed = true;
 
   @override
-  Future<List<KitchenUtensilDocument>> readAll({
-    required String userId,
-  }) async {
+  Future<List<KitchenUtensilDocument>> readAll({required String userId}) async {
     lastUserId = userId;
     return documents;
   }
@@ -132,11 +130,7 @@ void main() {
         await store.upsert(
           userId: 'owner-1',
           utensilId: 'pot-1',
-          data: const {
-            'id': 'pot-1',
-            'name': 'Pot',
-            'weight_grams': 420,
-          },
+          data: const {'id': 'pot-1', 'name': 'Pot', 'weight_grams': 420},
         ),
         isTrue,
       );
@@ -146,10 +140,7 @@ void main() {
 
       expect(watchedDocuments.single.id, 'pot-1');
       expect(readDocuments.single.data['name'], 'Pot');
-      expect(
-        await store.delete(userId: 'owner-1', utensilId: 'pot-1'),
-        isTrue,
-      );
+      expect(await store.delete(userId: 'owner-1', utensilId: 'pot-1'), isTrue);
       expect(await store.readAll(userId: 'owner-1'), isEmpty);
     },
   );
@@ -253,10 +244,7 @@ void main() {
       bytes: Uint8List.fromList(<int>[1]),
     );
 
-    expect(
-      path,
-      'users/owner-1/kitchen_utensils/pot-1/images/image-1.jpg',
-    );
+    expect(path, 'users/owner-1/kitchen_utensils/pot-1/images/image-1.jpg');
     expect(imageStore.lastUploadPath, path);
     expect(await repository.imageUrl(path!), 'https://example.test/$path');
     expect(await repository.deleteImage(path), isTrue);

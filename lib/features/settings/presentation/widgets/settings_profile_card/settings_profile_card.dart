@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
@@ -13,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Profile summary card shown at the top of settings.
 class SettingsProfileCard extends ConsumerWidget {
   /// Creates a settings profile card.
-  const SettingsProfileCard({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,7 +72,7 @@ class SettingsProfileCard extends ConsumerWidget {
 }
 
 class _SettingsAvatar extends StatelessWidget {
-  const _SettingsAvatar({required this.name});
+  const new({required this.name});
 
   final String name;
 
@@ -90,10 +90,8 @@ class _SettingsAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         initial,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          color: colors.primary,
-          fontWeight: FontWeight.w900,
-        ),
+        style: Theme.of(context).textTheme.titleLarge
+            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w900),
       ),
     );
   }

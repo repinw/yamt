@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -16,14 +17,14 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/memory_app_preferences.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
-class _MockUserMetadata extends Mock implements UserMetadata {}
+class _MockUserMetadata extends Mock implements UserMetadata;
 
 class _DelayedGuestNameRepository extends FakeAuthRepository {
-  _DelayedGuestNameRepository(this.completer);
+  new(this.completer);
 
   final Completer<void> completer;
 
@@ -100,7 +101,7 @@ Widget _wrapWithRouter(
     container: container,
     child: MaterialApp.router(
       routerConfig: router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
@@ -203,11 +204,7 @@ void main() {
     final auth = _MockFirebaseAuth();
     when(auth.signOut).thenAnswer((_) async {});
     await tester.pumpWidget(
-      _wrapWithRouter(
-        repository,
-        isAnonymous: true,
-        firebaseAuth: auth,
-      ),
+      _wrapWithRouter(repository, isAnonymous: true, firebaseAuth: auth),
     );
     await tester.pumpAndSettle();
 
@@ -223,15 +220,10 @@ void main() {
   ) async {
     final repository = FakeAuthRepository();
     final auth = _MockFirebaseAuth();
-    when(auth.signOut).thenThrow(
-      FirebaseAuthException(code: 'network-request-failed'),
-    );
+    when(auth.signOut)
+        .thenThrow(FirebaseAuthException(code: 'network-request-failed'));
     await tester.pumpWidget(
-      _wrapWithRouter(
-        repository,
-        isAnonymous: true,
-        firebaseAuth: auth,
-      ),
+      _wrapWithRouter(repository, isAnonymous: true, firebaseAuth: auth),
     );
     await tester.pumpAndSettle();
 
@@ -250,9 +242,7 @@ void main() {
   ) async {
     final completer = Completer<void>();
     final repository = _DelayedGuestNameRepository(completer);
-    await tester.pumpWidget(
-      _wrapWithRouter(repository, isAnonymous: true),
-    );
+    await tester.pumpWidget(_wrapWithRouter(repository, isAnonymous: true));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Guest Wlad');

@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -31,12 +32,12 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+  new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
   final StreamController<List<InventoryItem>> _controller =
@@ -96,7 +97,7 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
 }
 
 class _RecordingInventoryItemsController extends InventoryItemsController {
-  _RecordingInventoryItemsController({List<InventoryItem>? initialItems})
+  new({List<InventoryItem>? initialItems})
     : _initialItems = initialItems ?? const <InventoryItem>[];
 
   final List<InventoryItem> _initialItems;
@@ -113,7 +114,7 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
 }
 
 class _CompleteEatFlowButton extends ConsumerWidget {
-  const _CompleteEatFlowButton({
+  const new({
     required this.item,
     required this.request,
     this.pendingConsumptionId = 'pending-1',
@@ -205,7 +206,7 @@ Widget routerApp({
     child: MaterialApp.router(
       routerConfig: router,
       locale: const Locale('de'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
@@ -220,7 +221,7 @@ Widget routerAppWithContainer({
     child: MaterialApp.router(
       routerConfig: router,
       locale: const Locale('de'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
@@ -239,7 +240,7 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
 }
 
 class _DirectSaveFlowHarness {
-  _DirectSaveFlowHarness._({
+  new _({
     required this.item,
     required this.container,
     required this.commitStore,
@@ -281,9 +282,7 @@ class _DirectSaveFlowHarness {
     addTearDown(container.dispose);
     container
         .read(calorieDayControllerProvider.notifier)
-        .setDay(
-          request.loggedAt,
-        );
+        .setDay(request.loggedAt);
     final inventorySubscription = _keepInventoryAlive(container);
     final caloriesSubscription = _keepCaloriesAlive(container);
     addTearDown(inventorySubscription.close);
@@ -545,10 +544,7 @@ void main() {
             .name,
         item.name,
       );
-      expect(
-        find.text('Ins Tagebuch eingetragen'),
-        findsOneWidget,
-      );
+      expect(find.text('Ins Tagebuch eingetragen'), findsOneWidget);
     },
   );
 

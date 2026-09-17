@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/home/widgets/inventory_action_fab.dart';
 import 'package:yamt/features/product_search_hub/presentation/product_search_hub_page.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
@@ -27,9 +28,7 @@ Widget _buildHarness() {
   addTearDown(router.dispose);
 
   final container = ProviderContainer(
-    overrides: [
-      receiptCameraSupportedProvider.overrideWithValue(true),
-    ],
+    overrides: [receiptCameraSupportedProvider.overrideWithValue(true)],
   );
   addTearDown(container.dispose);
 
@@ -38,7 +37,7 @@ Widget _buildHarness() {
     child: MaterialApp.router(
       locale: const Locale('en'),
       routerConfig: router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );

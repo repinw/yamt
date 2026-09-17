@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
@@ -7,11 +7,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 /// Row showing subtitle breakdown and budget details trigger.
 class DiaryDailyBalanceSubtitleRow extends StatelessWidget {
   /// Creates the daily balance subtitle row.
-  const DiaryDailyBalanceSubtitleRow({
-    required this.data,
-    this.onBudgetDetailsTap,
-    super.key,
-  });
+  const new({required this.data, this.onBudgetDetailsTap, super.key});
 
   /// Render-ready card data.
   final DiaryDailyBalanceData data;
@@ -34,9 +30,7 @@ class DiaryDailyBalanceSubtitleRow extends StatelessWidget {
         ),
         if (onBudgetDetailsTap != null) ...[
           const SizedBox(width: AppSpacing.xs),
-          DiaryDailyBudgetDetailsButton(
-            onTap: onBudgetDetailsTap!,
-          ),
+          DiaryDailyBudgetDetailsButton(onTap: onBudgetDetailsTap!),
         ],
       ],
     );
@@ -46,7 +40,7 @@ class DiaryDailyBalanceSubtitleRow extends StatelessWidget {
 /// Formatted subtitle text or structured subtitle parts.
 class DiaryDailyBalanceSubtitleText extends StatelessWidget {
   /// Creates the subtitle text display.
-  const DiaryDailyBalanceSubtitleText({required this.data, super.key});
+  const new({required this.data, super.key});
 
   /// Render-ready card data.
   final DiaryDailyBalanceData data;

@@ -19,13 +19,12 @@ HealthWeightService createHealthWeightService() {
 /// Defines mobile health weight service.
 class MobileHealthWeightService implements HealthWeightService {
   /// Creates an instance.
-  MobileHealthWeightService({
+  new({
     Health? health,
     DateTime Function()? now,
-    Duration cacheTtl = _weightCacheTtl,
+    this._cacheTtl = _weightCacheTtl,
   }) : _health = health ?? Health(),
-       _now = now ?? DateTime.now,
-       _cacheTtl = cacheTtl;
+       _now = now ?? DateTime.now;
 
   final Health _health;
   final DateTime Function() _now;
@@ -287,7 +286,7 @@ double _weightClientRecordVersion() {
 }
 
 class _WeightSampleCacheEntry {
-  const _WeightSampleCacheEntry({
+  const new({
     required this.startInclusive,
     required this.endExclusive,
     required this.loadedAt,

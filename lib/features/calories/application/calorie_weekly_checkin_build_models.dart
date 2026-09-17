@@ -9,7 +9,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 class CalorieWeeklyCheckInDayData {
-  const CalorieWeeklyCheckInDayData({
+  const new({
     required this.days,
     required this.calculation,
     required this.blockedReason,
@@ -31,7 +31,7 @@ class CalorieWeeklyCheckInDayData {
 }
 
 class CalorieWeeklyCheckInWindowDates {
-  const CalorieWeeklyCheckInWindowDates({
+  const new({
     required this.pendingWeeklyCheckIn,
     required this.anchorEntry,
     required this.anchorWeightSourceDay,
@@ -72,7 +72,7 @@ class CalorieWeeklyCheckInWindowDates {
 }
 
 class CalorieWeeklyCheckInHealthData {
-  const CalorieWeeklyCheckInHealthData({
+  const new({
     required this.activeKcalByDay,
     required this.todayActiveKcal,
     required this.representativeWeightByDay,
@@ -86,7 +86,7 @@ class CalorieWeeklyCheckInHealthData {
 }
 
 class CalorieWeeklyLearningSeed {
-  const CalorieWeeklyLearningSeed({
+  const new({
     required this.previousGoalKcal,
     required this.previousLearnedTdeeKcal,
   });
@@ -96,23 +96,20 @@ class CalorieWeeklyLearningSeed {
 }
 
 class CalorieWeeklyCheckInWeightData {
-  const CalorieWeeklyCheckInWeightData({
-    required this.weightByDay,
-    required this.weightPoints,
-  });
+  const new({required this.weightByDay, required this.weightPoints});
 
   final Map<String, double> weightByDay;
   final List<CalorieWeeklyCheckInWeightPoint> weightPoints;
 }
 
 class CalorieWeeklyWindowIntakeData {
-  const CalorieWeeklyWindowIntakeData._({
+  const new _({
     required this.days,
     required this.missingIntakeDays,
     required this.blockedReason,
   });
 
-  factory CalorieWeeklyWindowIntakeData.ready({
+  factory ready({
     required List<CalorieWeeklyCheckInWindowDay> days,
     required List<DateTime> missingIntakeDays,
   }) {
@@ -123,7 +120,7 @@ class CalorieWeeklyWindowIntakeData {
     );
   }
 
-  factory CalorieWeeklyWindowIntakeData.blocked({
+  factory blocked({
     required List<CalorieWeeklyCheckInWindowDay> days,
     required CalorieWeeklyCheckInBlockedReason blockedReason,
     required List<DateTime> missingIntakeDays,
@@ -141,13 +138,13 @@ class CalorieWeeklyWindowIntakeData {
 }
 
 class CalorieWeeklyLearningIntakeData {
-  const CalorieWeeklyLearningIntakeData._({
+  const new _({
     required this.intakeKcalByDay,
     required this.missingIntakeDays,
     required this.blockedReason,
   });
 
-  factory CalorieWeeklyLearningIntakeData.ready({
+  factory ready({
     required List<double> intakeKcalByDay,
     required List<DateTime> missingIntakeDays,
   }) {
@@ -158,7 +155,7 @@ class CalorieWeeklyLearningIntakeData {
     );
   }
 
-  factory CalorieWeeklyLearningIntakeData.blocked({
+  factory blocked({
     required CalorieWeeklyCheckInBlockedReason blockedReason,
     required List<DateTime> missingIntakeDays,
   }) {

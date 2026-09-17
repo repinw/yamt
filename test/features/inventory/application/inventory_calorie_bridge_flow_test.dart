@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -28,12 +28,12 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 
 import '../../calories/support/fake_calories_repositories.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+  new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
   final StreamController<List<InventoryItem>> _controller =
@@ -93,7 +93,7 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
 }
 
 class _SaveDirectEntryButton extends ConsumerWidget {
-  const _SaveDirectEntryButton({
+  const new({
     required this.profile,
     required this.inventoryContext,
     required this.loggedAt,

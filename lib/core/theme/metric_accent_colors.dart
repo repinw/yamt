@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Semantic accent colors used by compact metric widgets.
 class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
   /// Creates metric accent colors.
-  const MetricAccentColors({
+  const new({
     required this.activity,
     required this.activityDark,
     required this.activityText,
@@ -19,7 +19,7 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
   });
 
   /// Builds metric accent colors from the active app color scheme.
-  factory MetricAccentColors.fromColorScheme(ColorScheme colors) {
+  factory fromColorScheme(ColorScheme colors) {
     final primary = colors.primary;
     final warm = _harmonize(const Color(0xFFF97316), primary, 0.14);
     final warmDark = _harmonize(const Color(0xFFFBBF24), primary, 0.1);

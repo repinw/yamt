@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -55,7 +56,7 @@ abstract final class DiaryIntroDialogKeys {
 /// Health action shown inside the diary intro.
 class DiaryIntroHealthAction {
   /// Creates health action data.
-  const DiaryIntroHealthAction({
+  const new({
     required this.accessState,
     required this.hasConnectionError,
     required this.onPressed,
@@ -80,21 +81,15 @@ Future<bool?> showDiaryIntroDialog({
   return showDialog<bool>(
     context: context,
     barrierDismissible: false,
-    builder: (context) => DiaryIntroDialog(
-      data: data,
-      healthAction: healthAction,
-    ),
+    builder: (context) =>
+        DiaryIntroDialog(data: data, healthAction: healthAction),
   );
 }
 
 /// First diary intro carousel.
 class DiaryIntroDialog extends StatefulWidget {
   /// Creates the intro dialog.
-  const DiaryIntroDialog({
-    required this.data,
-    this.healthAction,
-    super.key,
-  });
+  const new({required this.data, this.healthAction, super.key});
 
   /// Real calculator data to show.
   final DiaryIntroData data;
@@ -319,11 +314,7 @@ class _DiaryIntroDialogState extends State<DiaryIntroDialog> {
 }
 
 class _DiaryIntroPage extends StatelessWidget {
-  const _DiaryIntroPage({
-    required this.title,
-    required this.body,
-    this.action,
-  });
+  const new({required this.title, required this.body, this.action});
 
   final String title;
   final String body;
@@ -339,11 +330,7 @@ class _DiaryIntroPage extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.auto_graph_rounded,
-                  color: colors.primary,
-                  size: 42,
-                ),
+                Icon(Icons.auto_graph_rounded, color: colors.primary, size: 42),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
                   title,
@@ -357,10 +344,8 @@ class _DiaryIntroPage extends StatelessWidget {
                 Text(
                   body,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    height: 1.35,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge
+                      ?.copyWith(color: colors.onSurfaceVariant, height: 1.35),
                 ),
               ],
             ),
@@ -373,7 +358,7 @@ class _DiaryIntroPage extends StatelessWidget {
 }
 
 class _DiaryIntroDot extends StatelessWidget {
-  const _DiaryIntroDot({required this.isActive, super.key});
+  const new({required this.isActive, super.key});
 
   final bool isActive;
 
@@ -394,11 +379,7 @@ class _DiaryIntroDot extends StatelessWidget {
 }
 
 class _DiaryIntroPageData {
-  const _DiaryIntroPageData({
-    required this.title,
-    required this.body,
-    this.action,
-  });
+  const new({required this.title, required this.body, this.action});
 
   final String title;
   final String body;

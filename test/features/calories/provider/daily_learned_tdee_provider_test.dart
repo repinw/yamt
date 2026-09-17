@@ -31,7 +31,7 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import '../support/fake_calories_repositories.dart';
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  const _FakeBurnWeekRunStateRepository(this.state);
+  const new(this.state);
 
   final BurnWeekRunState state;
 
@@ -134,7 +134,7 @@ CalorieGoalSettings _learnedSettings({
 }
 
 class _DailyLearnedHarness {
-  _DailyLearnedHarness({
+  new({
     required CalorieGoalSettings settings,
     required List<CalorieEntry> entries,
     required List<HealthWeightSample> healthWeights,
@@ -232,17 +232,11 @@ void main() {
 
     final request = DailyLearnedTdeeGoalDaysRequest(
       today: today,
-      days: <DailyLearnedTdeeGoalDayRequest>[
-        firstRequest,
-        secondRequest,
-      ],
+      days: <DailyLearnedTdeeGoalDayRequest>[firstRequest, secondRequest],
     );
     final sameRequest = DailyLearnedTdeeGoalDaysRequest(
       today: DateTime(2026, 4, 28),
-      days: <DailyLearnedTdeeGoalDayRequest>[
-        sameFirstRequest,
-        secondRequest,
-      ],
+      days: <DailyLearnedTdeeGoalDayRequest>[sameFirstRequest, secondRequest],
     );
     final duplicateRequest = DailyLearnedTdeeGoalDaysRequest(
       today: today,
@@ -254,18 +248,12 @@ void main() {
     );
     final reversedRequest = DailyLearnedTdeeGoalDaysRequest(
       today: today,
-      days: <DailyLearnedTdeeGoalDayRequest>[
-        secondRequest,
-        firstRequest,
-      ],
+      days: <DailyLearnedTdeeGoalDayRequest>[secondRequest, firstRequest],
     );
     final changedGoalRequest = DailyLearnedTdeeGoalDaysRequest(
       today: today,
       days: <DailyLearnedTdeeGoalDayRequest>[
-        DailyLearnedTdeeGoalDayRequest(
-          day: firstDay,
-          storedGoalKcal: 2401,
-        ),
+        DailyLearnedTdeeGoalDayRequest(day: firstDay, storedGoalKcal: 2401),
         secondRequest,
       ],
     );
@@ -546,37 +534,34 @@ void main() {
     expect(result, isNull);
   });
 
-  test(
-    'returns null when saved window now misses end weight',
-    () async {
-      final startDay = DateTime(2026, 4);
-      final today = startDay.add(
-        const Duration(days: weeklyCheckInWindowLengthDays),
-      );
-      final settings = _learnedSettings(
+  test('returns null when saved window now misses end weight', () async {
+    final startDay = DateTime(2026, 4);
+    final today = startDay.add(
+      const Duration(days: weeklyCheckInWindowLengthDays),
+    );
+    final settings = _learnedSettings(
+      startDay: startDay,
+      windowEndDate: today.subtract(const Duration(days: 1)),
+      dailyGoalKcal: 2580,
+      learnedTdeeKcal: 2580,
+    );
+    final harness = _DailyLearnedHarness(
+      settings: settings,
+      entries: _dailyEntries(
         startDay: startDay,
-        windowEndDate: today.subtract(const Duration(days: 1)),
-        dailyGoalKcal: 2580,
-        learnedTdeeKcal: 2580,
-      );
-      final harness = _DailyLearnedHarness(
-        settings: settings,
-        entries: _dailyEntries(
-          startDay: startDay,
-          count: weeklyCheckInWindowLengthDays,
-          kcalForIndex: (_) => 2580,
-        ),
-        healthWeights: <HealthWeightSample>[
-          HealthWeightSample(recordedAt: startDay, weightKg: 80),
-        ],
-      );
-      addTearDown(harness.dispose);
+        count: weeklyCheckInWindowLengthDays,
+        kcalForIndex: (_) => 2580,
+      ),
+      healthWeights: <HealthWeightSample>[
+        HealthWeightSample(recordedAt: startDay, weightKg: 80),
+      ],
+    );
+    addTearDown(harness.dispose);
 
-      final result = await _readDailyLearned(harness.container, today: today);
+    final result = await _readDailyLearned(harness.container, today: today);
 
-      expect(result, isNull);
-    },
-  );
+    expect(result, isNull);
+  });
 
   test(
     'keeps latest learned target when current window misses end weight',
@@ -647,54 +632,48 @@ void main() {
     expect(result.newGoalKcal, closeTo(2580, 0.01));
   });
 
-  test(
-    'uses trusted saved check-in base goal for the next week',
-    () async {
-      final startDay = DateTime(2026, 5, 27);
-      final windowEndDate = DateTime(2026, 6, 2);
-      final today = DateTime(2026, 6, 3);
-      final settings =
-          _baseSettings(
-            startDay: startDay,
-            dailyGoalKcal: 1483.81,
-          ).applyGoalChange(
-            changedAt: today,
-            dailyKcalGoal: 1283.81,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: startDay,
-              windowEndDate: windowEndDate,
-              trendWeightChangePerDay: 0.26316,
-              measuredTdeeKcal: 601.73,
-              calculatedTdeeKcal: 1395.59,
-              baseGoalKcal: 1283.81,
-              lowConfidence: false,
-              inputHash: 'trusted-window',
-            ),
-          );
-      final harness = _DailyLearnedHarness(
-        settings: settings,
-        entries: <CalorieEntry>[
-          _entry('source', startDay.add(const Duration(hours: 8)), 2443.83),
-        ],
-        healthWeights: const <HealthWeightSample>[],
-      );
-      addTearDown(harness.dispose);
+  test('uses trusted saved check-in base goal for the next week', () async {
+    final startDay = DateTime(2026, 5, 27);
+    final windowEndDate = DateTime(2026, 6, 2);
+    final today = DateTime(2026, 6, 3);
+    final settings = _baseSettings(startDay: startDay, dailyGoalKcal: 1483.81)
+        .applyGoalChange(
+          changedAt: today,
+          dailyKcalGoal: 1283.81,
+          calculatorProfile: null,
+          source: CalorieGoalSource.weeklyCheckIn,
+          weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+            windowStartDate: startDay,
+            windowEndDate: windowEndDate,
+            trendWeightChangePerDay: 0.26316,
+            measuredTdeeKcal: 601.73,
+            calculatedTdeeKcal: 1395.59,
+            baseGoalKcal: 1283.81,
+            lowConfidence: false,
+            inputHash: 'trusted-window',
+          ),
+        );
+    final harness = _DailyLearnedHarness(
+      settings: settings,
+      entries: <CalorieEntry>[
+        _entry('source', startDay.add(const Duration(hours: 8)), 2443.83),
+      ],
+      healthWeights: const <HealthWeightSample>[],
+    );
+    addTearDown(harness.dispose);
 
-      final result = await _readDailyLearned(
-        harness.container,
-        today: today,
-        storedGoalKcal: 1483.81,
-      );
+    final result = await _readDailyLearned(
+      harness.container,
+      today: today,
+      storedGoalKcal: 1483.81,
+    );
 
-      expect(result, isNotNull);
-      expect(result!.calculatedBaseTdeeKcal, closeTo(1395.59, 0.01));
-      expect(result.newGoalKcal, closeTo(1283.81, 0.01));
-      expect(result.averageCreditedActivityKcal, closeTo(0, 0.01));
-      expect(result.measured.measuredTotalTdeeKcal, closeTo(601.73, 0.01));
-    },
-  );
+    expect(result, isNotNull);
+    expect(result!.calculatedBaseTdeeKcal, closeTo(1395.59, 0.01));
+    expect(result.newGoalKcal, closeTo(1283.81, 0.01));
+    expect(result.averageCreditedActivityKcal, closeTo(0, 0.01));
+    expect(result.measured.measuredTotalTdeeKcal, closeTo(601.73, 0.01));
+  });
 
   test(
     'ignores stale learned snapshot when source intake is invalid',
@@ -961,48 +940,45 @@ void main() {
     expect(result.measured.measuredTrueTdeeKcal, closeTo(5066.67, 0.01));
   });
 
-  test(
-    'interpolates skipped intake days from average of logged days in '
-    'the window',
-    () async {
-      final startDay = DateTime(2026, 4);
-      final today = startDay.add(const Duration(days: 9));
-      final skippedDay = startDay.add(const Duration(days: 1));
-      final settings = _learnedSettings(
-        startDay: startDay,
-        windowEndDate: startDay.add(const Duration(days: 6)),
-      ).setSkippedIntakeDay(day: skippedDay, isSkipped: true);
-      final harness = _DailyLearnedHarness(
-        settings: settings,
-        entries: <CalorieEntry>[
-          _entry('entry-0', startDay.add(const Duration(hours: 8)), 2000),
-          for (var index = 2; index < 9; index += 1)
-            _entry(
-              'entry-$index',
-              startDay.add(Duration(days: index, hours: 8)),
-              2500,
-            ),
-        ],
-        healthWeights: <HealthWeightSample>[
-          HealthWeightSample(recordedAt: startDay, weightKg: 80),
-          HealthWeightSample(
-            recordedAt: startDay.add(
-              const Duration(days: weeklyCheckInWindowLengthDays),
-            ),
-            weightKg: 80,
+  test('interpolates skipped intake days from average of logged days in '
+      'the window', () async {
+    final startDay = DateTime(2026, 4);
+    final today = startDay.add(const Duration(days: 9));
+    final skippedDay = startDay.add(const Duration(days: 1));
+    final settings = _learnedSettings(
+      startDay: startDay,
+      windowEndDate: startDay.add(const Duration(days: 6)),
+    ).setSkippedIntakeDay(day: skippedDay, isSkipped: true);
+    final harness = _DailyLearnedHarness(
+      settings: settings,
+      entries: <CalorieEntry>[
+        _entry('entry-0', startDay.add(const Duration(hours: 8)), 2000),
+        for (var index = 2; index < 9; index += 1)
+          _entry(
+            'entry-$index',
+            startDay.add(Duration(days: index, hours: 8)),
+            2500,
           ),
-        ],
-      );
-      addTearDown(harness.dispose);
+      ],
+      healthWeights: <HealthWeightSample>[
+        HealthWeightSample(recordedAt: startDay, weightKg: 80),
+        HealthWeightSample(
+          recordedAt: startDay.add(
+            const Duration(days: weeklyCheckInWindowLengthDays),
+          ),
+          weightKg: 80,
+        ),
+      ],
+    );
+    addTearDown(harness.dispose);
 
-      final result = await _readDailyLearned(harness.container, today: today);
+    final result = await _readDailyLearned(harness.container, today: today);
 
-      expect(result, isNotNull);
-      expect(result!.measured.averageIntakeKcal, closeTo(2416.67, 0.01));
-      expect(result.calculatedTrueTdeeKcal, closeTo(2405.0, 0.01));
-      expect(result.newGoalKcal, closeTo(2405.0, 0.01));
-    },
-  );
+    expect(result, isNotNull);
+    expect(result!.measured.averageIntakeKcal, closeTo(2416.67, 0.01));
+    expect(result.calculatedTrueTdeeKcal, closeTo(2405.0, 0.01));
+    expect(result.newGoalKcal, closeTo(2405.0, 0.01));
+  });
 
   test(
     'substitutes pause days with goal kcal in daily learned replay',

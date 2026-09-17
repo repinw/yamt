@@ -20,7 +20,7 @@ part 'cooking_flow_intro_inventory_controller.g.dart';
 /// Input used to initialize the intro inventory controller.
 class CookingFlowIntroInventoryInput {
   /// Creates intro inventory input.
-  const CookingFlowIntroInventoryInput({
+  const new({
     required this.template,
     required this.targetPortions,
     required this.localeCode,
@@ -43,7 +43,7 @@ class CookingFlowIntroInventoryInput {
 /// State for intro inventory assignment rows.
 class CookingFlowIntroInventoryState {
   /// Creates intro inventory state.
-  const CookingFlowIntroInventoryState({
+  const new({
     this.rows = const <CookingFlowInventoryCheckRowData>[],
     this.selectedActions = const <CookingFlowInventoryRowAction?>[],
     this.selectedInventorySelections =
@@ -568,9 +568,8 @@ class CookingFlowIntroInventoryController
       );
     }
 
-    final amountOnlyMatch = RegExp(
-      r'^(\d+(?:[.,]\d+)?)\s+(.+)$',
-    ).firstMatch(trimmed);
+    final amountOnlyMatch = RegExp(r'^(\d+(?:[.,]\d+)?)\s+(.+)$')
+        .firstMatch(trimmed);
     if (amountOnlyMatch != null) {
       return CookingFlowInventoryCheckRowData(
         rawIngredient: ingredient,
@@ -590,9 +589,8 @@ class CookingFlowIntroInventoryController
     String ingredient,
     CookingFlowIntroInventoryInput input,
   ) {
-    final match = RegExp(
-      r'^(\d+(?:[.,]\d+)?|\d+/\d+|\d+\s+\d+/\d+)\s+',
-    ).firstMatch(ingredient.trim());
+    final match = RegExp(r'^(\d+(?:[.,]\d+)?|\d+/\d+|\d+\s+\d+/\d+)\s+')
+        .firstMatch(ingredient.trim());
     final rawAmount = match?.group(1);
     if (rawAmount == null) {
       return null;

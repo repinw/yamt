@@ -320,10 +320,7 @@ TemplateIngredientRequirement? _parsePendingRequirement(String ingredient) {
 }
 
 class _PendingIngredientCoverage {
-  _PendingIngredientCoverage({
-    required this.component,
-    required this.remainingAmount,
-  });
+  new({required this.component, required this.remainingAmount});
 
   final PreparedMealComponent component;
   int remainingAmount;

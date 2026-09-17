@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -33,10 +33,10 @@ String _resolveValidationLocaleName(BuildContext context) {
 
 /// Defines auth validation factory.
 class AuthValidationFactory {
-  const AuthValidationFactory._(this._localeName);
+  const new _(this._localeName);
 
   /// Creates a [AuthValidationFactory] for from context.
-  factory AuthValidationFactory.fromContext(BuildContext context) {
+  factory fromContext(BuildContext context) {
     return AuthValidationFactory._(_resolveValidationLocaleName(context));
   }
 
@@ -69,7 +69,7 @@ class AuthValidationFactory {
 /// Defines auth text field.
 class AuthTextField extends StatelessWidget {
   /// The auth text field.
-  const AuthTextField({
+  const new({
     required this.controller,
     required this.validator,
     required this.label,
@@ -148,7 +148,7 @@ class AuthTextField extends StatelessWidget {
 /// Defines auth email field.
 class AuthEmailField extends StatelessWidget {
   /// The auth email field.
-  const AuthEmailField({
+  const new({
     required this.controller,
     required this.validator,
     this.label,
@@ -211,7 +211,7 @@ class AuthEmailField extends StatelessWidget {
 /// Defines auth password field.
 class AuthPasswordField extends StatefulWidget {
   /// The auth password field.
-  const AuthPasswordField({
+  const new({
     required this.controller,
     required this.validator,
     this.label,
@@ -328,7 +328,7 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
 /// Defines auth submit button.
 class AuthSubmitButton extends StatelessWidget {
   /// The auth submit button.
-  const AuthSubmitButton({
+  const new({
     required this.isLoading,
     required this.onPressed,
     required this.label,
@@ -416,7 +416,7 @@ class AuthSubmitButton extends StatelessWidget {
 }
 
 class _AuthFieldLabel extends StatelessWidget {
-  const _AuthFieldLabel({required this.text});
+  const new({required this.text});
 
   final String text;
 
@@ -426,9 +426,8 @@ class _AuthFieldLabel extends StatelessWidget {
 
     return Text(
       text.toUpperCase(),
-      style: Theme.of(
-        context,
-      ).textTheme.labelSmall?.copyWith(color: colors.onSurfaceVariant),
+      style: Theme.of(context).textTheme.labelSmall
+          ?.copyWith(color: colors.onSurfaceVariant),
     );
   }
 }
@@ -445,9 +444,8 @@ InputDecoration _authInputDecoration(
 
   return InputDecoration(
     hintText: hintText,
-    hintStyle: Theme.of(
-      context,
-    ).textTheme.bodyMedium?.copyWith(color: colors.outlineVariant),
+    hintStyle: Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(color: colors.outlineVariant),
     filled: true,
     fillColor: colors.surfaceContainerLow,
     prefixIcon: prefixIcon,

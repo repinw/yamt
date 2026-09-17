@@ -3,7 +3,7 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 /// Pure normalization and merging for shopping-list additions.
 class ShoppingListAddition {
   /// Creates an addition helper.
-  const ShoppingListAddition();
+  const new();
 
   /// Validates names and normalizes quantities and prices.
   ShoppingListAddInput? parseAddItemInput({
@@ -57,7 +57,7 @@ class ShoppingListAddition {
 /// Validated addition payload.
 class ShoppingListAddInput {
   /// Creates validated input.
-  const ShoppingListAddInput({
+  const new({
     required this.name,
     required this.brand,
     required this.quantity,

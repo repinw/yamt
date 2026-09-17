@@ -8,18 +8,16 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 typedef LoadPreparedMeals = Future<List<PreparedMeal>> Function();
 
 /// Saves updated prepared meals while keeping previous state for rollback.
-typedef SavePreparedMeals =
-    Future<bool> Function({
-      required List<PreparedMeal> previousMeals,
-      required List<PreparedMeal> nextMeals,
-    });
+typedef SavePreparedMeals = Future<bool> Function({
+  required List<PreparedMeal> previousMeals,
+  required List<PreparedMeal> nextMeals,
+});
 
 /// Restores inventory after a meal mutation failed.
-typedef RestoreInventoryItems =
-    Future<void> Function({
-      required InventoryItemRepository inventoryRepository,
-      required List<InventoryItem> previousItems,
-    });
+typedef RestoreInventoryItems = Future<void> Function({
+  required InventoryItemRepository inventoryRepository,
+  required List<InventoryItem> previousItems,
+});
 
 /// Publishes optimistic prepared meal state.
 typedef PublishPreparedMeals = void Function(List<PreparedMeal> meals);
@@ -33,7 +31,7 @@ typedef BuildMutationTime = DateTime Function();
 /// Shared dependencies for prepared meal workflow classes.
 class PreparedMealWorkflowContext {
   /// Creates prepared meal workflow context.
-  const PreparedMealWorkflowContext({
+  const new({
     required this.loadMeals,
     required this.saveMeals,
     required this.restoreInventory,

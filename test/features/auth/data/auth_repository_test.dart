@@ -5,11 +5,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUserCredential extends Mock implements UserCredential {}
+class _MockUserCredential extends Mock implements UserCredential;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 void main() {
   test('authRepository forwards email sign-in to FirebaseAuth', () async {
@@ -78,9 +78,7 @@ void main() {
     final mockAuth = _MockFirebaseAuth();
     final mockCredential = _MockUserCredential();
 
-    when(
-      mockAuth.signInAnonymously,
-    ).thenAnswer((_) async => mockCredential);
+    when(mockAuth.signInAnonymously).thenAnswer((_) async => mockCredential);
 
     final container = ProviderContainer(
       overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],

@@ -2,7 +2,7 @@
 // ignore_for_file: always_use_package_imports
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -14,7 +14,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 import 'inventory_item_eat_sheet_display.dart';
 
 class InventoryItemEatManualPortionSection extends StatelessWidget {
-  const InventoryItemEatManualPortionSection({
+  const new({
     required this.amountController,
     required this.amountFocusNode,
     required this.amountErrorText,
@@ -87,7 +87,7 @@ class InventoryItemEatManualPortionSection extends StatelessWidget {
 }
 
 class InventoryItemEatInedibleAmountSection extends StatelessWidget {
-  const InventoryItemEatInedibleAmountSection({
+  const new({
     required this.amountController,
     required this.amountFocusNode,
     required this.amountErrorText,

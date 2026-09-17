@@ -333,7 +333,7 @@ void main() {
 }
 
 class _BlockingCalorieSettingsRepository implements CalorieSettingsRepository {
-  _BlockingCalorieSettingsRepository({
+  new({
     CalorieGoalSettings? initialSettings,
     this.saveBlocker,
     this.saveShouldFail = false,

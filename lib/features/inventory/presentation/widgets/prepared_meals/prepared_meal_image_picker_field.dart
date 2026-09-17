@@ -1,8 +1,8 @@
 import 'dart:developer' show log;
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -21,7 +21,7 @@ enum PreparedMealImageSource {
 /// Defines prepared meal image picker field.
 class PreparedMealImagePickerField extends StatelessWidget {
   /// The prepared meal image picker field.
-  const PreparedMealImagePickerField({
+  const new({
     required this.label,
     required this.imageBytes,
     required this.supportsCamera,
@@ -59,9 +59,8 @@ class PreparedMealImagePickerField extends StatelessWidget {
       children: [
         Text(
           l10n.preparedMealImageLabel,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
@@ -86,9 +85,8 @@ class PreparedMealImagePickerField extends StatelessWidget {
                         FilledButton.tonalIcon(
                           onPressed: isPickingImage
                               ? null
-                              : () => onPickImage(
-                                  PreparedMealImageSource.camera,
-                                ),
+                              : () =>
+                                    onPickImage(PreparedMealImageSource.camera),
                           icon: const Icon(Icons.photo_camera_outlined),
                           label: Text(l10n.preparedMealImageCameraAction),
                         ),
@@ -114,12 +112,8 @@ class PreparedMealImagePickerField extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     l10n.preparedMealImageHint,
-                    style:
-                        Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                 ],
               ),

@@ -6,19 +6,13 @@ const int diaryCalendarFutureDayCount = 14;
 /// Selectable day range of the diary calendar.
 class DiaryCalendarBounds {
   /// Creates calendar bounds.
-  const DiaryCalendarBounds({
-    required this.earliestDay,
-    required this.latestDay,
-  });
+  const new({required this.earliestDay, required this.latestDay});
 
   /// Resolves bounds from [today] and the optional [planStartDay].
   ///
   /// Users cannot go back before their plan started, and never before today
   /// when no plan exists yet. The future is limited for meal prep.
-  factory DiaryCalendarBounds.resolve({
-    required DateTime today,
-    DateTime? planStartDay,
-  }) {
+  factory resolve({required DateTime today, DateTime? planStartDay}) {
     final normalizedToday = normalizeLocalDay(today);
     final planStart = planStartDay == null
         ? null

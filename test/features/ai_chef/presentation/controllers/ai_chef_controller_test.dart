@@ -9,7 +9,7 @@ import 'package:yamt/features/ai_chef/presentation/controllers/'
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 class _RecordingAiChefRepository extends FirebaseAiChefRepository {
-  _RecordingAiChefRepository({this.recipe});
+  new({this.recipe});
 
   PreparedMeal? recipe;
   String? languageCode;
@@ -41,9 +41,7 @@ void main() {
         'Milk (available: 750 ml)',
       ];
       final container = ProviderContainer(
-        overrides: [
-          aiChefRepositoryProvider.overrideWithValue(repository),
-        ],
+        overrides: [aiChefRepositoryProvider.overrideWithValue(repository)],
       );
       addTearDown(container.dispose);
 
@@ -72,9 +70,7 @@ void main() {
       );
       final ingredientsCompleter = Completer<List<String>>();
       final container = ProviderContainer(
-        overrides: [
-          aiChefRepositoryProvider.overrideWithValue(repository),
-        ],
+        overrides: [aiChefRepositoryProvider.overrideWithValue(repository)],
       );
       addTearDown(container.dispose);
       final subscription = container.listen(
@@ -108,9 +104,7 @@ void main() {
       recipe: _recipe(name: 'Soup'),
     );
     final container = ProviderContainer(
-      overrides: [
-        aiChefRepositoryProvider.overrideWithValue(repository),
-      ],
+      overrides: [aiChefRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
     var didLoadInventory = false;
@@ -136,9 +130,7 @@ void main() {
   test('generateRecipe stores error when repository returns null', () async {
     final repository = _RecordingAiChefRepository();
     final container = ProviderContainer(
-      overrides: [
-        aiChefRepositoryProvider.overrideWithValue(repository),
-      ],
+      overrides: [aiChefRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
 

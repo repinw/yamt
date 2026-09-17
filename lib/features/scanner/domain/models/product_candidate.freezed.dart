@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'product_candidate.dart';
@@ -9,6 +9,7 @@ part of 'product_candidate.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -37,16 +38,21 @@ $ProductCandidateCopyWith<ProductCandidate> get copyWith => _$ProductCandidateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductCandidate&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.category, category) || other.category == category)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.packageSize, packageSize) || other.packageSize == packageSize)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.source, source) || other.source == source)&&(identical(other.requiresPersistence, requiresPersistence) || other.requiresPersistence == requiresPersistence)&&const DeepCollectionEquality().equals(other.nutritionPer100g, nutritionPer100g));
+  final _this = this as ProductCandidate;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductCandidate&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.brand, _this.brand) || other.brand == _this.brand)&&(identical(other.category, _this.category) || other.category == _this.category)&&(identical(other.barcode, _this.barcode) || other.barcode == _this.barcode)&&(identical(other.imageUrl, _this.imageUrl) || other.imageUrl == _this.imageUrl)&&(identical(other.packageSize, _this.packageSize) || other.packageSize == _this.packageSize)&&(identical(other.confidence, _this.confidence) || other.confidence == _this.confidence)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.requiresPersistence, _this.requiresPersistence) || other.requiresPersistence == _this.requiresPersistence)&&const DeepCollectionEquality().equals(other.nutritionPer100g, _this.nutritionPer100g));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,brand,category,barcode,imageUrl,packageSize,confidence,source,requiresPersistence,const DeepCollectionEquality().hash(nutritionPer100g));
+int get hashCode {
+  final _this = this as ProductCandidate;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.brand,_this.category,_this.barcode,_this.imageUrl,_this.packageSize,_this.confidence,_this.source,_this.requiresPersistence,const DeepCollectionEquality().hash(_this.nutritionPer100g));
+}
 
 @override
 String toString() {
-  return 'ProductCandidate(id: $id, name: $name, brand: $brand, category: $category, barcode: $barcode, imageUrl: $imageUrl, packageSize: $packageSize, confidence: $confidence, source: $source, requiresPersistence: $requiresPersistence, nutritionPer100g: $nutritionPer100g)';
+  final _this = this as ProductCandidate;
+  return 'ProductCandidate(id: ${_this.id}, name: ${_this.name}, brand: ${_this.brand}, category: ${_this.category}, barcode: ${_this.barcode}, imageUrl: ${_this.imageUrl}, packageSize: ${_this.packageSize}, confidence: ${_this.confidence}, source: ${_this.source}, requiresPersistence: ${_this.requiresPersistence}, nutritionPer100g: ${_this.nutritionPer100g})';
 }
 
 
@@ -75,7 +81,7 @@ class _$ProductCandidateCopyWithImpl<$Res>
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutritionPer100g = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(ProductCandidate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
@@ -228,7 +234,7 @@ return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_th
 
 
 class _ProductCandidate extends ProductCandidate {
-  const _ProductCandidate({required this.id, required this.name, this.brand, this.category, this.barcode, this.imageUrl, this.packageSize, this.confidence = 1.0, this.source = CandidateSource.catalogFuzzy, this.requiresPersistence = false, final  Map<String, num>? nutritionPer100g}): _nutritionPer100g = nutritionPer100g,super._();
+  const _ProductCandidate({required this.id, required this.name, this.brand, this.category, this.barcode, this.imageUrl, this.packageSize, this.confidence = 1.0, this.source = CandidateSource.catalogFuzzy, this.requiresPersistence = false,  Map<String, num>? nutritionPer100g}): _nutritionPer100g = nutritionPer100g,super._();
   
 
 /// Eindeutige ID im Katalog (z. B. GlobalFoodItem-ID oder Barcode).
@@ -274,16 +280,18 @@ _$ProductCandidateCopyWith<_ProductCandidate> get copyWith => __$ProductCandidat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductCandidate&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.category, category) || other.category == category)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.packageSize, packageSize) || other.packageSize == packageSize)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.source, source) || other.source == source)&&(identical(other.requiresPersistence, requiresPersistence) || other.requiresPersistence == requiresPersistence)&&const DeepCollectionEquality().equals(other._nutritionPer100g, _nutritionPer100g));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductCandidate&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.category, category) || other.category == category)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.packageSize, packageSize) || other.packageSize == packageSize)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.source, source) || other.source == source)&&(identical(other.requiresPersistence, requiresPersistence) || other.requiresPersistence == requiresPersistence)&&const DeepCollectionEquality().equals(other.nutritionPer100g, _nutritionPer100g));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,brand,category,barcode,imageUrl,packageSize,confidence,source,requiresPersistence,const DeepCollectionEquality().hash(_nutritionPer100g));
+int get hashCode {
+    return Object.hash(runtimeType,id,name,brand,category,barcode,imageUrl,packageSize,confidence,source,requiresPersistence,const DeepCollectionEquality().hash(_nutritionPer100g));
+}
 
 @override
 String toString() {
-  return 'ProductCandidate(id: $id, name: $name, brand: $brand, category: $category, barcode: $barcode, imageUrl: $imageUrl, packageSize: $packageSize, confidence: $confidence, source: $source, requiresPersistence: $requiresPersistence, nutritionPer100g: $nutritionPer100g)';
+    return 'ProductCandidate(id: $id, name: $name, brand: $brand, category: $category, barcode: $barcode, imageUrl: $imageUrl, packageSize: $packageSize, confidence: $confidence, source: $source, requiresPersistence: $requiresPersistence, nutritionPer100g: $nutritionPer100g)';
 }
 
 

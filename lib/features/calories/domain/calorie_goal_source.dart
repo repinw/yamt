@@ -10,10 +10,9 @@ enum CalorieGoalSource {
   calculator('calculator'),
 
   /// Weekly check in.
-  weeklyCheckIn('weekly_checkin')
-  ;
+  weeklyCheckIn('weekly_checkin');
 
-  const CalorieGoalSource(this.jsonValue);
+  new(this.jsonValue);
 
   /// The json value.
   final String jsonValue;

@@ -24,11 +24,7 @@ abstract interface class CalorieLogUserSession {
 /// Defines firestore calorie log repository.
 class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   /// Creates an instance.
-  FirestoreCalorieLogRepository({
-    required CalorieLogUserSession session,
-    required FirebaseFirestore firestore,
-  }) : _session = session,
-       _firestore = firestore;
+  new({required this._session, required this._firestore});
 
   final CalorieLogUserSession _session;
   final FirebaseFirestore _firestore;
@@ -130,9 +126,10 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     }
 
     try {
-      final snapshot = await _collection(
-        userId,
-      ).orderBy('logged_at').limit(1).get();
+      final snapshot = await _collection(userId)
+          .orderBy('logged_at')
+          .limit(1)
+          .get();
       if (snapshot.docs.isEmpty) {
         return null;
       }
@@ -166,9 +163,9 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         userId: userId,
         updatedAt: DateTime.now(),
       );
-      await _collection(
-        userId,
-      ).doc(normalizedEntry.id).set(normalizedEntry.toJson());
+      await _collection(userId)
+          .doc(normalizedEntry.id)
+          .set(normalizedEntry.toJson());
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -298,8 +295,7 @@ CalorieLogRepositoryContract calorieLogRepository(Ref ref) {
 }
 
 class _CurrentCalorieLogUserSession implements CalorieLogUserSession {
-  const _CurrentCalorieLogUserSession({required String? currentUserId})
-    : _currentUserId = currentUserId;
+  const new({required this._currentUserId});
 
   final String? _currentUserId;
 
@@ -322,7 +318,7 @@ FirebaseFirestore? _resolveFirestore() {
 }
 
 class _UnavailableCalorieLogRepository implements CalorieLogRepositoryContract {
-  const _UnavailableCalorieLogRepository();
+  const new();
 
   @override
   Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day) {

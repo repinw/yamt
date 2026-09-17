@@ -23,7 +23,7 @@ enum ProductSearchHubInitialIntent {
 /// Route args for product search hub.
 class ProductSearchHubRouteArgs {
   /// Creates route args.
-  const ProductSearchHubRouteArgs({
+  const new({
     this.mode = ProductSearchHubMode.inventory,
     this.initialIntent = ProductSearchHubInitialIntent.launcher,
     this.item,
@@ -37,7 +37,7 @@ class ProductSearchHubRouteArgs {
   });
 
   /// Inventory add route args.
-  const ProductSearchHubRouteArgs.inventory({
+  const new inventory({
     ProductSearchHubInitialIntent initialIntent =
         ProductSearchHubInitialIntent.launcher,
     InventoryItem? item,
@@ -58,7 +58,7 @@ class ProductSearchHubRouteArgs {
        );
 
   /// Diary eat route args.
-  const ProductSearchHubRouteArgs.diary({
+  const new diary({
     ProductSearchHubInitialIntent initialIntent =
         ProductSearchHubInitialIntent.launcher,
     InventoryItem? item,
@@ -83,7 +83,7 @@ class ProductSearchHubRouteArgs {
        );
 
   /// Selection route args.
-  const ProductSearchHubRouteArgs.selection({
+  const new selection({
     required InventoryItem item,
     ProductSearchHubInitialIntent initialIntent =
         ProductSearchHubInitialIntent.launcher,

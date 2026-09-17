@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Pops the product search hub route when local mutation state allows it.
 void popProductSearchHubRoute({

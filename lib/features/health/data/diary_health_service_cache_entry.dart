@@ -4,7 +4,7 @@ import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 /// In-memory cache entry for one diary health day.
 class DiaryHealthDayCacheEntry {
   /// Creates a day cache entry.
-  const DiaryHealthDayCacheEntry({
+  const new({
     required this.dayStart,
     required this.loadedAt,
     required this.checkedAt,
@@ -27,7 +27,7 @@ class DiaryHealthDayCacheEntry {
 /// In-memory cache entry for aggregated diary activity trend days.
 class DiaryHealthActivityTrendCacheEntry {
   /// Creates an activity trend cache entry.
-  const DiaryHealthActivityTrendCacheEntry({
+  const new({
     required this.startInclusive,
     required this.endExclusive,
     required this.loadedAt,

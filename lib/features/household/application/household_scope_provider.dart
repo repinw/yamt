@@ -7,10 +7,7 @@ part 'household_scope_provider.g.dart';
 /// Defines household data owner recovery state.
 class HouseholdDataOwnerRecoveryState {
   /// The household data owner recovery state.
-  const HouseholdDataOwnerRecoveryState({
-    required this.staleOwnerUserId,
-    required this.personalUserId,
-  });
+  const new({required this.staleOwnerUserId, required this.personalUserId});
 
   /// The stale owner user id.
   final String staleOwnerUserId;

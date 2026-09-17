@@ -59,7 +59,7 @@ abstract interface class InventoryCalorieEntryCommitStore {
 /// Defines inventory calorie entry commit result.
 class InventoryCalorieEntryCommitResult {
   /// The inventory calorie entry commit result.
-  const InventoryCalorieEntryCommitResult({
+  const new({
     required this.itemId,
     required this.quantity,
     required this.currentAmount,
@@ -79,15 +79,12 @@ class InventoryCalorieEntryCommitResult {
 class FirestoreInventoryCalorieEntryCommitStore
     implements InventoryCalorieEntryCommitStore {
   /// The firestore inventory calorie entry commit store.
-  const FirestoreInventoryCalorieEntryCommitStore({
-    required FirebaseFirestore firestore,
-    required String? currentUserId,
-    required String? inventoryOwnerUserId,
-    required InventoryActivityActor? actor,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId,
-       _inventoryOwnerUserId = inventoryOwnerUserId,
-       _actor = actor;
+  const new({
+    required this._firestore,
+    required this._currentUserId,
+    required this._inventoryOwnerUserId,
+    required this._actor,
+  });
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
@@ -129,9 +126,8 @@ class FirestoreInventoryCalorieEntryCommitStore
 
     try {
       return await _firestore.runTransaction((transaction) async {
-        final inventoryRef = _inventoryCollection(
-          inventoryUserId,
-        ).doc(pendingConsumption.itemId);
+        final inventoryRef = _inventoryCollection(inventoryUserId)
+            .doc(pendingConsumption.itemId);
         final inventorySnapshot = await transaction.get(inventoryRef);
         if (!inventorySnapshot.exists) {
           log(
@@ -186,9 +182,7 @@ class FirestoreInventoryCalorieEntryCommitStore
         );
         if (activityEvent != null) {
           transaction.set(
-            _activityEventsCollectionRef(inventoryUserId).doc(
-              activityEvent.id,
-            ),
+            _activityEventsCollectionRef(inventoryUserId).doc(activityEvent.id),
             activityEvent.toJson(),
           );
         }
@@ -275,7 +269,7 @@ class FirestoreInventoryCalorieEntryCommitStore
 
 class _UnavailableInventoryCalorieEntryCommitStore
     implements InventoryCalorieEntryCommitStore {
-  const _UnavailableInventoryCalorieEntryCommitStore();
+  const new();
 
   @override
   Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({

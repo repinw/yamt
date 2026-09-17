@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
@@ -10,11 +10,7 @@ const _settingsTileIconSize = 34.0;
 /// Section wrapper for grouped settings rows.
 class SettingsSection extends StatelessWidget {
   /// Creates a settings section.
-  const SettingsSection({
-    required this.title,
-    required this.children,
-    super.key,
-  });
+  const new({required this.title, required this.children, super.key});
 
   /// Section title.
   final String title;
@@ -69,7 +65,7 @@ class SettingsSection extends StatelessWidget {
 /// Card surface used by settings rows and header blocks.
 class SettingsCard extends StatelessWidget {
   /// Creates a settings card.
-  const SettingsCard({required this.child, super.key});
+  const new({required this.child, super.key});
 
   /// Card contents.
   final Widget child;
@@ -94,7 +90,7 @@ class SettingsCard extends StatelessWidget {
 /// Reusable settings row.
 class SettingsTile extends StatelessWidget {
   /// Creates a settings tile.
-  const SettingsTile({
+  const new({
     required this.icon,
     required this.title,
     this.subtitle,
@@ -169,9 +165,8 @@ class SettingsTile extends StatelessWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       if (subtitle case final subtitle?) ...[
                         const SizedBox(height: 2),
@@ -207,7 +202,7 @@ class SettingsTile extends StatelessWidget {
 /// Settings row chevron.
 class SettingsChevron extends StatelessWidget {
   /// Creates a settings chevron.
-  const SettingsChevron({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -222,11 +217,7 @@ class SettingsChevron extends StatelessWidget {
 /// Compact trailing value shown in settings rows.
 class SettingsTrailingValue extends StatelessWidget {
   /// Creates a trailing settings value.
-  const SettingsTrailingValue({
-    required this.value,
-    this.swatchColor,
-    super.key,
-  });
+  const new({required this.value, this.swatchColor, super.key});
 
   /// Display value.
   final String value;
@@ -255,10 +246,8 @@ class SettingsTrailingValue extends StatelessWidget {
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: colors.primary,
-            fontWeight: FontWeight.w800,
-          ),
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
         ),
       ],
     );

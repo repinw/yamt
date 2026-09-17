@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -9,11 +9,7 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 /// Thumbnail image shown in the calorie entry overview.
 class CalorieEntryThumbnail extends StatelessWidget {
   /// Creates a calorie entry thumbnail.
-  const CalorieEntryThumbnail({
-    required this.entry,
-    required this.storedImageBytes,
-    super.key,
-  });
+  const new({required this.entry, required this.storedImageBytes, super.key});
 
   /// Entry whose image is displayed.
   final CalorieEntry entry;
@@ -29,17 +25,14 @@ class CalorieEntryThumbnail extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadius.lg + AppSpacing.xs),
       child: SizedBox.square(
         dimension: _imageSize,
-        child: _EntryImage(
-          entry: entry,
-          storedImageBytes: storedImageBytes,
-        ),
+        child: _EntryImage(entry: entry, storedImageBytes: storedImageBytes),
       ),
     );
   }
 }
 
 class _EntryImage extends StatelessWidget {
-  const _EntryImage({required this.entry, required this.storedImageBytes});
+  const new({required this.entry, required this.storedImageBytes});
 
   final CalorieEntry entry;
   final Uint8List? storedImageBytes;
@@ -79,7 +72,7 @@ class _EntryImage extends StatelessWidget {
 }
 
 class _EntryImageFallback extends StatelessWidget {
-  const _EntryImageFallback({required this.initial});
+  const new({required this.initial});
 
   final String initial;
 
@@ -90,10 +83,8 @@ class _EntryImageFallback extends StatelessWidget {
     return Center(
       child: Text(
         initial.toUpperCase(),
-        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-          color: colors.primary,
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(context).textTheme.headlineMedium
+            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
       ),
     );
   }

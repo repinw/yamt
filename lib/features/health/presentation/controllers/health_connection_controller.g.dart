@@ -51,7 +51,7 @@ abstract class _$HealthConnectionController
   FutureOr<HealthConnectionStatus> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<AsyncValue<HealthConnectionStatus>, HealthConnectionStatus>;
@@ -66,6 +66,6 @@ abstract class _$HealthConnectionController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

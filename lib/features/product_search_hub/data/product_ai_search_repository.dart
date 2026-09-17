@@ -28,15 +28,10 @@ FirebaseProductAiSearchRepository productAiSearchRepository(Ref ref) {
 /// Firebase-backed product AI search repository.
 class FirebaseProductAiSearchRepository {
   /// Creates an instance.
-  FirebaseProductAiSearchRepository({
-    TemplateGenerativeModel? model,
-    Future<String?> Function({
-      required String templateId,
-      required Map<String, Object?> inputs,
-    })?
-    generateContent,
-  }) : _model = model,
-       _generateContent = generateContent;
+  new({
+    this._model,
+    this._generateContent,
+  });
 
   final TemplateGenerativeModel? _model;
   final Future<String?> Function({
@@ -104,9 +99,8 @@ class FirebaseProductAiSearchRepository {
 
     final model =
         _model ??
-        FirebaseAI.vertexAI(
-          location: _vertexLocation,
-        ).templateGenerativeModel();
+        FirebaseAI.agentPlatform(location: _vertexLocation)
+            .templateGenerativeModel();
     final response = await model
         .generateContent(
           _productAiSearchTemplateId,
@@ -237,21 +231,15 @@ class FirebaseProductAiSearchRepository {
 
     final per100Nutrition = GlobalFoodNutrition(
       qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
-      per100Kcal: _readDouble(
-        per100Map['kcal'] ?? per100Map['per_100_kcal'],
-      ),
+      per100Kcal: _readDouble(per100Map['kcal'] ?? per100Map['per_100_kcal']),
       per100Protein: _readDouble(
         per100Map['protein'] ?? per100Map['per_100_protein'],
       ),
       per100Carbs: _readDouble(
         per100Map['carbs'] ?? per100Map['per_100_carbs'],
       ),
-      per100Fat: _readDouble(
-        per100Map['fat'] ?? per100Map['per_100_fat'],
-      ),
-      per100Salt: _readDouble(
-        per100Map['salt'] ?? per100Map['per_100_salt'],
-      ),
+      per100Fat: _readDouble(per100Map['fat'] ?? per100Map['per_100_fat']),
+      per100Salt: _readDouble(per100Map['salt'] ?? per100Map['per_100_salt']),
       per100SaturatedFat: _readDouble(
         per100Map['saturated_fat'] ?? per100Map['per_100_saturated_fat'],
       ),

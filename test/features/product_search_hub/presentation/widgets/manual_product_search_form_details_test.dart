@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
@@ -40,7 +41,7 @@ Widget _wrapDetailsForm({
   VoidCallback? onCreateManualDraft,
 }) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: Center(
@@ -260,10 +261,7 @@ void main() {
       _fieldValue(tester, ManualProductSearchFormFieldName.polyunsaturatedFat),
       '0.2',
     );
-    expect(
-      _fieldValue(tester, ManualProductSearchFormFieldName.fiber),
-      '2.4',
-    );
+    expect(_fieldValue(tester, ManualProductSearchFormFieldName.fiber), '2.4');
     expect(
       _fieldValue(
         tester,

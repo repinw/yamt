@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_macro_row.dart';
 
 void main() {
@@ -39,12 +39,7 @@ void main() {
     testWidgets('renders remaining grams when intake is under target', (
       tester,
     ) async {
-      await pumpRow(
-        tester,
-        label: 'Protein',
-        current: 45,
-        target: 100,
-      );
+      await pumpRow(tester, label: 'Protein', current: 45, target: 100);
 
       // 100 - 45 = 55g remaining
       expect(find.text('55g'), findsOneWidget);
@@ -58,12 +53,7 @@ void main() {
     testWidgets('renders 0g remaining when intake equals target', (
       tester,
     ) async {
-      await pumpRow(
-        tester,
-        label: 'Carbs',
-        current: 150,
-        target: 150,
-      );
+      await pumpRow(tester, label: 'Carbs', current: 150, target: 150);
 
       expect(find.text('0g'), findsOneWidget);
       expect(find.text('Carbs'), findsOneWidget);
@@ -76,12 +66,7 @@ void main() {
     testWidgets('renders plus indicator (+Xg) when intake exceeds target', (
       tester,
     ) async {
-      await pumpRow(
-        tester,
-        label: 'Fat',
-        current: 85,
-        target: 70,
-      );
+      await pumpRow(tester, label: 'Fat', current: 85, target: 70);
 
       // 85 - 70 = +15g overage
       expect(find.text('+15g'), findsOneWidget);
@@ -95,18 +80,10 @@ void main() {
     testWidgets('handles zero target safely without division by zero', (
       tester,
     ) async {
-      await pumpRow(
-        tester,
-        label: 'Protein',
-        current: 0,
-        target: 0,
-      );
+      await pumpRow(tester, label: 'Protein', current: 0, target: 0);
 
       expect(find.text('0g'), findsOneWidget);
-      expect(
-        find.textContaining('0 / 0g', findRichText: true),
-        findsOneWidget,
-      );
+      expect(find.textContaining('0 / 0g', findRichText: true), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

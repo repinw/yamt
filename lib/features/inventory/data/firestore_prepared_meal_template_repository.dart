@@ -13,13 +13,11 @@ const String _repositoryLogName = 'FirestorePreparedMealTemplateRepository';
 class FirestorePreparedMealTemplateRepository
     implements PreparedMealTemplateRepository {
   /// Creates an instance.
-  FirestorePreparedMealTemplateRepository({
-    required InventoryUserSession session,
-    required SessionShutdownSignal sessionShutdownSignal,
-    required PreparedMealTemplateStore store,
-  }) : _session = session,
-       _sessionShutdownSignal = sessionShutdownSignal,
-       _store = store;
+  new({
+    required this._session,
+    required this._sessionShutdownSignal,
+    required this._store,
+  });
 
   final InventoryUserSession _session;
   final SessionShutdownSignal _sessionShutdownSignal;

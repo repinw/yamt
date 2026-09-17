@@ -13,7 +13,7 @@ part 'inventory_manual_product_search_launcher.g.dart';
 /// Request to open a manual product-search flow for an inventory item.
 class InventoryManualProductSearchRequest {
   /// Creates manual product-search request.
-  const InventoryManualProductSearchRequest({
+  const new({
     required this.item,
     this.includeStoreInSearch = true,
     this.includeWeightInSearch = true,

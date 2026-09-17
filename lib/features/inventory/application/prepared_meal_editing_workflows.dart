@@ -16,9 +16,7 @@ import 'package:yamt/features/recipes/application/template_ingredient_parser.dar
 /// Handles prepared meal editing and inventory reconciliation workflows.
 class PreparedMealEditingWorkflows {
   /// Creates editing workflows.
-  const PreparedMealEditingWorkflows({
-    required PreparedMealWorkflowContext context,
-  }) : _context = context;
+  const new({required this._context});
 
   final PreparedMealWorkflowContext _context;
 

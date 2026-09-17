@@ -154,10 +154,9 @@ void main() {
         repository.savedUtensils.single.imageStoragePath,
         'users/owner-1/kitchen_utensils/pot-1/images/image-new.jpg',
       );
-      expect(
-        repository.deletedImagePaths,
-        ['users/owner-1/kitchen_utensils/pot-1/old.jpg'],
-      );
+      expect(repository.deletedImagePaths, [
+        'users/owner-1/kitchen_utensils/pot-1/old.jpg',
+      ]);
     },
   );
 

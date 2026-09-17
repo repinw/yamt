@@ -4,7 +4,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 /// Defines inventory item eat request.
 class InventoryItemEatRequest {
   /// The inventory item eat request.
-  const InventoryItemEatRequest({
+  const new({
     required this.inventoryAmount,
     required this.loggedAt,
     required this.mealType,

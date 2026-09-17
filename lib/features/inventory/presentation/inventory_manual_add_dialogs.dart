@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
@@ -31,7 +31,7 @@ showInventoryManualAddEatAmountDialog({
 }
 
 class _ManualMissingBarcodeDialog extends StatefulWidget {
-  const _ManualMissingBarcodeDialog();
+  const new();
 
   @override
   State<_ManualMissingBarcodeDialog> createState() {
@@ -101,9 +101,8 @@ class _ManualMissingBarcodeDialogState
   String? _validateBarcode(String? value) {
     final barcode = normalizeBarcode(value ?? '');
     if (barcode.isEmpty) {
-      return AppLocalizations.of(
-        context,
-      )!.inventoryManualAddMissingBarcodeRequired;
+      return AppLocalizations.of(context)!
+          .inventoryManualAddMissingBarcodeRequired;
     }
     return null;
   }
@@ -120,10 +119,7 @@ class _ManualMissingBarcodeDialogState
 /// Result from the manual add eat amount dialog.
 class InventoryManualAddEatAmountDialogResult {
   /// The manual add eat amount dialog result.
-  const InventoryManualAddEatAmountDialogResult({
-    required this.amount,
-    required this.unit,
-  });
+  const new({required this.amount, required this.unit});
 
   /// The parsed amount.
   final int amount;
@@ -133,7 +129,7 @@ class InventoryManualAddEatAmountDialogResult {
 }
 
 class _ManualEatAmountDialog extends StatefulWidget {
-  const _ManualEatAmountDialog({required this.initialUnit});
+  const new({required this.initialUnit});
 
   final InventoryAmountUnit initialUnit;
 
@@ -205,9 +201,7 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
               child: AppDropdownButtonFormField<InventoryAmountUnit>(
                 key: const Key('inventory_manual_add_eat_unit_field'),
                 initialValue: _selectedUnit,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
                 items: [
                   DropdownMenuItem<InventoryAmountUnit>(
                     value: InventoryAmountUnit.gram,

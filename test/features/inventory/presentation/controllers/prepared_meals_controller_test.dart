@@ -28,7 +28,7 @@ import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_
 import '../../../calories/support/fake_calories_repositories.dart';
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+  new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
   final StreamController<List<InventoryItem>> _controller =
@@ -83,7 +83,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
 }
 
 class _FakePreparedMealRepository implements PreparedMealRepository {
-  _FakePreparedMealRepository({
+  new({
     required List<PreparedMeal> initialMeals,
     this.throwOnSave = false,
     this.saveDelay = Duration.zero,
@@ -427,16 +427,8 @@ void main() {
           (event) => (event.type, event.itemId, event.amount),
         ),
         <(InventoryActivityEventType, String, int)>[
-          (
-            InventoryActivityEventType.itemUsedInPreparedMeal,
-            'rice',
-            200,
-          ),
-          (
-            InventoryActivityEventType.itemUsedInPreparedMeal,
-            'beans',
-            100,
-          ),
+          (InventoryActivityEventType.itemUsedInPreparedMeal, 'rice', 200),
+          (InventoryActivityEventType.itemUsedInPreparedMeal, 'beans', 100),
         ],
       );
       expect(activityRepository.events.first.beforeCurrentAmount, 300);
@@ -506,148 +498,136 @@ void main() {
     },
   );
 
-  test(
-    'createPreparedMeal still succeeds when activity save fails',
-    () async {
-      final inventoryRepository = _FakeInventoryItemRepository(
-        initialItems: [_item(id: 'rice', name: 'Rice')],
-      );
-      final preparedMealRepository = _FakePreparedMealRepository(
-        initialMeals: const <PreparedMeal>[],
-      );
-      final calorieLogRepository = FakeCalorieLogRepository();
-      final activityRepository = _FakeInventoryActivityEventRepository()
-        ..appendShouldFail = true;
-      addTearDown(inventoryRepository.dispose);
-      addTearDown(preparedMealRepository.dispose);
-      addTearDown(calorieLogRepository.dispose);
+  test('createPreparedMeal still succeeds when activity save fails', () async {
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [_item(id: 'rice', name: 'Rice')],
+    );
+    final preparedMealRepository = _FakePreparedMealRepository(
+      initialMeals: const <PreparedMeal>[],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final activityRepository = _FakeInventoryActivityEventRepository()
+      ..appendShouldFail = true;
+    addTearDown(inventoryRepository.dispose);
+    addTearDown(preparedMealRepository.dispose);
+    addTearDown(calorieLogRepository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          inventoryItemRepositoryProvider.overrideWithValue(
-            inventoryRepository,
-          ),
-          preparedMealRepositoryProvider.overrideWithValue(
-            preparedMealRepository,
-          ),
-          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-          inventoryActivityActorProvider.overrideWithValue(_testActor),
-          inventoryActivityEventRepositoryProvider.overrideWithValue(
-            activityRepository,
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-      final subscription = _keepControllerAlive(container);
-      addTearDown(subscription.close);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        preparedMealRepositoryProvider.overrideWithValue(
+          preparedMealRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        inventoryActivityActorProvider.overrideWithValue(_testActor),
+        inventoryActivityEventRepositoryProvider.overrideWithValue(
+          activityRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
 
-      await container.read(preparedMealsControllerProvider.future);
-      final result = await container
-          .read(preparedMealsControllerProvider.notifier)
-          .createPreparedMeal(
-            name: 'Rice bowl',
-            totalPortions: 2,
-            items: const [
-              PreparedMealItemInput(itemId: 'rice', usedAmount: 100),
-            ],
-          );
+    await container.read(preparedMealsControllerProvider.future);
+    final result = await container
+        .read(preparedMealsControllerProvider.notifier)
+        .createPreparedMeal(
+          name: 'Rice bowl',
+          totalPortions: 2,
+          items: const [PreparedMealItemInput(itemId: 'rice', usedAmount: 100)],
+        );
 
-      expect(result.isSuccess, isTrue);
-      expect(preparedMealRepository.savedMeals, hasLength(1));
-      expect(activityRepository.events, isEmpty);
-    },
-  );
+    expect(result.isSuccess, isTrue);
+    expect(preparedMealRepository.savedMeals, hasLength(1));
+    expect(activityRepository.events, isEmpty);
+  });
 
-  test(
-    'createPreparedMealFromTemplate parses fractions and decimals '
-    'and keeps unsupported units pending',
-    () async {
-      final inventoryRepository = _FakeInventoryItemRepository(
-        initialItems: [
-          _item(id: 'potatoes', name: 'Potatoes', currentAmount: 1000),
-          _item(
-            id: 'broth',
-            name: 'Broth',
-            currentAmount: 2000,
-            amountUnit: InventoryAmountUnit.milliliter,
-          ),
-          _item(
-            id: 'milk',
-            name: 'Milk',
-            currentAmount: 1000,
-            amountUnit: InventoryAmountUnit.milliliter,
-          ),
-        ],
-      );
-      final preparedMealRepository = _FakePreparedMealRepository(
-        initialMeals: const <PreparedMeal>[],
-      );
-      final calorieLogRepository = FakeCalorieLogRepository();
-      addTearDown(inventoryRepository.dispose);
-      addTearDown(preparedMealRepository.dispose);
-      addTearDown(calorieLogRepository.dispose);
+  test('createPreparedMealFromTemplate parses fractions and decimals '
+      'and keeps unsupported units pending', () async {
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [
+        _item(id: 'potatoes', name: 'Potatoes', currentAmount: 1000),
+        _item(
+          id: 'broth',
+          name: 'Broth',
+          currentAmount: 2000,
+          amountUnit: InventoryAmountUnit.milliliter,
+        ),
+        _item(
+          id: 'milk',
+          name: 'Milk',
+          currentAmount: 1000,
+          amountUnit: InventoryAmountUnit.milliliter,
+        ),
+      ],
+    );
+    final preparedMealRepository = _FakePreparedMealRepository(
+      initialMeals: const <PreparedMeal>[],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    addTearDown(inventoryRepository.dispose);
+    addTearDown(preparedMealRepository.dispose);
+    addTearDown(calorieLogRepository.dispose);
 
-      final template = PreparedMeal(
-        id: 'template-1',
-        name: 'Soup',
-        recipeIngredients: const <String>[
-          '1/2 kg Potatoes',
-          '1,5 l Broth',
-          '1 cup Milk',
-        ],
-        totalPortions: 1,
-        remainingPortions: 1,
-        totalKcal: 0,
-        totalProtein: 0,
-        totalCarbs: 0,
-        totalFat: 0,
-        createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
-        updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
-        components: const <PreparedMealComponent>[],
-      );
+    final template = PreparedMeal(
+      id: 'template-1',
+      name: 'Soup',
+      recipeIngredients: const <String>[
+        '1/2 kg Potatoes',
+        '1,5 l Broth',
+        '1 cup Milk',
+      ],
+      totalPortions: 1,
+      remainingPortions: 1,
+      totalKcal: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: const <PreparedMealComponent>[],
+    );
 
-      final container = ProviderContainer(
-        overrides: [
-          inventoryItemRepositoryProvider.overrideWithValue(
-            inventoryRepository,
-          ),
-          preparedMealRepositoryProvider.overrideWithValue(
-            preparedMealRepository,
-          ),
-          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-        ],
-      );
-      addTearDown(container.dispose);
-      final subscription = _keepControllerAlive(container);
-      addTearDown(subscription.close);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        preparedMealRepositoryProvider.overrideWithValue(
+          preparedMealRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
 
-      await container.read(preparedMealsControllerProvider.future);
-      final result = await container
-          .read(preparedMealsControllerProvider.notifier)
-          .createPreparedMealFromTemplate(
-            template: template,
-            totalPortions: 1,
-            recipeIngredientAssignments: const <String, List<String>>{
-              '1/2 kg Potatoes': <String>['potatoes'],
-              '1,5 l Broth': <String>['broth'],
-              '1 cup Milk': <String>['milk'],
-            },
-            recipeIngredientAmountConversions:
-                const <String, RecipeIngredientAmountConversion>{},
-          );
+    await container.read(preparedMealsControllerProvider.future);
+    final result = await container
+        .read(preparedMealsControllerProvider.notifier)
+        .createPreparedMealFromTemplate(
+          template: template,
+          totalPortions: 1,
+          recipeIngredientAssignments: const <String, List<String>>{
+            '1/2 kg Potatoes': <String>['potatoes'],
+            '1,5 l Broth': <String>['broth'],
+            '1 cup Milk': <String>['milk'],
+          },
+          recipeIngredientAmountConversions:
+              const <String, RecipeIngredientAmountConversion>{},
+        );
 
-      expect(result.isSuccess, isTrue);
-      expect(inventoryRepository.savedItems[0].currentAmount, 500);
-      expect(inventoryRepository.savedItems[1].currentAmount, 500);
-      expect(inventoryRepository.savedItems[2].currentAmount, 1000);
-      expect(preparedMealRepository.savedMeals, hasLength(1));
-      expect(preparedMealRepository.savedMeals.single.components, hasLength(2));
-      expect(
-        preparedMealRepository.savedMeals.single.pendingRecipeIngredients,
-        const <String>['1 cup Milk'],
-      );
-    },
-  );
+    expect(result.isSuccess, isTrue);
+    expect(inventoryRepository.savedItems[0].currentAmount, 500);
+    expect(inventoryRepository.savedItems[1].currentAmount, 500);
+    expect(inventoryRepository.savedItems[2].currentAmount, 1000);
+    expect(preparedMealRepository.savedMeals, hasLength(1));
+    expect(preparedMealRepository.savedMeals.single.components, hasLength(2));
+    expect(
+      preparedMealRepository.savedMeals.single.pendingRecipeIngredients,
+      const <String>['1 cup Milk'],
+    );
+  });
 
   test(
     'createPreparedMealFromTemplate uses piece-to-gram conversions safely',

@@ -47,10 +47,7 @@ void main() {
       expect(tokens, isNot(contains('5')));
       expect(tokens, isNot(contains('b')));
       expect(tokens.every((token) => token.length >= 2), isTrue);
-      expect(
-        tokens.any((token) => RegExp(r'^\d+$').hasMatch(token)),
-        isFalse,
-      );
+      expect(tokens.any((token) => RegExp(r'^\d+$').hasMatch(token)), isFalse);
     });
   });
 }

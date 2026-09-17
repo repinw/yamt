@@ -77,21 +77,13 @@ const inventoryAmountUnitAliases = <String, InventoryAmountUnitConversion>{
     scale: 1,
   ),
   'l': (base: InventoryAmountUnit.milliliter, multiplier: 1000.0, scale: 1),
-  'liter': (
-    base: InventoryAmountUnit.milliliter,
-    multiplier: 1000.0,
-    scale: 1,
-  ),
+  'liter': (base: InventoryAmountUnit.milliliter, multiplier: 1000.0, scale: 1),
   'liters': (
     base: InventoryAmountUnit.milliliter,
     multiplier: 1000.0,
     scale: 1,
   ),
-  'litre': (
-    base: InventoryAmountUnit.milliliter,
-    multiplier: 1000.0,
-    scale: 1,
-  ),
+  'litre': (base: InventoryAmountUnit.milliliter, multiplier: 1000.0, scale: 1),
   'litres': (
     base: InventoryAmountUnit.milliliter,
     multiplier: 1000.0,

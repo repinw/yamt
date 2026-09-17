@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
@@ -14,7 +14,7 @@ enum CredentialConflictAction {
 /// Defines credential conflict dialog.
 class CredentialConflictDialog extends StatelessWidget {
   /// The credential conflict dialog.
-  const CredentialConflictDialog({
+  const new({
     required this.title,
     required this.description,
     required this.overwriteAction,
@@ -132,7 +132,7 @@ class CredentialConflictDialog extends StatelessWidget {
 }
 
 class _ConflictActionTile extends StatelessWidget {
-  const _ConflictActionTile({
+  const new({
     required this.icon,
     required this.title,
     required this.subtitle,

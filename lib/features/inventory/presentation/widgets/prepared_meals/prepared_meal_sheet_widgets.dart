@@ -1,15 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shared prepared meal bottom sheet layout.
 class PreparedMealSheetContainer extends StatelessWidget {
   /// The prepared meal sheet container.
-  const PreparedMealSheetContainer({
-    required this.formKey,
-    required this.children,
-    super.key,
-  });
+  const new({required this.formKey, required this.children, super.key});
 
   /// The form key used by the sheet.
   final GlobalKey<FormState> formKey;
@@ -57,7 +53,7 @@ class PreparedMealSheetContainer extends StatelessWidget {
 /// Defines shared prepared meal name field.
 class PreparedMealNameField extends StatelessWidget {
   /// The prepared meal name field.
-  const PreparedMealNameField({
+  const new({
     required this.controller,
     required this.textInputAction,
     super.key,
@@ -105,7 +101,7 @@ class PreparedMealNameField extends StatelessWidget {
 /// Defines shared prepared meal sheet actions.
 class PreparedMealSheetActions extends StatelessWidget {
   /// The prepared meal sheet actions.
-  const PreparedMealSheetActions({
+  const new({
     required this.primaryLabel,
     required this.onPrimaryPressed,
     super.key,

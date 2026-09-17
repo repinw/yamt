@@ -31,12 +31,7 @@ void main() {
         overrides: [
           inventoryQuickEatInventoryProvider.overrideWith((ref) async {
             return InventoryQuickEatInventoryData(
-              items: [
-                availableItem,
-                emptyItem,
-                amountItem,
-                depletedAmountItem,
-              ],
+              items: [availableItem, emptyItem, amountItem, depletedAmountItem],
               meals: [readyMeal, depletedMeal],
             );
           }),

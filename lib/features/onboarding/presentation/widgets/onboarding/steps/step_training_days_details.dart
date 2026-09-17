@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Details shown when a fixed training-day plan is selected.
 class StepTrainingDaysDetails extends StatelessWidget {
   /// Creates fixed training-day details.
-  const StepTrainingDaysDetails({
+  const new({
     required this.state,
     required this.hasExtraKcal,
     required this.baseGoal,

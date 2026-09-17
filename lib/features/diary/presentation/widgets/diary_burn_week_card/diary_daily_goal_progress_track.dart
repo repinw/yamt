@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 
@@ -8,7 +8,7 @@ const Curve _progressAnimationCurve = Curves.easeOut;
 /// Animated daily kcal progress track.
 class DiaryDailyGoalProgressTrack extends StatelessWidget {
   /// Creates an animated progress track for daily kcal progress.
-  const DiaryDailyGoalProgressTrack({
+  const new({
     required this.height,
     required this.trackColor,
     required this.eatenColor,
@@ -96,7 +96,7 @@ class DiaryDailyGoalProgressTrack extends StatelessWidget {
 }
 
 class _ActivityPreviewSegment extends StatelessWidget {
-  const _ActivityPreviewSegment({
+  const new({
     required this.width,
     required this.activitySegmentRatio,
     required this.color,
@@ -134,7 +134,7 @@ class _ActivityPreviewSegment extends StatelessWidget {
 }
 
 class _EatenProgressSegment extends StatelessWidget {
-  const _EatenProgressSegment({
+  const new({
     required this.width,
     required this.eatenRatio,
     required this.color,
@@ -171,7 +171,7 @@ class _EatenProgressSegment extends StatelessWidget {
 }
 
 class _ActivityFilledSegment extends StatelessWidget {
-  const _ActivityFilledSegment({
+  const new({
     required this.width,
     required this.activityFillRatio,
     required this.activitySegmentStartRatio,
@@ -207,7 +207,7 @@ class _ActivityFilledSegment extends StatelessWidget {
 }
 
 class _ActivityDivider extends StatelessWidget {
-  const _ActivityDivider({
+  const new({
     required this.width,
     required this.activitySegmentRatio,
     required this.color,
@@ -236,9 +236,7 @@ class _ActivityDivider extends StatelessWidget {
           child: child!,
         );
       },
-      child: ColoredBox(
-        color: color,
-      ),
+      child: ColoredBox(color: color),
     );
   }
 }

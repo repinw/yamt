@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
 
 /// Loading state for the diary Burn Week card.
 class DiaryBalanceLoading extends StatelessWidget {
   /// Creates a loading card.
-  const DiaryBalanceLoading({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class DiaryBalanceLoading extends StatelessWidget {
 }
 
 class _ShimmerSkeleton extends StatefulWidget {
-  const _ShimmerSkeleton({
+  const new({
     required this.baseColor,
     required this.highlightColor,
     required this.child,
@@ -103,7 +103,7 @@ class _ShimmerSkeletonState extends State<_ShimmerSkeleton>
 }
 
 class _DiaryDailyBalanceSkeleton extends StatelessWidget {
-  const _DiaryDailyBalanceSkeleton();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +142,7 @@ class _DiaryDailyBalanceSkeleton extends StatelessWidget {
 }
 
 class _DailyMetricSkeleton extends StatelessWidget {
-  const _DailyMetricSkeleton({
+  const new({
     required this.crossAxisAlignment,
     required this.labelWidth,
     required this.valueWidth,
@@ -170,21 +170,19 @@ class _DailyMetricSkeleton extends StatelessWidget {
 }
 
 class _DailyProgressSkeleton extends StatelessWidget {
-  const _DailyProgressSkeleton();
+  const new();
 
   @override
   Widget build(BuildContext context) {
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _SkeletonBlock(height: 10),
-      ],
+      children: [_SkeletonBlock(height: 10)],
     );
   }
 }
 
 class _MacroBarsSkeleton extends StatelessWidget {
-  const _MacroBarsSkeleton();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +199,7 @@ class _MacroBarsSkeleton extends StatelessWidget {
 }
 
 class _MacroBarSkeleton extends StatelessWidget {
-  const _MacroBarSkeleton();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +217,7 @@ class _MacroBarSkeleton extends StatelessWidget {
 }
 
 class _SkeletonBlock extends StatelessWidget {
-  const _SkeletonBlock({required this.height, this.width});
+  const new({required this.height, this.width});
 
   final double? width;
   final double height;

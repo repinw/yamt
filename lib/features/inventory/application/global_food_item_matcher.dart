@@ -29,13 +29,11 @@ GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
 /// Defines global food item matcher.
 class GlobalFoodItemMatcher {
   /// Creates an instance.
-  GlobalFoodItemMatcher({
-    GlobalFoodItemRepository? globalFoodItemRepository,
-    GlobalFoodReceiptAliasRepository? globalFoodReceiptAliasRepository,
+  new({
+    this._globalFoodItemRepository,
+    this._globalFoodReceiptAliasRepository,
     OffProductSearchRepository? offProductSearchRepository,
-  }) : _globalFoodItemRepository = globalFoodItemRepository,
-       _globalFoodReceiptAliasRepository = globalFoodReceiptAliasRepository,
-       _localCandidateMatcher = const GlobalFoodLocalCandidateMatcher(),
+  }) : _localCandidateMatcher = const GlobalFoodLocalCandidateMatcher(),
        _externalCandidateSource = OffProductCandidateSource(
          repository: offProductSearchRepository,
        );

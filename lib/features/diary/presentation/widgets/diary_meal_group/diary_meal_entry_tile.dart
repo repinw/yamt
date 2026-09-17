@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
@@ -12,11 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// One logged food: image, name, macros, kcal, and amount.
 class DiaryMealEntryTile extends StatelessWidget {
   /// Creates a diary entry row.
-  const DiaryMealEntryTile({
-    required this.entry,
-    required this.onTap,
-    super.key,
-  });
+  const new({required this.entry, required this.onTap, super.key});
 
   /// Entry to display.
   final DiaryMealEntry entry;

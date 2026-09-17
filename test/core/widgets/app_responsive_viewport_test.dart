@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 
@@ -139,17 +139,11 @@ void main() {
       ),
     );
 
-    expect(
-      padding,
-      AppSizes.homeShellBottomBarClearance + AppSpacing.xxxxl,
-    );
+    expect(padding, AppSizes.homeShellBottomBarClearance + AppSpacing.xxxxl);
   });
 }
 
-Widget _buildProbe({
-  required Size size,
-  required WidgetBuilder builder,
-}) {
+Widget _buildProbe({required Size size, required WidgetBuilder builder}) {
   return MediaQuery(
     data: MediaQueryData(size: size),
     child: Directionality(

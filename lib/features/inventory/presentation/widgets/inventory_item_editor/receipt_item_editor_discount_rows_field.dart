@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines receipt editor discount rows field.
 class ReceiptEditorDiscountRowsField extends StatefulWidget {
   /// The receipt editor discount rows field.
-  const ReceiptEditorDiscountRowsField({
+  const new({
     required this.initialEntries,
     required this.onChanged,
     required this.errorText,
@@ -186,13 +186,13 @@ class _ReceiptEditorDiscountRowsFieldState
 }
 
 class _DiscountRowControllers {
-  const _DiscountRowControllers({
+  const new({
     required this.id,
     required this.nameController,
     required this.amountController,
   });
 
-  factory _DiscountRowControllers.empty({required int id}) {
+  factory empty({required int id}) {
     return _DiscountRowControllers(
       id: id,
       nameController: TextEditingController(),

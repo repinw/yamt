@@ -11,7 +11,7 @@ const int _maxAliasDocumentsPerTransaction = 200;
 /// Defines global food receipt alias document.
 class GlobalFoodReceiptAliasDocument {
   /// The global food receipt alias document.
-  const GlobalFoodReceiptAliasDocument({required this.id, required this.data});
+  const new({required this.id, required this.data});
 
   /// The id.
   final String id;
@@ -41,9 +41,7 @@ abstract interface class GlobalFoodReceiptAliasStore {
 class FirestoreGlobalFoodReceiptAliasStore
     implements GlobalFoodReceiptAliasStore {
   /// The firestore global food receipt alias store.
-  const FirestoreGlobalFoodReceiptAliasStore({
-    required FirebaseFirestore firestore,
-  }) : _firestore = firestore;
+  const new({required this._firestore});
 
   final FirebaseFirestore _firestore;
 

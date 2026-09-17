@@ -53,10 +53,7 @@ void main() {
         'description': 'Simple pasta',
         'image': '//example.test/pasta.jpg',
         'recipeYield': 4,
-        'recipeIngredient': <String>[
-          '200 g pasta',
-          '1 tbsp olive oil',
-        ],
+        'recipeIngredient': <String>['200 g pasta', '1 tbsp olive oil'],
         'recipeInstructions': <Object>[
           <String, String>{'@type': 'HowToStep', 'text': ' Boil pasta '},
           <String, String>{'@type': 'HowToStep', 'text': 'Serve'},
@@ -88,15 +85,8 @@ void main() {
     expect(result.imageUrl, 'https://example.test/pasta.jpg');
     expect(result.title, 'Pasta');
     expect(result.servings, 4);
-    expect(result.ingredients, <String>[
-      '200 g pasta',
-      '1 tbsp olive oil',
-    ]);
-    expect(result.instructions, <String>[
-      'Boil pasta',
-      'Serve',
-      'Garnish',
-    ]);
+    expect(result.ingredients, <String>['200 g pasta', '1 tbsp olive oil']);
+    expect(result.instructions, <String>['Boil pasta', 'Serve', 'Garnish']);
     expect(result.instructionsPreview, <String>[
       'Boil pasta',
       'Serve',
@@ -311,10 +301,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.imageUrl, 'https://example.test/burger-16x9.jpg');
       expect(result.servings, 3);
-      expect(result.instructions, <String>[
-        'Patties grillen',
-        'Buns belegen',
-      ]);
+      expect(result.instructions, <String>['Patties grillen', 'Buns belegen']);
     },
   );
 
@@ -332,9 +319,7 @@ void main() {
     });
 
     final notFoundResult = await const PreparedMealRecipeImporter()
-        .importRecipe(
-          'http://${server.address.host}:${server.port}/missing',
-        );
+        .importRecipe('http://${server.address.host}:${server.port}/missing');
     expect(notFoundResult, isNull);
 
     final invalidResult = await const PreparedMealRecipeImporter().importRecipe(

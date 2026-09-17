@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
@@ -31,10 +32,7 @@ import 'package:yamt/features/meal_templates/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _CookingFlowStartHarness {
-  const _CookingFlowStartHarness({
-    required this.app,
-    required this.sessionStore,
-  });
+  const new({required this.app, required this.sessionStore});
 
   final Widget app;
   final _FakeCookingFlowSessionLocalStore sessionStore;
@@ -64,7 +62,7 @@ class _FakeCookingFlowSessionLocalStore
 
 class _StaticPreparedMealTemplatesController
     extends PreparedMealTemplatesController {
-  _StaticPreparedMealTemplatesController(this._templates);
+  new(this._templates);
 
   final List<PreparedMeal> _templates;
 
@@ -75,7 +73,7 @@ class _StaticPreparedMealTemplatesController
 }
 
 class _StaticInventoryItemsController extends InventoryItemsController {
-  _StaticInventoryItemsController(this._items);
+  new(this._items);
 
   final List<InventoryItem> _items;
 
@@ -86,7 +84,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
 }
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  const _FakeInventoryItemRepository(this._items);
+  const new(this._items);
 
   final List<InventoryItem> _items;
 
@@ -145,9 +143,8 @@ _CookingFlowStartHarness _buildHarness() {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventory,
-                builder: (context, state) => const Scaffold(
-                  body: Center(child: Text('Inventory')),
-                ),
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Inventory'))),
               ),
             ],
           ),
@@ -155,9 +152,8 @@ _CookingFlowStartHarness _buildHarness() {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeDiary,
-                builder: (context, state) => const Scaffold(
-                  body: Center(child: Text('Diary')),
-                ),
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Diary'))),
               ),
             ],
           ),
@@ -175,9 +171,8 @@ _CookingFlowStartHarness _buildHarness() {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeSettings,
-                builder: (context, state) => const Scaffold(
-                  body: Center(child: Text('Settings')),
-                ),
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Settings'))),
               ),
             ],
           ),
@@ -193,15 +188,13 @@ _CookingFlowStartHarness _buildHarness() {
       ),
       GoRoute(
         path: AppRoutes.homeKitchenUtensils,
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Kitchen utensils')),
-        ),
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('Kitchen utensils'))),
       ),
       GoRoute(
         path: AppRoutes.homeShopping,
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Shopping list')),
-        ),
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('Shopping list'))),
       ),
     ],
   );
@@ -236,7 +229,7 @@ _CookingFlowStartHarness _buildHarness() {
       container: container,
       child: MaterialApp.router(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
       ),
@@ -248,10 +241,7 @@ PreparedMeal _recipeTemplate() {
   return PreparedMeal(
     id: 'template-1',
     name: 'One-pan pasta',
-    recipeIngredients: const <String>[
-      '200g Pasta',
-      '150g Tomato sauce',
-    ],
+    recipeIngredients: const <String>['200g Pasta', '150g Tomato sauce'],
     totalPortions: 2,
     remainingPortions: 2,
     totalKcal: 700,

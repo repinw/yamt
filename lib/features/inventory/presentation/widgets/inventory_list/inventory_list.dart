@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart' show listEquals;
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -55,7 +55,7 @@ enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 /// Defines inventory list.
 class InventoryList extends ConsumerStatefulWidget {
   /// The inventory list.
-  const InventoryList({
+  const new({
     required this.items,
     required this.preparedMeals,
     required this.emptyStateActionButton,
@@ -530,9 +530,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Theme.of(
-        context,
-      ).colorScheme.scrim.withValues(alpha: AppOpacities.modalBarrier),
+      barrierColor: Theme.of(context).colorScheme.scrim
+          .withValues(alpha: AppOpacities.modalBarrier),
       builder: (context) => InventoryUnifiedFilterSheet(
         initialSection: initialSection,
         initialViewMode: _viewMode,

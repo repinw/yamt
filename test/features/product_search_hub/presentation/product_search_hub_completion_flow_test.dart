@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
@@ -224,9 +225,7 @@ void main() {
 
   testWidgets(
     'diary mode missing weight opens eat sheet without amount dialog',
-    (
-      tester,
-    ) async {
+    (tester) async {
       final inventoryController = _SuccessfulInventoryItemsController();
       ProductSearchHubCompletionResult? completion;
 
@@ -373,9 +372,7 @@ void main() {
           inventoryItemsControllerProvider.overrideWith(
             () => inventoryController,
           ),
-          productSearchHubCompletionHandlerFactoryProvider.overrideWith((
-            ref,
-          ) {
+          productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
             return (_) => DiaryProductSearchHubCompletionHandler(
               container: ref.container,
               eatCoordinator: ref.container.read(
@@ -570,16 +567,12 @@ Widget _buildCompletionHarness({
     overrides: [
       if (firebaseAuth != null)
         firebaseAuthProvider.overrideWithValue(firebaseAuth),
-      inventoryItemsControllerProvider.overrideWith(
-        () => inventoryController,
-      ),
+      inventoryItemsControllerProvider.overrideWith(() => inventoryController),
       productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
         final container = ref.container;
         return (mode) => switch (mode) {
           ProductSearchHubMode.inventory =>
-            InventoryProductSearchHubCompletionHandler(
-              container: container,
-            ),
+            InventoryProductSearchHubCompletionHandler(container: container),
           ProductSearchHubMode.diary => DiaryProductSearchHubCompletionHandler(
             container: container,
             eatCoordinator: container.read(
@@ -594,9 +587,7 @@ Widget _buildCompletionHarness({
         barcodeRepository,
       ),
       if (commitStore != null)
-        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-          commitStore,
-        ),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
     ],
   );
   addTearDown(container.dispose);
@@ -605,7 +596,7 @@ Widget _buildCompletionHarness({
     container: container,
     child: MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Builder(
@@ -658,10 +649,7 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
   }
 }
 
-Future<void> _pumpUntil(
-  WidgetTester tester,
-  bool Function() condition,
-) async {
+Future<void> _pumpUntil(WidgetTester tester, bool Function() condition) async {
   for (var attempts = 0; attempts < 20 && !condition(); attempts++) {
     await tester.pump(const Duration(milliseconds: 50));
   }
@@ -669,7 +657,7 @@ Future<void> _pumpUntil(
 
 class _DelayedBuildInventoryItemsController
     extends _RecordingInventoryItemsController {
-  _DelayedBuildInventoryItemsController(this._buildGate);
+  new(this._buildGate);
 
   final Completer<void> _buildGate;
   var _didBuild = false;
@@ -761,7 +749,7 @@ class _RecordingCalorieLogRepository implements CalorieLogRepositoryContract {
 
 class _SuccessfulInventoryCalorieEntryCommitStore
     implements InventoryCalorieEntryCommitStore {
-  const _SuccessfulInventoryCalorieEntryCommitStore();
+  const new();
 
   @override
   Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
@@ -776,9 +764,9 @@ class _SuccessfulInventoryCalorieEntryCommitStore
   }
 }
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _RecordingGlobalBarcodeCandidateRepository
     implements GlobalBarcodeCandidateRepository {
@@ -804,7 +792,7 @@ class _RecordingGlobalBarcodeCandidateRepository
 
 class _NoopGlobalBarcodeCandidateRepository
     implements GlobalBarcodeCandidateRepository {
-  const _NoopGlobalBarcodeCandidateRepository();
+  const new();
 
   @override
   Future<List<GlobalBarcodeCandidate>> readCandidates({

@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/home/widgets/inventory_action_fab.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -12,10 +13,7 @@ import 'package:yamt/features/product_search_hub/presentation/product_search_hub
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-Future<void> _pumpHarness(
-  WidgetTester tester, {
-  bool embedded = true,
-}) async {
+Future<void> _pumpHarness(WidgetTester tester, {bool embedded = true}) async {
   final router = GoRouter(
     routes: [
       GoRoute(
@@ -47,7 +45,7 @@ Future<void> _pumpHarness(
       child: MaterialApp.router(
         routerConfig: router,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),
@@ -113,7 +111,7 @@ void main() {
 
 class _FakeInventoryItemRepository
     implements InventoryItemRepository, InventoryItemRecentManualReader {
-  const _FakeInventoryItemRepository();
+  const new();
 
   @override
   bool get supportsLimitedRecentManualReads => true;

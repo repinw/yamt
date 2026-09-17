@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.dart';
 
 /// State controller for the onboarding goal-start date choice.
 class CalorieOnboardingStartDateController extends ChangeNotifier {
   /// Creates start-date controller.
-  CalorieOnboardingStartDateController({DateTime? now})
+  new({DateTime? now})
     : _futureGoalStartDate = DateUtils.dateOnly(
         (now ?? DateTime.now()).add(const Duration(days: 1)),
       );

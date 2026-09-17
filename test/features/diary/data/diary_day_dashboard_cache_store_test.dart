@@ -64,9 +64,9 @@ void main() {
       userId: userId,
       data: _dashboardData(day),
     );
-    final json =
-        jsonDecode(preferences.getStringSync(_cacheKey(userId, day))!)
-            as Map<String, dynamic>;
+    final json = jsonDecode(
+      preferences.getStringSync(_cacheKey(userId, day))!,
+    ) as Map<String, dynamic>;
     final data = json['data'] as Map<String, dynamic>;
     final overview = data['week_overview'] as Map<String, dynamic>;
     for (final item in overview['days'] as List<dynamic>) {
@@ -104,11 +104,7 @@ void main() {
     );
 
     expect(
-      store.readSync(
-        preferences: preferences,
-        userId: 'user-2',
-        day: day,
-      ),
+      store.readSync(preferences: preferences, userId: 'user-2', day: day),
       isNull,
     );
     expect(

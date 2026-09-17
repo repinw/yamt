@@ -44,9 +44,7 @@ void main() {
     });
 
     test('parses German thousands and decimal separators', () {
-      final requirement = parseCookingFlowIngredientRequirement(
-        '1.000,50 g',
-      );
+      final requirement = parseCookingFlowIngredientRequirement('1.000,50 g');
 
       expect(requirement?.amount, 1000.5);
       expect(requirement?.unitCode, 'g');

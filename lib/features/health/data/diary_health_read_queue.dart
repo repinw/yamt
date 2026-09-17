@@ -5,10 +5,7 @@ class DiaryHealthReadQueue {
   /// Runs [action] after previously queued work completes.
   Future<T> run<T>(Future<T> Function() action) {
     final queuedAction = _tail.then((_) => action());
-    _tail = queuedAction.then<void>(
-      (_) {},
-      onError: (_, _) {},
-    );
+    _tail = queuedAction.then<void>((_) {}, onError: (_, _) {});
     return queuedAction;
   }
 }

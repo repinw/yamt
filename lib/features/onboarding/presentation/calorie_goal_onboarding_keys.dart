@@ -34,9 +34,7 @@ abstract final class CalorieGoalOnboardingKeys {
   );
 
   /// The onboarding catch-up low option.
-  static const catchUpLowOption = Key(
-    'calorie_calculator_catch_up_low_option',
-  );
+  static const catchUpLowOption = Key('calorie_calculator_catch_up_low_option');
 
   /// The onboarding catch-up normal option.
   static const catchUpNormalOption = Key(

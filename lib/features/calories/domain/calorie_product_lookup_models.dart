@@ -20,10 +20,9 @@ enum CalorieProductSource {
   offSearch('off_search'),
 
   /// Ocr.
-  ocr('ocr')
-  ;
+  ocr('ocr');
 
-  const CalorieProductSource(this.jsonValue);
+  new(this.jsonValue);
 
   /// The json value.
   final String jsonValue;
@@ -33,7 +32,7 @@ enum CalorieProductSource {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CalorieProductProfile {
   /// The calorie product profile.
-  const CalorieProductProfile({
+  const new({
     required this.barcode,
     required this.name,
     required this.per100Kcal,
@@ -49,12 +48,12 @@ class CalorieProductProfile {
   });
 
   /// Creates a [CalorieProductProfile] for from json.
-  factory CalorieProductProfile.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$CalorieProductProfileFromJson(json);
   }
 
   /// Creates a [CalorieProductProfile] for from entry.
-  factory CalorieProductProfile.fromEntry({
+  factory fromEntry({
     required CalorieEntry entry,
     required String barcode,
     required CalorieProductSource source,
@@ -158,11 +157,7 @@ class CalorieProductProfile {
 /// Defines calorie scanned source ref.
 class CalorieScannedSourceRef {
   /// The calorie scanned source ref.
-  const CalorieScannedSourceRef({
-    required this.barcode,
-    required this.source,
-    this.offProductId,
-  });
+  const new({required this.barcode, required this.source, this.offProductId});
 
   /// The barcode.
   final String barcode;

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome_visibility_controller.dart';
 import 'package:yamt/features/home/widgets/'
@@ -17,7 +17,7 @@ const _settingsBranchIndex = 3;
 /// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerStatefulWidget {
   /// The home page.
-  const HomePage({required this.navigationShell, super.key});
+  const new({required this.navigationShell, super.key});
 
   /// The navigation shell.
   final StatefulNavigationShell navigationShell;
@@ -128,9 +128,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 bottom: 0,
                 child: ValueListenableBuilder<double>(
                   valueListenable: _chromeVisibilityController,
-                  child: HomeBottomNavBar(
-                    entries: _navEntries(context, l10n),
-                  ),
+                  child: HomeBottomNavBar(entries: _navEntries(context, l10n)),
                   builder: (context, visibility, bottomNavBar) {
                     return HomeShellBottomChrome(
                       visibility: visibility,

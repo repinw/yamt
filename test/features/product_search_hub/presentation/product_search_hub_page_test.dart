@@ -1,12 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/'
@@ -55,7 +56,7 @@ Future<void> _pumpHarness(
       ],
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: child,
       ),
@@ -163,9 +164,7 @@ Future<void> _pumpRouteHarness(
           final container = ref.container;
           return (mode) => switch (mode) {
             ProductSearchHubMode.inventory =>
-              InventoryProductSearchHubCompletionHandler(
-                container: container,
-              ),
+              InventoryProductSearchHubCompletionHandler(container: container),
             ProductSearchHubMode.diary =>
               DiaryProductSearchHubCompletionHandler(
                 container: container,
@@ -186,7 +185,7 @@ Future<void> _pumpRouteHarness(
           return MaterialApp.router(
             routerConfig: router,
             locale: const Locale('en'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
           );
         },
@@ -236,9 +235,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(
-        const Key('product_search_hub_recently_selected_empty_state'),
-      ),
+      find.byKey(const Key('product_search_hub_recently_selected_empty_state')),
       findsOneWidget,
     );
     expect(find.text('Recently selected'), findsOneWidget);
@@ -536,10 +533,7 @@ void main() {
     final addButton = find.byKey(
       const Key('inventory_item_amount_dialog_confirm_button'),
     );
-    await _pumpUntil(
-      tester,
-      () => addButton.evaluate().isNotEmpty,
-    );
+    await _pumpUntil(tester, () => addButton.evaluate().isNotEmpty);
     await tester.pump(const Duration(milliseconds: 500));
     expect(
       find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
@@ -702,10 +696,7 @@ void _expectOutlinedActionEnabled(
   expect(button.onPressed != null, isEnabled);
 }
 
-Future<void> _pumpUntil(
-  WidgetTester tester,
-  bool Function() condition,
-) async {
+Future<void> _pumpUntil(WidgetTester tester, bool Function() condition) async {
   for (var attempts = 0; attempts < 20 && !condition(); attempts++) {
     await tester.pump(const Duration(milliseconds: 50));
   }
@@ -713,7 +704,7 @@ Future<void> _pumpUntil(
 
 class _FakeInventoryItemRepository
     implements InventoryItemRepository, InventoryItemRecentManualReader {
-  const _FakeInventoryItemRepository(this._items);
+  const new(this._items);
 
   final List<InventoryItem> _items;
 
@@ -776,7 +767,7 @@ class _SuccessfulInventoryItemsController
 
 class _SuccessfulInventoryCalorieEntryCommitStore
     implements InventoryCalorieEntryCommitStore {
-  const _SuccessfulInventoryCalorieEntryCommitStore();
+  const new();
 
   @override
   Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
@@ -791,9 +782,9 @@ class _SuccessfulInventoryCalorieEntryCommitStore
   }
 }
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 InventoryItem _item({
   required String id,
@@ -859,10 +850,7 @@ InventoryReceiptManualProductResult _diarySheetResult({
   );
 }
 
-InventoryItem _itemWithNutrition({
-  required String id,
-  required String name,
-}) {
+InventoryItem _itemWithNutrition({required String id, required String name}) {
   return InventoryItem.create(
     id: id,
     name: name,

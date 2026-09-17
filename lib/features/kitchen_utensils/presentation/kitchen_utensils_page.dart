@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/domain/'
@@ -18,7 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Kitchen utensils page.
 class KitchenUtensilsPage extends ConsumerWidget {
   /// Creates page.
-  const KitchenUtensilsPage({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,11 +68,8 @@ class KitchenUtensilsPage extends ConsumerWidget {
               final utensil = utensils[index];
               return KitchenUtensilCard(
                 utensil: utensil,
-                onEditPressed: (utensil) => _editUtensil(
-                  context: context,
-                  ref: ref,
-                  utensil: utensil,
-                ),
+                onEditPressed: (utensil) =>
+                    _editUtensil(context: context, ref: ref, utensil: utensil),
                 onDeletePressed: (utensilId) => _deleteUtensil(
                   context: context,
                   ref: ref,

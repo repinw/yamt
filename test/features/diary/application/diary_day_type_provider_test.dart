@@ -9,7 +9,7 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
 import 'package:yamt/features/diary/domain/diary_day_type.dart';
 
 class _RecordingCalorieGoalController extends CalorieGoalController {
-  _RecordingCalorieGoalController(this.settings);
+  new(this.settings);
 
   final CalorieGoalSettings settings;
   final calls = <String>[];
@@ -58,9 +58,7 @@ Future<(ProviderContainer, _RecordingCalorieGoalController)> _setUp({
 
 void main() {
   test('resolves the day type status from goal settings', () async {
-    final (container, _) = await _setUp(
-      pauseDayKeys: [diaryDayKey(_tuesday)],
-    );
+    final (container, _) = await _setUp(pauseDayKeys: [diaryDayKey(_tuesday)]);
 
     final monday = container.read(diaryDayTypeStatusProvider(_monday));
     expect(monday?.type, DiaryDayType.training);

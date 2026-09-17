@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+  new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
   final StreamController<List<InventoryItem>> _controller =
@@ -219,9 +219,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         inventoryItemRepositoryProvider.overrideWithValue(repository),
-        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-          commitStore,
-        ),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
       ],
     );
     addTearDown(container.dispose);

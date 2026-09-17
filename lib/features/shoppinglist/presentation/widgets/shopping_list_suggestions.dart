@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -8,11 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Recent consumption suggestions, independent of shopping list loading.
 class ShoppingListSuggestions extends ConsumerStatefulWidget {
   /// Creates the suggestions section.
-  const ShoppingListSuggestions({
-    required this.suggestions,
-    this.onRetry,
-    super.key,
-  });
+  const new({required this.suggestions, this.onRetry, super.key});
 
   /// The raw suggestions value to filter and display.
   final AsyncValue<List<ShoppingSuggestion>> suggestions;

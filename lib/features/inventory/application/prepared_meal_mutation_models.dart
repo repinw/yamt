@@ -25,19 +25,19 @@ enum PreparedMealCreationFailureReason {
 
 /// Defines prepared meal creation result.
 class PreparedMealCreationResult {
-  const PreparedMealCreationResult._({
+  const new _({
     required this.isSuccess,
     this.preparedMealId,
     this.failureReason,
-    List<String> preparedMealIds = const <String>[],
-  }) : _preparedMealIds = preparedMealIds;
+    this._preparedMealIds = const <String>[],
+  });
 
   /// Creates a [PreparedMealCreationResult] for success.
-  const PreparedMealCreationResult.success(String preparedMealId)
+  const new success(String preparedMealId)
     : this._(isSuccess: true, preparedMealId: preparedMealId);
 
   /// Creates a [PreparedMealCreationResult] for many saved meals.
-  factory PreparedMealCreationResult.successMany(List<String> preparedMealIds) {
+  factory successMany(List<String> preparedMealIds) {
     final ids = preparedMealIds
         .map((id) => id.trim())
         .where((id) => id.isNotEmpty)
@@ -53,9 +53,8 @@ class PreparedMealCreationResult {
   }
 
   /// Creates a [PreparedMealCreationResult] for failure.
-  const PreparedMealCreationResult.failure(
-    PreparedMealCreationFailureReason reason,
-  ) : this._(isSuccess: false, failureReason: reason);
+  const new failure(PreparedMealCreationFailureReason reason)
+    : this._(isSuccess: false, failureReason: reason);
 
   /// Whether success.
   final bool isSuccess;
@@ -81,7 +80,7 @@ class PreparedMealCreationResult {
 /// Defines prepared meal item input.
 class PreparedMealItemInput {
   /// The prepared meal item input.
-  const PreparedMealItemInput({
+  const new({
     required this.itemId,
     required this.usedAmount,
     this.manualNutrition,
@@ -104,7 +103,7 @@ class PreparedMealItemInput {
 /// Defines one prepared meal output from a split template creation.
 class PreparedMealContainerInput {
   /// Creates container input.
-  const PreparedMealContainerInput({
+  const new({
     required this.id,
     required this.label,
     required this.totalPortions,
@@ -131,7 +130,7 @@ class PreparedMealContainerInput {
 /// Carries built inventory and meal changes before persistence.
 class PreparedMealBuildResult {
   /// Creates a prepared meal build result.
-  const PreparedMealBuildResult({
+  const new({
     required this.nextItems,
     required this.preparedMeal,
     this.componentSourceKeys = const <String>[],
@@ -150,7 +149,7 @@ class PreparedMealBuildResult {
 /// Signals validation failure while building a prepared meal draft.
 class PreparedMealBuildException implements Exception {
   /// Creates a build exception.
-  const PreparedMealBuildException(this.reason);
+  const new(this.reason);
 
   /// The reason the build failed.
   final PreparedMealCreationFailureReason reason;
@@ -159,7 +158,7 @@ class PreparedMealBuildException implements Exception {
 /// Carries pending-ingredient fill changes before persistence.
 class PreparedMealPendingIngredientFillResult {
   /// Creates a pending ingredient fill result.
-  const PreparedMealPendingIngredientFillResult({
+  const new({
     required this.nextItems,
     required this.components,
     this.remainingIngredient,

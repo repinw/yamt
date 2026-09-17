@@ -29,9 +29,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(repository),
-        calorieWeekOverviewForWindowProvider(
-          selectedDay,
-        ).overrideWith(
+        calorieWeekOverviewForWindowProvider(selectedDay).overrideWith(
           (ref) => diaryWeekOverviewForTest(selectedDay: selectedDay),
         ),
         burnWeekRunControllerProvider.overrideWith(

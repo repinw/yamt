@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -27,11 +27,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Full-screen calorie goal onboarding wizard.
 class CalorieOnboardingWizard extends ConsumerStatefulWidget {
   /// Creates calorie onboarding wizard.
-  const CalorieOnboardingWizard({
-    required this.initialSettings,
-    this.now,
-    super.key,
-  });
+  const new({required this.initialSettings, this.now, super.key});
 
   /// Initial calorie settings used to seed the calculator.
   final CalorieGoalSettings initialSettings;
@@ -109,11 +105,7 @@ class _CalorieOnboardingWizardState
       ),
       startDateController: _startDateController,
       now: _now,
-    ).finish(
-      context: context,
-      formState: formState,
-      isMounted: () => mounted,
-    );
+    ).finish(context: context, formState: formState, isMounted: () => mounted);
   }
 
   Future<void> _pickFutureGoalStartDate() async {

@@ -74,9 +74,7 @@ void main() {
         .read(cookingFlowIntroInventoryControllerProvider.notifier)
         .sync(
           CookingFlowIntroInventoryInput(
-            template: _template(
-              recipeIngredients: const <String>['500g Rice'],
-            ),
+            template: _template(recipeIngredients: const <String>['500g Rice']),
             targetPortions: 4,
             localeCode: 'en',
             initialDraft: const CookingFlowIntroDraft(

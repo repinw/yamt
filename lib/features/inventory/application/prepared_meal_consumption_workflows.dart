@@ -12,9 +12,7 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 /// Handles prepared meal consumption and discard workflows.
 class PreparedMealConsumptionWorkflows {
   /// Creates consumption workflows.
-  const PreparedMealConsumptionWorkflows({
-    required PreparedMealWorkflowContext context,
-  }) : _context = context;
+  const new({required this._context});
 
   final PreparedMealWorkflowContext _context;
 

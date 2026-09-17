@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_logged_day_button.dart';
@@ -11,19 +12,15 @@ void main() {
     var tapCount = 0;
 
     await tester.pumpWidget(
-      _wrapLoggedDayButton(
-        isEnabled: false,
-        onPressed: () => tapCount += 1,
-      ),
+      _wrapLoggedDayButton(isEnabled: false, onPressed: () => tapCount += 1),
     );
 
     final inkWell = tester.widget<AppInkWell>(
       find.byKey(CalorieEntryDetailKeys.loggedDayButton),
     );
     final context = tester.element(find.byType(CalorieEntryLoggedDayButton));
-    final disabledColor = Theme.of(
-      context,
-    ).colorScheme.onSurface.withValues(alpha: 0.45);
+    final disabledColor = Theme.of(context).colorScheme.onSurface
+        .withValues(alpha: 0.45);
     final label = tester.widget<Text>(
       find
           .descendant(
@@ -48,7 +45,7 @@ Widget _wrapLoggedDayButton({
   required VoidCallback onPressed,
 }) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: Builder(

@@ -15,7 +15,7 @@ part 'diary_day_dashboard_data.g.dart';
 )
 class DiaryDayDashboardData {
   /// Creates diary dashboard data.
-  const DiaryDayDashboardData({
+  const new({
     required this.selectedDay,
     required this.refreshedAt,
     required this.weekOverview,
@@ -26,7 +26,7 @@ class DiaryDayDashboardData {
   });
 
   /// Creates data from persisted cache json.
-  factory DiaryDayDashboardData.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$DiaryDayDashboardDataFromJson(json);
 
   /// Selected diary day.
@@ -58,7 +58,7 @@ class DiaryDayDashboardData {
 // representation needs ISO strings; all other fields use its generated codec.
 class _CachedCalorieEntryConverter
     implements JsonConverter<CalorieEntry, Map<String, dynamic>> {
-  const _CachedCalorieEntryConverter();
+  const new();
 
   @override
   CalorieEntry fromJson(Map<String, dynamic> json) =>

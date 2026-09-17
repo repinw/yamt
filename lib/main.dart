@@ -1,8 +1,8 @@
 // coverage:ignore-file
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/config/firebase_config.dart';
@@ -77,9 +77,7 @@ Future<void> main() async {
           final container = ref.container;
           return (mode) => switch (mode) {
             ProductSearchHubMode.inventory =>
-              InventoryProductSearchHubCompletionHandler(
-                container: container,
-              ),
+              InventoryProductSearchHubCompletionHandler(container: container),
             ProductSearchHubMode.diary =>
               DiaryProductSearchHubCompletionHandler(
                 container: container,

@@ -5,10 +5,8 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_repository_contrac
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 class FakeShoppingListRepository implements ShoppingListRepository {
-  FakeShoppingListRepository({
-    List<ShoppingListItem>? initialItems,
-    this.onReadAll,
-  }) : _items = List<ShoppingListItem>.from(initialItems ?? const []);
+  new({List<ShoppingListItem>? initialItems, this.onReadAll})
+    : _items = List<ShoppingListItem>.from(initialItems ?? const []);
 
   final Future<List<ShoppingListItem>> Function()? onReadAll;
   final StreamController<List<ShoppingListItem>> _watchController =

@@ -10,14 +10,10 @@ void main() {
 
       final normalized = normalizeFirestoreJson(<String, dynamic>{
         'created_at': Timestamp.fromDate(createdAt),
-        'nested': <String, dynamic>{
-          'updated_at': Timestamp.fromDate(nestedAt),
-        },
+        'nested': <String, dynamic>{'updated_at': Timestamp.fromDate(nestedAt)},
         'items': <dynamic>[
           Timestamp.fromDate(createdAt),
-          <Object, dynamic>{
-            42: Timestamp.fromDate(nestedAt),
-          },
+          <Object, dynamic>{42: Timestamp.fromDate(nestedAt)},
         ],
       });
 

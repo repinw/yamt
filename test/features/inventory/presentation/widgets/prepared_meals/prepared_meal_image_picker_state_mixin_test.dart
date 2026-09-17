@@ -4,9 +4,10 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_image_picker_field.dart';
@@ -96,7 +97,7 @@ void main() {
 }
 
 class _ImagePickerMixinHarness extends ConsumerStatefulWidget {
-  const _ImagePickerMixinHarness({required this.onPicked});
+  const new({required this.onPicked});
 
   final ValueChanged<Uint8List> onPicked;
 
@@ -161,7 +162,7 @@ class _ControlledPreparedMealImagePicker implements PreparedMealImagePicker {
 }
 
 class _TestApp extends StatefulWidget {
-  const _TestApp({required this.imagePicker, required this.child});
+  const new({required this.imagePicker, required this.child});
 
   final PreparedMealImagePicker imagePicker;
   final Widget child;
@@ -189,7 +190,7 @@ class _TestAppState extends State<_TestApp> {
       container: _container,
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: widget.child,
       ),

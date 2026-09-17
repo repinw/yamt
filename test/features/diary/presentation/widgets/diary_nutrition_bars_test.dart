@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
@@ -103,9 +104,7 @@ void main() {
     expect(find.text('36g'), findsOneWidget); // 45 - 9 = 36g fat left
   });
 
-  testWidgets('renders over-target macro with plus indicator', (
-    tester,
-  ) async {
+  testWidgets('renders over-target macro with plus indicator', (tester) async {
     await _pumpNutritionBars(
       tester,
       selectedDay: selectedDay,
@@ -153,11 +152,7 @@ void main() {
                     carbs: 24,
                     protein: 18,
                     fat: 9,
-                    goals: DiaryMacroTargets(
-                      carbs: 120,
-                      protein: 90,
-                      fat: 45,
-                    ),
+                    goals: DiaryMacroTargets(carbs: 120, protein: 90, fat: 45),
                   ),
                 );
               },
@@ -166,7 +161,7 @@ void main() {
         ],
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Padding(
@@ -203,19 +198,14 @@ void main() {
           carbs: 24,
           protein: 18,
           fat: 9,
-          goals: DiaryMacroTargets(
-            carbs: 120,
-            protein: 90,
-            fat: 45,
-          ),
+          goals: DiaryMacroTargets(carbs: 120, protein: 90, fat: 45),
         ),
       ),
     );
     final container = ProviderContainer(
       overrides: [
-        diaryDayDashboardControllerProvider(
-          selectedDay,
-        ).overrideWith(() => controller),
+        diaryDayDashboardControllerProvider(selectedDay)
+            .overrideWith(() => controller),
       ],
     );
     addTearDown(container.dispose);
@@ -257,9 +247,7 @@ Future<void> _pumpNutritionBars(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        diaryDayDashboardControllerProvider(
-          selectedDay,
-        ).overrideWithValue(
+        diaryDayDashboardControllerProvider(selectedDay).overrideWithValue(
           diaryDashboardLoadedStateForTest(
             selectedDay: selectedDay,
             nutritionBars: data,
@@ -268,7 +256,7 @@ Future<void> _pumpNutritionBars(
       ],
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Padding(
@@ -291,7 +279,7 @@ Future<void> _pumpNutritionBarsWithContainer(
       container: container,
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Padding(

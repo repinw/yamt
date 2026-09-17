@@ -24,7 +24,7 @@ import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
 
 class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
-  FakeCalorieLogRepository({List<CalorieEntry>? initialEntries})
+  new({List<CalorieEntry>? initialEntries})
     : _entries = initialEntries ?? <CalorieEntry>[];
 
   final List<CalorieEntry> _entries;
@@ -215,7 +215,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 }
 
 class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
-  FakeCalorieSettingsRepository({CalorieGoalSettings? initialSettings})
+  new({CalorieGoalSettings? initialSettings})
     : _settings = initialSettings ?? const CalorieGoalSettings.empty();
 
   CalorieGoalSettings _settings;
@@ -286,7 +286,7 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
 }
 
 class FakeHealthConnectionService implements HealthConnectionService {
-  FakeHealthConnectionService(this.status);
+  new(this.status);
 
   final HealthConnectionStatus status;
   int requestAuthorizationCallCount = 0;
@@ -332,7 +332,7 @@ class FakeHealthConnectionService implements HealthConnectionService {
 }
 
 class FakeDiaryHealthService implements DiaryHealthService {
-  FakeDiaryHealthService(this.dataByDay);
+  new(this.dataByDay);
 
   final Map<String, DiaryHealthDayData> dataByDay;
   int loadDayDataCallCount = 0;
@@ -352,7 +352,7 @@ class FakeTrendDiaryHealthService extends FakeDiaryHealthService
     implements
         DiaryHealthActivityTrendRefreshService,
         DiaryHealthActivityTrendService {
-  FakeTrendDiaryHealthService(
+  new(
     super.dataByDay, {
     required this.trendDays,
     List<DiaryHealthActivityTrendDay>? refreshTrendDays,
@@ -412,7 +412,7 @@ class FakeTrendDiaryHealthService extends FakeDiaryHealthService
 }
 
 class FakeHealthWeightService implements HealthWeightService {
-  FakeHealthWeightService(this.samples);
+  new(this.samples);
 
   final List<HealthWeightSample> samples;
   final List<HealthWeightSample> deletedSamples = <HealthWeightSample>[];
@@ -449,7 +449,7 @@ class FakeHealthWeightService implements HealthWeightService {
 }
 
 class FakeManualHealthWeightRepository implements ManualHealthWeightRepository {
-  FakeManualHealthWeightRepository(this.entries);
+  new(this.entries);
 
   final List<ManualHealthWeightEntry> entries;
   final List<DateTime> deletedDays = <DateTime>[];
@@ -522,7 +522,7 @@ class FakeCalorieProductCacheRepository
 }
 
 class FakeNutritionLabelOcrRepository implements NutritionLabelOcrRepository {
-  FakeNutritionLabelOcrRepository({required this.onScanNutritionLabel});
+  new({required this.onScanNutritionLabel});
 
   final Future<NutritionLabelOcrResult> Function(String barcode)
   onScanNutritionLabel;

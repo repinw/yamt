@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/horizontal_dial_wheel.dart';
 
 /// Interactive card using horizontal dial wheel for numeric input.
 class PersonalInfoSliderCard extends StatelessWidget {
   /// Creates personal info dial card.
-  const PersonalInfoSliderCard({
+  const new({
     required this.label,
     required this.unit,
     required this.icon,
@@ -135,7 +135,7 @@ class PersonalInfoSliderCard extends StatelessWidget {
 }
 
 class _SliderHeader extends StatelessWidget {
-  const _SliderHeader({
+  const new({
     required this.icon,
     required this.label,
     required this.unit,
@@ -202,7 +202,7 @@ class _SliderHeader extends StatelessWidget {
 }
 
 class _DialControls extends StatelessWidget {
-  const _DialControls({
+  const new({
     required this.value,
     required this.minValue,
     required this.maxValue,
@@ -255,7 +255,7 @@ class _DialControls extends StatelessWidget {
 }
 
 class _SliderRangeFooter extends StatelessWidget {
-  const _SliderRangeFooter({
+  const new({
     required this.minValue,
     required this.maxValue,
     required this.unit,

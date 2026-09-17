@@ -86,9 +86,7 @@ void main() {
       );
 
       final store = FirestoreGlobalFoodItemStore(firestore: firestore);
-      final documents = await store.searchCandidates(
-        barcode: '4006381333931',
-      );
+      final documents = await store.searchCandidates(barcode: '4006381333931');
 
       expect(documents, hasLength(1));
       expect(documents.single.id, 'apple');
@@ -315,14 +313,11 @@ void main() {
         data['nutrition']! as Map<String, dynamic>,
       );
 
-      expect(
-        nutrition,
-        <String, dynamic>{
-          'quality_status': 'verified',
-          'per_100_kcal': 100.0,
-          'per_100_protein': 10.0,
-        },
-      );
+      expect(nutrition, <String, dynamic>{
+        'quality_status': 'verified',
+        'per_100_kcal': 100.0,
+        'per_100_protein': 10.0,
+      });
     },
   );
 

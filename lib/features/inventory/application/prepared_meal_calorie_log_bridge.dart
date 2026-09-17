@@ -16,11 +16,10 @@ part 'prepared_meal_calorie_log_bridge.g.dart';
 typedef PreparedMealStatePublisher = void Function(List<PreparedMeal> meals);
 
 /// Defines prepared meal save callback typedef.
-typedef PreparedMealSaveCallback =
-    Future<bool> Function(
-      List<PreparedMeal> previousMeals,
-      List<PreparedMeal> nextMeals,
-    );
+typedef PreparedMealSaveCallback = Future<bool> Function(
+  List<PreparedMeal> previousMeals,
+  List<PreparedMeal> nextMeals,
+);
 
 /// The prepared meal calorie log bridge provider.
 @riverpod
@@ -53,15 +52,12 @@ PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
 /// Defines prepared meal calorie log bridge.
 class PreparedMealCalorieLogBridge {
   /// Creates an instance.
-  PreparedMealCalorieLogBridge({
-    required Future<bool> Function(CalorieEntry entry) saveEntry,
-    required DateTime Function() now,
-    required String Function() nextEntryId,
-    Future<bool> Function(CalorieEntry entry)? saveEntryAtomically,
-  }) : _saveEntry = saveEntry,
-       _saveEntryAtomically = saveEntryAtomically,
-       _now = now,
-       _nextEntryId = nextEntryId;
+  new({
+    required this._saveEntry,
+    required this._now,
+    required this._nextEntryId,
+    this._saveEntryAtomically,
+  });
 
   final Future<bool> Function(CalorieEntry entry) _saveEntry;
   final Future<bool> Function(CalorieEntry entry)? _saveEntryAtomically;

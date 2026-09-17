@@ -19,7 +19,7 @@ enum CookingFlowInventoryConflictKind {
 /// Conflict between recipe requirement and selected inventory.
 class CookingFlowInventoryCheckConflict {
   /// Creates shortage conflict.
-  const CookingFlowInventoryCheckConflict({
+  const new({
     required this.availableAmountLabel,
     required this.missingAmountLabel,
   }) : kind = CookingFlowInventoryConflictKind.shortage,
@@ -27,7 +27,7 @@ class CookingFlowInventoryCheckConflict {
        selectedUnitCode = null;
 
   /// Creates unit conversion conflict.
-  const CookingFlowInventoryCheckConflict.unitConversion({
+  const new unitConversion({
     required this.requiredUnitCode,
     required this.selectedUnitCode,
   }) : kind = CookingFlowInventoryConflictKind.unitConversion,
@@ -53,7 +53,7 @@ class CookingFlowInventoryCheckConflict {
 /// Amount usage preview for selected inventory.
 class CookingFlowInventoryUsagePreview {
   /// Creates usage preview.
-  const CookingFlowInventoryUsagePreview({
+  const new({
     required this.usedAmountLabel,
     required this.remainingAmountLabel,
   });

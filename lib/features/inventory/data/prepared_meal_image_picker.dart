@@ -28,7 +28,7 @@ const int _maxOptimizationPasses = 12;
 /// Defines prepared meal image picker exception.
 class PreparedMealImagePickerException implements Exception {
   /// The prepared meal image picker exception.
-  const PreparedMealImagePickerException(this.code);
+  const new(this.code);
 
   /// The code.
   final String code;
@@ -63,11 +63,9 @@ abstract interface class PreparedMealImagePicker {
 }
 
 /// Picks prepared meal image files from the host platform.
-typedef PreparedMealImageFilePicker =
-    Future<FilePickerResult?> Function({
-      required bool withData,
-      required FileType type,
-    });
+typedef PreparedMealImageFilePicker = Future<PlatformFile?> Function({
+  required FileType type,
+});
 
 /// Prepared meal image file picker.
 @riverpod
@@ -75,14 +73,8 @@ PreparedMealImageFilePicker preparedMealImageFilePicker(Ref ref) {
   return _pickPreparedMealImageFile;
 }
 
-Future<FilePickerResult?> _pickPreparedMealImageFile({
-  required bool withData,
-  required FileType type,
-}) {
-  return FilePicker.pickFiles(
-    withData: withData,
-    type: type,
-  );
+Future<PlatformFile?> _pickPreparedMealImageFile({required FileType type}) {
+  return FilePicker.pickFile(type: type);
 }
 
 /// Prepared meal image picker.
@@ -96,11 +88,10 @@ PreparedMealImagePicker preparedMealImagePicker(Ref ref) {
 }
 
 class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
-  _DevicePreparedMealImagePicker({
-    required ImagePicker imagePicker,
-    required PreparedMealImageFilePicker filePicker,
-  }) : _imagePicker = imagePicker,
-       _filePicker = filePicker;
+  new({
+    required this._imagePicker,
+    required this._filePicker,
+  });
 
   final ImagePicker _imagePicker;
   final PreparedMealImageFilePicker _filePicker;
@@ -130,7 +121,7 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
       if (image == null) {
         return null;
       }
-      return _prepareBytes(await image.readAsBytes());
+      return await _prepareBytes(await image.readAsBytes());
     } on PreparedMealImagePickerException {
       rethrow;
     } on Object catch (error, stackTrace) {
@@ -149,24 +140,11 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
   @override
   Future<Uint8List?> pickFromFile() async {
     try {
-      final result = await _filePicker(
-        withData: true,
-        type: FileType.image,
-      );
-      if (result == null || result.files.isEmpty) {
+      final file = await _filePicker(type: FileType.image);
+      if (file == null) {
         return null;
       }
-
-      final file = result.files.first;
-      final bytes =
-          file.bytes ??
-          (file.path == null ? null : await XFile(file.path!).readAsBytes());
-      if (bytes == null) {
-        throw const PreparedMealImagePickerException(
-          PreparedMealImagePickerErrorCodes.filePickFailed,
-        );
-      }
-      return _prepareBytes(bytes);
+      return await _prepareBytes(await file.readAsBytes());
     } on PreparedMealImagePickerException {
       rethrow;
     } on Object catch (error, stackTrace) {

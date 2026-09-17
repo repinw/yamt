@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_repository.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
     'ai_chef_dialog/ai_chef_dialog.dart';
@@ -14,7 +15,7 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _CompletingAiChefRepository extends FirebaseAiChefRepository {
-  _CompletingAiChefRepository(this.recipeFuture);
+  new(this.recipeFuture);
 
   final Future<PreparedMeal?> recipeFuture;
 
@@ -30,7 +31,7 @@ class _CompletingAiChefRepository extends FirebaseAiChefRepository {
 
 class _RecordingPreparedMealTemplatesController
     extends PreparedMealTemplatesController {
-  _RecordingPreparedMealTemplatesController({required this.onSave});
+  new({required this.onSave});
 
   final void Function(PreparedMeal recipe) onSave;
 
@@ -98,7 +99,7 @@ void main() {
         ],
         child: MaterialApp.router(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router,
         ),

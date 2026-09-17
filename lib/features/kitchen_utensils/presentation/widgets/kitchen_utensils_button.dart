@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Button that opens the kitchen utensil library.
 class KitchenUtensilsButton extends StatelessWidget {
   /// Creates button.
-  const KitchenUtensilsButton({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {

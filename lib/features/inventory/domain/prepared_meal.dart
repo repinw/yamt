@@ -13,15 +13,11 @@ part 'prepared_meal.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RecipeIngredientAmountConversion {
   /// The recipe ingredient amount conversion.
-  const RecipeIngredientAmountConversion({
-    required this.amountPerPiece,
-    required this.unit,
-  });
+  const new({required this.amountPerPiece, required this.unit});
 
   /// Creates a [RecipeIngredientAmountConversion] for from json.
-  factory RecipeIngredientAmountConversion.fromJson(
-    Map<String, dynamic> json,
-  ) => _$RecipeIngredientAmountConversionFromJson(json);
+  factory fromJson(Map<String, dynamic> json) =>
+      _$RecipeIngredientAmountConversionFromJson(json);
 
   /// The amount per piece.
   @JsonKey(fromJson: _readIntOrZero)
@@ -63,7 +59,7 @@ class RecipeIngredientAmountConversion {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMeal {
   /// The prepared meal.
-  const PreparedMeal({
+  const new({
     required this.id,
     required this.name,
     required this.totalPortions,
@@ -89,8 +85,7 @@ class PreparedMeal {
   });
 
   /// Creates a [PreparedMeal] for from json.
-  factory PreparedMeal.fromJson(Map<String, dynamic> json) =>
-      _$PreparedMealFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$PreparedMealFromJson(json);
 
   /// The id.
   @JsonKey(fromJson: _readRequiredString)
@@ -407,7 +402,7 @@ String formatPreparedMealPortions(num portions, {String? localeName}) {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMealComponent {
   /// The prepared meal component.
-  const PreparedMealComponent({
+  const new({
     required this.inventoryItemId,
     required this.name,
     required this.brand,
@@ -422,7 +417,7 @@ class PreparedMealComponent {
   });
 
   /// Creates a [PreparedMealComponent] for from json.
-  factory PreparedMealComponent.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$PreparedMealComponentFromJson(json);
 
   /// The inventory item id.

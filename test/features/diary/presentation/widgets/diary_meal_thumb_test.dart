@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
@@ -21,9 +21,7 @@ void main() {
     return const ProviderScope(
       child: MaterialApp(
         home: Scaffold(
-          body: Center(
-            child: MealThumb(entry: entry),
-          ),
+          body: Center(child: MealThumb(entry: entry)),
         ),
       ),
     );

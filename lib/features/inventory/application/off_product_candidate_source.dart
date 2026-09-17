@@ -7,9 +7,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 /// External Open Food Facts-backed candidate source.
 class OffProductCandidateSource {
   /// Creates an external candidate source.
-  const OffProductCandidateSource({
-    required OffProductSearchRepository? repository,
-  }) : _repository = repository;
+  const new({required this._repository});
 
   final OffProductSearchRepository? _repository;
 

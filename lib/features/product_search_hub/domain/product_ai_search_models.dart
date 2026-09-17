@@ -7,7 +7,7 @@ import 'package:yamt/features/product_search_hub/domain/'
 @immutable
 class ProductAiSearchIngredientRow {
   /// Creates an ingredient row.
-  const ProductAiSearchIngredientRow({
+  const new({
     required this.label,
     required this.amountText,
     required this.amountGrams,
@@ -47,7 +47,7 @@ class ProductAiSearchIngredientRow {
 @immutable
 class ProductAiSearchNutritionEstimate {
   /// Creates a portion nutrition estimate.
-  const ProductAiSearchNutritionEstimate({
+  const new({
     required this.kcal,
     this.protein,
     this.carbs,
@@ -159,7 +159,7 @@ class ProductAiSearchNutritionEstimate {
 @immutable
 class ProductAiSearchDraft {
   /// Creates a draft.
-  const ProductAiSearchDraft({
+  const new({
     required this.name,
     required this.ingredients,
     required this.totalWeightGrams,
@@ -221,10 +221,9 @@ class ProductAiSearchDraft {
     required double value,
     required GlobalFoodNutritionQualityStatus qualityStatus,
   }) {
-    return nutritionForKcal(value).toPer100Nutrition(
-      grams: totalWeightGrams,
-      qualityStatus: qualityStatus,
-    );
+    return nutritionForKcal(
+      value,
+    ).toPer100Nutrition(grams: totalWeightGrams, qualityStatus: qualityStatus);
   }
 
   static String _formatDouble(double value) {

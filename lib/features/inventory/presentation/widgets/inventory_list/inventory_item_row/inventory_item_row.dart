@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -44,7 +44,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines inventory item row.
 class InventoryItemRow extends ConsumerStatefulWidget {
   /// The inventory item row.
-  const InventoryItemRow({
+  const new({
     required this.expansionStorageKey,
     required this.item,
     required this.l10n,
@@ -131,9 +131,8 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     }
     _didRestoreExpansionState = true;
 
-    final restoredState = PageStorage.maybeOf(
-      context,
-    )?.readState(context, identifier: widget.expansionStorageKey);
+    final restoredState = PageStorage.maybeOf(context)
+        ?.readState(context, identifier: widget.expansionStorageKey);
     if (restoredState is bool) {
       _isExpanded = restoredState;
     }
@@ -434,16 +433,14 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     }
 
     InventoryItemDiscardResult? discardResult;
-    await _actionCoordinator.runAction(
-      () async {
-        discardResult = await widget.onThrowAwayPressed(
-          widget.item.id,
-          discardedAmount,
-          discardReason,
-        );
-        return discardResult != null;
-      },
-    );
+    await _actionCoordinator.runAction(() async {
+      discardResult = await widget.onThrowAwayPressed(
+        widget.item.id,
+        discardedAmount,
+        discardReason,
+      );
+      return discardResult != null;
+    });
     if (!mounted || discardResult == null) {
       return;
     }
@@ -477,15 +474,13 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     }
 
     InventoryItemReductionResult? consumptionResult;
-    await _actionCoordinator.runAction(
-      () async {
-        consumptionResult = await controller.eatItemDetailed(
-          widget.item.id,
-          consumedAmount,
-        );
-        return consumptionResult != null;
-      },
-    );
+    await _actionCoordinator.runAction(() async {
+      consumptionResult = await controller.eatItemDetailed(
+        widget.item.id,
+        consumedAmount,
+      );
+      return consumptionResult != null;
+    });
     if (!mounted || consumptionResult == null) {
       return;
     }
@@ -604,7 +599,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 }
 
 class _ItemAmountInputConfig {
-  const _ItemAmountInputConfig({
+  const new({
     required this.maxAmount,
     required this.fieldLabel,
     required this.suffixText,
@@ -620,7 +615,7 @@ class _ItemAmountInputConfig {
 }
 
 class _InventoryItemRowLayoutData {
-  const _InventoryItemRowLayoutData({
+  const new({
     required this.colorScheme,
     required this.snapshot,
     required this.viewData,
@@ -631,7 +626,7 @@ class _InventoryItemRowLayoutData {
     required this.isRemoveActionEnabled,
   });
 
-  factory _InventoryItemRowLayoutData.fromItem({
+  factory fromItem({
     required BuildContext context,
     required InventoryItem item,
     required AppLocalizations l10n,
@@ -769,7 +764,7 @@ List<InventoryNutritionMetric> _buildNutritionMetrics(
 }
 
 class _InventoryItemRowCard extends StatelessWidget {
-  const _InventoryItemRowCard({
+  const new({
     required this.layoutData,
     required this.isExpanded,
     required this.isSelectionMode,
@@ -844,7 +839,7 @@ class _InventoryItemRowCard extends StatelessWidget {
 }
 
 class _InventoryItemRowBody extends StatelessWidget {
-  const _InventoryItemRowBody({
+  const new({
     required this.layoutData,
     required this.isExpanded,
     required this.isSelectionMode,

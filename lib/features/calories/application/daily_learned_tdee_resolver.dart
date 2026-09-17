@@ -19,7 +19,7 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 /// Context for a single day's learned TDEE resolution.
 class DailyLearnedTdeeDayContext {
   /// Creates learned TDEE day context.
-  const DailyLearnedTdeeDayContext({
+  const new({
     required this.day,
     required this.storedGoalKcal,
     required this.anchorEntry,
@@ -53,7 +53,7 @@ class DailyLearnedTdeeDayContext {
 /// A weekly window evaluated for daily learned goals.
 class WeeklyLearnedWindow {
   /// Creates weekly learned window.
-  const WeeklyLearnedWindow({
+  const new({
     required this.windowStartDate,
     required this.windowEndDate,
     required this.dueDate,
@@ -394,10 +394,7 @@ abstract final class DailyLearnedTdeeResolver {
       final dayEntries = entriesByDay[dayKey] ?? const <CalorieEntry>[];
       if (dayEntries.isNotEmpty && !isExplicitPause) {
         loggedVals.add(
-          dayEntries.fold<double>(
-            0,
-            (sum, entry) => sum + entry.totalKcal,
-          ),
+          dayEntries.fold<double>(0, (sum, entry) => sum + entry.totalKcal),
         );
       } else {
         missingDays.add(day);
@@ -423,10 +420,7 @@ abstract final class DailyLearnedTdeeResolver {
       final dayEntries = entriesByDay[dayKey] ?? const <CalorieEntry>[];
       if (dayEntries.isNotEmpty && !isExplicitPause) {
         intakeKcalByDay.add(
-          dayEntries.fold<double>(
-            0,
-            (sum, entry) => sum + entry.totalKcal,
-          ),
+          dayEntries.fold<double>(0, (sum, entry) => sum + entry.totalKcal),
         );
       } else {
         intakeKcalByDay.add(averageLogged);

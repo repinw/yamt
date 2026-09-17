@@ -7,7 +7,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 @immutable
 class ReceiptReviewItemDraft {
   /// The receipt review item draft.
-  const ReceiptReviewItemDraft({
+  const new({
     required this.item,
     this.candidates = const <GlobalFoodMatchCandidate>[],
     this.selectedGlobalFoodItemId,

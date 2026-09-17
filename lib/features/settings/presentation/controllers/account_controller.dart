@@ -30,7 +30,7 @@ abstract interface class SecondaryAuthClient {
 
 // coverage:ignore-start
 class _FirebaseSecondaryAuthClient implements SecondaryAuthClient {
-  const _FirebaseSecondaryAuthClient();
+  const new();
 
   @override
   Future<FirebaseApp> createApp(String appName) {

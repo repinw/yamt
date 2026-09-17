@@ -4,8 +4,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -30,7 +30,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class ManualProductDetailsForm extends StatefulWidget {
-  const ManualProductDetailsForm({
+  const new({
     required this.searchResults,
     required this.recentItems,
     required this.showDetails,
@@ -424,9 +424,7 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
               name: ManualProductSearchFormFieldName.saturatedFat,
               initialValue: widget.saturatedFatText,
               label: l10n.caloriesPer100SaturatedFatLabel,
-              fieldKey: const Key(
-                'receipt_review_manual_saturated_fat_field',
-              ),
+              fieldKey: const Key('receipt_review_manual_saturated_fat_field'),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
@@ -568,9 +566,8 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
               const SizedBox(height: AppSpacing.md),
               Text(
                 message,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: colors.error),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colors.error),
               ),
             ],
             const SizedBox(height: AppSpacing.lg),

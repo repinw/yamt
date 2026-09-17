@@ -17,7 +17,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
 /// Defines inventory calorie bridge flow.
 class InventoryCalorieBridgeFlow {
-  const InventoryCalorieBridgeFlow._();
+  const new _();
 
   static const _uuid = Uuid();
 

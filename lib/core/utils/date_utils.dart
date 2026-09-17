@@ -2,12 +2,7 @@ import 'package:intl/intl.dart';
 
 /// Returns the localized short weekday label for [day].
 String calendarWeekdayLabel(DateTime day, String localeName) {
-  return DateFormat.E(localeName)
-      .format(day)
-      .replaceFirst(
-        RegExp(r'\.$'),
-        '',
-      );
+  return DateFormat.E(localeName).format(day).replaceFirst(RegExp(r'\.$'), '');
 }
 
 /// Normalizes [day] to date-only precision.

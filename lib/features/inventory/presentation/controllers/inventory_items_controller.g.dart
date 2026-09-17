@@ -47,7 +47,7 @@ abstract class _$InventoryItemsController
   FutureOr<List<InventoryItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<InventoryItem>>, List<InventoryItem>>;
     final element =
@@ -58,6 +58,6 @@ abstract class _$InventoryItemsController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

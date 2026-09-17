@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -51,9 +51,7 @@ void main() {
             receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
             receiptManualProductPickerProvider.overrideWithValue(fakePicker),
           ],
-          child: MaterialApp(
-            home: ReceiptReviewPage(initialReceipt: receipt),
-          ),
+          child: MaterialApp(home: ReceiptReviewPage(initialReceipt: receipt)),
         ),
       );
     }

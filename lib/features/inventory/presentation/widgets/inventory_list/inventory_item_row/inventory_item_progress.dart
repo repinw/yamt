@@ -3,7 +3,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 /// Defines inventory item progress.
 class InventoryItemProgress {
   /// The inventory item progress.
-  const InventoryItemProgress({
+  const new({
     required this.remainingRatio,
     required this.remainingLabel,
     required this.segmentedByUnits,
@@ -30,7 +30,7 @@ class InventoryItemProgress {
 /// Defines inventory item progress calculator.
 class InventoryItemProgressCalculator {
   /// The inventory item progress calculator.
-  const InventoryItemProgressCalculator();
+  const new();
 
   /// From item.
   InventoryItemProgress fromItem(InventoryItem item) {
@@ -50,16 +50,8 @@ class InventoryItemProgressCalculator {
     return InventoryItemProgress(
       remainingRatio: remainingAmount / initialAmount,
       remainingLabel:
-          '${_formatAmount(
-            remainingAmount,
-            unit,
-            scale: item.amountScale,
-          )} / '
-          '${_formatAmount(
-            initialAmount,
-            unit,
-            scale: item.amountScale,
-          )}',
+          '${_formatAmount(remainingAmount, unit, scale: item.amountScale)} / '
+          '${_formatAmount(initialAmount, unit, scale: item.amountScale)}',
       segmentedByUnits: totalUnits > 1,
       totalUnits: totalUnits,
       remainingUnits: remainingUnits,
@@ -91,11 +83,7 @@ class InventoryItemProgressCalculator {
     InventoryAmountUnit unit, {
     required int scale,
   }) {
-    return '${formatInventoryAmountValue(
-      amount: value,
-      unit: unit,
-      scale: scale,
-    )}${_unitSuffix(unit)}';
+    return '${formatInventoryAmountValue(amount: value, unit: unit, scale: scale)}${_unitSuffix(unit)}';
   }
 
   String _unitSuffix(InventoryAmountUnit unit) {

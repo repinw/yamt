@@ -37,7 +37,7 @@ ProductSearchHubModeStrategy productSearchHubModeStrategy(
 /// Strategy for inventory mode.
 class InventoryHubModeStrategy implements ProductSearchHubModeStrategy {
   /// Creates an inventory hub mode strategy.
-  const InventoryHubModeStrategy();
+  const new();
 
   @override
   ProductSearchHubMode get mode => ProductSearchHubMode.inventory;
@@ -59,7 +59,7 @@ class InventoryHubModeStrategy implements ProductSearchHubModeStrategy {
 /// Strategy for diary mode.
 class DiaryHubModeStrategy implements ProductSearchHubModeStrategy {
   /// Creates a diary hub mode strategy.
-  const DiaryHubModeStrategy();
+  const new();
 
   @override
   ProductSearchHubMode get mode => ProductSearchHubMode.diary;
@@ -81,7 +81,7 @@ class DiaryHubModeStrategy implements ProductSearchHubModeStrategy {
 /// Strategy for selection mode.
 class SelectionHubModeStrategy implements ProductSearchHubModeStrategy {
   /// Creates a selection hub mode strategy.
-  const SelectionHubModeStrategy();
+  const new();
 
   @override
   ProductSearchHubMode get mode => ProductSearchHubMode.selection;

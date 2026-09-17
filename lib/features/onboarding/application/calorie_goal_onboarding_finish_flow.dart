@@ -32,7 +32,7 @@ CalorieGoalOnboardingFinishFlow calorieGoalOnboardingFinishFlow(Ref ref) {
 /// Inputs needed to finish calorie-goal onboarding.
 class CalorieGoalOnboardingFinishRequest {
   /// Creates finish request.
-  const CalorieGoalOnboardingFinishRequest({
+  const new({
     required this.profile,
     required this.dailyGoalKcal,
     required this.goalStartDate,
@@ -67,18 +67,13 @@ class CalorieGoalOnboardingFinishRequest {
 /// Saves calorie onboarding and places the user into Burn Week.
 class CalorieGoalOnboardingFinishFlow {
   /// Creates flow.
-  const CalorieGoalOnboardingFinishFlow({
-    required Future<CalorieGoalSettings> Function() readSettings,
-    required CalorieGoalController goalController,
-    required BurnWeekRunController burnWeekController,
-    required CalorieGoalOnboardingCatchUpPlaceholderWriter
-    catchUpPlaceholderWriter,
-    required bool Function() isMounted,
-  }) : _readSettings = readSettings,
-       _goalController = goalController,
-       _burnWeekController = burnWeekController,
-       _catchUpPlaceholderWriter = catchUpPlaceholderWriter,
-       _isMounted = isMounted;
+  const new({
+    required this._readSettings,
+    required this._goalController,
+    required this._burnWeekController,
+    required this._catchUpPlaceholderWriter,
+    required this._isMounted,
+  });
 
   final Future<CalorieGoalSettings> Function() _readSettings;
   final CalorieGoalController _goalController;

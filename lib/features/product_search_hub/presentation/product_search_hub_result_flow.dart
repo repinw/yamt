@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
@@ -25,11 +25,10 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Completes a product-search hub result selected by the user.
-typedef ProductSearchHubResultCompleter =
-    Future<void> Function({
-      required String sourceKey,
-      required inventory_models.InventoryReceiptManualProductResult result,
-    });
+typedef ProductSearchHubResultCompleter = Future<void> Function({
+  required String sourceKey,
+  required inventory_models.InventoryReceiptManualProductResult result,
+});
 
 /// Reports whether a source key is already blocked by current hub state.
 typedef ProductSearchHubSourceBlocker = bool Function(String sourceKey);

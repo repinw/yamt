@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip.dart';
@@ -13,7 +13,7 @@ const double diaryMacroStripKcalRowInset = AppSpacing.xs + 1;
 /// then the macro bars as their daily card counterparts scroll away.
 class DiaryMacroStripOverlay extends StatelessWidget {
   /// Creates the strip overlay.
-  const DiaryMacroStripOverlay({
+  const new({
     required this.selectedDay,
     required this.stage,
     this.kcalRowKey,

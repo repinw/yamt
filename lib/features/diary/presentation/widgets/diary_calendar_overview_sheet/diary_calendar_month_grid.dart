@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
@@ -13,7 +13,7 @@ const int _maxWeekRows = 6;
 /// Localized Monday-to-Sunday weekday labels above the month grid.
 class DiaryCalendarWeekdayRow extends StatelessWidget {
   /// Creates the weekday row.
-  const DiaryCalendarWeekdayRow({required this.referenceDay, super.key});
+  const new({required this.referenceDay, super.key});
 
   /// Any day; its calendar week provides the weekday names.
   final DateTime referenceDay;
@@ -47,7 +47,7 @@ class DiaryCalendarWeekdayRow extends StatelessWidget {
 /// Month grid of selectable diary days, starting on Monday.
 class DiaryCalendarMonthGrid extends StatelessWidget {
   /// Creates a month grid.
-  const DiaryCalendarMonthGrid({
+  const new({
     required this.month,
     required this.selectedDay,
     required this.today,
@@ -117,7 +117,7 @@ class DiaryCalendarMonthGrid extends StatelessWidget {
 }
 
 class _DiaryCalendarDayCell extends StatelessWidget {
-  const _DiaryCalendarDayCell({
+  const new({
     required this.day,
     required this.isSelected,
     required this.isToday,

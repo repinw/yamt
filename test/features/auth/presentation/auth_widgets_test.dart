@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/google_sign_in_provider.dart';
@@ -19,7 +20,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../../helpers/fake_auth_repository.dart';
 
 class _FirebaseGuestErrorRepository implements AuthRepository {
-  const _FirebaseGuestErrorRepository(this.error);
+  const new(this.error);
 
   final FirebaseAuthException error;
 
@@ -49,12 +50,12 @@ class _FirebaseGuestErrorRepository implements AuthRepository {
   }) async {}
 }
 
-class _MockGoogleSignIn extends Mock implements GoogleSignIn {}
+class _MockGoogleSignIn extends Mock implements GoogleSignIn;
 
 Widget _wrapWithApp(Widget child) {
   return ProviderScope(
     child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: child),
     ),
@@ -87,7 +88,7 @@ void main() {
       ProviderScope(
         overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: LoginForm()),
         ),
@@ -221,7 +222,7 @@ void main() {
       ProviderScope(
         overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: RegisterForm()),
         ),
@@ -267,7 +268,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: WelcomePage(),
         ),
@@ -293,7 +294,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: WelcomePage(),
         ),
@@ -317,7 +318,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: WelcomePage(),
         ),
@@ -364,7 +365,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: WelcomePage(),
         ),
@@ -390,7 +391,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: MediaQuery(
               data: MediaQueryData(
@@ -435,7 +436,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: WelcomePage(),
         ),
@@ -478,7 +479,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: WelcomePage(),
         ),
@@ -513,7 +514,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: WelcomePage(),
           ),
@@ -531,9 +532,7 @@ void main() {
     (tester) async {
       final mockGoogleSignIn = _MockGoogleSignIn();
       final completer = Completer<GoogleSignInAccount>();
-      when(
-        mockGoogleSignIn.authenticate,
-      ).thenAnswer((_) => completer.future);
+      when(mockGoogleSignIn.authenticate).thenAnswer((_) => completer.future);
 
       await tester.pumpWidget(
         ProviderScope(
@@ -546,7 +545,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: WelcomePage(),
           ),

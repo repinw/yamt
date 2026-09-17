@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Top progress and bottom action chrome for the onboarding wizard.
 class CalorieOnboardingWizardChrome extends StatelessWidget {
   /// Creates onboarding wizard chrome.
-  const CalorieOnboardingWizardChrome({
+  const new({
     required this.progress,
     required this.nextLabel,
     required this.onBack,
@@ -29,14 +29,8 @@ class CalorieOnboardingWizardChrome extends StatelessWidget {
     return Positioned.fill(
       child: Stack(
         children: [
-          _TopChrome(
-            progress: progress,
-            onBack: onBack,
-          ),
-          _BottomChrome(
-            nextLabel: nextLabel,
-            onNext: onNext,
-          ),
+          _TopChrome(progress: progress, onBack: onBack),
+          _BottomChrome(nextLabel: nextLabel, onNext: onNext),
         ],
       ),
     );
@@ -44,10 +38,7 @@ class CalorieOnboardingWizardChrome extends StatelessWidget {
 }
 
 class _TopChrome extends StatelessWidget {
-  const _TopChrome({
-    required this.progress,
-    required this.onBack,
-  });
+  const new({required this.progress, required this.onBack});
 
   final double progress;
   final VoidCallback onBack;
@@ -83,9 +74,8 @@ class _TopChrome extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.chevron_left),
                     onPressed: onBack,
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).backButtonTooltip,
+                    tooltip: MaterialLocalizations.of(context)
+                        .backButtonTooltip,
                   ),
                 ],
               ),
@@ -98,10 +88,7 @@ class _TopChrome extends StatelessWidget {
 }
 
 class _BottomChrome extends StatelessWidget {
-  const _BottomChrome({
-    required this.nextLabel,
-    required this.onNext,
-  });
+  const new({required this.nextLabel, required this.onNext});
 
   final String nextLabel;
   final VoidCallback onNext;

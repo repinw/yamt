@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -29,9 +29,10 @@ Page<Object?> buildManualProductSearchRoutePage(
   BuildContext context,
   GoRouterState state,
 ) {
-  final payloadStore = ProviderScope.containerOf(context, listen: false).read(
-    manualProductSearchRoutePayloadStoreProvider,
-  );
+  final payloadStore = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(manualProductSearchRoutePayloadStoreProvider);
   final args = ManualProductSearchRouteArgs.tryParse(state, payloadStore);
   if (args == null) {
     return NoTransitionPage<Object?>(
@@ -82,9 +83,10 @@ String? redirectInvalidManualProductSearchRoute(
   BuildContext context,
   GoRouterState state,
 ) {
-  final payloadStore = ProviderScope.containerOf(context, listen: false).read(
-    manualProductSearchRoutePayloadStoreProvider,
-  );
+  final payloadStore = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(manualProductSearchRoutePayloadStoreProvider);
   return ManualProductSearchRouteArgs.tryParse(state, payloadStore) == null
       ? AppRoutes.homeProductSearchHub
       : null;
@@ -95,14 +97,14 @@ Future<T?> pushManualProductSearchPage<T extends Object?>({
   required BuildContext context,
   required ManualProductSearchRouteArgs args,
 }) async {
-  final payloadStore = ProviderScope.containerOf(context, listen: false).read(
-    manualProductSearchRoutePayloadStoreProvider,
-  );
+  final payloadStore = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(manualProductSearchRoutePayloadStoreProvider);
   final payloadId = payloadStore.put(args);
   try {
-    return await GoRouter.of(context).push<T>(
-      args.locationForPayload(payloadId),
-    );
+    return await GoRouter.of(context)
+        .push<T>(args.locationForPayload(payloadId));
   } finally {
     payloadStore.remove(payloadId);
   }

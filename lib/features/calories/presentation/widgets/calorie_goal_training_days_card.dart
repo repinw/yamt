@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Card to configure training days and calorie cycling offset.
 class CalorieGoalTrainingDaysCard extends StatelessWidget {
   /// Creates the training days configuration card.
-  const CalorieGoalTrainingDaysCard({
+  const new({
     required this.baseGoalKcal,
     required this.trainingWeekdays,
     required this.trainingDayKcalOffset,
@@ -195,7 +195,7 @@ class CalorieGoalTrainingDaysCard extends StatelessWidget {
 }
 
 class _TrainingDayResultRow extends StatelessWidget {
-  const _TrainingDayResultRow({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -207,16 +207,14 @@ class _TrainingDayResultRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
         Text(
           value,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(fontWeight: FontWeight.w800),
         ),
       ],
     );

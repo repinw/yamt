@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -16,7 +16,7 @@ import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 /// to Yamt's app-wide ProductSearchHub.
 class YamtReceiptManualProductPicker implements ReceiptManualProductPicker {
   /// Creates a [YamtReceiptManualProductPicker].
-  const YamtReceiptManualProductPicker();
+  const new();
 
   @override
   Future<ProductCandidate?> pickOrEditProduct(

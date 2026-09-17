@@ -12,7 +12,7 @@ typedef OffProductResolvedServing = ({
 /// Helper resolving package weight and serving size for OFF search results.
 class OffProductSearchPackageWeightResolver {
   /// Creates an OFF package weight resolver.
-  const OffProductSearchPackageWeightResolver();
+  const new();
 
   /// Resolves package weight and serving info directly from an item payload.
   OffProductResolvedServing resolveFromItem(Map<String, dynamic> item) {
@@ -26,9 +26,7 @@ class OffProductSearchPackageWeightResolver {
       item['product_quantity_unit'] ?? item['productQuantityUnit'],
     );
     final sSize = _readText(item['serving_size'] ?? item['servingSize']);
-    var sQty = _readDouble(
-      item['serving_quantity'] ?? item['servingQuantity'],
-    );
+    var sQty = _readDouble(item['serving_quantity'] ?? item['servingQuantity']);
     var sUnit = _readText(
       item['serving_quantity_unit'] ?? item['servingQuantityUnit'],
     );

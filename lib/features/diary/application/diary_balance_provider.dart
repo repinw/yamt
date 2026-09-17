@@ -13,26 +13,23 @@ part 'diary_balance_provider.g.dart';
 
 /// Resolved card state for the diary balance card.
 class DiaryBalanceCardData {
-  const DiaryBalanceCardData._({
+  const new _({
     this.loadedMetrics,
     this.scheduledRestartDate,
     this.practiceDay,
   });
 
   /// Creates loaded balance data.
-  const DiaryBalanceCardData.loaded({
-    required DiaryBalanceLoadedMetrics loadedMetrics,
-  }) : this._(loadedMetrics: loadedMetrics);
+  const new loaded({required DiaryBalanceLoadedMetrics loadedMetrics})
+    : this._(loadedMetrics: loadedMetrics);
 
   /// Creates scheduled restart balance data.
-  const DiaryBalanceCardData.scheduledRestart({
-    required DateTime scheduledRestartDate,
-  }) : this._(scheduledRestartDate: scheduledRestartDate);
+  const new scheduledRestart({required DateTime scheduledRestartDate})
+    : this._(scheduledRestartDate: scheduledRestartDate);
 
   /// Creates practice day balance data.
-  const DiaryBalanceCardData.practiceDay({
-    required DiaryBalancePracticeDayData practiceDay,
-  }) : this._(practiceDay: practiceDay);
+  const new practiceDay({required DiaryBalancePracticeDayData practiceDay})
+    : this._(practiceDay: practiceDay);
 
   /// Loaded daily and weekly metrics.
   final DiaryBalanceLoadedMetrics? loadedMetrics;
@@ -47,10 +44,7 @@ class DiaryBalanceCardData {
 /// Practice day state for the diary balance card.
 class DiaryBalancePracticeDayData {
   /// Creates practice day data.
-  const DiaryBalancePracticeDayData({
-    required this.startDate,
-    required this.futureGoalKcal,
-  });
+  const new({required this.startDate, required this.futureGoalKcal});
 
   /// First official counting day.
   final DateTime startDate;
@@ -61,18 +55,15 @@ class DiaryBalancePracticeDayData {
 
 /// Adapter source that hides Calories feature types from diary widgets.
 class DiaryBalanceSource {
-  const DiaryBalanceSource._({
-    required CalorieWeekOverview weekOverview,
-    required CalorieWeekDayOverview selectedDayOverview,
-    required List<CalorieEntry> selectedDayEntries,
-    required BurnWeekRunState runState,
-  }) : _weekOverview = weekOverview,
-       _selectedDayOverview = selectedDayOverview,
-       _selectedDayEntries = selectedDayEntries,
-       _runState = runState;
+  const new _({
+    required this._weekOverview,
+    required this._selectedDayOverview,
+    required this._selectedDayEntries,
+    required this._runState,
+  });
 
   /// Creates a balance source from cached dashboard data.
-  factory DiaryBalanceSource.fromDashboardData(DiaryDayDashboardData data) {
+  factory fromDashboardData(DiaryDayDashboardData data) {
     return DiaryBalanceSource._(
       weekOverview: data.weekOverview,
       selectedDayOverview: data.weekOverview.days.last,
@@ -200,9 +191,7 @@ DiaryBalanceActions diaryBalanceActions(Ref ref) {
 /// Operations that bridge diary balance UI to application state.
 class DiaryBalanceActions {
   /// Creates diary balance actions.
-  const DiaryBalanceActions({
-    required void Function(DateTime selectedDay) refreshBalance,
-  }) : _refreshBalance = refreshBalance;
+  const new({required this._refreshBalance});
 
   final void Function(DateTime selectedDay) _refreshBalance;
 

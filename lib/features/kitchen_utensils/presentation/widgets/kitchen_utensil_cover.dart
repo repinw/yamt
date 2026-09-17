@@ -1,13 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
 /// Square cover for kitchen utensils.
 class KitchenUtensilCover extends StatelessWidget {
   /// Creates cover.
-  const KitchenUtensilCover({
+  const new({
     required this.label,
     required this.imageBytes,
     super.key,
@@ -69,7 +69,7 @@ class KitchenUtensilCover extends StatelessWidget {
 }
 
 class _KitchenUtensilCoverFallback extends StatelessWidget {
-  const _KitchenUtensilCoverFallback({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -84,10 +84,8 @@ class _KitchenUtensilCoverFallback extends StatelessWidget {
     return Center(
       child: Text(
         trimmed.substring(0, 1).toUpperCase(),
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: colors.primary,
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
       ),
     );
   }

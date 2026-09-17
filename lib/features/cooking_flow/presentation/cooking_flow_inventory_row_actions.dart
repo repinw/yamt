@@ -1,7 +1,7 @@
 // Internal split widgets are public only for sibling imports.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/features/inventory/presentation/constants/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CookingFlowInventoryRowActions extends StatelessWidget {
-  const CookingFlowInventoryRowActions({
+  const new({
     required this.selectedAction,
     required this.onAssignPressed,
     required this.onShoppingPressed,
@@ -55,7 +55,7 @@ class CookingFlowInventoryRowActions extends StatelessWidget {
 }
 
 class CookingFlowInventoryActionButton extends StatelessWidget {
-  const CookingFlowInventoryActionButton({
+  const new({
     required this.icon,
     required this.tooltip,
     required this.isActive,

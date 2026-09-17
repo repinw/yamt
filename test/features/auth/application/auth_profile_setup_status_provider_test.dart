@@ -11,7 +11,7 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 void main() {
   User buildUser(String uid) {

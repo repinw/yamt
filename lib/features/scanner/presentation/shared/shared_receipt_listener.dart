@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
@@ -14,11 +14,7 @@ const _startupDelay = Duration(seconds: 1);
 /// Widget wrapping the app to listen for incoming shared receipt files.
 class SharedReceiptListener extends ConsumerStatefulWidget {
   /// Creates a [SharedReceiptListener].
-  const SharedReceiptListener({
-    required this.child,
-    this.onReceiptSaved,
-    super.key,
-  });
+  const new({required this.child, this.onReceiptSaved, super.key});
 
   /// The child widget (typically the app router/navigator).
   final Widget child;

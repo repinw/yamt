@@ -45,12 +45,8 @@ OffProductSearchRepository offProductSearchRepository(Ref ref) {
 /// Defines http off product search repository.
 class HttpOffProductSearchRepository implements OffProductSearchRepository {
   /// The http off product search repository.
-  HttpOffProductSearchRepository({
-    required http.Client client,
-    required Uri searchUri,
-  }) : _client = client,
-       _searchUri = searchUri,
-       _responseParser = const OffProductSearchResponseParser();
+  new({required this._client, required this._searchUri})
+    : _responseParser = const OffProductSearchResponseParser();
 
   final http.Client _client;
   final Uri _searchUri;
@@ -195,7 +191,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
 
 class _UnavailableOffProductSearchRepository
     implements OffProductSearchRepository {
-  const _UnavailableOffProductSearchRepository();
+  const new();
 
   @override
   Future<List<OffProductSearchResult>> search({

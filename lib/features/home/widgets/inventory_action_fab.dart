@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/home/widgets/inventory_expanded_fab_actions.dart';
 import 'package:yamt/features/home/widgets/inventory_expanded_fab_menu.dart';
@@ -13,10 +13,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines inventory action fab.
 class InventoryActionFab extends ConsumerStatefulWidget {
   /// The inventory action fab for the shell Scaffold slot.
-  const InventoryActionFab({super.key}) : embedded = false;
+  const new({super.key}) : embedded = false;
 
   /// The inventory action fab for inline empty-state placement.
-  const InventoryActionFab.embedded({super.key}) : embedded = true;
+  const new embedded({super.key}) : embedded = true;
 
   /// Whether to render inside normal content instead of Scaffold FAB chrome.
   final bool embedded;

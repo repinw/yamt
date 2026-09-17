@@ -15,10 +15,7 @@ export 'package:yamt/features/cooking_flow/application/'
 /// User-selected inventory item for an ingredient row.
 class CookingFlowInventoryAssignmentSelection {
   /// Creates assignment selection.
-  const CookingFlowInventoryAssignmentSelection({
-    required this.itemId,
-    this.isAdditionalIngredient = false,
-  });
+  const new({required this.itemId, this.isAdditionalIngredient = false});
 
   /// Inventory item id.
   final String itemId;
@@ -54,7 +51,7 @@ enum CookingFlowInventoryConflictResolution {
 /// Intro row parsed for inventory assignment.
 class CookingFlowInventoryCheckRowData {
   /// Creates intro inventory row data.
-  const CookingFlowInventoryCheckRowData({
+  const new({
     required this.rawIngredient,
     required this.name,
     required this.amountLabel,
@@ -184,9 +181,8 @@ CookingFlowIntroConflictResolution? cookingFlowSessionConflictResolution(
   String value,
 ) {
   final trimmed = cookingFlowStripInventoryPackageCountPrefix(value);
-  final match = RegExp(
-    r'^(\d+(?:[.,]\d+)?)(?:\s*([a-zA-ZäöüÄÖÜß]+))?$',
-  ).firstMatch(trimmed);
+  final match = RegExp(r'^(\d+(?:[.,]\d+)?)(?:\s*([a-zA-ZäöüÄÖÜß]+))?$')
+      .firstMatch(trimmed);
   if (match == null) {
     return (amount: trimmed, unit: '');
   }

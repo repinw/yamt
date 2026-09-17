@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_picker_sheet.dart';
@@ -37,7 +37,7 @@ Future<InventoryItemRemovalChoice?> showInventoryItemRemoveDialog(
 }
 
 class _InventoryItemRemoveDialog extends StatelessWidget {
-  const _InventoryItemRemoveDialog({
+  const new({
     required this.itemName,
     required this.canReduceAmount,
     required this.useRootNavigator,
@@ -55,16 +55,12 @@ class _InventoryItemRemoveDialog extends StatelessWidget {
     return InventoryActionPickerSheet(
       title: l10n.inventoryItemRemoveDialogTitle,
       subtitle: l10n.inventoryItemRemoveDialogMessage(itemName),
-      onClose: () => Navigator.of(
-        context,
-        rootNavigator: useRootNavigator,
-      ).pop(),
+      onClose: () =>
+          Navigator.of(context, rootNavigator: useRootNavigator).pop(),
       footer: Center(
         child: TextButton(
-          onPressed: () => Navigator.of(
-            context,
-            rootNavigator: useRootNavigator,
-          ).pop(),
+          onPressed: () =>
+              Navigator.of(context, rootNavigator: useRootNavigator).pop(),
           child: Text(l10n.inventoryReceiptReviewCancelAction),
         ),
       ),
@@ -86,10 +82,8 @@ class _InventoryItemRemoveDialog extends StatelessWidget {
             subtitle: l10n.inventoryItemRemoveConsumeElsewhereSubtitle,
             foregroundColor: colors.primary,
             backgroundColor: colors.primaryContainer.withValues(alpha: 0.45),
-            onPressed: () => _close(
-              context,
-              InventoryItemRemovalChoice.consumedElsewhere,
-            ),
+            onPressed: () =>
+                _close(context, InventoryItemRemovalChoice.consumedElsewhere),
           ),
           const SizedBox(height: AppSpacing.sm),
         ],
@@ -99,10 +93,8 @@ class _InventoryItemRemoveDialog extends StatelessWidget {
           subtitle: l10n.inventoryItemRemoveDeleteSubtitle,
           foregroundColor: colors.onSurfaceVariant,
           backgroundColor: colors.surfaceContainerHigh,
-          onPressed: () => _close(
-            context,
-            InventoryItemRemovalChoice.deleteCompletely,
-          ),
+          onPressed: () =>
+              _close(context, InventoryItemRemovalChoice.deleteCompletely),
         ),
       ],
     );

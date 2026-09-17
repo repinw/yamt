@@ -51,7 +51,7 @@ DiaryIntroTrigger? diaryIntroTrigger(Ref ref) {
 @immutable
 class DiaryIntroTrigger {
   /// Creates a diary intro trigger.
-  const DiaryIntroTrigger({
+  const new({
     required this.preferences,
     required this.introData,
     required this.healthStatus,

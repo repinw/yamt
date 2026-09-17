@@ -8,7 +8,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 @immutable
 class DiaryIntroData {
   /// Creates intro data.
-  const DiaryIntroData({
+  const new({
     required this.goalMode,
     required this.maintenanceKcal,
     required this.dailyAdjustmentKcal,
@@ -19,7 +19,7 @@ class DiaryIntroData {
   });
 
   /// Creates intro data from current calorie settings.
-  factory DiaryIntroData.fromSettings(CalorieGoalSettings settings) {
+  factory fromSettings(CalorieGoalSettings settings) {
     final entry = settings.latestGoalEntry;
     final profile = entry?.calculatorProfile ?? settings.calculatorProfile;
     final targetKcal = entry?.dailyKcalGoal ?? settings.dailyKcalGoal;

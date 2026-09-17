@@ -27,11 +27,7 @@ abstract interface class CalorieProductCacheUserSession {
 class FirestoreCalorieProductCacheRepository
     implements CalorieProductCacheRepositoryContract {
   /// Creates an instance.
-  FirestoreCalorieProductCacheRepository({
-    required CalorieProductCacheUserSession session,
-    required FirebaseFirestore firestore,
-  }) : _session = session,
-       _firestore = firestore;
+  new({required this._session, required this._firestore});
 
   final CalorieProductCacheUserSession _session;
   final FirebaseFirestore _firestore;
@@ -264,8 +260,7 @@ CalorieProductCacheRepositoryContract calorieProductCacheRepository(Ref ref) {
 
 class _CurrentCalorieProductCacheUserSession
     implements CalorieProductCacheUserSession {
-  const _CurrentCalorieProductCacheUserSession({required String? currentUserId})
-    : _currentUserId = currentUserId;
+  const new({required this._currentUserId});
 
   final String? _currentUserId;
 
@@ -289,7 +284,7 @@ FirebaseFirestore? _resolveFirestore() {
 
 class _UnavailableCalorieProductCacheRepository
     implements CalorieProductCacheRepositoryContract {
-  const _UnavailableCalorieProductCacheRepository();
+  const new();
 
   @override
   Future<CalorieProductProfile?> readUserOverride(String barcode) async {

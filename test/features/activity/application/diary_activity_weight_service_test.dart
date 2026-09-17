@@ -105,7 +105,7 @@ const _deniedStatus = HealthConnectionStatus(
 );
 
 class _FakeHealthWeightService implements HealthWeightService {
-  _FakeHealthWeightService(this.samples);
+  new(this.samples);
 
   final List<HealthWeightSample> samples;
   int loadCount = 0;

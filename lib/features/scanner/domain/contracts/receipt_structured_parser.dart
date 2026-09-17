@@ -15,7 +15,5 @@ abstract interface class ReceiptStructuredParser {
 
   /// Parses a digital PDF document (e-receipt) directly into
   /// a structured [ScannedReceipt].
-  Future<ScannedReceipt> parsePdf({
-    required String pdfFilePath,
-  });
+  Future<ScannedReceipt> parsePdf({required String pdfFilePath});
 }

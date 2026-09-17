@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -9,7 +10,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_day_type_toggle.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _FakeCalorieGoalController extends CalorieGoalController {
-  _FakeCalorieGoalController(this.settings);
+  new(this.settings);
 
   final CalorieGoalSettings settings;
 
@@ -18,7 +19,7 @@ class _FakeCalorieGoalController extends CalorieGoalController {
 }
 
 class _FixedDiaryCalendarController extends DiaryCalendarController {
-  _FixedDiaryCalendarController(this.day);
+  new(this.day);
 
   final DateTime day;
 
@@ -48,7 +49,7 @@ void main() {
         ],
         child: const MaterialApp(
           locale: Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: Center(child: DiaryDayTypeToggle())),
         ),

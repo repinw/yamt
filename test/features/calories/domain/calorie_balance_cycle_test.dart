@@ -6,30 +6,27 @@ import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 
 void main() {
   group('resolveCalorieBalanceCycleStartDate', () {
-    test(
-      'returns the active cycle anchor date when an active goal exists',
-      () {
-        final settings =
-            CalorieGoalSettings.single(
-              dailyKcalGoal: 2100,
-              calculatorProfile: null,
-              effectiveDate: DateTime(2026, 4, 1, 8),
-            ).applyGoalChange(
-              changedAt: DateTime(2026, 4, 8, 9),
-              dailyKcalGoal: 2200,
-              calculatorProfile: null,
-              source: CalorieGoalSource.weeklyCheckIn,
-            );
+    test('returns the active cycle anchor date when an active goal exists', () {
+      final settings =
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2100,
+            calculatorProfile: null,
+            effectiveDate: DateTime(2026, 4, 1, 8),
+          ).applyGoalChange(
+            changedAt: DateTime(2026, 4, 8, 9),
+            dailyKcalGoal: 2200,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+          );
 
-        final startDate = resolveCalorieBalanceCycleStartDate(
-          settings: settings,
-          day: DateTime(2026, 4, 10, 14),
-          fallbackStartDate: DateTime(2026, 4, 4, 12),
-        );
+      final startDate = resolveCalorieBalanceCycleStartDate(
+        settings: settings,
+        day: DateTime(2026, 4, 10, 14),
+        fallbackStartDate: DateTime(2026, 4, 4, 12),
+      );
 
-        expect(startDate, DateTime(2026, 4));
-      },
-    );
+      expect(startDate, DateTime(2026, 4));
+    });
 
     test(
       'falls back to the normalized fallback start date when no goal exists',

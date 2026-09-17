@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
@@ -189,9 +189,8 @@ Future<void> _handleScannedExternalProduct(
       showEatImmediatelyOption: ctx.showEatImmediatelyOption,
       showActionSelector: false,
       initialInfoMessage: action == InventoryReceiptManualProductAction.eatNow
-          ? AppLocalizations.of(
-              ctx.context,
-            )!.inventoryManualAddEatNowRequiresNutrition
+          ? AppLocalizations.of(ctx.context)!
+                .inventoryManualAddEatNowRequiresNutrition
           : null,
       onSaved: ctx.onSaved,
       onClosePage: ctx.onClosePage,

@@ -23,7 +23,7 @@ const currentCalorieMathVersion = 3;
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieGoalSettings {
   /// The calorie goal settings.
-  const CalorieGoalSettings({
+  const new({
     required this.dailyKcalGoal,
     required this.calculatorProfile,
     required this.updatedAt,
@@ -44,12 +44,12 @@ class CalorieGoalSettings {
   });
 
   /// Creates a [CalorieGoalSettings] for from json.
-  factory CalorieGoalSettings.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$CalorieGoalSettingsFromJson(json);
   }
 
   /// Creates empty calorie goal settings.
-  const CalorieGoalSettings.empty()
+  const new empty()
     : dailyKcalGoal = null,
       calculatorProfile = null,
       calorieMathVersion = currentCalorieMathVersion,
@@ -69,7 +69,7 @@ class CalorieGoalSettings {
       pauseDayKeys = const <String>[];
 
   /// Creates a [CalorieGoalSettings] for single.
-  factory CalorieGoalSettings.single({
+  factory single({
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
     required DateTime effectiveDate,
@@ -91,11 +91,7 @@ class CalorieGoalSettings {
     final resolvedWeekdays =
         trainingWeekdays ??
         calculatorProfile?.trainingWeekdays ??
-        const <int>[
-          DateTime.monday,
-          DateTime.wednesday,
-          DateTime.friday,
-        ];
+        const <int>[DateTime.monday, DateTime.wednesday, DateTime.friday];
     final resolvedOffset =
         trainingDayKcalOffset ??
         calculatorProfile?.trainingDayKcalOffset ??

@@ -23,16 +23,13 @@ part 'calorie_debug_action_controller.g.dart';
 
 /// Result from exporting calorie debug dump.
 sealed class CalorieDebugDumpPrintResult {
-  const CalorieDebugDumpPrintResult();
+  const new();
 }
 
 /// Successful calorie debug dump export.
 class CalorieDebugDumpPrintSuccess extends CalorieDebugDumpPrintResult {
   /// Creates success result.
-  const CalorieDebugDumpPrintSuccess({
-    required this.rowCount,
-    this.filePath,
-  });
+  const new({required this.rowCount, this.filePath});
 
   /// Number of rows exported.
   final int rowCount;
@@ -44,25 +41,25 @@ class CalorieDebugDumpPrintSuccess extends CalorieDebugDumpPrintResult {
 /// User canceled calorie debug dump export.
 class CalorieDebugDumpPrintCanceled extends CalorieDebugDumpPrintResult {
   /// Creates canceled result.
-  const CalorieDebugDumpPrintCanceled();
+  const new();
 }
 
 /// Failed calorie debug dump export.
 class CalorieDebugDumpPrintFailure extends CalorieDebugDumpPrintResult {
   /// Creates failure result.
-  const CalorieDebugDumpPrintFailure();
+  const new();
 }
 
 /// Result from printing calorie settings debug dump.
 sealed class CalorieSettingsDebugDumpPrintResult {
-  const CalorieSettingsDebugDumpPrintResult();
+  const new();
 }
 
 /// Successful calorie settings debug dump print.
 class CalorieSettingsDebugDumpPrintSuccess
     extends CalorieSettingsDebugDumpPrintResult {
   /// Creates success result.
-  const CalorieSettingsDebugDumpPrintSuccess({required this.entryCount});
+  const new({required this.entryCount});
 
   /// Number of goal-history entries printed.
   final int entryCount;
@@ -72,26 +69,26 @@ class CalorieSettingsDebugDumpPrintSuccess
 class CalorieSettingsDebugDumpPrintFailure
     extends CalorieSettingsDebugDumpPrintResult {
   /// Creates failure result.
-  const CalorieSettingsDebugDumpPrintFailure();
+  const new();
 }
 
 /// Result from printing calorie weekly check-in debug dump.
 sealed class CalorieWeeklyCheckInDebugDumpPrintResult {
-  const CalorieWeeklyCheckInDebugDumpPrintResult();
+  const new();
 }
 
 /// Successful calorie weekly check-in debug dump print.
 class CalorieWeeklyCheckInDebugDumpPrintSuccess
     extends CalorieWeeklyCheckInDebugDumpPrintResult {
   /// Creates success result.
-  const CalorieWeeklyCheckInDebugDumpPrintSuccess();
+  const new();
 }
 
 /// Failed calorie weekly check-in debug dump print.
 class CalorieWeeklyCheckInDebugDumpPrintFailure
     extends CalorieWeeklyCheckInDebugDumpPrintResult {
   /// Creates failure result.
-  const CalorieWeeklyCheckInDebugDumpPrintFailure();
+  const new();
 }
 
 /// Handles calorie debug actions that need providers.
@@ -157,9 +154,8 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
   Future<CalorieSettingsDebugDumpPrintResult> printSettingsDebugDump() async {
     try {
       final settings = await ref.watch(calorieGoalControllerProvider.future);
-      final encoded = const JsonEncoder.withIndent(
-        '  ',
-      ).convert(_jsonDebugValue(settings.toJson()));
+      final encoded = const JsonEncoder.withIndent('  ')
+          .convert(_jsonDebugValue(settings.toJson()));
       _logCalorieSettingsDebugDump(
         'users/<uid>/calorie_settings/default\n$encoded',
       );
@@ -185,9 +181,8 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
     );
     try {
       final checkInData = await checkInDataFuture;
-      final encoded = const JsonEncoder.withIndent(
-        '  ',
-      ).convert(_weeklyCheckInDataDebugJson(checkInData));
+      final encoded = const JsonEncoder.withIndent('  ')
+          .convert(_weeklyCheckInDataDebugJson(checkInData));
       _logDebugDump(
         name: 'CalorieWeeklyCheckInDebugDump',
         dump: 'calorieWeeklyCheckInData\n$encoded',
@@ -318,9 +313,7 @@ Map<String, Object?>? _calculationDebugJson(
   };
 }
 
-Map<String, Object?> _windowDayDebugJson(
-  CalorieWeeklyCheckInWindowDay day,
-) {
+Map<String, Object?> _windowDayDebugJson(CalorieWeeklyCheckInWindowDay day) {
   return <String, Object?>{
     'day': diaryDayKey(day.day),
     'has_entries': day.hasEntries,
@@ -342,9 +335,6 @@ void _logDebugDump({required String name, required String dump}) {
     final end = offset + chunkLength > dump.length
         ? dump.length
         : offset + chunkLength;
-    developer.log(
-      dump.substring(offset, end),
-      name: name,
-    );
+    developer.log(dump.substring(offset, end), name: name);
   }
 }

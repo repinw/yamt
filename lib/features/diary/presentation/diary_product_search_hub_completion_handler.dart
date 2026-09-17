@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_entry_deleter.dart';
 import 'package:yamt/features/inventory/application/'
@@ -18,11 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class DiaryProductSearchHubCompletionHandler
     implements ProductSearchHubCompletionHandler {
   /// Creates a diary completion handler.
-  const DiaryProductSearchHubCompletionHandler({
-    required ProviderContainer container,
-    required InventoryManualProductEatCoordinator eatCoordinator,
-  }) : _container = container,
-       _eatCoordinator = eatCoordinator;
+  const new({required this._container, required this._eatCoordinator});
 
   final ProviderContainer _container;
   final InventoryManualProductEatCoordinator _eatCoordinator;

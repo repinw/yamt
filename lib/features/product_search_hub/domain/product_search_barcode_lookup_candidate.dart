@@ -20,7 +20,7 @@ enum InventoryBarcodeLookupCandidateSource {
 
 /// Defines inventory barcode lookup candidate.
 class InventoryBarcodeLookupCandidate {
-  const InventoryBarcodeLookupCandidate._({
+  const new _({
     required this.source,
     required this.barcode,
     required this.name,
@@ -39,9 +39,7 @@ class InventoryBarcodeLookupCandidate {
   });
 
   /// Creates a [InventoryBarcodeLookupCandidate] for from learned.
-  factory InventoryBarcodeLookupCandidate.fromLearned(
-    GlobalBarcodeCandidate candidate,
-  ) {
+  factory fromLearned(GlobalBarcodeCandidate candidate) {
     final item = candidate.globalFoodItem;
     return InventoryBarcodeLookupCandidate._(
       source: InventoryBarcodeLookupCandidateSource.learned,
@@ -62,9 +60,7 @@ class InventoryBarcodeLookupCandidate {
   }
 
   /// Creates a [InventoryBarcodeLookupCandidate] for from off product.
-  factory InventoryBarcodeLookupCandidate.fromOffProduct(
-    OffProductSearchResult product,
-  ) {
+  factory fromOffProduct(OffProductSearchResult product) {
     return InventoryBarcodeLookupCandidate._(
       source: InventoryBarcodeLookupCandidateSource.off,
       barcode: normalizeBarcode(product.code),
@@ -136,24 +132,26 @@ enum InventoryBarcodeCandidateAction {
 }
 
 /// Defines inventory barcode product selection callback typedef.
-typedef InventoryBarcodeProductSelectionCallback =
-    Future<bool> Function(
-      InventoryBarcodeLookupCandidate candidate,
-      String scannedBarcode,
-      InventoryBarcodeCandidateAction action,
-    );
+typedef InventoryBarcodeProductSelectionCallback = Future<bool> Function(
+  InventoryBarcodeLookupCandidate candidate,
+  String scannedBarcode,
+  InventoryBarcodeCandidateAction action,
+);
 
 /// Defines inventory barcode not found callback typedef.
-typedef InventoryBarcodeNotFoundCallback =
-    Future<bool> Function(String scannedBarcode);
+typedef InventoryBarcodeNotFoundCallback = Future<bool> Function(
+  String scannedBarcode,
+);
 
 /// Defines inventory barcode manual product callback typedef.
-typedef InventoryBarcodeManualProductCallback =
-    Future<bool> Function(String scannedBarcode);
+typedef InventoryBarcodeManualProductCallback = Future<bool> Function(
+  String scannedBarcode,
+);
 
 /// Defines inventory raw barcode scanned callback typedef.
-typedef InventoryBarcodeScanCallback =
-    Future<bool> Function(String scannedBarcode);
+typedef InventoryBarcodeScanCallback = Future<bool> Function(
+  String scannedBarcode,
+);
 
 /// Merge inventory barcode candidates.
 List<InventoryBarcodeLookupCandidate> mergeInventoryBarcodeCandidates({

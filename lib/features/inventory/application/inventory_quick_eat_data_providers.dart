@@ -11,10 +11,7 @@ part 'inventory_quick_eat_data_providers.g.dart';
 @immutable
 class InventoryQuickEatInventoryData {
   /// Creates quick-eat inventory data.
-  const InventoryQuickEatInventoryData({
-    required this.items,
-    required this.meals,
-  });
+  const new({required this.items, required this.meals});
 
   /// All inventory items available to the caller.
   final List<InventoryItem> items;

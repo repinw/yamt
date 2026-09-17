@@ -42,29 +42,14 @@ DiaryWeightActions diaryWeightActions(Ref ref) {
 /// Save/delete behavior for diary weight entries.
 class DiaryWeightActions {
   /// Creates diary weight actions.
-  const DiaryWeightActions({
-    required Future<bool> Function({
-      required DateTime day,
-      required double weightKg,
-    })
-    saveManualWeight,
-    required Future<bool> Function(DateTime day) deleteManualWeight,
-    required Future<bool> Function(HealthWeightSample sample)
-    deleteHealthWeightSample,
-    required Future<void> Function({
-      required DateTime selectedDay,
-      DateTime? day,
-    })
-    refreshDependents,
-  }) : _saveManualWeight = saveManualWeight,
-       _deleteManualWeight = deleteManualWeight,
-       _deleteHealthWeightSample = deleteHealthWeightSample,
-       _refreshDependents = refreshDependents;
+  const new({
+    required this._saveManualWeight,
+    required this._deleteManualWeight,
+    required this._deleteHealthWeightSample,
+    required this._refreshDependents,
+  });
 
-  final Future<bool> Function({
-    required DateTime day,
-    required double weightKg,
-  })
+  final Future<bool> Function({required DateTime day, required double weightKg})
   _saveManualWeight;
   final Future<bool> Function(DateTime day) _deleteManualWeight;
   final Future<bool> Function(HealthWeightSample sample)

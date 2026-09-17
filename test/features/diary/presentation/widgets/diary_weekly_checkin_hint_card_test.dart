@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
@@ -41,9 +42,7 @@ void main() {
         child: DiaryWeeklyCheckInHintCard(
           checkInData: _checkInData(
             pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
-            days: [
-              _windowDay(day: selectedDay),
-            ],
+            days: [_windowDay(day: selectedDay)],
           ),
           selectedDay: selectedDay,
           selectedDayHasEntries: false,
@@ -79,13 +78,8 @@ void main() {
             pendingWeeklyCheckIn: _pendingWeeklyCheckIn(),
             blockedReason:
                 CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
-            missingWeightDays: [
-              DateTime(2026, 4, 6),
-              DateTime(2026, 4, 7),
-            ],
-            days: [
-              _windowDay(day: selectedDay, isSkippedIntakeDay: true),
-            ],
+            missingWeightDays: [DateTime(2026, 4, 6), DateTime(2026, 4, 7)],
+            days: [_windowDay(day: selectedDay, isSkippedIntakeDay: true)],
           ),
           selectedDay: selectedDay,
           selectedDayHasEntries: true,
@@ -127,10 +121,7 @@ void main() {
         ),
       );
 
-      expect(
-        find.byKey(DiaryWeeklyCheckInCardKeys.hintCard),
-        findsOneWidget,
-      );
+      expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
       expect(
         find.byKey(DiaryWeeklyCheckInCardKeys.continueButton),
         findsNothing,
@@ -198,7 +189,7 @@ DiaryWeeklyCheckInData _checkInData({
 }
 
 class _App extends StatelessWidget {
-  const _App({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -206,7 +197,7 @@ class _App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: child),
     );

@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Responsive metric value text that can style the unit separately.
 class DiaryBalanceMetricValueText extends StatelessWidget {
   /// Creates metric value text.
-  const DiaryBalanceMetricValueText({
+  const new({
     required this.value,
     required this.valueColor,
     required this.unitColor,

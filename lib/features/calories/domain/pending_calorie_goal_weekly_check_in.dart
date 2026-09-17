@@ -10,7 +10,7 @@ const _keepValue = Object();
 @JsonSerializable(fieldRename: FieldRename.snake)
 class PendingCalorieGoalWeeklyCheckIn {
   /// The pending calorie goal weekly check in.
-  const PendingCalorieGoalWeeklyCheckIn({
+  const new({
     required this.windowStartDate,
     required this.windowEndDate,
     required this.dueDate,
@@ -18,7 +18,7 @@ class PendingCalorieGoalWeeklyCheckIn {
   });
 
   /// Creates a [PendingCalorieGoalWeeklyCheckIn] from json.
-  factory PendingCalorieGoalWeeklyCheckIn.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$PendingCalorieGoalWeeklyCheckInFromJson(json);
 
   /// The window start date.

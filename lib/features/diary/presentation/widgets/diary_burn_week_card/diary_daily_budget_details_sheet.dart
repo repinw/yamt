@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
@@ -20,10 +20,8 @@ Future<void> showDiaryDailyBudgetDetailsSheet({
     useRootNavigator: useRootNavigator,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) => DiaryDailyBudgetDetailsSheet(
-      data: data,
-      numberFormat: numberFormat,
-    ),
+    builder: (_) =>
+        DiaryDailyBudgetDetailsSheet(data: data, numberFormat: numberFormat),
   );
 }
 
@@ -31,11 +29,7 @@ Future<void> showDiaryDailyBudgetDetailsSheet({
 /// and the carryover accumulated from previous days.
 class DiaryDailyBudgetDetailsSheet extends StatelessWidget {
   /// Creates the daily budget details sheet.
-  const DiaryDailyBudgetDetailsSheet({
-    required this.data,
-    required this.numberFormat,
-    super.key,
-  });
+  const new({required this.data, required this.numberFormat, super.key});
 
   /// The budget details data to render.
   final DiaryDailyBudgetDetailsData data;

@@ -10,7 +10,7 @@ const String _shoppingListCollection = 'shopping_list_items';
 /// Defines shopping list item document.
 class ShoppingListItemDocument {
   /// The shopping list item document.
-  const ShoppingListItemDocument({required this.id, required this.data});
+  const new({required this.id, required this.data});
 
   /// The id.
   final String id;
@@ -37,8 +37,7 @@ abstract interface class ShoppingListItemStore {
 /// Defines firestore shopping list item store.
 class FirestoreShoppingListItemStore implements ShoppingListItemStore {
   /// The firestore shopping list item store.
-  const FirestoreShoppingListItemStore({required FirebaseFirestore firestore})
-    : _firestore = firestore;
+  const new({required this._firestore});
 
   final FirebaseFirestore _firestore;
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -9,7 +9,7 @@ const _productSearchHubActionHeight = 88.0;
 /// Quick actions shown above product search.
 class ProductSearchHubActionGrid extends StatelessWidget {
   /// Creates product search hub quick actions.
-  const ProductSearchHubActionGrid({
+  const new({
     required this.showDiarySourceActions,
     super.key,
     this.onBarcodePressed,
@@ -111,7 +111,7 @@ class ProductSearchHubActionGrid extends StatelessWidget {
 }
 
 class _ProductSearchHubActionButton extends StatelessWidget {
-  const _ProductSearchHubActionButton({
+  const new({
     required this.icon,
     required this.label,
     required this.width,

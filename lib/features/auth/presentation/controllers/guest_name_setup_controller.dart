@@ -23,9 +23,7 @@ bool canCancelGuestSetup(Ref ref) {
 /// Defines guest name setup form defaults.
 class GuestNameSetupFormDefaults {
   /// The guest name setup form defaults.
-  const GuestNameSetupFormDefaults({
-    required this.prefilledName,
-  });
+  const new({required this.prefilledName});
 
   /// The prefilled name.
   final String? prefilledName;
@@ -42,9 +40,7 @@ class GuestNameSetupController extends _$GuestNameSetupController {
     final currentUser = _currentUser();
 
     if (currentUser == null || currentUser.isAnonymous) {
-      return const GuestNameSetupFormDefaults(
-        prefilledName: null,
-      );
+      return const GuestNameSetupFormDefaults(prefilledName: null);
     }
 
     final prefilledName = currentUser.displayName?.trim();

@@ -379,9 +379,9 @@ void main() {
   test('moves to success after finalize succeeds', () async {
     final container = _container();
     final wizard = container.read(cookingFlowWizardControllerProvider.notifier);
-    final finalizeController =
-        container.read(cookingFlowControllerProvider.notifier)
-            as _SuccessCookingFlowController;
+    final finalizeController = container.read(
+      cookingFlowControllerProvider.notifier,
+    ) as _SuccessCookingFlowController;
 
     wizard
       ..addSummaryIngredient(
@@ -518,7 +518,7 @@ class _SuccessCookingFlowController extends CookingFlowController {
 
 class _FakeCookingFlowSessionLocalStore
     implements CookingFlowSessionLocalStore {
-  _FakeCookingFlowSessionLocalStore({this.session});
+  new({this.session});
 
   CookingFlowSession? session;
 

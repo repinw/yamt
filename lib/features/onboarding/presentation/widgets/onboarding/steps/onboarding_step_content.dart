@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared scrollable content shell for calorie-goal onboarding steps.
 class OnboardingStepContent extends StatelessWidget {
   /// Creates an onboarding step with the standard title and subtitle header.
-  const OnboardingStepContent({
+  const new({
     required this.title,
     required this.subtitle,
     required this.children,

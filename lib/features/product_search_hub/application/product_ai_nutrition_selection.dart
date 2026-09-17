@@ -4,7 +4,7 @@ import 'package:yamt/features/product_search_hub/domain/product_ai_search_models
 /// User-adjusted nutrition selection for an AI product draft.
 class ProductAiNutritionSelection {
   /// Creates a selection.
-  const ProductAiNutritionSelection({
+  const new({
     required this.draft,
     required this.weightGrams,
     required this.weightLabel,

@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions_menu.dart';
@@ -19,7 +19,7 @@ const double _diaryTopChromeVerticalPadding = 28;
 /// Home-shell top chrome for the diary tab: a day navigator pinned to the top.
 class DiaryHomeShellTopChrome extends StatelessWidget {
   /// Creates diary top chrome.
-  const DiaryHomeShellTopChrome({this.overlay, super.key});
+  const new({this.overlay, super.key});
 
   /// Painted directly below the bar and moving with it, e.g. during the
   /// overscroll stretch. Not hit-testable.
@@ -27,9 +27,8 @@ class DiaryHomeShellTopChrome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scaledLabelHeight = MediaQuery.textScalerOf(
-      context,
-    ).scale(_diaryTopChromeLabelLineHeight);
+    final scaledLabelHeight = MediaQuery.textScalerOf(context)
+        .scale(_diaryTopChromeLabelLineHeight);
     final height = math.max(
       _diaryTopChromeMinHeight,
       scaledLabelHeight + _diaryTopChromeVerticalPadding,
@@ -46,11 +45,7 @@ class DiaryHomeShellTopChrome extends StatelessWidget {
 }
 
 class _DiaryPinnedTopBarDelegate extends SliverPersistentHeaderDelegate {
-  const _DiaryPinnedTopBarDelegate({
-    required this.height,
-    required this.child,
-    required this.overlay,
-  });
+  const new({required this.height, required this.child, required this.overlay});
 
   final double height;
   final Widget child;
@@ -96,7 +91,7 @@ class _DiaryPinnedTopBarDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class _DiaryTopBar extends ConsumerWidget {
-  const _DiaryTopBar({required this.height});
+  const new({required this.height});
 
   final double height;
 

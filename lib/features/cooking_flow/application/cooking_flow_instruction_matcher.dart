@@ -24,9 +24,7 @@ List<CookingFlowInstructionSegment> buildInstructionSegments({
   }
 
   final sortedReferences =
-      List<CookingIngredientReference>.from(
-        ingredientReferences,
-      )..sort(
+      List<CookingIngredientReference>.from(ingredientReferences)..sort(
         (a, b) => b.longestMatchTextLength.compareTo(a.longestMatchTextLength),
       );
 
@@ -208,9 +206,7 @@ List<CookingFlowInstructionSegment> _assembleSegments({
         ),
       );
     }
-    segments.add(
-      CookingFlowInstructionSegment(match.label, isHighlight: true),
-    );
+    segments.add(CookingFlowInstructionSegment(match.label, isHighlight: true));
     cursor = match.end;
   }
   if (cursor < instruction.length) {

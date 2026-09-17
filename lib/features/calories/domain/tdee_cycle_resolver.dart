@@ -27,7 +27,10 @@ abstract final class TdeeCycleResolver {
         goalSpeedKgPerWeek: settings.calculatorProfile?.goalSpeedKgPerWeek,
         initialGoalKcal: settings.dailyKcalGoal,
       );
-      return [defaultCycle, _buildAllGoalsCycle([defaultCycle])];
+      return [
+        defaultCycle,
+        _buildAllGoalsCycle([defaultCycle]),
+      ];
     }
 
     final cycles = <TdeeAnalyticsGoalCycle>[];

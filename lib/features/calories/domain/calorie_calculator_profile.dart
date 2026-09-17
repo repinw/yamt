@@ -10,10 +10,9 @@ enum CalorieCalculatorSex {
   male('male'),
 
   /// Female.
-  female('female')
-  ;
+  female('female');
 
-  const CalorieCalculatorSex(this.jsonValue);
+  new(this.jsonValue);
 
   /// The json value.
   final String jsonValue;
@@ -29,10 +28,9 @@ enum CalorieGoalMode {
   maintain('maintain'),
 
   /// Gain.
-  gain('gain')
-  ;
+  gain('gain');
 
-  const CalorieGoalMode(this.jsonValue);
+  new(this.jsonValue);
 
   /// The json value.
   final String jsonValue;
@@ -42,7 +40,7 @@ enum CalorieGoalMode {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CalorieCalculatorProfile {
   /// The calorie calculator profile.
-  const CalorieCalculatorProfile({
+  const new({
     required this.sex,
     required this.weightKg,
     required this.heightCm,
@@ -60,12 +58,12 @@ class CalorieCalculatorProfile {
   });
 
   /// Creates a [CalorieCalculatorProfile] for from json.
-  factory CalorieCalculatorProfile.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$CalorieCalculatorProfileFromJson(json);
   }
 
   /// Creates a [CalorieCalculatorProfile] for defaults.
-  const CalorieCalculatorProfile.defaults()
+  const new defaults()
     : sex = CalorieCalculatorSex.male,
       weightKg = 80,
       heightCm = 180,

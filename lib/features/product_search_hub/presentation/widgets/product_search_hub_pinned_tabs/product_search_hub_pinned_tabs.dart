@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_scroll_hint_handle/'
@@ -11,7 +11,7 @@ const _productSearchHubPinnedTabsExtent = 72.0;
 /// Pinned tab header with a centered scroll affordance above the tabs.
 class ProductSearchHubPinnedTabs extends StatelessWidget {
   /// Creates a pinned product search hub tab header.
-  const ProductSearchHubPinnedTabs({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +26,7 @@ class ProductSearchHubPinnedTabs extends StatelessWidget {
 
 class _ProductSearchHubPinnedTabsDelegate
     extends SliverPersistentHeaderDelegate {
-  const _ProductSearchHubPinnedTabsDelegate({
-    required this.backgroundColor,
-  });
+  const new({required this.backgroundColor});
 
   final Color backgroundColor;
 

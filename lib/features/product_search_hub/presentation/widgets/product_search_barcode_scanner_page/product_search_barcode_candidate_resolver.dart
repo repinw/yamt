@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'composite_product_search_adapter.dart';
@@ -22,13 +22,11 @@ enum InventoryBarcodeCandidateSelectionKind {
 /// Selected item from the barcode candidate picker bottom sheet.
 class InventoryBarcodeCandidateSelection {
   /// Selection of a concrete product candidate.
-  const InventoryBarcodeCandidateSelection.candidate({
-    required this.candidate,
-    required this.action,
-  }) : kind = InventoryBarcodeCandidateSelectionKind.candidate;
+  const new candidate({required this.candidate, required this.action})
+    : kind = InventoryBarcodeCandidateSelectionKind.candidate;
 
   /// Selection of manual product creation.
-  const InventoryBarcodeCandidateSelection.manual()
+  const new manual()
     : kind = InventoryBarcodeCandidateSelectionKind.manual,
       candidate = null,
       action = null;
@@ -52,9 +50,7 @@ resolveInventoryBarcodeCandidates({
 }) {
   return ref
       .read(productSearchGatewayProvider)
-      .resolveBarcodeCandidates(
-        barcode: barcode,
-      );
+      .resolveBarcodeCandidates(barcode: barcode);
 }
 
 /// Displays the candidate picker sheet and returns user's selection.

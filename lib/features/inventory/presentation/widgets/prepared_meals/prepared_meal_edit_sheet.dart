@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
@@ -23,7 +23,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines prepared meal edit sheet result.
 class PreparedMealEditSheetResult {
   /// The prepared meal edit sheet result.
-  const PreparedMealEditSheetResult({
+  const new({
     required this.name,
     required this.imageChanged,
     required this.imageBytes,
@@ -94,7 +94,7 @@ Future<PreparedMealEditSheetResult?> showPreparedMealEditSheet({
 /// Defines prepared meal edit sheet.
 class PreparedMealEditSheet extends ConsumerStatefulWidget {
   /// The prepared meal edit sheet.
-  const PreparedMealEditSheet({
+  const new({
     required this.meal,
     required this.inventoryItems,
     super.key,
@@ -165,9 +165,8 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
       children: [
         Text(
           l10n.preparedMealEditTitle,
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.titleLarge
+              ?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: AppSpacing.md),
         PreparedMealNameField(
@@ -198,17 +197,13 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
         const SizedBox(height: AppSpacing.lg),
         Text(
           l10n.preparedMealIngredientsTitle,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         if (_drafts.isEmpty) _PreparedMealNoIngredientsMessage(l10n: l10n),
         ..._drafts.map(
-          (draft) => _buildDraftCard(
-            draft,
-            enabled: !isContentEditingLocked,
-          ),
+          (draft) => _buildDraftCard(draft, enabled: !isContentEditingLocked),
         ),
         SizedBox(
           width: double.infinity,
@@ -501,7 +496,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
 }
 
 class _PreparedMealEditItemEditorCard extends StatelessWidget {
-  const _PreparedMealEditItemEditorCard({
+  const new({
     required this.draft,
     required this.enabled,
     required this.onRemove,
@@ -523,9 +518,7 @@ class _PreparedMealEditItemEditorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: colors.outlineVariant,
-        ),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -548,9 +541,8 @@ class _PreparedMealEditItemEditorCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Text(
                 hintText,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
               ),
               const SizedBox(height: AppSpacing.sm),
               _ManualNutritionField(
@@ -596,10 +588,7 @@ class _PreparedMealEditItemEditorCard extends StatelessWidget {
 }
 
 class _PreparedMealEditItemHeader extends StatelessWidget {
-  const _PreparedMealEditItemHeader({
-    required this.draft,
-    required this.onRemove,
-  });
+  const new({required this.draft, required this.onRemove});
 
   final _PreparedMealEditItemDraft draft;
   final VoidCallback? onRemove;
@@ -617,17 +606,15 @@ class _PreparedMealEditItemHeader extends StatelessWidget {
             children: [
               Text(
                 draft.name,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               if ((draft.brand ?? '').trim().isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   draft.brand!.trim(),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: colors.onSurfaceVariant),
                 ),
               ],
             ],
@@ -645,7 +632,7 @@ class _PreparedMealEditItemHeader extends StatelessWidget {
 }
 
 class _ManualNutritionField extends StatelessWidget {
-  const _ManualNutritionField({
+  const new({
     required this.controller,
     required this.label,
     required this.enabled,
@@ -678,7 +665,7 @@ class _ManualNutritionField extends StatelessWidget {
 }
 
 class _PreparedMealNoIngredientsMessage extends StatelessWidget {
-  const _PreparedMealNoIngredientsMessage({required this.l10n});
+  const new({required this.l10n});
 
   final AppLocalizations l10n;
 
@@ -690,16 +677,15 @@ class _PreparedMealNoIngredientsMessage extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Text(
         l10n.preparedMealEmptyIngredientsMessage,
-        style: Theme.of(
-          context,
-        ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+        style: Theme.of(context).textTheme.bodyMedium
+            ?.copyWith(color: colors.onSurfaceVariant),
       ),
     );
   }
 }
 
 class _PreparedMealEditItemDraft {
-  _PreparedMealEditItemDraft.existing({
+  new existing({
     required PreparedMealComponent component,
     required int usedAmount,
     required this.maxAmount,
@@ -708,15 +694,13 @@ class _PreparedMealEditItemDraft {
        brand = component.brand,
        unit = component.usedUnit,
        inventoryItem = null,
-       amountController = TextEditingController(
-         text: usedAmount.toString(),
-       ),
+       amountController = TextEditingController(text: usedAmount.toString()),
        kcalController = TextEditingController(),
        proteinController = TextEditingController(),
        carbsController = TextEditingController(),
        fatController = TextEditingController();
 
-  _PreparedMealEditItemDraft.inventory({
+  new inventory({
     required InventoryItem item,
     required int usedAmount,
     required this.maxAmount,
@@ -726,9 +710,7 @@ class _PreparedMealEditItemDraft {
        brand = item.brand,
        unit = _usedUnitForItem(item),
        inventoryItem = item,
-       amountController = TextEditingController(
-         text: usedAmount.toString(),
-       ),
+       amountController = TextEditingController(text: usedAmount.toString()),
        kcalController = TextEditingController(
          text: _nutritionText(manualNutrition?.per100Kcal),
        ),

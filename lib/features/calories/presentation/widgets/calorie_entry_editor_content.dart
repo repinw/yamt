@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -29,7 +29,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Stateful editor content used by calorie entry route.
 class CalorieEntryEditorContent extends ConsumerStatefulWidget {
   /// Creates editor content.
-  const CalorieEntryEditorContent({
+  const new({
     required this.user,
     this.entryId,
     this.prefilledProfile,

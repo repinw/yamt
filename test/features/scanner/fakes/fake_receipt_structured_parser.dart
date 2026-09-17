@@ -45,17 +45,13 @@ class FakeReceiptStructuredParser implements ReceiptStructuredParser {
   }
 
   @override
-  Future<ScannedReceipt> parsePdf({
-    required String pdfFilePath,
-  }) async {
+  Future<ScannedReceipt> parsePdf({required String pdfFilePath}) async {
     parsedPdfPathsHistory.add(pdfFilePath);
 
     if (shouldFail) {
       throw Exception(failureMessage);
     }
 
-    return nextReceipt.copyWith(
-      sourceFilePaths: <String>[pdfFilePath],
-    );
+    return nextReceipt.copyWith(sourceFilePaths: <String>[pdfFilePath]);
   }
 }

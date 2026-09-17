@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_product_menu.dart';
@@ -9,7 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Reusable favorites and scheduled entries remain available after clearing.
 class ShoppingListSavedProducts extends ConsumerWidget {
   /// Creates the saved products section.
-  const ShoppingListSavedProducts({required this.items, super.key});
+  const new({required this.items, super.key});
 
   /// Saved products supplied by the presentation state.
   final List<ShoppingListItem> items;
@@ -60,9 +60,8 @@ class ShoppingListSavedProducts extends ConsumerWidget {
         ),
       if (item.nextDueDate != null && item.repeatEveryDays > 0)
         l10n.shoppingListNextDue(
-          DateFormat.yMd(
-            Localizations.localeOf(context).toLanguageTag(),
-          ).format(item.nextDueDate!),
+          DateFormat.yMd(Localizations.localeOf(context).toLanguageTag())
+              .format(item.nextDueDate!),
         ),
       if (item.isFavorite && item.repeatEveryDays == 0)
         l10n.shoppingListFavorite,

@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 /// Parses OFF search responses from JSON or legacy text payloads.
 class OffProductSearchResponseParser {
   /// Creates an OFF product search response parser.
-  const OffProductSearchResponseParser({
+  const new({
     this.textPayloadParser = const OffProductSearchTextPayloadParser(),
     this.packageWeightResolver = const OffProductSearchPackageWeightResolver(),
   });

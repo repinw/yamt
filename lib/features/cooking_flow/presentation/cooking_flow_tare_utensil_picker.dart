@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Picker for applying saved kitchen utensils as cookflow tare.
 class CookingFlowTareUtensilPicker extends ConsumerWidget {
   /// Creates picker.
-  const CookingFlowTareUtensilPicker({
+  const new({
     required this.selectedTaraWeightGrams,
     required this.selectedUtensilId,
     required this.onSelected,
@@ -80,10 +80,7 @@ class CookingFlowTareUtensilPicker extends ConsumerWidget {
 }
 
 class _CookingFlowTareUtensilHeader extends StatelessWidget {
-  const _CookingFlowTareUtensilHeader({
-    required this.title,
-    required this.onOpenKitchenUtensilsPressed,
-  });
+  const new({required this.title, required this.onOpenKitchenUtensilsPressed});
 
   final String title;
   final VoidCallback onOpenKitchenUtensilsPressed;
@@ -96,9 +93,8 @@ class _CookingFlowTareUtensilHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
         ),
         TextButton.icon(
@@ -112,9 +108,7 @@ class _CookingFlowTareUtensilHeader extends StatelessWidget {
 }
 
 class _CookingFlowTareUtensilEmptyState extends StatelessWidget {
-  const _CookingFlowTareUtensilEmptyState({
-    required this.onOpenKitchenUtensilsPressed,
-  });
+  const new({required this.onOpenKitchenUtensilsPressed});
 
   final VoidCallback onOpenKitchenUtensilsPressed;
 
@@ -137,9 +131,8 @@ class _CookingFlowTareUtensilEmptyState extends StatelessWidget {
             Expanded(
               child: Text(
                 l10n.kitchenUtensilsEmptyState,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: colors.onSurfaceVariant),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -156,7 +149,7 @@ class _CookingFlowTareUtensilEmptyState extends StatelessWidget {
 }
 
 class _CookingFlowTareUtensilList extends StatelessWidget {
-  const _CookingFlowTareUtensilList({
+  const new({
     required this.utensils,
     required this.selectedTaraWeightGrams,
     required this.selectedUtensilId,
@@ -191,7 +184,7 @@ class _CookingFlowTareUtensilList extends StatelessWidget {
 }
 
 class _CookingFlowTareUtensilTile extends ConsumerWidget {
-  const _CookingFlowTareUtensilTile({
+  const new({
     required this.utensil,
     required this.isSelected,
     required this.onSelected,
@@ -246,16 +239,14 @@ class _CookingFlowTareUtensilTile extends ConsumerWidget {
                         displayName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       Text(
                         weightLabel,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: colors.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -272,7 +263,7 @@ class _CookingFlowTareUtensilTile extends ConsumerWidget {
 }
 
 class _CookingFlowTareUtensilLoading extends StatelessWidget {
-  const _CookingFlowTareUtensilLoading();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -288,10 +279,7 @@ class _CookingFlowTareUtensilLoading extends StatelessWidget {
 }
 
 class _CookingFlowTareUtensilLoadError extends StatelessWidget {
-  const _CookingFlowTareUtensilLoadError({
-    required this.message,
-    required this.onRetryPressed,
-  });
+  const new({required this.message, required this.onRetryPressed});
 
   final String message;
   final VoidCallback onRetryPressed;

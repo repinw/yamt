@@ -24,7 +24,7 @@ enum ReceiptItemStatus {
 @freezed
 abstract class ReceiptLineItem with _$ReceiptLineItem {
   /// Creates an instance of [ReceiptLineItem].
-  const factory ReceiptLineItem({
+  const factory({
     /// Unique ID of this line within the receipt.
     required String id,
 
@@ -71,7 +71,7 @@ abstract class ReceiptLineItem with _$ReceiptLineItem {
     @Default(<ProductCandidate>[]) List<ProductCandidate> candidates,
   }) = _ReceiptLineItem;
 
-  const ReceiptLineItem._();
+  const new _();
 
   /// Actually paid price for this item.
   ///
@@ -112,9 +112,6 @@ abstract class ReceiptLineItem with _$ReceiptLineItem {
 
   /// Clears the product association and resets status to unmatched.
   ReceiptLineItem clearProduct() {
-    return copyWith(
-      matchedProduct: null,
-      status: ReceiptItemStatus.unmatched,
-    );
+    return copyWith(matchedProduct: null, status: ReceiptItemStatus.unmatched);
   }
 }

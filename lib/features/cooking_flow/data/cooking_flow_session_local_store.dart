@@ -32,7 +32,7 @@ Future<CookingFlowSession?> cookingFlowSessionSnapshot(Ref ref) {
 /// Reactive session access used by cookflow UI.
 class CookingFlowSessionCoordinator {
   /// Creates coordinator.
-  const CookingFlowSessionCoordinator(this._ref);
+  const new(this._ref);
 
   final Ref _ref;
 
@@ -45,9 +45,7 @@ class CookingFlowSessionCoordinator {
   Future<bool> save(CookingFlowSession session) async {
     final saved = await _ref
         .read(cookingFlowSessionLocalStoreProvider)
-        .save(
-          session,
-        );
+        .save(session);
     if (saved) {
       _refreshSnapshot();
     }
@@ -83,10 +81,10 @@ CookingFlowSessionCoordinator cookingFlowSessionCoordinator(Ref ref) {
 class AppPreferencesCookingFlowSessionLocalStore
     implements CookingFlowSessionLocalStore {
   /// Creates local store.
-  AppPreferencesCookingFlowSessionLocalStore({
-    required AppPreferences preferences,
+  new({
+    required this._preferences,
     this.storageKey = cookingFlowSessionPreferenceKey,
-  }) : _preferences = preferences;
+  });
 
   final AppPreferences _preferences;
 

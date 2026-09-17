@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/presentation/widgets/product_candidate_thumbnail.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// List displaying candidate products suggested for a receipt line item.
 class ReceiptItemCandidatesList extends StatelessWidget {
   /// Creates a [ReceiptItemCandidatesList].
-  const ReceiptItemCandidatesList({
+  const new({
     required this.candidates,
     required this.onSelectCandidate,
     super.key,

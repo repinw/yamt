@@ -79,29 +79,24 @@ void main() {
   });
 
   test('serving suggestion global query has matching composite index', () {
-    final rawIndexes =
-        jsonDecode(
-              File('firestore.indexes.json').readAsStringSync(),
-            )
-            as Map<String, dynamic>;
+    final rawIndexes = jsonDecode(
+      File('firestore.indexes.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
     final indexes = rawIndexes['indexes'] as List<dynamic>;
 
-    final servingIndex = indexes.cast<Map<String, dynamic>>().singleWhere(
-      (index) {
-        return index['collectionGroup'] == 'global_food_item_serving_sizes';
-      },
-    );
+    final servingIndex = indexes.cast<Map<String, dynamic>>().singleWhere((
+      index,
+    ) {
+      return index['collectionGroup'] == 'global_food_item_serving_sizes';
+    });
 
     expect(servingIndex['queryScope'], 'COLLECTION');
-    expect(
-      servingIndex['fields'],
-      <Map<String, String>>[
-        {'fieldPath': 'item_key', 'order': 'ASCENDING'},
-        {'fieldPath': 'unique_user_count', 'order': 'DESCENDING'},
-        {'fieldPath': 'selection_count', 'order': 'DESCENDING'},
-        {'fieldPath': 'updated_at', 'order': 'DESCENDING'},
-      ],
-    );
+    expect(servingIndex['fields'], <Map<String, String>>[
+      {'fieldPath': 'item_key', 'order': 'ASCENDING'},
+      {'fieldPath': 'unique_user_count', 'order': 'DESCENDING'},
+      {'fieldPath': 'selection_count', 'order': 'DESCENDING'},
+      {'fieldPath': 'updated_at', 'order': 'DESCENDING'},
+    ]);
   });
 }
 

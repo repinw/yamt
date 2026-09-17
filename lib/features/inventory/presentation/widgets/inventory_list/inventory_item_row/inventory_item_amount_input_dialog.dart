@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 /// Defines inventory item amount input dialog.
 class InventoryItemAmountInputDialog extends StatefulWidget {
   /// The inventory item amount input dialog.
-  const InventoryItemAmountInputDialog({
+  const new({
     required this.title,
     required this.confirmLabel,
     required this.cancelLabel,

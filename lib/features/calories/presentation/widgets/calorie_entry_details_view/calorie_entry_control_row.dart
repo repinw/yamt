@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -12,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Compact row for editing the logged day and meal type.
 class CalorieEntryControlRow extends StatelessWidget {
   /// Creates the calorie entry detail control row.
-  const CalorieEntryControlRow({
+  const new({
     required this.isSaving,
     required this.selectedMealType,
     required this.selectedLoggedAt,

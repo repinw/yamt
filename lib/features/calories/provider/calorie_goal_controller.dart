@@ -33,8 +33,7 @@ typedef LearnedTdeeGoalSaveResult = ({bool saved, bool goalChanged});
 /// Defines calorie goal controller.
 @riverpod
 class CalorieGoalController extends _$CalorieGoalController {
-  StreamSubscription<CalorieGoalSettings>?
-  _settingsSubscription; // ignore: cancel_subscriptions, because: Riverpod disposes it via ref.onDispose(_disposeSubscription).
+  StreamSubscription<CalorieGoalSettings>? _settingsSubscription; // ignore: cancel_subscriptions, because: Riverpod disposes it via ref.onDispose(_disposeSubscription).
 
   @override
   FutureOr<CalorieGoalSettings> build() {
@@ -79,9 +78,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       return false;
     }
     final normalizedEffectiveDate =
-        normalizedGoalStartDate.isAfter(
-          normalizedToday,
-        )
+        normalizedGoalStartDate.isAfter(normalizedToday)
         ? normalizedToday
         : normalizedGoalStartDate;
     final changedAt = _goalChangeTimestamp(
@@ -130,9 +127,7 @@ class CalorieGoalController extends _$CalorieGoalController {
   }
 
   /// Shift goal start.
-  Future<bool> shiftGoalStart({
-    required DateTime goalStartDate,
-  }) {
+  Future<bool> shiftGoalStart({required DateTime goalStartDate}) {
     final previousSettings =
         state.asData?.value ?? const CalorieGoalSettings.empty();
     if (!previousSettings.hasGoal) {
@@ -154,9 +149,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
     final normalizedToday = normalizeDiaryDay(DateTime.now());
     final normalizedEffectiveDate =
-        normalizedGoalStartDate.isAfter(
-          normalizedToday,
-        )
+        normalizedGoalStartDate.isAfter(normalizedToday)
         ? normalizedToday
         : normalizedGoalStartDate;
     final changedAt = _goalChangeTimestamp(
@@ -242,10 +235,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       return true;
     }
     final nextSettings = previous
-        .setSkippedIntakeDay(
-          day: day,
-          isSkipped: isSkipped,
-        )
+        .setSkippedIntakeDay(day: day, isSkipped: isSkipped)
         .invalidateWeeklyCheckInSnapshotsFromDay(
           day: day,
           invalidatedAt: DateTime.now(),
@@ -323,9 +313,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
     final normalizedToday = normalizeDiaryDay(DateTime.now());
     final normalizedEffectiveDate =
-        normalizedGoalStartDate.isAfter(
-          normalizedToday,
-        )
+        normalizedGoalStartDate.isAfter(normalizedToday)
         ? normalizedToday
         : normalizedGoalStartDate;
     final changedAt = _goalChangeTimestamp(

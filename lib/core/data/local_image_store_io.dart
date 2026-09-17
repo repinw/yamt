@@ -101,9 +101,7 @@ class _IoLocalImageStore implements LocalImageStore {
 
   Future<File> _resolveFile(LocalImageRef imageRef) async {
     final rootDirectory = await _resolveRootDirectory();
-    final folder = Directory(
-      '${rootDirectory.path}/${imageRef.storageFolder}',
-    );
+    final folder = Directory('${rootDirectory.path}/${imageRef.storageFolder}');
     if (!folder.existsSync()) {
       await folder.create(recursive: true);
     }

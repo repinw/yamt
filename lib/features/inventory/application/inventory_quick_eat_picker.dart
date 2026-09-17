@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -51,7 +51,7 @@ InventoryQuickEatPicker inventoryQuickEatPicker(Ref ref) =>
     const _UnconfiguredInventoryQuickEatPicker();
 
 class _UnconfiguredInventoryQuickEatPicker implements InventoryQuickEatPicker {
-  const _UnconfiguredInventoryQuickEatPicker();
+  const new();
 
   Never _fail() => throw UnsupportedError(
     'InventoryQuickEatPicker must be overridden by the application shell.',

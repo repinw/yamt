@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -10,7 +10,7 @@ const _productSearchHubSearchActionMinWidth = 72.0;
 /// Quick actions shown below the focused product search field.
 class ProductSearchHubSearchActions extends StatelessWidget {
   /// Creates focused search quick actions.
-  const ProductSearchHubSearchActions({
+  const new({
     required this.onBarcodePressed,
     required this.onAiPressed,
     required this.onCreateOwnPressed,
@@ -78,7 +78,7 @@ class ProductSearchHubSearchActions extends StatelessWidget {
 }
 
 class _ProductSearchHubSearchActionButton extends StatelessWidget {
-  const _ProductSearchHubSearchActionButton({
+  const new({
     required this.icon,
     required this.label,
     required this.width,

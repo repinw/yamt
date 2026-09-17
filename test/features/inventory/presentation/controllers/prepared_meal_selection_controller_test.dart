@@ -9,9 +9,7 @@ void main() {
     addTearDown(container.dispose);
 
     final controller =
-        container.read(
-            preparedMealSelectionControllerProvider.notifier,
-          )
+        container.read(preparedMealSelectionControllerProvider.notifier)
           ..enterSelection('item-1')
           ..toggleSelection('item-2');
     expect(

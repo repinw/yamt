@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
@@ -14,7 +14,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// style.
 class DiaryMacroStrip extends ConsumerWidget {
   /// Creates the macro strip.
-  const DiaryMacroStrip({
+  const new({
     required this.selectedDay,
     this.showKcal = true,
     this.showMacros = true,
@@ -45,9 +45,10 @@ class DiaryMacroStrip extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final data = dashboardData.nutritionBars;
-    final daily = DiaryBalanceSource.fromDashboardData(
-      dashboardData,
-    ).resolve(now: ref.watch(calorieBalanceNowProvider)()).loadedMetrics?.daily;
+    final daily = DiaryBalanceSource.fromDashboardData(dashboardData)
+        .resolve(now: ref.watch(calorieBalanceNowProvider)())
+        .loadedMetrics
+        ?.daily;
     final l10n = AppLocalizations.of(context)!;
     final accents = MetricAccentColors.of(context);
     final macros = [
@@ -108,7 +109,7 @@ class DiaryMacroStrip extends ConsumerWidget {
 /// Grows [child] downward from zero height while [visible] and collapses it
 /// again otherwise.
 class _Reveal extends StatelessWidget {
-  const _Reveal({required this.visible, required this.child});
+  const new({required this.visible, required this.child});
 
   final bool visible;
   final Widget child;
@@ -134,7 +135,7 @@ class _Reveal extends StatelessWidget {
 }
 
 class _KcalStripItem extends StatelessWidget {
-  const _KcalStripItem({required this.eaten, required this.target});
+  const new({required this.eaten, required this.target});
 
   final double eaten;
   final double target;
@@ -185,7 +186,7 @@ class _KcalStripItem extends StatelessWidget {
 }
 
 class _MacroStripItem extends StatelessWidget {
-  const _MacroStripItem({
+  const new({
     required this.letter,
     required this.current,
     required this.target,

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/product_search_hub/application/'
@@ -35,9 +35,10 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
       productSearchHubCompletionHandlerProvider(args.mode),
     );
   } else {
-    resolvedHandler = ProviderScope.containerOf(context, listen: false).read(
-      productSearchHubCompletionHandlerProvider(args.mode),
-    );
+    resolvedHandler = ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(productSearchHubCompletionHandlerProvider(args.mode));
   }
   return resolvedHandler.completeResult(
     context: context,

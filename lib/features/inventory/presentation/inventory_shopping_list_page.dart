@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/application/inventory_shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_suggestions.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_su
 /// Finished shopping surface with inventory-owned recommendation input.
 class InventoryShoppingListPage extends ConsumerWidget {
   /// Creates the integrated page.
-  const InventoryShoppingListPage({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

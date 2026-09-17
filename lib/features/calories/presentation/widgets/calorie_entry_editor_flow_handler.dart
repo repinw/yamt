@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
@@ -268,10 +268,7 @@ abstract final class CalorieEntryEditorFlowHandler {
     }
 
     final l10n = AppLocalizations.of(context)!;
-    showFailureSnackBar(
-      ScaffoldMessenger.of(context),
-      l10n.caloriesSaveFailed,
-    );
+    showFailureSnackBar(ScaffoldMessenger.of(context), l10n.caloriesSaveFailed);
   }
 
   /// Updates and saves an existing entry.
@@ -303,18 +300,11 @@ abstract final class CalorieEntryEditorFlowHandler {
     }
 
     if (saved) {
-      maybePopRootNavigator(
-        context,
-        isEditing: true,
-        result: true,
-      );
+      maybePopRootNavigator(context, isEditing: true, result: true);
       return;
     }
 
     final l10n = AppLocalizations.of(context)!;
-    showFailureSnackBar(
-      ScaffoldMessenger.of(context),
-      l10n.caloriesSaveFailed,
-    );
+    showFailureSnackBar(ScaffoldMessenger.of(context), l10n.caloriesSaveFailed);
   }
 }

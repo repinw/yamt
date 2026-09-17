@@ -10,8 +10,7 @@ const String _repositoryLogName = 'FirestoreGlobalFoodItemRepository';
 /// Defines firestore global food item repository.
 class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
   /// Creates an instance.
-  FirestoreGlobalFoodItemRepository({required GlobalFoodItemStore store})
-    : _store = store;
+  new({required this._store});
 
   final GlobalFoodItemStore _store;
   Future<void> _writeBarrier = Future<void>.value();

@@ -67,7 +67,7 @@ PreparedMeal _meal({
 }
 
 class _AlwaysAmountProgressInventoryItem extends InventoryItem {
-  _AlwaysAmountProgressInventoryItem({
+  new({
     required super.id,
     required String name,
     required super.entryDate,
@@ -110,10 +110,7 @@ void main() {
       imageAssetId: 'asset-1',
       imageUrl: 'https://images.example.com/rice-bowl.jpg',
       recipeUrl: 'https://www.chefkoch.de/rezepte/123/rice-bowl.html',
-      recipeInstructions: const <String>[
-        'Reis waschen.',
-        'Reis kochen.',
-      ],
+      recipeInstructions: const <String>['Reis waschen.', 'Reis kochen.'],
       totalPortions: 4,
       remainingPortions: 2.5,
       totalKcal: 720,
@@ -149,10 +146,7 @@ void main() {
     expect(roundtrip.components.single.sourceItemSnapshot, sourceItem);
     expect(roundtrip.remainingPortions, 2.5);
     expect(
-      formatPreparedMealPortions(
-        roundtrip.remainingPortions,
-        localeName: 'en',
-      ),
+      formatPreparedMealPortions(roundtrip.remainingPortions, localeName: 'en'),
       '2.5',
     );
   });

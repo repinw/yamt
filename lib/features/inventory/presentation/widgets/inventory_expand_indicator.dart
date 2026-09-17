@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 const _expandIndicatorAnimationDuration = Duration(milliseconds: 220);
@@ -8,7 +8,7 @@ const _expandIndicatorIconSize = 20.0;
 /// Defines inventory expand indicator.
 class InventoryExpandIndicator extends StatelessWidget {
   /// The inventory expand indicator.
-  const InventoryExpandIndicator({
+  const new({
     required this.isExpanded,
     super.key,
     this.rotationKey,

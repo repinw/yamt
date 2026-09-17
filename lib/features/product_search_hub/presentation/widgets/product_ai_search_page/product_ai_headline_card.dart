@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/features/product_search_hub/domain/'
 /// Headline summary card for an AI product draft.
 class AiHeadlineCard extends StatelessWidget {
   /// Creates an AI headline card.
-  const AiHeadlineCard({required this.draft, super.key});
+  const new({required this.draft, super.key});
 
   /// Current AI draft.
   final ProductAiSearchDraft draft;
@@ -31,17 +31,15 @@ class AiHeadlineCard extends StatelessWidget {
         children: [
           Text(
             draft.name,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
           if (draft.brand case final String brand) ...[
             const SizedBox(height: AppSpacing.xs),
             Text(
               brand,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: colors.onSurfaceVariant),
             ),
           ],
           const SizedBox(height: AppSpacing.sm),
@@ -61,7 +59,7 @@ class AiHeadlineCard extends StatelessWidget {
 /// Wrap of small metadata chips.
 class AiMetaWrap extends StatelessWidget {
   /// Creates metadata chips.
-  const AiMetaWrap({required this.labels, super.key});
+  const new({required this.labels, super.key});
 
   /// Labels displayed as chips.
   final List<String> labels;

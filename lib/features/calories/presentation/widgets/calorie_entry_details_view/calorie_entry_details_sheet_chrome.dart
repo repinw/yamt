@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_details_sheet_header.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 /// Shared visual shell for the calorie entry details sheet.
 class CalorieEntryDetailsSheetChrome extends StatelessWidget {
   /// Creates a sheet chrome wrapper.
-  const CalorieEntryDetailsSheetChrome({
+  const new({
     required this.title,
     required this.isSaving,
     required this.onClose,
@@ -34,9 +34,7 @@ class CalorieEntryDetailsSheetChrome extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final maxSheetHeight = MediaQuery.sizeOf(context).height * 0.9;
-    final sheetRadius = BorderRadius.circular(
-      AppRadius.xl + AppSpacing.xs,
-    );
+    final sheetRadius = BorderRadius.circular(AppRadius.xl + AppSpacing.xs);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -61,9 +59,7 @@ class CalorieEntryDetailsSheetChrome extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: colors.surfaceContainerLow,
                   borderRadius: sheetRadius,
-                  border: Border.all(
-                    color: colors.outlineVariant,
-                  ),
+                  border: Border.all(color: colors.outlineVariant),
                 ),
                 child: ClipRRect(
                   borderRadius: sheetRadius,
@@ -71,17 +67,12 @@ class CalorieEntryDetailsSheetChrome extends StatelessWidget {
                     children: [
                       CalorieEntryDetailsSheetHeader(
                         title: title,
-                        closeTooltip: MaterialLocalizations.of(
-                          context,
-                        ).closeButtonTooltip,
+                        closeTooltip: MaterialLocalizations.of(context)
+                            .closeButtonTooltip,
                         isSaving: isSaving,
                         onClose: onClose,
                       ),
-                      Expanded(
-                        child: FocusTraversalGroup(
-                          child: child,
-                        ),
-                      ),
+                      Expanded(child: FocusTraversalGroup(child: child)),
                       footer,
                     ],
                   ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
@@ -9,7 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Selectable activity-level list for the calorie-goal calculator.
 class CalorieGoalCalculatorActivityLevelSelector extends StatelessWidget {
   /// The calorie goal calculator activity level selector.
-  const CalorieGoalCalculatorActivityLevelSelector({
+  const new({
     required this.selectedOption,
     required this.onSelected,
     super.key,
@@ -32,9 +32,8 @@ class CalorieGoalCalculatorActivityLevelSelector extends StatelessWidget {
       children: [
         Text(
           l10n.caloriesCalculatorActivityLevelHelp,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: colors.onSurfaceVariant),
         ),
         const SizedBox(height: AppSpacing.md),
         for (final option in CalorieActivityLevelOption.values) ...[
@@ -90,7 +89,7 @@ class CalorieGoalCalculatorActivityLevelSelector extends StatelessWidget {
 }
 
 class _ActivityLevelOptionCard extends StatelessWidget {
-  const _ActivityLevelOptionCard({
+  const new({
     required this.option,
     required this.isSelected,
     required this.title,
@@ -143,16 +142,14 @@ class _ActivityLevelOptionCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       description,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: colors.onSurfaceVariant),
                     ),
                   ],
                 ),

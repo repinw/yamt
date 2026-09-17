@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -13,7 +13,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 /// Context and callbacks for dispatching barcode scanner outcomes.
 class EditorBarcodeDispatchContext {
   /// Creates the dispatch context.
-  const EditorBarcodeDispatchContext({
+  const new({
     required this.context,
     required this.config,
     required this.controller,

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Premium, rich empty state for the cookbook page.
 class MealTemplatesEmptyState extends ConsumerWidget {
   /// Creates a premium empty state widget.
-  const MealTemplatesEmptyState({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,18 +46,15 @@ class MealTemplatesEmptyState extends ConsumerWidget {
                 Text(
                   l10n.homeCookbook,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   l10n.preparedMealTemplatesEmptyState,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    height: 1.5,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: colors.onSurfaceVariant, height: 1.5),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 FilledButton.icon(
@@ -145,7 +142,7 @@ class MealTemplatesEmptyState extends ConsumerWidget {
 }
 
 class _GlowingHalo extends StatelessWidget {
-  const _GlowingHalo({required this.icon});
+  const new({required this.icon});
 
   final IconData icon;
 
@@ -163,11 +160,7 @@ class _GlowingHalo extends StatelessWidget {
             shape: BoxShape.circle,
             color: colors.primaryContainer.withValues(alpha: 0.8),
           ),
-          child: Icon(
-            icon,
-            size: 32,
-            color: colors.primary,
-          ),
+          child: Icon(icon, size: 32, color: colors.primary),
         ),
       ),
     );

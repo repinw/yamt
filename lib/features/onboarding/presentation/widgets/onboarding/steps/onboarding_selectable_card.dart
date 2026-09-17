@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared selected-card container for calorie-goal onboarding choices.
 class OnboardingSelectableCard extends StatelessWidget {
   /// Creates a tappable choice card.
-  const OnboardingSelectableCard({
+  const new({
     required this.isSelected,
     required this.onTap,
     required this.child,

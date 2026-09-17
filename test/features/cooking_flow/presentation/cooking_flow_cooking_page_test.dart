@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_cooking_page.dart';
@@ -12,7 +13,7 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _StaticInventoryItemsController extends InventoryItemsController {
-  _StaticInventoryItemsController(this._items);
+  new(this._items);
 
   final List<InventoryItem> _items;
 
@@ -60,7 +61,7 @@ Future<void> _pumpHarness(
       ],
       child: MaterialApp(
         locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: CookingFlowCookingPage(
@@ -164,10 +165,7 @@ void main() {
     await _pumpHarness(
       tester,
       template: _template(
-        recipeIngredients: const <String>[
-          '300g Linsen',
-          '500g Kartoffeln',
-        ],
+        recipeIngredients: const <String>['300g Linsen', '500g Kartoffeln'],
       ),
       adjustmentController: controller,
     );
@@ -187,10 +185,7 @@ void main() {
     await _pumpHarness(
       tester,
       template: _template(
-        recipeIngredients: const <String>[
-          '2 Zwiebeln',
-          'Hackfleisch',
-        ],
+        recipeIngredients: const <String>['2 Zwiebeln', 'Hackfleisch'],
         recipeInstructions: const <String>[
           'Zwiebeln und Hackfleisch anbraten.',
         ],
@@ -240,10 +235,7 @@ void main() {
     await _pumpHarness(
       tester,
       template: _template(
-        recipeIngredients: const <String>[
-          '500 g Hackfleisch',
-          '2 Zwiebeln',
-        ],
+        recipeIngredients: const <String>['500 g Hackfleisch', '2 Zwiebeln'],
         recipeInstructions: const <String>[
           '500g Hackfleisch und 2 Zwiebeln anbraten.',
         ],
@@ -291,12 +283,8 @@ void main() {
     await _pumpHarness(
       tester,
       template: _template(
-        recipeIngredients: const <String>[
-          '2 stück Zwiebeln',
-        ],
-        recipeInstructions: const <String>[
-          '2 stück Zwiebeln anbraten.',
-        ],
+        recipeIngredients: const <String>['2 stück Zwiebeln'],
+        recipeInstructions: const <String>['2 stück Zwiebeln anbraten.'],
       ),
       introDraft: const CookingFlowIntroDraft(
         rowStates: <CookingFlowIntroRowDraft>[
@@ -332,12 +320,8 @@ void main() {
       tester,
       locale: const Locale('en'),
       template: _template(
-        recipeIngredients: const <String>[
-          '2 pieces onions',
-        ],
-        recipeInstructions: const <String>[
-          'Add the onions to the pan.',
-        ],
+        recipeIngredients: const <String>['2 pieces onions'],
+        recipeInstructions: const <String>['Add the onions to the pan.'],
       ),
       introDraft: const CookingFlowIntroDraft(
         rowStates: <CookingFlowIntroRowDraft>[
@@ -351,11 +335,7 @@ void main() {
         ],
       ),
       inventoryItems: <InventoryItem>[
-        _quantityInventoryItem(
-          id: 'onions',
-          name: 'onions',
-          quantity: 2,
-        ),
+        _quantityInventoryItem(id: 'onions', name: 'onions', quantity: 2),
       ],
       adjustmentController: controller,
     );
@@ -367,21 +347,15 @@ void main() {
     );
   });
 
-  testWidgets('fuzzy matches imported ingredient aliases', (
-    tester,
-  ) async {
+  testWidgets('fuzzy matches imported ingredient aliases', (tester) async {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
     await _pumpHarness(
       tester,
       template: _template(
-        recipeIngredients: const <String>[
-          'm.-große Zwiebeln',
-        ],
-        recipeInstructions: const <String>[
-          'Die Zwiebeln abziehen.',
-        ],
+        recipeIngredients: const <String>['m.-große Zwiebeln'],
+        recipeInstructions: const <String>['Die Zwiebeln abziehen.'],
       ),
       introDraft: const CookingFlowIntroDraft(
         rowStates: <CookingFlowIntroRowDraft>[
@@ -395,11 +369,7 @@ void main() {
         ],
       ),
       inventoryItems: <InventoryItem>[
-        _quantityInventoryItem(
-          id: 'onions',
-          name: 'Zwiebeln',
-          quantity: 2,
-        ),
+        _quantityInventoryItem(id: 'onions', name: 'Zwiebeln', quantity: 2),
       ],
       adjustmentController: controller,
     );
@@ -423,9 +393,7 @@ void main() {
         recipeIngredients: const <String>[
           'gr Dose/n Tomaten, stückig (ca 800g)',
         ],
-        recipeInstructions: const <String>[
-          'Die Tomaten in den Topf geben.',
-        ],
+        recipeInstructions: const <String>['Die Tomaten in den Topf geben.'],
       ),
       introDraft: const CookingFlowIntroDraft(
         rowStates: <CookingFlowIntroRowDraft>[
@@ -464,12 +432,8 @@ void main() {
     await _pumpHarness(
       tester,
       template: _template(
-        recipeIngredients: const <String>[
-          '1 Dose Tomaten, passiert (ca 800g)',
-        ],
-        recipeInstructions: const <String>[
-          'Die Tomaten in den Topf geben.',
-        ],
+        recipeIngredients: const <String>['1 Dose Tomaten, passiert (ca 800g)'],
+        recipeInstructions: const <String>['Die Tomaten in den Topf geben.'],
       ),
       introDraft: const CookingFlowIntroDraft(
         rowStates: <CookingFlowIntroRowDraft>[

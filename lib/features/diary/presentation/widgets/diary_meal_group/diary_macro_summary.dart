@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// One-line `P · C · F` gram summary in muted text.
 class DiaryMacroSummary extends StatelessWidget {
   /// Creates a macro summary.
-  const DiaryMacroSummary({
+  const new({
     required this.protein,
     required this.carbs,
     required this.fat,

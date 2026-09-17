@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Nutrition summary shown in the calorie entry details sheet.
 class CalorieEntryNutritionSummaryCard extends StatelessWidget {
   /// Creates a nutrition summary card.
-  const CalorieEntryNutritionSummaryCard({required this.entry, super.key});
+  const new({required this.entry, super.key});
 
   /// Entry whose nutrition totals are displayed.
   final CalorieEntry entry;
@@ -36,7 +36,7 @@ class CalorieEntryNutritionSummaryCard extends StatelessWidget {
 /// Ingredient table shown for bundle calorie entries.
 class CalorieEntryIngredientsSection extends StatelessWidget {
   /// Creates an ingredient section.
-  const CalorieEntryIngredientsSection({required this.entry, super.key});
+  const new({required this.entry, super.key});
 
   /// Entry whose bundle components are displayed.
   final CalorieEntry entry;

@@ -15,10 +15,7 @@ const _persistentTrendDayCacheIndexKey =
 /// Persisted aggregate activity totals for one diary day.
 class DiaryHealthActivityTrendDayCacheEntry {
   /// Creates a persisted activity trend day entry.
-  const DiaryHealthActivityTrendDayCacheEntry({
-    required this.loadedAt,
-    required this.day,
-  });
+  const new({required this.loadedAt, required this.day});
 
   /// Time when Health aggregate data was loaded.
   final DateTime loadedAt;
@@ -30,11 +27,7 @@ class DiaryHealthActivityTrendDayCacheEntry {
 /// Stores derived per-day activity trend totals in preferences.
 class DiaryHealthActivityTrendDayCacheStore {
   /// Creates a per-day activity trend cache store.
-  const DiaryHealthActivityTrendDayCacheStore({
-    required AppPreferences preferences,
-    required int maxEntries,
-  }) : _preferences = preferences,
-       _maxEntries = maxEntries;
+  const new({required this._preferences, required this._maxEntries});
 
   final AppPreferences _preferences;
   final int _maxEntries;

@@ -9,7 +9,7 @@ const String _kitchenUtensilsCollection = 'kitchen_utensils';
 /// Kitchen utensil document.
 class KitchenUtensilDocument {
   /// Creates document wrapper.
-  const KitchenUtensilDocument({required this.id, required this.data});
+  const new({required this.id, required this.data});
 
   /// Document id.
   final String id;
@@ -40,15 +40,12 @@ abstract interface class KitchenUtensilStore {
 /// Firestore store for kitchen utensils.
 class FirestoreKitchenUtensilStore implements KitchenUtensilStore {
   /// Creates Firestore store.
-  const FirestoreKitchenUtensilStore({required FirebaseFirestore firestore})
-    : _firestore = firestore;
+  const new({required this._firestore});
 
   final FirebaseFirestore _firestore;
 
   @override
-  Future<List<KitchenUtensilDocument>> readAll({
-    required String userId,
-  }) async {
+  Future<List<KitchenUtensilDocument>> readAll({required String userId}) async {
     final snapshot = await _collection(userId).get();
     return _mapSnapshot(snapshot);
   }

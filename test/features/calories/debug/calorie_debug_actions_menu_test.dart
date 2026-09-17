@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions_menu.dart';
@@ -47,9 +48,7 @@ void main() {
   ) async {
     await _pumpDebugMenu(tester);
 
-    await tester.tap(
-      find.byKey(CalorieDebugKeys.actionsMenuButton),
-    );
+    await tester.tap(find.byKey(CalorieDebugKeys.actionsMenuButton));
     await tester.pumpAndSettle();
 
     expect(find.byKey(CalorieDebugKeys.debugDumpButton), findsOneWidget);
@@ -65,10 +64,7 @@ void main() {
     await tester.tap(find.byKey(CalorieDebugKeys.debugDumpButton));
     await tester.pumpAndSettle();
 
-    expect(
-      find.textContaining('Downloaded calorie debug TXT'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Downloaded calorie debug TXT'), findsOneWidget);
   });
 
   testWidgets('debug menu shows failure snackbar when dump fails', (
@@ -81,9 +77,7 @@ void main() {
 
     await _pumpDebugMenu(tester, logRepository: logRepository);
 
-    await tester.tap(
-      find.byKey(CalorieDebugKeys.actionsMenuButton),
-    );
+    await tester.tap(find.byKey(CalorieDebugKeys.actionsMenuButton));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(CalorieDebugKeys.debugDumpButton));
     await tester.pumpAndSettle();
@@ -96,10 +90,7 @@ void main() {
   ) async {
     await _pumpDebugMenu(tester);
 
-    await _selectDebugAction(
-      tester,
-      CalorieDebugKeys.settingsDebugDumpButton,
-    );
+    await _selectDebugAction(tester, CalorieDebugKeys.settingsDebugDumpButton);
 
     expect(
       find.text('Printed calorie settings debug dump (0 goal entries).'),
@@ -111,17 +102,12 @@ void main() {
       CalorieDebugKeys.weeklyCheckInDebugDumpButton,
     );
 
-    expect(
-      find.text('Printed weekly check-in debug dump.'),
-      findsOneWidget,
-    );
+    expect(find.text('Printed weekly check-in debug dump.'), findsOneWidget);
   });
 }
 
 Future<void> _selectDebugAction(WidgetTester tester, Key actionKey) async {
-  await tester.tap(
-    find.byKey(CalorieDebugKeys.actionsMenuButton),
-  );
+  await tester.tap(find.byKey(CalorieDebugKeys.actionsMenuButton));
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(actionKey));
   await tester.pumpAndSettle();
@@ -167,14 +153,10 @@ Future<void> _pumpDebugMenu(
       ],
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          appBar: AppBar(
-            actions: const [
-              CalorieDebugActionsMenu(),
-            ],
-          ),
+          appBar: AppBar(actions: const [CalorieDebugActionsMenu()]),
         ),
       ),
     ),
@@ -221,14 +203,10 @@ Future<void> _pumpNestedDebugMenu(
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: Scaffold(
-          appBar: AppBar(
-            actions: const [
-              CalorieDebugActionsMenu(),
-            ],
-          ),
+          appBar: AppBar(actions: const [CalorieDebugActionsMenu()]),
         ),
       ),
     ),
@@ -237,7 +215,7 @@ Future<void> _pumpNestedDebugMenu(
 }
 
 class _FakeCalorieDebugFileExporter implements CalorieDebugFileExporter {
-  const _FakeCalorieDebugFileExporter();
+  const new();
 
   @override
   Future<CalorieDebugFileExportResult> saveText({
@@ -245,8 +223,6 @@ class _FakeCalorieDebugFileExporter implements CalorieDebugFileExporter {
     required String fileName,
     required String text,
   }) async {
-    return const CalorieDebugFileExportSaved(
-      path: '/tmp/yamt_diary_debug.txt',
-    );
+    return const CalorieDebugFileExportSaved(path: '/tmp/yamt_diary_debug.txt');
   }
 }

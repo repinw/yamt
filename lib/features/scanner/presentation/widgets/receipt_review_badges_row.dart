@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -7,11 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Row of summary chips displaying discrepancy, savings, and deposit info.
 class ReceiptReviewBadgesRow extends StatelessWidget {
   /// Creates a [ReceiptReviewBadgesRow].
-  const ReceiptReviewBadgesRow({
-    required this.receipt,
-    required this.formatter,
-    super.key,
-  });
+  const new({required this.receipt, required this.formatter, super.key});
 
   /// The scanned receipt being reviewed.
   final ScannedReceipt receipt;

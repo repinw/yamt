@@ -7,7 +7,7 @@ const _usersCollection = 'users';
 const _itemsCollection = 'items';
 
 class _HookedFakeFirebaseFirestore extends FakeFirebaseFirestore {
-  _HookedFakeFirebaseFirestore({this.onBeforeRunTransaction});
+  new({this.onBeforeRunTransaction});
 
   final Future<void> Function()? onBeforeRunTransaction;
   int runTransactionCalls = 0;

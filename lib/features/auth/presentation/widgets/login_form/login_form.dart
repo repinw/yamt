@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines login form.
 class LoginForm extends ConsumerStatefulWidget {
   /// The login form.
-  const LoginForm({super.key});
+  const new({super.key});
 
   @override
   ConsumerState<LoginForm> createState() => _LoginFormState();
@@ -43,9 +43,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.commonNotImplementedYet)),
-      );
+      ..showSnackBar(SnackBar(content: Text(l10n.commonNotImplementedYet)));
   }
 
   @override

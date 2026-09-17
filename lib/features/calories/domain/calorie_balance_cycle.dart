@@ -86,10 +86,7 @@ DateTime resolveCalorieGoalRunEndDate({
   required CalorieGoalSettings settings,
   required DateTime day,
 }) {
-  final runStart = resolveCalorieGoalRunStartDate(
-    settings: settings,
-    day: day,
-  );
+  final runStart = resolveCalorieGoalRunStartDate(settings: settings, day: day);
   return addDiaryDays(runStart, calorieGoalRunLengthDays - 1);
 }
 

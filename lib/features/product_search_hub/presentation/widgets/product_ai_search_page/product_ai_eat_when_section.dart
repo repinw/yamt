@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Eat-now date and meal type controls for AI search.
 class AiEatWhenSection extends StatelessWidget {
   /// Creates eat-now controls.
-  const AiEatWhenSection({
+  const new({
     required this.isToday,
     required this.label,
     required this.selectedMealType,
@@ -65,7 +65,7 @@ class AiEatWhenSection extends StatelessWidget {
 /// Date selection card for AI eat-now flow.
 class AiEatWhenCard extends StatelessWidget {
   /// Creates a date selection card.
-  const AiEatWhenCard({
+  const new({
     required this.label,
     required this.isToday,
     required this.onPressed,
@@ -89,23 +89,16 @@ class AiEatWhenCard extends StatelessWidget {
       content = Row(
         key: const Key('manual_product_ai_logged_at_labeled'),
         children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            color: colors.onSurfaceVariant,
-          ),
+          Icon(Icons.calendar_today_rounded, color: colors.onSurfaceVariant),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
               text,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: colors.onSurfaceVariant,
-          ),
+          Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
         ],
       );
     } else {
@@ -113,15 +106,9 @@ class AiEatWhenCard extends StatelessWidget {
         key: const Key('manual_product_ai_logged_at_compact'),
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            color: colors.onSurfaceVariant,
-          ),
+          Icon(Icons.calendar_today_rounded, color: colors.onSurfaceVariant),
           const SizedBox(width: AppSpacing.md),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: colors.onSurfaceVariant,
-          ),
+          Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
         ],
       );
     }
@@ -157,7 +144,7 @@ class AiEatWhenCard extends StatelessWidget {
 /// Meal type selector for AI eat-now flow.
 class AiMealTypeSelector extends StatelessWidget {
   /// Creates a meal type selector.
-  const AiMealTypeSelector({
+  const new({
     required this.selectedMealType,
     required this.onMealTypeSelected,
     super.key,

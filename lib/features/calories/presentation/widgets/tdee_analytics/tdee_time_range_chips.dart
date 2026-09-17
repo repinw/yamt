@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 /// Horizontal pill selector for TDEE analytics time ranges.
 class TdeeTimeRangeChips extends StatelessWidget {
   /// Creates time range chips bar.
-  const TdeeTimeRangeChips({
+  const new({
     required this.selectedRange,
     required this.onSelectRange,
     super.key,
@@ -47,7 +47,7 @@ class TdeeTimeRangeChips extends StatelessWidget {
 }
 
 class _RangePill extends StatelessWidget {
-  const _RangePill({
+  const new({
     required this.range,
     required this.isSelected,
     required this.colorScheme,

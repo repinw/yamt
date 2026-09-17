@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/receipt_item_editor_updater.dart';
@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines inventory receipt item editor sheet.
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
   /// The inventory receipt item editor sheet.
-  const InventoryReceiptItemEditorSheet({
+  const new({
     required this.item,
     super.key,
     this.title,

@@ -38,7 +38,7 @@ GlobalFoodReceiptAliasStore _resolveStore() {
 
 class _UnavailableGlobalFoodReceiptAliasStore
     implements GlobalFoodReceiptAliasStore {
-  const _UnavailableGlobalFoodReceiptAliasStore();
+  const new();
 
   @override
   Future<List<GlobalFoodReceiptAliasDocument>> searchCandidates({

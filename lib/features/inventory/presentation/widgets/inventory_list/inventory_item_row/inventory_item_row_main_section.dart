@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
@@ -18,7 +18,7 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
 /// Defines inventory item row main section.
 class InventoryItemRowMainSection extends StatelessWidget {
   /// The inventory item row main section.
-  const InventoryItemRowMainSection({
+  const new({
     required this.item,
     required this.viewData,
     required this.isExpanded,
@@ -84,7 +84,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
 }
 
 class _InventoryItemPrimaryActions extends StatelessWidget {
-  const _InventoryItemPrimaryActions({
+  const new({
     required this.viewData,
     required this.onPrimaryActionPressed,
     required this.onQuickShoppingListActionPressed,
@@ -116,10 +116,7 @@ class _InventoryItemPrimaryActions extends StatelessWidget {
 }
 
 class _InventoryItemPrimaryActionButton extends StatelessWidget {
-  const _InventoryItemPrimaryActionButton({
-    required this.viewData,
-    required this.onPrimaryActionPressed,
-  });
+  const new({required this.viewData, required this.onPrimaryActionPressed});
 
   final InventoryItemRowViewData viewData;
   final VoidCallback? onPrimaryActionPressed;
@@ -159,10 +156,7 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
 }
 
 class _InventoryItemQuickShoppingListAction extends StatelessWidget {
-  const _InventoryItemQuickShoppingListAction({
-    required this.viewData,
-    required this.onPressed,
-  });
+  const new({required this.viewData, required this.onPressed});
 
   final InventoryItemRowViewData viewData;
   final VoidCallback? onPressed;

@@ -1,15 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
 /// Reusable thumbnail image or fallback icon for a product candidate.
 class ProductCandidateThumbnail extends StatelessWidget {
   /// Creates a [ProductCandidateThumbnail].
-  const ProductCandidateThumbnail({
-    this.imageUrl,
-    this.size = 36,
-    this.borderRadius = 6,
-    super.key,
-  });
+  const new({this.imageUrl, this.size = 36, this.borderRadius = 6, super.key});
 
   /// Image URL of the product.
   final String? imageUrl;

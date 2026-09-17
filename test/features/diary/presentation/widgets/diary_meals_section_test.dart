@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -142,9 +143,7 @@ void main() {
     expect(find.text('Pasta'), findsOneWidget);
   });
 
-  testWidgets('shows retry and reloads after meals load error', (
-    tester,
-  ) async {
+  testWidgets('shows retry and reloads after meals load error', (tester) async {
     var shouldFail = true;
     await _pumpDiaryWidget(
       tester,
@@ -222,9 +221,8 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
-        diaryDayDashboardControllerProvider(
-          selectedDay,
-        ).overrideWith(() => controller),
+        diaryDayDashboardControllerProvider(selectedDay)
+            .overrideWith(() => controller),
       ],
     );
     addTearDown(container.dispose);
@@ -259,9 +257,7 @@ Future<void> _pumpMealsSection(
     tester,
     DiaryMealsSection(selectedDay: selectedDay),
     overrides: [
-      diaryDayDashboardControllerProvider(
-        selectedDay,
-      ).overrideWithValue(
+      diaryDayDashboardControllerProvider(selectedDay).overrideWithValue(
         diaryDashboardLoadedStateForTest(
           selectedDay: selectedDay,
           mealSections: sections,
@@ -281,7 +277,7 @@ Future<void> _pumpMealsSectionWithContainer(
       container: container,
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: SingleChildScrollView(
@@ -297,17 +293,11 @@ Future<void> _pumpMealsSectionWithContainer(
   await tester.pumpAndSettle();
 }
 
-DiaryMealSection _mealSection(
-  MealType mealType,
-  List<DiaryMealEntry> entries,
-) {
+DiaryMealSection _mealSection(MealType mealType, List<DiaryMealEntry> entries) {
   return DiaryMealSection(
     mealType: mealType,
     entries: entries,
-    totalKcal: entries.fold<double>(
-      0,
-      (sum, entry) => sum + entry.totalKcal,
-    ),
+    totalKcal: entries.fold<double>(0, (sum, entry) => sum + entry.totalKcal),
   );
 }
 
@@ -345,14 +335,11 @@ Future<void> _pumpDiaryWidget(
       overrides: overrides,
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: child,
-            ),
+            child: Padding(padding: const EdgeInsets.all(16), child: child),
           ),
         ),
       ),

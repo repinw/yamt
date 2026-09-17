@@ -31,7 +31,7 @@ abstract interface class AppPreferences {
 /// Shared-preferences-backed implementation of [AppPreferences].
 class SharedPreferencesStore implements AppPreferences {
   /// Creates preference store with optional injected instance for tests.
-  SharedPreferencesStore({SharedPreferences? preferences})
+  new({SharedPreferences? preferences})
     : _preferences = preferences,
       _instanceFuture = preferences != null
           ? Future<SharedPreferences?>.value(preferences)
@@ -107,7 +107,7 @@ class SharedPreferencesStore implements AppPreferences {
   Future<bool> setString(String key, String value) async {
     final preferences = await _instance();
     if (preferences != null) {
-      return preferences.setString(key, value);
+      return await preferences.setString(key, value);
     }
     return false;
   }
@@ -116,7 +116,7 @@ class SharedPreferencesStore implements AppPreferences {
   Future<bool> setInt(String key, int value) async {
     final preferences = await _instance();
     if (preferences != null) {
-      return preferences.setInt(key, value);
+      return await preferences.setInt(key, value);
     }
     return false;
   }

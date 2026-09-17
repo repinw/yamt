@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -14,7 +14,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Resolves the inventory request used by the manual-product eat flow.
 abstract final class InventoryManualProductEatSelectionFlow {
-  const InventoryManualProductEatSelectionFlow._();
+  const new _();
 
   /// Uses an existing selection or opens the inventory eat sheet.
   static Future<InventoryItemEatSheetResult?> resolve({

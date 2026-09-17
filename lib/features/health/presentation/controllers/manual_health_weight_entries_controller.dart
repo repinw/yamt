@@ -126,7 +126,7 @@ class ManualHealthWeightEntriesController
         weightKg: weightKg,
       );
       if (!saved) {
-        return _saveToRepository(
+        return await _saveToRepository(
           repository: repository,
           previousEntries: previousEntries,
           entry: ManualHealthWeightEntry(

@@ -28,7 +28,7 @@ enum CookingFlowStep {
 /// Intro selection state used by the fixed CTA.
 class CookingFlowIntroSelectionState {
   /// Creates intro selection state.
-  const CookingFlowIntroSelectionState({
+  const new({
     required this.allItemsSelected,
     required this.hasShoppingSelections,
     required this.hasUnresolvedConflicts,
@@ -55,7 +55,7 @@ class CookingFlowIntroSelectionState {
 /// Storage input from page-owned text controllers.
 class CookingFlowWizardStorageDraftInput {
   /// Creates storage input.
-  const CookingFlowWizardStorageDraftInput({
+  const new({
     required this.id,
     required this.label,
     required this.taraText,
@@ -86,7 +86,7 @@ class CookingFlowWizardStorageDraftInput {
 /// Page-owned transient input needed to persist session.
 class CookingFlowWizardSessionInput {
   /// Creates session input.
-  const CookingFlowWizardSessionInput({
+  const new({
     required this.templateId,
     required this.taraText,
     required this.taraUtensilId,
@@ -133,7 +133,7 @@ enum CookingFlowShoppingListActionResult {
 /// Wizard state for cookflow shell.
 class CookingFlowWizardState {
   /// Creates state.
-  const CookingFlowWizardState({
+  const new({
     required this.step,
     required this.isRestoringSession,
     required this.didInitializePortionsFromTemplate,
@@ -159,7 +159,7 @@ class CookingFlowWizardState {
   });
 
   /// Default state.
-  const CookingFlowWizardState.initial()
+  const new initial()
     : step = CookingFlowStep.start,
       isRestoringSession = true,
       didInitializePortionsFromTemplate = false,

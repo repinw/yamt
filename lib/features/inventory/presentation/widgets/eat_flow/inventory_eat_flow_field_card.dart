@@ -1,15 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_leading_icon.dart';
 
 /// Shared field card.
 class InventoryEatFlowFieldCard extends StatelessWidget {
   /// Creates field card.
-  const InventoryEatFlowFieldCard({
-    required this.leadingIcon,
-    required this.child,
-    super.key,
-  });
+  const new({required this.leadingIcon, required this.child, super.key});
 
   /// Leading icon.
   final IconData leadingIcon;
@@ -25,9 +21,7 @@ class InventoryEatFlowFieldCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: colors.outlineVariant,
-        ),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 66),

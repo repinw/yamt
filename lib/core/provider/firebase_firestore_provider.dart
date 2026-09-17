@@ -13,13 +13,12 @@ const _providerLogName = 'FirebaseFirestoreProvider';
 typedef FirebaseFirestoreInstanceGetter = FirebaseFirestore Function();
 
 /// Structured logger used by the Firestore provider.
-typedef FirebaseFirestoreLogWriter =
-    void Function(
-      String message, {
-      String name,
-      Object? error,
-      StackTrace? stackTrace,
-    });
+typedef FirebaseFirestoreLogWriter = void Function(
+  String message, {
+  String name,
+  Object? error,
+  StackTrace? stackTrace,
+});
 
 FirebaseFirestore _defaultFirebaseFirestoreInstanceGetter() {
   return FirebaseFirestore.instance;

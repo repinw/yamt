@@ -61,7 +61,7 @@ void main() {
 }
 
 class _FailingCalorieLogRepository extends FakeCalorieLogRepository {
-  _FailingCalorieLogRepository({required this.failOnSaveAttempt});
+  new({required this.failOnSaveAttempt});
 
   final int failOnSaveAttempt;
   final deletedIds = <String>[];
@@ -84,7 +84,7 @@ class _FailingCalorieLogRepository extends FakeCalorieLogRepository {
 }
 
 class _AfterSaveCallbackCalorieLogRepository extends FakeCalorieLogRepository {
-  _AfterSaveCallbackCalorieLogRepository({required this.onSaved});
+  new({required this.onSaved});
 
   final void Function() onSaved;
   final deletedIds = <String>[];

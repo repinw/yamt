@@ -24,10 +24,7 @@ class FakeReceiptProductResolver implements ReceiptProductResolver {
   }
 
   /// Registers a product for a specific barcode.
-  void registerProductForBarcode(
-    String barcode,
-    ProductCandidate product,
-  ) {
+  void registerProductForBarcode(String barcode, ProductCandidate product) {
     _productsByBarcode[barcode.trim()] = product;
     _candidatesByBarcode[barcode.trim()] = [product];
     if (!_catalog.contains(product)) {

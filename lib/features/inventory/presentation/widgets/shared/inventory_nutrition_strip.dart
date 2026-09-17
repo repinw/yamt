@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_item_row_view_data.dart';
@@ -10,11 +10,7 @@ export 'package:yamt/features/inventory/presentation/formatters/'
 /// Defines inventory nutrition strip.
 class InventoryNutritionStrip extends StatelessWidget {
   /// The inventory nutrition strip.
-  const InventoryNutritionStrip({
-    required this.metrics,
-    required this.colorScheme,
-    super.key,
-  });
+  const new({required this.metrics, required this.colorScheme, super.key});
 
   /// The metrics.
   final List<InventoryNutritionMetric> metrics;

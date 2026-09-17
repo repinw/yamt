@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -29,7 +30,7 @@ Widget _buildHarness({
 
   return MaterialApp(
     locale: const Locale('de'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: CookingFlowFinalizePage(

@@ -27,10 +27,7 @@ enum InventoryActivityEventType {
 /// Actor persisted with inventory activity events.
 class InventoryActivityActor {
   /// Creates an inventory activity actor.
-  const InventoryActivityActor({
-    required this.userId,
-    required this.displayName,
-  });
+  const new({required this.userId, required this.displayName});
 
   /// User id.
   final String userId;
@@ -42,7 +39,7 @@ class InventoryActivityActor {
 /// Shared inventory stock activity event.
 class InventoryActivityEvent {
   /// Creates an inventory activity event.
-  const InventoryActivityEvent({
+  const new({
     required this.id,
     required this.type,
     required this.actorUserId,
@@ -63,7 +60,7 @@ class InventoryActivityEvent {
   });
 
   /// Creates an event from stock before/after snapshots.
-  factory InventoryActivityEvent.fromStockChange({
+  factory fromStockChange({
     required String id,
     required InventoryActivityEventType type,
     required InventoryActivityActor actor,
@@ -98,7 +95,7 @@ class InventoryActivityEvent {
   }
 
   /// Creates an inventory activity event from JSON.
-  factory InventoryActivityEvent.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return InventoryActivityEvent(
       id: _readString(json['id']),
       type: _readType(json['type']),

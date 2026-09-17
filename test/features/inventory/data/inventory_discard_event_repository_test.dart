@@ -91,9 +91,7 @@ void main() {
         'updated_at': Timestamp.fromDate(discardedAt),
         'history': <Object>[
           Timestamp.fromDate(discardedAt),
-          <String, dynamic>{
-            'nested_at': Timestamp.fromDate(discardedAt),
-          },
+          <String, dynamic>{'nested_at': Timestamp.fromDate(discardedAt)},
         ],
       },
     });

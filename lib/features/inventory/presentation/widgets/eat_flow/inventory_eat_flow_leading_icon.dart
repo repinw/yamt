@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared leading icon.
 class InventoryEatFlowLeadingIcon extends StatelessWidget {
   /// Creates leading icon.
-  const InventoryEatFlowLeadingIcon({required this.icon, super.key});
+  const new({required this.icon, super.key});
 
   /// Icon.
   final IconData icon;

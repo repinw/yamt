@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Dialog to manually add an item to the receipt.
 class ReceiptAddItemDialog extends StatefulWidget {
   /// Creates a [ReceiptAddItemDialog].
-  const ReceiptAddItemDialog({super.key});
+  const new({super.key});
 
   /// Shows the dialog and returns the new [ReceiptLineItem] or null if
   /// cancelled.
@@ -41,15 +41,9 @@ class _ReceiptAddItemDialogState extends State<ReceiptAddItemDialog> {
     if (name.isEmpty) return;
 
     final quantity =
-        double.tryParse(
-          _quantityController.text.replaceAll(',', '.'),
-        ) ??
-        1.0;
+        double.tryParse(_quantityController.text.replaceAll(',', '.')) ?? 1.0;
     final price =
-        double.tryParse(
-          _priceController.text.replaceAll(',', '.'),
-        ) ??
-        0.0;
+        double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0;
 
     final item = ReceiptLineItem(
       id: 'manual_${DateTime.now().microsecondsSinceEpoch}',
@@ -127,9 +121,7 @@ class _ReceiptAddItemDialogState extends State<ReceiptAddItemDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            l10n?.inventoryReceiptReviewCancelAction ?? 'Abbrechen',
-          ),
+          child: Text(l10n?.inventoryReceiptReviewCancelAction ?? 'Abbrechen'),
         ),
         FilledButton(
           onPressed: _onSave,

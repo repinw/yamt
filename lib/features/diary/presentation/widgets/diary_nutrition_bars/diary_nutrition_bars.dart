@@ -1,7 +1,7 @@
 import 'dart:async' show unawaited;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -20,18 +20,14 @@ abstract final class DiaryNutritionBarsKeys {
 /// Macro nutrition bars for the diary page.
 class DiaryNutritionBars extends ConsumerWidget {
   /// Creates standalone diary nutrition bars.
-  const DiaryNutritionBars({
-    required this.selectedDay,
-    super.key,
-  }) : _framed = true,
-       _showTitle = true;
+  const new({required this.selectedDay, super.key})
+    : _framed = true,
+      _showTitle = true;
 
   /// Creates embedded diary nutrition bars without a standalone card frame.
-  const DiaryNutritionBars.embedded({
-    required this.selectedDay,
-    super.key,
-  }) : _framed = false,
-       _showTitle = false;
+  const new embedded({required this.selectedDay, super.key})
+    : _framed = false,
+      _showTitle = false;
 
   /// The selected diary day.
   final DateTime selectedDay;
@@ -63,10 +59,7 @@ class DiaryNutritionBars extends ConsumerWidget {
             )
           : data == null
           ? DiaryNutritionBarsSkeleton(showTitle: _showTitle)
-          : DiaryNutritionBarsContent(
-              data: data,
-              showTitle: _showTitle,
-            ),
+          : DiaryNutritionBarsContent(data: data, showTitle: _showTitle),
     );
 
     if (!_framed) {

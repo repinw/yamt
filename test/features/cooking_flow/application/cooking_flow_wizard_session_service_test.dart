@@ -20,9 +20,7 @@ void main() {
   test('saves wizard state into persisted session snapshot', () async {
     final store = _FakeCookingFlowSessionLocalStore();
     final container = _container(store);
-    final controller = container.read(
-      cookingFlowWizardSessionServiceProvider,
-    );
+    final controller = container.read(cookingFlowWizardSessionServiceProvider);
 
     final saved = await controller.saveSession(
       state: _state(isRestoringSession: false),
@@ -53,10 +51,9 @@ void main() {
     expect(store.savedSession?.step, CookingFlowSessionStep.summary);
     expect(store.savedSession?.summaryIngredients.single.name, 'Mehl');
     expect(store.savedSession?.storageContainers.single.taraText, '300');
-    expect(
-      store.savedSession?.ingredientContainerAssignments,
-      <String, String>{'template:500g Mehl': 'container-1'},
-    );
+    expect(store.savedSession?.ingredientContainerAssignments, <String, String>{
+      'template:500g Mehl': 'container-1',
+    });
   });
 
   test('does not save while wizard is restoring session', () async {
@@ -115,9 +112,7 @@ void main() {
       ),
     );
     final container = _container(store);
-    final controller = container.read(
-      cookingFlowWizardSessionServiceProvider,
-    );
+    final controller = container.read(cookingFlowWizardSessionServiceProvider);
 
     final restored = await controller.restoreSession('template-1');
     final state = controller.stateFromStoredSession(
@@ -177,7 +172,7 @@ CookingFlowWizardState _state({required bool isRestoringSession}) {
 
 class _FakeCookingFlowSessionLocalStore
     implements CookingFlowSessionLocalStore {
-  _FakeCookingFlowSessionLocalStore({this.session});
+  new({this.session});
 
   CookingFlowSession? session;
   CookingFlowSession? savedSession;

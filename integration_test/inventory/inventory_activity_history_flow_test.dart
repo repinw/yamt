@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
@@ -21,9 +22,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 class _StreamingInventoryActivityEventRepository
     implements InventoryActivityEventRepository {
-  _StreamingInventoryActivityEventRepository(
-    List<InventoryActivityEvent> events,
-  ) : _events = List<InventoryActivityEvent>.from(events);
+  new(List<InventoryActivityEvent> events)
+    : _events = List<InventoryActivityEvent>.from(events);
 
   final StreamController<List<InventoryActivityEvent>> _controller =
       StreamController<List<InventoryActivityEvent>>.broadcast();
@@ -61,7 +61,7 @@ class _StreamingInventoryActivityEventRepository
 }
 
 class _StaticInventoryItemsController extends InventoryItemsController {
-  _StaticInventoryItemsController(this.items);
+  new(this.items);
 
   final List<InventoryItem> items;
 
@@ -86,10 +86,7 @@ class _StaticShoppingListController extends ShoppingListController {
 }
 
 class _InventoryActivityHistoryHarness {
-  const _InventoryActivityHistoryHarness({
-    required this.app,
-    required this.activityRepository,
-  });
+  const new({required this.app, required this.activityRepository});
 
   final Widget app;
   final _StreamingInventoryActivityEventRepository activityRepository;
@@ -145,11 +142,9 @@ _InventoryActivityHistoryHarness _buildHarness() {
       container: container,
       child: const MaterialApp(
         locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: InventoryPage(includeHomeShellChrome: true),
-        ),
+        home: Scaffold(body: InventoryPage(includeHomeShellChrome: true)),
       ),
     ),
   );

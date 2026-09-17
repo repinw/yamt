@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file/memory.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
@@ -21,7 +21,7 @@ final Uint8List _transparentPngBytes = base64Decode(
   '/w8AAgMBgJGDnzsAAAAASUVORK5CYII=',
 );
 
-class _MockImageCacheManager extends Mock implements ImageCacheManager {}
+class _MockImageCacheManager extends Mock implements ImageCacheManager;
 
 Widget _buildHarness(Widget child, {double devicePixelRatio = 1}) {
   return MediaQuery(

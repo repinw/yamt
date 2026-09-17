@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 /// Renders the stock list with the callbacks coordinated by the page.
 class InventoryPageListContent extends StatelessWidget {
   /// Creates inventory page list content.
-  const InventoryPageListContent({
+  const new({
     required this.items,
     required this.preparedMeals,
     required this.emptyStateActionButton,

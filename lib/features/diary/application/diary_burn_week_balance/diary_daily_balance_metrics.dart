@@ -3,7 +3,7 @@ import 'dart:math' as math;
 /// Derived values for the selected day's balance summary and progress bar.
 class DiaryDailyBalanceMetrics {
   /// Creates derived daily balance metrics.
-  const DiaryDailyBalanceMetrics({
+  const new({
     required this.bufferAdjustmentKcal,
     required this.realEatenKcal,
     required this.eatenKcal,
@@ -133,8 +133,5 @@ double resolveDiaryActivitySegmentReferenceKcal({
   required double activitySegmentKcal,
 }) {
   final positiveActivitySegmentKcal = math.max<double>(0, activitySegmentKcal);
-  return math.max<double>(
-    goalKcal,
-    baseGoalKcal + positiveActivitySegmentKcal,
-  );
+  return math.max<double>(goalKcal, baseGoalKcal + positiveActivitySegmentKcal);
 }

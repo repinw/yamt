@@ -16,7 +16,7 @@ enum ManualBarcodeScanResultKind {
 
 /// Selected or missing barcode result from the scanner sheet.
 class ManualBarcodeScanResult {
-  const ManualBarcodeScanResult._({
+  const new _({
     required this.kind,
     this.action,
     this.candidate,
@@ -24,7 +24,7 @@ class ManualBarcodeScanResult {
   });
 
   /// A barcode candidate was selected.
-  const ManualBarcodeScanResult.selected({
+  const new selected({
     required InventoryBarcodeLookupCandidate candidate,
     required String scannedBarcode,
     required InventoryBarcodeCandidateAction action,
@@ -36,14 +36,14 @@ class ManualBarcodeScanResult {
        );
 
   /// The scanned barcode was not found.
-  const ManualBarcodeScanResult.notFound({required String scannedBarcode})
+  const new notFound({required String scannedBarcode})
     : this._(
         kind: ManualBarcodeScanResultKind.notFound,
         scannedBarcode: scannedBarcode,
       );
 
   /// The user wants to create their own product.
-  const ManualBarcodeScanResult.manual({required String scannedBarcode})
+  const new manual({required String scannedBarcode})
     : this._(
         kind: ManualBarcodeScanResultKind.manual,
         scannedBarcode: scannedBarcode,

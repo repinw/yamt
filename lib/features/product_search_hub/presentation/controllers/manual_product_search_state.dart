@@ -12,7 +12,7 @@ const _keepValue = Object();
 /// Defines inventory receipt manual product state.
 class InventoryReceiptManualProductState {
   /// The inventory receipt manual product state.
-  const InventoryReceiptManualProductState({
+  const new({
     this.searchQuery = '',
     this.nameText = '',
     this.brandText = '',

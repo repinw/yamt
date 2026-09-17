@@ -6,7 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 void main() {
   User buildUser({

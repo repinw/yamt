@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_ghost_text_button/auth_ghost_text_button.dart';
 
 Widget _wrapWithApp(Widget child) {
@@ -27,9 +27,7 @@ void main() {
       expect(find.text('Continue as guest'), findsNothing);
     });
 
-    testWidgets('renders text and fires callback when pressed', (
-      tester,
-    ) async {
+    testWidgets('renders text and fires callback when pressed', (tester) async {
       var actionCalls = 0;
 
       await tester.pumpWidget(

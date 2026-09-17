@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Divider used between sections in inventory filter sheets.
 class InventoryFilterDivider extends StatelessWidget {
   /// Creates inventory filter divider.
-  const InventoryFilterDivider({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,12 +12,8 @@ class InventoryFilterDivider extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
       child: Divider(
         height: AppSizes.dividerThickness,
-        color:
-            Theme.of(
-              context,
-            ).colorScheme.outlineVariant.withValues(
-              alpha: AppOpacities.inventoryFilterDivider,
-            ),
+        color: Theme.of(context).colorScheme.outlineVariant
+            .withValues(alpha: AppOpacities.inventoryFilterDivider),
       ),
     );
   }

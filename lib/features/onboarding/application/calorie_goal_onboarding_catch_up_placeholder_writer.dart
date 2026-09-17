@@ -14,13 +14,11 @@ const _minimumPlaceholderKcal = 100.0;
 /// Writes estimated calorie entries for same-day onboarding catch-up.
 class CalorieGoalOnboardingCatchUpPlaceholderWriter {
   /// Creates placeholder writer.
-  const CalorieGoalOnboardingCatchUpPlaceholderWriter({
-    required CalorieLogRepositoryContract logRepository,
-    required bool Function() isMounted,
+  const new({
+    required this._logRepository,
+    required this._isMounted,
     String Function()? idGenerator,
-  }) : _logRepository = logRepository,
-       _isMounted = isMounted,
-       _idGenerator = idGenerator ?? _defaultId;
+  }) : _idGenerator = idGenerator ?? _defaultId;
 
   final CalorieLogRepositoryContract _logRepository;
   final bool Function() _isMounted;

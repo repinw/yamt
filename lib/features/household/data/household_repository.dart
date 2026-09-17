@@ -35,16 +35,13 @@ HouseholdRepository householdRepository(Ref ref) {
 /// Defines household repository.
 class HouseholdRepository {
   /// Creates an instance.
-  HouseholdRepository({
-    required FirebaseFirestore firestore,
-    required String currentUserId,
-    required bool isAnonymous,
+  new({
+    required this._firestore,
+    required this._currentUserId,
+    required this._isAnonymous,
     required String? currentHouseholdId,
     Random? random,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId,
-       _isAnonymous = isAnonymous,
-       _currentHouseholdId = _normalizeOptional(currentHouseholdId),
+  }) : _currentHouseholdId = _normalizeOptional(currentHouseholdId),
        _random = random ?? Random.secure();
 
   static const _fieldUid = 'uid';

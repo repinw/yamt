@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared sticky footer for inventory eat flows.
 class InventoryEatFlowFooter extends StatelessWidget {
   /// Creates shared footer.
-  const InventoryEatFlowFooter({
+  const new({
     required this.confirmActionText,
     required this.confirmButtonKey,
     required this.onConfirm,
@@ -39,11 +39,7 @@ class InventoryEatFlowFooter extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surfaceContainerLowest,
-        border: Border(
-          top: BorderSide(
-            color: colors.outlineVariant,
-          ),
-        ),
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -85,7 +81,7 @@ class InventoryEatFlowFooter extends StatelessWidget {
 }
 
 class _SecondaryButton extends StatelessWidget {
-  const _SecondaryButton({
+  const new({
     required this.buttonKey,
     required this.text,
     required this.onPressed,
@@ -109,16 +105,15 @@ class _SecondaryButton extends StatelessWidget {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(fontWeight: FontWeight.w800),
       ),
     );
   }
 }
 
 class _ConfirmButton extends StatelessWidget {
-  const _ConfirmButton({
+  const new({
     required this.buttonKey,
     required this.text,
     required this.colors,
@@ -144,10 +139,8 @@ class _ConfirmButton extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: colors.onPrimary,
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(color: colors.onPrimary, fontWeight: FontWeight.w800),
       ),
     );
   }

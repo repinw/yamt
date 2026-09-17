@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 const _productSearchHubScrollHandleWidth = 44.0;
@@ -8,7 +8,7 @@ const _productSearchHubScrollHandleOpacity = 0.68;
 /// Centered scroll affordance for the product search hub list area.
 class ProductSearchHubScrollHintHandle extends StatelessWidget {
   /// Creates a product search hub scroll hint handle.
-  const ProductSearchHubScrollHintHandle({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,7 @@ import 'package:yamt/features/health/domain/health_weight_sample.dart';
 /// Data for the diary weight card.
 class DiaryActivityWeightData {
   /// Creates diary weight data.
-  const DiaryActivityWeightData({
+  const new({
     required this.profileWeightKg,
     required this.selectedWeightKg,
     required this.hasSelectedDayWeight,
@@ -30,7 +30,7 @@ class DiaryActivityWeightData {
 /// One day of weight data for the selected diary window.
 class DiaryWeightDayData {
   /// Creates one weight day.
-  const DiaryWeightDayData({
+  const new({
     required this.day,
     required this.weightKg,
     required this.hasManualWeight,
@@ -60,9 +60,7 @@ class DiaryWeightDayData {
 /// Profile input used as the fallback weight.
 class DiaryActivityWeightProfile {
   /// Creates the weight profile input.
-  const DiaryActivityWeightProfile({
-    required this.weightKg,
-  });
+  const new({required this.weightKg});
 
   /// Profile weight in kilograms.
   final double? weightKg;

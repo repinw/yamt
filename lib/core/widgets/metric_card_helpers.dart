@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared rounded detail card shell for secondary metric cards.
 class MetricDetailCardShell extends StatelessWidget {
   /// Creates a detail card shell.
-  const MetricDetailCardShell({required this.child, super.key});
+  const new({required this.child, super.key});
 
   /// The card content.
   final Widget child;
@@ -30,12 +30,7 @@ class MetricDetailCardShell extends StatelessWidget {
 /// Shared rounded frame for compact metric cards.
 class MetricCardFrame extends StatelessWidget {
   /// Creates a metric card frame.
-  const MetricCardFrame({
-    required this.child,
-    this.padding,
-    this.clip = true,
-    super.key,
-  });
+  const new({required this.child, this.padding, this.clip = true, super.key});
 
   /// Card content.
   final Widget child;
@@ -69,12 +64,7 @@ class MetricCardFrame extends StatelessWidget {
 /// Shared skeleton block for metric loading placeholders.
 class MetricSkeletonBlock extends StatelessWidget {
   /// Creates a skeleton block.
-  const MetricSkeletonBlock({
-    required this.height,
-    required this.color,
-    this.width,
-    super.key,
-  });
+  const new({required this.height, required this.color, this.width, super.key});
 
   /// Optional width.
   final double? width;
@@ -101,7 +91,7 @@ class MetricSkeletonBlock extends StatelessWidget {
 /// Compact retry content for metric cards.
 class MetricErrorRetryContent extends StatelessWidget {
   /// Creates retry content.
-  const MetricErrorRetryContent({
+  const new({
     required this.message,
     required this.retryLabel,
     required this.onRetry,

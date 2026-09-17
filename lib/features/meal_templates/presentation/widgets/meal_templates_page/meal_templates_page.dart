@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
@@ -29,7 +29,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines meal templates page.
 class MealTemplatesPage extends ConsumerWidget {
   /// The meal templates page.
-  const MealTemplatesPage({super.key, this.includeAppBar = true});
+  const new({super.key, this.includeAppBar = true});
 
   /// Whether this page should render its own app bar.
   final bool includeAppBar;
@@ -69,10 +69,8 @@ class MealTemplatesPage extends ConsumerWidget {
         return MealTemplatesGrid(
           templates: templates,
           includeAppBar: includeAppBar,
-          onOpen: (template) => _openTemplateDetail(
-            context: context,
-            templateId: template.id,
-          ),
+          onOpen: (template) =>
+              _openTemplateDetail(context: context, templateId: template.id),
           onEdit: (template) => _editTemplate(
             context: context,
             templatesController: templatesController,
@@ -91,9 +89,7 @@ class MealTemplatesPage extends ConsumerWidget {
       ),
       error: (error, stackTrace) => SliverFillRemaining(
         hasScrollBody: false,
-        child: MealTemplatesErrorState(
-          onRetry: templatesController.refresh,
-        ),
+        child: MealTemplatesErrorState(onRetry: templatesController.refresh),
       ),
     );
 
@@ -109,12 +105,7 @@ class MealTemplatesPage extends ConsumerWidget {
               ],
             )
           : null,
-      body: CustomScrollView(
-        slivers: [
-          ...topChromeSlivers,
-          bodySliver,
-        ],
-      ),
+      body: CustomScrollView(slivers: [...topChromeSlivers, bodySliver]),
     );
   }
 

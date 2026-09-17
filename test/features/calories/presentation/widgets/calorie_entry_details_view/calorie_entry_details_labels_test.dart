@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -11,10 +11,7 @@ void main() {
   const material = DefaultMaterialLocalizations();
 
   test('logged day label formats today', () {
-    expect(
-      calorieEntryLoggedDayLabel(l10n, material, DateTime.now()),
-      'Today',
-    );
+    expect(calorieEntryLoggedDayLabel(l10n, material, DateTime.now()), 'Today');
   });
 
   test('logged day label formats previous days', () {
@@ -61,10 +58,7 @@ void main() {
 
   test('consumed amount label formats regular entries', () {
     expect(
-      calorieEntryConsumedAmountLabel(
-        l10n,
-        _regularEntry(consumedAmount: 200),
-      ),
+      calorieEntryConsumedAmountLabel(l10n, _regularEntry(consumedAmount: 200)),
       '200 g',
     );
   });

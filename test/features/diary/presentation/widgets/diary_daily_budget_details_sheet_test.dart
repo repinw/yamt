@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
@@ -10,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 void main() {
   Widget buildTestWidget(DiaryDailyBudgetDetailsData data) {
     return MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         extensions: [
@@ -157,9 +158,7 @@ void main() {
 
     testWidgets(
       'renders calorie cycling breakdown when cycling adjustment is present',
-      (
-        tester,
-      ) async {
+      (tester) async {
         final monday = DateTime(2026, 4, 13);
 
         final data = DiaryDailyBudgetDetailsData(

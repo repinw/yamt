@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/data/off_product_search_result.dart';
 /// Parses legacy text payloads from OFF search responses.
 class OffProductSearchTextPayloadParser {
   /// Creates an OFF text payload parser.
-  const OffProductSearchTextPayloadParser();
+  const new();
 
   /// Parses text lines starting with "Score:" into search results.
   List<OffProductSearchResult> parse(String body) {
@@ -31,9 +31,8 @@ class OffProductSearchTextPayloadParser {
 
       final code = parts[codeIndex].trim();
       final brandedName = parts[nameIndex].trim();
-      final brandedNameMatch = RegExp(
-        r'^\[(.*?)\]\s*(.+)$',
-      ).firstMatch(brandedName);
+      final brandedNameMatch = RegExp(r'^\[(.*?)\]\s*(.+)$')
+          .firstMatch(brandedName);
       final brand = brandedNameMatch?.group(1)?.trim();
       final name = brandedNameMatch?.group(2)?.trim();
       if (score == null || code.isEmpty || name == null || name.isEmpty) {

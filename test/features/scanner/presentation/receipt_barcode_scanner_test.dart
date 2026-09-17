@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/barcode_scanner/app_barcode_scanner_page.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'receipt_barcode_input_dialog.dart';
@@ -12,58 +13,57 @@ void main() {
     Widget buildTestApp({required Widget child}) {
       return MaterialApp(
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: child),
       );
     }
 
-    testWidgets(
-      'opens AppBarcodeScannerPage with manual action in app bar',
-      (tester) async {
-        String? result;
+    testWidgets('opens AppBarcodeScannerPage with manual action in app bar', (
+      tester,
+    ) async {
+      String? result;
 
-        await tester.pumpWidget(
-          buildTestApp(
-            child: Builder(
-              builder: (context) {
-                return ElevatedButton(
-                  onPressed: () async {
-                    result = await openReceiptBarcodeScanner(context);
-                  },
-                  child: const Text('Open Scanner'),
-                );
-              },
-            ),
+      await tester.pumpWidget(
+        buildTestApp(
+          child: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  result = await openReceiptBarcodeScanner(context);
+                },
+                child: const Text('Open Scanner'),
+              );
+            },
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open Scanner'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open Scanner'));
+      await tester.pumpAndSettle();
 
-        expect(find.byType(AppBarcodeScannerPage), findsOneWidget);
-        expect(
-          find.byKey(const Key('receipt_barcode_scanner_manual_action')),
-          findsOneWidget,
-        );
+      expect(find.byType(AppBarcodeScannerPage), findsOneWidget);
+      expect(
+        find.byKey(const Key('receipt_barcode_scanner_manual_action')),
+        findsOneWidget,
+      );
 
-        // Tap manual entry action in app bar
-        await tester.tap(
-          find.byKey(const Key('receipt_barcode_scanner_manual_action')),
-        );
-        await tester.pumpAndSettle();
+      // Tap manual entry action in app bar
+      await tester.tap(
+        find.byKey(const Key('receipt_barcode_scanner_manual_action')),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.byType(ReceiptBarcodeInputDialog), findsOneWidget);
+      expect(find.byType(ReceiptBarcodeInputDialog), findsOneWidget);
 
-        // Enter barcode and submit
-        await tester.enterText(find.byType(TextField), '4006381333931');
-        await tester.tap(find.text('Bestätigen'));
-        await tester.pumpAndSettle();
+      // Enter barcode and submit
+      await tester.enterText(find.byType(TextField), '4006381333931');
+      await tester.tap(find.text('Bestätigen'));
+      await tester.pumpAndSettle();
 
-        expect(result, '4006381333931');
-        expect(find.byType(AppBarcodeScannerPage), findsNothing);
-      },
-    );
+      expect(result, '4006381333931');
+      expect(find.byType(AppBarcodeScannerPage), findsNothing);
+    });
 
     testWidgets('cancelling manual input dialog leaves scanner open', (
       tester,

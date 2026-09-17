@@ -6,29 +6,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
 
 void main() {
-  test('saveText returns saved result when file picker returns path', () async {
+  test('saveText returns saved result when file picker returns uri', () async {
     late String capturedDialogTitle;
     late String capturedFileName;
     late FileType capturedType;
     late List<String>? capturedAllowedExtensions;
-    late Uint8List? capturedBytes;
+    late Uint8List capturedBytes;
     final exporter = FilePickerCalorieDebugFileExporter(
       saveFile:
           ({
+            required fileName,
+            required bytes,
             dialogTitle,
-            fileName,
-            initialDirectory,
             type = FileType.any,
             allowedExtensions,
-            bytes,
-            lockParentWindow = false,
           }) async {
             capturedDialogTitle = dialogTitle ?? '';
-            capturedFileName = fileName ?? '';
+            capturedFileName = fileName;
             capturedType = type;
             capturedAllowedExtensions = allowedExtensions;
             capturedBytes = bytes;
-            return '/tmp/calorie-debug.txt';
+            return Uri.file('/tmp/calorie-debug.txt');
           },
     );
 
@@ -47,7 +45,7 @@ void main() {
     expect(capturedFileName, 'calorie-debug.txt');
     expect(capturedType, FileType.custom);
     expect(capturedAllowedExtensions, const <String>['txt']);
-    expect(utf8.decode(capturedBytes ?? Uint8List(0)), 'debug text');
+    expect(utf8.decode(capturedBytes), 'debug text');
   });
 
   test(
@@ -56,13 +54,11 @@ void main() {
       final exporter = FilePickerCalorieDebugFileExporter(
         saveFile:
             ({
+              required fileName,
+              required bytes,
               dialogTitle,
-              fileName,
-              initialDirectory,
               type = FileType.any,
               allowedExtensions,
-              bytes,
-              lockParentWindow = false,
             }) async {
               return null;
             },

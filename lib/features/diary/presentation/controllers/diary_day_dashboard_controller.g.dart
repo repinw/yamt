@@ -106,7 +106,7 @@ abstract class _$DiaryDayDashboardController
   DiaryDayDashboardState build(DateTime selectedDay);
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<DiaryDayDashboardState, DiaryDayDashboardState>;
     final element =
@@ -117,6 +117,6 @@ abstract class _$DiaryDayDashboardController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, () => build(_$args));
+    return element.handleCreate(ref, () => build(_$args));
   }
 }

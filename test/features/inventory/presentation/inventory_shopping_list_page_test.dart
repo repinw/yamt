@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _StockRepository implements InventoryItemRepository {
@@ -54,7 +56,7 @@ Future<FakeShoppingListRepository> _pump(
       container: container,
       child: const MaterialApp(
         locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: InventoryShoppingListPage(),
       ),

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/barcode_scanner/app_barcode_scanner_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

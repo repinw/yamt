@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
@@ -21,7 +21,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 /// Defines inventory receipt manual product launcher content.
 class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
   /// The inventory receipt manual product launcher content.
-  const InventoryReceiptManualProductLauncherContent({
+  const new({
     required this.title,
     required this.searchController,
     required this.recentItems,
@@ -103,7 +103,7 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
 /// Defines inventory receipt manual product form.
 class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The inventory receipt manual product form.
-  const InventoryReceiptManualProductForm({
+  const new({
     required this.title,
     required this.searchController,
     required this.isSearching,

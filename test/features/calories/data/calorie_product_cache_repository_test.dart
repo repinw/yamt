@@ -4,7 +4,7 @@ import 'package:yamt/features/calories/data/calorie_product_cache_repository.dar
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 class _FakeSession implements CalorieProductCacheUserSession {
-  _FakeSession(this.currentUserId);
+  new(this.currentUserId);
 
   @override
   final String? currentUserId;

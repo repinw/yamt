@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -28,7 +28,7 @@ enum DiaryQuickEatSource {
 
 /// Runs diary quick-eat flows.
 class DiaryQuickEatFlow {
-  const DiaryQuickEatFlow._();
+  const new _();
 
   /// Opens [source] for [selectedDay].
   ///

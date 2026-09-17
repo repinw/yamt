@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_eat_flow_leading_icon.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_flow/inventory_
 /// Shared date card.
 class InventoryEatFlowWhenCard extends StatelessWidget {
   /// Creates date card.
-  const InventoryEatFlowWhenCard({
+  const new({
     required this.label,
     required this.isToday,
     required this.buttonKey,
@@ -49,9 +49,7 @@ class InventoryEatFlowWhenCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: colors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(
-              color: colors.outlineVariant,
-            ),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 66),

@@ -1,14 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Track missing weight action for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInTrackMissingWeightAction extends StatelessWidget {
   /// Creates a track missing weight dialog action.
-  const DiaryWeeklyCheckInTrackMissingWeightAction({
-    required this.onPressed,
-    super.key,
-  });
+  const new({required this.onPressed, super.key});
 
   /// Called when action is tapped.
   final VoidCallback onPressed;
@@ -28,7 +25,7 @@ class DiaryWeeklyCheckInTrackMissingWeightAction extends StatelessWidget {
 /// Later action for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInLaterAction extends StatelessWidget {
   /// Creates a later dialog action.
-  const DiaryWeeklyCheckInLaterAction({required this.onPressed, super.key});
+  const new({required this.onPressed, super.key});
 
   /// Called when action is tapped.
   final VoidCallback onPressed;
@@ -48,7 +45,7 @@ class DiaryWeeklyCheckInLaterAction extends StatelessWidget {
 /// Apply action for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInApplyAction extends StatelessWidget {
   /// Creates an apply dialog action.
-  const DiaryWeeklyCheckInApplyAction({required this.onPressed, super.key});
+  const new({required this.onPressed, super.key});
 
   /// Called when action is tapped.
   final VoidCallback onPressed;
@@ -68,7 +65,7 @@ class DiaryWeeklyCheckInApplyAction extends StatelessWidget {
 /// Reject action for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInRejectAction extends StatelessWidget {
   /// Creates a reject dialog action.
-  const DiaryWeeklyCheckInRejectAction({required this.onPressed, super.key});
+  const new({required this.onPressed, super.key});
 
   /// Called when action is tapped.
   final VoidCallback onPressed;

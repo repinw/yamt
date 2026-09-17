@@ -39,10 +39,7 @@ void main() {
     expect(AppRoutes.homeShopping, '/home/shopping');
     expect(AppRoutes.homeDiary, '/home/calories');
     expect(AppRoutes.homeCalories, '/home/calories');
-    expect(
-      AppRoutes.homeCaloriesEntryCreate,
-      '/home/calories/entry/create',
-    );
+    expect(AppRoutes.homeCaloriesEntryCreate, '/home/calories/entry/create');
     expect(
       AppRoutes.homeCaloriesEntryDetails,
       '/home/calories/entry/:entryId/details',

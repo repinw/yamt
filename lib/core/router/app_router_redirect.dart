@@ -60,10 +60,7 @@ String? _redirectForOnboarding(
   return _redirectForCalorieGoal(calorieState, path);
 }
 
-String? _redirectForCalorieGoal(
-  AsyncValue<bool> calorieState,
-  String path,
-) {
+String? _redirectForCalorieGoal(AsyncValue<bool> calorieState, String path) {
   final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
   if (calorieState.isLoading) {
     return (isStartup || path == AppRoutes.calorieGoalSetup)

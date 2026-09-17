@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 
@@ -50,9 +50,7 @@ void main() {
         builder: (context, ref) => ElevatedButton(
           onPressed: () async {
             await harness
-                .createCoordinator(
-                  cameraPicker: () async => '/tmp/photo.jpg',
-                )
+                .createCoordinator(cameraPicker: () async => '/tmp/photo.jpg')
                 .startCameraFlow(context);
           },
           child: const Text('Camera'),

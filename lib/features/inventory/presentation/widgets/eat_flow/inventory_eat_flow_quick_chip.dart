@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Shared quick chip.
 class InventoryEatFlowQuickChip extends StatelessWidget {
   /// Creates quick chip.
-  const InventoryEatFlowQuickChip({
+  const new({
     required this.label,
     required this.isSelected,
     required this.onPressed,
@@ -35,10 +35,7 @@ class InventoryEatFlowQuickChip extends StatelessWidget {
             color: isSelected ? colors.primary : colors.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(AppRadius.xl),
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 5,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(

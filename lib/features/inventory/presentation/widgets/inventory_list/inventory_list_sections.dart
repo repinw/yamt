@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
@@ -9,12 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines inventory section header.
 class InventorySectionHeader extends StatelessWidget {
   /// The inventory section header.
-  const InventorySectionHeader({
-    required this.title,
-    super.key,
-    this.subtitle,
-    this.trailing,
-  });
+  const new({required this.title, super.key, this.subtitle, this.trailing});
 
   /// The title.
   final String title;
@@ -33,10 +28,8 @@ class InventorySectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: colors.onSurface,
-            fontWeight: FontWeight.w800,
-          ),
+          style: Theme.of(context).textTheme.headlineSmall
+              ?.copyWith(color: colors.onSurface, fontWeight: FontWeight.w800),
         ),
         if (subtitle != null) ...[
           const SizedBox(height: AppSpacing.xxs),
@@ -82,7 +75,7 @@ class InventorySectionHeader extends StatelessWidget {
 /// Defines inventory filters sheet.
 class InventoryFiltersSheet extends StatelessWidget {
   /// The inventory filters sheet.
-  const InventoryFiltersSheet({
+  const new({
     required this.title,
     required this.subtitle,
     required this.actionLabel,
@@ -193,9 +186,8 @@ class InventoryFiltersSheet extends StatelessWidget {
                         const SizedBox(width: AppSpacing.md),
                         IconButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          tooltip: MaterialLocalizations.of(
-                            context,
-                          ).closeButtonTooltip,
+                          tooltip: MaterialLocalizations.of(context)
+                              .closeButtonTooltip,
                           style: IconButton.styleFrom(
                             backgroundColor: colors.surfaceContainerLow,
                             foregroundColor: colors.onSurfaceVariant,
@@ -249,7 +241,7 @@ class InventoryFiltersSheet extends StatelessWidget {
 /// Defines inventory filters section label.
 class InventoryFiltersSectionLabel extends StatelessWidget {
   /// The inventory filters section label.
-  const InventoryFiltersSectionLabel({required this.label, super.key});
+  const new({required this.label, super.key});
 
   /// The label.
   final String label;
@@ -275,7 +267,7 @@ class InventoryFiltersSectionLabel extends StatelessWidget {
 /// Defines inventory sort option card.
 class InventorySortOptionCard extends StatelessWidget {
   /// The inventory sort option card.
-  const InventorySortOptionCard({
+  const new({
     required this.title,
     required this.icon,
     required this.isSelected,
@@ -464,10 +456,7 @@ class InventorySortOptionCard extends StatelessWidget {
 }
 
 class _InventoryFiltersPrimaryButton extends StatelessWidget {
-  const _InventoryFiltersPrimaryButton({
-    required this.label,
-    required this.onPressed,
-  });
+  const new({required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback onPressed;
@@ -508,7 +497,7 @@ class _InventoryFiltersPrimaryButton extends StatelessWidget {
 /// Defines inventory section expand button.
 class InventorySectionExpandButton extends StatelessWidget {
   /// The inventory section expand button.
-  const InventorySectionExpandButton({
+  const new({
     required this.isExpanded,
     required this.semanticLabel,
     required this.onPressed,
@@ -559,11 +548,7 @@ class InventorySectionExpandButton extends StatelessWidget {
 /// Defines inventory empty state.
 class InventoryEmptyState extends StatelessWidget {
   /// The inventory empty state.
-  const InventoryEmptyState({
-    super.key,
-    this.actionButton,
-    this.message,
-  });
+  const new({super.key, this.actionButton, this.message});
 
   /// The action button.
   final Widget? actionButton;
@@ -609,7 +594,7 @@ class InventoryEmptyState extends StatelessWidget {
 }
 
 class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
-  const _InventoryEmptyStateHighlightedAction({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -633,11 +618,7 @@ class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: haloColor,
-              boxShadow: [
-                BoxShadow(
-                  color: haloShadowColor,
-                ),
-              ],
+              boxShadow: [BoxShadow(color: haloShadowColor)],
             ),
             child: const SizedBox.square(),
           ),

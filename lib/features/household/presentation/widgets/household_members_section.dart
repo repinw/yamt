@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/household/presentation/controllers/'
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines household members section.
 class HouseholdMembersSection extends ConsumerWidget {
   /// The household members section.
-  const HouseholdMembersSection({
+  const new({
     required this.members,
     required this.currentUserId,
     required this.householdRootId,
@@ -62,7 +62,7 @@ class HouseholdMembersSection extends ConsumerWidget {
 }
 
 class _MemberRow extends ConsumerWidget {
-  const _MemberRow({
+  const new({
     required this.member,
     required this.currentUserId,
     required this.householdRootId,
@@ -166,7 +166,7 @@ class _MemberRow extends ConsumerWidget {
 }
 
 class _MemberChip extends StatelessWidget {
-  const _MemberChip({required this.label});
+  const new({required this.label});
 
   final String label;
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
@@ -13,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Kitchen utensil list card.
 class KitchenUtensilCard extends ConsumerWidget {
   /// Creates card.
-  const KitchenUtensilCard({
+  const new({
     required this.utensil,
     required this.onEditPressed,
     required this.onDeletePressed,
@@ -33,9 +33,7 @@ class KitchenUtensilCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final borderRadius = BorderRadius.circular(
-      AppRadius.xl,
-    );
+    final borderRadius = BorderRadius.circular(AppRadius.xl);
     final imagePath = utensil.imageStoragePath;
     final imageUrl = imagePath == null
         ? null
@@ -66,16 +64,14 @@ class KitchenUtensilCard extends ConsumerWidget {
                     displayName,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
                     l10n.kitchenUtensilWeightValue(utensil.weightGrams),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                 ],
               ),

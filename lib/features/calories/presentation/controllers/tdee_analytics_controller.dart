@@ -6,7 +6,7 @@ part 'tdee_analytics_controller.g.dart';
 /// UI state for user selections on the TDEE analytics view.
 class TdeeAnalyticsUiState {
   /// Creates UI state for TDEE analytics.
-  const TdeeAnalyticsUiState({
+  const new({
     required this.selectedCycleId,
     required this.timeRange,
     this.showAnticipation = true,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
@@ -15,7 +15,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 /// Visual shell for focused product search page.
 class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Creates focused search page content.
-  const ProductSearchHubSearchPageContent({
+  const new({
     required this.title,
     required this.searchController,
     required this.searchFocusNode,
@@ -168,7 +168,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
 }
 
 class _ProductSearchHubSearchFieldStack extends StatelessWidget {
-  const _ProductSearchHubSearchFieldStack({
+  const new({
     required this.searchController,
     required this.searchFocusNode,
     required this.isSearching,

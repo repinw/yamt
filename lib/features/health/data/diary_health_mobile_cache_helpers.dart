@@ -27,10 +27,7 @@ double? normalizeDiaryHealthUserHeightCm(double? userHeightCm) {
     return null;
   }
 
-  return userHeightCm.clamp(
-    minPersonalizedHeightCm,
-    maxPersonalizedHeightCm,
-  );
+  return userHeightCm.clamp(minPersonalizedHeightCm, maxPersonalizedHeightCm);
 }
 
 /// Cache TTL for one diary health day.

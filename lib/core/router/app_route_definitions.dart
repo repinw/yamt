@@ -100,9 +100,7 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       path: AppRoutes.homeCaloriesEntryDetails,
       pageBuilder: (context, state) => ModalBottomSheetPage<void>(
         key: state.pageKey,
-        child: CalorieEntryEditorPage(
-          entryId: state.pathParameters['entryId'],
-        ),
+        child: CalorieEntryEditorPage(entryId: state.pathParameters['entryId']),
       ),
     ),
     GoRoute(
@@ -130,9 +128,8 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     ),
     GoRoute(
       path: AppRoutes.homeInventoryTemplateDetail,
-      builder: (context, state) => CookingFlowPage(
-        templateId: state.pathParameters['templateId'] ?? '',
-      ),
+      builder: (context, state) =>
+          CookingFlowPage(templateId: state.pathParameters['templateId'] ?? ''),
     ),
     GoRoute(
       path: AppRoutes.homeKitchenUtensils,

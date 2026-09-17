@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 /// Expanded progress track with animated consumed fill and day dividers.
 class DiaryExpandedBalanceProgressTrack extends StatelessWidget {
   /// Creates an expanded progress track.
-  const DiaryExpandedBalanceProgressTrack({
+  const new({
     required this.width,
     required this.actualConsumedRatio,
     required this.activityColor,
@@ -79,7 +79,7 @@ class DiaryExpandedBalanceProgressTrack extends StatelessWidget {
 }
 
 class _AnimatedProgressFill extends StatelessWidget {
-  const _AnimatedProgressFill({
+  const new({
     required this.width,
     required this.actualConsumedRatio,
     required this.activityColor,
@@ -96,10 +96,7 @@ class _AnimatedProgressFill extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       duration: diaryBalanceProgressAnimationDuration,
       curve: diaryBalanceProgressAnimationCurve,
-      tween: Tween<double>(
-        begin: 0,
-        end: actualConsumedRatio,
-      ),
+      tween: Tween<double>(begin: 0, end: actualConsumedRatio),
       builder: (context, value, child) {
         return Positioned(
           left: 0,
@@ -111,12 +108,7 @@ class _AnimatedProgressFill extends StatelessWidget {
       },
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              activityColor,
-              fatColor,
-            ],
-          ),
+          gradient: LinearGradient(colors: [activityColor, fatColor]),
         ),
       ),
     );

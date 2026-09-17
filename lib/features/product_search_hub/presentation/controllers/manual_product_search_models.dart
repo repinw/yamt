@@ -12,7 +12,7 @@ import 'package:yamt/features/product_search_hub/domain/manual_product_search_va
 /// Defines inventory receipt manual product config.
 class InventoryReceiptManualProductConfig {
   /// The inventory receipt manual product config.
-  const InventoryReceiptManualProductConfig({
+  const new({
     required this.item,
     this.selectedProduct,
     this.includeStoreInSearch = true,
@@ -135,7 +135,7 @@ enum InventoryReceiptOptionalNutritionType {
 /// Defines inventory receipt manual product selection.
 class InventoryReceiptManualProductSelection {
   /// The inventory receipt manual product selection.
-  const InventoryReceiptManualProductSelection({
+  const new({
     required this.source,
     required this.name,
     required this.barcode,
@@ -151,9 +151,7 @@ class InventoryReceiptManualProductSelection {
   });
 
   /// Creates a [InventoryReceiptManualProductSelection] for from search result.
-  factory InventoryReceiptManualProductSelection.fromSearchResult(
-    OffProductSearchResult result,
-  ) {
+  factory fromSearchResult(OffProductSearchResult result) {
     return InventoryReceiptManualProductSelection(
       source: InventoryReceiptManualProductSelectionSource.externalSearch,
       name: result.name,
@@ -171,9 +169,7 @@ class InventoryReceiptManualProductSelection {
   }
 
   /// Creates a [InventoryReceiptManualProductSelection] from inventory item.
-  factory InventoryReceiptManualProductSelection.fromInventoryItem(
-    InventoryItem item,
-  ) {
+  factory fromInventoryItem(InventoryItem item) {
     return InventoryReceiptManualProductSelection(
       source: InventoryReceiptManualProductSelectionSource.recentInventory,
       name: item.name,

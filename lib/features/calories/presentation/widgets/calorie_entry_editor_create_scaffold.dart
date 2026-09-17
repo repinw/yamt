@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Scaffold and PopScope wrapper for creating or editing entry via form.
 class CalorieEntryEditorCreateScaffold extends StatelessWidget {
   /// Creates form scaffold wrapper.
-  const CalorieEntryEditorCreateScaffold({
+  const new({
     required this.draft,
     required this.isEditing,
     required this.isSaving,

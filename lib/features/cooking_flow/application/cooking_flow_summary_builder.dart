@@ -181,10 +181,7 @@ buildCookingFlowSummaryIngredientsFromIntro({
           rowDraft.conflictResolution ==
                   CookingFlowIntroConflictResolution.adjustTemplate &&
               requirement != null
-          ? _availableAmount(
-              selectedItems: baseItems,
-              requirement: requirement,
-            )
+          ? _availableAmount(selectedItems: baseItems, requirement: requirement)
           : rowDraft.conflictResolution ==
                 CookingFlowIntroConflictResolution.weighLater
           ? 0

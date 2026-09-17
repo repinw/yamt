@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_messages.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Title text for the diary weekly check-in hint.
 class DiaryWeeklyCheckInHintTitle extends StatelessWidget {
   /// Creates diary weekly check-in hint title text.
-  const DiaryWeeklyCheckInHintTitle({required this.checkInData, super.key});
+  const new({required this.checkInData, super.key});
 
   /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
@@ -19,9 +19,8 @@ class DiaryWeeklyCheckInHintTitle extends StatelessWidget {
 
     return Text(
       _title(l10n),
-      style: Theme.of(
-        context,
-      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+      style: Theme.of(context).textTheme.titleMedium
+          ?.copyWith(fontWeight: FontWeight.w700),
     );
   }
 
@@ -42,7 +41,7 @@ class DiaryWeeklyCheckInHintTitle extends StatelessWidget {
 /// Body text for the diary weekly check-in hint.
 class DiaryWeeklyCheckInHintBody extends StatelessWidget {
   /// Creates diary weekly check-in hint body text.
-  const DiaryWeeklyCheckInHintBody({required this.checkInData, super.key});
+  const new({required this.checkInData, super.key});
 
   /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;

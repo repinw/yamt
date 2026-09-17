@@ -12,8 +12,7 @@ enum GlobalFoodNutritionQualityStatus {
   unverified,
 
   /// Verified.
-  verified
-  ;
+  verified;
 
   /// Resolves quality status from dynamic JSON value.
   static GlobalFoodNutritionQualityStatus fromJson(Object? value) {
@@ -32,7 +31,7 @@ enum GlobalFoodNutritionQualityStatus {
 @freezed
 abstract class GlobalFoodNutrition with _$GlobalFoodNutrition {
   /// The global food nutrition.
-  const factory GlobalFoodNutrition({
+  const factory({
     required GlobalFoodNutritionQualityStatus qualityStatus,
     double? per100Kcal,
     double? per100Protein,
@@ -45,10 +44,10 @@ abstract class GlobalFoodNutrition with _$GlobalFoodNutrition {
     double? per100Fiber,
   }) = _GlobalFoodNutrition;
 
-  const GlobalFoodNutrition._();
+  const new _();
 
   /// Creates a [GlobalFoodNutrition] from json payload with optional fallback.
-  factory GlobalFoodNutrition.fromJson(
+  factory fromJson(
     Map<String, dynamic> json, {
     Map<String, dynamic>? fallback,
     GlobalFoodNutritionQualityStatus? qualityStatusOverride,
@@ -84,11 +83,7 @@ abstract class GlobalFoodNutrition with _$GlobalFoodNutrition {
     ]);
     final sodium = directSalt != null
         ? null
-        : read(const <String>[
-            'sodium_100g',
-            'sodium_100ml',
-            'sodium',
-          ]);
+        : read(const <String>['sodium_100g', 'sodium_100ml', 'sodium']);
     final resolvedSalt = directSalt ?? (sodium != null ? (sodium * 2.5) : null);
 
     final qualityStatus =

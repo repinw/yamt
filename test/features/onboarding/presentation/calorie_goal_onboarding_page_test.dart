@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_page.dart';
@@ -53,7 +54,7 @@ Future<void> _pumpPage(
       ],
       child: const MaterialApp(
         locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: CalorieGoalOnboardingPage(),
       ),
@@ -90,7 +91,7 @@ class _NeverEmittingCalorieSettingsRepository
 }
 
 class _StaticCalorieSettingsRepository implements CalorieSettingsRepository {
-  const _StaticCalorieSettingsRepository(this.settings);
+  const new(this.settings);
 
   final CalorieGoalSettings settings;
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 const _maxSegmentCount = 12;
@@ -15,7 +15,7 @@ enum RemainingProgressBarLabelLayout {
 /// Defines remaining progress bar.
 class RemainingProgressBar extends StatelessWidget {
   /// The remaining progress bar.
-  const RemainingProgressBar({
+  const new({
     required this.ratio,
     required this.stockLabel,
     required this.segmentedByUnits,
@@ -202,7 +202,7 @@ class RemainingProgressBar extends StatelessWidget {
 }
 
 class _StockLabel extends StatelessWidget {
-  const _StockLabel({
+  const new({
     required this.stockLabel,
     required this.baseStyle,
     required this.accentColor,

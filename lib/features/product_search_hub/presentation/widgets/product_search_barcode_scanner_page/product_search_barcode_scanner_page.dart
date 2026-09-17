@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -8,7 +8,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 /// Defines inventory barcode scanner page with an app bar and scanner view.
 class InventoryBarcodeScannerPage extends StatelessWidget {
   /// The inventory barcode scanner page.
-  const InventoryBarcodeScannerPage({
+  const new({
     required this.title,
     super.key,
     this.onBarcodeScanned,
@@ -50,10 +50,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: actions,
-      ),
+      appBar: AppBar(title: Text(title), actions: actions),
       body: InventoryBarcodeScannerView(
         onBarcodeScanned: onBarcodeScanned,
         onProductSelected: onProductSelected,

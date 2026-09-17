@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/onboarding/application/'
@@ -16,16 +16,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Handles the presentation-side finish action for calorie onboarding.
 class CalorieOnboardingFinishHandler {
   /// Creates a finish handler.
-  const CalorieOnboardingFinishHandler({
-    required CalorieGoalOnboardingFinishFlow finishFlow,
-    required CalorieOnboardingWizardController wizardController,
-    required CalorieOnboardingStartDateController startDateController,
+  const new({
+    required this._finishFlow,
+    required this._wizardController,
+    required this._startDateController,
     DateTime Function()? now,
     Future<void> Function(ProviderContainer container)? markCompleted,
-  }) : _finishFlow = finishFlow,
-       _wizardController = wizardController,
-       _startDateController = startDateController,
-       _now = now ?? DateTime.now,
+  }) : _now = now ?? DateTime.now,
        _markCompleted =
            markCompleted ?? markCalorieGoalOnboardingCompletedFromContainer;
 

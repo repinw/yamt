@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
@@ -9,11 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _appBarDebugIconSplashRadius = 18.0;
 
-enum _CalorieDebugAction {
-  debugDump,
-  settingsDump,
-  weeklyCheckInDump,
-}
+enum _CalorieDebugAction { debugDump, settingsDump, weeklyCheckInDump }
 
 extension _CalorieDebugActionDetails on _CalorieDebugAction {
   Key get key {
@@ -65,7 +61,7 @@ extension _CalorieDebugActionDetails on _CalorieDebugAction {
 /// Debug-only calorie actions menu for the home shell app bar.
 class CalorieDebugActionsMenu extends ConsumerWidget {
   /// Creates the calorie debug actions menu.
-  const CalorieDebugActionsMenu({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -102,10 +98,7 @@ class CalorieDebugActionsMenu extends ConsumerWidget {
 }
 
 class _CalorieDebugMenuItem extends StatelessWidget {
-  const _CalorieDebugMenuItem({
-    required this.icon,
-    required this.label,
-  });
+  const new({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -146,10 +139,7 @@ Future<void> _printCalorieSettingsDebugDump(
   if (!context.mounted) {
     return;
   }
-  showCalorieSettingsDebugDumpResultSnackBar(
-    context: context,
-    result: result,
-  );
+  showCalorieSettingsDebugDumpResultSnackBar(context: context, result: result);
 }
 
 Future<void> _printCalorieWeeklyCheckInDebugDump(

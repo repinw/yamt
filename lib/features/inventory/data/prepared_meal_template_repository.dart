@@ -45,9 +45,7 @@ PreparedMealTemplateStore _resolveStore(Ref ref) {
 }
 
 class _CurrentPreparedMealTemplateUserSession implements InventoryUserSession {
-  const _CurrentPreparedMealTemplateUserSession({
-    required String? currentUserId,
-  }) : _currentUserId = currentUserId;
+  const new({required this._currentUserId});
 
   final String? _currentUserId;
 
@@ -57,7 +55,7 @@ class _CurrentPreparedMealTemplateUserSession implements InventoryUserSession {
 
 class _UnavailablePreparedMealTemplateStore
     implements PreparedMealTemplateStore {
-  const _UnavailablePreparedMealTemplateStore();
+  const new();
 
   @override
   Future<List<PreparedMealTemplateDocument>> readAll({

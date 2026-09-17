@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -8,7 +8,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 /// Shows today's applied weekly check-in success card.
 class DiaryWeeklyCheckInSuccessHost extends ConsumerWidget {
   /// Creates diary weekly check-in success host.
-  const DiaryWeeklyCheckInSuccessHost({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

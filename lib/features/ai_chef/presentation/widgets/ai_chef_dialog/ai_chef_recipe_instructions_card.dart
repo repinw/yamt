@@ -1,14 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// Displays generated recipe instructions.
 class AiChefRecipeInstructionsCard extends StatelessWidget {
   /// Creates recipe instructions card.
-  const AiChefRecipeInstructionsCard({
-    required this.recipe,
-    super.key,
-  });
+  const new({required this.recipe, super.key});
 
   /// Generated recipe.
   final PreparedMeal recipe;
@@ -33,7 +30,7 @@ class AiChefRecipeInstructionsCard extends StatelessWidget {
 }
 
 class _InstructionRow extends StatelessWidget {
-  const _InstructionRow({required this.index, required this.step});
+  const new({required this.index, required this.step});
 
   final int index;
   final String step;
@@ -65,7 +62,7 @@ class _InstructionRow extends StatelessWidget {
 }
 
 class _StepNumberBadge extends StatelessWidget {
-  const _StepNumberBadge({required this.index});
+  const new({required this.index});
 
   final int index;
 

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';

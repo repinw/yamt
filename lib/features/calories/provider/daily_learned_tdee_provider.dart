@@ -103,9 +103,7 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
       manualEntries,
     );
     final representativeWeightByDay =
-        DailyLearnedTdeeResolver.representativeWeightByDay(
-          healthWeights,
-        );
+        DailyLearnedTdeeResolver.representativeWeightByDay(healthWeights);
     for (final context in contexts) {
       result[diaryDayKey(
         context.day,

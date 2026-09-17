@@ -14,7 +14,7 @@ const double _estimatedCaloriesPerOutsideStep = 0.04;
 /// Defines diary activity summary.
 class DiaryActivitySummary {
   /// The diary activity summary.
-  const DiaryActivitySummary({
+  const new({
     required this.day,
     required this.stepGoal,
     required this.accessState,
@@ -27,7 +27,7 @@ class DiaryActivitySummary {
   });
 
   /// Creates a [DiaryActivitySummary] for locked.
-  factory DiaryActivitySummary.locked({
+  factory locked({
     required DateTime day,
     required HealthDataAccessState accessState,
     int stepGoal = diaryActivityStepGoal,
@@ -118,10 +118,7 @@ DiaryActivitySummary buildDiaryActivitySummary({
       )
       .toList(growable: false);
   final stepsDuringUnassignedActiveEnergy = dayUnassignedActiveEnergySegments
-      .fold<int>(
-        0,
-        (sum, segment) => sum + (segment.totalSteps ?? 0),
-      );
+      .fold<int>(0, (sum, segment) => sum + (segment.totalSteps ?? 0));
   final accountedSteps =
       stepsDuringWorkouts + stepsDuringUnassignedActiveEnergy;
   final stepsOutsideWorkouts = dayData.totalSteps >= accountedSteps

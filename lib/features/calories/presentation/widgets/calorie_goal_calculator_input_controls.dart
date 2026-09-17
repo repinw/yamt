@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Numeric text field used inside the calorie-goal calculator onboarding.
 class CalorieGoalCalculatorNumberField extends StatelessWidget {
   /// The calorie goal calculator number field.
-  const CalorieGoalCalculatorNumberField({
+  const new({
     required this.fieldKey,
     required this.controller,
     required this.label,
@@ -64,11 +64,7 @@ class CalorieGoalCalculatorNumberField extends StatelessWidget {
 /// Segmented sex selector for the calorie-goal calculator.
 class CalorieGoalCalculatorSexSegmentedControl extends StatelessWidget {
   /// The calorie goal calculator sex segmented control.
-  const CalorieGoalCalculatorSexSegmentedControl({
-    required this.selectedSex,
-    required this.onSelected,
-    super.key,
-  });
+  const new({required this.selectedSex, required this.onSelected, super.key});
 
   /// The selected sex.
   final CalorieCalculatorSex selectedSex;
@@ -106,7 +102,7 @@ class CalorieGoalCalculatorSexSegmentedControl extends StatelessWidget {
 /// Segmented goal-mode selector for the calorie-goal calculator.
 class CalorieGoalCalculatorGoalModeSegmentedControl extends StatelessWidget {
   /// The calorie goal calculator goal mode segmented control.
-  const CalorieGoalCalculatorGoalModeSegmentedControl({
+  const new({
     required this.selectedGoalMode,
     required this.onSelected,
     super.key,

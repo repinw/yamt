@@ -18,11 +18,10 @@ const String _votesCollection = 'global_food_item_serving_votes';
 class FirestoreGlobalFoodServingSuggestionRepository
     implements GlobalFoodServingSuggestionRepository {
   /// The firestore global food serving suggestion repository.
-  const FirestoreGlobalFoodServingSuggestionRepository({
-    required FirebaseFirestore firestore,
-    required String? currentUserId,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId;
+  const new({
+    required this._firestore,
+    required this._currentUserId,
+  });
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
@@ -174,9 +173,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
             updatedAtText: nowText,
           );
         }
-        final selectionCount = _readPositiveInt(
-          currentData['selection_count'],
-        );
+        final selectionCount = _readPositiveInt(currentData['selection_count']);
         final uniqueUserCount = _readPositiveInt(
           currentData['unique_user_count'],
         );
@@ -402,9 +399,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
       if (existingIndex != null) {
         final existing = deduped[existingIndex];
         if (existing.label == null && suggestion.label != null) {
-          deduped[existingIndex] = existing.copyWith(
-            label: suggestion.label,
-          );
+          deduped[existingIndex] = existing.copyWith(label: suggestion.label);
         }
         continue;
       }
@@ -478,7 +473,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
 }
 
 class _PreferenceWriteTarget {
-  const _PreferenceWriteTarget({
+  const new({
     required this.document,
     required this.itemKey,
     required this.foodFingerprint,

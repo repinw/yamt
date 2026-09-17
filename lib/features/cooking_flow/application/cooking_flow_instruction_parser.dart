@@ -10,7 +10,7 @@ import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dar
 /// Parsed row data representing one recipe ingredient.
 class CookingIngredientRowData {
   /// Creates row data for an ingredient.
-  const CookingIngredientRowData({
+  const new({
     required this.rawIngredient,
     required this.name,
     required this.amountLabel,
@@ -38,12 +38,7 @@ CookingIngredientRowData parseRecipeIngredientRow({
 
   return _tryParsePrefixQualitative(ingredient, cleaned) ??
       _tryParseSuffixQualitative(ingredient, cleaned) ??
-      _tryParseRangeAmount(
-        ingredient,
-        cleaned,
-        parserLocale,
-        pieceUnitLabel,
-      ) ??
+      _tryParseRangeAmount(ingredient, cleaned, parserLocale, pieceUnitLabel) ??
       _tryParseStructuredRequirement(ingredient, cleaned, pieceUnitLabel) ??
       _tryParseAmountWithUnit(ingredient, cleaned, parserLocale) ??
       _tryParseAmountOnly(ingredient, cleaned, pieceUnitLabel) ??
@@ -177,9 +172,8 @@ CookingIngredientRowData? _tryParseAmountOnly(
   String cleaned,
   String pieceUnitLabel,
 ) {
-  final match = RegExp(
-    r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)\s+(.+)$',
-  ).firstMatch(cleaned);
+  final match = RegExp(r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)\s+(.+)$')
+      .firstMatch(cleaned);
   if (match == null) {
     return null;
   }

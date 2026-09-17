@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -17,10 +17,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// inventory import.
 class ReceiptReviewPage extends ConsumerStatefulWidget {
   /// Creates a [ReceiptReviewPage].
-  const ReceiptReviewPage({
-    required this.initialReceipt,
-    super.key,
-  });
+  const new({required this.initialReceipt, super.key});
 
   /// The initially parsed receipt.
   final ScannedReceipt initialReceipt;
@@ -39,24 +36,24 @@ class _ReceiptReviewPageState extends ConsumerState<ReceiptReviewPage> {
       receiptReviewControllerProvider(widget.initialReceipt),
     );
 
-    ref.listen(
-      receiptReviewControllerProvider(widget.initialReceipt),
-      (prev, next) {
-        if (next.saveSuccess) {
-          Navigator.of(context).pop(true);
-        }
-        if (next.errorMessage != null &&
-            next.errorMessage != prev?.errorMessage) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(next.errorMessage!),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-          _notifier.clearError();
-        }
-      },
-    );
+    ref.listen(receiptReviewControllerProvider(widget.initialReceipt), (
+      prev,
+      next,
+    ) {
+      if (next.saveSuccess) {
+        Navigator.of(context).pop(true);
+      }
+      if (next.errorMessage != null &&
+          next.errorMessage != prev?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        _notifier.clearError();
+      }
+    });
 
     final receipt = state.receipt;
     final l10n = AppLocalizations.of(context);

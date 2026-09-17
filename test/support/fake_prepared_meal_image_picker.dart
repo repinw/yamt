@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 
 class FakePreparedMealImagePicker implements PreparedMealImagePicker {
-  FakePreparedMealImagePicker({
+  new({
     this.cameraBytes,
     this.fileBytes,
     this.cameraException,

@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
@@ -28,7 +29,7 @@ import '../../../helpers/root_navigator_test_utils.dart';
 import '../../../support/fake_prepared_meal_image_picker.dart';
 
 class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {
-  _FakeKitchenUtensilRepository({List<KitchenUtensil>? initialUtensils})
+  new({List<KitchenUtensil>? initialUtensils})
     : _utensils = List<KitchenUtensil>.from(
         initialUtensils ?? const <KitchenUtensil>[],
       );
@@ -100,7 +101,7 @@ class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {
 
 class _FakePreparedMealTemplateRepository
     implements PreparedMealTemplateRepository {
-  const _FakePreparedMealTemplateRepository();
+  const new();
 
   @override
   Stream<List<PreparedMeal>> watchAll() {
@@ -119,7 +120,7 @@ class _FakePreparedMealTemplateRepository
 }
 
 class _FakePreparedMealRecipeImporter extends PreparedMealRecipeImporter {
-  const _FakePreparedMealRecipeImporter();
+  const new();
 
   @override
   Future<PreparedMealRecipeImport?> importRecipe(
@@ -158,7 +159,7 @@ Widget _buildKitchenHarness({
     container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     ),
@@ -202,7 +203,7 @@ Widget _buildCookbookHarness({
     container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     ),
@@ -227,7 +228,7 @@ void main() {
           rootObserver: rootObserver,
           nestedObserver: nestedObserver,
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           child: Scaffold(
             body: Builder(
@@ -269,10 +270,7 @@ void main() {
     await tester.tap(find.byTooltip('Add utensil'));
     await tester.pumpAndSettle();
     await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Pot');
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Weight (g)'),
-      '420',
-    );
+    await tester.enterText(find.widgetWithText(TextField, 'Weight (g)'), '420');
     await tester.tap(find.widgetWithText(FilledButton, 'Add utensil'));
     await tester.pumpAndSettle();
 
@@ -283,10 +281,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Edit'));
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Weight (g)'),
-      '430',
-    );
+    await tester.enterText(find.widgetWithText(TextField, 'Weight (g)'), '430');
     await tester.tap(find.text('Edit'));
     await tester.pumpAndSettle();
 
@@ -315,10 +310,7 @@ void main() {
 
     expect(find.text('Please enter a weight greater than 0.'), findsOneWidget);
 
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Weight (g)'),
-      '100',
-    );
+    await tester.enterText(find.widgetWithText(TextField, 'Weight (g)'), '100');
     await tester.tap(find.widgetWithText(FilledButton, 'Add utensil'));
     await tester.pumpAndSettle();
 

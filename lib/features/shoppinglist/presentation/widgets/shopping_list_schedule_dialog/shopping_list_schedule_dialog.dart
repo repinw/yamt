@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_schedule_dialog/shopping_schedule_form.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -16,7 +16,7 @@ Future<ShoppingScheduleInput?> showShoppingScheduleDialog(
 );
 
 class _ScheduleDialog extends StatefulWidget {
-  const _ScheduleDialog({required this.item});
+  const new({required this.item});
   final ShoppingListItem item;
   @override
   State<_ScheduleDialog> createState() => _ScheduleDialogState();
@@ -28,9 +28,7 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
     text:
         '${widget.item.repeatEveryDays > 0 ? widget.item.repeatEveryDays : 7}',
   );
-  late final _quantity = TextEditingController(
-    text: '${_initialQuantity()}',
-  );
+  late final _quantity = TextEditingController(text: '${_initialQuantity()}');
   late DateTime _date =
       widget.item.nextDueDate ?? DateTime.now().add(const Duration(days: 7));
 
@@ -73,10 +71,7 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
       onPressed: () => Navigator.pop(context),
       child: Text(l10n.inventoryReceiptReviewCancelAction),
     ),
-    FilledButton(
-      onPressed: _save,
-      child: Text(l10n.shoppingListSaveSettings),
-    ),
+    FilledButton(onPressed: _save, child: Text(l10n.shoppingListSaveSettings)),
   ];
 
   Future<void> _pickDate() async {

@@ -149,9 +149,9 @@ void main() {
         documentsById: <String, Map<String, dynamic>>{'alias-1': secondData},
       );
 
-      final snapshot = await _aliasCollection(
-        firestore: firestore,
-      ).doc('alias-1').get();
+      final snapshot = await _aliasCollection(firestore: firestore)
+          .doc('alias-1')
+          .get();
 
       expect(snapshot.data()!['receipt_name'], 'OVERRIDDEN');
       expect(snapshot.data()!['selection_count'], 3);

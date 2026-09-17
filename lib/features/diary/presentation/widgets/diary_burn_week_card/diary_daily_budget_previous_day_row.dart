@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
@@ -9,11 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// and diff badge.
 class DiaryDailyBudgetPreviousDayRow extends StatelessWidget {
   /// Creates the previous day row.
-  const DiaryDailyBudgetPreviousDayRow({
-    required this.day,
-    required this.numberFormat,
-    super.key,
-  });
+  const new({required this.day, required this.numberFormat, super.key});
 
   /// Day detail model.
   final DiaryCarryoverDayDetail day;

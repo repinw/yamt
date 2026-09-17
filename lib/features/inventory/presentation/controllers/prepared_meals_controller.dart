@@ -525,6 +525,9 @@ class PreparedMealsController extends _$PreparedMealsController {
     InventoryItemRepository inventoryRepository,
   ) async {
     try {
+      // Read failures currently propagate and fail the operation; tests rely
+      // on that. Awaiting here would make them non-fatal.
+      // ignore: unawaited_return_in_try_block
       return inventoryRepository.readAll();
     } on Object catch (error, stackTrace) {
       log(
@@ -597,18 +600,15 @@ class PreparedMealsController extends _$PreparedMealsController {
 
 class _ActivityTrackingInventoryItemRepository
     implements InventoryItemRepository {
-  _ActivityTrackingInventoryItemRepository({
-    required InventoryItemRepository delegate,
+  new({
+    required this._delegate,
     required List<InventoryItem> initialItems,
-  }) : _delegate = delegate,
-       _latestItems = List<InventoryItem>.from(initialItems);
+  }) : _latestItems = List<InventoryItem>.from(initialItems);
 
   final InventoryItemRepository _delegate;
   List<InventoryItem> _latestItems;
 
-  List<InventoryItem> get latestItems => List<InventoryItem>.from(
-    _latestItems,
-  );
+  List<InventoryItem> get latestItems => List<InventoryItem>.from(_latestItems);
 
   @override
   Stream<List<InventoryItem>> watchAll() {

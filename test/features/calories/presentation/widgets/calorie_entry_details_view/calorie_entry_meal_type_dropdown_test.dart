@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_meal_type_dropdown.dart';
@@ -24,9 +25,8 @@ void main() {
       find.byKey(CalorieEntryDetailKeys.mealSelector),
     );
     final context = tester.element(find.byType(CalorieEntryMealTypeDropdown));
-    final disabledColor = Theme.of(
-      context,
-    ).colorScheme.onSurface.withValues(alpha: 0.45);
+    final disabledColor = Theme.of(context).colorScheme.onSurface
+        .withValues(alpha: 0.45);
 
     expect(dropdown.onChanged, isNull);
     expect(dropdown.style?.color, disabledColor);
@@ -43,7 +43,7 @@ Widget _wrapDropdown({
   required ValueChanged<MealType> onMealTypeChanged,
 }) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: SizedBox(

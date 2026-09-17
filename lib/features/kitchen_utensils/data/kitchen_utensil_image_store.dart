@@ -17,10 +17,7 @@ String kitchenUtensilImageStoragePath({
 /// Store for utensil images.
 abstract interface class KitchenUtensilImageStore {
   /// Uploads image bytes and returns the storage path.
-  Future<String?> uploadBytes({
-    required String path,
-    required Uint8List bytes,
-  });
+  Future<String?> uploadBytes({required String path, required Uint8List bytes});
 
   /// Deletes image at path. Missing images count as success.
   Future<bool> deleteImage(String path);
@@ -32,9 +29,7 @@ abstract interface class KitchenUtensilImageStore {
 /// Firebase Storage implementation.
 class FirebaseKitchenUtensilImageStore implements KitchenUtensilImageStore {
   /// Creates image store.
-  const FirebaseKitchenUtensilImageStore({
-    required FirebaseStorage storage,
-  }) : _storage = storage;
+  const new({required this._storage});
 
   final FirebaseStorage _storage;
 
@@ -46,10 +41,7 @@ class FirebaseKitchenUtensilImageStore implements KitchenUtensilImageStore {
     try {
       await _storage
           .ref(path)
-          .putData(
-            bytes,
-            SettableMetadata(contentType: 'image/jpeg'),
-          );
+          .putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
       return path;
     } on Object catch (error, stackTrace) {
       log(
@@ -92,7 +84,7 @@ class FirebaseKitchenUtensilImageStore implements KitchenUtensilImageStore {
   @override
   Future<String?> downloadUrl(String path) async {
     try {
-      return _storage.ref(path).getDownloadURL();
+      return await _storage.ref(path).getDownloadURL();
     } on Object catch (error, stackTrace) {
       log(
         'Failed to load kitchen utensil image URL.',

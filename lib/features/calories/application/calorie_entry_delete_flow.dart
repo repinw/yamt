@@ -25,18 +25,18 @@ enum CalorieEntryDeleteFailureReason {
 
 /// Defines calorie entry delete result.
 class CalorieEntryDeleteResult {
-  const CalorieEntryDeleteResult._({
+  const new _({
     required this.isSuccess,
     required this.restoredToInventory,
     this.failureReason,
   });
 
   /// Creates a [CalorieEntryDeleteResult] for success.
-  const CalorieEntryDeleteResult.success({required bool restoredToInventory})
+  const new success({required bool restoredToInventory})
     : this._(isSuccess: true, restoredToInventory: restoredToInventory);
 
   /// Creates a [CalorieEntryDeleteResult] for failure.
-  const CalorieEntryDeleteResult.failure(CalorieEntryDeleteFailureReason reason)
+  const new failure(CalorieEntryDeleteFailureReason reason)
     : this._(
         isSuccess: false,
         restoredToInventory: false,
@@ -86,38 +86,16 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
 /// Defines calorie entry delete flow.
 class CalorieEntryDeleteFlow {
   /// The calorie entry delete flow.
-  const CalorieEntryDeleteFlow({
-    required Future<bool> Function(String entryId) deleteEntryById,
-    required Future<bool> Function(String itemId, int amount)
-    restoreConsumedItem,
-    required Future<bool> Function(
-      String itemId,
-      int amount, {
-      DateTime? consumedAt,
-    })
-    rollbackRestoredItem,
-    required Future<bool> Function(String itemId) sourceInventoryItemExists,
-    required Future<bool> Function({
-      required String mealId,
-      required num portions,
-    })
-    restorePreparedMealPortions,
-    required Future<bool> Function({
-      required String mealId,
-      required num discardedPortions,
-    })
-    rollbackRestoredPreparedMeal,
-    required Future<bool> Function(String mealId) sourcePreparedMealExists,
-    Future<bool> Function(DateTime day) invalidateSnapshotsFromDay =
-        _noopInvalidateSnapshotsFromDay,
-  }) : _deleteEntryById = deleteEntryById,
-       _restoreConsumedItem = restoreConsumedItem,
-       _rollbackRestoredItem = rollbackRestoredItem,
-       _sourceInventoryItemExists = sourceInventoryItemExists,
-       _restorePreparedMealPortions = restorePreparedMealPortions,
-       _rollbackRestoredPreparedMeal = rollbackRestoredPreparedMeal,
-       _invalidateSnapshotsFromDay = invalidateSnapshotsFromDay,
-       _sourcePreparedMealExists = sourcePreparedMealExists;
+  const new({
+    required this._deleteEntryById,
+    required this._restoreConsumedItem,
+    required this._rollbackRestoredItem,
+    required this._sourceInventoryItemExists,
+    required this._restorePreparedMealPortions,
+    required this._rollbackRestoredPreparedMeal,
+    required this._sourcePreparedMealExists,
+    this._invalidateSnapshotsFromDay = _noopInvalidateSnapshotsFromDay,
+  });
 
   final Future<bool> Function(String entryId) _deleteEntryById;
   final Future<bool> Function(String itemId, int amount) _restoreConsumedItem;
@@ -398,7 +376,7 @@ Future<bool> invalidateCalorieWeeklyCheckInSnapshotsFromDay({
     if (identical(previous, nextSettings)) {
       return true;
     }
-    return settingsRepository.saveSettings(nextSettings);
+    return await settingsRepository.saveSettings(nextSettings);
   } on Object catch (error, stackTrace) {
     log(
       'Failed to invalidate weekly check-in snapshots.',

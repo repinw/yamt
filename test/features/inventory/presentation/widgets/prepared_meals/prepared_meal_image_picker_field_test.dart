@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_image_picker_field.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -77,13 +78,10 @@ void main() {
     await tester.tap(find.text('Change image'));
     await tester.tap(find.text('Remove image'));
 
-    expect(
-      pickedSources,
-      <PreparedMealImageSource>[
-        PreparedMealImageSource.camera,
-        PreparedMealImageSource.file,
-      ],
-    );
+    expect(pickedSources, <PreparedMealImageSource>[
+      PreparedMealImageSource.camera,
+      PreparedMealImageSource.file,
+    ]);
     expect(clearCount, 1);
   });
 
@@ -116,7 +114,7 @@ void main() {
 }
 
 class _TestApp extends StatelessWidget {
-  const _TestApp({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -124,7 +122,7 @@ class _TestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: child),
     );

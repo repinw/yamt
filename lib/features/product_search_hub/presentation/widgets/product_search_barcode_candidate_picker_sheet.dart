@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_result_quality.dart';
@@ -21,7 +21,7 @@ const inventoryBarcodeCandidateSheetKey = Key(
 /// Defines inventory barcode candidate picker sheet.
 class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
   /// The inventory barcode candidate picker sheet.
-  const InventoryBarcodeCandidatePickerSheet({
+  const new({
     required this.candidates,
     required this.onSelect,
     super.key,
@@ -112,10 +112,7 @@ class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
 }
 
 class _BarcodeCandidatePickerHeader extends StatelessWidget {
-  const _BarcodeCandidatePickerHeader({
-    required this.title,
-    required this.subtitle,
-  });
+  const new({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -132,16 +129,14 @@ class _BarcodeCandidatePickerHeader extends StatelessWidget {
             children: <Widget>[
               Text(
                 title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: AppSpacing.xxs * 2),
               Text(
                 subtitle,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
               ),
             ],
           ),
@@ -168,7 +163,7 @@ class _BarcodeCandidatePickerHeader extends StatelessWidget {
 }
 
 class _BarcodeCandidateTile extends StatelessWidget {
-  const _BarcodeCandidateTile({
+  const new({
     required this.candidate,
     required this.showActionButtons,
     required this.eatOnly,
@@ -199,9 +194,8 @@ class _BarcodeCandidateTile extends StatelessWidget {
       packageWeight: candidate.packageWeight,
       nutrition: candidate.nutrition,
       topLabel: sourceLabel,
-      statusLabel: gradeOffProductNutrition(
-        candidate.nutrition,
-      ).localizedLabel(l10n),
+      statusLabel: gradeOffProductNutrition(candidate.nutrition)
+          .localizedLabel(l10n),
       onTap: showActionButtons
           ? null
           : () => onSelect(
@@ -224,10 +218,8 @@ class _BarcodeCandidateTile extends StatelessWidget {
                 candidate,
                 InventoryBarcodeCandidateAction.addToInventory,
               ),
-              onEat: () => onSelect(
-                candidate,
-                InventoryBarcodeCandidateAction.eatNow,
-              ),
+              onEat: () =>
+                  onSelect(candidate, InventoryBarcodeCandidateAction.eatNow),
               showInventoryAction: !eatOnly,
             )
           : null,

@@ -11,21 +11,18 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 part 'inventory_serving_suggestion_service.g.dart';
 
 /// Logs serving suggestion failures.
-typedef InventoryServingSuggestionLogger =
-    void Function(
-      String message, {
-      String name,
-      Object? error,
-      StackTrace? stackTrace,
-    });
+typedef InventoryServingSuggestionLogger = void Function(
+  String message, {
+  String name,
+  Object? error,
+  StackTrace? stackTrace,
+});
 
 /// Coordinates serving suggestion reads and writes for inventory items.
 class InventoryServingSuggestionService {
   /// The inventory serving suggestion service.
-  const InventoryServingSuggestionService(
-    this._repository, {
-    InventoryServingSuggestionLogger? logger,
-  }) : _logger = logger ?? developer.log;
+  const new(this._repository, {InventoryServingSuggestionLogger? logger})
+    : _logger = logger ?? developer.log;
 
   final GlobalFoodServingSuggestionRepository _repository;
   final InventoryServingSuggestionLogger _logger;

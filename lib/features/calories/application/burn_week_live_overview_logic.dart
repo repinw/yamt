@@ -27,29 +27,29 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
   final fallbackDailyGoalKcal = resolveBurnWeekMockGoalKcal(
     todayOverview.baseGoalKcal,
   );
-  final visibleCurrentWeekBaseGoalKcal = weekOverview.days.fold<double>(
-    0,
-    (sum, day) {
-      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-        return sum;
-      }
-      return sum + day.baseGoalKcal;
-    },
-  );
+  final visibleCurrentWeekBaseGoalKcal = weekOverview.days.fold<double>(0, (
+    sum,
+    day,
+  ) {
+    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+      return sum;
+    }
+    return sum + day.baseGoalKcal;
+  });
   final baseWeeklyGoalKcal = math.max<double>(
     fallbackDailyGoalKcal * burnWeekDaysPerWeek,
     visibleCurrentWeekBaseGoalKcal,
   );
 
-  final currentWeekActivityBonus = weekOverview.days.fold<double>(
-    0,
-    (sum, day) {
-      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-        return sum;
-      }
-      return sum + day.activityBonusKcal;
-    },
-  );
+  final currentWeekActivityBonus = weekOverview.days.fold<double>(0, (
+    sum,
+    day,
+  ) {
+    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+      return sum;
+    }
+    return sum + day.activityBonusKcal;
+  });
   final rawWeeklyGoalKcal = baseWeeklyGoalKcal + currentWeekActivityBonus;
   final adjustedWeeklyGoalKcal = math.max<double>(
     fallbackDailyGoalKcal,
@@ -65,21 +65,18 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
       .length;
   final elapsedWeekDays = completedDaysCount + dayProgress;
   final targetKcal = dailyGoalKcal * elapsedWeekDays;
-  final actualConsumedKcal = weekOverview.days.fold<double>(
-    0,
-    (sum, day) {
-      if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-        return sum;
+  final actualConsumedKcal = weekOverview.days.fold<double>(0, (sum, day) {
+    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
+      return sum;
+    }
+    if (isSameDiaryDay(day.date, todayOverview.date)) {
+      if (day.isPauseDay) {
+        return sum + day.goalKcal;
       }
-      if (isSameDiaryDay(day.date, todayOverview.date)) {
-        if (day.isPauseDay) {
-          return sum + day.goalKcal;
-        }
-        return sum + math.max<double>(0, day.totalKcal - plannedLaterTodayKcal);
-      }
-      return sum + day.countedTotalKcal;
-    },
-  );
+      return sum + math.max<double>(0, day.totalKcal - plannedLaterTodayKcal);
+    }
+    return sum + day.countedTotalKcal;
+  });
   final consumedKcal = actualConsumedKcal;
 
   return BurnWeekMockMetrics(
@@ -165,9 +162,9 @@ String formatBurnWeekLiveWeekDayLabel({
   required AppLocalizations l10n,
 }) {
   final dayNumber =
-      normalizeDiaryDay(
-        currentDay,
-      ).difference(normalizeDiaryDay(currentWeekStartDate)).inDays +
+      normalizeDiaryDay(currentDay)
+          .difference(normalizeDiaryDay(currentWeekStartDate))
+          .inDays +
       1;
   return l10n.burnWeekWeekDayLabel(runWeekNumber, dayNumber);
 }
@@ -240,9 +237,7 @@ DateTime resolveBurnWeekLiveSyncWeekStartDate({
   var syncWeekStartDate = normalizeDiaryDay(currentWeekStartDate);
   final normalizedCurrentDay = normalizeDiaryDay(currentDay);
   while (!normalizedCurrentDay.isBefore(
-    syncWeekStartDate.add(
-      const Duration(days: burnWeekDaysPerWeek),
-    ),
+    syncWeekStartDate.add(const Duration(days: burnWeekDaysPerWeek)),
   )) {
     syncWeekStartDate = syncWeekStartDate.add(
       const Duration(days: burnWeekDaysPerWeek),
@@ -256,9 +251,10 @@ int resolveBurnWeekLiveElapsedDays({
   required DateTime currentDay,
   required DateTime balanceStartDate,
 }) {
-  return normalizeDiaryDay(
-    currentDay,
-  ).difference(normalizeDiaryDay(balanceStartDate)).inDays.clamp(0, 1000000);
+  return normalizeDiaryDay(currentDay)
+      .difference(normalizeDiaryDay(balanceStartDate))
+      .inDays
+      .clamp(0, 1000000);
 }
 
 /// Resolves whether tracking miss already happened this week.

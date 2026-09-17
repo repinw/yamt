@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -20,8 +20,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 typedef InventoryItemDeleteCallback = Future<bool> Function(String itemId);
 
 /// Callback used to eat an inventory item.
-typedef InventoryItemEatCallback =
-    Future<bool> Function(String itemId, InventoryItemEatRequest request);
+typedef InventoryItemEatCallback = Future<bool> Function(
+  String itemId,
+  InventoryItemEatRequest request,
+);
 
 /// Callback used to throw away inventory item quantity.
 typedef InventoryItemThrowAwayCallback =
@@ -34,7 +36,7 @@ typedef InventoryItemThrowAwayCallback =
 /// Actions used by [ReceiptGroupTile] rows.
 class ReceiptGroupTileActions {
   /// Creates receipt group tile actions.
-  const ReceiptGroupTileActions({
+  const new({
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
@@ -53,7 +55,7 @@ class ReceiptGroupTileActions {
 /// Selection options used by [ReceiptGroupTile] rows.
 class ReceiptGroupSelectionOptions {
   /// Creates receipt group selection options.
-  const ReceiptGroupSelectionOptions({
+  const new({
     this.isSelectionMode = false,
     this.selectedItemIds = const <String>{},
     this.onItemLongPress = _noopItemSelection,
@@ -76,7 +78,7 @@ class ReceiptGroupSelectionOptions {
 /// Defines receipt group tile.
 class ReceiptGroupTile extends StatefulWidget {
   /// The receipt group tile.
-  const ReceiptGroupTile({
+  const new({
     required this.group,
     required this.dateFormat,
     required this.activeShoppingListItemKeys,
@@ -118,9 +120,8 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
     }
     _didRestoreExpansionState = true;
 
-    final restoredState = PageStorage.maybeOf(
-      context,
-    )?.readState(context, identifier: _storageKey);
+    final restoredState = PageStorage.maybeOf(context)
+        ?.readState(context, identifier: _storageKey);
     if (restoredState is bool) {
       _isExpanded = restoredState;
     }
@@ -145,9 +146,8 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                 Expanded(
                   child: Text(
                     title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
                 DecoratedBox(
@@ -164,9 +164,8 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                       '${widget.group.items.length} '
                               '${l10n.inventoryReceiptGroupItems}'
                           .toUpperCase(),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
+                      style: Theme.of(context).textTheme.labelSmall
+                          ?.copyWith(color: colors.onSurfaceVariant),
                     ),
                   ),
                 ),
@@ -204,9 +203,7 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                             onThrowAwayItem: widget.actions.onThrowAwayItem,
                             isSelectionMode: widget.selection.isSelectionMode,
                             isSelected: widget.selection.selectedItemIds
-                                .contains(
-                                  item.id,
-                                ),
+                                .contains(item.id),
                             onItemLongPress: () =>
                                 widget.selection.onItemLongPress(item.id),
                             onSelectionToggle: () =>
@@ -229,9 +226,8 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
     setState(() {
       _isExpanded = !_isExpanded;
     });
-    PageStorage.maybeOf(
-      context,
-    )?.writeState(context, _isExpanded, identifier: _storageKey);
+    PageStorage.maybeOf(context)
+        ?.writeState(context, _isExpanded, identifier: _storageKey);
   }
 }
 

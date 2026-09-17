@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/household/application/household_members_provider.dart';
@@ -17,7 +18,7 @@ import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _FakeHouseholdInviteCodeController extends HouseholdInviteCodeController {
   @override
@@ -61,7 +62,7 @@ Widget _buildApp({
   return ProviderScope(
     overrides: overrides,
     child: const MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: HouseholdPage(),
     ),

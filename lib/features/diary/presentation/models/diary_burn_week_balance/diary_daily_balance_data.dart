@@ -28,7 +28,7 @@ typedef DiaryDailyBalanceSubtitlePart = ({
 /// Render-ready data for the daily Burn Week balance card.
 class DiaryDailyBalanceData {
   /// Creates daily balance render data.
-  const DiaryDailyBalanceData({
+  const new({
     required this.selectedDay,
     required this.metrics,
     required this.eatenValue,
@@ -51,7 +51,7 @@ class DiaryDailyBalanceData {
   });
 
   /// Builds daily render data from raw metrics and localization dependencies.
-  factory DiaryDailyBalanceData.from({
+  factory from({
     required DateTime selectedDay,
     required DiaryDailyBalanceMetrics metrics,
     required bool isPauseDay,
@@ -72,13 +72,7 @@ class DiaryDailyBalanceData {
     final bufferAdjustmentLabel = isPauseDay ? null : adjustmentLabel;
     final eatenSubtitle = metrics.bufferAdjustmentKcal.round() == 0
         ? null
-        : '${l10n.diaryBalanceRealEatenLabel(
-            formatDiaryKcal(
-              numberFormat,
-              metrics.realEatenKcal,
-              l10n.caloriesUnitKcal,
-            ),
-          )} · $adjustmentLabel';
+        : '${l10n.diaryBalanceRealEatenLabel(formatDiaryKcal(numberFormat, metrics.realEatenKcal, l10n.caloriesUnitKcal))} · $adjustmentLabel';
 
     final today = normalizeDiaryDay(now ?? DateTime.now());
     final isFutureDay = normalizeDiaryDay(selectedDay).isAfter(today);

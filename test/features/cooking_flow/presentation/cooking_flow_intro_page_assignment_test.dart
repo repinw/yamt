@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
@@ -56,9 +57,7 @@ void main() {
     );
     expect(cookingFlowInventoryRowAction(null), isNull);
     expect(
-      cookingFlowSessionIntroRowAction(
-        CookingFlowInventoryRowAction.assigned,
-      ),
+      cookingFlowSessionIntroRowAction(CookingFlowInventoryRowAction.assigned),
       CookingFlowIntroRowAction.assigned,
     );
     expect(
@@ -137,22 +136,22 @@ void main() {
   });
 
   test('splits amount labels after package prefixes', () {
-    expect(
-      cookingFlowSplitIngredientAmountLabel('2x 300 g'),
-      (amount: '300', unit: 'g'),
-    );
-    expect(
-      cookingFlowSplitIngredientAmountLabel('2x300 g'),
-      (amount: '300', unit: 'g'),
-    );
-    expect(
-      cookingFlowSplitIngredientAmountLabel('1,5 stück'),
-      (amount: '1,5', unit: 'stück'),
-    );
-    expect(
-      cookingFlowSplitIngredientAmountLabel('nach Geschmack'),
-      (amount: 'nach Geschmack', unit: ''),
-    );
+    expect(cookingFlowSplitIngredientAmountLabel('2x 300 g'), (
+      amount: '300',
+      unit: 'g',
+    ));
+    expect(cookingFlowSplitIngredientAmountLabel('2x300 g'), (
+      amount: '300',
+      unit: 'g',
+    ));
+    expect(cookingFlowSplitIngredientAmountLabel('1,5 stück'), (
+      amount: '1,5',
+      unit: 'stück',
+    ));
+    expect(cookingFlowSplitIngredientAmountLabel('nach Geschmack'), (
+      amount: 'nach Geschmack',
+      unit: '',
+    ));
   });
 
   test('builds shopping list labels and strips package prefixes', () {
@@ -497,7 +496,7 @@ Future<AppLocalizations> _loadGermanLocalizations() {
 Widget _harness(Widget child) {
   return MaterialApp(
     locale: const Locale('de'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: Center(child: child)),
   );
@@ -512,7 +511,7 @@ Widget _nestedHarness(
     rootObserver: rootObserver,
     nestedObserver: nestedObserver,
     locale: const Locale('de'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     child: Scaffold(body: Center(child: child)),
   );

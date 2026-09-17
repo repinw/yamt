@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Dialog to prompt the user for manual barcode input.
 class ReceiptBarcodeInputDialog extends StatefulWidget {
   /// Creates a [ReceiptBarcodeInputDialog].
-  const ReceiptBarcodeInputDialog({super.key});
+  const new({super.key});
 
   /// Displays the dialog and returns the entered barcode or null.
   static Future<String?> show(BuildContext context) {
@@ -53,9 +53,7 @@ class _ReceiptBarcodeInputDialogState extends State<ReceiptBarcodeInputDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            l10n?.inventoryReceiptReviewCancelAction ?? 'Abbrechen',
-          ),
+          child: Text(l10n?.inventoryReceiptReviewCancelAction ?? 'Abbrechen'),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_controller.text.trim()),

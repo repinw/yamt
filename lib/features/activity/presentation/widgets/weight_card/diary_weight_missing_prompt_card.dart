@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,11 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Prompt shown when the selected diary day has no weight entry.
 class DiaryWeightMissingPromptCard extends StatelessWidget {
   /// Creates a missing weight prompt.
-  const DiaryWeightMissingPromptCard({
-    required this.onTrack,
-    required this.onDismiss,
-    super.key,
-  });
+  const new({required this.onTrack, required this.onDismiss, super.key});
 
   /// Opens the weight entry dialog.
   final VoidCallback onTrack;
@@ -39,9 +35,7 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: accentColors.activity.withValues(
-              alpha: isDark ? 0.1 : 0.15,
-            ),
+            color: accentColors.activity.withValues(alpha: isDark ? 0.1 : 0.15),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -86,9 +80,9 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.8,
                               ),

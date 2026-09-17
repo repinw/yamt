@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
@@ -56,7 +56,7 @@ Future<void> showSettingsMacroGoalsSheet(
 /// Bottom sheet allowing users to configure macro multipliers and activity.
 class SettingsMacroGoalsSheet extends ConsumerStatefulWidget {
   /// Creates the macro goals sheet.
-  const SettingsMacroGoalsSheet({super.key});
+  const new({super.key});
 
   @override
   ConsumerState<SettingsMacroGoalsSheet> createState() =>
@@ -215,16 +215,14 @@ class _SettingsMacroGoalsSheetState
         children: [
           Text(
             l10n.settingsMacroGoalsSheetTitle,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w900,
-            ),
+            style: Theme.of(context).textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
             l10n.settingsMacroGoalsSubtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: colors.onSurfaceVariant),
           ),
           const SizedBox(height: AppSpacing.lg),
 
@@ -244,10 +242,7 @@ class _SettingsMacroGoalsSheetState
               ),
               subtitle: Text(
                 l10n.settingsMacroGoalsSportActiveSubtitle,
-                style: TextStyle(
-                  color: colors.onSurfaceVariant,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
               ),
             ),
           ),
@@ -268,9 +263,8 @@ class _SettingsMacroGoalsSheetState
                 _proteinMultiplier = double.parse(val.toStringAsFixed(1));
               });
             },
-            formatGramPerKg: (val) => l10n.settingsMacroGoalsGramPerKg(
-              val.toStringAsFixed(1),
-            ),
+            formatGramPerKg: (val) =>
+                l10n.settingsMacroGoalsGramPerKg(val.toStringAsFixed(1)),
           ),
           const SizedBox(height: AppSpacing.md),
 
@@ -289,9 +283,8 @@ class _SettingsMacroGoalsSheetState
                 _fatMultiplier = double.parse(val.toStringAsFixed(1));
               });
             },
-            formatGramPerKg: (val) => l10n.settingsMacroGoalsGramPerKg(
-              val.toStringAsFixed(1),
-            ),
+            formatGramPerKg: (val) =>
+                l10n.settingsMacroGoalsGramPerKg(val.toStringAsFixed(1)),
           ),
           const SizedBox(height: AppSpacing.md),
 
@@ -303,9 +296,7 @@ class _SettingsMacroGoalsSheetState
                 alpha: colors.brightness == Brightness.dark ? 0.14 : 0.08,
               ),
               borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(
-                color: accents.carbs.withValues(alpha: 0.25),
-              ),
+              border: Border.all(color: accents.carbs.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [

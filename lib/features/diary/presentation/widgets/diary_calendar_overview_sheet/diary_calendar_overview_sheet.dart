@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_overview_sheet/diary_calendar_month_grid.dart';
@@ -39,9 +39,7 @@ Future<DateTime?> showDiaryCalendarOverviewSheet({
     showDragHandle: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(AppRadius.lg),
-      ),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
     ),
     builder: (_) => DiaryCalendarOverview(
       selectedDay: selectedDay,
@@ -54,7 +52,7 @@ Future<DateTime?> showDiaryCalendarOverviewSheet({
 /// Swipeable month overview used inside the calendar sheet.
 class DiaryCalendarOverview extends StatefulWidget {
   /// Creates the calendar overview.
-  const DiaryCalendarOverview({
+  const new({
     required this.selectedDay,
     required this.today,
     required this.bounds,
@@ -78,10 +76,8 @@ class _DiaryCalendarOverviewState extends State<DiaryCalendarOverview> {
   late final PageController _pageController;
   late int _pageIndex;
 
-  DateTime get _firstMonth => DateTime(
-    widget.bounds.earliestDay.year,
-    widget.bounds.earliestDay.month,
-  );
+  DateTime get _firstMonth =>
+      DateTime(widget.bounds.earliestDay.year, widget.bounds.earliestDay.month);
 
   int get _monthCount => _monthIndex(widget.bounds.latestDay) + 1;
 
@@ -172,7 +168,7 @@ class _DiaryCalendarOverviewState extends State<DiaryCalendarOverview> {
 }
 
 class _DiaryCalendarMonthHeader extends StatelessWidget {
-  const _DiaryCalendarMonthHeader({
+  const new({
     required this.month,
     required this.onPrevious,
     required this.onNext,
@@ -196,9 +192,8 @@ class _DiaryCalendarMonthHeader extends StatelessWidget {
           child: Text(
             DateFormat.yMMMM(localeName).format(month),
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
         ),
         IconButton(

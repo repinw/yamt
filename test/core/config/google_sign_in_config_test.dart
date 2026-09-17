@@ -18,9 +18,6 @@ void main() {
       return;
     }
 
-    expect(
-      GoogleSignInConfig.serverClientId,
-      GoogleSignInConfig.webClientId,
-    );
+    expect(GoogleSignInConfig.serverClientId, GoogleSignInConfig.webClientId);
   });
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Defines app receipt review ui.
 abstract final class AppReceiptReviewUi {
@@ -133,14 +133,14 @@ abstract final class AppInventoryClosedTile {
 /// Defines app inventory eat action colors.
 class AppInventoryEatActionColors {
   /// The app inventory eat action colors.
-  const AppInventoryEatActionColors({
+  const new({
     required this.backgroundColor,
     required this.borderColor,
     required this.iconColor,
   });
 
   /// Creates a [AppInventoryEatActionColors] for from color scheme.
-  factory AppInventoryEatActionColors.fromColorScheme(ColorScheme colors) {
+  factory fromColorScheme(ColorScheme colors) {
     final backgroundColor = Color.alphaBlend(
       AppInventoryEatAction.tint.withValues(
         alpha: AppInventoryEatAction.backgroundAlpha,
@@ -180,14 +180,14 @@ class AppInventoryEatActionColors {
 /// Defines app inventory buy again action colors.
 class AppInventoryBuyAgainActionColors {
   /// The app inventory buy again action colors.
-  const AppInventoryBuyAgainActionColors({
+  const new({
     required this.backgroundColor,
     required this.borderColor,
     required this.iconColor,
   });
 
   /// Creates a [AppInventoryBuyAgainActionColors] for from color scheme.
-  factory AppInventoryBuyAgainActionColors.fromColorScheme(ColorScheme colors) {
+  factory fromColorScheme(ColorScheme colors) {
     final backgroundColor = Color.alphaBlend(
       AppInventoryBuyAgainAction.tint.withValues(
         alpha: AppInventoryBuyAgainAction.backgroundAlpha,

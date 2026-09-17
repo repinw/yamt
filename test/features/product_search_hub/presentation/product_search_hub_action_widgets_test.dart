@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
@@ -106,7 +107,7 @@ void main() {
 Widget _buildMaterialHarness({required Widget child}) {
   return MaterialApp(
     locale: const Locale('en'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: Center(child: child)),
   );
@@ -125,15 +126,12 @@ Widget _buildRouterHarness({required Widget child}) {
   return MaterialApp.router(
     routerConfig: router,
     locale: const Locale('en'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
   );
 }
 
-InventoryItem _item({
-  required String id,
-  required String name,
-}) {
+InventoryItem _item({required String id, required String name}) {
   return InventoryItem.create(
     id: id,
     name: name,

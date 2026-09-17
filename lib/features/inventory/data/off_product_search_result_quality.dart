@@ -184,10 +184,7 @@ bool _hasNutritionConflict(
 
   return _hasValueConflict(left.per100Kcal, right.per100Kcal) ||
       _hasValueConflict(left.per100Fat, right.per100Fat) ||
-      _hasValueConflict(
-        left.per100SaturatedFat,
-        right.per100SaturatedFat,
-      ) ||
+      _hasValueConflict(left.per100SaturatedFat, right.per100SaturatedFat) ||
       _hasValueConflict(left.per100Carbs, right.per100Carbs) ||
       _hasValueConflict(left.per100Sugar, right.per100Sugar) ||
       _hasValueConflict(left.per100Protein, right.per100Protein) ||

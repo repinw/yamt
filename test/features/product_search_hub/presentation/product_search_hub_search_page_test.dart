@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -31,19 +32,13 @@ Widget _buildHarness({
     ],
     child: MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: ProductSearchHubSearchPage(
         args: args,
         lookupProducts:
             lookupProducts ??
-            ({
-              required query,
-              required limit,
-              store,
-              brand,
-              weight,
-            }) async {
+            ({required query, required limit, store, brand, weight}) async {
               return ProductSearchHubSearchLookupResult.success(
                 List<OffProductSearchResult>.from(searchResults.take(limit)),
               );
@@ -210,11 +205,9 @@ void main() {
     await tester.pumpAndSettle();
 
     firstLookup.complete(
-      ProductSearchHubSearchLookupResult.success(
-        const <OffProductSearchResult>[
-          OffProductSearchResult(code: 'milk', name: 'Milk', score: 1),
-        ],
-      ),
+      ProductSearchHubSearchLookupResult.success(const <OffProductSearchResult>[
+        OffProductSearchResult(code: 'milk', name: 'Milk', score: 1),
+      ]),
     );
     await tester.pumpAndSettle();
 
@@ -229,9 +222,7 @@ void main() {
     );
   });
 
-  testWidgets('focused search field can be edited and cleared', (
-    tester,
-  ) async {
+  testWidgets('focused search field can be edited and cleared', (tester) async {
     await tester.pumpWidget(_buildHarness());
     await tester.pumpAndSettle();
     await _pumpFocusedSearchReady(tester);
@@ -326,7 +317,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: ProductSearchHubSearchResults(
@@ -361,7 +352,7 @@ void main() {
         ],
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Builder(
             builder: (context) {

@@ -1,15 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 
 class _AmountDialogHarness extends StatelessWidget {
-  const _AmountDialogHarness({
-    required this.onResult,
-    this.builder = _defaultDialogBuilder,
-  });
+  const new({required this.onResult, this.builder = _defaultDialogBuilder});
 
   final ValueChanged<int?> onResult;
   final WidgetBuilder builder;

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Custom painter for the darkened backdrop, cutout window, corner brackets,
 /// and animated laser sweep beam.
 class BarcodeScannerOverlayPainter extends CustomPainter {
   /// Creates a barcode scanner overlay painter.
-  const BarcodeScannerOverlayPainter({
+  const new({
     required this.windowSize,
     required this.laserProgress,
     required this.isLocked,
@@ -156,10 +156,7 @@ class BarcodeScannerOverlayPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          color.withValues(alpha: 0),
-          color.withValues(alpha: 0.18),
-        ],
+        colors: [color.withValues(alpha: 0), color.withValues(alpha: 0.18)],
       ).createShader(auraRect);
     canvas.drawRect(auraRect, auraPaint);
 

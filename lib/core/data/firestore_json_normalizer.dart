@@ -3,10 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Converts Firestore values into JSON values accepted by model factories.
 Map<String, dynamic> normalizeFirestoreJson(Map<String, dynamic> rawData) {
   return rawData.map(
-    (key, value) => MapEntry<String, dynamic>(
-      key,
-      normalizeFirestoreValue(value),
-    ),
+    (key, value) =>
+        MapEntry<String, dynamic>(key, normalizeFirestoreValue(value)),
   );
 }
 

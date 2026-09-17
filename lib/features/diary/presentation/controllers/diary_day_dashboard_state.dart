@@ -5,7 +5,7 @@ const _keepError = Object();
 /// State for one diary day dashboard.
 class DiaryDayDashboardState {
   /// Creates diary day dashboard state.
-  const DiaryDayDashboardState({
+  const new({
     required this.data,
     required this.isFromCache,
     required this.isRefreshing,

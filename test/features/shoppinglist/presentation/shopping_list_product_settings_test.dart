@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
 import '../support/fake_shopping_list_repository.dart';
 
 Future<ProviderContainer> _pump(WidgetTester tester) async {
@@ -23,7 +25,7 @@ Future<ProviderContainer> _pump(WidgetTester tester) async {
       container: container,
       child: const MaterialApp(
         locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: ShoppingListPage(),
       ),

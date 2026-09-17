@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Preparation step for cookflow.
 class CookingFlowPreparationPage extends StatelessWidget {
   /// Creates preparation step.
-  const CookingFlowPreparationPage({
+  const new({
     required this.storageContainers,
     required this.onContainerChanged,
     required this.onContainerTaraUtensilSelected,
@@ -67,10 +67,7 @@ class CookingFlowPreparationPage extends StatelessWidget {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    const Icon(
-                      Icons.balance_outlined,
-                      size: 18,
-                    ),
+                    const Icon(Icons.balance_outlined, size: 18),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
@@ -147,7 +144,7 @@ class CookingFlowPreparationPage extends StatelessWidget {
 }
 
 class _PreparationStorageContainerCard extends StatelessWidget {
-  const _PreparationStorageContainerCard({
+  const new({
     required this.container,
     required this.index,
     required this.onContainerChanged,
@@ -186,9 +183,8 @@ class _PreparationStorageContainerCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     _containerTitle(l10n, container, index),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
                 if (container.canRemove) ...<Widget>[

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
@@ -22,10 +22,7 @@ void main() {
         name: 'Frische Vollmilch 3.8%',
         source: CandidateSource.aliasExact,
       );
-      const fuzzyCandidate = ProductCandidate(
-        id: 'p-2',
-        name: 'Bananen Bio',
-      );
+      const fuzzyCandidate = ProductCandidate(id: 'p-2', name: 'Bananen Bio');
 
       harness.fakeResolver
         ..registerCandidatesForText('VOLLMILCH', [exactCandidate])

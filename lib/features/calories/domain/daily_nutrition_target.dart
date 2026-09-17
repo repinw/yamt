@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 @immutable
 class DailyNutritionTarget {
   /// Creates a daily nutrition target.
-  const DailyNutritionTarget({
+  const new({
     required this.date,
     required this.goalKcal,
     required this.carbsGrams,

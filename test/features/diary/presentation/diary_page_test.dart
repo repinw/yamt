@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
@@ -87,14 +88,12 @@ void _setWeeklyCheckInData(
   container.invalidate(diaryWeeklyCheckInDataProvider);
 }
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  _FakeBurnWeekRunStateRepository({
-    this.state = const BurnWeekRunState.initial(),
-  });
+  new({this.state = const BurnWeekRunState.initial()});
 
   BurnWeekRunState state;
 
@@ -109,17 +108,14 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 }
 
 class _TestDiaryCalendarController extends DiaryCalendarController {
-  _TestDiaryCalendarController(this.day);
+  new(this.day);
 
   final DateTime day;
 
   @override
   DiaryCalendarState build() {
     final normalizedDay = normalizeDiaryDay(day);
-    return DiaryCalendarState(
-      today: normalizedDay,
-      selectedDay: normalizedDay,
-    );
+    return DiaryCalendarState(today: normalizedDay, selectedDay: normalizedDay);
   }
 }
 
@@ -308,7 +304,7 @@ void main() {
         ],
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: DiaryWeeklyCheckInSection(selectedDay: selectedDay),
@@ -391,11 +387,10 @@ void main() {
               _setWeeklyCheckInData(container, reopenedCheckIn);
               return true;
             },
-            setSkippedIntakeDay:
-                ({
-                  required selectedDay,
-                  required isSkipped,
-                }) async => true,
+            setSkippedIntakeDay: ({
+              required selectedDay,
+              required isSkipped,
+            }) async => true,
             refreshCheckInData: () {},
           ),
         ),
@@ -507,9 +502,7 @@ void main() {
       initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 21),
         shouldAutoOpen: false,
-        days: [
-          _weeklyCheckInWindowDay(selectedDay),
-        ],
+        days: [_weeklyCheckInWindowDay(selectedDay)],
       ),
     );
 
@@ -543,9 +536,7 @@ void main() {
 
     _setWeeklyCheckInData(
       container,
-      _weeklyCheckInCheckInData(
-        windowStartDate: DateTime(2026, 4, 20),
-      ),
+      _weeklyCheckInCheckInData(windowStartDate: DateTime(2026, 4, 20)),
     );
     await _pumpFrames(tester);
 
@@ -776,10 +767,7 @@ void main() {
       ),
     );
 
-    expect(
-      find.byKey(DiaryWeeklyCheckInCardKeys.successCard),
-      findsOneWidget,
-    );
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.successCard), findsOneWidget);
     expect(
       find.text('Target updated from weekly check-in: 1,800 kcal.'),
       findsOneWidget,
@@ -797,11 +785,7 @@ void main() {
       selectedDay: today,
       logRepository: FakeCalorieLogRepository(
         initialEntries: [
-          _entry(
-            id: 'practice-food',
-            day: today,
-            mealType: MealType.breakfast,
-          ),
+          _entry(id: 'practice-food', day: today, mealType: MealType.breakfast),
         ],
       ),
       settingsRepository: FakeCalorieSettingsRepository(
@@ -945,9 +929,7 @@ void main() {
           effectiveDate: selectedDay,
         ),
       ),
-      overrides: [
-        burnWeekLiveSyncProvider.overrideWith((ref) => null),
-      ],
+      overrides: [burnWeekLiveSyncProvider.overrideWith((ref) => null)],
     );
     await _advanceIntroToActivityPage(tester);
 
@@ -1081,9 +1063,7 @@ void main() {
           effectiveDate: selectedDay,
         ),
       ),
-      overrides: [
-        burnWeekLiveSyncProvider.overrideWith((ref) => null),
-      ],
+      overrides: [burnWeekLiveSyncProvider.overrideWith((ref) => null)],
     );
 
     await tester.scrollUntilVisible(
@@ -1121,9 +1101,7 @@ void main() {
           effectiveDate: selectedDay,
         ),
       ),
-      overrides: [
-        burnWeekLiveSyncProvider.overrideWith((ref) => null),
-      ],
+      overrides: [burnWeekLiveSyncProvider.overrideWith((ref) => null)],
     );
 
     await tester.scrollUntilVisible(
@@ -1144,9 +1122,7 @@ void main() {
     expect(DiaryIntroPreferences.isBannerDismissed(preferences), isTrue);
   });
 
-  testWidgets('hides intro banner card after first diary week', (
-    tester,
-  ) async {
+  testWidgets('hides intro banner card after first diary week', (tester) async {
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
@@ -1198,9 +1174,7 @@ void main() {
     final container = await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      overrides: [
-        diaryCalendarNowProvider.overrideWithValue(() => now),
-      ],
+      overrides: [diaryCalendarNowProvider.overrideWithValue(() => now)],
     );
 
     now = selectedDay.add(const Duration(days: 1, hours: 8));
@@ -1308,9 +1282,7 @@ Future<ProviderContainer> _pumpDiaryPage(
       calorieSettingsRepositoryProvider.overrideWithValue(
         resolvedSettingsRepository,
       ),
-      diaryDayDashboardControllerProvider(
-        normalizedSelectedDay,
-      ).overrideWith(
+      diaryDayDashboardControllerProvider(normalizedSelectedDay).overrideWith(
         () => FakeDiaryDayDashboardController(
           dashboardState ??
               diaryDashboardLoadedStateForTest(
@@ -1359,14 +1331,12 @@ Future<ProviderContainer> _pumpDiaryPage(
   });
 
   final diaryPage = Scaffold(
-    body: DiaryPage(
-      includeHomeShellChrome: includeHomeShellChrome,
-    ),
+    body: DiaryPage(includeHomeShellChrome: includeHomeShellChrome),
   );
   final app = useGoRouter
       ? MaterialApp.router(
           locale: locale,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: GoRouter(
             initialLocation: AppRoutes.homeCalories,
@@ -1380,16 +1350,13 @@ Future<ProviderContainer> _pumpDiaryPage(
         )
       : MaterialApp(
           locale: locale,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: diaryPage,
         );
 
   await tester.pumpWidget(
-    UncontrolledProviderScope(
-      container: container,
-      child: app,
-    ),
+    UncontrolledProviderScope(container: container, child: app),
   );
   if (initialFrameCount > 0) {
     await _pumpFrames(tester, count: initialFrameCount);
@@ -1426,10 +1393,7 @@ CalorieWeekOverview _dashboardWeekOverviewForPageTest({
         entryCount: offset == 0 ? selectedDayEntries.length : 0,
       ),
   ];
-  final totalGoalKcal = days.fold<double>(
-    0,
-    (sum, day) => sum + day.goalKcal,
-  );
+  final totalGoalKcal = days.fold<double>(0, (sum, day) => sum + day.goalKcal);
 
   return CalorieWeekOverview(
     days: days,
@@ -1504,11 +1468,8 @@ DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
     applyWeeklyCheckIn: (_) async => true,
     rejectWeeklyCheckIn: (_) async => true,
     showWeeklyCheckInAgain: (_) async => true,
-    setSkippedIntakeDay:
-        ({
-          required selectedDay,
-          required isSkipped,
-        }) async => true,
+    setSkippedIntakeDay: ({required selectedDay, required isSkipped}) async =>
+        true,
     refreshCheckInData: () {},
   );
 }

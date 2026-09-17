@@ -5,7 +5,7 @@ import 'package:yamt/features/ai_chef/data/ai_chef_recipe_draft.dart';
 /// Parses Firebase AI Chef template responses.
 class AiChefRecipeResponseParser {
   /// Creates parser.
-  const AiChefRecipeResponseParser();
+  const new();
 
   /// Parses a raw model response into an AI Chef recipe draft.
   AiChefRecipeDraft? parse(String responseText) {

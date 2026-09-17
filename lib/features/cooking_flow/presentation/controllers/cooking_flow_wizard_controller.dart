@@ -34,9 +34,7 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
 
   /// Restores saved session for [templateId].
   Future<CookingFlowSession?> restoreSession(String templateId) async {
-    final sessionController = ref.read(
-      cookingFlowWizardSessionServiceProvider,
-    );
+    final sessionController = ref.read(cookingFlowWizardSessionServiceProvider);
     final storedSession = await sessionController.restoreSession(templateId);
     if (!ref.mounted) {
       return null;
@@ -410,9 +408,6 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
   void persistSessionSilently(CookingFlowWizardSessionInput input) {
     ref
         .read(cookingFlowWizardSessionServiceProvider)
-        .persistSessionSilently(
-          state: state,
-          input: input,
-        );
+        .persistSessionSilently(state: state, input: input);
   }
 }

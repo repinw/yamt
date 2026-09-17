@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -24,15 +25,13 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _FakeProductAiSearchRepository extends FirebaseProductAiSearchRepository {
-  _FakeProductAiSearchRepository({required this.onGenerateFoodFromText});
+  new({required this.onGenerateFoodFromText});
 
   final Future<ProductAiSearchDraft?> Function(String prompt)
   onGenerateFoodFromText;
 
   @override
-  Future<ProductAiSearchDraft?> generateFoodFromText({
-    required String prompt,
-  }) {
+  Future<ProductAiSearchDraft?> generateFoodFromText({required String prompt}) {
     return onGenerateFoodFromText(prompt);
   }
 }
@@ -212,10 +211,7 @@ GoRouter _buildAiPageRouter({
                   final result =
                       await pushManualProductSearchPage<
                         ManualProductAiSearchResult
-                      >(
-                        context: context,
-                        args: args,
-                      );
+                      >(context: context, args: args);
                   onResult(result);
                 },
                 child: const Text('open'),
@@ -244,7 +240,7 @@ void main() {
           productAiSearchRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: ManualProductAiSearchPage(
             item: InventoryItem.create(
@@ -288,7 +284,7 @@ void main() {
           voiceSearchServiceProvider.overrideWithValue(speechService),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: ManualProductAiSearchPage(
             item: InventoryItem.create(
@@ -334,7 +330,7 @@ void main() {
           productAiSearchRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: ManualProductAiSearchPage(
             item: _placeholderItem(),
@@ -441,7 +437,7 @@ void main() {
           productAiSearchRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp.router(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router,
         ),
@@ -522,7 +518,7 @@ void main() {
           productAiSearchRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp.router(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router,
         ),
@@ -596,10 +592,7 @@ void main() {
     expect(pageResult?.eatSelection, isNotNull);
     expect(pageResult?.eatSelection?.inventoryAmount, 380);
     expect(pageResult?.eatSelection?.mealType, MealType.dinner);
-    expect(
-      DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt),
-      targetDate,
-    );
+    expect(DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt), targetDate);
   });
 
   testWidgets('ai date picker cancel keeps logged day unchanged', (
@@ -627,7 +620,7 @@ void main() {
           productAiSearchRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp.router(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router,
         ),
@@ -669,10 +662,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(pageResult, isNotNull);
-    expect(
-      DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt),
-      today,
-    );
+    expect(DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt), today);
   });
 
   testWidgets(
@@ -711,7 +701,7 @@ void main() {
             productAiSearchRepositoryProvider.overrideWithValue(repository),
           ],
           child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: ManualProductAiSearchPage(
               item: InventoryItem.create(

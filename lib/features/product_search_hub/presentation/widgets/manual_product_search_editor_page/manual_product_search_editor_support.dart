@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -30,10 +30,7 @@ void replaceControllerText(
       ? TextSelection.collapsed(offset: nextText.length)
       : clampTextSelection(controller.selection, nextText.length);
 
-  controller.value = TextEditingValue(
-    text: nextText,
-    selection: selection,
-  );
+  controller.value = TextEditingValue(text: nextText, selection: selection);
 }
 
 /// Clamps [selection] offsets to [textLength].

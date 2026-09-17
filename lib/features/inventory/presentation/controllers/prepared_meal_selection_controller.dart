@@ -17,7 +17,7 @@ enum PreparedMealSelectionPurpose {
 @immutable
 class PreparedMealSelectionState {
   /// The prepared meal selection state.
-  const PreparedMealSelectionState({
+  const new({
     this.selectedItemIds = const <String>{},
     this.bindRequestToken = 0,
     this.purpose = PreparedMealSelectionPurpose.createMeal,

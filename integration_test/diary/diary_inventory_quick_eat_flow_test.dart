@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -51,9 +52,7 @@ final _selectedDay = DateTime(2026, 5, 13);
 const _userId = 'user-1';
 const _householdId = 'household-1';
 const _locale = Locale('de');
-const _inventoryItemAmountFieldKey = Key(
-  'inventory_item_amount_dialog_field',
-);
+const _inventoryItemAmountFieldKey = Key('inventory_item_amount_dialog_field');
 const _inventoryItemAmountConfirmButtonKey = Key(
   'inventory_item_amount_dialog_confirm_button',
 );
@@ -61,7 +60,7 @@ const _preparedMealPortionsFieldKey = Key('prepared_meal_portions_field');
 const _preparedMealConfirmButtonKey = Key('prepared_meal_eat_confirm_button');
 
 class _DiaryInventoryQuickEatHarness {
-  const _DiaryInventoryQuickEatHarness({
+  const new({
     required this.app,
     required this.profileController,
     required this.logRepository,
@@ -90,7 +89,7 @@ class _DiaryInventoryQuickEatHarness {
   }
 }
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 _DiaryInventoryQuickEatHarness _buildHarness({
   List<InventoryItem>? inventoryItems,
@@ -156,9 +155,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
         () => _StaticDiaryCalendarController(_selectedDay),
       ),
       healthConnectionServiceProvider.overrideWithValue(
-        FakeHealthConnectionService(
-          const HealthConnectionStatus.unsupported(),
-        ),
+        FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
       ),
       diaryHealthServiceProvider.overrideWithValue(
         FakeDiaryHealthService(const <String, DiaryHealthDayData>{}),
@@ -196,7 +193,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       child: MaterialApp.router(
         locale: _locale,
         routerConfig: router,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),
@@ -261,9 +258,7 @@ Future<void> _pumpUntilOnScreen(
   );
 }
 
-Future<void> _openInventoryQuickEat(
-  WidgetTester tester,
-) async {
+Future<void> _openInventoryQuickEat(WidgetTester tester) async {
   final inventorySource = find.byKey(
     DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.inventory),
   );
@@ -319,9 +314,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('diary quick eat waits for household inventory', (
-    tester,
-  ) async {
+  testWidgets('diary quick eat waits for household inventory', (tester) async {
     final harness = await _pumpAndOpenInventoryQuickEat(tester);
 
     expect(find.text('Aus Vorrat essen'), findsNothing);
@@ -351,14 +344,8 @@ void main() {
 
     expect(find.text('Brötchen'), findsOneWidget);
     expect(find.text(_currentMealName()), findsWidgets);
-    expect(
-      find.byKey(_inventoryItemAmountFieldKey),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(_inventoryItemAmountConfirmButtonKey),
-      findsOneWidget,
-    );
+    expect(find.byKey(_inventoryItemAmountFieldKey), findsOneWidget);
+    expect(find.byKey(_inventoryItemAmountConfirmButtonKey), findsOneWidget);
   });
 
   testWidgets('diary quick eat waits for household prepared meals', (
@@ -367,9 +354,7 @@ void main() {
     final harness = await _pumpAndOpenInventoryQuickEat(
       tester,
       inventoryItems: const <InventoryItem>[],
-      preparedMeals: [
-        _preparedMeal(id: 'meal-1', name: 'Chili sin Carne'),
-      ],
+      preparedMeals: [_preparedMeal(id: 'meal-1', name: 'Chili sin Carne')],
     );
 
     expect(find.text('Aus Vorrat essen'), findsNothing);
@@ -399,14 +384,9 @@ void main() {
 
     expect(find.text('Chili sin Carne'), findsOneWidget);
     expect(find.text(_currentMealName()), findsWidgets);
-    expect(
-      find.byKey(_preparedMealPortionsFieldKey),
-      findsOneWidget,
-    );
+    expect(find.byKey(_preparedMealPortionsFieldKey), findsOneWidget);
 
-    final confirmButton = find.byKey(
-      _preparedMealConfirmButtonKey,
-    );
+    final confirmButton = find.byKey(_preparedMealConfirmButtonKey);
     expect(confirmButton, findsOneWidget);
     await _pumpUntilOnScreen(
       tester,
@@ -430,9 +410,7 @@ void main() {
 
   testWidgets(
     'diary inventory quick add shows empty state after provider load',
-    (
-      tester,
-    ) async {
+    (tester) async {
       final harness = await _pumpAndOpenInventoryQuickEat(
         tester,
         inventoryItems: [
@@ -460,9 +438,7 @@ void main() {
 
   testWidgets(
     'diary inventory quick add shows action error without nutrition',
-    (
-      tester,
-    ) async {
+    (tester) async {
       final harness = await _pumpAndOpenInventoryQuickEat(
         tester,
         inventoryItems: [
@@ -492,9 +468,7 @@ void main() {
         description: 'inventory item eat sheet',
       );
 
-      final confirmButton = find.byKey(
-        _inventoryItemAmountConfirmButtonKey,
-      );
+      final confirmButton = find.byKey(_inventoryItemAmountConfirmButtonKey);
       await _pumpUntilOnScreen(
         tester,
         confirmButton,
@@ -518,9 +492,7 @@ void main() {
     final harness = await _pumpAndOpenInventoryQuickEat(
       tester,
       inventoryItems: const <InventoryItem>[],
-      preparedMeals: [
-        _preparedMeal(id: 'meal-fail', name: 'Gulasch'),
-      ],
+      preparedMeals: [_preparedMeal(id: 'meal-fail', name: 'Gulasch')],
       preparedMealSaveShouldFail: true,
     );
     harness.publishHouseholdProfile();
@@ -542,9 +514,7 @@ void main() {
       description: 'prepared meal eat sheet',
     );
 
-    final confirmButton = find.byKey(
-      _preparedMealConfirmButtonKey,
-    );
+    final confirmButton = find.byKey(_preparedMealConfirmButtonKey);
     await _pumpUntilOnScreen(
       tester,
       confirmButton,
@@ -562,10 +532,10 @@ void main() {
   });
 }
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _StaticBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  const _StaticBurnWeekRunStateRepository();
+  const new();
 
   @override
   Future<BurnWeekRunState> readState() async {
@@ -579,25 +549,19 @@ class _StaticBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 }
 
 class _StaticDiaryCalendarController extends DiaryCalendarController {
-  _StaticDiaryCalendarController(this.day);
+  new(this.day);
 
   final DateTime day;
 
   @override
   DiaryCalendarState build() {
     final normalizedDay = normalizeDiaryDay(day);
-    return DiaryCalendarState(
-      today: normalizedDay,
-      selectedDay: normalizedDay,
-    );
+    return DiaryCalendarState(today: normalizedDay, selectedDay: normalizedDay);
   }
 }
 
 class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
-  const _OwnerScopedInventoryItemRepository({
-    required this.ownerId,
-    required this.itemsByOwnerId,
-  });
+  const new({required this.ownerId, required this.itemsByOwnerId});
 
   final String? ownerId;
   final Map<String, List<InventoryItem>> itemsByOwnerId;
@@ -651,7 +615,7 @@ class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
 }
 
 class _OwnerScopedPreparedMealRepository implements PreparedMealRepository {
-  const _OwnerScopedPreparedMealRepository({
+  const new({
     required this.ownerId,
     required this.mealsByOwnerId,
     required this.saveShouldFail,
@@ -727,10 +691,7 @@ InventoryItem _inventoryItem({
   );
 }
 
-PreparedMeal _preparedMeal({
-  required String id,
-  required String name,
-}) {
+PreparedMeal _preparedMeal({required String id, required String name}) {
   return PreparedMeal(
     id: id,
     name: name,

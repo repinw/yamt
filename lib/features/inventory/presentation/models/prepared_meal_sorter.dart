@@ -20,7 +20,7 @@ enum PreparedMealSortCriterion {
 /// Sorts prepared meals and exposes sort-mode metadata for the UI.
 class PreparedMealSorter {
   /// The prepared meal sorter.
-  const PreparedMealSorter();
+  const new();
 
   /// Criterion for.
   PreparedMealSortCriterion criterionFor(PreparedMealSortMode sortMode) {

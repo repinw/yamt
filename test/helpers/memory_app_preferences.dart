@@ -5,7 +5,7 @@ import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 
 class MemoryAppPreferences implements AppPreferences {
-  MemoryAppPreferences({
+  new({
     Set<String> completedProfileSetupUserIds = const <String>{},
     Set<String> completedCalorieGoalOnboardingUserIds = const <String>{},
     Map<String, String>? initialStrings,

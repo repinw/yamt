@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared amount input card for inventory eat flows.
 class InventoryEatFlowAmountCard extends StatelessWidget {
   /// Creates amount input card.
-  const InventoryEatFlowAmountCard({
+  const new({
     required this.controller,
     required this.focusNode,
     required this.errorText,
@@ -99,20 +99,14 @@ class InventoryEatFlowAmountCard extends StatelessWidget {
                         hintText: '0',
                         isCollapsed: true,
                       ),
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        height: 1,
-                      ),
+                      style: Theme.of(context).textTheme.displaySmall
+                          ?.copyWith(fontWeight: FontWeight.w800, height: 1),
                       onChanged: onChanged,
                       onSubmitted: (_) => onSubmitted(),
                     ),
                   ),
                 ),
-                Container(
-                  width: 1,
-                  height: 64,
-                  color: colors.outlineVariant,
-                ),
+                Container(width: 1, height: 64, color: colors.outlineVariant),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(
@@ -138,9 +132,8 @@ class InventoryEatFlowAmountCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             errorText!,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: colors.error),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: colors.error),
           ),
         ],
       ],

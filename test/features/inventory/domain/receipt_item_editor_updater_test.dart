@@ -177,10 +177,7 @@ void main() {
   test('apply keeps review-only zero quantity at zero', () {
     final result = updater.apply(
       sourceItem: _sourceItem(),
-      formData: _formData(
-        quantityText: '0',
-        isDeposit: true,
-      ),
+      formData: _formData(quantityText: '0', isDeposit: true),
       locale: 'en_US',
       fallbackUnit: null,
     );

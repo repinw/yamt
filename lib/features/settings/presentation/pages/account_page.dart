@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/data/auth_service.dart'
     show authStateChangesProvider;
@@ -21,7 +21,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines account page.
 class AccountPage extends ConsumerStatefulWidget {
   /// The account page.
-  const AccountPage({super.key});
+  const new({super.key});
 
   @override
   ConsumerState<AccountPage> createState() => _AccountPageState();

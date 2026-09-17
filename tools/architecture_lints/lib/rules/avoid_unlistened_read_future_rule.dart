@@ -8,7 +8,7 @@ import 'package:analyzer/error/error.dart';
 /// Rule that enforces not calling .read(provider.future) without subscription.
 class AvoidUnlistenedReadFutureRule extends AnalysisRule {
   /// Creates the avoid unlistened read future rule.
-  AvoidUnlistenedReadFutureRule()
+  new()
       : super(
           name: 'avoid_unlistened_read_future',
           description:
@@ -41,7 +41,7 @@ class AvoidUnlistenedReadFutureRule extends AnalysisRule {
 }
 
 class _ReadFutureVisitor extends SimpleAstVisitor<void> {
-  _ReadFutureVisitor(this.rule, this.context);
+  new(this.rule, this.context);
 
   final AvoidUnlistenedReadFutureRule rule;
   final RuleContext context;

@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
@@ -21,7 +21,7 @@ const _swapGlobalFoodIdPrefix = 'global-food-';
 /// Describes the product data that should replace an inventory item.
 class InventoryItemCandidateSwapRequest {
   /// The inventory item candidate swap request.
-  const InventoryItemCandidateSwapRequest({
+  const new({
     required this.resolvedProduct,
     required this.requiresGlobalPersistence,
     required this.weight,

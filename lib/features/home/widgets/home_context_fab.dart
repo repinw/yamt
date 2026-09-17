@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Floating action button for shell-level home actions.
 class HomeContextFab extends StatelessWidget {
   /// The home context fab.
-  const HomeContextFab({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {

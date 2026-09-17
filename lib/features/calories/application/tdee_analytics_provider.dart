@@ -26,10 +26,7 @@ part 'tdee_analytics_provider.g.dart';
 @immutable
 class TdeeAnalyticsQuery {
   /// Creates an analytics query.
-  const TdeeAnalyticsQuery({
-    required this.cycleId,
-    required this.timeRange,
-  });
+  const new({required this.cycleId, required this.timeRange});
 
   /// Selected cycle ID or 'all'.
   final String cycleId;

@@ -1,7 +1,7 @@
 import 'package:yamt/features/auth/data/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
-  FakeAuthRepository({
+  new({
     this.shouldFailSignIn = false,
     this.shouldFailRegister = false,
     this.shouldFailGuest = false,

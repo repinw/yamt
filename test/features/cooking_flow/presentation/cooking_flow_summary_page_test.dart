@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
@@ -27,7 +28,7 @@ Widget _buildHarness({
 }) {
   return MaterialApp(
     locale: const Locale('de'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: CookingFlowSummaryPage(
@@ -100,7 +101,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: Scaffold(
           body: CookingFlowSummaryPage(
@@ -163,9 +164,7 @@ void main() {
     expect(find.textContaining('50g Petersilie'), findsOneWidget);
   });
 
-  testWidgets('shows inventory subtract and remaining amounts', (
-    tester,
-  ) async {
+  testWidgets('shows inventory subtract and remaining amounts', (tester) async {
     await tester.pumpWidget(
       _buildHarness(
         adjustments: const <String>[],

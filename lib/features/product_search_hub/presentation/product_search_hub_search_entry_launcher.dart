@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_entry_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';

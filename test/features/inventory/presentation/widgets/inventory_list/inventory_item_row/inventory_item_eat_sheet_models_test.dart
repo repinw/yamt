@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -96,9 +96,6 @@ void main() {
     expect(changedAmount, '125');
     expect(changedUnit, ConsumedUnit.milliliters);
     expect(submitted, isTrue);
-    expect(
-      pressedSuggestion,
-      (amount: 200, unit: ConsumedUnit.milliliters),
-    );
+    expect(pressedSuggestion, (amount: 200, unit: ConsumedUnit.milliliters));
   });
 }

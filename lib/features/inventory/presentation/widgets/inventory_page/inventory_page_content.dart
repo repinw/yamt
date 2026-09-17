@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -29,7 +29,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Builds the inventory page content and coordinates its UI controllers.
 class InventoryPageContent extends ConsumerWidget {
   /// Creates inventory page content.
-  const InventoryPageContent({
+  const new({
     required this.isShowingHistory,
     required this.onToggleView,
     required this.mealEditCoordinator,

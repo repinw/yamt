@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -80,7 +80,7 @@ bool shouldBuildCookingInstructionStepsOffMain({
 /// Cooking step for cookflow.
 class CookingFlowCookingPage extends ConsumerWidget {
   /// Creates cooking step.
-  const CookingFlowCookingPage({
+  const new({
     required this.template,
     required this.introDraft,
     required this.adjustmentController,
@@ -173,7 +173,7 @@ class CookingFlowCookingPage extends ConsumerWidget {
 @immutable
 class CookingInstructionStepsRequest {
   /// Creates instruction generation request data.
-  const CookingInstructionStepsRequest({
+  const new({
     required this.template,
     required this.introDraft,
     required this.text,
@@ -207,10 +207,7 @@ class CookingInstructionStepsRequest {
 }
 
 class _CookingInstructionCard extends StatelessWidget {
-  const _CookingInstructionCard({
-    required this.stepNumber,
-    required this.instruction,
-  });
+  const new({required this.stepNumber, required this.instruction});
 
   final int stepNumber;
   final CookingFlowInstructionStep instruction;
@@ -264,10 +261,8 @@ class _CookingInstructionCard extends StatelessWidget {
                       ),
                   ],
                 ),
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  height: 1.45,
-                ),
+                style: Theme.of(context).textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w500, height: 1.45),
               ),
             ),
           ],

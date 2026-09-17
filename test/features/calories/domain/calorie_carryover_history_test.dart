@@ -12,14 +12,11 @@ void main() {
         endExclusive: DateTime(2026, 4, 4, 23),
       );
 
-      expect(
-        days,
-        <DateTime>[
-          DateTime(2026, 4),
-          DateTime(2026, 4, 2),
-          DateTime(2026, 4, 3),
-        ],
-      );
+      expect(days, <DateTime>[
+        DateTime(2026, 4),
+        DateTime(2026, 4, 2),
+        DateTime(2026, 4, 3),
+      ]);
     });
 
     test('returns empty list when range is not forward', () {

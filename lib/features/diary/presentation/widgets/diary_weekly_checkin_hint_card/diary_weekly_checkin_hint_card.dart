@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_hint_card/diary_weekly_checkin_hint_card_body.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 /// Defines diary weekly check-in hint card.
 class DiaryWeeklyCheckInHintCard extends StatelessWidget {
   /// The diary weekly check-in hint card.
-  const DiaryWeeklyCheckInHintCard({
+  const new({
     required this.checkInData,
     required this.selectedDay,
     required this.selectedDayHasEntries,

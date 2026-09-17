@@ -53,11 +53,7 @@ Future<void> setupFirebaseAppCheck() async {
     await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
     _trace(
       'Firebase App Check activated for '
-      '${describeFirebaseAppCheckMode(
-        isWeb: kIsWeb,
-        platform: defaultTargetPlatform,
-        shouldUseDebugProvider: shouldUseDebugProvider,
-      )}.',
+      '${describeFirebaseAppCheckMode(isWeb: kIsWeb, platform: defaultTargetPlatform, shouldUseDebugProvider: shouldUseDebugProvider)}.',
     );
   } on Object catch (error, stackTrace) {
     _trace(

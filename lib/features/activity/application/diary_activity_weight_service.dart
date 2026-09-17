@@ -15,7 +15,7 @@ const _logName = 'DiaryActivityWeightService';
 /// Aggregates weight inputs for the diary card.
 class DiaryActivityWeightService {
   /// Creates a diary weight service.
-  const DiaryActivityWeightService();
+  const new();
 
   /// Loads weight data for the selected seven-day window.
   Future<DiaryActivityWeightData> load({

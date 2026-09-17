@@ -1,11 +1,11 @@
 // Internal split file. Public names are imported only by sibling widgets.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 class InventoryItemEatSectionCard extends StatelessWidget {
-  const InventoryItemEatSectionCard({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -17,9 +17,7 @@ class InventoryItemEatSectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: colors.outlineVariant,
-        ),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -30,7 +28,7 @@ class InventoryItemEatSectionCard extends StatelessWidget {
 }
 
 class InventoryItemEatCardTitle extends StatelessWidget {
-  const InventoryItemEatCardTitle({required this.text});
+  const new({required this.text});
 
   final String text;
 

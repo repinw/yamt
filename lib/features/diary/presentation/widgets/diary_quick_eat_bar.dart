@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
@@ -18,11 +18,7 @@ const _barcodeGlyph = '𝄃𝄂𝄀𝄁𝄃𝄂𝄂𝄃';
 /// logged.
 class DiaryQuickEatBar extends StatelessWidget {
   /// Creates the quick-eat bar.
-  const DiaryQuickEatBar({
-    required this.expanded,
-    required this.onSelected,
-    super.key,
-  });
+  const new({required this.expanded, required this.onSelected, super.key});
 
   /// Whether to show large labeled buttons.
   final bool expanded;
@@ -45,11 +41,7 @@ class DiaryQuickEatBar extends StatelessWidget {
         const Text('🔍'),
         l10n.diaryQuickEatSourceManualSearch,
       ),
-      (
-        DiaryQuickEatSource.ai,
-        const Text('✨'),
-        l10n.diaryQuickEatSourceAi,
-      ),
+      (DiaryQuickEatSource.ai, const Text('✨'), l10n.diaryQuickEatSourceAi),
       (
         DiaryQuickEatSource.barcode,
         const Text(_barcodeGlyph),
@@ -77,7 +69,7 @@ class DiaryQuickEatBar extends StatelessWidget {
 }
 
 class _QuickEatButton extends StatelessWidget {
-  const _QuickEatButton({
+  const new({
     required this.glyph,
     required this.label,
     required this.expanded,
@@ -154,10 +146,8 @@ class _QuickEatButton extends StatelessWidget {
     return IconTheme.merge(
       data: IconThemeData(size: size, color: colors.onSurface),
       child: DefaultTextStyle.merge(
-        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-          fontSize: size,
-          color: colors.onSurface,
-        ),
+        style: Theme.of(context).textTheme.headlineMedium
+            ?.copyWith(fontSize: size, color: colors.onSurface),
         child: glyph,
       ),
     );

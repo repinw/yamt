@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart'
@@ -8,11 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Action selector for manual product completion.
 class ManualProductActionSelector extends StatelessWidget {
   /// Creates an action selector.
-  const ManualProductActionSelector({
-    required this.selectedAction,
-    this.onChanged,
-    super.key,
-  });
+  const new({required this.selectedAction, this.onChanged, super.key});
 
   /// Selected action.
   final models.InventoryReceiptManualProductAction selectedAction;

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_weekly_balance_metrics.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Weekly Burn Week pacing card.
 class DiaryWeeklyBalanceCard extends StatelessWidget {
   /// Creates the weekly balance card.
-  const DiaryWeeklyBalanceCard({
+  const new({
     required this.weeklyMetrics,
     required this.runWeekNumber,
     required this.numberFormat,
@@ -34,9 +34,8 @@ class DiaryWeeklyBalanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final activity = MetricAccentColors.of(context).activityFor(
-      colors.brightness,
-    );
+    final activity = MetricAccentColors.of(context)
+        .activityFor(colors.brightness);
     final actualKcal = numberFormat.format(
       weeklyMetrics.pacing.actualConsumedKcal.round(),
     );
@@ -118,7 +117,7 @@ class DiaryWeeklyBalanceCard extends StatelessWidget {
 }
 
 class _WeekNumberBadge extends StatelessWidget {
-  const _WeekNumberBadge({
+  const new({
     required this.value,
     required this.semanticLabel,
     required this.accentColor,
@@ -139,19 +138,12 @@ class _WeekNumberBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: accentColor.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: accentColor.withValues(alpha: 0.42),
-            ),
+            border: Border.all(color: accentColor.withValues(alpha: 0.42)),
           ),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: 28,
-              minHeight: 24,
-            ),
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 24),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xs,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
               child: Center(
                 child: Text(
                   value,

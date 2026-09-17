@@ -95,10 +95,7 @@ void main() {
     };
 
     final result = isSourceItemInActiveShoppingList(
-      item: _sourceItem(
-        name: 'Milk',
-        brand: 'Acme',
-      ),
+      item: _sourceItem(name: 'Milk', brand: 'Acme'),
       activeItemKeys: activeKeys,
     );
 
@@ -111,10 +108,7 @@ void main() {
     };
 
     final result = isSourceItemInActiveShoppingList(
-      item: _sourceItem(
-        name: 'Bread',
-        brand: 'Acme',
-      ),
+      item: _sourceItem(name: 'Bread', brand: 'Acme'),
       activeItemKeys: activeKeys,
     );
 
@@ -127,11 +121,7 @@ void main() {
     };
 
     final result = isSourceItemInActiveShoppingList(
-      item: _sourceItem(
-        name: 'Milk',
-        brand: 'Acme',
-        initialQuantity: 2,
-      ),
+      item: _sourceItem(name: 'Milk', brand: 'Acme', initialQuantity: 2),
       activeItemKeys: activeKeys,
     );
 
@@ -206,9 +196,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final result = container.read(
-      sourceItemInActiveShoppingListProvider(item),
-    );
+    final result = container.read(sourceItemInActiveShoppingListProvider(item));
 
     expect(result, isTrue);
   });

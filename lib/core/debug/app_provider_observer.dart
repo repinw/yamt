@@ -8,7 +8,7 @@ const _providerObserverLogName = 'RiverpodDebug';
 /// Logs provider lifecycle changes in debug builds.
 final class AppProviderObserver extends ProviderObserver {
   /// Creates provider observer.
-  const AppProviderObserver();
+  const new();
 
   @override
   void didAddProvider(ProviderObserverContext context, Object? value) {

@@ -5,14 +5,14 @@ import 'package:yamt/features/inventory/presentation/models/'
 /// Defines inventory sorted items cache.
 class InventorySortedItemsCache {
   /// The inventory sorted items cache.
-  const InventorySortedItemsCache({
+  const new({
     required this.signature,
     required this.sortedItemIds,
     required this.sortMode,
   });
 
   /// Creates a [InventorySortedItemsCache] for from items.
-  factory InventorySortedItemsCache.fromItems(
+  factory fromItems(
     List<InventoryItem> items, {
     required InventoryItemSortMode sortMode,
   }) {
@@ -160,17 +160,15 @@ int _compareInventoryItemSortOrder(
       }
       return b.entryDate.compareTo(a.entryDate);
     case InventoryItemSortMode.availableAmountAscending:
-      final ratioCompare = _availableAmountRatio(
-        a,
-      ).compareTo(_availableAmountRatio(b));
+      final ratioCompare = _availableAmountRatio(a)
+          .compareTo(_availableAmountRatio(b));
       if (ratioCompare != 0) {
         return ratioCompare;
       }
       return _compareInventoryItemName(a, b);
     case InventoryItemSortMode.availableAmountDescending:
-      final ratioCompare = _availableAmountRatio(
-        b,
-      ).compareTo(_availableAmountRatio(a));
+      final ratioCompare = _availableAmountRatio(b)
+          .compareTo(_availableAmountRatio(a));
       if (ratioCompare != 0) {
         return ratioCompare;
       }

@@ -11,7 +11,7 @@ part 'diary_day_dashboard_live_data_provider.g.dart';
 /// Live provider data needed to refresh a cached diary dashboard.
 class DiaryDayDashboardLiveData {
   /// Creates live dashboard data.
-  const DiaryDayDashboardLiveData({
+  const new({
     required this.weekOverview,
     required this.selectedDayEntries,
     required this.runState,

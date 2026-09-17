@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
@@ -21,7 +21,7 @@ Future<T?> showInventoryActionPickerSheet<T>(
 /// Shared shell for inventory action picker sheets.
 class InventoryActionPickerSheet extends StatelessWidget {
   /// The inventory action picker sheet.
-  const InventoryActionPickerSheet({
+  const new({
     required this.title,
     required this.children,
     required this.onClose,
@@ -100,9 +100,8 @@ class InventoryActionPickerSheet extends StatelessWidget {
                     const SizedBox(width: AppSpacing.md),
                     IconButton(
                       onPressed: onClose,
-                      tooltip: MaterialLocalizations.of(
-                        context,
-                      ).closeButtonTooltip,
+                      tooltip: MaterialLocalizations.of(context)
+                          .closeButtonTooltip,
                       icon: Icon(Icons.close, color: colors.onSurfaceVariant),
                       style: IconButton.styleFrom(
                         backgroundColor: colors.surfaceContainerHighest,
@@ -138,7 +137,7 @@ class InventoryActionPickerSheet extends StatelessWidget {
 /// Shared leading icon chip for inventory action picker options.
 class InventoryActionPickerOptionIcon extends StatelessWidget {
   /// The inventory action picker option icon.
-  const InventoryActionPickerOptionIcon({
+  const new({
     required this.icon,
     required this.foregroundColor,
     required this.backgroundColor,
@@ -177,7 +176,7 @@ class InventoryActionPickerOptionIcon extends StatelessWidget {
 /// Shared tappable tile for inventory action picker options.
 class InventoryActionPickerOptionTile extends StatelessWidget {
   /// The inventory action picker option tile.
-  const InventoryActionPickerOptionTile({
+  const new({
     required this.icon,
     required this.title,
     required this.foregroundColor,

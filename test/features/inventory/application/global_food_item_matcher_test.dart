@@ -13,7 +13,7 @@ import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 class _SearchCall {
-  const _SearchCall({
+  const new({
     required this.query,
     required this.store,
     required this.brand,
@@ -29,7 +29,7 @@ class _SearchCall {
 }
 
 class _GlobalSearchCall {
-  const _GlobalSearchCall({
+  const new({
     required this.normalizedName,
     required this.normalizedStoreName,
     required this.barcode,
@@ -47,7 +47,7 @@ class _GlobalSearchCall {
 }
 
 class _AliasSearchCall {
-  const _AliasSearchCall({
+  const new({
     required this.normalizedStoreName,
     required this.normalizedReceiptName,
     required this.limit,
@@ -59,11 +59,10 @@ class _AliasSearchCall {
 }
 
 class _FakeOffProductSearchRepository implements OffProductSearchRepository {
-  _FakeOffProductSearchRepository({
+  new({
     this.fallbackResults = const <OffProductSearchResult>[],
-    Map<String, List<OffProductSearchResult>> resultsByQuery =
-        const <String, List<OffProductSearchResult>>{},
-  }) : _resultsByQuery = resultsByQuery;
+    this._resultsByQuery = const <String, List<OffProductSearchResult>>{},
+  });
 
   final List<OffProductSearchResult> fallbackResults;
   final Map<String, List<OffProductSearchResult>> _resultsByQuery;
@@ -99,10 +98,7 @@ class _FakeOffProductSearchRepository implements OffProductSearchRepository {
 }
 
 class _FakeGlobalFoodItemRepository implements GlobalFoodItemRepository {
-  _FakeGlobalFoodItemRepository({
-    this.fallbackResults = const <GlobalFoodItem>[],
-    Future<List<GlobalFoodItem>> Function(_GlobalSearchCall call)? onSearch,
-  }) : _onSearch = onSearch;
+  new({this.fallbackResults = const <GlobalFoodItem>[]}) : _onSearch = null;
 
   final List<GlobalFoodItem> fallbackResults;
   final Future<List<GlobalFoodItem>> Function(_GlobalSearchCall call)?
@@ -155,9 +151,7 @@ class _FakeGlobalFoodItemRepository implements GlobalFoodItemRepository {
 
 class _FakeGlobalFoodReceiptAliasRepository
     implements GlobalFoodReceiptAliasRepository {
-  _FakeGlobalFoodReceiptAliasRepository({
-    this.fallbackResults = const <GlobalFoodReceiptAlias>[],
-  });
+  new({this.fallbackResults = const <GlobalFoodReceiptAlias>[]});
 
   final List<GlobalFoodReceiptAlias> fallbackResults;
   final List<_AliasSearchCall> calls = <_AliasSearchCall>[];
@@ -293,9 +287,7 @@ void main() {
   });
 
   test('OFF source handles missing repository and blank query', () async {
-    const sourceWithoutRepository = OffProductCandidateSource(
-      repository: null,
-    );
+    const sourceWithoutRepository = OffProductCandidateSource(repository: null);
     final blankRepository = _FakeOffProductSearchRepository();
     final sourceWithRepository = OffProductCandidateSource(
       repository: blankRepository,
@@ -622,53 +614,50 @@ void main() {
     },
   );
 
-  test(
-    'findCandidates rejects legacy alias matches based solely on short '
-    'single-letter token overlap',
-    () async {
-      final creamCheese = _globalItem(
-        id: 'frischkaese',
-        name: 'Frischkäse Natur',
+  test('findCandidates rejects legacy alias matches based solely on short '
+      'single-letter token overlap', () async {
+    final creamCheese = _globalItem(
+      id: 'frischkaese',
+      name: 'Frischkäse Natur',
+      storeName: 'Aldi',
+    );
+    final legacyAlias =
+        _receiptAlias(
+          id: 'alias-frischkaese',
+          receiptName: 'FRISCHKAESE B',
+          item: creamCheese,
+          selectionCount: 10,
+        ).copyWith(
+          // Simulates old alias stored in Firestore prior to token filtering
+          receiptSearchTokens: <String>[
+            'frischkaese b',
+            'frischkaeseb',
+            'frischkaese',
+            'b',
+          ],
+        );
+    final aliasRepository = _FakeGlobalFoodReceiptAliasRepository(
+      fallbackResults: <GlobalFoodReceiptAlias>[legacyAlias],
+    );
+    final matcher = GlobalFoodItemMatcher(
+      globalFoodReceiptAliasRepository: aliasRepository,
+      offProductSearchRepository: _FakeOffProductSearchRepository(),
+    );
+
+    final candidates = await matcher.findCandidates(
+      _inventoryItem(
+        id: 'item-1',
+        name: 'Butter',
+        ocrName: 'BUTTER B',
         storeName: 'Aldi',
-      );
-      final legacyAlias =
-          _receiptAlias(
-            id: 'alias-frischkaese',
-            receiptName: 'FRISCHKAESE B',
-            item: creamCheese,
-            selectionCount: 10,
-          ).copyWith(
-            // Simulates old alias stored in Firestore prior to token filtering
-            receiptSearchTokens: <String>[
-              'frischkaese b',
-              'frischkaeseb',
-              'frischkaese',
-              'b',
-            ],
-          );
-      final aliasRepository = _FakeGlobalFoodReceiptAliasRepository(
-        fallbackResults: <GlobalFoodReceiptAlias>[legacyAlias],
-      );
-      final matcher = GlobalFoodItemMatcher(
-        globalFoodReceiptAliasRepository: aliasRepository,
-        offProductSearchRepository: _FakeOffProductSearchRepository(),
-      );
+      ),
+    );
 
-      final candidates = await matcher.findCandidates(
-        _inventoryItem(
-          id: 'item-1',
-          name: 'Butter',
-          ocrName: 'BUTTER B',
-          storeName: 'Aldi',
-        ),
-      );
-
-      expect(
-        candidates.any((candidate) => candidate.item.id == 'frischkaese'),
-        isFalse,
-      );
-    },
-  );
+    expect(
+      candidates.any((candidate) => candidate.item.id == 'frischkaese'),
+      isFalse,
+    );
+  });
 
   test(
     'findCandidates keeps local and OFF buckets separate even for same barcode',

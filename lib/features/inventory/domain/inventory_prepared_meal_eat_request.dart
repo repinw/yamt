@@ -3,7 +3,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 /// Prepared meal eat request selected from the Inventory quick-eat surface.
 class InventoryPreparedMealEatRequest {
   /// Creates a prepared meal eat request.
-  const InventoryPreparedMealEatRequest({
+  const new({
     required this.portions,
     required this.mealType,
     required this.loggedDay,

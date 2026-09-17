@@ -1,7 +1,7 @@
 // Internal split file. Public names are imported only by sibling widgets.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -9,7 +9,7 @@ import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class NewPortionDialog extends StatefulWidget {
-  const NewPortionDialog({
+  const new({
     required this.initialLabel,
     required this.initialAmount,
     required this.initialUnit,
@@ -158,11 +158,7 @@ class _NewPortionDialogState extends State<NewPortionDialog> {
 }
 
 class NewPortionDialogResult {
-  const NewPortionDialogResult({
-    required this.amount,
-    required this.unit,
-    required this.label,
-  });
+  const new({required this.amount, required this.unit, required this.label});
 
   final double amount;
   final ConsumedUnit unit;

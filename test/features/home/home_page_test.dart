@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -54,10 +55,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository(this.items);
+  new(this.items);
 
   final List<InventoryItem> items;
 
@@ -79,7 +80,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
 }
 
 class _FakePreparedMealRepository implements PreparedMealRepository {
-  _FakePreparedMealRepository(this.meals);
+  new(this.meals);
 
   final List<PreparedMeal> meals;
 
@@ -112,7 +113,7 @@ class _LoadingPreparedMealsController extends PreparedMealsController {
 }
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  _FakeBurnWeekRunStateRepository(this.state);
+  new(this.state);
 
   BurnWeekRunState state;
 
@@ -127,7 +128,7 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 }
 
 class _TestDiaryCalendarController extends DiaryCalendarController {
-  _TestDiaryCalendarController(this.selectedDay);
+  new(this.selectedDay);
 
   final DateTime selectedDay;
 
@@ -142,7 +143,7 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
 }
 
 class _DummyReceiptParser implements ReceiptStructuredParser {
-  const _DummyReceiptParser();
+  const new();
   @override
   Future<ScannedReceipt> parsePdf({required String pdfFilePath}) =>
       throw UnimplementedError();
@@ -154,7 +155,7 @@ class _DummyReceiptParser implements ReceiptStructuredParser {
 }
 
 class _DummyReceiptExtractor implements ReceiptTextExtractor {
-  const _DummyReceiptExtractor();
+  const new();
   @override
   Future<String> extractText(List<String> imageFilePaths) =>
       throw UnimplementedError();
@@ -163,7 +164,7 @@ class _DummyReceiptExtractor implements ReceiptTextExtractor {
 }
 
 class _DummyReceiptResolver implements ReceiptProductResolver {
-  const _DummyReceiptResolver();
+  const new();
   @override
   Future<List<ProductCandidate>> resolveCandidates({
     required String rawLineText,
@@ -192,7 +193,7 @@ class _DummyReceiptResolver implements ReceiptProductResolver {
 }
 
 class _RecordingReceiptScanFlowCoordinator extends ReceiptScanFlowCoordinator {
-  _RecordingReceiptScanFlowCoordinator()
+  new()
     : super(
         parser: const _DummyReceiptParser(),
         extractor: const _DummyReceiptExtractor(),
@@ -275,10 +276,7 @@ Widget _defaultBranchBody(HomeTabType tab) {
   return CustomScrollView(
     slivers: [
       HomeShellTabTopChrome(title: _titleForTab(tab)),
-      const SliverFillRemaining(
-        hasScrollBody: false,
-        child: SizedBox(),
-      ),
+      const SliverFillRemaining(hasScrollBody: false, child: SizedBox()),
     ],
   );
 }
@@ -287,10 +285,7 @@ Widget _diaryTopChromeBranchBody() {
   return const CustomScrollView(
     slivers: [
       DiaryHomeShellTopChrome(),
-      SliverFillRemaining(
-        hasScrollBody: false,
-        child: SizedBox(),
-      ),
+      SliverFillRemaining(hasScrollBody: false, child: SizedBox()),
     ],
   );
 }
@@ -299,10 +294,7 @@ Widget _inventoryTopChromeBranchBody() {
   return const CustomScrollView(
     slivers: [
       InventoryHomeShellTopChrome(),
-      SliverFillRemaining(
-        hasScrollBody: false,
-        child: SizedBox(),
-      ),
+      SliverFillRemaining(hasScrollBody: false, child: SizedBox()),
     ],
   );
 }
@@ -453,17 +445,13 @@ Widget _buildHarness({
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       burnWeekRunStateRepositoryProvider.overrideWithValue(
         burnWeekRunStateRepository ??
-            _FakeBurnWeekRunStateRepository(
-              const BurnWeekRunState.initial(),
-            ),
+            _FakeBurnWeekRunStateRepository(const BurnWeekRunState.initial()),
       ),
-      calorieWeekOverviewForWindowProvider(today).overrideWith(
-        (ref) => _weekOverview(today),
-      ),
+      calorieWeekOverviewForWindowProvider(today)
+          .overrideWith((ref) => _weekOverview(today)),
       if (!isSameDiaryDay(dashboardDay, today))
-        calorieWeekOverviewForWindowProvider(dashboardDay).overrideWith(
-          (ref) => _weekOverview(dashboardDay),
-        ),
+        calorieWeekOverviewForWindowProvider(dashboardDay)
+            .overrideWith((ref) => _weekOverview(dashboardDay)),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
       householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
@@ -492,9 +480,7 @@ Widget _buildHarness({
           () => _TestDiaryCalendarController(selectedDiaryDay),
         ),
       if (isCameraSupported != null)
-        receiptCameraSupportedProvider.overrideWith(
-          (ref) => isCameraSupported,
-        ),
+        receiptCameraSupportedProvider.overrideWith((ref) => isCameraSupported),
     ],
   );
   addTearDown(container.dispose);
@@ -504,7 +490,7 @@ Widget _buildHarness({
       locale: const Locale('en'),
       theme: theme,
       routerConfig: router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
@@ -626,10 +612,7 @@ void main() {
                 ),
               ],
             ),
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: SizedBox(),
-            ),
+            const SliverFillRemaining(hasScrollBody: false, child: SizedBox()),
           ],
         ),
       ),
@@ -661,10 +644,7 @@ void main() {
                 SliverList.builder(
                   itemCount: 40,
                   itemBuilder: (context, index) {
-                    return SizedBox(
-                      height: 72,
-                      child: Text('Row $index'),
-                    );
+                    return SizedBox(height: 72, child: Text('Row $index'));
                   },
                 ),
               ],
@@ -781,10 +761,7 @@ void main() {
           slivers: [
             HomeShellTabTopChrome(title: 'Today'),
             SliverToBoxAdapter(
-              child: SizedBox(
-                height: 980,
-                child: Text('Shallow content'),
-              ),
+              child: SizedBox(height: 980, child: Text('Shallow content')),
             ),
           ],
         ),
@@ -828,10 +805,7 @@ void main() {
             SliverList.builder(
               itemCount: 40,
               itemBuilder: (context, index) {
-                return SizedBox(
-                  height: 72,
-                  child: Text('Row $index'),
-                );
+                return SizedBox(height: 72, child: Text('Row $index'));
               },
             ),
           ],
@@ -876,10 +850,7 @@ void main() {
             SliverList.builder(
               itemCount: 40,
               itemBuilder: (context, index) {
-                return SizedBox(
-                  height: 72,
-                  child: Text('Row $index'),
-                );
+                return SizedBox(height: 72, child: Text('Row $index'));
               },
             ),
           ],
@@ -930,10 +901,7 @@ void main() {
             SliverList.builder(
               itemCount: 40,
               itemBuilder: (context, index) {
-                return SizedBox(
-                  height: 72,
-                  child: Text('Row $index'),
-                );
+                return SizedBox(height: 72, child: Text('Row $index'));
               },
             ),
           ],
@@ -1005,10 +973,7 @@ void main() {
             SliverList.builder(
               itemCount: 20,
               itemBuilder: (context, index) {
-                return SizedBox(
-                  height: 72,
-                  child: Text('Outer row $index'),
-                );
+                return SizedBox(height: 72, child: Text('Outer row $index'));
               },
             ),
           ],
@@ -1085,9 +1050,7 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('inventory top bar actions show shopping route', (
-    tester,
-  ) async {
+  testWidgets('inventory top bar actions show shopping route', (tester) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
 
@@ -1265,10 +1228,7 @@ void main() {
             SliverList.builder(
               itemCount: 40,
               itemBuilder: (context, index) {
-                return SizedBox(
-                  height: 72,
-                  child: Text('Row $index'),
-                );
+                return SizedBox(height: 72, child: Text('Row $index'));
               },
             ),
           ],
@@ -1285,9 +1245,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 120));
 
     final collapsedFabTop = tester
-        .getTopLeft(
-          find.byType(InventoryActionFab),
-        )
+        .getTopLeft(find.byType(InventoryActionFab))
         .dy;
 
     expect(collapsedFabTop, greaterThan(initialFabTop));
@@ -1351,9 +1309,7 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('inventory snackbar lays out with inventory fab', (
-    tester,
-  ) async {
+  testWidgets('inventory snackbar lays out with inventory fab', (tester) async {
     await tester.binding.setSurfaceSize(const Size(384, 832));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -1381,9 +1337,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final homeContext = tester.element(find.byType(HomePage));
-    ScaffoldMessenger.of(homeContext).showSnackBar(
-      const SnackBar(content: Text('Saved')),
-    );
+    ScaffoldMessenger.of(homeContext)
+        .showSnackBar(const SnackBar(content: Text('Saved')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -1427,9 +1382,7 @@ void main() {
     expect(args.initialIntent, ProductSearchHubInitialIntent.search);
   });
 
-  testWidgets('inventory shell fab opens ai suggestion route', (
-    tester,
-  ) async {
+  testWidgets('inventory shell fab opens ai suggestion route', (tester) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     Object? hubRouteExtra;
@@ -1558,98 +1511,94 @@ void main() {
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets(
-    'inventory selection chrome compacts on small zoomed layouts',
-    (tester) async {
-      tester.platformDispatcher.textScaleFactorTestValue = 1.8;
-      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      await tester.binding.setSurfaceSize(const Size(320, 640));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets('inventory selection chrome compacts on small zoomed layouts', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.binding.setSurfaceSize(const Size(320, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final repository = FakeCalorieSettingsRepository();
-      addTearDown(repository.dispose);
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
 
-      await tester.pumpWidget(
-        _buildHarness(
-          settingsRepository: repository,
-          initialLocation: AppRoutes.homeInventory,
-          branchBody: _inventoryTopChromeBranchBody(),
-        ),
-      );
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        branchBody: _inventoryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(HomePage)),
-      );
-      container.read(preparedMealSelectionControllerProvider.notifier)
-        ..enterSelection('item-1')
-        ..toggleSelection('item-2');
-      await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomePage)),
+    );
+    container.read(preparedMealSelectionControllerProvider.notifier)
+      ..enterSelection('item-1')
+      ..toggleSelection('item-2');
+    await tester.pumpAndSettle();
 
-      expect(find.text('Cancel'), findsNothing);
-      expect(find.text('Bind meal'), findsNothing);
-      expect(find.byIcon(Icons.close_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.restaurant_menu_rounded), findsOneWidget);
+    expect(find.text('Cancel'), findsNothing);
+    expect(find.text('Bind meal'), findsNothing);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.restaurant_menu_rounded), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.restaurant_menu_rounded));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.restaurant_menu_rounded));
+    await tester.pumpAndSettle();
 
-      expect(
-        container
-            .read(preparedMealSelectionControllerProvider)
-            .bindRequestToken,
-        1,
-      );
+    expect(
+      container.read(preparedMealSelectionControllerProvider).bindRequestToken,
+      1,
+    );
 
-      await tester.tap(find.byIcon(Icons.close_rounded));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
 
-      expect(
-        container.read(preparedMealSelectionControllerProvider).isSelectionMode,
-        isFalse,
-      );
-      expect(tester.takeException(), isNull);
-    },
-  );
+    expect(
+      container.read(preparedMealSelectionControllerProvider).isSelectionMode,
+      isFalse,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
-  testWidgets(
-    'bottom nav keeps labels on wider layouts with larger text',
-    (tester) async {
-      tester.platformDispatcher.textScaleFactorTestValue = 1.25;
-      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      await tester.binding.setSurfaceSize(const Size(430, 900));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets('bottom nav keeps labels on wider layouts with larger text', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.25;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.binding.setSurfaceSize(const Size(430, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final repository = FakeCalorieSettingsRepository();
-      addTearDown(repository.dispose);
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
 
-      await tester.pumpWidget(
-        _buildHarness(
-          settingsRepository: repository,
-          initialLocation: AppRoutes.homeInventory,
-        ),
-      );
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(find.text('INVENTORY'), findsOneWidget);
-      expect(find.text('DIARY'), findsOneWidget);
-      expect(find.text('COOKBOOK'), findsOneWidget);
-      expect(
-        tester.getCenter(find.text('DIARY')).dx,
-        lessThan(tester.getCenter(find.text('INVENTORY')).dx),
-      );
-      expect(
-        tester.getCenter(find.text('INVENTORY')).dx,
-        lessThan(tester.getCenter(find.text('COOKBOOK')).dx),
-      );
-      expect(
-        tester.getCenter(find.text('COOKBOOK')).dx,
-        lessThan(tester.getCenter(find.text('SETTINGS')).dx),
-      );
-      expect(find.text('BURN'), findsNothing);
-      expect(find.text('SETTINGS'), findsOneWidget);
-      expect(find.text('STATISTICS'), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    expect(find.text('INVENTORY'), findsOneWidget);
+    expect(find.text('DIARY'), findsOneWidget);
+    expect(find.text('COOKBOOK'), findsOneWidget);
+    expect(
+      tester.getCenter(find.text('DIARY')).dx,
+      lessThan(tester.getCenter(find.text('INVENTORY')).dx),
+    );
+    expect(
+      tester.getCenter(find.text('INVENTORY')).dx,
+      lessThan(tester.getCenter(find.text('COOKBOOK')).dx),
+    );
+    expect(
+      tester.getCenter(find.text('COOKBOOK')).dx,
+      lessThan(tester.getCenter(find.text('SETTINGS')).dx),
+    );
+    expect(find.text('BURN'), findsNothing);
+    expect(find.text('SETTINGS'), findsOneWidget);
+    expect(find.text('STATISTICS'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

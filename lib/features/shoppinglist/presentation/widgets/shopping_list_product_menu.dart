@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_schedule_dialog/shopping_list_schedule_dialog.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Favorite and recurrence controls shared by listed and saved products.
 class ShoppingListProductMenu extends ConsumerWidget {
   /// Creates product settings.
-  const ShoppingListProductMenu({required this.item, super.key});
+  const new({required this.item, super.key});
 
   /// Product being edited.
   final ShoppingListItem item;

@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -72,7 +73,7 @@ Widget _buildInventoryTestApp({
   return UncontrolledProviderScope(
     container: resolvedContainer,
     child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: _buildInventoryListBody(
@@ -94,20 +95,20 @@ Widget _buildInventoryListBody({
     emptyStateActionButton: const SizedBox.shrink(),
     onDeleteItem: (itemId) async => true,
     onEatItem: (itemId, request) async => true,
-    onThrowAwayItem: (itemId, amount, reason) async => (
-      discardEventId: 'discard-$itemId',
-      removedAmount: amount,
-    ),
-    onEatPreparedMeal:
-        ({
-          required mealId,
-          required portions,
-          required mealType,
-          required loggedDay,
-        }) async => true,
+    onThrowAwayItem: (itemId, amount, reason) async =>
+        (discardEventId: 'discard-$itemId', removedAmount: amount),
+    onEatPreparedMeal: ({
+      required mealId,
+      required portions,
+      required mealType,
+      required loggedDay,
+    }) async => true,
     onThrowAwayPreparedMeal: (mealId, portions, reason) async => true,
-    onFillPendingPreparedMealIngredient:
-        (mealId, ingredient, inventoryItemIds) async => true,
+    onFillPendingPreparedMealIngredient: (
+      mealId,
+      ingredient,
+      inventoryItemIds,
+    ) async => true,
     onIgnorePendingPreparedMealIngredient: (mealId, ingredient) async => true,
     onUnbundlePreparedMeal: (mealId) async => true,
     onEditPreparedMeal: (mealId, result) async => true,
@@ -231,7 +232,7 @@ class _FakeManualProductSpeechService implements VoiceSearchService {
 }
 
 class _StaticInventoryItemsController extends InventoryItemsController {
-  _StaticInventoryItemsController(this._items);
+  new(this._items);
 
   final List<InventoryItem> _items;
 
@@ -240,10 +241,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
 }
 
 class _InventoryListPersistenceHarness extends StatefulWidget {
-  const _InventoryListPersistenceHarness({
-    required this.items,
-    required this.preparedMeals,
-  });
+  const new({required this.items, required this.preparedMeals});
 
   final List<InventoryItem> items;
   final List<PreparedMeal> preparedMeals;
@@ -368,10 +366,7 @@ void main() {
     final grid = tester.widget<SliverGrid>(
       find.byKey(const Key('inventory_items_tile_view')),
     );
-    expect(
-      grid.gridDelegate,
-      isA<SliverGridDelegateWithMaxCrossAxisExtent>(),
-    );
+    expect(grid.gridDelegate, isA<SliverGridDelegateWithMaxCrossAxisExtent>());
   });
 
   testWidgets('view mode toggle switches prepared meals to tile layout', (
@@ -403,10 +398,7 @@ void main() {
     final grid = tester.widget<SliverGrid>(
       find.byKey(const Key('prepared_meals_tile_view')),
     );
-    expect(
-      grid.gridDelegate,
-      isA<SliverGridDelegateWithMaxCrossAxisExtent>(),
-    );
+    expect(grid.gridDelegate, isA<SliverGridDelegateWithMaxCrossAxisExtent>());
   });
 
   testWidgets('inventory search filters items and prepared meals', (
@@ -714,10 +706,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        _visiblePreparedMealNames(tester),
-        <String>['Old Eaten', 'New Eaten'],
-      );
+      expect(_visiblePreparedMealNames(tester), <String>[
+        'Old Eaten',
+        'New Eaten',
+      ]);
 
       await _openPreparedMealFilterSheet(tester);
 
@@ -729,10 +721,10 @@ void main() {
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(
-        _visiblePreparedMealNames(tester),
-        <String>['New Eaten', 'Old Eaten'],
-      );
+      expect(_visiblePreparedMealNames(tester), <String>[
+        'New Eaten',
+        'Old Eaten',
+      ]);
 
       await _openPreparedMealFilterSheet(tester);
 
@@ -744,10 +736,10 @@ void main() {
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(
-        _visiblePreparedMealNames(tester),
-        <String>['Old Eaten', 'New Eaten'],
-      );
+      expect(_visiblePreparedMealNames(tester), <String>[
+        'Old Eaten',
+        'New Eaten',
+      ]);
     },
   );
 
@@ -827,11 +819,7 @@ void main() {
       _buildInventoryTestApp(
         items: const <InventoryItem>[],
         preparedMeals: <PreparedMeal>[
-          _preparedMeal(
-            id: 'meal-low',
-            name: 'Low Meal',
-            totalPortions: 4,
-          ),
+          _preparedMeal(id: 'meal-low', name: 'Low Meal', totalPortions: 4),
           _preparedMeal(
             id: 'meal-mid',
             name: 'Mid Meal',
@@ -859,10 +847,11 @@ void main() {
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
 
-    expect(
-      _visiblePreparedMealNames(tester),
-      <String>['Low Meal', 'Mid Meal', 'High Meal'],
-    );
+    expect(_visiblePreparedMealNames(tester), <String>[
+      'Low Meal',
+      'Mid Meal',
+      'High Meal',
+    ]);
 
     await _openPreparedMealFilterSheet(tester);
 
@@ -874,10 +863,11 @@ void main() {
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
 
-    expect(
-      _visiblePreparedMealNames(tester),
-      <String>['High Meal', 'Mid Meal', 'Low Meal'],
-    );
+    expect(_visiblePreparedMealNames(tester), <String>[
+      'High Meal',
+      'Mid Meal',
+      'Low Meal',
+    ]);
   });
 
   testWidgets('inventory view preferences persist across remount', (
@@ -936,11 +926,7 @@ void main() {
   ) async {
     final preferences = MemoryAppPreferences();
     final preparedMeals = <PreparedMeal>[
-      _preparedMeal(
-        id: 'meal-low',
-        name: 'Ready Low',
-        totalPortions: 4,
-      ),
+      _preparedMeal(id: 'meal-low', name: 'Ready Low', totalPortions: 4),
       _preparedMeal(
         id: 'meal-high',
         name: 'Ready High',
@@ -1208,7 +1194,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: _InventoryListPersistenceHarness(
@@ -1303,7 +1289,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: _InventoryListPersistenceHarness(

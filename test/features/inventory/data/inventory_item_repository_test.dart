@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  _FakeInventoryUserSession({this.currentUserId});
+  new({this.currentUserId});
 
   @override
   final String? currentUserId;
@@ -16,10 +16,9 @@ class _FakeInventoryUserSession implements InventoryUserSession {
 
 class _FakeInventoryItemStore
     implements InventoryItemStore, InventoryItemRecentManualStore {
-  _FakeInventoryItemStore({
-    Map<String, List<InventoryItemDocument>>? initialDocumentsByUser,
-  }) : _documentsByUser =
-           initialDocumentsByUser ?? <String, List<InventoryItemDocument>>{};
+  new({Map<String, List<InventoryItemDocument>>? initialDocumentsByUser})
+    : _documentsByUser =
+          initialDocumentsByUser ?? <String, List<InventoryItemDocument>>{};
 
   final Map<String, List<InventoryItemDocument>> _documentsByUser;
   final Map<String, StreamController<List<InventoryItemDocument>>>
@@ -354,9 +353,8 @@ void main() {
   });
 
   test('readAll preserves manual add origin from stored documents', () async {
-    final manualItem = _item(
-      'manual-1',
-    ).copyWith(origin: InventoryItemOrigin.manualAdd);
+    final manualItem = _item('manual-1')
+        .copyWith(origin: InventoryItemOrigin.manualAdd);
     final store = _FakeInventoryItemStore(
       initialDocumentsByUser: <String, List<InventoryItemDocument>>{
         'user-1': <InventoryItemDocument>[

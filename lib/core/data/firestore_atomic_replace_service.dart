@@ -14,10 +14,7 @@ const int defaultMaxStaleDeleteCandidatesPerTransaction = 100;
 /// Stores the original document state for stale-delete safety checks.
 class FirestoreStaleDeleteCandidate {
   /// Creates stale-delete candidate with expected document contents.
-  const FirestoreStaleDeleteCandidate({
-    required this.reference,
-    required this.expectedData,
-  });
+  const new({required this.reference, required this.expectedData});
 
   /// Reference considered for deletion.
   final DocumentReference<Map<String, dynamic>> reference;
@@ -29,13 +26,13 @@ class FirestoreStaleDeleteCandidate {
 /// Provides atomic/fallback replace-all behavior for Firestore collections.
 class FirestoreAtomicReplaceService {
   /// Creates service with configurable Firestore safety limits.
-  const FirestoreAtomicReplaceService({
-    required FirebaseFirestore firestore,
+  const new({
+    required this._firestore,
     this.maxFirestoreBatchOperations = defaultMaxFirestoreBatchOperations,
     this.maxFirestoreTransactionWrites = defaultMaxFirestoreTransactionWrites,
     this.maxStaleDeleteCandidatesPerTransaction =
         defaultMaxStaleDeleteCandidatesPerTransaction,
-  }) : _firestore = firestore;
+  });
 
   final FirebaseFirestore _firestore;
 
@@ -146,10 +143,7 @@ class FirestoreAtomicReplaceService {
       );
 
       documentsById.entries.forEach(
-        _transactionSetter(
-          transaction: transaction,
-          collection: collection,
-        ),
+        _transactionSetter(transaction: transaction, collection: collection),
       );
 
       deleteReferences.forEach(transaction.delete);

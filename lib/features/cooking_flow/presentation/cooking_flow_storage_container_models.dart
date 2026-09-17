@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Container view state shared by cookflow steps.
 class CookingFlowStorageContainerView {
   /// Creates container view state.
-  const CookingFlowStorageContainerView({
+  const new({
     required this.id,
     required this.labelController,
     required this.taraController,

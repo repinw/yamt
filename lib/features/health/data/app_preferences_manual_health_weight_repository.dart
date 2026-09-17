@@ -15,10 +15,10 @@ const _logName = 'ManualHealthWeightRepository';
 class AppPreferencesManualHealthWeightRepository
     implements ManualHealthWeightRepository {
   /// Creates an instance.
-  AppPreferencesManualHealthWeightRepository({
-    required AppPreferences preferences,
+  new({
+    required this._preferences,
     this.storageKey = manualHealthWeightEntriesPreferenceKey,
-  }) : _preferences = preferences;
+  });
 
   final AppPreferences _preferences;
 

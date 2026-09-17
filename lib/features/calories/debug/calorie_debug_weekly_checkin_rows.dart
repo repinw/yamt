@@ -282,9 +282,7 @@ List<CalorieDebugDumpRow> _readyWeeklyCheckInRows({
   required List<double> intakeKcalByDay,
   required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
 }) {
-  final weightTrend = _weightTrend(
-    weightPoints: weightPoints,
-  );
+  final weightTrend = _weightTrend(weightPoints: weightPoints);
   return [
     _readyWeeklyCheckInSummaryRow(
       window: window,
@@ -425,9 +423,7 @@ CalorieDebugDumpRow _plannedVsEatenWeeklyRow({
       _debugNumber('planned_total', plannedTotalKcal),
       _debugNumber('eaten_total', eatenTotalKcal),
       _debugNumber('eaten_daily_avg', eatenTotalKcal / windowDays.length),
-      'eaten_minus_planned=${formatCalorieDebugNumber(
-        eatenTotalKcal - plannedTotalKcal,
-      )}',
+      'eaten_minus_planned=${formatCalorieDebugNumber(eatenTotalKcal - plannedTotalKcal)}',
       'days=[${_formatWindowDays(windowDays)}]',
     ].join('; '),
   );
@@ -453,9 +449,7 @@ CalorieDebugDumpRow _weightTrendWeeklyRow({
       _debugNumber('end_weight', weightTrend.endWeightKg),
       _debugNumber('weight_change', weightTrend.weightChangeKg),
       'trend_kg_per_day=$trendPerDay',
-      'trend_kg_per_week=${formatCalorieDebugNumber(
-        calculation.trendWeightChangePerDay * 7,
-      )}',
+      'trend_kg_per_week=${formatCalorieDebugNumber(calculation.trendWeightChangePerDay * 7)}',
       'low_confidence=${weightPoints.length <= 2}',
       'weight_points=[${_formatWeightPoints(weightPoints)}]',
     ].join('; '),
@@ -482,9 +476,7 @@ CalorieDebugDumpRow _measuredTotalTdeeWeeklyRow({
       'formula=average_eaten - weight_storage_per_day',
       _debugNumber('average_eaten', calculation.averageIntakeKcal),
       _debugNumber('weight_storage_per_day', weightStorageKcalPerDay),
-      'measured_total_tdee=${formatCalorieDebugNumber(
-        calculation.measuredTotalTdeeKcal,
-      )}',
+      'measured_total_tdee=${formatCalorieDebugNumber(calculation.measuredTotalTdeeKcal)}',
       'learning_intake=[${_formatDoubleList(intakeKcalByDay)}]',
     ].join('; '),
   );
@@ -589,9 +581,7 @@ Future<_DebugWeeklyHealthData> _loadDebugWeeklyHealthData({
     endExclusive: nextDiaryDay(weightEndDay),
   );
   return _DebugWeeklyHealthData(
-    representativeWeightByDay: _representativeWeightByDay(
-      healthWeightSamples,
-    ),
+    representativeWeightByDay: _representativeWeightByDay(healthWeightSamples),
   );
 }
 
@@ -773,15 +763,13 @@ DateTime _earliestDate(List<DateTime> dates) {
 }
 
 class _DebugWeeklyHealthData {
-  const _DebugWeeklyHealthData({
-    required this.representativeWeightByDay,
-  });
+  const new({required this.representativeWeightByDay});
 
   final Map<String, double> representativeWeightByDay;
 }
 
 class _DebugWeeklyRowResult {
-  const _DebugWeeklyRowResult({
+  const new({
     required this.rows,
     required this.calculation,
     required this.windowDays,
@@ -797,12 +785,9 @@ class _DebugWeeklyRowResult {
 }
 
 class CalorieDebugWeeklyRowsResult {
-  const CalorieDebugWeeklyRowsResult({
-    required this.rows,
-    required this.learnedTdeeByWeekStart,
-  });
+  const new({required this.rows, required this.learnedTdeeByWeekStart});
 
-  const CalorieDebugWeeklyRowsResult.empty()
+  const new empty()
     : rows = const <CalorieDebugDumpRow>[],
       learnedTdeeByWeekStart = const <String, CalorieDebugWeekTdeeData>{};
 
@@ -811,7 +796,7 @@ class CalorieDebugWeeklyRowsResult {
 }
 
 class _DebugWeightTrend {
-  const _DebugWeightTrend({
+  const new({
     required this.startWeightKg,
     required this.endWeightKg,
     required this.weightChangeKg,
@@ -823,11 +808,7 @@ class _DebugWeightTrend {
 }
 
 class CalorieDebugWeekTdeeData {
-  const CalorieDebugWeekTdeeData({
-    required this.source,
-    required this.tdeeKcal,
-    required this.used,
-  });
+  const new({required this.source, required this.tdeeKcal, required this.used});
 
   final String source;
   final double tdeeKcal;
@@ -835,10 +816,7 @@ class CalorieDebugWeekTdeeData {
 }
 
 class _DebugMissingWeightData {
-  const _DebugMissingWeightData({
-    required this.reason,
-    required this.missingWeightDays,
-  });
+  const new({required this.reason, required this.missingWeightDays});
 
   final String reason;
   final List<DateTime> missingWeightDays;

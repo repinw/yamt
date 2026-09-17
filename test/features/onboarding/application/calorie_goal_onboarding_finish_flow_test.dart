@@ -139,9 +139,8 @@ void main() {
       final saved = await flow.saveGoal(
         CalorieGoalOnboardingFinishRequest(
           profile: _profile,
-          dailyGoalKcal: CalorieGoalCalculator.calculate(
-            _profile,
-          ).finalGoalKcal,
+          dailyGoalKcal: CalorieGoalCalculator.calculate(_profile)
+              .finalGoalKcal,
           goalStartDate: now,
           countGoalStartDayForLearning: null,
           catchUpEstimate: null,
@@ -277,9 +276,7 @@ void main() {
       final now = DateTime(2026, 4, 22, 12);
       final settingsRepository = FakeCalorieSettingsRepository();
       final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _todayLunchEntry(now),
-        ],
+        initialEntries: <CalorieEntry>[_todayLunchEntry(now)],
       );
       final runStateRepository = _FakeBurnWeekRunStateRepository(
         const BurnWeekRunState.initial(),
@@ -321,9 +318,7 @@ void main() {
         final now = DateTime(2026, 4, 22, 12);
         final settingsRepository = FakeCalorieSettingsRepository();
         final logRepository = FakeCalorieLogRepository(
-          initialEntries: <CalorieEntry>[
-            _todayLunchEntry(now),
-          ],
+          initialEntries: <CalorieEntry>[_todayLunchEntry(now)],
         );
         final runStateRepository = _FakeBurnWeekRunStateRepository(
           const BurnWeekRunState(
@@ -379,10 +374,10 @@ void main() {
       final settingsRepository = FakeCalorieSettingsRepository();
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
-          _todayLunchEntry(now, totalKcal: 5000).copyWith(
-            id: 'future',
-            loggedAt: now.add(const Duration(hours: 1)),
-          ),
+          _todayLunchEntry(
+            now,
+            totalKcal: 5000,
+          ).copyWith(id: 'future', loggedAt: now.add(const Duration(hours: 1))),
         ],
       );
       final runStateRepository = _FakeBurnWeekRunStateRepository(
@@ -454,9 +449,7 @@ void main() {
           saveCallCount += 1;
         };
       final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _todayLunchEntry(now),
-        ],
+        initialEntries: <CalorieEntry>[_todayLunchEntry(now)],
       )..saveShouldFail = true;
       final runStateRepository = _FakeBurnWeekRunStateRepository(
         const BurnWeekRunState.initial(),
@@ -491,9 +484,7 @@ void main() {
         final settingsRepository = FakeCalorieSettingsRepository()
           ..saveShouldFail = true;
         final logRepository = FakeCalorieLogRepository(
-          initialEntries: <CalorieEntry>[
-            _todayLunchEntry(now),
-          ],
+          initialEntries: <CalorieEntry>[_todayLunchEntry(now)],
         );
         final runStateRepository = _FakeBurnWeekRunStateRepository(
           const BurnWeekRunState.initial(),
@@ -557,9 +548,8 @@ void main() {
       final saved = await flow.saveGoal(
         CalorieGoalOnboardingFinishRequest(
           profile: _profile,
-          dailyGoalKcal: CalorieGoalCalculator.calculate(
-            _profile,
-          ).finalGoalKcal,
+          dailyGoalKcal: CalorieGoalCalculator.calculate(_profile)
+              .finalGoalKcal,
           goalStartDate: DateTime(2026, 4, 22, 12),
           countGoalStartDayForLearning: null,
           catchUpEstimate: null,
@@ -578,9 +568,7 @@ void main() {
       final settingsRepository = FakeCalorieSettingsRepository();
       final logRepository =
           FakeCalorieLogRepository(
-              initialEntries: <CalorieEntry>[
-                _todayLunchEntry(now),
-              ],
+              initialEntries: <CalorieEntry>[_todayLunchEntry(now)],
             )
             ..onReadEntriesForDay = (day) async {
               mounted = false;
@@ -613,9 +601,8 @@ void main() {
       final saved = await flow.saveGoal(
         CalorieGoalOnboardingFinishRequest(
           profile: _profile,
-          dailyGoalKcal: CalorieGoalCalculator.calculate(
-            _profile,
-          ).finalGoalKcal,
+          dailyGoalKcal: CalorieGoalCalculator.calculate(_profile)
+              .finalGoalKcal,
           goalStartDate: now,
           countGoalStartDayForLearning: null,
           catchUpEstimate: CalorieGoalOnboardingCatchUpEstimate.normal,
@@ -637,9 +624,7 @@ void main() {
       final now = DateTime(2026, 4, 22, 12);
       final settingsRepository = FakeCalorieSettingsRepository();
       final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _todayLunchEntry(now),
-        ],
+        initialEntries: <CalorieEntry>[_todayLunchEntry(now)],
       );
       final runStateRepository = _FakeBurnWeekRunStateRepository(
         const BurnWeekRunState.initial(),
@@ -676,9 +661,7 @@ void main() {
       final now = DateTime(2026, 4, 22, 12);
       final settingsRepository = FakeCalorieSettingsRepository();
       final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _todayLunchEntry(now),
-        ],
+        initialEntries: <CalorieEntry>[_todayLunchEntry(now)],
       );
       final runStateRepository = _FakeBurnWeekRunStateRepository(
         const BurnWeekRunState.initial(),
@@ -716,9 +699,7 @@ void main() {
         final now = DateTime(2026, 4, 22, 12);
         final settingsRepository = FakeCalorieSettingsRepository();
         final logRepository = FakeCalorieLogRepository(
-          initialEntries: <CalorieEntry>[
-            _todayLunchEntry(now),
-          ],
+          initialEntries: <CalorieEntry>[_todayLunchEntry(now)],
         );
         final runStateRepository = _FakeBurnWeekRunStateRepository(
           const BurnWeekRunState(
@@ -762,7 +743,7 @@ void main() {
 }
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  _FakeBurnWeekRunStateRepository(this.state);
+  new(this.state);
 
   BurnWeekRunState state;
 

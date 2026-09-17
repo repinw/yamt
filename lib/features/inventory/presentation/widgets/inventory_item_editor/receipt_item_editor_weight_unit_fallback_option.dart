@@ -12,8 +12,7 @@ enum ReceiptWeightUnitFallbackOption {
   milliliter,
 
   /// Documented member.
-  piece
-  ;
+  piece;
 
   /// Resolve.
   InventoryAmountUnit? resolve({required InventoryAmountUnit? autoFallback}) {

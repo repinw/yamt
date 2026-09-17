@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'receipt_review_state.dart';
@@ -9,6 +9,7 @@ part of 'receipt_review_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -30,16 +31,21 @@ $ReceiptReviewStateCopyWith<ReceiptReviewState> get copyWith => _$ReceiptReviewS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptReviewState&&(identical(other.receipt, receipt) || other.receipt == receipt)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.isResolving, isResolving) || other.isResolving == isResolving)&&(identical(other.saveSuccess, saveSuccess) || other.saveSuccess == saveSuccess)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  final _this = this as ReceiptReviewState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptReviewState&&(identical(other.receipt, _this.receipt) || other.receipt == _this.receipt)&&(identical(other.isSaving, _this.isSaving) || other.isSaving == _this.isSaving)&&(identical(other.isResolving, _this.isResolving) || other.isResolving == _this.isResolving)&&(identical(other.saveSuccess, _this.saveSuccess) || other.saveSuccess == _this.saveSuccess)&&(identical(other.errorMessage, _this.errorMessage) || other.errorMessage == _this.errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,receipt,isSaving,isResolving,saveSuccess,errorMessage);
+int get hashCode {
+  final _this = this as ReceiptReviewState;
+  return Object.hash(runtimeType,_this.receipt,_this.isSaving,_this.isResolving,_this.saveSuccess,_this.errorMessage);
+}
 
 @override
 String toString() {
-  return 'ReceiptReviewState(receipt: $receipt, isSaving: $isSaving, isResolving: $isResolving, saveSuccess: $saveSuccess, errorMessage: $errorMessage)';
+  final _this = this as ReceiptReviewState;
+  return 'ReceiptReviewState(receipt: ${_this.receipt}, isSaving: ${_this.isSaving}, isResolving: ${_this.isResolving}, saveSuccess: ${_this.saveSuccess}, errorMessage: ${_this.errorMessage})';
 }
 
 
@@ -68,7 +74,7 @@ class _$ReceiptReviewStateCopyWithImpl<$Res>
 /// Create a copy of ReceiptReviewState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? receipt = null,Object? isSaving = null,Object? isResolving = null,Object? saveSuccess = null,Object? errorMessage = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(ReceiptReviewState(
 receipt: null == receipt ? _self.receipt : receipt // ignore: cast_nullable_to_non_nullable
 as ScannedReceipt,isSaving: null == isSaving ? _self.isSaving : isSaving // ignore: cast_nullable_to_non_nullable
 as bool,isResolving: null == isResolving ? _self.isResolving : isResolving // ignore: cast_nullable_to_non_nullable
@@ -248,16 +254,18 @@ _$ReceiptReviewStateCopyWith<_ReceiptReviewState> get copyWith => __$ReceiptRevi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptReviewState&&(identical(other.receipt, receipt) || other.receipt == receipt)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.isResolving, isResolving) || other.isResolving == isResolving)&&(identical(other.saveSuccess, saveSuccess) || other.saveSuccess == saveSuccess)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptReviewState&&(identical(other.receipt, receipt) || other.receipt == receipt)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.isResolving, isResolving) || other.isResolving == isResolving)&&(identical(other.saveSuccess, saveSuccess) || other.saveSuccess == saveSuccess)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,receipt,isSaving,isResolving,saveSuccess,errorMessage);
+int get hashCode {
+    return Object.hash(runtimeType,receipt,isSaving,isResolving,saveSuccess,errorMessage);
+}
 
 @override
 String toString() {
-  return 'ReceiptReviewState(receipt: $receipt, isSaving: $isSaving, isResolving: $isResolving, saveSuccess: $saveSuccess, errorMessage: $errorMessage)';
+    return 'ReceiptReviewState(receipt: $receipt, isSaving: $isSaving, isResolving: $isResolving, saveSuccess: $saveSuccess, errorMessage: $errorMessage)';
 }
 
 

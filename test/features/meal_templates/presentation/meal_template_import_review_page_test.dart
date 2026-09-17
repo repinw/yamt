@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -14,7 +15,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 class _FakePreparedMealTemplateRepository
     implements PreparedMealTemplateRepository {
-  _FakePreparedMealTemplateRepository({this.saveSucceeds = true});
+  new({this.saveSucceeds = true});
 
   final bool saveSucceeds;
   final StreamController<List<PreparedMeal>> _controller =
@@ -90,7 +91,7 @@ Widget _buildHarness({
     child: MaterialApp.router(
       locale: const Locale('de'),
       routerConfig: router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );

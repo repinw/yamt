@@ -8,9 +8,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart'
 /// Parses recipe JSON-LD structured data from HTML documents.
 class PreparedMealRecipeHtmlParser {
   /// Creates a recipe HTML parser.
-  const PreparedMealRecipeHtmlParser({
-    this.formatter = const PreparedMealRecipeImportFormatter(),
-  });
+  const new({this.formatter = const PreparedMealRecipeImportFormatter()});
 
   /// The formatter used for ingredients and image URLs.
   final PreparedMealRecipeImportFormatter formatter;
@@ -99,23 +97,15 @@ class PreparedMealRecipeHtmlParser {
 
     final rawTitle = _extractTitle(resolved, document);
     final rawImageUrl =
-        _extractImageUrl(
-          resolved['image'],
-          graphById: graphById,
-        ) ??
-        _extractImageUrl(
-          resolved['thumbnailUrl'],
-          graphById: graphById,
-        );
+        _extractImageUrl(resolved['image'], graphById: graphById) ??
+        _extractImageUrl(resolved['thumbnailUrl'], graphById: graphById);
 
     final servings = _extractServings(resolved['recipeYield']);
     final ingredients = _extractIngredients(
       resolved['recipeIngredient'],
       localeName: localeName,
     );
-    final instructions = _extractInstructions(
-      resolved['recipeInstructions'],
-    );
+    final instructions = _extractInstructions(resolved['recipeInstructions']);
 
     return PreparedMealRecipeImport(
       recipeUrl: recipeUrl,
@@ -257,10 +247,7 @@ class PreparedMealRecipeHtmlParser {
     return 1;
   }
 
-  List<String> _extractIngredients(
-    dynamic raw, {
-    String? localeName,
-  }) {
+  List<String> _extractIngredients(dynamic raw, {String? localeName}) {
     final result = <String>[];
     if (raw == null) {
       return result;

@@ -1,7 +1,7 @@
 /// Defines unassigned health energy that may count as activity.
 class HealthEnergySegment {
   /// Creates a health energy segment.
-  const HealthEnergySegment({
+  const new({
     required this.id,
     required this.start,
     required this.endExclusive,

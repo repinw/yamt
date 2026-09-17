@@ -1,17 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 
 /// Interactive line chart displaying learned TDEE trend curve.
 class TdeeFluxChart extends StatelessWidget {
   /// Creates the TDEE chart.
-  const TdeeFluxChart({
-    required this.points,
-    super.key,
-  });
+  const new({required this.points, super.key});
 
   /// Chronological daily points.
   final List<TdeeAnalyticsPoint> points;
@@ -24,8 +21,9 @@ class TdeeFluxChart extends StatelessWidget {
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final validPoints =
-        points.where((p) => p.learnedBaseTdeeKcal != null).toList();
+    final validPoints = points
+        .where((p) => p.learnedBaseTdeeKcal != null)
+        .toList();
 
     if (validPoints.length < 2) {
       return _buildEmptyState(context);
@@ -52,9 +50,7 @@ class TdeeFluxChart extends StatelessWidget {
             titlesData: _buildTitlesData(colorScheme, theme),
             borderData: FlBorderData(show: false),
             lineTouchData: _buildTouchData(colorScheme, theme),
-            lineBarsData: [
-              _buildTdeeBar(colorScheme),
-            ],
+            lineBarsData: [_buildTdeeBar(colorScheme)],
           ),
         ),
       ),

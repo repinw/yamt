@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 
 /// Helper class for configuring weight chart data and styles.
 class TdeeWeightChartBuilder {
-  const TdeeWeightChartBuilder._();
+  const new _();
 
   /// Calculates Y-axis minimum and maximum bounds.
   static (double, double) calculateYBounds(

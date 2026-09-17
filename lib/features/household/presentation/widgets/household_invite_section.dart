@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_invite_code_controller.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines household invite section.
 class HouseholdInviteSection extends ConsumerWidget {
   /// The household invite section.
-  const HouseholdInviteSection({required this.isBusy, super.key});
+  const new({required this.isBusy, super.key});
 
   /// Whether busy.
   final bool isBusy;
@@ -70,7 +70,7 @@ class HouseholdInviteSection extends ConsumerWidget {
 }
 
 class _GeneratedCodeView extends ConsumerWidget {
-  const _GeneratedCodeView({required this.code, required this.isBusy});
+  const new({required this.code, required this.isBusy});
 
   final String code;
   final bool isBusy;

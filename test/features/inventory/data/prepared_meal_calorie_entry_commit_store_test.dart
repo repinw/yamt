@@ -74,9 +74,9 @@ void main() {
     'commitEntryAndPreparedMeal saves entry and reduces meal together',
     () async {
       final firestore = FakeFirebaseFirestore();
-      await _preparedMealCollection(
-        firestore: firestore,
-      ).doc('meal-1').set(_meal().toJson());
+      await _preparedMealCollection(firestore: firestore)
+          .doc('meal-1')
+          .set(_meal().toJson());
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
@@ -88,9 +88,9 @@ void main() {
 
       expect(saved, isTrue);
 
-      final savedEntry = await _entryCollection(
-        firestore: firestore,
-      ).doc('entry-1').get();
+      final savedEntry = await _entryCollection(firestore: firestore)
+          .doc('entry-1')
+          .get();
       expect(savedEntry.exists, isTrue);
       expect(savedEntry.data()?['bundle_source_prepared_meal_id'], 'meal-1');
       expect(
@@ -98,9 +98,9 @@ void main() {
         Timestamp.fromDate(_entry().updatedAt),
       );
 
-      final savedMeal = await _preparedMealCollection(
-        firestore: firestore,
-      ).doc('meal-1').get();
+      final savedMeal = await _preparedMealCollection(firestore: firestore)
+          .doc('meal-1')
+          .get();
       expect(savedMeal.data()?['remaining_portions'], 2);
       expect(
         savedMeal.data()?['updated_at'],
@@ -113,9 +113,9 @@ void main() {
     'commitEntryAndPreparedMeal persists fractional remaining portions',
     () async {
       final firestore = FakeFirebaseFirestore();
-      await _preparedMealCollection(
-        firestore: firestore,
-      ).doc('meal-1').set(_meal(remainingPortions: 1).toJson());
+      await _preparedMealCollection(firestore: firestore)
+          .doc('meal-1')
+          .set(_meal(remainingPortions: 1).toJson());
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
@@ -129,14 +129,14 @@ void main() {
 
       expect(saved, isTrue);
 
-      final savedEntry = await _entryCollection(
-        firestore: firestore,
-      ).doc('entry-1').get();
+      final savedEntry = await _entryCollection(firestore: firestore)
+          .doc('entry-1')
+          .get();
       expect(savedEntry.data()?['bundle_consumed_portions'], 0.5);
 
-      final savedMeal = await _preparedMealCollection(
-        firestore: firestore,
-      ).doc('meal-1').get();
+      final savedMeal = await _preparedMealCollection(firestore: firestore)
+          .doc('meal-1')
+          .get();
       expect(savedMeal.data()?['remaining_portions'], 0.5);
     },
   );
@@ -163,15 +163,13 @@ void main() {
         preparedMealOwnerUserId: 'user-1',
       );
 
-      final saved = await store.commitEntryAndPreparedMeal(
-        entry: _entry(),
-      );
+      final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
 
       expect(saved, isTrue);
 
-      final savedMeal = await _preparedMealCollection(
-        firestore: firestore,
-      ).doc('meal-1').get();
+      final savedMeal = await _preparedMealCollection(firestore: firestore)
+          .doc('meal-1')
+          .get();
       expect(savedMeal.data()?['remaining_portions'], 2);
       expect(savedMeal.data()?['remaining_net_weight'], 1127);
     },
@@ -180,9 +178,9 @@ void main() {
   test('commitEntryAndPreparedMeal leaves meal untouched when portions '
       'exceed remaining stock', () async {
     final firestore = FakeFirebaseFirestore();
-    await _preparedMealCollection(
-      firestore: firestore,
-    ).doc('meal-1').set(_meal(remainingPortions: 1).toJson());
+    await _preparedMealCollection(firestore: firestore)
+        .doc('meal-1')
+        .set(_meal(remainingPortions: 1).toJson());
 
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
@@ -194,14 +192,14 @@ void main() {
 
     expect(saved, isFalse);
 
-    final savedEntry = await _entryCollection(
-      firestore: firestore,
-    ).doc('entry-1').get();
+    final savedEntry = await _entryCollection(firestore: firestore)
+        .doc('entry-1')
+        .get();
     expect(savedEntry.exists, isFalse);
 
-    final savedMeal = await _preparedMealCollection(
-      firestore: firestore,
-    ).doc('meal-1').get();
+    final savedMeal = await _preparedMealCollection(firestore: firestore)
+        .doc('meal-1')
+        .get();
     expect(savedMeal.data()?['remaining_portions'], 1);
   });
 
@@ -220,9 +218,9 @@ void main() {
 
       expect(saved, isFalse);
 
-      final savedEntry = await _entryCollection(
-        firestore: firestore,
-      ).doc('entry-1').get();
+      final savedEntry = await _entryCollection(firestore: firestore)
+          .doc('entry-1')
+          .get();
       expect(savedEntry.exists, isFalse);
     },
   );
@@ -248,14 +246,14 @@ void main() {
 
     expect(saved, isFalse);
 
-    final savedEntry = await _entryCollection(
-      firestore: firestore,
-    ).doc('entry-1').get();
+    final savedEntry = await _entryCollection(firestore: firestore)
+        .doc('entry-1')
+        .get();
     expect(savedEntry.exists, isFalse);
 
-    final savedMeal = await _preparedMealCollection(
-      firestore: firestore,
-    ).doc('meal-1').get();
+    final savedMeal = await _preparedMealCollection(firestore: firestore)
+        .doc('meal-1')
+        .get();
     expect(savedMeal.data()?['pending_recipe_ingredients'], const <String>[
       '200 g Rice',
     ]);

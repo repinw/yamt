@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Footer prompt that switches between login and registration.
 class AuthFooterPrompt extends StatelessWidget {
   /// Creates an auth footer prompt.
-  const AuthFooterPrompt({
+  const new({
     required this.prefixText,
     required this.actionText,
     required this.buttonKey,
@@ -34,9 +34,8 @@ class AuthFooterPrompt extends StatelessWidget {
       children: [
         Text(
           prefixText,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: colors.onSurfaceVariant),
         ),
         TextButton(
           key: buttonKey,

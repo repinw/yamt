@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -102,7 +102,7 @@ abstract final class ManualProductSearchFormFieldName {
 /// Weight amount and unit fields.
 class ManualProductWeightFields extends StatelessWidget {
   /// Creates weight fields.
-  const ManualProductWeightFields({
+  const new({
     required this.amountValue,
     required this.selectedUnit,
     required this.onAmountChanged,
@@ -192,7 +192,7 @@ class ManualProductWeightFields extends StatelessWidget {
 /// Manual product text field.
 class ManualProductTextField extends StatelessWidget {
   /// Creates a manual product text field.
-  const ManualProductTextField({
+  const new({
     required this.name,
     required this.initialValue,
     required this.label,

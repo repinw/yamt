@@ -15,7 +15,7 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
 
 class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
-  _FakeNutritionOcrRepository({required this.onScanNutritionLabel});
+  new({required this.onScanNutritionLabel});
 
   final Future<NutritionLabelOcrResult> Function(String barcode)
   onScanNutritionLabel;
@@ -52,7 +52,7 @@ class _ThrowingOffProductSearchRepository
 
 class _RecordingOffProductSearchRepository
     implements OffProductSearchRepository {
-  _RecordingOffProductSearchRepository(this.results);
+  new(this.results);
 
   final List<OffProductSearchResult> results;
   String? lastQuery;
@@ -280,10 +280,7 @@ void main() {
       payload?.item.nutrition?.qualityStatus,
       GlobalFoodNutritionQualityStatus.unverified,
     );
-    expect(
-      payload?.item.nutrition?.hasEuMandatoryNutritionDeclaration,
-      isTrue,
-    );
+    expect(payload?.item.nutrition?.hasEuMandatoryNutritionDeclaration, isTrue);
   });
 
   test('buildSavePayload keeps verified nutrition with tiny float drift', () {
@@ -427,42 +424,39 @@ void main() {
     },
   );
 
-  test(
-    'buildDirectSearchResultPayload normalizes fractional piece amount'
-    ' for inventory storage',
-    () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+  test('buildDirectSearchResultPayload normalizes fractional piece amount'
+      ' for inventory storage', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
 
-      final config = InventoryReceiptManualProductConfig(item: _item());
-      final provider = inventoryReceiptManualProductControllerProvider(config);
-      final controller = container.read(provider.notifier);
+    final config = InventoryReceiptManualProductConfig(item: _item());
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final controller = container.read(provider.notifier);
 
-      final payload = controller.buildDirectSearchResultPayload(
-        product: const OffProductSearchResult(
-          code: '4006381333931',
-          name: 'Apple',
-          brand: 'Brand',
-          packageWeight: '1.5 Stk',
-          score: 99,
-          nutrition: GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 100,
-            per100Protein: 1,
-            per100Carbs: 20,
-            per100Fat: 0,
-          ),
+    final payload = controller.buildDirectSearchResultPayload(
+      product: const OffProductSearchResult(
+        code: '4006381333931',
+        name: 'Apple',
+        brand: 'Brand',
+        packageWeight: '1.5 Stk',
+        score: 99,
+        nutrition: GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 100,
+          per100Protein: 1,
+          per100Carbs: 20,
+          per100Fat: 0,
         ),
-        action: InventoryReceiptManualProductAction.eatNow,
-      );
+      ),
+      action: InventoryReceiptManualProductAction.eatNow,
+    );
 
-      expect(payload, isNotNull);
-      expect(payload?.item.weight, '1.5 pc');
-      expect(payload?.item.currentAmount, 1500);
-      expect(payload?.item.amountScale, inventoryPieceAmountScale);
-      expect(payload?.globalPackageWeight, '1.5 Stk');
-    },
-  );
+    expect(payload, isNotNull);
+    expect(payload?.item.weight, '1.5 pc');
+    expect(payload?.item.currentAmount, 1500);
+    expect(payload?.item.amountScale, inventoryPieceAmountScale);
+    expect(payload?.globalPackageWeight, '1.5 Stk');
+  });
 
   test(
     'buildDirectSearchResultPayload returns null when nutrition is missing',
@@ -520,37 +514,34 @@ void main() {
     },
   );
 
-  test(
-    'buildDirectSearchResultPayload returns null when barcode is blank',
-    () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+  test('buildDirectSearchResultPayload returns null when barcode is blank', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
 
-      final config = InventoryReceiptManualProductConfig(item: _item());
-      final provider = inventoryReceiptManualProductControllerProvider(config);
-      final controller = container.read(provider.notifier);
+    final config = InventoryReceiptManualProductConfig(item: _item());
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final controller = container.read(provider.notifier);
 
-      final payload = controller.buildDirectSearchResultPayload(
-        product: const OffProductSearchResult(
-          code: '',
-          name: 'Milk',
-          brand: 'Brand',
-          packageWeight: '1 l',
-          score: 99,
-          nutrition: GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 100,
-            per100Protein: 10,
-            per100Carbs: 20,
-            per100Fat: 3,
-          ),
+    final payload = controller.buildDirectSearchResultPayload(
+      product: const OffProductSearchResult(
+        code: '',
+        name: 'Milk',
+        brand: 'Brand',
+        packageWeight: '1 l',
+        score: 99,
+        nutrition: GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 100,
+          per100Protein: 10,
+          per100Carbs: 20,
+          per100Fat: 3,
         ),
-        action: InventoryReceiptManualProductAction.eatNow,
-      );
+      ),
+      action: InventoryReceiptManualProductAction.eatNow,
+    );
 
-      expect(payload, isNull);
-    },
-  );
+    expect(payload, isNull);
+  });
 
   test('buildPreviewData uses manual text with matched product media', () {
     final container = ProviderContainer();
@@ -657,111 +648,105 @@ void main() {
     expect(state.searchResults, isEmpty);
   });
 
-  test(
-    'buildSavePayload stores normalized manual piece amount for inventory'
-    ' and global payload',
-    () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+  test('buildSavePayload stores normalized manual piece amount for inventory'
+      ' and global payload', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
 
-      const selectedProduct = OffProductSearchResult(
-        code: '4311596490202',
-        name: 'Apple',
-        brand: 'Brand',
-        score: 100,
-      );
-      final config = InventoryReceiptManualProductConfig(
-        item: _item(),
-        selectedProduct: selectedProduct,
-      );
-      final provider = inventoryReceiptManualProductControllerProvider(config);
-      final payload =
-          (container.read(provider.notifier)
-                ..updateWeightAmount('1,5')
-                ..updateWeightUnit(InventoryAmountUnit.piece))
-              .buildSavePayload();
+    const selectedProduct = OffProductSearchResult(
+      code: '4311596490202',
+      name: 'Apple',
+      brand: 'Brand',
+      score: 100,
+    );
+    final config = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: selectedProduct,
+    );
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final payload =
+        (container.read(provider.notifier)
+              ..updateWeightAmount('1,5')
+              ..updateWeightUnit(InventoryAmountUnit.piece))
+            .buildSavePayload();
 
-      expect(payload, isNotNull);
-      expect(payload?.item.weight, '1.5 pc');
-      expect(payload?.item.currentAmount, 1500);
-      expect(payload?.item.amountScale, inventoryPieceAmountScale);
-      expect(payload?.globalPackageWeight, '1.5 pc');
-    },
-  );
+    expect(payload, isNotNull);
+    expect(payload?.item.weight, '1.5 pc');
+    expect(payload?.item.currentAmount, 1500);
+    expect(payload?.item.amountScale, inventoryPieceAmountScale);
+    expect(payload?.globalPackageWeight, '1.5 pc');
+  });
 
-  test(
-    'updateSearchQuery shows incomplete OFF results and collapses safe'
-    ' duplicates',
-    () async {
-      final repository = _RecordingOffProductSearchRepository(
-        const <OffProductSearchResult>[
-          OffProductSearchResult(
-            code: '4311596490201',
-            name: 'No Nutrition',
-            brand: 'Booster',
-            packageWeight: '330 ml',
-            score: 100,
+  test('updateSearchQuery shows incomplete OFF results and collapses safe'
+      ' duplicates', () async {
+    final repository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[
+        OffProductSearchResult(
+          code: '4311596490201',
+          name: 'No Nutrition',
+          brand: 'Booster',
+          packageWeight: '330 ml',
+          score: 100,
+        ),
+        OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Incomplete Zero',
+          brand: 'Booster',
+          packageWeight: '330 ml',
+          score: 99,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 2,
+            per100Carbs: 0.01,
+            per100Fat: 0,
+            per100Protein: 0.02,
           ),
-          OffProductSearchResult(
-            code: '4311596490202',
-            name: 'Incomplete Zero',
-            brand: 'Booster',
-            packageWeight: '330 ml',
-            score: 99,
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 2,
-              per100Carbs: 0.01,
-              per100Fat: 0,
-              per100Protein: 0.02,
-            ),
+        ),
+        OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Complete Zero',
+          brand: 'Booster',
+          packageWeight: '330 ml',
+          score: 98,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 2,
+            per100Fat: 0,
+            per100SaturatedFat: 0,
+            per100Carbs: 0.01,
+            per100Sugar: 0.01,
+            per100Protein: 0.02,
+            per100Salt: 0.01,
           ),
-          OffProductSearchResult(
-            code: '4311596490202',
-            name: 'Complete Zero',
-            brand: 'Booster',
-            packageWeight: '330 ml',
-            score: 98,
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 2,
-              per100Fat: 0,
-              per100SaturatedFat: 0,
-              per100Carbs: 0.01,
-              per100Sugar: 0.01,
-              per100Protein: 0.02,
-              per100Salt: 0.01,
-            ),
-          ),
-        ],
-      );
-      final container = ProviderContainer(
-        overrides: [
-          offProductSearchRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
+        ),
+      ],
+    );
+    final container = ProviderContainer(
+      overrides: [
+        offProductSearchRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      final config = InventoryReceiptManualProductConfig(item: _item());
-      final provider = inventoryReceiptManualProductControllerProvider(config);
-      final subscription = container.listen(provider, (previous, next) {});
-      addTearDown(subscription.close);
+    final config = InventoryReceiptManualProductConfig(item: _item());
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final subscription = container.listen(provider, (previous, next) {});
+    addTearDown(subscription.close);
 
-      container.read(provider.notifier).updateSearchQuery('Zero');
-      await Future<void>.delayed(const Duration(milliseconds: 350));
-      await Future<void>.delayed(Duration.zero);
+    container.read(provider.notifier).updateSearchQuery('Zero');
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    await Future<void>.delayed(Duration.zero);
 
-      final state = container.read(provider);
-      expect(
-        state.searchResults.map((result) => result.name),
-        <String>['No Nutrition', 'Complete Zero'],
-      );
-      expect(repository.lastQuery, 'Zero');
-      expect(repository.lastStore, isNull);
-      expect(repository.lastWeight, isNull);
-      expect(repository.lastLimit, 20);
-    },
-  );
+    final state = container.read(provider);
+    expect(state.searchResults.map((result) => result.name), <String>[
+      'No Nutrition',
+      'Complete Zero',
+    ]);
+    expect(repository.lastQuery, 'Zero');
+    expect(repository.lastStore, isNull);
+    expect(repository.lastWeight, isNull);
+    expect(repository.lastLimit, 20);
+  });
 
   test(
     'updateSearchQuery sends supported store and receipt weight hints',
@@ -938,11 +923,7 @@ void main() {
   test('ocr name is preferred for the initial search query', () {
     final query = buildManualProductInitialSearchQuery(
       InventoryReceiptManualProductConfig(
-        item: _item(
-          name: 'Milch',
-          storeName: 'Netto',
-          ocrName: 'H-MILCH 3,5%',
-        ),
+        item: _item(name: 'Milch', storeName: 'Netto', ocrName: 'H-MILCH 3,5%'),
       ),
     );
 

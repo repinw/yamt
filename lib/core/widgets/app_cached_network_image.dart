@@ -1,13 +1,13 @@
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Uses the shared network image cache so remote images stay fast and
 /// consistent across the app.
 class AppCachedNetworkImage extends StatelessWidget {
   /// Creates cached network image widget.
-  const AppCachedNetworkImage({
+  const new({
     required this.imageUrl,
     super.key,
     this.width,

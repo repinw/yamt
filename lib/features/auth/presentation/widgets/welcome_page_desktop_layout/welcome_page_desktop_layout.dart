@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_card/auth_card.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_footer_prompt/auth_footer_prompt.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Wide auth welcome layout.
 class DesktopAuthLayout extends StatelessWidget {
   /// Creates the wide auth welcome layout.
-  const DesktopAuthLayout({
+  const new({
     required this.isLoginMode,
     required this.onShowLoginMode,
     required this.onShowRegisterMode,
@@ -58,12 +58,10 @@ class DesktopAuthLayout extends StatelessWidget {
               if (isLoginMode) ...[
                 SizedBox(height: metrics.footerSpacing),
                 AuthFooterPrompt(
-                  prefixText: AppLocalizations.of(
-                    context,
-                  )!.authFooterNoAccountPrefix,
-                  actionText: AppLocalizations.of(
-                    context,
-                  )!.authSwitchRegisterAction,
+                  prefixText: AppLocalizations.of(context)!
+                      .authFooterNoAccountPrefix,
+                  actionText: AppLocalizations.of(context)!
+                      .authSwitchRegisterAction,
                   buttonKey: const Key('auth_switch_to_register_button'),
                   onPressed: onShowRegisterMode,
                 ),

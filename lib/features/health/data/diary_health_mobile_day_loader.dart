@@ -14,19 +14,14 @@ import 'package:yamt/features/health/domain/health_workout_session.dart';
 /// Loads and caches derived diary health day data for mobile Health.
 class DiaryHealthMobileDayLoader {
   /// Creates a mobile diary health day loader.
-  DiaryHealthMobileDayLoader({
-    required DiaryHealthMobileHealthReader healthReader,
-    required DiaryHealthMobileActivityTrendLoader activityTrendLoader,
-    required DateTime Function() now,
-    required Duration todayCacheTtl,
-    required Duration historicalCacheTtl,
-    DiaryHealthDayCacheStore? cacheStore,
-  }) : _healthReader = healthReader,
-       _activityTrendLoader = activityTrendLoader,
-       _now = now,
-       _todayCacheTtl = todayCacheTtl,
-       _historicalCacheTtl = historicalCacheTtl,
-       _cacheStore = cacheStore;
+  new({
+    required this._healthReader,
+    required this._activityTrendLoader,
+    required this._now,
+    required this._todayCacheTtl,
+    required this._historicalCacheTtl,
+    this._cacheStore,
+  });
 
   final DiaryHealthMobileHealthReader _healthReader;
   final DiaryHealthMobileActivityTrendLoader _activityTrendLoader;
@@ -253,9 +248,7 @@ class DiaryHealthMobileDayLoader {
       'workouts=${data.workouts.length} '
       'workout_kcal=${_sumWorkoutCalories(data.workouts)} '
       'unassigned_active_energy_kcal='
-      '${_sumUnassignedActiveEnergyCalories(
-        data.unassignedActiveEnergySegments,
-      )} '
+      '${_sumUnassignedActiveEnergyCalories(data.unassignedActiveEnergySegments)} '
       'workout_steps=${_sumWorkoutSteps(data.workouts)}',
       name: diaryHealthLogName,
     );
@@ -276,10 +269,7 @@ class DiaryHealthMobileDayLoader {
   }
 
   int _sumUnassignedActiveEnergyCalories(List<HealthEnergySegment> segments) {
-    return segments.fold<int>(
-      0,
-      (sum, segment) => sum + segment.totalCalories,
-    );
+    return segments.fold<int>(0, (sum, segment) => sum + segment.totalCalories);
   }
 
   Future<DiaryHealthDayCacheEntry?> _readCachedEntry({
@@ -398,10 +388,7 @@ class DiaryHealthMobileDayLoader {
         );
   }
 
-  bool _isTooStaleDayCacheEntry(
-    DiaryHealthDayCacheEntry entry,
-    DateTime now,
-  ) {
+  bool _isTooStaleDayCacheEntry(DiaryHealthDayCacheEntry entry, DateTime now) {
     return now.difference(entry.loadedAt) > diaryHealthMaxStaleCacheAge;
   }
 
@@ -429,18 +416,14 @@ class DiaryHealthMobileDayLoader {
   }
 
   void _trimDayDataCache(DateTime now) {
-    _cacheByKey.removeWhere(
-      (_, entry) => _isTooStaleDayCacheEntry(entry, now),
-    );
+    _cacheByKey.removeWhere((_, entry) => _isTooStaleDayCacheEntry(entry, now));
     if (_cacheByKey.length <= maxDiaryHealthCacheEntries) {
       return;
     }
 
     final entriesByAge = _cacheByKey.entries.toList(growable: false)
       ..sort(
-        (left, right) => left.value.loadedAt.compareTo(
-          right.value.loadedAt,
-        ),
+        (left, right) => left.value.loadedAt.compareTo(right.value.loadedAt),
       );
     final entriesToRemove = _cacheByKey.length - maxDiaryHealthCacheEntries;
     for (final entry in entriesByAge.take(entriesToRemove)) {

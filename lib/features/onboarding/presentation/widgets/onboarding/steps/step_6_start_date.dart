@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Onboarding step for choosing goal start date.
 class Step6StartDate extends StatelessWidget {
   /// Creates start-date onboarding step.
-  const Step6StartDate({
+  const new({
     required this.startNow,
     required this.todayMode,
     required this.catchUpEstimate,

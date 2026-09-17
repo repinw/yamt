@@ -10,7 +10,7 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 
 import '../../../helpers/fake_auth_repository.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 void main() {
   test(
@@ -76,10 +76,7 @@ void main() {
 
     await pumpEventQueue();
     expect(fakeRepo.guestCalls, 0);
-    expect(
-      container.read(initialGuestAuthControllerProvider).hasValue,
-      isTrue,
-    );
+    expect(container.read(initialGuestAuthControllerProvider).hasValue, isTrue);
   });
 
   test('does not trigger second guest sign-in after user signs out', () async {
@@ -144,9 +141,6 @@ void main() {
     await pumpEventQueue();
 
     expect(fakeRepo.guestCalls, 1);
-    expect(
-      container.read(initialGuestAuthControllerProvider).hasError,
-      isTrue,
-    );
+    expect(container.read(initialGuestAuthControllerProvider).hasError, isTrue);
   });
 }

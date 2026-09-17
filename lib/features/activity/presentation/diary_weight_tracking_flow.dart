@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/'
@@ -18,9 +18,7 @@ DiaryWeightTrackingFlow diaryWeightTrackingFlow(Ref ref) {
 /// Activity-owned flow for adding or editing diary weights.
 class DiaryWeightTrackingFlow {
   /// Creates the diary weight tracking flow.
-  const DiaryWeightTrackingFlow({
-    required DiaryWeightActions weightActions,
-  }) : _weightActions = weightActions;
+  const new({required this._weightActions});
 
   final DiaryWeightActions _weightActions;
 

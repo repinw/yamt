@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
@@ -20,20 +20,17 @@ enum ReceiptCandidatePickerSelectionKind {
 
 /// Defines receipt candidate picker selection.
 class ReceiptCandidatePickerSelection {
-  const ReceiptCandidatePickerSelection._({
-    required this.kind,
-    this.candidateId,
-  });
+  const new _({required this.kind, this.candidateId});
 
   /// Creates a [ReceiptCandidatePickerSelection] for candidate.
-  const ReceiptCandidatePickerSelection.candidate(String candidateId)
+  const new candidate(String candidateId)
     : this._(
         kind: ReceiptCandidatePickerSelectionKind.candidate,
         candidateId: candidateId,
       );
 
   /// Creates a [ReceiptCandidatePickerSelection] for manual entry.
-  const ReceiptCandidatePickerSelection.manualEntry()
+  const new manualEntry()
     : this._(kind: ReceiptCandidatePickerSelectionKind.manualEntry);
 
   /// The kind.
@@ -46,10 +43,7 @@ class ReceiptCandidatePickerSelection {
 /// Defines inventory receipt candidate picker sheet.
 class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
   /// The inventory receipt candidate picker sheet.
-  const InventoryReceiptCandidatePickerSheet({
-    required this.draft,
-    super.key,
-  });
+  const new({required this.draft, super.key});
 
   /// The draft.
   final ReceiptReviewItemDraft draft;
@@ -115,7 +109,7 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
 }
 
 class _CandidatePickerHeader extends StatelessWidget {
-  const _CandidatePickerHeader({required this.draft});
+  const new({required this.draft});
 
   final ReceiptReviewItemDraft draft;
 
@@ -133,16 +127,14 @@ class _CandidatePickerHeader extends StatelessWidget {
             children: [
               Text(
                 l10n.inventoryReceiptReviewProductSelectionLabel,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: AppSpacing.xxs * 2),
               Text(
                 _sourceLabel(l10n),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
               ),
             ],
           ),
@@ -168,7 +160,7 @@ class _CandidatePickerHeader extends StatelessWidget {
 }
 
 class _CandidatePickerTile extends StatelessWidget {
-  const _CandidatePickerTile({
+  const new({
     required this.candidate,
     required this.isSelected,
     required this.onTap,
@@ -220,9 +212,8 @@ class _CandidatePickerTile extends StatelessWidget {
                       const SizedBox(height: AppSpacing.xxs * 2),
                       Text(
                         brand,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: colors.onSurfaceVariant),
                       ),
                     ],
                     if (item.nutrition?.hasAnyNutritionValue ?? false) ...[
@@ -248,7 +239,7 @@ class _CandidatePickerTile extends StatelessWidget {
 }
 
 class _FallbackSelectionTile extends StatelessWidget {
-  const _FallbackSelectionTile({
+  const new({
     required this.isSelected,
     required this.onTap,
     required this.title,

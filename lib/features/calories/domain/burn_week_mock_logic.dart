@@ -13,7 +13,7 @@ const int _secondsPerDay = 24 * 60 * 60;
 /// Difficulty tier for Burn Week mock progression.
 class BurnWeekMockDifficulty {
   /// Creates Burn Week mock difficulty.
-  const BurnWeekMockDifficulty({
+  const new({
     required this.label,
     required this.minimumHearts,
     required this.safeZoneMultiplier,
@@ -32,7 +32,7 @@ class BurnWeekMockDifficulty {
 /// Pure view data for Burn Week mock calculations.
 class BurnWeekMockMetrics {
   /// Creates calculated Burn Week mock metrics.
-  const BurnWeekMockMetrics({
+  const new({
     required this.dailyGoalKcal,
     required this.weeklyGoalKcal,
     required this.usesFallbackGoal,

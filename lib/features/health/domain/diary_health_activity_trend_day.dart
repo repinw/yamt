@@ -1,7 +1,7 @@
 /// Aggregated Health Connect activity data for one diary trend day.
 class DiaryHealthActivityTrendDay {
   /// Creates a trend day.
-  const DiaryHealthActivityTrendDay({
+  const new({
     required this.day,
     required this.totalSteps,
     required this.activeEnergyKcal,

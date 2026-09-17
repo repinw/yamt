@@ -293,9 +293,8 @@ String _stripIngredientPrefix(
 
   final tokens = tail.split(RegExp(r'\s+')).toList(growable: true);
   while (tokens.isNotEmpty) {
-    final normalizedToken = _normalizeMatchText(
-      tokens.first,
-    ).replaceAll(' ', '');
+    final normalizedToken = _normalizeMatchText(tokens.first)
+        .replaceAll(' ', '');
     if (!lexicon.prefixTokens.contains(normalizedToken)) {
       break;
     }
@@ -336,7 +335,7 @@ String _singularizeMatchToken(String token) {
 }
 
 class _IngredientMatcherLexicon {
-  const _IngredientMatcherLexicon({
+  const new({
     required this.stopWords,
     required this.prefixTokens,
     required this.tokenAliases,

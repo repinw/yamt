@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Recent manual product list.
 class ManualProductRecentItems extends StatelessWidget {
   /// Creates recent item list.
-  const ManualProductRecentItems({
+  const new({
     required this.items,
     required this.onSelect,
     super.key,
@@ -43,9 +43,8 @@ class ManualProductRecentItems extends StatelessWidget {
       children: [
         Text(
           l10n.inventoryReceiptReviewRecentProductsTitle,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.md),
         Column(

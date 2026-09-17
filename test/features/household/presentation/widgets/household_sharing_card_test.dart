@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/household/application/household_members_provider.dart';
@@ -16,7 +17,7 @@ import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _FakeHouseholdInviteCodeController extends HouseholdInviteCodeController {
   @override
@@ -26,10 +27,7 @@ class _FakeHouseholdInviteCodeController extends HouseholdInviteCodeController {
 }
 
 class _FakeHouseholdMembershipController extends HouseholdMembershipController {
-  _FakeHouseholdMembershipController({
-    this.onRemoveMember,
-    this.onJoinHousehold,
-  });
+  new({this.onRemoveMember, this.onJoinHousehold});
 
   final Future<void> Function(String userId)? onRemoveMember;
   final Future<void> Function(String code, String? displayName)?
@@ -88,7 +86,7 @@ void main() {
     return UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: HouseholdSharingCard(user: user)),
       ),
@@ -224,7 +222,7 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: HouseholdSharingCard(user: user)),
         ),
@@ -244,10 +242,7 @@ void main() {
     'dialog and joins with entered name',
     (tester) async {
       final user = buildUser(uid: 'guest-1', isAnonymous: true);
-      const profile = UserProfile(
-        uid: 'guest-1',
-        isAnonymous: true,
-      );
+      const profile = UserProfile(uid: 'guest-1', isAnonymous: true);
       String? joinedCode;
       String? joinedDisplayName;
 
@@ -290,10 +285,7 @@ void main() {
     'user with existing name joining household does not see name prompt',
     (tester) async {
       final user = buildUser(uid: 'user-1', isAnonymous: false);
-      const profile = UserProfile(
-        uid: 'user-1',
-        displayName: 'Existing User',
-      );
+      const profile = UserProfile(uid: 'user-1', displayName: 'Existing User');
       String? joinedCode;
       String? joinedDisplayName;
 
@@ -325,43 +317,39 @@ void main() {
     },
   );
 
-  testWidgets(
-    'user canceling name prompt does not join household',
-    (tester) async {
-      final user = buildUser(uid: 'guest-1', isAnonymous: true);
-      const profile = UserProfile(
-        uid: 'guest-1',
-        isAnonymous: true,
-      );
-      var joinCalled = false;
+  testWidgets('user canceling name prompt does not join household', (
+    tester,
+  ) async {
+    final user = buildUser(uid: 'guest-1', isAnonymous: true);
+    const profile = UserProfile(uid: 'guest-1', isAnonymous: true);
+    var joinCalled = false;
 
-      await tester.pumpWidget(
-        buildApp(
-          user: user,
-          profile: profile,
-          members: [profile],
-          membershipController: _FakeHouseholdMembershipController(
-            onJoinHousehold: (code, displayName) async {
-              joinCalled = true;
-            },
-          ),
+    await tester.pumpWidget(
+      buildApp(
+        user: user,
+        profile: profile,
+        members: [profile],
+        membershipController: _FakeHouseholdMembershipController(
+          onJoinHousehold: (code, displayName) async {
+            joinCalled = true;
+          },
         ),
-      );
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), '123456');
-      await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '123456');
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Join'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Join'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Enter your name'), findsOneWidget);
+    expect(find.text('Enter your name'), findsOneWidget);
 
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Enter your name'), findsNothing);
-      expect(joinCalled, isFalse);
-    },
-  );
+    expect(find.text('Enter your name'), findsNothing);
+    expect(joinCalled, isFalse);
+  });
 }

@@ -19,17 +19,13 @@ part 'cooking_flow_controller.g.dart';
 /// UI-facing cookflow controller state.
 class CookingFlowControllerState {
   /// Creates state.
-  const CookingFlowControllerState({
-    this.isFinalizingMeal = false,
-  });
+  const new({this.isFinalizingMeal = false});
 
   /// Whether final save is running.
   final bool isFinalizingMeal;
 
   /// Returns updated state.
-  CookingFlowControllerState copyWith({
-    bool? isFinalizingMeal,
-  }) {
+  CookingFlowControllerState copyWith({bool? isFinalizingMeal}) {
     return CookingFlowControllerState(
       isFinalizingMeal: isFinalizingMeal ?? this.isFinalizingMeal,
     );

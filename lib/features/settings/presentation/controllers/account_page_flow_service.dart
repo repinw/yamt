@@ -28,15 +28,10 @@ AccountPageFlowService accountPageFlowService(Ref ref) {
 /// Defines account page flow service.
 class AccountPageFlowService {
   /// The account page flow service.
-  const AccountPageFlowService({
-    required Future<void> Function(AuthCredential credential)
-    overwriteExistingGoogleAccountWithGuest,
-    required Future<void> Function(AuthCredential credential)
-    deleteGuestAndSignInWithGoogleCredential,
-  }) : _overwriteExistingGoogleAccountWithGuest =
-           overwriteExistingGoogleAccountWithGuest,
-       _deleteGuestAndSignInWithGoogleCredential =
-           deleteGuestAndSignInWithGoogleCredential;
+  const new({
+    required this._overwriteExistingGoogleAccountWithGuest,
+    required this._deleteGuestAndSignInWithGoogleCredential,
+  });
 
   final Future<void> Function(AuthCredential credential)
   _overwriteExistingGoogleAccountWithGuest;

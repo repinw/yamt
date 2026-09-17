@@ -12,11 +12,7 @@ const _persistentDayCacheIndexKey = 'diary_health_day_cache_v1:index';
 /// Stores derived diary health day data in preferences.
 class DiaryHealthDayCacheStore {
   /// Creates a persistent day cache store.
-  const DiaryHealthDayCacheStore({
-    required AppPreferences preferences,
-    required int maxEntries,
-  }) : _preferences = preferences,
-       _maxEntries = maxEntries;
+  const new({required this._preferences, required this._maxEntries});
 
   final AppPreferences _preferences;
   final int _maxEntries;
@@ -67,10 +63,7 @@ class DiaryHealthDayCacheStore {
         loadedAt: loadedAt,
         data: data,
       );
-      await _preferences.setString(
-        _cacheEntryKey(cacheKey),
-        snapshot.encode(),
-      );
+      await _preferences.setString(_cacheEntryKey(cacheKey), snapshot.encode());
       await _remember(cacheKey);
     } on Object catch (error, stackTrace) {
       log(

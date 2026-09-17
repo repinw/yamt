@@ -1,15 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Welcome step for calorie onboarding.
 class Step0Welcome extends StatelessWidget {
   /// Creates welcome step.
-  const Step0Welcome({
-    required this.onNext,
-    this.onLogin,
-    super.key,
-  });
+  const new({required this.onNext, this.onLogin, super.key});
 
   /// Called when user continues from welcome.
   final VoidCallback onNext;
@@ -35,10 +31,7 @@ class Step0Welcome extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Text(
-              '👋',
-              style: TextStyle(fontSize: 48),
-            ),
+            child: const Text('👋', style: TextStyle(fontSize: 48)),
           ),
           const SizedBox(height: AppSpacing.xl),
           Text(
@@ -52,10 +45,8 @@ class Step0Welcome extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(
             l10n.onboardingWelcomeText,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              height: 1.5,
-            ),
+            style: Theme.of(context).textTheme.bodyLarge
+                ?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.5),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xxl),
@@ -69,10 +60,7 @@ class Step0Welcome extends StatelessWidget {
             ),
             child: Text(
               l10n.onboardingWelcomeAction,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ),
           if (onLogin != null) ...[
@@ -82,9 +70,7 @@ class Step0Welcome extends StatelessWidget {
               child: Text.rich(
                 TextSpan(
                   text: '${l10n.onboardingWelcomeAlreadyHaveAccount} ',
-                  style: TextStyle(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(color: colorScheme.onSurfaceVariant),
                   children: [
                     TextSpan(
                       text: l10n.onboardingWelcomeLoginAction,

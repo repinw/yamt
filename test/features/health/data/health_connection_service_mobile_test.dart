@@ -78,9 +78,7 @@ void main() {
 
   test('disconnect on iOS disables local Apple Health access', () async {
     final preferences = MemoryAppPreferences(
-      initialStrings: <String, String>{
-        'ios_health_connection_enabled_v1': '1',
-      },
+      initialStrings: <String, String>{'ios_health_connection_enabled_v1': '1'},
     );
     final fakeHealth = _FakeHealth(hasPermissionsResult: true);
     final service = MobileHealthConnectionService(
@@ -104,9 +102,7 @@ void main() {
 
   test('requestAuthorization re-enables local Apple Health access', () async {
     final preferences = MemoryAppPreferences(
-      initialStrings: <String, String>{
-        'ios_health_connection_enabled_v1': '0',
-      },
+      initialStrings: <String, String>{'ios_health_connection_enabled_v1': '0'},
     );
     final fakeHealth = _FakeHealth(hasPermissionsResult: true);
     final service = MobileHealthConnectionService(
@@ -154,33 +150,30 @@ void main() {
     },
   );
 
-  test(
-    'openHealthPermissionSettings falls back through settings intents '
-    'to install',
-    () async {
-      final fakeHealth = _FakeHealth(hasPermissionsResult: true);
-      final launchedActions = <String?>[];
-      final service = MobileHealthConnectionService(
-        health: fakeHealth,
-        isAndroid: true,
-        isIOS: false,
-        packageNameLoader: () async => 'de.yamt.app',
-        androidIntentLauncher: (intent) async {
-          launchedActions.add(intent.action);
-          return false;
-        },
-      );
+  test('openHealthPermissionSettings falls back through settings intents '
+      'to install', () async {
+    final fakeHealth = _FakeHealth(hasPermissionsResult: true);
+    final launchedActions = <String?>[];
+    final service = MobileHealthConnectionService(
+      health: fakeHealth,
+      isAndroid: true,
+      isIOS: false,
+      packageNameLoader: () async => 'de.yamt.app',
+      androidIntentLauncher: (intent) async {
+        launchedActions.add(intent.action);
+        return false;
+      },
+    );
 
-      await service.openHealthPermissionSettings();
+    await service.openHealthPermissionSettings();
 
-      expect(launchedActions, [
-        'android.health.connect.action.MANAGE_HEALTH_PERMISSIONS',
-        'android.health.connect.action.HEALTH_HOME_SETTINGS',
-        'androidx.health.ACTION_HEALTH_CONNECT_SETTINGS',
-      ]);
-      expect(fakeHealth.installHealthConnectCallCount, 1);
-    },
-  );
+    expect(launchedActions, [
+      'android.health.connect.action.MANAGE_HEALTH_PERMISSIONS',
+      'android.health.connect.action.HEALTH_HOME_SETTINGS',
+      'androidx.health.ACTION_HEALTH_CONNECT_SETTINGS',
+    ]);
+    expect(fakeHealth.installHealthConnectCallCount, 1);
+  });
 
   test(
     'openAppPermissionSettings uses injected app settings launcher',
@@ -222,7 +215,7 @@ void main() {
 }
 
 class _FakeHealth extends Health {
-  _FakeHealth({required this.hasPermissionsResult});
+  new({required this.hasPermissionsResult});
 
   final bool? hasPermissionsResult;
 

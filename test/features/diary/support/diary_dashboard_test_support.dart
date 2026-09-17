@@ -72,10 +72,7 @@ CalorieWeekOverview diaryWeekOverviewForTest({
     0,
     (sum, day) => sum + day.totalKcal,
   );
-  final totalGoalKcal = days.fold<double>(
-    0,
-    (sum, day) => sum + day.goalKcal,
-  );
+  final totalGoalKcal = days.fold<double>(0, (sum, day) => sum + day.goalKcal);
   return CalorieWeekOverview(
     days: days,
     totalConsumedKcal: totalConsumedKcal,
@@ -93,10 +90,7 @@ CalorieWeekOverview diaryWeekOverviewForTest({
 /// Fake dashboard controller with optional retry transition.
 class FakeDiaryDayDashboardController extends DiaryDayDashboardController {
   /// Creates fake controller.
-  FakeDiaryDayDashboardController(
-    this.initialState, {
-    this.onRetry,
-  });
+  new(this.initialState, {this.onRetry});
 
   /// Initial state returned from build.
   final DiaryDayDashboardState initialState;

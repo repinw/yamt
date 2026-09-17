@@ -7,7 +7,7 @@ part 'user_profile.g.dart';
 @freezed
 abstract class UserProfile with _$UserProfile {
   /// Creates persisted user profile model.
-  const factory UserProfile({
+  const factory({
     required String uid,
     String? householdId,
     String? email,
@@ -16,6 +16,5 @@ abstract class UserProfile with _$UserProfile {
   }) = _UserProfile;
 
   /// Decodes profile from JSON.
-  factory UserProfile.fromJson(Map<String, dynamic> json) =>
-      _$UserProfileFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
 }

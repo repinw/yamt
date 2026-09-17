@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
@@ -15,9 +15,7 @@ double _effectiveTextScale(
   BuildContext context, {
   double referenceFontSize = 14,
 }) {
-  return MediaQuery.textScalerOf(
-        context,
-      ).scale(referenceFontSize) /
+  return MediaQuery.textScalerOf(context).scale(referenceFontSize) /
       referenceFontSize;
 }
 
@@ -92,10 +90,7 @@ enum HomeTabType {
 /// Floating sliver that hosts the shared home top chrome.
 class HomeShellTopSliverChrome extends StatelessWidget {
   /// The shell top chrome sliver.
-  const HomeShellTopSliverChrome({
-    required this.child,
-    super.key,
-  });
+  const new({required this.child, super.key});
 
   /// The visible app bar.
   final PreferredSizeWidget child;
@@ -117,7 +112,7 @@ class HomeShellTopSliverChrome extends StatelessWidget {
 }
 
 class _HomeShellTopChromeDelegate extends SliverPersistentHeaderDelegate {
-  const _HomeShellTopChromeDelegate({
+  const new({
     required this.child,
     required this.statusBarInset,
     required this.toolbarHeight,
@@ -176,7 +171,7 @@ class _HomeShellTopChromeDelegate extends SliverPersistentHeaderDelegate {
 /// Top app bar used by the home shell pages.
 class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// The home top bar.
-  const HomeTopBar({
+  const new({
     required this.title,
     required this.actions,
     super.key,
@@ -264,7 +259,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
 /// Circular icon-button styled actions shown at the end of a home top bar.
 class HomeTopBarActions extends StatelessWidget {
   /// Creates home top bar actions.
-  const HomeTopBarActions({required this.actions, super.key});
+  const new({required this.actions, super.key});
 
   /// The action widgets, usually icon buttons.
   final List<Widget> actions;
@@ -306,7 +301,7 @@ class HomeTopBarActions extends StatelessWidget {
 /// Data needed to render one item in the home bottom navigation.
 class HomeNavItem {
   /// The home nav item.
-  const HomeNavItem({required this.icon, required this.label});
+  const new({required this.icon, required this.label});
 
   /// The icon.
   final IconData icon;
@@ -318,7 +313,7 @@ class HomeNavItem {
 /// UI state and action for a single home navigation entry.
 class HomeNavEntry {
   /// The home nav entry.
-  const HomeNavEntry({
+  const new({
     required this.item,
     required this.isSelected,
     required this.onTap,
@@ -341,11 +336,7 @@ class HomeNavEntry {
 /// Collapses and fades the shared home bottom chrome.
 class HomeShellBottomChrome extends StatelessWidget {
   /// The shell bottom chrome transition.
-  const HomeShellBottomChrome({
-    required this.child,
-    required this.visibility,
-    super.key,
-  });
+  const new({required this.child, required this.visibility, super.key});
 
   /// The visible bottom chrome.
   final Widget child;
@@ -383,11 +374,7 @@ class HomeShellBottomChrome extends StatelessWidget {
 /// Moves the home floating action button with the shared bottom chrome.
 class HomeShellFloatingActionButtonChrome extends StatelessWidget {
   /// The shell floating action button transition.
-  const HomeShellFloatingActionButtonChrome({
-    required this.child,
-    required this.visibility,
-    super.key,
-  });
+  const new({required this.child, required this.visibility, super.key});
 
   /// The visible floating action button.
   final Widget child;
@@ -417,7 +404,7 @@ class HomeShellFloatingActionButtonChrome extends StatelessWidget {
 /// Bottom navigation bar used by the home shell pages.
 class HomeBottomNavBar extends StatelessWidget {
   /// The home bottom nav bar.
-  const HomeBottomNavBar({required this.entries, super.key});
+  const new({required this.entries, super.key});
 
   /// The entries.
   final List<HomeNavEntry> entries;
@@ -444,9 +431,7 @@ class HomeBottomNavBar extends StatelessWidget {
             decoration: BoxDecoration(
               color: colors.surfaceContainerLow,
               borderRadius: radius,
-              border: Border.all(
-                color: colors.outlineVariant,
-              ),
+              border: Border.all(color: colors.outlineVariant),
             ),
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -489,7 +474,7 @@ class HomeBottomNavBar extends StatelessWidget {
 }
 
 class _HomeBottomNavItemButton extends StatelessWidget {
-  const _HomeBottomNavItemButton({
+  const new({
     required this.item,
     required this.isSelected,
     required this.onTap,

@@ -98,15 +98,12 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       });
     }
     _settledMutationRefreshTimer?.cancel();
-    _settledMutationRefreshTimer = Timer(
-      _mutationRefreshSettlingDelay,
-      () {
-        if (!ref.mounted) {
-          return;
-        }
-        unawaited(_refreshSelectedDay(forceRefresh: true));
-      },
-    );
+    _settledMutationRefreshTimer = Timer(_mutationRefreshSettlingDelay, () {
+      if (!ref.mounted) {
+        return;
+      }
+      unawaited(_refreshSelectedDay(forceRefresh: true));
+    });
     await refresh;
     return state;
   }

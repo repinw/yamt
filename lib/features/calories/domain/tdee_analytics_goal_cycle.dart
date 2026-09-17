@@ -3,7 +3,7 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 /// Represents one goal cycle or the aggregate "all goals" view.
 class TdeeAnalyticsGoalCycle {
   /// Creates a goal cycle descriptor.
-  const TdeeAnalyticsGoalCycle({
+  const new({
     required this.id,
     required this.title,
     required this.startDate,

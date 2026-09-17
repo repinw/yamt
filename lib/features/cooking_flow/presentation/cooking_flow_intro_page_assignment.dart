@@ -1,7 +1,7 @@
 // Internal split widgets/helpers are public only for sibling imports.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
@@ -52,7 +52,7 @@ Future<CookingFlowInventoryCheckRowData?> showCookingFlowIngredientEditSheet({
 }
 
 class _IngredientEditBottomSheet extends StatefulWidget {
-  const _IngredientEditBottomSheet({required this.row});
+  const new({required this.row});
 
   final CookingFlowInventoryCheckRowData row;
 
@@ -187,7 +187,7 @@ class _IngredientEditBottomSheetState
 }
 
 class CookingFlowInventoryAssignmentBottomSheet extends StatefulWidget {
-  const CookingFlowInventoryAssignmentBottomSheet({
+  const new({
     required this.ingredient,
     required this.inventoryItems,
     required this.localeCode,
@@ -264,9 +264,7 @@ class _CookingFlowInventoryAssignmentBottomSheetState
               const SizedBox(height: AppSpacing.lg),
               Expanded(
                 child: sortedItems.isEmpty
-                    ? Center(
-                        child: Text(l10n.cookflowInventorySelectionEmpty),
-                      )
+                    ? Center(child: Text(l10n.cookflowInventorySelectionEmpty))
                     : ListView.builder(
                         itemCount:
                             sortedItems.length + _manualSelections.length + 1,
@@ -305,42 +303,48 @@ class _CookingFlowInventoryAssignmentBottomSheetState
                           if (manualIndex < _manualSelections.length) {
                             final selection = _manualSelections[manualIndex];
                             final item = _inventoryItemById(selection.itemId);
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: CookingFlowInventoryAssignmentPreview(
-                                label:
-                                    item?.name ??
-                                    l10n.cookflowInventorySelectionItemLabel,
-                                imageUrl: item?.imageUrl,
-                              ),
-                              title: Text(
-                                item?.name ??
-                                    l10n.cookflowInventorySelectionItemLabel,
-                              ),
-                              subtitle: Text(
-                                l10n.cookflowInventorySelectionWeightLater,
-                              ),
-                              trailing: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _manualSelections.removeAt(manualIndex);
-                                  });
-                                },
-                                icon: const Icon(Icons.close_rounded),
+                            return Material(
+                              type: MaterialType.transparency,
+                              child: ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: CookingFlowInventoryAssignmentPreview(
+                                  label:
+                                      item?.name ??
+                                      l10n.cookflowInventorySelectionItemLabel,
+                                  imageUrl: item?.imageUrl,
+                                ),
+                                title: Text(
+                                  item?.name ??
+                                      l10n.cookflowInventorySelectionItemLabel,
+                                ),
+                                subtitle: Text(
+                                  l10n.cookflowInventorySelectionWeightLater,
+                                ),
+                                trailing: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _manualSelections.removeAt(manualIndex);
+                                    });
+                                  },
+                                  icon: const Icon(Icons.close_rounded),
+                                ),
                               ),
                             );
                           }
 
-                          return ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(
-                              Icons.add_circle_outline_rounded,
+                          return Material(
+                            type: MaterialType.transparency,
+                            child: ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(
+                                Icons.add_circle_outline_rounded,
+                              ),
+                              title: Text(
+                                l10n.cookflowInventorySelectionAddIngredient,
+                              ),
+                              subtitle: Text(addIngredientSubtitle),
+                              onTap: _addManualSelection,
                             ),
-                            title: Text(
-                              l10n.cookflowInventorySelectionAddIngredient,
-                            ),
-                            subtitle: Text(addIngredientSubtitle),
-                            onTap: _addManualSelection,
                           );
                         },
                       ),
@@ -358,9 +362,9 @@ class _CookingFlowInventoryAssignmentBottomSheetState
                     onPressed:
                         _selectedItemIds.isEmpty && _manualSelections.isEmpty
                         ? null
-                        : () => Navigator.of(context).pop(
-                            _buildSelectionResult(),
-                          ),
+                        : () =>
+                              Navigator.of(context)
+                                  .pop(_buildSelectionResult()),
                     child: Text(l10n.cookflowInventorySelectionSaveButton),
                   ),
                 ],
@@ -426,9 +430,7 @@ class _CookingFlowInventoryAssignmentBottomSheetState
 }
 
 class _ManualIngredientAdditionSheet extends StatefulWidget {
-  const _ManualIngredientAdditionSheet({
-    required this.inventoryItems,
-  });
+  const new({required this.inventoryItems});
 
   final List<InventoryItem> inventoryItems;
 
@@ -524,19 +526,14 @@ class _ManualIngredientAdditionSheetState
 
   List<InventoryItem> _sortInventoryItems(List<InventoryItem> items) {
     return List<InventoryItem>.from(items)..sort(
-      (left, right) => left.name.toLowerCase().compareTo(
-        right.name.toLowerCase(),
-      ),
+      (left, right) =>
+          left.name.toLowerCase().compareTo(right.name.toLowerCase()),
     );
   }
 }
 
 class CookingFlowInventoryAssignmentPreview extends StatelessWidget {
-  const CookingFlowInventoryAssignmentPreview({
-    required this.label,
-    required this.imageUrl,
-    this.size = 40,
-  });
+  const new({required this.label, required this.imageUrl, this.size = 40});
 
   final String label;
   final String? imageUrl;

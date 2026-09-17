@@ -57,9 +57,8 @@ void main() {
   });
 
   test('withDerivedAmount can use fallback enum unit', () {
-    final item = _item(
-      weight: '300',
-    ).withDerivedAmount(fallbackUnit: InventoryAmountUnit.gram);
+    final item = _item(weight: '300')
+        .withDerivedAmount(fallbackUnit: InventoryAmountUnit.gram);
 
     expect(item.initialAmount, 300);
     expect(item.currentAmount, 300);
@@ -67,9 +66,8 @@ void main() {
   });
 
   test('withDerivedAmount uses fallback enum for unknown suffix', () {
-    final item = _item(
-      weight: '300abc',
-    ).withDerivedAmount(fallbackUnit: InventoryAmountUnit.gram);
+    final item = _item(weight: '300abc')
+        .withDerivedAmount(fallbackUnit: InventoryAmountUnit.gram);
 
     expect(item.initialAmount, 300);
     expect(item.currentAmount, 300);

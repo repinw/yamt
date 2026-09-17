@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Add row for the expanded diary weight details card.
 class DiaryWeightAddRow extends StatelessWidget {
   /// Creates a weight add row.
-  const DiaryWeightAddRow({required this.onPressed, super.key});
+  const new({required this.onPressed, super.key});
 
   /// Called when the row is pressed.
   final VoidCallback onPressed;

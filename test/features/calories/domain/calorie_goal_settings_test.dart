@@ -264,61 +264,52 @@ void main() {
     },
   );
 
-  test(
-    'spontaneous training day falls back to default 200 kcal offset '
-    'if offset is zero',
-    () {
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: DateTime(2026, 2, 24, 6),
-            dailyKcalGoal: 2000,
-            calculatorProfile: null,
-          )
-          .copyWith(
-            trainingWeekdays: const <int>[],
-            trainingDayKcalOffset: 0,
-          );
+  test('spontaneous training day falls back to default 200 kcal offset '
+      'if offset is zero', () {
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 2, 24, 6),
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+        )
+        .copyWith(trainingWeekdays: const <int>[], trainingDayKcalOffset: 0);
 
-      final day = DateTime(2026, 2, 24);
-      expect(settings.goalKcalForDay(day), 2000);
+    final day = DateTime(2026, 2, 24);
+    expect(settings.goalKcalForDay(day), 2000);
 
-      final toggled = settings.toggleTrainingDay(day);
-      expect(toggled.isTrainingDay(day), isTrue);
-      expect(toggled.goalKcalForDay(day), 2200);
-    },
-  );
+    final toggled = settings.toggleTrainingDay(day);
+    expect(toggled.isTrainingDay(day), isTrue);
+    expect(toggled.goalKcalForDay(day), 2200);
+  });
 
-  test(
-    'training day cycling distributes offset across rest days when '
-    'weekdays configured',
-    () {
-      // 3 training days: Mo (1), We (3), Fr (5). 4 rest days.
-      // Base: 2000, Offset: 200.
-      // Training day: 2000 + 200 = 2200.
-      // Rest day: 2000 - (3 * 200 / 4) = 2000 - 150 = 1850.
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: DateTime(2026, 2, 23, 6), // Monday
-            dailyKcalGoal: 2000,
-            calculatorProfile: null,
-          )
-          .copyWith(
-            trainingWeekdays: const <int>[
-              DateTime.monday,
-              DateTime.wednesday,
-              DateTime.friday,
-            ],
-            trainingDayKcalOffset: 200,
-          );
+  test('training day cycling distributes offset across rest days when '
+      'weekdays configured', () {
+    // 3 training days: Mo (1), We (3), Fr (5). 4 rest days.
+    // Base: 2000, Offset: 200.
+    // Training day: 2000 + 200 = 2200.
+    // Rest day: 2000 - (3 * 200 / 4) = 2000 - 150 = 1850.
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 2, 23, 6), // Monday
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+        )
+        .copyWith(
+          trainingWeekdays: const <int>[
+            DateTime.monday,
+            DateTime.wednesday,
+            DateTime.friday,
+          ],
+          trainingDayKcalOffset: 200,
+        );
 
-      final monday = DateTime(2026, 2, 23); // Monday
-      final tuesday = DateTime(2026, 2, 24); // Tuesday
+    final monday = DateTime(2026, 2, 23); // Monday
+    final tuesday = DateTime(2026, 2, 24); // Tuesday
 
-      expect(settings.isTrainingDay(monday), isTrue);
-      expect(settings.goalKcalForDay(monday), 2200);
+    expect(settings.isTrainingDay(monday), isTrue);
+    expect(settings.goalKcalForDay(monday), 2200);
 
-      expect(settings.isTrainingDay(tuesday), isFalse);
-      expect(settings.goalKcalForDay(tuesday), 1850);
-    },
-  );
+    expect(settings.isTrainingDay(tuesday), isFalse);
+    expect(settings.goalKcalForDay(tuesday), 1850);
+  });
 }

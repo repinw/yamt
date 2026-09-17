@@ -4,8 +4,8 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -254,9 +254,8 @@ mixin PreparedMealCardActions<T extends ConsumerStatefulWidget>
         ingredient,
         selectedItemIds,
       ),
-      failureMessage: AppLocalizations.of(
-        context,
-      )!.preparedMealPendingIngredientFillFailed,
+      failureMessage: AppLocalizations.of(context)!
+          .preparedMealPendingIngredientFillFailed,
     );
   }
 
@@ -269,9 +268,8 @@ mixin PreparedMealCardActions<T extends ConsumerStatefulWidget>
 
     await _runAction(
       () => ignorePendingIngredientPressedAction!(actionMeal.id, ingredient),
-      failureMessage: AppLocalizations.of(
-        context,
-      )!.preparedMealPendingIngredientIgnoreFailed,
+      failureMessage: AppLocalizations.of(context)!
+          .preparedMealPendingIngredientIgnoreFailed,
     );
   }
 

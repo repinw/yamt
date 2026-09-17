@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -11,6 +12,7 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_stats_card.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_suggestions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
 import '../support/fake_shopping_list_repository.dart';
 
 Widget _wrap(ProviderContainer container, {Widget? suggestionsSection}) {
@@ -18,20 +20,16 @@ Widget _wrap(ProviderContainer container, {Widget? suggestionsSection}) {
     container: container,
     child: MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: ShoppingListPage(suggestionsSection: suggestionsSection),
     ),
   );
 }
 
-ProviderContainer _createContainer(
-  FakeShoppingListRepository repository,
-) {
+ProviderContainer _createContainer(FakeShoppingListRepository repository) {
   final container = ProviderContainer(
-    overrides: [
-      shoppingListRepositoryProvider.overrideWithValue(repository),
-    ],
+    overrides: [shoppingListRepositoryProvider.overrideWithValue(repository)],
   );
   addTearDown(container.dispose);
   addTearDown(repository.dispose);
@@ -54,9 +52,7 @@ Future<void> _addItem(
 }
 
 void main() {
-  testWidgets('adds a purchase suggestion once and hides it', (
-    tester,
-  ) async {
+  testWidgets('adds a purchase suggestion once and hides it', (tester) async {
     final repository = FakeShoppingListRepository();
     final container = _createContainer(repository);
     await tester.pumpWidget(
@@ -141,12 +137,11 @@ void main() {
           child: MaterialApp(
             theme: ThemeData(brightness: brightness),
             locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             builder: (context, child) => MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: const TextScaler.linear(2)),
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: const TextScaler.linear(2)),
               child: child!,
             ),
             home: const ShoppingListPage(),

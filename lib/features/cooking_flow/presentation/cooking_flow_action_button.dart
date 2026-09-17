@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Primary accent button used across Cookflow screens.
 class CookingFlowActionButton extends StatelessWidget {
   /// Creates primary Cookflow action button.
-  const CookingFlowActionButton({
+  const new({
     required this.label,
     required this.onPressed,
     this.leadingIcon,
@@ -82,7 +82,7 @@ class CookingFlowActionButton extends StatelessWidget {
 }
 
 class _CookingFlowAccentSurface extends StatelessWidget {
-  const _CookingFlowAccentSurface({
+  const new({
     required this.child,
     required this.onPressed,
     required this.shadowBlurRadius,
@@ -112,18 +112,12 @@ class _CookingFlowAccentSurface extends StatelessWidget {
               ),
         borderRadius: radius,
         boxShadow: isEnabled
-            ? <BoxShadow>[
-                const BoxShadow(color: Colors.transparent),
-              ]
+            ? <BoxShadow>[const BoxShadow(color: Colors.transparent)]
             : null,
       ),
       child: Material(
         color: Colors.transparent,
-        child: AppInkWell(
-          onTap: onPressed,
-          borderRadius: radius,
-          child: child,
-        ),
+        child: AppInkWell(onTap: onPressed, borderRadius: radius, child: child),
       ),
     );
   }
@@ -132,7 +126,7 @@ class _CookingFlowAccentSurface extends StatelessWidget {
 /// Secondary Cookflow action button for lower-priority actions.
 class CookingFlowSecondaryActionButton extends StatelessWidget {
   /// Creates secondary Cookflow action button.
-  const CookingFlowSecondaryActionButton({
+  const new({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -220,11 +214,7 @@ class CookingFlowSecondaryActionButton extends StatelessWidget {
 /// Compact accent icon button for Cookflow inline actions.
 class CookingFlowActionIconButton extends StatelessWidget {
   /// Creates compact Cookflow accent icon button.
-  const CookingFlowActionIconButton({
-    required this.icon,
-    required this.onPressed,
-    super.key,
-  });
+  const new({required this.icon, required this.onPressed, super.key});
 
   /// Button icon.
   final IconData icon;

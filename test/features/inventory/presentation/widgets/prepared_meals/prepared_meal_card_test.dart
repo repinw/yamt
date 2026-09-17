@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -22,7 +23,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../../../../support/fake_local_image_store.dart';
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+  new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
   final _controller = StreamController<List<InventoryItem>>.broadcast();
@@ -157,19 +158,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -199,19 +199,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -242,19 +241,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -289,19 +287,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal().copyWith(remainingPortions: 0.5),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -330,7 +327,7 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
@@ -340,13 +337,12 @@ void main() {
                   remainingPortions: 3000,
                   finalNetWeight: 3000,
                 ),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -371,7 +367,7 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
@@ -381,13 +377,12 @@ void main() {
                   remainingPortions: 2,
                   finalNetWeight: 3000,
                 ),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -413,7 +408,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: _wrapCard(
@@ -428,13 +423,12 @@ void main() {
                         .toJson(),
                     'remaining_net_weight': 2253,
                   }),
-                  onEatPressed:
-                      ({
-                        required mealId,
-                        required portions,
-                        required mealType,
-                        required loggedDay,
-                      }) async => true,
+                  onEatPressed: ({
+                    required mealId,
+                    required portions,
+                    required mealType,
+                    required loggedDay,
+                  }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed: (mealId, result) async => true,
@@ -460,19 +454,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -499,19 +492,18 @@ void main() {
         child: MaterialApp(
           theme: theme,
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -545,19 +537,18 @@ void main() {
         overrides: [localImageStoreProvider.overrideWithValue(localImageStore)],
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -591,19 +582,18 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             locale: const Locale('en'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: _wrapCard(
                 PreparedMealCard(
                   meal: _depletedMeal(),
-                  onEatPressed:
-                      ({
-                        required mealId,
-                        required portions,
-                        required mealType,
-                        required loggedDay,
-                      }) async => true,
+                  onEatPressed: ({
+                    required mealId,
+                    required portions,
+                    required mealType,
+                    required loggedDay,
+                  }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed: (mealId, result) async => true,
@@ -636,19 +626,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async {
                   unbundledMealId = mealId;
@@ -683,19 +672,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async {
                   thrownAwayMealId = mealId;
                   thrownAwayPortions = portions;
@@ -745,19 +733,18 @@ void main() {
         overrides: [localImageStoreProvider.overrideWithValue(localImageStore)],
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -788,19 +775,18 @@ void main() {
         overrides: [localImageStoreProvider.overrideWithValue(localImageStore)],
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -832,19 +818,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -938,19 +923,18 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             locale: const Locale('en'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: _wrapCard(
                 PreparedMealCard(
                   meal: meal,
-                  onEatPressed:
-                      ({
-                        required mealId,
-                        required portions,
-                        required mealType,
-                        required loggedDay,
-                      }) async => true,
+                  onEatPressed: ({
+                    required mealId,
+                    required portions,
+                    required mealType,
+                    required loggedDay,
+                  }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed: (mealId, result) async => true,
@@ -982,7 +966,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             locale: const Locale('en'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: StatefulBuilder(
@@ -1008,7 +992,7 @@ void main() {
                                   ),
                                 );
                               });
-                              return firstAction.future;
+                              return await firstAction.future;
                             }
                             return true;
                           },
@@ -1097,19 +1081,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -1136,25 +1119,27 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
-                onFillPendingIngredientPressed:
-                    (mealId, ingredient, inventoryItemIds) async => true,
+                onFillPendingIngredientPressed: (
+                  mealId,
+                  ingredient,
+                  inventoryItemIds,
+                ) async => true,
                 onIgnorePendingIngredientPressed: (mealId, ingredient) async =>
                     true,
               ),
@@ -1198,19 +1183,18 @@ void main() {
         ],
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -1256,25 +1240,27 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
                 onSaveTemplatePressed: (meal) async => true,
-                onFillPendingIngredientPressed:
-                    (mealId, ingredient, inventoryItemIds) async => true,
+                onFillPendingIngredientPressed: (
+                  mealId,
+                  ingredient,
+                  inventoryItemIds,
+                ) async => true,
                 onIgnorePendingIngredientPressed: (mealId, ingredient) async {
                   ignoredMealId = mealId;
                   ignoredIngredient = ingredient;
@@ -1306,19 +1292,18 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed:
-                    ({
-                      required mealId,
-                      required portions,
-                      required mealType,
-                      required loggedDay,
-                    }) async => true,
+                onEatPressed: ({
+                  required mealId,
+                  required portions,
+                  required mealType,
+                  required loggedDay,
+                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,

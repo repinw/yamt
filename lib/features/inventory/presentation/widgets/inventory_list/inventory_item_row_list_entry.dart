@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -13,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines inventory item row list entry.
 class InventoryItemRowListEntry extends StatelessWidget {
   /// The inventory item row list entry.
-  const InventoryItemRowListEntry({
+  const new({
     required this.item,
     required this.keyPrefix,
     required this.bottomSpacing,

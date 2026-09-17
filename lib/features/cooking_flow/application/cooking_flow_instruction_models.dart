@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 @immutable
 class CookingFlowInstructionText {
   /// Creates localized instruction builder text.
-  const CookingFlowInstructionText({
+  const new({
     required this.unknownAmount,
     required this.fallbackNoIngredients,
     required this.fallbackPrepPrefix,
@@ -60,7 +60,7 @@ class CookingFlowInstructionText {
 @immutable
 class CookingFlowInstructionStep {
   /// Creates instruction step.
-  const CookingFlowInstructionStep({required this.segments});
+  const new({required this.segments});
 
   /// Rich-text segments for this instruction.
   final List<CookingFlowInstructionSegment> segments;
@@ -83,7 +83,7 @@ class CookingFlowInstructionStep {
 @immutable
 class CookingFlowInstructionSegment {
   /// Creates instruction segment.
-  const CookingFlowInstructionSegment(this.text, {this.isHighlight = false});
+  const new(this.text, {this.isHighlight = false});
 
   /// Segment text.
   final String text;
@@ -111,11 +111,7 @@ class CookingFlowInstructionSegment {
 @immutable
 class CookingInstructionMatch {
   /// Creates an instruction match span.
-  const CookingInstructionMatch({
-    required this.start,
-    required this.end,
-    required this.label,
-  });
+  const new({required this.start, required this.end, required this.label});
 
   /// Start index in source instruction.
   final int start;

@@ -15,7 +15,7 @@ import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
     'kitchen_utensils_controller.dart';
 
 class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {
-  _FakeKitchenUtensilRepository({List<KitchenUtensil>? initialUtensils})
+  new({List<KitchenUtensil>? initialUtensils})
     : _utensils = List<KitchenUtensil>.from(
         initialUtensils ?? const <KitchenUtensil>[],
       );
@@ -172,10 +172,7 @@ void main() {
         .addUtensil(weightGrams: 420);
 
     expect(result.isSuccess, isFalse);
-    expect(
-      result.failureReason,
-      KitchenUtensilSaveFailureReason.invalidInput,
-    );
+    expect(result.failureReason, KitchenUtensilSaveFailureReason.invalidInput);
     expect(container.read(kitchenUtensilsControllerProvider).value, isEmpty);
   });
 
@@ -189,10 +186,7 @@ void main() {
     await container.read(kitchenUtensilsControllerProvider.future);
     final result = await container
         .read(kitchenUtensilsControllerProvider.notifier)
-        .addUtensil(
-          imageBytes: Uint8List.fromList(<int>[1]),
-          weightGrams: 420,
-        );
+        .addUtensil(imageBytes: Uint8List.fromList(<int>[1]), weightGrams: 420);
 
     expect(result.isSuccess, isFalse);
     expect(
@@ -211,10 +205,7 @@ void main() {
     await container.read(kitchenUtensilsControllerProvider.future);
     final result = await container
         .read(kitchenUtensilsControllerProvider.notifier)
-        .addUtensil(
-          imageBytes: Uint8List.fromList(<int>[1]),
-          weightGrams: 420,
-        );
+        .addUtensil(imageBytes: Uint8List.fromList(<int>[1]), weightGrams: 420);
 
     expect(result.isSuccess, isFalse);
     expect(repository.uploadedPaths, hasLength(1));
@@ -242,17 +233,12 @@ void main() {
         );
 
     expect(result.isSuccess, isFalse);
-    expect(
-      result.failureReason,
-      KitchenUtensilSaveFailureReason.invalidInput,
-    );
+    expect(result.failureReason, KitchenUtensilSaveFailureReason.invalidInput);
   });
 
   test('deleteUtensil removes metadata and schedules image cleanup', () async {
     final repository = _FakeKitchenUtensilRepository(
-      initialUtensils: [
-        _utensil(imageStoragePath: 'users/owner-1/pot.jpg'),
-      ],
+      initialUtensils: [_utensil(imageStoragePath: 'users/owner-1/pot.jpg')],
     );
     addTearDown(repository.dispose);
     final container = _buildContainer(repository);

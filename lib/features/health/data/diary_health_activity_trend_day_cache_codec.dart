@@ -11,7 +11,7 @@ const _cacheVersion = 1;
 @JsonSerializable(fieldRename: FieldRename.snake)
 class DiaryHealthActivityTrendDayCacheSnapshot {
   /// Creates a persisted activity trend day snapshot.
-  const DiaryHealthActivityTrendDayCacheSnapshot({
+  const new({
     required this.version,
     required this.cacheKey,
     required this.loadedAt,
@@ -21,7 +21,7 @@ class DiaryHealthActivityTrendDayCacheSnapshot {
   });
 
   /// Creates snapshot from domain data.
-  factory DiaryHealthActivityTrendDayCacheSnapshot.fromDomain({
+  factory fromDomain({
     required String cacheKey,
     required DateTime loadedAt,
     required DiaryHealthActivityTrendDay day,
@@ -37,9 +37,7 @@ class DiaryHealthActivityTrendDayCacheSnapshot {
   }
 
   /// Creates snapshot from JSON.
-  factory DiaryHealthActivityTrendDayCacheSnapshot.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$DiaryHealthActivityTrendDayCacheSnapshotFromJson(json);
   }
 

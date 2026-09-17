@@ -4,20 +4,17 @@ import 'package:yamt/features/product_search_hub/domain/'
 /// Local selection list state for the product search hub page.
 class ProductSearchHubSelectionState {
   /// Creates selection state.
-  const ProductSearchHubSelectionState(this.selections);
+  const new(this.selections);
 
   /// Empty selection state.
-  const ProductSearchHubSelectionState.empty()
-    : selections = const <ProductSearchHubSavedSelection>[];
+  const new empty() : selections = const <ProductSearchHubSavedSelection>[];
 
   /// Saved selections shown in the hub overlay.
   final List<ProductSearchHubSavedSelection> selections;
 
   /// Selected product source keys.
   Set<String> get sourceKeys {
-    return {
-      for (final selection in selections) selection.sourceKey,
-    };
+    return {for (final selection in selections) selection.sourceKey};
   }
 
   /// Whether a source key is already selected.
@@ -26,9 +23,7 @@ class ProductSearchHubSelectionState {
   }
 
   /// Adds a saved selection.
-  ProductSearchHubSelectionState add(
-    ProductSearchHubSavedSelection selection,
-  ) {
+  ProductSearchHubSelectionState add(ProductSearchHubSavedSelection selection) {
     return ProductSearchHubSelectionState([...selections, selection]);
   }
 

@@ -8,11 +8,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
 void main() {
   test('uses store, brand, and weight from base item', () {
     final args = ProductSearchHubRouteArgs.inventory(
-      item: _item(
-        storeName: 'Aldi Nord',
-        brand: 'Dairy Co',
-        weight: '500 g',
-      ),
+      item: _item(storeName: 'Aldi Nord', brand: 'Dairy Co', weight: '500 g'),
     );
 
     expect(productSearchHubSearchStore(args), 'Aldi');
@@ -71,11 +67,7 @@ void main() {
   test('prioritizes explicit initialQuery even if item exists', () {
     final args = ProductSearchHubRouteArgs.inventory(
       initialQuery: '4006381333931',
-      item: _item(
-        brand: 'Dairy Co',
-        storeName: 'Aldi Nord',
-        weight: '500 g',
-      ),
+      item: _item(brand: 'Dairy Co', storeName: 'Aldi Nord', weight: '500 g'),
     );
 
     expect(productSearchHubInitialSearchQuery(args), '4006381333931');

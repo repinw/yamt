@@ -55,7 +55,7 @@ abstract class _$CookingFlowController
   CookingFlowControllerState build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<CookingFlowControllerState, CookingFlowControllerState>;
@@ -70,6 +70,6 @@ abstract class _$CookingFlowController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

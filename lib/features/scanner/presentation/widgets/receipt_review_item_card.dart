@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Card representing a single line item with traffic-light status.
 class ReceiptReviewItemCard extends StatelessWidget {
   /// Creates a [ReceiptReviewItemCard].
-  const ReceiptReviewItemCard({
+  const new({
     required this.item,
     required this.currencyCode,
     required this.onTap,

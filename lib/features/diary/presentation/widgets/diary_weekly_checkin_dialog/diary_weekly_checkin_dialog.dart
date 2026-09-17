@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_actions.dart';
@@ -36,7 +36,7 @@ Future<DiaryWeeklyCheckInDialogAction?> showDiaryWeeklyCheckInDialog(
 }
 
 class _DiaryWeeklyCheckInDialog extends StatelessWidget {
-  const _DiaryWeeklyCheckInDialog({required this.checkInData});
+  const new({required this.checkInData});
 
   final DiaryWeeklyCheckInData checkInData;
 
@@ -52,9 +52,8 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
         if (_shouldShowTrackMissingWeight(checkInData))
           DiaryWeeklyCheckInTrackMissingWeightAction(
             onPressed: () {
-              Navigator.of(
-                context,
-              ).pop(DiaryWeeklyCheckInDialogAction.trackMissingWeight);
+              Navigator.of(context)
+                  .pop(DiaryWeeklyCheckInDialogAction.trackMissingWeight);
             },
           ),
         DiaryWeeklyCheckInLaterAction(

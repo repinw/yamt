@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -12,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines meal template import review page.
 class MealTemplateImportReviewPage extends ConsumerStatefulWidget {
   /// The meal template import review page.
-  const MealTemplateImportReviewPage({required this.args, super.key});
+  const new({required this.args, super.key});
 
   /// The args.
   final MealTemplateImportReviewArgs args;

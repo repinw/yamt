@@ -26,17 +26,17 @@ class _DenyingTransactionFakeFirebaseFirestore extends FakeFirebaseFirestore {
   }
 }
 
-class _MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+class _MockFirebaseFirestore extends Mock implements FirebaseFirestore;
 
 // ignore: subtype_of_sealed_class, mocktail verifies Firestore query chaining.
 class _MockCollectionReference extends Mock
-    implements CollectionReference<Map<String, dynamic>> {}
+    implements CollectionReference<Map<String, dynamic>>;
 
 // ignore: subtype_of_sealed_class, mocktail verifies Firestore query chaining.
-class _MockQuery extends Mock implements Query<Map<String, dynamic>> {}
+class _MockQuery extends Mock implements Query<Map<String, dynamic>>;
 
 class _MockQuerySnapshot extends Mock
-    implements QuerySnapshot<Map<String, dynamic>> {}
+    implements QuerySnapshot<Map<String, dynamic>>;
 
 void main() {
   test('readSuggestions applies global query ordering and limit', () async {
@@ -45,15 +45,12 @@ void main() {
     final query = _MockQuery();
     final snapshot = _MockQuerySnapshot();
     when(() => firestore.collection(_globalCollection)).thenReturn(collection);
-    when(
-      () => collection.where('item_key', isEqualTo: 'global_off-cheese'),
-    ).thenReturn(query);
-    when(
-      () => query.orderBy('unique_user_count', descending: true),
-    ).thenReturn(query);
-    when(
-      () => query.orderBy('selection_count', descending: true),
-    ).thenReturn(query);
+    when(() => collection.where('item_key', isEqualTo: 'global_off-cheese'))
+        .thenReturn(query);
+    when(() => query.orderBy('unique_user_count', descending: true))
+        .thenReturn(query);
+    when(() => query.orderBy('selection_count', descending: true))
+        .thenReturn(query);
     when(() => query.orderBy('updated_at', descending: true)).thenReturn(query);
     when(() => query.limit(3)).thenReturn(query);
     when(query.get).thenAnswer((_) async => snapshot);
@@ -152,53 +149,50 @@ void main() {
     ]);
   });
 
-  test(
-    'readSuggestions dedupes shared keys while preserving labels',
-    () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection(_globalCollection).doc('global').set(
-        <String, dynamic>{
-          'id': 'global',
-          'item_key': 'global_off-cheese',
-          'global_food_item_id': 'off-cheese',
-          'amount': 35,
-          'unit': 'g',
-          'selection_count': 5,
-          'unique_user_count': 4,
-          'created_at': '2026-04-09T10:00:00.000Z',
-          'updated_at': '2026-04-09T10:00:00.000Z',
-        },
-      );
-      await firestore.collection(_globalCollection).doc('fingerprint').set(
-        <String, dynamic>{
-          'id': 'fingerprint',
-          'item_key': 'fingerprint_cheese__brand',
-          'amount': 35,
-          'unit': 'g',
-          'label': 'Scheibe',
-          'selection_count': 1,
-          'unique_user_count': 1,
-          'created_at': '2026-04-10T10:00:00.000Z',
-          'updated_at': '2026-04-10T10:00:00.000Z',
-        },
-      );
+  test('readSuggestions dedupes shared keys while preserving labels', () async {
+    final firestore = FakeFirebaseFirestore();
+    await firestore.collection(_globalCollection).doc('global').set(
+      <String, dynamic>{
+        'id': 'global',
+        'item_key': 'global_off-cheese',
+        'global_food_item_id': 'off-cheese',
+        'amount': 35,
+        'unit': 'g',
+        'selection_count': 5,
+        'unique_user_count': 4,
+        'created_at': '2026-04-09T10:00:00.000Z',
+        'updated_at': '2026-04-09T10:00:00.000Z',
+      },
+    );
+    await firestore.collection(_globalCollection).doc('fingerprint').set(
+      <String, dynamic>{
+        'id': 'fingerprint',
+        'item_key': 'fingerprint_cheese__brand',
+        'amount': 35,
+        'unit': 'g',
+        'label': 'Scheibe',
+        'selection_count': 1,
+        'unique_user_count': 1,
+        'created_at': '2026-04-10T10:00:00.000Z',
+        'updated_at': '2026-04-10T10:00:00.000Z',
+      },
+    );
 
-      final repository = FirestoreGlobalFoodServingSuggestionRepository(
-        firestore: firestore,
-        currentUserId: 'user-1',
-      );
+    final repository = FirestoreGlobalFoodServingSuggestionRepository(
+      firestore: firestore,
+      currentUserId: 'user-1',
+    );
 
-      final suggestions = await repository.readSuggestions(
-        foodFingerprint: 'cheese__brand',
-        globalFoodItemId: 'off-cheese',
-      );
+    final suggestions = await repository.readSuggestions(
+      foodFingerprint: 'cheese__brand',
+      globalFoodItemId: 'off-cheese',
+    );
 
-      expect(suggestions.globalSuggestions, hasLength(1));
-      expect(suggestions.globalSuggestions.single.itemKey, 'global_off-cheese');
-      expect(suggestions.globalSuggestions.single.amount, 35);
-      expect(suggestions.globalSuggestions.single.label, 'Scheibe');
-    },
-  );
+    expect(suggestions.globalSuggestions, hasLength(1));
+    expect(suggestions.globalSuggestions.single.itemKey, 'global_off-cheese');
+    expect(suggestions.globalSuggestions.single.amount, 35);
+    expect(suggestions.globalSuggestions.single.label, 'Scheibe');
+  });
 
   test(
     'recordSelection writes shared counters and increments unique users once',
@@ -405,61 +399,56 @@ void main() {
     },
   );
 
-  test(
-    'recordSelection keeps personal preference and throws '
-    'when shared write is denied',
-    () async {
-      final firestore = _DenyingTransactionFakeFirebaseFirestore();
-      final repository = FirestoreGlobalFoodServingSuggestionRepository(
-        firestore: firestore,
-        currentUserId: 'user-1',
-      );
+  test('recordSelection keeps personal preference and throws '
+      'when shared write is denied', () async {
+    final firestore = _DenyingTransactionFakeFirebaseFirestore();
+    final repository = FirestoreGlobalFoodServingSuggestionRepository(
+      firestore: firestore,
+      currentUserId: 'user-1',
+    );
 
-      await expectLater(
-        repository.recordSelection(
-          foodFingerprint: 'cheese__brand',
-          globalFoodItemId: 'off-cheese',
-          amount: 35,
-          unit: ConsumedUnit.grams,
-          label: 'Scheibe',
-          selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+    await expectLater(
+      repository.recordSelection(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'off-cheese',
+        amount: 35,
+        unit: ConsumedUnit.grams,
+        label: 'Scheibe',
+        selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+      ),
+      throwsA(
+        isA<FirebaseException>().having(
+          (error) => error.code,
+          'code',
+          'permission-denied',
         ),
-        throwsA(
-          isA<FirebaseException>().having(
-            (error) => error.code,
-            'code',
-            'permission-denied',
-          ),
-        ),
-      );
+      ),
+    );
 
-      final sharedSnapshot = await firestore
-          .collection(_globalCollection)
-          .get();
-      final globalPrefSnapshot = await firestore
-          .collection(_usersCollection)
-          .doc('user-1')
-          .collection(_prefsCollection)
-          .doc('global_off-cheese')
-          .get();
-      final fingerprintPrefSnapshot = await firestore
-          .collection(_usersCollection)
-          .doc('user-1')
-          .collection(_prefsCollection)
-          .doc('fingerprint_cheese__brand')
-          .get();
-      final votesSnapshot = await firestore
-          .collection(_usersCollection)
-          .doc('user-1')
-          .collection(_votesCollection)
-          .get();
+    final sharedSnapshot = await firestore.collection(_globalCollection).get();
+    final globalPrefSnapshot = await firestore
+        .collection(_usersCollection)
+        .doc('user-1')
+        .collection(_prefsCollection)
+        .doc('global_off-cheese')
+        .get();
+    final fingerprintPrefSnapshot = await firestore
+        .collection(_usersCollection)
+        .doc('user-1')
+        .collection(_prefsCollection)
+        .doc('fingerprint_cheese__brand')
+        .get();
+    final votesSnapshot = await firestore
+        .collection(_usersCollection)
+        .doc('user-1')
+        .collection(_votesCollection)
+        .get();
 
-      expect(sharedSnapshot.docs, isEmpty);
-      expect(votesSnapshot.docs, isEmpty);
-      expect(globalPrefSnapshot.data()!['amount'], 35);
-      expect(globalPrefSnapshot.data()!['label'], 'Scheibe');
-      expect(fingerprintPrefSnapshot.data()!['amount'], 35);
-      expect(fingerprintPrefSnapshot.data()!['label'], 'Scheibe');
-    },
-  );
+    expect(sharedSnapshot.docs, isEmpty);
+    expect(votesSnapshot.docs, isEmpty);
+    expect(globalPrefSnapshot.data()!['amount'], 35);
+    expect(globalPrefSnapshot.data()!['label'], 'Scheibe');
+    expect(fingerprintPrefSnapshot.data()!['amount'], 35);
+    expect(fingerprintPrefSnapshot.data()!['label'], 'Scheibe');
+  });
 }

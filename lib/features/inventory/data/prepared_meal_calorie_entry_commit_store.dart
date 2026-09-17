@@ -50,13 +50,11 @@ abstract interface class PreparedMealCalorieEntryCommitStore {
 class FirestorePreparedMealCalorieEntryCommitStore
     implements PreparedMealCalorieEntryCommitStore {
   /// The firestore prepared meal calorie entry commit store.
-  const FirestorePreparedMealCalorieEntryCommitStore({
-    required FirebaseFirestore firestore,
-    required String? currentUserId,
-    required String? preparedMealOwnerUserId,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId,
-       _preparedMealOwnerUserId = preparedMealOwnerUserId;
+  const new({
+    required this._firestore,
+    required this._currentUserId,
+    required this._preparedMealOwnerUserId,
+  });
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
@@ -90,9 +88,8 @@ class FirestorePreparedMealCalorieEntryCommitStore
 
     try {
       return await _firestore.runTransaction((transaction) async {
-        final mealRef = _preparedMealCollection(
-          preparedMealOwnerUserId,
-        ).doc(preparedMealId);
+        final mealRef = _preparedMealCollection(preparedMealOwnerUserId)
+            .doc(preparedMealId);
         final mealSnapshot = await transaction.get(mealRef);
         if (!mealSnapshot.exists) {
           log(

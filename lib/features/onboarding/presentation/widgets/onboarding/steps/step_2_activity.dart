@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
@@ -9,11 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Onboarding step for daily activity level.
 class Step2Activity extends StatelessWidget {
   /// Creates activity onboarding step.
-  const Step2Activity({
-    required this.state,
-    required this.notifier,
-    super.key,
-  });
+  const new({required this.state, required this.notifier, super.key});
 
   /// Current calculator form state.
   final CalorieGoalCalculatorFormState state;
@@ -90,9 +86,9 @@ class Step2Activity extends StatelessWidget {
                                     ? theme.colorScheme.primary.withValues(
                                         alpha: 0.8,
                                       )
-                                    : Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
+                                    : Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -107,9 +103,9 @@ class Step2Activity extends StatelessWidget {
                           border: Border.all(
                             color: isSelected
                                 ? theme.colorScheme.primary
-                                : Theme.of(
-                                    context,
-                                  ).colorScheme.surfaceContainerHigh,
+                                : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHigh,
                             width: 2,
                           ),
                           color: isSelected

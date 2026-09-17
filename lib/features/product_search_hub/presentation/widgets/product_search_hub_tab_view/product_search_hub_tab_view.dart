@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_recently_selected_tab/'
@@ -7,7 +7,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 /// Product search hub tab contents.
 class ProductSearchHubTabView extends StatelessWidget {
   /// Creates product search hub tab contents.
-  const ProductSearchHubTabView({
+  const new({
     required this.selectedProductKeys,
     required this.onRecentlySelectedProductPressed,
     this.onRecentlySelectedProductCopied,

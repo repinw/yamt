@@ -1,7 +1,7 @@
 /// Defines health weight sample.
 class HealthWeightSample {
   /// The health weight sample.
-  const HealthWeightSample({
+  const new({
     required this.recordedAt,
     required this.weightKg,
     this.uuid,

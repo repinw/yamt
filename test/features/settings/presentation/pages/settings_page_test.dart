@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -30,10 +31,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _FakeHealthConnectionService implements HealthConnectionService {
-  _FakeHealthConnectionService({
+  new({
     required this.disconnectResult,
     HealthConnectionStatus? status,
     this.requestAuthorizationResult,
@@ -165,7 +166,7 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
           appVersionProvider.overrideWith(appVersionOverride),
       ],
       child: const MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: SettingsPage()),
       ),
@@ -209,7 +210,7 @@ Future<ProviderContainer> _pumpSettingsPageUnderShellOverlay(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Stack(
@@ -229,10 +230,7 @@ Future<ProviderContainer> _pumpSettingsPageUnderShellOverlay(
                 child: ValueListenableBuilder<bool>(
                   valueListenable: menuCatchesTaps,
                   builder: (context, catchesTaps, child) {
-                    return IgnorePointer(
-                      ignoring: !catchesTaps,
-                      child: child,
-                    );
+                    return IgnorePointer(ignoring: !catchesTaps, child: child);
                   },
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -373,24 +371,23 @@ void main() {
     expect(find.text('Guest mode'), findsOneWidget);
   });
 
-  testWidgets(
-    'SettingsPage stays scrollable on compact display-size layouts',
-    (tester) async {
-      await tester.binding.setSurfaceSize(const Size(320, 640));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets('SettingsPage stays scrollable on compact display-size layouts', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await _pumpSettingsPage(
-        tester,
-        appVersionOverride: (ref) async => '1.1.0+2',
-      );
-      await tester.pumpAndSettle();
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+    );
+    await tester.pumpAndSettle();
 
-      await _scrollToText(tester, 'About');
+    await _scrollToText(tester, 'About');
 
-      expect(find.text('About'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    expect(find.text('About'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('health connect tile requests authorization', (tester) async {
     final healthService = _FakeHealthConnectionService(
@@ -841,10 +838,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _scrollToText(tester, 'Apple Health');
-    expect(
-      find.text('Stop using Apple Health in YAMT.'),
-      findsOneWidget,
-    );
+    expect(find.text('Stop using Apple Health in YAMT.'), findsOneWidget);
 
     await tester.tap(_settingsTile(SettingsPageKeys.healthConnectTile));
     await tester.pumpAndSettle();
@@ -913,7 +907,7 @@ void main() {
         ],
         child: MaterialApp.router(
           routerConfig: router,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),
@@ -1104,7 +1098,7 @@ void main() {
         ],
         child: MaterialApp.router(
           routerConfig: router,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),

@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/onboarding_selectable_card.dart';
 
 /// Selectable main card for start-date choices.
 class Step6StartDateChoiceCard extends StatelessWidget {
   /// Creates choice card.
-  const Step6StartDateChoiceCard({
+  const new({
     required this.title,
     required this.description,
     required this.icon,

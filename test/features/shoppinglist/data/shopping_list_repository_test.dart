@@ -9,17 +9,16 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_user_session.dart'
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 class _FakeShoppingListUserSession implements ShoppingListUserSession {
-  _FakeShoppingListUserSession({this.currentUserId});
+  new({this.currentUserId});
 
   @override
   final String? currentUserId;
 }
 
 class _FakeShoppingListItemStore implements ShoppingListItemStore {
-  _FakeShoppingListItemStore({
-    Map<String, List<ShoppingListItemDocument>>? initialDocumentsByUser,
-  }) : _documentsByUser =
-           initialDocumentsByUser ?? <String, List<ShoppingListItemDocument>>{};
+  new({Map<String, List<ShoppingListItemDocument>>? initialDocumentsByUser})
+    : _documentsByUser =
+          initialDocumentsByUser ?? <String, List<ShoppingListItemDocument>>{};
 
   final Map<String, List<ShoppingListItemDocument>> _documentsByUser;
   final Map<String, StreamController<List<ShoppingListItemDocument>>>

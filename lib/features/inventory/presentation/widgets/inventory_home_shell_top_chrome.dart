@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
@@ -11,10 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Home-shell top chrome for the inventory tab.
 class InventoryHomeShellTopChrome extends ConsumerWidget {
   /// Creates inventory top chrome.
-  const InventoryHomeShellTopChrome({
-    super.key,
-    this.actions = const <Widget>[],
-  });
+  const new({super.key, this.actions = const <Widget>[]});
 
   /// Tab-owned actions.
   final List<Widget> actions;

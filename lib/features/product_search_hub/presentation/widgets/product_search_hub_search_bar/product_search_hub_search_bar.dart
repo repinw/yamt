@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -9,7 +9,7 @@ const productSearchHubSearchBarHeroTag = 'product_search_hub_search_bar_hero';
 /// Local product search input for the hub shell.
 class ProductSearchHubSearchBar extends StatefulWidget {
   /// Creates product search hub search bar.
-  const ProductSearchHubSearchBar({
+  const new({
     required this.isSearching,
     this.controller,
     this.focusNode,

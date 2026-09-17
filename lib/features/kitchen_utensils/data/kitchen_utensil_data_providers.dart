@@ -49,8 +49,7 @@ final kitchenUtensilImageStoreProvider = Provider<KitchenUtensilImageStore>((
 });
 
 class _CurrentKitchenUtensilUserSession implements InventoryUserSession {
-  const _CurrentKitchenUtensilUserSession({required String? currentUserId})
-    : _currentUserId = currentUserId;
+  const new({required this._currentUserId});
 
   final String? _currentUserId;
 
@@ -59,12 +58,10 @@ class _CurrentKitchenUtensilUserSession implements InventoryUserSession {
 }
 
 class _UnavailableKitchenUtensilStore implements KitchenUtensilStore {
-  const _UnavailableKitchenUtensilStore();
+  const new();
 
   @override
-  Future<List<KitchenUtensilDocument>> readAll({
-    required String userId,
-  }) async {
+  Future<List<KitchenUtensilDocument>> readAll({required String userId}) async {
     return const <KitchenUtensilDocument>[];
   }
 
@@ -94,7 +91,7 @@ class _UnavailableKitchenUtensilStore implements KitchenUtensilStore {
 }
 
 class _UnavailableKitchenUtensilImageStore implements KitchenUtensilImageStore {
-  const _UnavailableKitchenUtensilImageStore();
+  const new();
 
   @override
   Future<String?> uploadBytes({

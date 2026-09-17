@@ -67,7 +67,7 @@ enum PreparedMealConsumptionFilter {
 /// Defines inventory list view preferences.
 class InventoryListViewPreferences {
   /// The inventory list view preferences.
-  const InventoryListViewPreferences({
+  const new({
     this.viewMode = InventoryListViewMode.list,
     this.consumptionFilter = const InventoryConsumptionFilter(),
     this.inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending,
@@ -135,7 +135,7 @@ class InventoryListViewPreferences {
 /// Defines inventory list view preferences store.
 class InventoryListViewPreferencesStore {
   /// The inventory list view preferences store.
-  const InventoryListViewPreferencesStore();
+  const new();
 
   static const _inventoryHideConsumedItemsKey =
       'inventory_list_hide_consumed_items';
@@ -206,10 +206,7 @@ class InventoryListViewPreferencesStore {
     AppPreferences preferences,
     InventoryListViewPreferences value,
   ) async {
-    await preferences.setString(
-      _viewModeKey,
-      value.viewMode.name,
-    );
+    await preferences.setString(_viewModeKey, value.viewMode.name);
     await preferences.setInt(
       _inventoryHideConsumedItemsKey,
       value.consumptionFilter.hideFullyConsumedItems ? 1 : 0,

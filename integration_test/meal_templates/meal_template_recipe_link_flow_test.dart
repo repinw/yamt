@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
@@ -29,7 +30,7 @@ const _recipeUrl =
     'French-Hotdog-mit-Merguez-und-Brioche-Broetchen.html';
 
 class _RecipeLinkHarness {
-  const _RecipeLinkHarness({
+  const new({
     required this.app,
     required this.importer,
     required this.templateRepository,
@@ -41,7 +42,7 @@ class _RecipeLinkHarness {
 }
 
 class _FakeRecipeImporter extends PreparedMealRecipeImporter {
-  _FakeRecipeImporter();
+  new();
 
   final List<String> importedUrls = <String>[];
 
@@ -123,7 +124,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
 }
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  const _FakeInventoryItemRepository();
+  const new();
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
@@ -170,9 +171,8 @@ _RecipeLinkHarness _buildHarness() {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventory,
-                builder: (context, state) => const Scaffold(
-                  body: Center(child: Text('Inventory')),
-                ),
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Inventory'))),
               ),
             ],
           ),
@@ -180,9 +180,8 @@ _RecipeLinkHarness _buildHarness() {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeDiary,
-                builder: (context, state) => const Scaffold(
-                  body: Center(child: Text('Diary')),
-                ),
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Diary'))),
               ),
             ],
           ),
@@ -200,9 +199,8 @@ _RecipeLinkHarness _buildHarness() {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeSettings,
-                builder: (context, state) => const Scaffold(
-                  body: Center(child: Text('Settings')),
-                ),
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Settings'))),
               ),
             ],
           ),
@@ -250,7 +248,7 @@ _RecipeLinkHarness _buildHarness() {
       container: container,
       child: MaterialApp.router(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
       ),
@@ -279,10 +277,7 @@ Future<void> _pumpUntilFound(
   }
 }
 
-Future<void> _tapBottomSheetButton(
-  WidgetTester tester,
-  String label,
-) async {
+Future<void> _tapBottomSheetButton(WidgetTester tester, String label) async {
   final button = find.ancestor(
     of: find.descendant(
       of: find.byType(BottomSheet),
@@ -290,11 +285,7 @@ Future<void> _tapBottomSheetButton(
     ),
     matching: find.byType(FilledButton),
   );
-  await _pumpUntilFound(
-    tester,
-    button,
-    description: '$label button',
-  );
+  await _pumpUntilFound(tester, button, description: '$label button');
   await tester.ensureVisible(button);
   await tester.pumpAndSettle();
   await tester.drag(

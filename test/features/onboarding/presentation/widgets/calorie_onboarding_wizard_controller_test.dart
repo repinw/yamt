@@ -76,11 +76,7 @@ void main() {
         expect(controller.state.showErrors, isTrue);
 
         expect(
-          _next(
-            controller,
-            maintainState,
-            hasValidStartDateChoice: true,
-          ),
+          _next(controller, maintainState, hasValidStartDateChoice: true),
           8,
         );
         expect(controller.state.currentStep, CalorieOnboardingStep.ready);

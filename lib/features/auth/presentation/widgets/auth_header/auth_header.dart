@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_layout_metrics/auth_layout_metrics.dart';
 import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Header shown above the auth card.
 class AuthHeader extends StatelessWidget {
   /// Creates the auth header.
-  const AuthHeader({
+  const new({
     required this.isLoginMode,
     required this.isWide,
     required this.metrics,

@@ -369,40 +369,35 @@ class _BurnWeekMutationCoordinator {
 }
 
 sealed class _PendingBurnWeekMutationState {
-  const _PendingBurnWeekMutationState(this.mutation);
+  const new(this.mutation);
 
   final _PendingBurnWeekMutation mutation;
 }
 
 class _QueuedBurnWeekMutationState extends _PendingBurnWeekMutationState {
-  const _QueuedBurnWeekMutationState(super.mutation);
+  const new(super.mutation);
 }
 
 class _RunningBurnWeekMutationState extends _PendingBurnWeekMutationState {
-  const _RunningBurnWeekMutationState(super.mutation);
+  const new(super.mutation);
 }
 
 @immutable
 class _PendingBurnWeekMutation {
-  const _PendingBurnWeekMutation._(this.key);
+  const new _(this.key);
 
-  const _PendingBurnWeekMutation.reset() : this._('reset');
+  const new reset() : this._('reset');
 
-  factory _PendingBurnWeekMutation.restart({
-    required DateTime weekStartDate,
-    int? runWeekNumber,
-  }) {
+  factory restart({required DateTime weekStartDate, int? runWeekNumber}) {
     final keyParts = <String>[
       'restart',
       diaryDayKey(normalizeDiaryDay(weekStartDate)),
       if (runWeekNumber != null) runWeekNumber.toString(),
     ];
-    return _PendingBurnWeekMutation._(
-      keyParts.join(':'),
-    );
+    return _PendingBurnWeekMutation._(keyParts.join(':'));
   }
 
-  factory _PendingBurnWeekMutation.sync({
+  factory sync({
     required DateTime weekStartDate,
     required bool missedTrackingThisWeek,
     List<bool>? missedTrackingForClosedWeeks,

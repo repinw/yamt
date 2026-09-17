@@ -7,7 +7,7 @@ part 'template_ingredient_parser.g.dart';
 /// Defines template ingredient parser.
 class TemplateIngredientParser {
   /// The template ingredient parser.
-  const TemplateIngredientParser();
+  const new();
 
   /// Parse requirement.
   TemplateIngredientRequirement? parseRequirement({
@@ -20,9 +20,8 @@ class TemplateIngredientParser {
     }
 
     final trimmed = ingredient.trim();
-    final match = RegExp(
-      r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,\s]\d+)*)\s*(.+)$',
-    ).firstMatch(trimmed);
+    final match = RegExp(r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,\s]\d+)*)\s*(.+)$')
+        .firstMatch(trimmed);
     if (match == null) {
       return _parseEmbeddedAmountRequirement(
         ingredient: trimmed,
@@ -124,9 +123,8 @@ class TemplateIngredientParser {
 
   double? _parseQuantity(String rawValue) {
     final normalized = rawValue.trim();
-    final mixedFractionMatch = RegExp(
-      r'^(\d+)\s+(\d+)/(\d+)$',
-    ).firstMatch(normalized);
+    final mixedFractionMatch = RegExp(r'^(\d+)\s+(\d+)/(\d+)$')
+        .firstMatch(normalized);
     if (mixedFractionMatch != null) {
       final whole = _parseNumber(mixedFractionMatch.group(1)!);
       final numerator = _parseNumber(mixedFractionMatch.group(2)!);
@@ -306,9 +304,7 @@ class TemplateIngredientParser {
   }
 
   bool _isQuantityPrefixToken(String token) {
-    return RegExp(
-      r'^(\d+(?:[.,]\d+)?|\d+/\d+)$',
-    ).hasMatch(token.trim());
+    return RegExp(r'^(\d+(?:[.,]\d+)?|\d+/\d+)$').hasMatch(token.trim());
   }
 
   String _packageCountLabel({
@@ -356,7 +352,7 @@ TemplateIngredientParser templateIngredientParser(Ref ref) {
 }
 
 class _TemplateIngredientUnitConversion {
-  const _TemplateIngredientUnitConversion({
+  const new({
     required this.unit,
     required this.multiplier,
     required this.consumesUnitToken,

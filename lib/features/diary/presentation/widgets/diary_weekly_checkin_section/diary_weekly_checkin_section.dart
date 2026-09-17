@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -26,10 +26,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Hosts diary weekly check-in cards and dialog orchestration.
 class DiaryWeeklyCheckInSection extends ConsumerStatefulWidget {
   /// Creates diary weekly check-in section.
-  const DiaryWeeklyCheckInSection({
-    required this.selectedDay,
-    super.key,
-  });
+  const new({required this.selectedDay, super.key});
 
   /// Selected diary day.
   final DateTime selectedDay;
@@ -94,15 +91,12 @@ class _DiaryWeeklyCheckInSectionState
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               key: DiaryWeeklyCheckInCardKeys.showAgainButton,
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-              ),
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
               onPressed: () => _showWeeklyCheckInAgain(dismissedPending),
               icon: const Icon(Icons.replay_rounded, size: 18),
               label: Text(
-                AppLocalizations.of(
-                  context,
-                )!.caloriesWeeklyCheckInShowAgainAction,
+                AppLocalizations.of(context)!
+                    .caloriesWeeklyCheckInShowAgainAction,
               ),
             ),
           ),

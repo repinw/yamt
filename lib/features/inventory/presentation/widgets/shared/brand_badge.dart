@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
 
 /// Defines brand badge.
 class BrandBadge extends StatelessWidget {
   /// The brand badge.
-  const BrandBadge({required this.brand, super.key});
+  const new({required this.brand, super.key});
 
   /// The brand.
   final String brand;

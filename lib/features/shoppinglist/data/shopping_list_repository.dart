@@ -26,8 +26,7 @@ ShoppingListRepository shoppingListRepository(Ref ref) {
 }
 
 class _CurrentShoppingListUserSession implements ShoppingListUserSession {
-  const _CurrentShoppingListUserSession({required String? currentUserId})
-    : _currentUserId = currentUserId;
+  const new({required this._currentUserId});
 
   final String? _currentUserId;
 
@@ -36,7 +35,7 @@ class _CurrentShoppingListUserSession implements ShoppingListUserSession {
 }
 
 class _UnavailableShoppingListRepository implements ShoppingListRepository {
-  const _UnavailableShoppingListRepository();
+  const new();
 
   @override
   Stream<List<ShoppingListItem>> watchAll() {

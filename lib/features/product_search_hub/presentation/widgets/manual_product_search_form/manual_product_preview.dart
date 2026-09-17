@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/features/product_search_hub/domain/'
 /// Data shown in manual product preview.
 class InventoryReceiptManualProductPreviewData {
   /// Creates manual product preview data.
-  const InventoryReceiptManualProductPreviewData({
+  const new({
     required this.imageUrl,
     required this.name,
     this.brand,
@@ -31,10 +31,7 @@ class InventoryReceiptManualProductPreviewData {
 /// Preview card for currently selected manual product.
 class ManualProductPreview extends StatelessWidget {
   /// Creates a manual product preview.
-  const ManualProductPreview({
-    required this.preview,
-    super.key,
-  });
+  const new({required this.preview, super.key});
 
   /// Preview data.
   final InventoryReceiptManualProductPreviewData preview;
@@ -106,7 +103,7 @@ class ManualProductPreview extends StatelessWidget {
 }
 
 class _PreviewImage extends StatelessWidget {
-  const _PreviewImage({required this.imageUrl});
+  const new({required this.imageUrl});
 
   final String? imageUrl;
 

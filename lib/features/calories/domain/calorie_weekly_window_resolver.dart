@@ -8,9 +8,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 /// Resolves weekly calorie learning windows from goal history.
 abstract final class CalorieWeeklyWindowResolver {
   /// Returns the first weekly check-in window start for [anchorEntry].
-  static DateTime firstWindowStartDate(
-    CalorieGoalHistoryEntry anchorEntry,
-  ) {
+  static DateTime firstWindowStartDate(CalorieGoalHistoryEntry anchorEntry) {
     final anchorStartDate = normalizeDiaryDay(
       anchorEntry.effectiveCountingStartDate,
     );
@@ -61,10 +59,7 @@ abstract final class CalorieWeeklyWindowResolver {
     required CalorieGoalHistoryEntry anchorEntry,
     required DateTime windowStartDate,
   }) {
-    return isSameDiaryDay(
-      firstWindowStartDate(anchorEntry),
-      windowStartDate,
-    );
+    return isSameDiaryDay(firstWindowStartDate(anchorEntry), windowStartDate);
   }
 
   /// Returns starter-day weight source day for first partial-day window.

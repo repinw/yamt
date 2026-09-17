@@ -123,9 +123,7 @@ class _FakeHealthConnectionService implements HealthConnectionService {
 
 ProviderContainer _createContainer(_FakeHealthConnectionService service) {
   final container = ProviderContainer(
-    overrides: [
-      healthConnectionServiceProvider.overrideWith((ref) => service),
-    ],
+    overrides: [healthConnectionServiceProvider.overrideWith((ref) => service)],
   );
   addTearDown(container.dispose);
   return container;

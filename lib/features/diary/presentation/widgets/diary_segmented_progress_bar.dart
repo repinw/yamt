@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 
 /// Animated multi-segment progress bar with rounded pill capsules.
 class DiarySegmentedProgressBar extends StatelessWidget {
   /// Creates a segmented progress bar.
-  const DiarySegmentedProgressBar({
+  const new({
     required this.progress,
     required this.color,
     required this.trackColor,
@@ -53,9 +53,7 @@ class DiarySegmentedProgressBar extends StatelessWidget {
 
         return Expanded(
           child: Padding(
-            padding: EdgeInsets.only(
-              right: index < count - 1 ? spacing : 0.0,
-            ),
+            padding: EdgeInsets.only(right: index < count - 1 ? spacing : 0.0),
             child: Container(
               height: height,
               decoration: BoxDecoration(
@@ -93,7 +91,7 @@ class DiarySegmentedProgressBar extends StatelessWidget {
 /// Multi-segment skeleton loader bar matching [DiarySegmentedProgressBar].
 class DiarySegmentedSkeletonBar extends StatelessWidget {
   /// Creates a segmented skeleton bar.
-  const DiarySegmentedSkeletonBar({
+  const new({
     required this.segmentCount,
     required this.color,
     this.height = 6.0,
@@ -121,13 +119,8 @@ class DiarySegmentedSkeletonBar extends StatelessWidget {
       children: List.generate(count, (index) {
         return Expanded(
           child: Padding(
-            padding: EdgeInsets.only(
-              right: index < count - 1 ? spacing : 0.0,
-            ),
-            child: MetricSkeletonBlock(
-              height: height,
-              color: color,
-            ),
+            padding: EdgeInsets.only(right: index < count - 1 ? spacing : 0.0),
+            child: MetricSkeletonBlock(height: height, color: color),
           ),
         );
       }),

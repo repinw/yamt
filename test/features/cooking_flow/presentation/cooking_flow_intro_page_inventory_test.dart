@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
@@ -104,9 +105,7 @@ void main() {
 
     expect(latestSelectionState.allItemsSelected, isTrue);
     expect(latestSelectionState.hasShoppingSelections, isTrue);
-    expect(latestSelectionState.shoppingListLabels, <String>[
-      '500 g Flour',
-    ]);
+    expect(latestSelectionState.shoppingListLabels, <String>['500 g Flour']);
   });
 
   testWidgets('assign sheet clears matching shopping labels', (tester) async {
@@ -214,11 +213,7 @@ void main() {
       _harness(
         template: _template(recipeIngredients: const <String>['500g Flour']),
         inventoryItems: <InventoryItem>[
-          _inventoryItem(
-            id: 'flour',
-            name: 'Flour',
-            currentAmount: 100,
-          ),
+          _inventoryItem(id: 'flour', name: 'Flour', currentAmount: 100),
         ],
         initialDraft: const CookingFlowIntroDraft(
           rowStates: <CookingFlowIntroRowDraft>[
@@ -265,7 +260,7 @@ Widget _harness({
   return ProviderScope(
     child: MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SingleChildScrollView(

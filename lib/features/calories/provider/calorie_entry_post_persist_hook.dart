@@ -7,12 +7,11 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 part 'calorie_entry_post_persist_hook.g.dart';
 
 /// Defines calorie entry post persist hook typedef.
-typedef CalorieEntryPostPersistHook =
-    Future<void> Function({
-      required CalorieEntry entry,
-      CalorieInventoryCreateContext? inventoryContext,
-      CalorieScannedSourceRef? scannedSourceRef,
-    });
+typedef CalorieEntryPostPersistHook = Future<void> Function({
+  required CalorieEntry entry,
+  CalorieInventoryCreateContext? inventoryContext,
+  CalorieScannedSourceRef? scannedSourceRef,
+});
 
 /// The calorie entry post persist hook provider.
 @Riverpod(keepAlive: true)

@@ -1,14 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_reset_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_learned_tdee_goal_sheet.dart';
 
-enum _CalorieGoalCalculatorSheetRoute {
-  learnedTdee,
-  fullCalculator,
-}
+enum _CalorieGoalCalculatorSheetRoute { learnedTdee, fullCalculator }
 
 /// Show calorie goal calculator sheet.
 Future<void> showCalorieGoalCalculatorSheet(

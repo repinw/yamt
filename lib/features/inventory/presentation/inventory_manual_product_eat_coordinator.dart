@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
@@ -18,9 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 part 'inventory_manual_product_eat_coordinator.g.dart';
 
 /// Provides the Inventory presentation boundary for Diary's manual eat flow.
-@Riverpod(
-  keepAlive: true,
-)
+@Riverpod(keepAlive: true)
 InventoryManualProductEatCoordinator inventoryManualProductEatCoordinator(
   Ref ref,
 ) {
@@ -29,7 +27,7 @@ InventoryManualProductEatCoordinator inventoryManualProductEatCoordinator(
 
 class _InventoryManualProductEatCoordinator
     implements InventoryManualProductEatCoordinator {
-  const _InventoryManualProductEatCoordinator();
+  const new();
 
   @override
   Future<InventoryManualProductEatOutcome> complete({

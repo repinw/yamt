@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/core/widgets/app_cached_network_image.dart';
 /// Defines prepared meal cover.
 class PreparedMealCover extends StatelessWidget {
   /// The prepared meal cover.
-  const PreparedMealCover({
+  const new({
     required this.label,
     required this.imageBytes,
     super.key,
@@ -78,7 +78,7 @@ class PreparedMealCover extends StatelessWidget {
 }
 
 class _PreparedMealCoverFallback extends StatelessWidget {
-  const _PreparedMealCoverFallback({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -91,10 +91,8 @@ class _PreparedMealCoverFallback extends StatelessWidget {
     return Center(
       child: Text(
         initial.toUpperCase(),
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: colors.primary,
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
       ),
     );
   }

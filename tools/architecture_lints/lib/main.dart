@@ -27,7 +27,7 @@ class ArchitectureLintsPlugin extends Plugin {
 /// Rule that enforces files do not exceed 300 lines.
 class MaxFileLinesRule extends AnalysisRule {
   /// Creates the max file lines rule.
-  MaxFileLinesRule()
+  new()
       : super(
           name: 'max_file_lines',
           description: 'Enforces that files do not exceed 300 lines.',
@@ -56,7 +56,7 @@ class MaxFileLinesRule extends AnalysisRule {
 }
 
 class _Visitor extends SimpleAstVisitor<void> {
-  _Visitor(this.rule, this.context);
+  new(this.rule, this.context);
 
   final MaxFileLinesRule rule;
   final RuleContext context;

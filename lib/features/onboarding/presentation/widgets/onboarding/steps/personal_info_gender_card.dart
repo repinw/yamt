@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
 /// Selectable card for gender choices in onboarding personal info step.
 class PersonalInfoGenderCard extends StatelessWidget {
   /// Creates personal info gender card.
-  const PersonalInfoGenderCard({
+  const new({
     required this.label,
     required this.icon,
     required this.isSelected,
@@ -93,7 +93,7 @@ class PersonalInfoGenderCard extends StatelessWidget {
 }
 
 class _GenderIconCircle extends StatelessWidget {
-  const _GenderIconCircle({
+  const new({
     required this.icon,
     required this.isSelected,
     required this.hasError,
@@ -119,10 +119,7 @@ class _GenderIconCircle extends StatelessWidget {
     return Container(
       width: 44,
       height: 44,
-      decoration: BoxDecoration(
-        color: circleColor,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: circleColor, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Icon(icon, color: iconColor, size: 24),
     );

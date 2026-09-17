@@ -3,7 +3,7 @@
 
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -29,7 +29,7 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class PreparedMealCardHeader extends StatelessWidget {
-  const PreparedMealCardHeader({
+  const new({
     required this.meal,
     required this.imageBytes,
     required this.ingredientCount,
@@ -69,15 +69,12 @@ class PreparedMealCardHeader extends StatelessWidget {
           ),
           badgeText: l10n.preparedMealIngredientsCount(ingredientCount),
           title: meal.name,
-          titleStyle:
-              Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(
-                fontSize: AppInventoryClosedTile.titleFontSize,
-                fontWeight: FontWeight.w700,
-                height: AppInventoryClosedTile.titleLineHeight,
-                letterSpacing: 0,
-              ),
+          titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontSize: AppInventoryClosedTile.titleFontSize,
+            fontWeight: FontWeight.w700,
+            height: AppInventoryClosedTile.titleLineHeight,
+            letterSpacing: 0,
+          ),
           statusText: meal.hasPendingRecipeIngredients
               ? l10n.preparedMealIncompleteLabel
               : null,
@@ -104,7 +101,7 @@ class PreparedMealCardHeader extends StatelessWidget {
 }
 
 class PreparedMealCardExpandedContent extends StatelessWidget {
-  const PreparedMealCardExpandedContent({
+  const new({
     required this.meal,
     required this.inventoryItems,
     required this.pendingIngredientSuggestions,
@@ -200,9 +197,8 @@ class PreparedMealCardExpandedContent extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     '${component.usedAmount} ${component.usedUnit.code}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -212,9 +208,8 @@ class PreparedMealCardExpandedContent extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(
               l10n.preparedMealIncompleteHint,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: colors.onSurfaceVariant),
             ),
             const SizedBox(height: AppSpacing.md),
             ...meal.pendingRecipeIngredients.map((ingredient) {

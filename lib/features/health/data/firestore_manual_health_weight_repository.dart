@@ -13,11 +13,7 @@ const _logName = 'FirestoreManualHealthWeightRepository';
 class FirestoreManualHealthWeightRepository
     implements ManualHealthWeightRepository {
   /// Creates an instance.
-  FirestoreManualHealthWeightRepository({
-    required FirebaseFirestore? firestore,
-    required String? currentUserId,
-  }) : _firestore = firestore,
-       _currentUserId = currentUserId;
+  new({required this._firestore, required this._currentUserId});
 
   final FirebaseFirestore? _firestore;
   final String? _currentUserId;

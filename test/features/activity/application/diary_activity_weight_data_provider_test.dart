@@ -70,7 +70,7 @@ void main() {
 }
 
 class _FakeCalorieGoalController extends CalorieGoalController {
-  _FakeCalorieGoalController(this.settings);
+  new(this.settings);
 
   final CalorieGoalSettings settings;
 

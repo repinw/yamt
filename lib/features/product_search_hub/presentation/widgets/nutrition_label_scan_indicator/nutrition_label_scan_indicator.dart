@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shows a captured nutrition label with an animated scanning line.
 class NutritionLabelScanIndicator extends StatefulWidget {
   /// Creates a nutrition-label scan indicator.
-  const NutritionLabelScanIndicator({
+  const new({
     required this.imageBytes,
     required this.statusLabel,
     required this.semanticLabel,
@@ -103,10 +103,7 @@ class _NutritionLabelScanIndicatorState
 }
 
 class _ScanImage extends StatelessWidget {
-  const _ScanImage({
-    required this.imageBytes,
-    required this.scanController,
-  });
+  const new({required this.imageBytes, required this.scanController});
 
   final Uint8List imageBytes;
   final Animation<double> scanController;
@@ -153,7 +150,7 @@ class _ScanImage extends StatelessWidget {
 }
 
 class _ScanVignette extends StatelessWidget {
-  const _ScanVignette();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +174,7 @@ class _ScanVignette extends StatelessWidget {
 }
 
 class _ScanLine extends StatelessWidget {
-  const _ScanLine({required this.animation});
+  const new({required this.animation});
 
   final Animation<double> animation;
 
@@ -213,7 +210,7 @@ class _ScanLine extends StatelessWidget {
 }
 
 class _ScanStatus extends StatelessWidget {
-  const _ScanStatus({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -222,17 +219,9 @@ class _ScanStatus extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(
-          Icons.document_scanner_outlined,
-          color: theme.colorScheme.primary,
-        ),
+        Icon(Icons.document_scanner_outlined, color: theme.colorScheme.primary),
         const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Text(
-            label,
-            style: theme.textTheme.bodyMedium,
-          ),
-        ),
+        Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
       ],
     );
   }
@@ -250,9 +239,7 @@ const _previewImageBase64 =
 )
 Widget nutritionLabelScanIndicatorPreview() {
   return MaterialApp(
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
-    ),
+    theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal)),
     home: Scaffold(
       body: Padding(
         padding: AppInsets.page,

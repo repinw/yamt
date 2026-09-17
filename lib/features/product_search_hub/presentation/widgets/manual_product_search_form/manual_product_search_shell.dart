@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Shell for manual product search modal pages.
 class ManualProductSearchShell extends StatelessWidget {
   /// Creates a manual product search shell.
-  const ManualProductSearchShell({
+  const new({
     required this.title,
     required this.searchBar,
     required this.body,
@@ -46,10 +46,7 @@ class ManualProductSearchShell extends StatelessWidget {
           children: [
             ManualProductDialogHeader(title: title, onClose: onClose),
             const SizedBox(height: AppSpacing.lg),
-            Theme(
-              data: _buildSearchToolbarTheme(context),
-              child: searchBar,
-            ),
+            Theme(data: _buildSearchToolbarTheme(context), child: searchBar),
             const SizedBox(height: AppSpacing.lg),
             Divider(
               height: 1,
@@ -67,7 +64,7 @@ class ManualProductSearchShell extends StatelessWidget {
 /// Search toolbar for manual product flows.
 class ManualProductSearchToolbar extends StatelessWidget {
   /// Creates a manual product search toolbar.
-  const ManualProductSearchToolbar({
+  const new({
     required this.searchController,
     required this.onAiSearchTap,
     required this.onScanBarcode,
@@ -165,11 +162,7 @@ class ManualProductSearchToolbar extends StatelessWidget {
 /// Header for manual product modal pages.
 class ManualProductDialogHeader extends StatelessWidget {
   /// Creates a manual product dialog header.
-  const ManualProductDialogHeader({
-    required this.title,
-    required this.onClose,
-    super.key,
-  });
+  const new({required this.title, required this.onClose, super.key});
 
   /// Dialog title.
   final String title;
@@ -186,9 +179,8 @@ class ManualProductDialogHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
         ),
         DecoratedBox(
@@ -212,7 +204,7 @@ class ManualProductDialogHeader extends StatelessWidget {
 /// Quick action buttons shown below manual search field.
 class ManualProductQuickActionsRow extends StatelessWidget {
   /// Creates quick action buttons.
-  const ManualProductQuickActionsRow({
+  const new({
     required this.onAiSearchTap,
     required this.onScanBarcode,
     super.key,
@@ -261,9 +253,7 @@ ThemeData _buildSearchToolbarTheme(BuildContext context) {
   final iconButtonStyle = IconButton.styleFrom(
     backgroundColor: colors.surfaceContainerLow.withValues(alpha: 0.96),
     foregroundColor: colors.onSurfaceVariant,
-    side: BorderSide(
-      color: colors.outlineVariant.withValues(alpha: 0.72),
-    ),
+    side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.72)),
     shape: shape,
   ).merge(theme.iconButtonTheme.style);
 
@@ -295,8 +285,6 @@ ThemeData _buildSearchToolbarTheme(BuildContext context) {
         borderSide: BorderSide(color: colors.primary.withValues(alpha: 0.82)),
       ),
     ),
-    iconButtonTheme: IconButtonThemeData(
-      style: iconButtonStyle,
-    ),
+    iconButtonTheme: IconButtonThemeData(style: iconButtonStyle),
   );
 }

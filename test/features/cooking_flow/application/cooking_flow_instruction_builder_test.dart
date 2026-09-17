@@ -191,9 +191,7 @@ void main() {
     final steps = buildCookingFlowInstructionSteps(
       template: _template(
         recipeIngredients: const <String>['1 Bund Koriander', '1 Lauch'],
-        recipeInstructions: const <String>[
-          'Und auch etwas Salz dazugeben.',
-        ],
+        recipeInstructions: const <String>['Und auch etwas Salz dazugeben.'],
       ),
       introDraft: null,
       inventoryItems: const <InventoryItem>[],
@@ -228,83 +226,65 @@ void main() {
     expect(_plainText(steps.single), 'rote Zwiebel (1 Stück) schneiden.');
   });
 
-  test(
-    'replaces pre-existing different amount in instruction with required '
-    'piece amount',
-    () {
-      final steps = buildCookingFlowInstructionSteps(
-        template: _template(
-          recipeIngredients: const <String>['2 Zwiebeln'],
-          recipeInstructions: const <String>['1 Zwiebel fein wuerfeln.'],
-        ),
-        introDraft: null,
-        inventoryItems: const <InventoryItem>[],
-        text: _text,
-        localeCode: 'de',
-      );
+  test('replaces pre-existing different amount in instruction with required '
+      'piece amount', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>['2 Zwiebeln'],
+        recipeInstructions: const <String>['1 Zwiebel fein wuerfeln.'],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+    );
 
-      expect(
-        steps.single.segments
-            .where((segment) => segment.isHighlight)
-            .single
-            .text,
-        'Zwiebel (2 Stück)',
-      );
-      expect(_plainText(steps.single), 'Zwiebel (2 Stück) fein wuerfeln.');
-    },
-  );
+    expect(
+      steps.single.segments.where((segment) => segment.isHighlight).single.text,
+      'Zwiebel (2 Stück)',
+    );
+    expect(_plainText(steps.single), 'Zwiebel (2 Stück) fein wuerfeln.');
+  });
 
-  test(
-    'replaces pre-existing matching amount in instruction with required '
-    'piece amount',
-    () {
-      final steps = buildCookingFlowInstructionSteps(
-        template: _template(
-          recipeIngredients: const <String>['2 Zwiebeln'],
-          recipeInstructions: const <String>['2 Zwiebeln fein wuerfeln.'],
-        ),
-        introDraft: null,
-        inventoryItems: const <InventoryItem>[],
-        text: _text,
-        localeCode: 'de',
-      );
+  test('replaces pre-existing matching amount in instruction with required '
+      'piece amount', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>['2 Zwiebeln'],
+        recipeInstructions: const <String>['2 Zwiebeln fein wuerfeln.'],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+    );
 
-      expect(
-        steps.single.segments
-            .where((segment) => segment.isHighlight)
-            .single
-            .text,
-        'Zwiebeln (2 Stück)',
-      );
-      expect(_plainText(steps.single), 'Zwiebeln (2 Stück) fein wuerfeln.');
-    },
-  );
+    expect(
+      steps.single.segments.where((segment) => segment.isHighlight).single.text,
+      'Zwiebeln (2 Stück)',
+    );
+    expect(_plainText(steps.single), 'Zwiebeln (2 Stück) fein wuerfeln.');
+  });
 
-  test(
-    'replaces pre-existing weight amount in instruction when recipe '
-    'amount differs',
-    () {
-      final steps = buildCookingFlowInstructionSteps(
-        template: _template(
-          recipeIngredients: const <String>['800 g Hackfleisch'],
-          recipeInstructions: const <String>['500g Hackfleisch anbraten.'],
-        ),
-        introDraft: null,
-        inventoryItems: const <InventoryItem>[],
-        text: _text,
-        localeCode: 'de',
-      );
+  test('replaces pre-existing weight amount in instruction when recipe '
+      'amount differs', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>['800 g Hackfleisch'],
+        recipeInstructions: const <String>['500g Hackfleisch anbraten.'],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+    );
 
-      expect(
-        steps.single.segments
-            .where((segment) => segment.isHighlight)
-            .single
-            .text,
-        'Hackfleisch (800 g)',
-      );
-      expect(_plainText(steps.single), 'Hackfleisch (800 g) anbraten.');
-    },
-  );
+    expect(
+      steps.single.segments.where((segment) => segment.isHighlight).single.text,
+      'Hackfleisch (800 g)',
+    );
+    expect(_plainText(steps.single), 'Hackfleisch (800 g) anbraten.');
+  });
 
   test('does not duplicate trailing parenthesized amounts in instruction', () {
     final steps = buildCookingFlowInstructionSteps(

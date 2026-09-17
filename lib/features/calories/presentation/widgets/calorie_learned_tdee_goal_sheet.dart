@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
@@ -47,7 +47,7 @@ Future<void> showCalorieLearnedTdeeGoalSheet(
 /// Defines calorie learned tdee goal sheet.
 class CalorieLearnedTdeeGoalSheet extends ConsumerStatefulWidget {
   /// The calorie learned tdee goal sheet.
-  const CalorieLearnedTdeeGoalSheet({required this.initialSettings, super.key});
+  const new({required this.initialSettings, super.key});
 
   /// The initial settings.
   final CalorieGoalSettings initialSettings;
@@ -275,16 +275,26 @@ class _CalorieLearnedTdeeGoalSheetState
     });
 
     final container = ProviderScope.containerOf(context, listen: false);
+    // Keeps the auto-dispose goal controller alive until the save completes.
+    final goalSubscription = container.listen(
+      calorieGoalControllerProvider,
+      (_, _) {},
+    );
     final controller = container.read(calorieGoalControllerProvider.notifier);
     final burnWeekController = container.read(
       burnWeekRunControllerProvider.notifier,
     );
-    final saveResult = await controller.saveLearnedTdeeGoalWithResult(
-      goalMode: _goalMode,
-      goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
-      goalStartDate: _goalStartDate,
-      countGoalStartDayForLearning: countGoalStartDayForLearning,
-    );
+    final LearnedTdeeGoalSaveResult saveResult;
+    try {
+      saveResult = await controller.saveLearnedTdeeGoalWithResult(
+        goalMode: _goalMode,
+        goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
+        goalStartDate: _goalStartDate,
+        countGoalStartDayForLearning: countGoalStartDayForLearning,
+      );
+    } finally {
+      goalSubscription.close();
+    }
 
     if (!mounted) {
       return;
@@ -367,7 +377,7 @@ class _CalorieLearnedTdeeGoalSheetState
 }
 
 class _LearnedTdeeRow extends StatelessWidget {
-  const _LearnedTdeeRow({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -380,9 +390,8 @@ class _LearnedTdeeRow extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         Text(
           value,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
       ],
     );

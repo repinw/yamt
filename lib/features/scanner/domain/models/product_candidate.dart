@@ -26,7 +26,7 @@ enum CandidateSource {
 @freezed
 abstract class ProductCandidate with _$ProductCandidate {
   /// Erstellt eine Instanz von [ProductCandidate].
-  const factory ProductCandidate({
+  const factory({
     /// Eindeutige ID im Katalog (z. B. GlobalFoodItem-ID oder Barcode).
     required String id,
 
@@ -62,7 +62,7 @@ abstract class ProductCandidate with _$ProductCandidate {
     Map<String, num>? nutritionPer100g,
   }) = _ProductCandidate;
 
-  const ProductCandidate._();
+  const new _();
 
   /// Energy in kcal per 100g/ml if available.
   double? get kcal =>

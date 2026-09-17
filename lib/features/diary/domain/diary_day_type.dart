@@ -16,16 +16,10 @@ enum DiaryDayType {
 /// Day type of a diary day together with the data its picker displays.
 class DiaryDayTypeStatus {
   /// Creates a day type status.
-  const DiaryDayTypeStatus({
-    required this.type,
-    required this.trainingDayKcalOffset,
-  });
+  const new({required this.type, required this.trainingDayKcalOffset});
 
   /// Resolves the status of [day] from calorie goal [settings].
-  factory DiaryDayTypeStatus.fromSettings(
-    CalorieGoalSettings settings,
-    DateTime day,
-  ) {
+  factory fromSettings(CalorieGoalSettings settings, DateTime day) {
     return DiaryDayTypeStatus(
       type: settings.isPauseDay(day)
           ? DiaryDayType.pause

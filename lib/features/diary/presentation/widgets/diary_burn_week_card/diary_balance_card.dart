@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
@@ -19,7 +19,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Calorie balance card for the diary page.
 class DiaryBalanceCard extends ConsumerWidget {
   /// Creates the diary balance card.
-  const DiaryBalanceCard({
+  const new({
     required this.selectedDay,
     this.kcalBarKey,
     this.macroBarsKey,
@@ -46,9 +46,8 @@ class DiaryBalanceCard extends ConsumerWidget {
     );
 
     if (dashboardData != null) {
-      final data = DiaryBalanceSource.fromDashboardData(dashboardData).resolve(
-        now: DateTime.now(),
-      );
+      final data = DiaryBalanceSource.fromDashboardData(dashboardData)
+          .resolve(now: DateTime.now());
 
       final scheduledRestartDate = data.scheduledRestartDate;
       if (scheduledRestartDate != null) {

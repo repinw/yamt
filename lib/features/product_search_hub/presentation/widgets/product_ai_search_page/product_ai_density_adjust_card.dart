@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_ai_nutrition_selection.dart';
@@ -12,11 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Kcal density adjustment card for AI nutrition.
 class AiDensityAdjustCard extends StatelessWidget {
   /// Creates a density adjustment card.
-  const AiDensityAdjustCard({
-    required this.selection,
-    required this.onChanged,
-    super.key,
-  });
+  const new({required this.selection, required this.onChanged, super.key});
 
   /// Current nutrition selection.
   final ProductAiNutritionSelection selection;
@@ -42,16 +38,14 @@ class AiDensityAdjustCard extends StatelessWidget {
           children: [
             Text(
               l10n.inventoryManualAddAiSearchDensityTitle,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               l10n.inventoryManualAddAiSearchDensityHint,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: colors.onSurfaceVariant),
             ),
             const SizedBox(height: AppSpacing.md),
             Slider(
@@ -68,9 +62,8 @@ class AiDensityAdjustCard extends StatelessWidget {
                     l10n.inventoryManualAddAiSearchDensityMinLabel(
                       formatManualProductDouble(selection.minPer100Kcal),
                     ),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                 ),
                 Text(
@@ -88,9 +81,8 @@ class AiDensityAdjustCard extends StatelessWidget {
                       formatManualProductDouble(selection.maxPer100Kcal),
                     ),
                     textAlign: TextAlign.end,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                 ),
               ],
@@ -105,7 +97,7 @@ class AiDensityAdjustCard extends StatelessWidget {
 /// Weight input field for AI portion calculation.
 class AiWeightField extends StatelessWidget {
   /// Creates an AI weight field.
-  const AiWeightField({
+  const new({
     required this.controller,
     required this.errorText,
     required this.labelText,

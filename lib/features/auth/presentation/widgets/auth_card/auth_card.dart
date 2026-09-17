@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
 import 'package:yamt/features/auth/presentation/controllers/guest_auth_controller.dart';
@@ -17,7 +17,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Auth form card with email, social, and guest actions.
 class AuthCard extends ConsumerWidget {
   /// Creates an auth card.
-  const AuthCard({
+  const new({
     required this.isLoginMode,
     required this.onShowLoginMode,
     required this.onShowRegisterMode,

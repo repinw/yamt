@@ -25,29 +25,26 @@ void main() {
     ]);
   });
 
-  test(
-    'add failure returns failed and retry saves all labels',
-    () async {
-      final repository = FakeShoppingListRepository()
-        ..enqueueSaveResult(result: false)
-        ..enqueueSaveResult(result: true);
-      final container = _container(repository);
-      final controller = container.read(
-        cookingFlowShoppingControllerProvider.notifier,
-      );
+  test('add failure returns failed and retry saves all labels', () async {
+    final repository = FakeShoppingListRepository()
+      ..enqueueSaveResult(result: false)
+      ..enqueueSaveResult(result: true);
+    final container = _container(repository);
+    final controller = container.read(
+      cookingFlowShoppingControllerProvider.notifier,
+    );
 
-      final firstResult = await controller.addLabels(<String>['Mehl', 'Milch']);
-      final retryResult = await controller.addLabels(<String>['Mehl', 'Milch']);
+    final firstResult = await controller.addLabels(<String>['Mehl', 'Milch']);
+    final retryResult = await controller.addLabels(<String>['Mehl', 'Milch']);
 
-      expect(firstResult, CookingFlowShoppingListActionResult.failed);
-      expect(retryResult, CookingFlowShoppingListActionResult.success);
-      expect(repository.savedItems.map((item) => item.name), <String>[
-        'Mehl',
-        'Milch',
-      ]);
-      expect(repository.savedItems.map((item) => item.quantity), <int>[1, 1]);
-    },
-  );
+    expect(firstResult, CookingFlowShoppingListActionResult.failed);
+    expect(retryResult, CookingFlowShoppingListActionResult.success);
+    expect(repository.savedItems.map((item) => item.name), <String>[
+      'Mehl',
+      'Milch',
+    ]);
+    expect(repository.savedItems.map((item) => item.quantity), <int>[1, 1]);
+  });
 
   test('resolves labels by decrementing or removing matching rows', () async {
     final repository = FakeShoppingListRepository(

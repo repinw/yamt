@@ -27,7 +27,7 @@ DiaryDayTypeUpdater diaryDayTypeUpdater(Ref ref) {
 /// Changes the day type of a diary day through the calorie goal controller.
 class DiaryDayTypeUpdater {
   /// Creates a day type updater.
-  const DiaryDayTypeUpdater(this._ref);
+  const new(this._ref);
 
   final Ref _ref;
 

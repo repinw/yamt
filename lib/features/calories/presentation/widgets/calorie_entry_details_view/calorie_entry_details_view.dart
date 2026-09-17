@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -14,7 +14,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 /// Read-only details view for an existing diary entry.
 class CalorieEntryDetailsView extends StatelessWidget {
   /// The calorie entry details view.
-  const CalorieEntryDetailsView({
+  const new({
     required this.title,
     required this.entry,
     required this.selectedMealType,

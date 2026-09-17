@@ -36,7 +36,7 @@ void main() {
 }
 
 class _FakeProductAiSearchRepository extends FirebaseProductAiSearchRepository {
-  _FakeProductAiSearchRepository(this._draft);
+  new(this._draft);
 
   final ProductAiSearchDraft? _draft;
   String? lastPrompt;

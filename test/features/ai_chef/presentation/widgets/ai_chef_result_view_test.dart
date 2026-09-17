@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
     'ai_chef_dialog/ai_chef_result_view.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -15,7 +16,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: SizedBox(
@@ -66,9 +67,6 @@ PreparedMeal _recipe() {
     updatedAt: DateTime.parse('2026-04-02T12:00:00Z'),
     components: const <PreparedMealComponent>[],
     recipeIngredients: const <String>['200 g Tomato', '120 g pasta'],
-    recipeInstructions: const <String>[
-      'Boil pasta.',
-      'Add tomato sauce.',
-    ],
+    recipeInstructions: const <String>['Boil pasta.', 'Add tomato sauce.'],
   );
 }

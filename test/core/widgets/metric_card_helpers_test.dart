@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 
@@ -24,10 +24,7 @@ void main() {
     final decoration = frame.decoration as BoxDecoration;
 
     expect(decoration.color, colors.surfaceContainerLow);
-    expect(
-      (decoration.border as Border?)?.top.color,
-      colors.outlineVariant,
-    );
+    expect((decoration.border as Border?)?.top.color, colors.outlineVariant);
     expect(decoration.boxShadow, isNull);
     expect(find.byKey(const ValueKey<String>('metric-child')), findsOneWidget);
   });
@@ -39,9 +36,7 @@ void main() {
       MaterialApp(
         theme: AppTheme.light(),
         home: const Scaffold(
-          body: MetricDetailCardShell(
-            child: Text('Detail content'),
-          ),
+          body: MetricDetailCardShell(child: Text('Detail content')),
         ),
       ),
     );

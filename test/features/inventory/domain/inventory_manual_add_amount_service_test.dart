@@ -159,10 +159,7 @@ void main() {
   });
 
   test('default eat unit uses serving hints when amount unit is missing', () {
-    final milk = _plainItem(
-      servingSize: '250 ml',
-      servingQuantityUnit: 'ml',
-    );
+    final milk = _plainItem(servingSize: '250 ml', servingQuantityUnit: 'ml');
     final eggs = _plainItem(servingSize: '1 pc');
 
     expect(
@@ -251,10 +248,7 @@ InventoryItem _amountItem({
   );
 }
 
-InventoryItem _plainItem({
-  String? servingSize,
-  String? servingQuantityUnit,
-}) {
+InventoryItem _plainItem({String? servingSize, String? servingQuantityUnit}) {
   return InventoryItem.create(
     id: 'item-1',
     name: 'Food',

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines prepared meal creation sheet result.
 class PreparedMealCreationSheetResult {
   /// The prepared meal creation sheet result.
-  const PreparedMealCreationSheetResult({
+  const new({
     required this.name,
     required this.imageBytes,
     required this.totalPortions,
@@ -53,7 +53,7 @@ Future<PreparedMealCreationSheetResult?> showPreparedMealCreationSheet({
 /// Defines prepared meal creation sheet.
 class PreparedMealCreationSheet extends ConsumerStatefulWidget {
   /// The prepared meal creation sheet.
-  const PreparedMealCreationSheet({required this.items, super.key});
+  const new({required this.items, super.key});
 
   /// The items.
   final List<InventoryItem> items;
@@ -103,9 +103,8 @@ class _PreparedMealCreationSheetState
       children: [
         Text(
           l10n.preparedMealCreateTitle,
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.titleLarge
+              ?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: AppSpacing.md),
         PreparedMealNameField(
@@ -140,9 +139,8 @@ class _PreparedMealCreationSheetState
         const SizedBox(height: AppSpacing.lg),
         Text(
           l10n.preparedMealIngredientsTitle,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         ..._drafts.map((draft) {
@@ -263,7 +261,7 @@ class _PreparedMealCreationSheetState
 }
 
 class _PreparedMealItemEditorCard extends StatelessWidget {
-  const _PreparedMealItemEditorCard({required this.draft});
+  const new({required this.draft});
 
   final _PreparedMealItemDraft draft;
 
@@ -279,9 +277,7 @@ class _PreparedMealItemEditorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: colors.outlineVariant,
-        ),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -290,17 +286,15 @@ class _PreparedMealItemEditorCard extends StatelessWidget {
           children: [
             Text(
               draft.item.name,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             if ((draft.item.brand ?? '').trim().isNotEmpty) ...[
               const SizedBox(height: AppSpacing.xxs),
               Text(
                 draft.item.brand!.trim(),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
               ),
             ],
             const SizedBox(height: AppSpacing.md),
@@ -326,9 +320,8 @@ class _PreparedMealItemEditorCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Text(
                 hintText,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
               ),
               const SizedBox(height: AppSpacing.sm),
               TextFormField(
@@ -393,7 +386,7 @@ class _PreparedMealItemEditorCard extends StatelessWidget {
 }
 
 class _PreparedMealItemDraft {
-  _PreparedMealItemDraft({required this.item})
+  new({required this.item})
     : amountController = TextEditingController(
         text: _defaultAmount(item).toString(),
       ),

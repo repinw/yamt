@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines account guest card.
 class AccountGuestCard extends StatelessWidget {
   /// The account guest card.
-  const AccountGuestCard({
+  const new({
     required this.l10n,
     required this.isActionLoading,
     required this.onLinkWithGoogle,

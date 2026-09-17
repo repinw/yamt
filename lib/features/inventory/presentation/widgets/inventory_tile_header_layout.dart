@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
 /// Defines inventory tile header layout.
 class InventoryTileHeaderLayout extends StatelessWidget {
   /// The inventory tile header layout.
-  const InventoryTileHeaderLayout({
+  const new({
     required this.leading,
     required this.title,
     required this.progressRatio,
@@ -176,7 +176,7 @@ class InventoryTileHeaderLayout extends StatelessWidget {
 }
 
 class _InventoryTileHeaderInfo extends StatelessWidget {
-  const _InventoryTileHeaderInfo({
+  const new({
     required this.title,
     required this.titleStyle,
     required this.badgeText,
@@ -211,9 +211,8 @@ class _InventoryTileHeaderInfo extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style:
               titleStyle ??
-              Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w800),
         ),
         if (hasStatus) ...[
           const SizedBox(height: AppSpacing.xxs),

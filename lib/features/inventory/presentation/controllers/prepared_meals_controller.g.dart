@@ -47,7 +47,7 @@ abstract class _$PreparedMealsController
   FutureOr<List<PreparedMeal>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<PreparedMeal>>, List<PreparedMeal>>;
     final element =
@@ -58,6 +58,6 @@ abstract class _$PreparedMealsController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

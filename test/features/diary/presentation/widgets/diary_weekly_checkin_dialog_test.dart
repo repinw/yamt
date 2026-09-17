@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
@@ -111,10 +112,7 @@ Future<void> _openDialog(WidgetTester tester) async {
 const _openDialogButtonKey = ValueKey<String>('open-dialog');
 
 class _App extends StatelessWidget {
-  const _App({
-    required this.checkInData,
-    required this.onResult,
-  });
+  const new({required this.checkInData, required this.onResult});
 
   final DiaryWeeklyCheckInData checkInData;
   final ValueChanged<DiaryWeeklyCheckInDialogAction?> onResult;
@@ -123,7 +121,7 @@ class _App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Builder(

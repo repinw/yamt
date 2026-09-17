@@ -56,7 +56,7 @@ abstract class _$CookingFlowWizardController
   CookingFlowWizardState build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<CookingFlowWizardState, CookingFlowWizardState>;
     final element =
@@ -67,6 +67,6 @@ abstract class _$CookingFlowWizardController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

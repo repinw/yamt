@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
@@ -39,9 +40,7 @@ import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
 void main() {
-  testWidgets('loading skeleton reserves daily balance card', (
-    tester,
-  ) async {
+  testWidgets('loading skeleton reserves daily balance card', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -58,9 +57,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders daily balance without weekly pacing', (
-    tester,
-  ) async {
+  testWidgets('renders daily balance without weekly pacing', (tester) async {
     final selectedDay = DateTime(2026, 4, 27);
 
     await _pumpBalanceCard(
@@ -95,7 +92,7 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: SingleChildScrollView(
@@ -122,11 +119,7 @@ void main() {
   testWidgets('weekly progress animates fill and target marker', (
     tester,
   ) async {
-    await _pumpWeeklyProgressBar(
-      tester,
-      actualConsumedKcal: 0,
-      targetKcal: 0,
-    );
+    await _pumpWeeklyProgressBar(tester, actualConsumedKcal: 0, targetKcal: 0);
 
     await _pumpWeeklyProgressBar(
       tester,
@@ -146,10 +139,7 @@ void main() {
     expect(midFillRect.width, greaterThan(0));
     expect(midFillRect.width, lessThan(midTrackRect.width * 0.5));
     expect(midTargetRect.center.dxRatioWithin(midTrackRect), greaterThan(0));
-    expect(
-      midTargetRect.center.dxRatioWithin(midTrackRect),
-      lessThan(0.7),
-    );
+    expect(midTargetRect.center.dxRatioWithin(midTrackRect), lessThan(0.7));
 
     await tester.pumpAndSettle();
 
@@ -161,10 +151,7 @@ void main() {
       find.byKey(DiaryBalanceCardKeys.targetMarker),
     );
 
-    expect(
-      settledFillRect.width / settledTrackRect.width,
-      closeTo(0.5, 0.02),
-    );
+    expect(settledFillRect.width / settledTrackRect.width, closeTo(0.5, 0.02));
     expect(
       settledTargetRect.center.dxRatioWithin(settledTrackRect),
       closeTo(0.7, 0.02),
@@ -230,41 +217,36 @@ void main() {
     expect(fractionallySizedBoxes[6].widthFactor, lessThan(1.0));
   });
 
-  testWidgets(
-    'daily progress ignores legacy activity kcal',
-    (
+  testWidgets('daily progress ignores legacy activity kcal', (tester) async {
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
       tester,
-    ) async {
-      final selectedDay = DateTime(2026, 4, 27);
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: '2026-4-27',
+      ),
+      activityBonusKcal: 200,
+    );
 
-      await _pumpBalanceCard(
-        tester,
-        selectedDay: selectedDay,
-        weekStartDate: selectedDay,
-        dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-        runState: const BurnWeekRunState.initial().copyWith(
-          currentWeekStartDayKey: '2026-4-27',
-        ),
-        activityBonusKcal: 200,
-      );
-
-      final trackRect = tester.getRect(
-        find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-      );
-      final eatenRect = tester.getRect(
-        find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
-      );
-      expect(eatenRect.width / trackRect.width, closeTo(1000 / 2000, 0.02));
-      expect(
-        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
-        findsNothing,
-      );
-      expect(
-        find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-        findsNothing,
-      );
-    },
-  );
+    final trackRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
+    );
+    final eatenRect = tester.getRect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
+    );
+    expect(eatenRect.width / trackRect.width, closeTo(1000 / 2000, 0.02));
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
+      findsNothing,
+    );
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
+      findsNothing,
+    );
+  });
 
   testWidgets('daily progress animates eaten and filled activity segments', (
     tester,
@@ -311,19 +293,14 @@ void main() {
       find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
     );
 
-    expect(
-      settledEatenRect.width / settledTrackRect.width,
-      closeTo(1, 0.02),
-    );
+    expect(settledEatenRect.width / settledTrackRect.width, closeTo(1, 0.02));
     expect(
       settledActivityRect.width / settledTrackRect.width,
       closeTo(0.25, 0.02),
     );
   });
 
-  testWidgets('pause day shows special balance', (
-    tester,
-  ) async {
+  testWidgets('pause day shows special balance', (tester) async {
     final today = normalizeDiaryDay(DateTime.now());
 
     await _pumpBalanceCard(
@@ -342,9 +319,7 @@ void main() {
     expect(find.text('Ignored for learning'), findsOneWidget);
   });
 
-  testWidgets('recoverable over-target state keeps card quiet', (
-    tester,
-  ) async {
+  testWidgets('recoverable over-target state keeps card quiet', (tester) async {
     final today = normalizeDiaryDay(DateTime.now());
 
     await _pumpBalanceCard(
@@ -690,10 +665,7 @@ void main() {
       find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
     );
 
-    expect(
-      previewRect.width / trackRect.width,
-      closeTo(674.25 / 1471, 0.02),
-    );
+    expect(previewRect.width / trackRect.width, closeTo(674.25 / 1471, 0.02));
     expect(
       activityRect.width / trackRect.width,
       closeTo((1358 + 674.25 - 1471) / 1471, 0.02),
@@ -831,22 +803,20 @@ Future<void> _pumpBalanceCard(
           onBurnWeekLiveSyncWatch?.call();
           return null;
         }),
-        calorieWeekOverviewForWindowProvider(
-          normalizedSelectedDay,
-        ).overrideWith((ref) {
-          onWeekOverviewRead?.call();
-          if (weekOverviewThrows) {
-            throw StateError('week overview failed');
-          }
-          final builder = weekOverviewBuilder;
-          if (builder != null) {
-            return builder();
-          }
-          return weekOverview;
-        }),
-        calorieWeekDayOverviewForDateProvider(
-          normalizedSelectedDay,
-        ).overrideWith((ref) => selectedDayOverview),
+        calorieWeekOverviewForWindowProvider(normalizedSelectedDay)
+            .overrideWith((ref) {
+              onWeekOverviewRead?.call();
+              if (weekOverviewThrows) {
+                throw StateError('week overview failed');
+              }
+              final builder = weekOverviewBuilder;
+              if (builder != null) {
+                return builder();
+              }
+              return weekOverview;
+            }),
+        calorieWeekDayOverviewForDateProvider(normalizedSelectedDay)
+            .overrideWith((ref) => selectedDayOverview),
         burnWeekRunControllerProvider.overrideWith(
           () => _FakeBurnWeekRunController(
             runState,
@@ -857,7 +827,7 @@ Future<void> _pumpBalanceCard(
       ],
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         theme: ThemeData.light(),
         darkTheme: ThemeData.dark(),
@@ -865,9 +835,7 @@ Future<void> _pumpBalanceCard(
         home: Scaffold(
           body: Padding(
             padding: const EdgeInsets.all(16),
-            child: DiaryBalanceCard(
-              selectedDay: normalizedSelectedDay,
-            ),
+            child: DiaryBalanceCard(selectedDay: normalizedSelectedDay),
           ),
         ),
       ),
@@ -888,7 +856,7 @@ Future<void> _pumpWeeklyProgressBar(
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Center(
@@ -914,7 +882,7 @@ Future<void> _pumpWeeklyBalanceCard(
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
@@ -1024,10 +992,7 @@ CalorieWeekOverview _weekOverview({
     0,
     (sum, day) => sum + day.totalKcal,
   );
-  final totalGoalKcal = days.fold<double>(
-    0,
-    (sum, day) => sum + day.goalKcal,
-  );
+  final totalGoalKcal = days.fold<double>(0, (sum, day) => sum + day.goalKcal);
   return CalorieWeekOverview(
     days: days,
     totalConsumedKcal: totalConsumedKcal,
@@ -1043,7 +1008,7 @@ CalorieWeekOverview _weekOverview({
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
-  _FakeBurnWeekRunController(
+  new(
     this.initialState, {
     this.onRestartRunFrom,
     this.onContinueRunAfterLimitWarning,
@@ -1070,7 +1035,7 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
   }
 }
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 extension on Offset {
   double dxRatioWithin(Rect rect) {

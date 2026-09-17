@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -16,7 +16,7 @@ Future<String?> showHouseholdJoinNameDialog({
 /// Defines household join name dialog.
 class HouseholdJoinNameDialog extends StatefulWidget {
   /// Creates the dialog.
-  const HouseholdJoinNameDialog({required this.l10n, super.key});
+  const new({required this.l10n, super.key});
 
   /// The l10n instance.
   final AppLocalizations l10n;
@@ -80,7 +80,7 @@ class _HouseholdJoinNameDialogState extends State<HouseholdJoinNameDialog> {
 }
 
 class _HouseholdJoinNameTextField extends StatelessWidget {
-  const _HouseholdJoinNameTextField({
+  const new({
     required this.controller,
     required this.label,
     required this.requiredError,

@@ -124,7 +124,7 @@ abstract class _$CalorieGoalCalculatorFormController
   });
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -142,7 +142,7 @@ abstract class _$CalorieGoalCalculatorFormController
               Object?,
               Object?
             >;
-    element.handleCreate(
+    return element.handleCreate(
       ref,
       () => build(_$args.$1, useEmptyDefaults: _$args.useEmptyDefaults),
     );

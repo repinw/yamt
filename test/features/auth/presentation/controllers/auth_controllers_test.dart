@@ -19,20 +19,20 @@ import 'package:yamt/features/auth/presentation/controllers/guest_name_setup_con
 import '../../../../helpers/fake_auth_repository.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 
-class _MockGoogleSignIn extends Mock implements GoogleSignIn {}
+class _MockGoogleSignIn extends Mock implements GoogleSignIn;
 
-class _MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
+class _MockGoogleSignInAccount extends Mock implements GoogleSignInAccount;
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUserCredential extends Mock implements UserCredential {}
+class _MockUserCredential extends Mock implements UserCredential;
 
-class _MockFirebaseUser extends Mock implements User {}
+class _MockFirebaseUser extends Mock implements User;
 
-class _FakeAuthCredential extends Fake implements AuthCredential {}
+class _FakeAuthCredential extends Fake implements AuthCredential;
 
 class _DelayedGuestNameRepository implements AuthRepository {
-  _DelayedGuestNameRepository(this._completer);
+  new(this._completer);
 
   final Completer<void> _completer;
   int saveCalls = 0;
@@ -65,7 +65,7 @@ class _DelayedGuestNameRepository implements AuthRepository {
 }
 
 class _DelayedGuestSignInRepository implements AuthRepository {
-  _DelayedGuestSignInRepository(this._completer);
+  new(this._completer);
 
   final Completer<void> _completer;
   int signInCalls = 0;
@@ -98,7 +98,7 @@ class _DelayedGuestSignInRepository implements AuthRepository {
 }
 
 class _DelayedEmailSignInRepository implements AuthRepository {
-  _DelayedEmailSignInRepository(this._completer);
+  new(this._completer);
 
   final Completer<void> _completer;
   int signInCalls = 0;
@@ -131,7 +131,7 @@ class _DelayedEmailSignInRepository implements AuthRepository {
 }
 
 class _DelayedEmailRegisterRepository implements AuthRepository {
-  _DelayedEmailRegisterRepository(this._completer);
+  new(this._completer);
 
   final Completer<void> _completer;
   int registerCalls = 0;
@@ -259,32 +259,29 @@ void main() {
       expect(container.read(authFormControllerProvider).hasError, isFalse);
     });
 
-    test(
-      'register keeps AsyncData state when display name update '
-      'fails afterwards',
-      () async {
-        final repository = _FailingDisplayNameUpdateRepository();
-        final container = ProviderContainer(
-          overrides: [authRepositoryProvider.overrideWithValue(repository)],
-        );
-        addTearDown(container.dispose);
+    test('register keeps AsyncData state when display name update '
+        'fails afterwards', () async {
+      final repository = _FailingDisplayNameUpdateRepository();
+      final container = ProviderContainer(
+        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
 
-        await container
-            .read(authFormControllerProvider.notifier)
-            .createUserWithEmailAndPassword(
-              email: 'demo@test.com',
-              password: 'secret',
-              displayName: 'Guest Wlad',
-            );
+      await container
+          .read(authFormControllerProvider.notifier)
+          .createUserWithEmailAndPassword(
+            email: 'demo@test.com',
+            password: 'secret',
+            displayName: 'Guest Wlad',
+          );
 
-        expect(repository.registerCalls, 1);
-        expect(repository.updateCalls, 1);
-        expect(
-          container.read(authFormControllerProvider),
-          const AsyncData<void>(null),
-        );
-      },
-    );
+      expect(repository.registerCalls, 1);
+      expect(repository.updateCalls, 1);
+      expect(
+        container.read(authFormControllerProvider),
+        const AsyncData<void>(null),
+      );
+    });
 
     test('email sign in does not crash when provider is disposed', () async {
       final completer = Completer<void>();
@@ -611,12 +608,10 @@ void main() {
       final mockGoogleSignIn = _MockGoogleSignIn();
       final mockGoogleAccount = _MockGoogleSignInAccount();
 
-      when(
-        mockGoogleSignIn.authenticate,
-      ).thenAnswer((_) async => mockGoogleAccount);
-      when(
-        () => mockGoogleAccount.authentication,
-      ).thenReturn(const GoogleSignInAuthentication(idToken: null));
+      when(mockGoogleSignIn.authenticate)
+          .thenAnswer((_) async => mockGoogleAccount);
+      when(() => mockGoogleAccount.authentication)
+          .thenReturn(const GoogleSignInAuthentication(idToken: null));
 
       final container = ProviderContainer(
         overrides: [
@@ -650,15 +645,13 @@ void main() {
       final mockFirebaseAuth = _MockFirebaseAuth();
       final mockUserCredential = _MockUserCredential();
 
-      when(
-        mockGoogleSignIn.authenticate,
-      ).thenAnswer((_) async => mockGoogleAccount);
+      when(mockGoogleSignIn.authenticate)
+          .thenAnswer((_) async => mockGoogleAccount);
       when(
         () => mockGoogleAccount.authentication,
       ).thenReturn(const GoogleSignInAuthentication(idToken: 'id-token-123'));
-      when(
-        () => mockFirebaseAuth.signInWithCredential(any()),
-      ).thenAnswer((_) async => mockUserCredential);
+      when(() => mockFirebaseAuth.signInWithCredential(any()))
+          .thenAnswer((_) async => mockUserCredential);
 
       final container = ProviderContainer(
         overrides: [
@@ -684,9 +677,9 @@ void main() {
       expect(state, const AsyncData<void>(null));
 
       final capturedCredential =
-          verify(
-                () => mockFirebaseAuth.signInWithCredential(captureAny()),
-              ).captured.single
+          verify(() => mockFirebaseAuth.signInWithCredential(captureAny()))
+                  .captured
+                  .single
               as AuthCredential;
       expect(capturedCredential.providerId, 'google.com');
       expect((capturedCredential as OAuthCredential).idToken, 'id-token-123');
@@ -701,16 +694,14 @@ void main() {
         final mockFirebaseUser = _MockFirebaseUser();
         final mockUserCredential = _MockUserCredential();
 
-        when(
-          mockGoogleSignIn.authenticate,
-        ).thenAnswer((_) async => mockGoogleAccount);
+        when(mockGoogleSignIn.authenticate)
+            .thenAnswer((_) async => mockGoogleAccount);
         when(
           () => mockGoogleAccount.authentication,
         ).thenReturn(const GoogleSignInAuthentication(idToken: 'id-token-123'));
         when(() => mockFirebaseAuth.currentUser).thenReturn(mockFirebaseUser);
-        when(
-          () => mockFirebaseUser.linkWithCredential(any()),
-        ).thenAnswer((_) async => mockUserCredential);
+        when(() => mockFirebaseUser.linkWithCredential(any()))
+            .thenAnswer((_) async => mockUserCredential);
 
         final container = ProviderContainer(
           overrides: [
@@ -737,9 +728,9 @@ void main() {
         verifyNever(() => mockFirebaseAuth.signInWithCredential(any()));
 
         final capturedCredential =
-            verify(
-                  () => mockFirebaseUser.linkWithCredential(captureAny()),
-                ).captured.single
+            verify(() => mockFirebaseUser.linkWithCredential(captureAny()))
+                    .captured
+                    .single
                 as AuthCredential;
         expect(capturedCredential.providerId, 'google.com');
         expect((capturedCredential as OAuthCredential).idToken, 'id-token-123');
@@ -756,22 +747,19 @@ void main() {
         final mockUserCredential = _MockUserCredential();
         var currentDisplayName = 'Guest Wlad';
 
-        when(
-          mockGoogleSignIn.authenticate,
-        ).thenAnswer((_) async => mockGoogleAccount);
+        when(mockGoogleSignIn.authenticate)
+            .thenAnswer((_) async => mockGoogleAccount);
         when(
           () => mockGoogleAccount.authentication,
         ).thenReturn(const GoogleSignInAuthentication(idToken: 'id-token-123'));
         when(() => mockFirebaseAuth.currentUser).thenReturn(mockFirebaseUser);
-        when(
-          () => mockFirebaseUser.displayName,
-        ).thenAnswer((_) => currentDisplayName);
-        when(() => mockFirebaseUser.linkWithCredential(any())).thenAnswer((
-          _,
-        ) async {
-          currentDisplayName = 'Google Name';
-          return mockUserCredential;
-        });
+        when(() => mockFirebaseUser.displayName)
+            .thenAnswer((_) => currentDisplayName);
+        when(() => mockFirebaseUser.linkWithCredential(any()))
+            .thenAnswer((_) async {
+              currentDisplayName = 'Google Name';
+              return mockUserCredential;
+            });
         when(() => mockFirebaseUser.updateDisplayName(any())).thenAnswer((
           invocation,
         ) async {
@@ -799,9 +787,8 @@ void main() {
             .linkCurrentUserWithGoogle();
 
         verify(() => mockFirebaseUser.linkWithCredential(any())).called(1);
-        verify(
-          () => mockFirebaseUser.updateDisplayName('Guest Wlad'),
-        ).called(1);
+        verify(() => mockFirebaseUser.updateDisplayName('Guest Wlad'))
+            .called(1);
         verify(mockFirebaseUser.reload).called(1);
       },
     );
@@ -811,9 +798,8 @@ void main() {
       final mockGoogleAccount = _MockGoogleSignInAccount();
       final mockFirebaseAuth = _MockFirebaseAuth();
 
-      when(
-        mockGoogleSignIn.authenticate,
-      ).thenAnswer((_) async => mockGoogleAccount);
+      when(mockGoogleSignIn.authenticate)
+          .thenAnswer((_) async => mockGoogleAccount);
       when(
         () => mockGoogleAccount.authentication,
       ).thenReturn(const GoogleSignInAuthentication(idToken: 'id-token-123'));

@@ -15,7 +15,7 @@ ProductAiSearchService productAiSearchService(Ref ref) {
 /// Coordinates AI product draft generation for presentation widgets.
 class ProductAiSearchService {
   /// Creates a product AI search service.
-  const ProductAiSearchService(this._repository);
+  const new(this._repository);
 
   final FirebaseProductAiSearchRepository _repository;
 

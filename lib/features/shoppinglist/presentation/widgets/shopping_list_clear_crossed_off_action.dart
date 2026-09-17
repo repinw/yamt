@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines shopping list clear crossed off action.
 class ShoppingListClearCrossedOffAction extends StatelessWidget {
   /// The shopping list clear crossed off action.
-  const ShoppingListClearCrossedOffAction({
+  const new({
     required this.crossedOffCount,
     required this.controller,
     required this.l10n,

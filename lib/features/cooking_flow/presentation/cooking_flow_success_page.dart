@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_action_button.dart';
@@ -9,7 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Success screen shown after cookflow saved a meal.
 class CookingFlowSuccessPage extends StatelessWidget {
   /// Creates success page.
-  const CookingFlowSuccessPage({
+  const new({
     required this.mealName,
     required this.onInventoryPressed,
     super.key,
@@ -58,9 +58,8 @@ class CookingFlowSuccessPage extends StatelessWidget {
                 Text(
                   l10n.cookflowSuccessHeadline,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(

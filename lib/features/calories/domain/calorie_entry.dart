@@ -11,10 +11,9 @@ enum ConsumedUnit {
   grams('g'),
 
   /// Milliliters.
-  milliliters('ml')
-  ;
+  milliliters('ml');
 
-  const ConsumedUnit(this.jsonValue);
+  new(this.jsonValue);
 
   /// The json value.
   final String jsonValue;
@@ -32,7 +31,7 @@ enum ConsumedUnit {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CalorieEntryBundleComponent {
   /// The calorie entry bundle component.
-  const CalorieEntryBundleComponent({
+  const new({
     required this.name,
     required this.amountLabel,
     required this.totalKcal,
@@ -44,7 +43,7 @@ class CalorieEntryBundleComponent {
   });
 
   /// Creates a [CalorieEntryBundleComponent] for from json.
-  factory CalorieEntryBundleComponent.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$CalorieEntryBundleComponentFromJson(json);
   }
 
@@ -107,7 +106,7 @@ class CalorieEntryBundleComponent {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieEntry {
   /// The calorie entry.
-  const CalorieEntry({
+  const new({
     required this.id,
     required this.userId,
     required this.name,
@@ -137,7 +136,7 @@ class CalorieEntry {
   });
 
   /// Creates a [CalorieEntry] for create.
-  factory CalorieEntry.create({
+  factory create({
     required String id,
     required String userId,
     required String name,
@@ -187,7 +186,7 @@ class CalorieEntry {
   }
 
   /// Creates a [CalorieEntry] for bundle.
-  factory CalorieEntry.bundle({
+  factory bundle({
     required String id,
     required String userId,
     required String name,
@@ -243,7 +242,7 @@ class CalorieEntry {
   /// they started tracking actively. They expose only [totalKcal] —
   /// macros are estimated with a generic 50% carbs / 25% protein / 25%
   /// fat split so totals are roughly self-consistent.
-  factory CalorieEntry.placeholder({
+  factory placeholder({
     required String id,
     required String name,
     required MealType mealType,
@@ -283,7 +282,7 @@ class CalorieEntry {
   }
 
   /// Creates a [CalorieEntry] for from json.
-  factory CalorieEntry.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return _$CalorieEntryFromJson(json);
   }
 

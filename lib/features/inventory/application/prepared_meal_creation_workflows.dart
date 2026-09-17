@@ -14,9 +14,7 @@ import 'package:yamt/features/recipes/application/template_ingredient_parser.dar
 /// Handles prepared meal creation workflows.
 class PreparedMealCreationWorkflows {
   /// Creates creation workflows.
-  const PreparedMealCreationWorkflows({
-    required PreparedMealWorkflowContext context,
-  }) : _context = context;
+  const new({required this._context});
 
   final PreparedMealWorkflowContext _context;
 
@@ -48,7 +46,7 @@ class PreparedMealCreationWorkflows {
         totalPortions: totalPortions,
         inputs: items,
       );
-      return _persistCreatedMeal(
+      return await _persistCreatedMeal(
         inventoryRepository: inventoryRepository,
         currentMeals: currentMeals,
         currentItems: currentItems,
@@ -109,7 +107,7 @@ class PreparedMealCreationWorkflows {
           : creationResult.preparedMeal.copyWith(
               finalNetWeight: finalNetWeight,
             );
-      return _persistCreatedMeal(
+      return await _persistCreatedMeal(
         inventoryRepository: inventoryRepository,
         currentMeals: currentMeals,
         currentItems: currentItems,
@@ -190,7 +188,7 @@ class PreparedMealCreationWorkflows {
         );
       }
 
-      return _persistCreatedMeals(
+      return await _persistCreatedMeals(
         inventoryRepository: inventoryRepository,
         currentMeals: currentMeals,
         currentItems: currentItems,
@@ -230,9 +228,7 @@ class PreparedMealCreationWorkflows {
       );
     }
 
-    final inventorySaved = await inventoryRepository.saveAll(
-      nextItems,
-    );
+    final inventorySaved = await inventoryRepository.saveAll(nextItems);
     if (!inventorySaved) {
       return const PreparedMealCreationResult.failure(
         PreparedMealCreationFailureReason.inventorySaveFailed,

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
@@ -12,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Content of the expanded diary weight details card.
 class DiaryWeightDetailsContent extends StatelessWidget {
   /// Creates weight details content.
-  const DiaryWeightDetailsContent({
+  const new({
     required this.days,
     required this.onAdd,
     required this.onEdit,

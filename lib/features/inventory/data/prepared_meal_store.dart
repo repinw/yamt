@@ -10,7 +10,7 @@ const String _preparedMealsCollection = 'prepared_meals';
 /// Defines prepared meal document.
 class PreparedMealDocument {
   /// The prepared meal document.
-  const PreparedMealDocument({required this.id, required this.data});
+  const new({required this.id, required this.data});
 
   /// The id.
   final String id;
@@ -37,8 +37,7 @@ abstract interface class PreparedMealStore {
 /// Defines firestore prepared meal store.
 class FirestorePreparedMealStore implements PreparedMealStore {
   /// The firestore prepared meal store.
-  const FirestorePreparedMealStore({required FirebaseFirestore firestore})
-    : _firestore = firestore;
+  const new({required this._firestore});
 
   final FirebaseFirestore _firestore;
 

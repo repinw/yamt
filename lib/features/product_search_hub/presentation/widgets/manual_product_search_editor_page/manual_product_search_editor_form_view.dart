@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
@@ -23,7 +23,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Form view displaying search, product details, and save actions.
 class ManualProductSearchEditorFormView extends StatelessWidget {
   /// Creates the editor form view.
-  const ManualProductSearchEditorFormView({
+  const new({
     required this.state,
     required this.controller,
     required this.searchController,

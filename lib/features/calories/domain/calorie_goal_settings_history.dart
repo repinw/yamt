@@ -133,9 +133,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
       nextKeys.remove(dayKey);
     }
     nextKeys.sort();
-    return copyWith(
-      skippedIntakeDayKeys: List<String>.unmodifiable(nextKeys),
-    );
+    return copyWith(skippedIntakeDayKeys: List<String>.unmodifiable(nextKeys));
   }
 
   /// Mark weekly check-in snapshots dirty from a changed diary day.

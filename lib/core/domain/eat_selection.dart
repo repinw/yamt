@@ -3,7 +3,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 /// Generic eat selection returned by product add flows.
 class EatSelection {
   /// Creates a generic eat selection.
-  const EatSelection({
+  const new({
     required this.inventoryAmount,
     required this.loggedAt,
     required this.mealType,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
@@ -15,7 +15,7 @@ enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 /// Food-specific content for the unified inventory filter sheet.
 class InventoryItemFilterContent extends StatefulWidget {
   /// Creates food filter content.
-  const InventoryItemFilterContent({
+  const new({
     required this.initialSortMode,
     required this.initialHideFullyConsumedItems,
     required this.enabled,
@@ -276,7 +276,7 @@ class _InventoryItemFilterContentState
 }
 
 class _InventoryItemSortOptionConfig {
-  const _InventoryItemSortOptionConfig({
+  const new({
     required this.criterion,
     required this.optionKey,
     required this.directionButtonKey,

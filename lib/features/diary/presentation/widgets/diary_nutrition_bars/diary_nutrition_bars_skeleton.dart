@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
@@ -6,10 +6,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progres
 /// Skeleton loader for diary nutrition bars matching the 4-column layout.
 class DiaryNutritionBarsSkeleton extends StatelessWidget {
   /// Creates the nutrition bars skeleton.
-  const DiaryNutritionBarsSkeleton({
-    required this.showTitle,
-    super.key,
-  });
+  const new({required this.showTitle, super.key});
 
   /// Whether to show the top title skeleton block.
   final bool showTitle;

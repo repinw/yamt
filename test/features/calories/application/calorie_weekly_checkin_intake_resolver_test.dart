@@ -61,9 +61,8 @@ void main() {
       final start = DateTime(2026, 4, 2);
       final skippedDay = nextDiaryDay(start);
       final thirdDay = nextDiaryDay(skippedDay);
-      final settings = _settings(
-        start,
-      ).setSkippedIntakeDay(day: skippedDay, isSkipped: true);
+      final settings = _settings(start)
+          .setSkippedIntakeDay(day: skippedDay, isSkipped: true);
 
       final data = resolveWeeklyWindowIntakeData(
         days: [start, skippedDay, thirdDay],
@@ -88,9 +87,8 @@ void main() {
   test('does not block when the first day of the week is skipped', () {
     final start = DateTime(2026, 4, 2);
     final secondDay = nextDiaryDay(start);
-    final settings = _settings(
-      start,
-    ).setSkippedIntakeDay(day: start, isSkipped: true);
+    final settings = _settings(start)
+        .setSkippedIntakeDay(day: start, isSkipped: true);
 
     final data = resolveWeeklyWindowIntakeData(
       days: [start, secondDay],
@@ -117,9 +115,8 @@ void main() {
       final pauseDay = nextDiaryDay(start);
       final thirdDay = nextDiaryDay(pauseDay);
 
-      final settings = _settings(
-        start,
-      ).setPauseDay(day: pauseDay, isPause: true);
+      final settings = _settings(start)
+          .setPauseDay(day: pauseDay, isPause: true);
       final data = resolveWeeklyLearningIntakeData(
         days: [start, pauseDay, thirdDay],
         calorieEntriesByDay: {

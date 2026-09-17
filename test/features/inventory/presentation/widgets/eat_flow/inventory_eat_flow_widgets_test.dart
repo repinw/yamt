@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
     'inventory_eat_flow_amount_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
@@ -107,20 +107,18 @@ void main() {
           builder: (context) {
             return TextButton(
               onPressed: () {
-                unawaited(
-                  showModalBottomSheet<void>(
-                    context: context,
-                    builder: (_) {
-                      return InventoryEatFlowHero(
-                        title: 'Rice bowl',
-                        eyebrow: 'Eat meal',
-                        imageBytes: _pngBytes(),
-                        imageKey: const Key('hero_image'),
-                        cancelButtonKey: const Key('close_sheet'),
-                        fallback: const Text('fallback'),
-                      );
-                    },
-                  ),
+                showModalBottomSheet<void>(
+                  context: context,
+                  builder: (_) {
+                    return InventoryEatFlowHero(
+                      title: 'Rice bowl',
+                      eyebrow: 'Eat meal',
+                      imageBytes: _pngBytes(),
+                      imageKey: const Key('hero_image'),
+                      cancelButtonKey: const Key('close_sheet'),
+                      fallback: const Text('fallback'),
+                    );
+                  },
                 );
               },
               child: const Text('Open'),
@@ -292,7 +290,7 @@ Uint8List _pngBytes() {
 }
 
 class _TestApp extends StatelessWidget {
-  const _TestApp({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -300,7 +298,7 @@ class _TestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Center(child: SizedBox(width: 360, child: child)),

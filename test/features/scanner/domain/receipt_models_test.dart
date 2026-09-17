@@ -41,10 +41,7 @@ void main() {
         },
       );
 
-      expect(
-        product.formattedMacros,
-        '46 kcal · F: 1.4g · KH: 6.8g · P: 0.8g',
-      );
+      expect(product.formattedMacros, '46 kcal · F: 1.4g · KH: 6.8g · P: 0.8g');
     });
 
     test('Initial line item is unmatched by default', () {
@@ -95,38 +92,35 @@ void main() {
       expect(discountCoupon.shouldPersist, isFalse);
     });
 
-    test(
-      'REGRESSION: Barcode-Korrektur ersetzt Artikel sauber '
-      'ohne Datenleck',
-      () {
-        const originalItem = ReceiptLineItem(
-          id: 'line-1',
-          rawName: 'JA! VOLLM. 3.8% 1L',
-          totalPrice: 1.19,
-          status: ReceiptItemStatus.suggested,
-          matchedProduct: productFrischkaese,
-        );
+    test('REGRESSION: Barcode-Korrektur ersetzt Artikel sauber '
+        'ohne Datenleck', () {
+      const originalItem = ReceiptLineItem(
+        id: 'line-1',
+        rawName: 'JA! VOLLM. 3.8% 1L',
+        totalPrice: 1.19,
+        status: ReceiptItemStatus.suggested,
+        matchedProduct: productFrischkaese,
+      );
 
-        expect(originalItem.matchedProduct?.name, 'Bresso Frischkäse 150g');
+      expect(originalItem.matchedProduct?.name, 'Bresso Frischkäse 150g');
 
-        final updatedItem = originalItem.withSelectedProduct(productMilch);
+      final updatedItem = originalItem.withSelectedProduct(productMilch);
 
-        expect(updatedItem.id, 'line-1');
-        expect(updatedItem.rawName, 'JA! VOLLM. 3.8% 1L');
-        expect(updatedItem.totalPrice, 1.19);
-        expect(updatedItem.status, ReceiptItemStatus.confirmed);
-        expect(updatedItem.shouldPersist, isTrue);
+      expect(updatedItem.id, 'line-1');
+      expect(updatedItem.rawName, 'JA! VOLLM. 3.8% 1L');
+      expect(updatedItem.totalPrice, 1.19);
+      expect(updatedItem.status, ReceiptItemStatus.confirmed);
+      expect(updatedItem.shouldPersist, isTrue);
 
-        final product = updatedItem.matchedProduct!;
-        expect(product.id, 'prod-milch-2');
-        expect(product.name, 'Ja! Frische Vollmilch 3,8% 1L');
-        expect(product.barcode, '4311501234567');
-        expect(product.imageUrl, 'https://example.com/milch.jpg');
-        expect(product.source, CandidateSource.barcode);
+      final product = updatedItem.matchedProduct!;
+      expect(product.id, 'prod-milch-2');
+      expect(product.name, 'Ja! Frische Vollmilch 3,8% 1L');
+      expect(product.barcode, '4311501234567');
+      expect(product.imageUrl, 'https://example.com/milch.jpg');
+      expect(product.source, CandidateSource.barcode);
 
-        expect(originalItem.matchedProduct?.name, 'Bresso Frischkäse 150g');
-      },
-    );
+      expect(originalItem.matchedProduct?.name, 'Bresso Frischkäse 150g');
+    });
 
     test('Pfandzeilen werden korrekt als nicht speicherbar erkannt', () {
       const depositItem = ReceiptLineItem(
@@ -135,10 +129,7 @@ void main() {
         totalPrice: 0.25,
         isDeposit: true,
         status: ReceiptItemStatus.confirmed,
-        matchedProduct: ProductCandidate(
-          id: 'deposit-id',
-          name: 'Einwegpfand',
-        ),
+        matchedProduct: ProductCandidate(id: 'deposit-id', name: 'Einwegpfand'),
       );
 
       expect(depositItem.shouldPersist, isFalse);
@@ -208,10 +199,7 @@ void main() {
     });
 
     test('addItem fügt eine vergessene Position hinzu', () {
-      const receipt = ScannedReceipt(
-        id: 'receipt-add',
-        items: [itemNormal],
-      );
+      const receipt = ScannedReceipt(id: 'receipt-add', items: [itemNormal]);
 
       expect(receipt.items.length, 1);
       expect(receipt.calculatedTotal, 1.19);

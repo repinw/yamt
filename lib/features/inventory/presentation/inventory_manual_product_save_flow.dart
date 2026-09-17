@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_manual_add_product_factory.dart';
@@ -36,7 +36,7 @@ enum InventoryManualProductSaveStatus {
 
 /// Manual product inventory save outcome.
 class InventoryManualProductSaveOutcome {
-  const InventoryManualProductSaveOutcome._({
+  const new _({
     required this.status,
     this.item,
     this.calorieEntryId,
@@ -44,7 +44,7 @@ class InventoryManualProductSaveOutcome {
   });
 
   /// Saved outcome.
-  factory InventoryManualProductSaveOutcome.saved(
+  factory saved(
     InventoryItem item, {
     String? calorieEntryId,
     bool addMoreRequested = false,
@@ -58,12 +58,11 @@ class InventoryManualProductSaveOutcome {
   }
 
   /// Canceled outcome.
-  const InventoryManualProductSaveOutcome.canceled()
+  const new canceled()
     : this._(status: InventoryManualProductSaveStatus.canceled);
 
   /// Failed outcome.
-  const InventoryManualProductSaveOutcome.failed()
-    : this._(status: InventoryManualProductSaveStatus.failed);
+  const new failed() : this._(status: InventoryManualProductSaveStatus.failed);
 
   /// Outcome status.
   final InventoryManualProductSaveStatus status;
@@ -243,10 +242,7 @@ Future<_ManualBarcodePromptResult?> _resolveMissingBarcode(
 }
 
 class _ManualBarcodePromptResult {
-  const _ManualBarcodePromptResult({
-    required this.item,
-    required this.barcode,
-  });
+  const new({required this.item, required this.barcode});
 
   final InventoryItem item;
   final String? barcode;

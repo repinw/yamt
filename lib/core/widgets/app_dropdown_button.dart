@@ -1,13 +1,13 @@
 // Mirrors Flutter's dropdown APIs; delegated property docs stay in the SDK.
 // ignore_for_file: public_member_api_docs
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 
 /// App-standard [DropdownButton] with Material feedback disabled centrally.
 class AppDropdownButton<T> extends StatelessWidget {
   /// Creates an app dropdown button.
-  const AppDropdownButton({
+  const new({
     required this.items,
     required this.onChanged,
     this.selectedItemBuilder,
@@ -115,7 +115,7 @@ class AppDropdownButton<T> extends StatelessWidget {
 /// App-standard [DropdownButtonFormField] with feedback disabled centrally.
 class AppDropdownButtonFormField<T> extends StatelessWidget {
   /// Creates an app dropdown form field.
-  const AppDropdownButtonFormField({
+  const new({
     required this.items,
     required this.onChanged,
     this.selectedItemBuilder,

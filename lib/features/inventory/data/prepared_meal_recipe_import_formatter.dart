@@ -46,14 +46,10 @@ final String _unitsPattern = '(?:${_units.join('|')})';
 /// Represents a parsed recipe ingredient.
 class Ingredient {
   /// Creates an ingredient representation.
-  const Ingredient({
-    required this.name,
-    required this.quantity,
-    this.unit,
-  });
+  const new({required this.name, required this.quantity, this.unit});
 
   /// Parses an ingredient string into an [Ingredient].
-  factory Ingredient.fromIngredientString(String ingredientString) {
+  factory fromIngredientString(String ingredientString) {
     return _calculateIngredient(ingredientString);
   }
 
@@ -95,9 +91,8 @@ Ingredient _calculateIngredient(String rawIngredientString) {
     }
   }
 
-  final amountMatch = RegExp(
-    r'^\d+([.,]\d+)?',
-  ).stringMatch(ingredientParts.first);
+  final amountMatch = RegExp(r'^\d+([.,]\d+)?')
+      .stringMatch(ingredientParts.first);
   final amount = amountMatch != null
       ? double.tryParse(amountMatch.replaceAll(',', '.'))
       : null;
@@ -120,11 +115,7 @@ Ingredient _calculateIngredient(String rawIngredientString) {
   }
   name = name.replaceAll(RegExp(r'\s+'), ' ').trim();
 
-  return Ingredient(
-    name: name,
-    quantity: amount ?? 1,
-    unit: unitMatch,
-  );
+  return Ingredient(name: name, quantity: amount ?? 1, unit: unitMatch);
 }
 
 String _replaceFractions(String ingredientString) {
@@ -150,7 +141,7 @@ String _replaceFractions(String ingredientString) {
 /// Formats scraped recipe data into strings shown in the app.
 class PreparedMealRecipeImportFormatter {
   /// The prepared meal recipe import formatter.
-  const PreparedMealRecipeImportFormatter();
+  const new();
 
   /// Format ingredient line.
   String formatIngredientLine(Ingredient ingredient, {String? localeName}) {

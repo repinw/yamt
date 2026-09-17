@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_page_flow_service.dart';
 
-class _MockAuthCredential extends Fake implements AuthCredential {}
+class _MockAuthCredential extends Fake implements AuthCredential;
 
 class _RecordingAccountController extends AccountController {
   var _overwriteCalls = 0;
@@ -101,9 +101,9 @@ void main() {
       );
       addTearDown(container.dispose);
       final service = container.read(accountPageFlowServiceProvider);
-      final controller =
-          container.read(accountControllerProvider.notifier)
-              as _RecordingAccountController;
+      final controller = container.read(
+        accountControllerProvider.notifier,
+      ) as _RecordingAccountController;
       final credential = _MockAuthCredential();
 
       await service.resolveCredentialConflict(
@@ -130,9 +130,9 @@ void main() {
       );
       addTearDown(container.dispose);
       final service = container.read(accountPageFlowServiceProvider);
-      final controller =
-          container.read(accountControllerProvider.notifier)
-              as _RecordingAccountController;
+      final controller = container.read(
+        accountControllerProvider.notifier,
+      ) as _RecordingAccountController;
       final credential = _MockAuthCredential();
 
       await service.resolveCredentialConflict(

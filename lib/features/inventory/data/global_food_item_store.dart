@@ -37,7 +37,7 @@ final Object _omittedValue = Object();
 /// Defines global food item document.
 class GlobalFoodItemDocument {
   /// The global food item document.
-  const GlobalFoodItemDocument({required this.id, required this.data});
+  const new({required this.id, required this.data});
 
   /// The id.
   final String id;
@@ -78,8 +78,7 @@ abstract interface class GlobalFoodItemStore {
 /// Defines firestore global food item store.
 class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
   /// The firestore global food item store.
-  const FirestoreGlobalFoodItemStore({required FirebaseFirestore firestore})
-    : _firestore = firestore;
+  const new({required this._firestore});
 
   final FirebaseFirestore _firestore;
 
@@ -331,9 +330,7 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     }
     if (value is Map) {
       return _compactMap(
-        value.map(
-          (key, nestedValue) => MapEntry(key.toString(), nestedValue),
-        ),
+        value.map((key, nestedValue) => MapEntry(key.toString(), nestedValue)),
       );
     }
     if (value is Iterable) {

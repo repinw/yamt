@@ -22,25 +22,16 @@ void main() {
 
   test('normalizes days and resolves week starts', () {
     expect(dateOnly(DateTime(2026, 4, 29, 23, 59)), DateTime(2026, 4, 29));
-    expect(
-      startOfCalendarWeek(DateTime(2026, 5, 3)),
-      DateTime(2026, 4, 27),
-    );
+    expect(startOfCalendarWeek(DateTime(2026, 5, 3)), DateTime(2026, 4, 27));
   });
 
   test('compares dates at diary-day precision', () {
     expect(
-      isSameCalendarDay(
-        DateTime(2026, 4, 27, 1),
-        DateTime(2026, 4, 27, 23),
-      ),
+      isSameCalendarDay(DateTime(2026, 4, 27, 1), DateTime(2026, 4, 27, 23)),
       isTrue,
     );
     expect(
-      isSameCalendarDay(
-        DateTime(2026, 4, 27),
-        DateTime(2026, 4, 28),
-      ),
+      isSameCalendarDay(DateTime(2026, 4, 27), DateTime(2026, 4, 28)),
       isFalse,
     );
   });

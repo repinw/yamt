@@ -1,16 +1,12 @@
 import 'dart:ui' show ImageFilter;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Frosted pill card displaying a helpful guidance hint below the reticle.
 class BarcodeScannerGuidanceHintPill extends StatelessWidget {
   /// Creates a guidance hint pill.
-  const BarcodeScannerGuidanceHintPill({
-    required this.message,
-    required this.isLocked,
-    super.key,
-  });
+  const new({required this.message, required this.isLocked, super.key});
 
   /// The message displayed to the user.
   final String message;
@@ -37,9 +33,7 @@ class BarcodeScannerGuidanceHintPill extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(AppRadius.pill),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

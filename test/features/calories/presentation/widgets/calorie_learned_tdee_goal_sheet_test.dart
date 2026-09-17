@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -26,7 +27,7 @@ import '../../../../helpers/root_navigator_test_utils.dart';
 import '../../support/fake_calories_repositories.dart';
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  _FakeBurnWeekRunStateRepository(this.state);
+  new(this.state);
 
   BurnWeekRunState state;
   int saveCallCount = 0;
@@ -50,7 +51,7 @@ Widget _buildHarness({
     overrides: overrides,
     child: MaterialApp(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Builder(
@@ -156,7 +157,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: Scaffold(
           body: Builder(
@@ -236,9 +237,7 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(
-      _buildHarness(initialSettings: initialSettings),
-    );
+    await tester.pumpWidget(_buildHarness(initialSettings: initialSettings));
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
@@ -297,9 +296,7 @@ void main() {
       starBrokeThisWeek: true,
       missedTrackingThisWeek: true,
     );
-    final runStateRepository = _FakeBurnWeekRunStateRepository(
-      initialRunState,
-    );
+    final runStateRepository = _FakeBurnWeekRunStateRepository(initialRunState);
     addTearDown(settingsRepository.dispose);
     addTearDown(logRepository.dispose);
 
@@ -337,9 +334,7 @@ void main() {
   ) async {
     final today = normalizeDiaryDay(DateTime.now());
     final goalStartDate = today.subtract(const Duration(days: 6));
-    final initialSettings = _learnedTdeeSettings(
-      goalStartDate: goalStartDate,
-    );
+    final initialSettings = _learnedTdeeSettings(goalStartDate: goalStartDate);
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: initialSettings,
     );
@@ -397,12 +392,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(runStateRepository.saveCallCount, 1);
-    expect(
-      runStateRepository.state.currentWeekStartDayKey,
-      diaryDayKey(
-        today,
-      ),
-    );
+    expect(runStateRepository.state.currentWeekStartDayKey, diaryDayKey(today));
     expect(
       runStateRepository.state.runWeekNumber,
       burnWeekLearningRunWeekNumber,

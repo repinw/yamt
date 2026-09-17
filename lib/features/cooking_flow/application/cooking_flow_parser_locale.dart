@@ -29,7 +29,7 @@ const Set<String> commonPieceUnitTokens = <String>{
 /// Locale-specific dictionary tokens for cooking flow ingredient matching.
 class CookingFlowParserLocale {
   /// Creates a locale configuration for cooking flow parsing.
-  const CookingFlowParserLocale({
+  const new({
     required this.amountUnitTokens,
     required this.pieceUnitTokens,
     required this.fuzzyInstructionStopWords,
@@ -39,7 +39,7 @@ class CookingFlowParserLocale {
   });
 
   /// Resolves parser data for a locale code.
-  factory CookingFlowParserLocale.forLocaleCode(String? localeCode) {
+  factory forLocaleCode(String? localeCode) {
     final normalizedCode = localeCode?.toLowerCase().split('_').first;
     return switch (normalizedCode) {
       'de' => german,
@@ -146,10 +146,7 @@ class CookingFlowParserLocale {
     }
   }
 
-  static String _matchCase({
-    required String reference,
-    required String value,
-  }) {
+  static String _matchCase({required String reference, required String value}) {
     if (reference.isEmpty || value.isEmpty) {
       return value;
     }

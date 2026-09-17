@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
@@ -53,27 +53,21 @@ void main() {
       expect(factors, [1.0, 0.0, 0.0, 0.0]);
     });
 
-    testWidgets('fills first two segments at 0.50 progress', (
-      tester,
-    ) async {
+    testWidgets('fills first two segments at 0.50 progress', (tester) async {
       await pumpBar(tester, progress: 0.50);
 
       final factors = getWidthFactors(tester);
       expect(factors, [1.0, 1.0, 0.0, 0.0]);
     });
 
-    testWidgets('fills first three segments at 0.75 progress', (
-      tester,
-    ) async {
+    testWidgets('fills first three segments at 0.75 progress', (tester) async {
       await pumpBar(tester, progress: 0.75);
 
       final factors = getWidthFactors(tester);
       expect(factors, [1.0, 1.0, 1.0, 0.0]);
     });
 
-    testWidgets('fills all 4 segments at 1.0 progress', (
-      tester,
-    ) async {
+    testWidgets('fills all 4 segments at 1.0 progress', (tester) async {
       await pumpBar(tester, progress: 1);
 
       final factors = getWidthFactors(tester);

@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Single write operation that can be applied to a Firestore batch.
 class FirestoreBatchWriteOperation {
   /// Creates set operation for given document reference.
-  const FirestoreBatchWriteOperation.set(this.reference, this.data);
+  const new set(this.reference, this.data);
 
   /// Document reference affected by this operation.
   final DocumentReference<Map<String, dynamic>> reference;
@@ -21,7 +21,7 @@ class FirestoreBatchWriteOperation {
 
 /// Splits Firestore operations into chunks that fit batch limits.
 class FirestoreBatchChunker {
-  const FirestoreBatchChunker._();
+  const new _();
 
   /// Yields chunks with at most `maxChunkSize` items each.
   static Iterable<List<T>> chunk<T>({

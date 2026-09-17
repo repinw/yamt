@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
+
 import '../fakes/fake_receipt_structured_parser.dart';
 import '../fakes/fake_receipt_text_extractor.dart';
 
@@ -127,16 +128,8 @@ void main() {
           storeName: 'EDEKA',
           printedTotal: 2.78,
           items: <ReceiptLineItem>[
-            ReceiptLineItem(
-              id: '1',
-              rawName: 'Haferflocken',
-              totalPrice: 0.79,
-            ),
-            ReceiptLineItem(
-              id: '2',
-              rawName: 'Apfel',
-              totalPrice: 1.99,
-            ),
+            ReceiptLineItem(id: '1', rawName: 'Haferflocken', totalPrice: 0.79),
+            ReceiptLineItem(id: '2', rawName: 'Apfel', totalPrice: 1.99),
           ],
         );
 

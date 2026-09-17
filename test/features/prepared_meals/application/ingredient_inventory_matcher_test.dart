@@ -152,21 +152,18 @@ void main() {
     },
   );
 
-  test(
-    'rankInventoryItemsForIngredient still matches onion compounds',
-    () {
-      final rankedItems = rankInventoryItemsForIngredient(
-        ingredient: 'Zwiebeln',
-        inventoryItems: <InventoryItem>[
-          _item(id: '1', name: 'Bio-Speisezwiebeln'),
-          _item(id: '2', name: 'Schwin Schweine Hack'),
-        ],
-        localeCode: 'de',
-      );
+  test('rankInventoryItemsForIngredient still matches onion compounds', () {
+    final rankedItems = rankInventoryItemsForIngredient(
+      ingredient: 'Zwiebeln',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Bio-Speisezwiebeln'),
+        _item(id: '2', name: 'Schwin Schweine Hack'),
+      ],
+      localeCode: 'de',
+    );
 
-      expect(rankedItems.map((item) => item.id).first, '1');
-    },
-  );
+    expect(rankedItems.map((item) => item.id).first, '1');
+  });
 
   test('matchInventoryItemsForIngredient returns empty for blank input', () {
     final matches = matchInventoryItemsForIngredient(

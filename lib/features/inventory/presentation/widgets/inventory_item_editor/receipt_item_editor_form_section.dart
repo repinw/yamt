@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/inventory/presentation/models/receipt_item_editor_draft.dart';
@@ -11,7 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines receipt item editor form section.
 class ReceiptItemEditorFormSection extends StatelessWidget {
   /// The receipt item editor form section.
-  const ReceiptItemEditorFormSection({
+  const new({
     required this.onSubmit,
     required this.numberValidator,
     required this.weightValidator,
@@ -96,7 +96,7 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
 }
 
 class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
-  const _ReceiptEditorTextFieldsGroup({
+  const new({
     required this.fields,
     required this.numberValidator,
     required this.weightValidator,
@@ -139,7 +139,7 @@ class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
 }
 
 class _ReceiptEditorTextField extends StatelessWidget {
-  const _ReceiptEditorTextField({
+  const new({
     required this.field,
     required this.label,
     required this.keyboardType,
@@ -184,7 +184,7 @@ class _ReceiptEditorTextField extends StatelessWidget {
 }
 
 class _ReceiptEditorSwitchField extends StatelessWidget {
-  const _ReceiptEditorSwitchField({required this.name, required this.title});
+  const new({required this.name, required this.title});
 
   final String name;
   final String title;
@@ -205,7 +205,7 @@ class _ReceiptEditorSwitchField extends StatelessWidget {
 }
 
 class _ReceiptEditorWeightUnitField extends StatelessWidget {
-  const _ReceiptEditorWeightUnitField();
+  const new();
 
   @override
   Widget build(BuildContext context) {

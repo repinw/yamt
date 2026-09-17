@@ -4,7 +4,7 @@
 import 'dart:developer' show log;
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
@@ -26,18 +26,17 @@ const _defaultPreparedMealPortions = 1.0;
 const _preparedMealDialogsLogName = 'PreparedMealDialogs';
 
 /// Defines prepared meal day picker typedef.
-typedef PreparedMealDayPicker =
-    Future<DateTime?> Function({
-      required BuildContext context,
-      required DateTime initialDate,
-      required DateTime firstDate,
-      required DateTime lastDate,
-    });
+typedef PreparedMealDayPicker = Future<DateTime?> Function({
+  required BuildContext context,
+  required DateTime initialDate,
+  required DateTime firstDate,
+  required DateTime lastDate,
+});
 
 /// Defines prepared meal eat dialog result.
 class PreparedMealEatDialogResult {
   /// The prepared meal eat dialog result.
-  const PreparedMealEatDialogResult({
+  const new({
     required this.portions,
     required this.mealType,
     required this.loggedDay,
@@ -97,7 +96,7 @@ Future<num?> showPreparedMealPortionDialog({
 }
 
 class _PreparedMealEatSheet extends StatefulWidget {
-  const _PreparedMealEatSheet({
+  const new({
     required this.meal,
     required this.pickLoggedDay,
     required this.imageBytes,
@@ -132,9 +131,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
     _selectedLoggedAt = widget.initialLoggedAt ?? DateTime.now();
     _selectedMealType =
         widget.initialMealType ??
-        MealType.defaultForDateTime(
-          _selectedLoggedAt,
-        );
+        MealType.defaultForDateTime(_selectedLoggedAt);
   }
 
   @override
@@ -257,23 +254,17 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       NutritionMetric(
         label: l10n.inventoryNutritionCarbsShortLabel,
         value:
-            '${formatInventoryNutritionValue(
-              widget.meal.totalCarbs * multiplier,
-            )}g',
+            '${formatInventoryNutritionValue(widget.meal.totalCarbs * multiplier)}g',
       ),
       NutritionMetric(
         label: l10n.caloriesProteinLabel,
         value:
-            '${formatInventoryNutritionValue(
-              widget.meal.totalProtein * multiplier,
-            )}g',
+            '${formatInventoryNutritionValue(widget.meal.totalProtein * multiplier)}g',
       ),
       NutritionMetric(
         label: l10n.caloriesFatLabel,
         value:
-            '${formatInventoryNutritionValue(
-              widget.meal.totalFat * multiplier,
-            )}g',
+            '${formatInventoryNutritionValue(widget.meal.totalFat * multiplier)}g',
       ),
     ];
   }
@@ -374,9 +365,7 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
             PreparedMealEatAmountMode.portions => _gramsToPortions(
               currentAmount,
             ),
-            PreparedMealEatAmountMode.grams => _portionsToGrams(
-              currentAmount,
-            ),
+            PreparedMealEatAmountMode.grams => _portionsToGrams(currentAmount),
           };
     setState(() {
       _selectedAmountMode = mode;
@@ -565,10 +554,7 @@ bool _canUseGramAmountMode(PreparedMeal meal) {
 }
 
 String _formatGrams(num grams) {
-  return '${formatInventoryAmountValue(
-    amount: grams.round(),
-    unit: InventoryAmountUnit.gram,
-  )}g';
+  return '${formatInventoryAmountValue(amount: grams.round(), unit: InventoryAmountUnit.gram)}g';
 }
 
 Future<DateTime?> _showPreparedMealDayPicker({
@@ -586,7 +572,7 @@ Future<DateTime?> _showPreparedMealDayPicker({
 }
 
 class _PreparedMealPortionDialog extends StatefulWidget {
-  const _PreparedMealPortionDialog({required this.meal, required this.title});
+  const new({required this.meal, required this.title});
 
   final PreparedMeal meal;
   final String title;
@@ -724,8 +710,5 @@ String _defaultPortionsText(num remainingPortions, String localeName) {
       localeName: localeName,
     );
   }
-  return formatPreparedMealPortions(
-    remainingPortions,
-    localeName: localeName,
-  );
+  return formatPreparedMealPortions(remainingPortions, localeName: localeName);
 }

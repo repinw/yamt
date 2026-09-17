@@ -8,7 +8,7 @@ part 'kitchen_utensil.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake)
 class KitchenUtensil {
   /// Creates a kitchen utensil.
-  const KitchenUtensil({
+  const new({
     required this.id,
     required this.weightGrams,
     required this.createdAt,
@@ -18,7 +18,7 @@ class KitchenUtensil {
   });
 
   /// Creates a kitchen utensil from json.
-  factory KitchenUtensil.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final utensil = _$KitchenUtensilFromJson(json);
     if (utensil.id.isEmpty ||
         utensil.weightGrams <= 0 ||

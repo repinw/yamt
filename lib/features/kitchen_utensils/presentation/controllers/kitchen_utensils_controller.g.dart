@@ -50,7 +50,7 @@ abstract class _$KitchenUtensilsController
   FutureOr<List<KitchenUtensil>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<AsyncValue<List<KitchenUtensil>>, List<KitchenUtensil>>;
@@ -65,6 +65,6 @@ abstract class _$KitchenUtensilsController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

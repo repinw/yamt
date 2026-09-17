@@ -124,12 +124,10 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           burnWeekLiveSyncProvider.overrideWith((ref) => null),
-          calorieWeekOverviewForWindowProvider(
-            normalizedSelectedDay,
-          ).overrideWith((ref) => _weekOverview(selectedDay: selectedDay)),
-          diaryEntriesForDayProvider(
-            normalizedSelectedDay,
-          ).overrideWith((ref) => Stream.value(const <CalorieEntry>[])),
+          calorieWeekOverviewForWindowProvider(normalizedSelectedDay)
+              .overrideWith((ref) => _weekOverview(selectedDay: selectedDay)),
+          diaryEntriesForDayProvider(normalizedSelectedDay)
+              .overrideWith((ref) => Stream.value(const <CalorieEntry>[])),
           burnWeekRunControllerProvider.overrideWith(
             () => _DelayedBurnWeekRunController(runStateCompleter),
           ),
@@ -180,12 +178,10 @@ Future<DiaryBalanceCardData> _resolveBalanceData({
   final container = ProviderContainer(
     overrides: [
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
-      calorieWeekOverviewForWindowProvider(
-        normalizedSelectedDay,
-      ).overrideWith((ref) => weekOverview),
-      diaryEntriesForDayProvider(
-        normalizedSelectedDay,
-      ).overrideWith((ref) => Stream.value(entries)),
+      calorieWeekOverviewForWindowProvider(normalizedSelectedDay)
+          .overrideWith((ref) => weekOverview),
+      diaryEntriesForDayProvider(normalizedSelectedDay)
+          .overrideWith((ref) => Stream.value(entries)),
       burnWeekRunControllerProvider.overrideWith(
         () => _FakeBurnWeekRunController(runState),
       ),
@@ -229,10 +225,7 @@ CalorieWeekOverview _weekOverview({
     0,
     (sum, day) => sum + day.totalKcal,
   );
-  final totalGoalKcal = days.fold<double>(
-    0,
-    (sum, day) => sum + day.goalKcal,
-  );
+  final totalGoalKcal = days.fold<double>(0, (sum, day) => sum + day.goalKcal);
   return CalorieWeekOverview(
     days: days,
     totalConsumedKcal: totalConsumedKcal,
@@ -277,7 +270,7 @@ CalorieEntry _entry({
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
-  _FakeBurnWeekRunController(this.initialState);
+  new(this.initialState);
 
   final BurnWeekRunState initialState;
 
@@ -286,7 +279,7 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
 }
 
 class _DelayedBurnWeekRunController extends BurnWeekRunController {
-  _DelayedBurnWeekRunController(this.completer);
+  new(this.completer);
 
   final Completer<BurnWeekRunState> completer;
 

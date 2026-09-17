@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -26,9 +26,7 @@ Future<void> showProductSearchHubSelectionSheet({
       return StatefulBuilder(
         builder: (context, setSheetState) {
           return ProductSearchHubSelectionSheet(
-            items: [
-              for (final selection in selections()) selection.item,
-            ],
+            items: [for (final selection in selections()) selection.item],
             isSaving: isSaving(),
             onRemovePressed: (item) async {
               final selection = _selectionForItem(selections(), item.id);

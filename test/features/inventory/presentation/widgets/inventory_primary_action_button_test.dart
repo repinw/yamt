@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 
@@ -28,9 +28,7 @@ void main() {
       ),
     );
 
-    final decoratedBox = tester.widget<DecoratedBox>(
-      find.byType(DecoratedBox),
-    );
+    final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
     final decoration = decoratedBox.decoration as BoxDecoration;
 
     expect(decoration.borderRadius, BorderRadius.circular(12));

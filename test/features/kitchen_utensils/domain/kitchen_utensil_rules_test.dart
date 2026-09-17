@@ -82,9 +82,10 @@ void main() {
 
     final sorted = sortKitchenUtensils([old, newerCreated, newerUpdated]);
 
-    expect(
-      sorted.map((utensil) => utensil.id),
-      ['newer-updated', 'newer-created', 'old'],
-    );
+    expect(sorted.map((utensil) => utensil.id), [
+      'newer-updated',
+      'newer-created',
+      'old',
+    ]);
   });
 }

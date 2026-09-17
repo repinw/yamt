@@ -8,7 +8,7 @@ DiaryHealthService createDiaryHealthService({AppPreferences? preferences}) {
 }
 
 class _UnsupportedDiaryHealthService implements DiaryHealthService {
-  const _UnsupportedDiaryHealthService();
+  const new();
 
   @override
   Future<DiaryHealthDayData> loadDayData({

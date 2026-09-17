@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/onboarding_step_content.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Onboarding step that explains the first learning week.
 class Step5Info extends StatelessWidget {
   /// Creates learning-week info step.
-  const Step5Info({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {

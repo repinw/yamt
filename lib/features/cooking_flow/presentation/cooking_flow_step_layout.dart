@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 
@@ -7,7 +7,7 @@ const _cookflowMaxContentWidth = 560.0;
 /// Shared layout wrapper for Cookflow step screens.
 class CookingFlowStepLayout extends StatelessWidget {
   /// Creates shared Cookflow step layout.
-  const CookingFlowStepLayout({
+  const new({
     required this.title,
     required this.subtitle,
     required this.children,
@@ -50,17 +50,14 @@ class CookingFlowStepLayout extends StatelessWidget {
             children: <Widget>[
               Text(
                 title,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(context).textTheme.headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 subtitle,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  height: 1.45,
-                ),
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(color: colors.onSurfaceVariant, height: 1.45),
               ),
               const SizedBox(height: AppSpacing.xxxxl),
               ...children,

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
@@ -24,11 +24,10 @@ typedef ReceiptCameraPicker = Future<String?> Function();
 typedef ReceiptFilesPicker = Future<List<String>> Function();
 
 /// Signature for opening the receipt review screen.
-typedef ReceiptReviewLauncher =
-    Future<bool?> Function(
-      BuildContext context,
-      ScannedReceipt receipt,
-    );
+typedef ReceiptReviewLauncher = Future<bool?> Function(
+  BuildContext context,
+  ScannedReceipt receipt,
+);
 
 /// Provider for [ReceiptScanFlowCoordinator].
 @riverpod
@@ -44,17 +43,14 @@ ReceiptScanFlowCoordinator receiptScanFlowCoordinator(Ref ref) {
 /// product pre-resolution, and the review screen flow.
 class ReceiptScanFlowCoordinator {
   /// Creates a [ReceiptScanFlowCoordinator].
-  ReceiptScanFlowCoordinator({
-    required ReceiptStructuredParser parser,
-    required ReceiptTextExtractor extractor,
-    required ReceiptProductResolver resolver,
+  new({
+    required this._parser,
+    required this._extractor,
+    required this._resolver,
     ReceiptCameraPicker? cameraPicker,
     ReceiptFilesPicker? filesPicker,
     ReceiptReviewLauncher? reviewLauncher,
-  }) : _parser = parser,
-       _extractor = extractor,
-       _resolver = resolver,
-       _cameraPicker = cameraPicker ?? _defaultCameraPicker,
+  }) : _cameraPicker = cameraPicker ?? _defaultCameraPicker,
        _filesPicker = filesPicker ?? _defaultFilesPicker,
        _reviewLauncher = reviewLauncher ?? _defaultReviewLauncher;
 
@@ -171,10 +167,7 @@ class ReceiptScanFlowCoordinator {
     }
 
     final rawText = await _extractor.extractText(validPaths);
-    return _parser.parseRawText(
-      rawText: rawText,
-      sourceFilePaths: validPaths,
-    );
+    return _parser.parseRawText(rawText: rawText, sourceFilePaths: validPaths);
   }
 
   Future<ScannedReceipt> _preResolveProducts(ScannedReceipt receipt) async {
@@ -220,16 +213,11 @@ class ReceiptScanFlowCoordinator {
   }
 
   static Future<List<String>> _defaultFilesPicker() async {
-    final result = await FilePicker.pickFiles(
-      allowMultiple: true,
+    final files = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: const ['pdf', 'jpg', 'jpeg', 'png', 'webp'],
     );
-    if (result == null || result.files.isEmpty) return const <String>[];
-    return result.files
-        .map((f) => f.path)
-        .whereType<String>()
-        .toList(growable: false);
+    return files.map((f) => f.path).whereType<String>().toList(growable: false);
   }
 
   static Future<bool?> _defaultReviewLauncher(

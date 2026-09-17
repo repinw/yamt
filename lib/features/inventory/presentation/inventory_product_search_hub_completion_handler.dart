@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
@@ -20,9 +20,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class InventoryProductSearchHubCompletionHandler
     implements ProductSearchHubCompletionHandler {
   /// Creates an inventory completion handler.
-  const InventoryProductSearchHubCompletionHandler({
-    required ProviderContainer container,
-  }) : _container = container;
+  const new({required this._container});
 
   final ProviderContainer _container;
 

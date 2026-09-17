@@ -88,10 +88,7 @@ void main() {
   });
 
   test('falls back to quantity progress and segments for multi-unit items', () {
-    final item = _item(
-      initialQuantity: 4,
-      quantity: 3,
-    );
+    final item = _item(initialQuantity: 4, quantity: 3);
 
     final progress = calculator.fromItem(item);
 

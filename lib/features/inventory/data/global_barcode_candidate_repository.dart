@@ -29,7 +29,7 @@ GlobalBarcodeCandidateRepository globalBarcodeCandidateRepository(Ref ref) {
 
 class _UnavailableGlobalBarcodeCandidateRepository
     implements GlobalBarcodeCandidateRepository {
-  const _UnavailableGlobalBarcodeCandidateRepository();
+  const new();
 
   @override
   Future<List<GlobalBarcodeCandidate>> readCandidates({

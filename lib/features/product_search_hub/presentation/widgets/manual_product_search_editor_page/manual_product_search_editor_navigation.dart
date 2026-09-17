@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -122,9 +122,8 @@ Future<void> handleEditorSearchResultAction({
   required void Function(InventoryReceiptManualProductAction action)
   onApplyAction,
 }) async {
-  final eatNowRequiresNutritionMessage = AppLocalizations.of(
-    context,
-  )!.inventoryManualAddEatNowRequiresNutrition;
+  final eatNowRequiresNutritionMessage = AppLocalizations.of(context)!
+      .inventoryManualAddEatNowRequiresNutrition;
   await onStopVoiceSearch();
   if (!context.mounted) {
     return;

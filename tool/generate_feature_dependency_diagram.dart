@@ -79,11 +79,7 @@ String _buildDocument({
     for (final toEntry in fromEntry.value.entries) {
       final files = toEntry.value.toList()..sort();
       edgeRows.add(
-        _EdgeRow(
-          from: fromEntry.key,
-          to: toEntry.key,
-          files: files,
-        ),
+        _EdgeRow(from: fromEntry.key, to: toEntry.key, files: files),
       );
     }
   }
@@ -125,9 +121,7 @@ String _buildDocument({
   for (final edge in edgeRows) {
     final fromId = _nodeId(edge.from);
     final toId = _nodeId(edge.to);
-    buffer.writeln(
-      '  $fromId -->|${edge.files.length}| $toId',
-    );
+    buffer.writeln('  $fromId -->|${edge.files.length}| $toId');
   }
 
   buffer
@@ -235,11 +229,7 @@ int _compareEdgeRows(_EdgeRow left, _EdgeRow right) {
 }
 
 class _EdgeRow {
-  const _EdgeRow({
-    required this.from,
-    required this.to,
-    required this.files,
-  });
+  const new({required this.from, required this.to, required this.files});
 
   final String from;
   final String to;

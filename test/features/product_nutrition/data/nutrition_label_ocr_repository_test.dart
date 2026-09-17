@@ -12,8 +12,7 @@ import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
 
 class _FakeImagePicker extends ImagePicker {
-  _FakeImagePicker({Future<XFile?> Function(ImageSource source)? onPickImage})
-    : _onPickImage = onPickImage;
+  new({this._onPickImage});
 
   final Future<XFile?> Function(ImageSource source)? _onPickImage;
 
@@ -35,7 +34,7 @@ class _FakeImagePicker extends ImagePicker {
 }
 
 class _FakeConfigClient {
-  _FakeConfigClient({this.error});
+  new({this.error});
 
   final Exception? error;
   int callCount = 0;
@@ -51,10 +50,7 @@ class _FakeConfigClient {
 }
 
 class _FakeModelClient {
-  _FakeModelClient({
-    this.responseText,
-    this.error,
-  });
+  new({this.responseText, this.error});
 
   final String? responseText;
   final Exception? error;
@@ -122,10 +118,7 @@ void main() {
     );
 
     expect(result.status, NutritionLabelOcrStatus.failed);
-    expect(
-      result.errorCode,
-      NutritionLabelOcrErrorCodes.cameraNotSupported,
-    );
+    expect(result.errorCode, NutritionLabelOcrErrorCodes.cameraNotSupported);
     expect(cameraOpened, isFalse);
   });
 
@@ -303,9 +296,8 @@ void main() {
           );
         },
       ),
-      configClient: _FakeConfigClient(
-        error: Exception('missing template'),
-      ).loadTemplateId,
+      configClient: _FakeConfigClient(error: Exception('missing template'))
+          .loadTemplateId,
       modelClient: modelClient.generateContent,
     );
 
@@ -314,10 +306,7 @@ void main() {
     );
 
     expect(result.status, NutritionLabelOcrStatus.failed);
-    expect(
-      result.errorCode,
-      NutritionLabelOcrErrorCodes.templateConfigFailed,
-    );
+    expect(result.errorCode, NutritionLabelOcrErrorCodes.templateConfigFailed);
     expect(modelClient.callCount, 0);
   });
 
@@ -332,9 +321,8 @@ void main() {
           );
         },
       ),
-      modelClient: _FakeModelClient(
-        error: Exception('model failed'),
-      ).generateContent,
+      modelClient: _FakeModelClient(error: Exception('model failed'))
+          .generateContent,
     );
 
     final result = await repository.scanNutritionLabel(

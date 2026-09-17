@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
@@ -12,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Health Connect/Apple Health settings row.
 class SettingsHealthConnectTile extends ConsumerWidget {
   /// Creates the health connection settings row.
-  const SettingsHealthConnectTile({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

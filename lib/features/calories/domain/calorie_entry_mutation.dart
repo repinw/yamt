@@ -15,11 +15,7 @@ enum CalorieEntryMutationKind {
 /// A local commit, independent of optimistic state and remote subscriptions.
 class CalorieEntryMutation {
   /// Creates a committed mutation.
-  const CalorieEntryMutation({
-    required this.kind,
-    required this.entryId,
-    this.entry,
-  });
+  const new({required this.kind, required this.entryId, this.entry});
 
   /// Operation that completed successfully.
   final CalorieEntryMutationKind kind;

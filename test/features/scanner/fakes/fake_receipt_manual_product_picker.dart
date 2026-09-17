@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_manual_product_picker.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 

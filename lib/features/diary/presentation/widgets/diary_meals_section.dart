@@ -1,8 +1,8 @@
 import 'dart:async' show unawaited;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
@@ -19,7 +19,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Quick-eat buttons and the meals logged on the selected diary day.
 class DiaryMealsSection extends ConsumerWidget {
   /// Creates the diary meals section.
-  const DiaryMealsSection({required this.selectedDay, super.key});
+  const new({required this.selectedDay, super.key});
 
   /// The selected diary day.
   final DateTime selectedDay;

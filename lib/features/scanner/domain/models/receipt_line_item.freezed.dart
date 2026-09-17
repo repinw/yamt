@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'receipt_line_item.dart';
@@ -9,6 +9,7 @@ part of 'receipt_line_item.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -40,16 +41,21 @@ $ReceiptLineItemCopyWith<ReceiptLineItem> get copyWith => _$ReceiptLineItemCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptLineItem&&(identical(other.id, id) || other.id == id)&&(identical(other.rawName, rawName) || other.rawName == rawName)&&(identical(other.totalPrice, totalPrice) || other.totalPrice == totalPrice)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.rawCategory, rawCategory) || other.rawCategory == rawCategory)&&(identical(other.rawBrand, rawBrand) || other.rawBrand == rawBrand)&&(identical(other.packageWeight, packageWeight) || other.packageWeight == packageWeight)&&(identical(other.isDeposit, isDeposit) || other.isDeposit == isDeposit)&&(identical(other.isDiscount, isDiscount) || other.isDiscount == isDiscount)&&(identical(other.status, status) || other.status == status)&&(identical(other.matchedProduct, matchedProduct) || other.matchedProduct == matchedProduct)&&const DeepCollectionEquality().equals(other.candidates, candidates));
+  final _this = this as ReceiptLineItem;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptLineItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.rawName, _this.rawName) || other.rawName == _this.rawName)&&(identical(other.totalPrice, _this.totalPrice) || other.totalPrice == _this.totalPrice)&&(identical(other.discount, _this.discount) || other.discount == _this.discount)&&(identical(other.quantity, _this.quantity) || other.quantity == _this.quantity)&&(identical(other.unitPrice, _this.unitPrice) || other.unitPrice == _this.unitPrice)&&(identical(other.unit, _this.unit) || other.unit == _this.unit)&&(identical(other.rawCategory, _this.rawCategory) || other.rawCategory == _this.rawCategory)&&(identical(other.rawBrand, _this.rawBrand) || other.rawBrand == _this.rawBrand)&&(identical(other.packageWeight, _this.packageWeight) || other.packageWeight == _this.packageWeight)&&(identical(other.isDeposit, _this.isDeposit) || other.isDeposit == _this.isDeposit)&&(identical(other.isDiscount, _this.isDiscount) || other.isDiscount == _this.isDiscount)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.matchedProduct, _this.matchedProduct) || other.matchedProduct == _this.matchedProduct)&&const DeepCollectionEquality().equals(other.candidates, _this.candidates));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,rawName,totalPrice,discount,quantity,unitPrice,unit,rawCategory,rawBrand,packageWeight,isDeposit,isDiscount,status,matchedProduct,const DeepCollectionEquality().hash(candidates));
+int get hashCode {
+  final _this = this as ReceiptLineItem;
+  return Object.hash(runtimeType,_this.id,_this.rawName,_this.totalPrice,_this.discount,_this.quantity,_this.unitPrice,_this.unit,_this.rawCategory,_this.rawBrand,_this.packageWeight,_this.isDeposit,_this.isDiscount,_this.status,_this.matchedProduct,const DeepCollectionEquality().hash(_this.candidates));
+}
 
 @override
 String toString() {
-  return 'ReceiptLineItem(id: $id, rawName: $rawName, totalPrice: $totalPrice, discount: $discount, quantity: $quantity, unitPrice: $unitPrice, unit: $unit, rawCategory: $rawCategory, rawBrand: $rawBrand, packageWeight: $packageWeight, isDeposit: $isDeposit, isDiscount: $isDiscount, status: $status, matchedProduct: $matchedProduct, candidates: $candidates)';
+  final _this = this as ReceiptLineItem;
+  return 'ReceiptLineItem(id: ${_this.id}, rawName: ${_this.rawName}, totalPrice: ${_this.totalPrice}, discount: ${_this.discount}, quantity: ${_this.quantity}, unitPrice: ${_this.unitPrice}, unit: ${_this.unit}, rawCategory: ${_this.rawCategory}, rawBrand: ${_this.rawBrand}, packageWeight: ${_this.packageWeight}, isDeposit: ${_this.isDeposit}, isDiscount: ${_this.isDiscount}, status: ${_this.status}, matchedProduct: ${_this.matchedProduct}, candidates: ${_this.candidates})';
 }
 
 
@@ -78,7 +84,7 @@ class _$ReceiptLineItemCopyWithImpl<$Res>
 /// Create a copy of ReceiptLineItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? rawName = null,Object? totalPrice = null,Object? discount = null,Object? quantity = null,Object? unitPrice = freezed,Object? unit = freezed,Object? rawCategory = freezed,Object? rawBrand = freezed,Object? packageWeight = freezed,Object? isDeposit = null,Object? isDiscount = null,Object? status = null,Object? matchedProduct = freezed,Object? candidates = null,}) {
-  return _then(_self.copyWith(
+  return _then(ReceiptLineItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,rawName: null == rawName ? _self.rawName : rawName // ignore: cast_nullable_to_non_nullable
 as String,totalPrice: null == totalPrice ? _self.totalPrice : totalPrice // ignore: cast_nullable_to_non_nullable
@@ -247,7 +253,7 @@ return $default(_that.id,_that.rawName,_that.totalPrice,_that.discount,_that.qua
 
 
 class _ReceiptLineItem extends ReceiptLineItem {
-  const _ReceiptLineItem({required this.id, required this.rawName, required this.totalPrice, this.discount = 0.0, this.quantity = 1.0, this.unitPrice, this.unit, this.rawCategory, this.rawBrand, this.packageWeight, this.isDeposit = false, this.isDiscount = false, this.status = ReceiptItemStatus.unmatched, this.matchedProduct, final  List<ProductCandidate> candidates = const <ProductCandidate>[]}): _candidates = candidates,super._();
+  const _ReceiptLineItem({required this.id, required this.rawName, required this.totalPrice, this.discount = 0.0, this.quantity = 1.0, this.unitPrice, this.unit, this.rawCategory, this.rawBrand, this.packageWeight, this.isDeposit = false, this.isDiscount = false, this.status = ReceiptItemStatus.unmatched, this.matchedProduct,  List<ProductCandidate> candidates = const <ProductCandidate>[]}): _candidates = candidates,super._();
   
 
 /// Unique ID of this line within the receipt.
@@ -298,16 +304,18 @@ _$ReceiptLineItemCopyWith<_ReceiptLineItem> get copyWith => __$ReceiptLineItemCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptLineItem&&(identical(other.id, id) || other.id == id)&&(identical(other.rawName, rawName) || other.rawName == rawName)&&(identical(other.totalPrice, totalPrice) || other.totalPrice == totalPrice)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.rawCategory, rawCategory) || other.rawCategory == rawCategory)&&(identical(other.rawBrand, rawBrand) || other.rawBrand == rawBrand)&&(identical(other.packageWeight, packageWeight) || other.packageWeight == packageWeight)&&(identical(other.isDeposit, isDeposit) || other.isDeposit == isDeposit)&&(identical(other.isDiscount, isDiscount) || other.isDiscount == isDiscount)&&(identical(other.status, status) || other.status == status)&&(identical(other.matchedProduct, matchedProduct) || other.matchedProduct == matchedProduct)&&const DeepCollectionEquality().equals(other._candidates, _candidates));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptLineItem&&(identical(other.id, id) || other.id == id)&&(identical(other.rawName, rawName) || other.rawName == rawName)&&(identical(other.totalPrice, totalPrice) || other.totalPrice == totalPrice)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.rawCategory, rawCategory) || other.rawCategory == rawCategory)&&(identical(other.rawBrand, rawBrand) || other.rawBrand == rawBrand)&&(identical(other.packageWeight, packageWeight) || other.packageWeight == packageWeight)&&(identical(other.isDeposit, isDeposit) || other.isDeposit == isDeposit)&&(identical(other.isDiscount, isDiscount) || other.isDiscount == isDiscount)&&(identical(other.status, status) || other.status == status)&&(identical(other.matchedProduct, matchedProduct) || other.matchedProduct == matchedProduct)&&const DeepCollectionEquality().equals(other.candidates, _candidates));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,rawName,totalPrice,discount,quantity,unitPrice,unit,rawCategory,rawBrand,packageWeight,isDeposit,isDiscount,status,matchedProduct,const DeepCollectionEquality().hash(_candidates));
+int get hashCode {
+    return Object.hash(runtimeType,id,rawName,totalPrice,discount,quantity,unitPrice,unit,rawCategory,rawBrand,packageWeight,isDeposit,isDiscount,status,matchedProduct,const DeepCollectionEquality().hash(_candidates));
+}
 
 @override
 String toString() {
-  return 'ReceiptLineItem(id: $id, rawName: $rawName, totalPrice: $totalPrice, discount: $discount, quantity: $quantity, unitPrice: $unitPrice, unit: $unit, rawCategory: $rawCategory, rawBrand: $rawBrand, packageWeight: $packageWeight, isDeposit: $isDeposit, isDiscount: $isDiscount, status: $status, matchedProduct: $matchedProduct, candidates: $candidates)';
+    return 'ReceiptLineItem(id: $id, rawName: $rawName, totalPrice: $totalPrice, discount: $discount, quantity: $quantity, unitPrice: $unitPrice, unit: $unit, rawCategory: $rawCategory, rawBrand: $rawBrand, packageWeight: $packageWeight, isDeposit: $isDeposit, isDiscount: $isDiscount, status: $status, matchedProduct: $matchedProduct, candidates: $candidates)';
 }
 
 

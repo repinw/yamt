@@ -24,7 +24,7 @@ InventoryBackedCalorieEntrySaveFlow inventoryBackedCalorieEntrySaveFlow(
 /// Defines inventory backed calorie entry save flow.
 class InventoryBackedCalorieEntrySaveFlow {
   /// The inventory backed calorie entry save flow.
-  const InventoryBackedCalorieEntrySaveFlow({required Ref ref}) : _ref = ref;
+  const new({required this._ref});
 
   final Ref _ref;
 

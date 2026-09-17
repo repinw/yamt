@@ -1,7 +1,7 @@
 // Internal split widgets/helpers are public only for sibling imports.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -21,7 +21,7 @@ const Color _conflictTextColor = Color(0xFFB95B00);
 const Color _conflictBackgroundColor = Color(0xFFFFE7D6);
 
 class CookingFlowInventoryConflictPanel extends StatelessWidget {
-  const CookingFlowInventoryConflictPanel({
+  const new({
     required this.conflict,
     required this.selectedResolution,
     required this.onBuyRemainingPressed,
@@ -115,10 +115,7 @@ class CookingFlowInventoryConflictPanel extends StatelessWidget {
 }
 
 class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
-  const CookingFlowInventoryReturnSuggestionPanel({
-    required this.item,
-    required this.onPressed,
-  });
+  const new({required this.item, required this.onPressed});
 
   final InventoryItem item;
   final VoidCallback onPressed;
@@ -134,16 +131,11 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: 0.24),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
       ),
       child: Row(
         children: <Widget>[
-          const Icon(
-            Icons.inventory_2_rounded,
-            size: 18,
-          ),
+          const Icon(Icons.inventory_2_rounded, size: 18),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Row(
@@ -161,9 +153,8 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         l10n.cookflowInventoryReturnSuggestion,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.labelLarge
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
@@ -193,7 +184,7 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
 }
 
 class _ConflictResolutionButton extends StatelessWidget {
-  const _ConflictResolutionButton({
+  const new({
     required this.label,
     required this.isActive,
     required this.backgroundColor,
@@ -228,16 +219,15 @@ class _ConflictResolutionButton extends StatelessWidget {
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(context).textTheme.labelLarge
+            ?.copyWith(fontWeight: FontWeight.w800),
       ),
     );
   }
 }
 
 class CookingFlowInventoryUnitConflictPanel extends StatefulWidget {
-  const CookingFlowInventoryUnitConflictPanel({
+  const new({
     required this.conflict,
     required this.selectedResolution,
     required this.onConvertUnitPressed,
@@ -310,9 +300,8 @@ class _CookingFlowInventoryUnitConflictPanelState
           children: <Widget>[
             Text(
               l10n.cookflowInventoryUnitConversionPrefix,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: colors.onSurfaceVariant),
             ),
             const SizedBox(width: AppSpacing.sm),
             SizedBox(

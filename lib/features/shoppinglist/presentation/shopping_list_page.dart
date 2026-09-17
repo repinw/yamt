@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines shopping list page.
 class ShoppingListPage extends ConsumerStatefulWidget {
   /// The shopping list page.
-  const ShoppingListPage({this.suggestionsSection, super.key});
+  const new({this.suggestionsSection, super.key});
 
   /// Optional widget slot for suggestions.
   final Widget? suggestionsSection;

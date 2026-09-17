@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -12,7 +12,7 @@ const _productSearchHubSelectionOverlayCountSize = 48.0;
 /// Compact selected-products overlay shown above the hub content.
 class ProductSearchHubSelectionOverlay extends StatelessWidget {
   /// Creates selected-products overlay.
-  const ProductSearchHubSelectionOverlay({
+  const new({
     required this.productCount,
     required this.isSaving,
     required this.onCountPressed,
@@ -88,7 +88,7 @@ class ProductSearchHubSelectionOverlay extends StatelessWidget {
 /// Sheet listing selected products.
 class ProductSearchHubSelectionSheet extends StatelessWidget {
   /// Creates selected-products sheet.
-  const ProductSearchHubSelectionSheet({
+  const new({
     required this.items,
     required this.isSaving,
     required this.onRemovePressed,
@@ -134,18 +134,14 @@ class ProductSearchHubSelectionSheet extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final item = items[index];
                     return InventoryProductCandidateTile(
-                      key: Key(
-                        'product_search_hub_selection_sheet_${item.id}',
-                      ),
+                      key: Key('product_search_hub_selection_sheet_${item.id}'),
                       name: item.name,
                       brand: item.brand,
                       imageUrl: item.imageUrl,
                       packageWeight: item.weight,
                       nutrition: item.nutrition,
                       trailing: IconButton(
-                        key: Key(
-                          'product_search_hub_cart_remove_${item.id}',
-                        ),
+                        key: Key('product_search_hub_cart_remove_${item.id}'),
                         tooltip: l10n.productSearchHubCartRemoveAction,
                         onPressed: isSaving
                             ? null

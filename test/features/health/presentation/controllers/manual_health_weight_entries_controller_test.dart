@@ -32,7 +32,7 @@ const _permissionRequiredStatus = HealthConnectionStatus(
 );
 
 class _FakeHealthConnectionService implements HealthConnectionService {
-  _FakeHealthConnectionService(this.status);
+  new(this.status);
 
   final HealthConnectionStatus status;
 
@@ -61,10 +61,7 @@ class _FakeHealthConnectionService implements HealthConnectionService {
 }
 
 class _FakeHealthWeightService implements HealthWeightService {
-  _FakeHealthWeightService({
-    this.shouldSaveFail = false,
-    this.shouldThrowOnSave = false,
-  });
+  new({this.shouldSaveFail = false, this.shouldThrowOnSave = false});
   bool shouldSaveFail;
   bool shouldThrowOnSave;
   int saveCallCount = 0;
@@ -101,7 +98,7 @@ class _FakeHealthWeightService implements HealthWeightService {
 
 class _FakeManualHealthWeightRepository
     implements ManualHealthWeightRepository {
-  _FakeManualHealthWeightRepository({
+  new({
     this.entries = const <ManualHealthWeightEntry>[],
     this.readEntriesCompleter,
     this.shouldSaveFail = false,
@@ -364,9 +361,7 @@ void main() {
       ],
       shouldSaveFail: true,
     );
-    final container = buildContainer(
-      repository: repository,
-    );
+    final container = buildContainer(repository: repository);
     addTearDown(container.dispose);
 
     await container.read(manualHealthWeightEntriesControllerProvider.future);

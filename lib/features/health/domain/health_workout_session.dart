@@ -1,7 +1,7 @@
 /// Defines health workout session.
 class HealthWorkoutSession {
   /// The health workout session.
-  const HealthWorkoutSession({
+  const new({
     required this.id,
     required this.start,
     required this.endExclusive,
@@ -77,7 +77,7 @@ class HealthWorkoutSession {
 /// Defines health active energy sample.
 class HealthActiveEnergySample {
   /// The health active energy sample.
-  const HealthActiveEnergySample({
+  const new({
     required this.startAt,
     required this.endAt,
     required this.numericValue,

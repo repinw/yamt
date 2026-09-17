@@ -5,7 +5,7 @@ const _maxInventoryIngredients = 40;
 /// Builds pantry inventory entries for the AI Chef prompt.
 class AiChefInventoryInputBuilder {
   /// Creates the builder.
-  const AiChefInventoryInputBuilder();
+  const new();
 
   /// Returns active inventory entries formatted for prompt input.
   List<String> build(List<InventoryItem> items) {

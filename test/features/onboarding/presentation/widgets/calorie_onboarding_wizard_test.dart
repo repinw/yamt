@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -25,9 +26,7 @@ void main() {
     final harness = await _pumpOnboarding(tester);
     await _goToStartDateStep(tester);
 
-    await tester.tap(
-      find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
-    );
+    await tester.tap(find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(CalorieGoalOnboardingKeys.todayTrackingEstimateOption),
@@ -68,9 +67,7 @@ void main() {
     final harness = await _pumpOnboarding(tester);
     await _goToStartDateStep(tester);
 
-    await tester.tap(
-      find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
-    );
+    await tester.tap(find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(CalorieGoalOnboardingKeys.todayTrackingExactOption),
@@ -258,16 +255,12 @@ Future<_OnboardingHarness> _pumpOnboarding(
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const Scaffold(
-          body: SizedBox.shrink(),
-        ),
+        builder: (context, state) => const Scaffold(body: SizedBox.shrink()),
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => CalorieOnboardingWizard(
-          initialSettings: initialSettings,
-          now: now,
-        ),
+        builder: (context, state) =>
+            CalorieOnboardingWizard(initialSettings: initialSettings, now: now),
       ),
     ],
   );
@@ -276,9 +269,7 @@ Future<_OnboardingHarness> _pumpOnboarding(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(
-          settingsRepository,
-        ),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         burnWeekRunStateRepositoryProvider.overrideWithValue(
           runStateRepository,
@@ -286,7 +277,7 @@ Future<_OnboardingHarness> _pumpOnboarding(
       ],
       child: MaterialApp.router(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
       ),
@@ -352,7 +343,7 @@ Future<void> _tapNext(WidgetTester tester) async {
 }
 
 class _OnboardingHarness {
-  _OnboardingHarness({
+  new({
     required this.settingsRepository,
     required this.logRepository,
     required this.runStateRepository,
@@ -364,7 +355,7 @@ class _OnboardingHarness {
 }
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  _FakeBurnWeekRunStateRepository(this.state);
+  new(this.state);
 
   BurnWeekRunState state;
 

@@ -24,7 +24,7 @@ class MobileDiaryHealthService
         DiaryHealthActivityTrendService,
         DiaryHealthActivityTrendRefreshService {
   /// Creates an instance.
-  MobileDiaryHealthService({
+  new({
     Health? health,
     AppPreferences? preferences,
     DateTime Function()? now,

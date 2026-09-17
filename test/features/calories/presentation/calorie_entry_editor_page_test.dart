@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
@@ -37,10 +38,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+  new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
   final StreamController<List<InventoryItem>> _controller =
@@ -170,7 +171,7 @@ CalorieEntryDeleteFlow _sourceDisappearsDeleteFlow() {
 }
 
 class _AutoOpenRoutePage extends StatefulWidget {
-  const _AutoOpenRoutePage({required this.location, this.extra});
+  const new({required this.location, this.extra});
 
   final String location;
   final Object? extra;
@@ -360,7 +361,7 @@ Widget _buildHarness({
   final app = MaterialApp.router(
     locale: locale,
     routerConfig: router,
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
   );
 
@@ -403,7 +404,7 @@ Widget _buildDirectEditorHarness({
   return UncontrolledProviderScope(
     container: container,
     child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: CalorieEntryEditorContent(
         key: const ValueKey('editor-content'),
@@ -521,9 +522,7 @@ void main() {
     expect(find.text('Inventory Home'), findsOneWidget);
   });
 
-  testWidgets('details flow loads and updates the meal window', (
-    tester,
-  ) async {
+  testWidgets('details flow loads and updates the meal window', (tester) async {
     final existing = _entry('entry-1');
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
@@ -668,9 +667,8 @@ void main() {
   testWidgets('prepared meal details view shows ingredient table', (
     tester,
   ) async {
-    final existing = _bundleEntry(
-      'bundle-1',
-    ).copyWith(bundleConsumedPortions: 0.5);
+    final existing = _bundleEntry('bundle-1')
+        .copyWith(bundleConsumedPortions: 0.5);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
     );
@@ -1280,10 +1278,7 @@ void main() {
     });
     await tester.pump();
 
-    expect(
-      inventoryController.hasPendingConsumption('pending-1'),
-      isTrue,
-    );
+    expect(inventoryController.hasPendingConsumption('pending-1'), isTrue);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -1299,10 +1294,7 @@ void main() {
     });
     await tester.pump();
 
-    expect(
-      inventoryController.hasPendingConsumption('pending-1'),
-      isFalse,
-    );
+    expect(inventoryController.hasPendingConsumption('pending-1'), isFalse);
   });
 
   testWidgets('pending inventory discard no-ops when handler is null', (

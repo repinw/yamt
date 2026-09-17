@@ -7,7 +7,7 @@ part 'receipt_review_state.freezed.dart';
 @freezed
 abstract class ReceiptReviewState with _$ReceiptReviewState {
   /// Creates an instance of [ReceiptReviewState].
-  const factory ReceiptReviewState({
+  const factory({
     /// Currently reviewed receipt.
     required ScannedReceipt receipt,
 
@@ -24,5 +24,5 @@ abstract class ReceiptReviewState with _$ReceiptReviewState {
     String? errorMessage,
   }) = _ReceiptReviewState;
 
-  const ReceiptReviewState._();
+  const new _();
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -12,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Bottom action used by phase pages.
 class CookingFlowPhaseBottomAction extends StatelessWidget {
   /// Creates bottom action.
-  const CookingFlowPhaseBottomAction({
+  const new({
     required this.label,
     required this.onPressed,
     this.icon = Icons.arrow_forward_rounded,
@@ -50,7 +50,7 @@ class CookingFlowPhaseBottomAction extends StatelessWidget {
 /// Bottom action with secondary and primary button.
 class CookingFlowPhaseBottomDualAction extends StatelessWidget {
   /// Creates dual action.
-  const CookingFlowPhaseBottomDualAction({
+  const new({
     required this.secondaryLabel,
     required this.onSecondaryPressed,
     required this.primaryLabel,
@@ -114,7 +114,7 @@ class CookingFlowPhaseBottomDualAction extends StatelessWidget {
 }
 
 class _CookingFlowPhaseBottomSurface extends StatelessWidget {
-  const _CookingFlowPhaseBottomSurface({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -139,9 +139,7 @@ class _CookingFlowPhaseBottomSurface extends StatelessWidget {
             decoration: BoxDecoration(
               color: colors.surfaceContainerLow,
               borderRadius: radius,
-              border: Border.all(
-                color: colors.outlineVariant,
-              ),
+              border: Border.all(color: colors.outlineVariant),
             ),
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.sm),
@@ -157,7 +155,7 @@ class _CookingFlowPhaseBottomSurface extends StatelessWidget {
 /// Cookflow top app bar.
 class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Creates top bar.
-  const CookflowTopBar({
+  const new({
     required this.onBackPressed,
     required this.progressIndex,
     super.key,
@@ -212,9 +210,8 @@ class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
                     l10n.cookflowPrepflowTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
                 if (progressIndex != null)
@@ -240,7 +237,7 @@ const String cookingFlowTaraDefaultValue = '1000';
 /// Text controller state for one storage container row.
 class CookingFlowStorageContainerState {
   /// Creates storage container state.
-  CookingFlowStorageContainerState({
+  new({
     required this.id,
     required this.labelController,
     required this.taraController,
@@ -275,9 +272,8 @@ class CookingFlowStorageContainerState {
   int get taraWeight => parseCookingFlowWholeWeight(taraController.text);
 
   /// Gross grams.
-  int get grossWeight => parseCookingFlowWholeWeight(
-    grossWeightController.text,
-  );
+  int get grossWeight =>
+      parseCookingFlowWholeWeight(grossWeightController.text);
 
   /// Net grams.
   int get finalNetWeight => grossWeight - taraWeight;

@@ -74,10 +74,7 @@ void main() {
       231.58,
     );
     expect(lastTemplateId, 'product-ai-search-template');
-    expect(
-      lastInputs,
-      <String, Object?>{'prompt': 'Doener Haehnchen'},
-    );
+    expect(lastInputs, <String, Object?>{'prompt': 'Doener Haehnchen'});
   });
 
   test(

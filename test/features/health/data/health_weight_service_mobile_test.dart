@@ -65,14 +65,8 @@ void main() {
     final requestedEnd = DateTime(2026, 5, 3);
     final fakeHealth = _FakeHealth(
       healthDataPoints: <HealthDataPoint>[
-        _buildWeightPoint(
-          recordedAt: DateTime(2026, 4, 27, 8),
-          weightKg: 83.5,
-        ),
-        _buildWeightPoint(
-          recordedAt: DateTime(2026, 4, 29, 8),
-          weightKg: 83.2,
-        ),
+        _buildWeightPoint(recordedAt: DateTime(2026, 4, 27, 8), weightKg: 83.5),
+        _buildWeightPoint(recordedAt: DateTime(2026, 4, 29, 8), weightKg: 83.2),
       ],
     );
     final service = MobileHealthWeightService(
@@ -101,14 +95,8 @@ void main() {
     final requestedEnd = DateTime(2024, 2);
     final fakeHealth = _FakeHealth(
       healthDataPoints: <HealthDataPoint>[
-        _buildWeightPoint(
-          recordedAt: DateTime(2024, 1, 14, 8),
-          weightKg: 83.5,
-        ),
-        _buildWeightPoint(
-          recordedAt: DateTime(2026, 4, 24, 8),
-          weightKg: 82.7,
-        ),
+        _buildWeightPoint(recordedAt: DateTime(2024, 1, 14, 8), weightKg: 83.5),
+        _buildWeightPoint(recordedAt: DateTime(2026, 4, 24, 8), weightKg: 82.7),
       ],
     );
     final service = MobileHealthWeightService(
@@ -132,10 +120,7 @@ void main() {
     final requestedStart = DateTime(2026, 4, 8);
     final requestedEnd = DateTime(2026, 4, 23);
     final healthDataPoints = <HealthDataPoint>[
-      _buildWeightPoint(
-        recordedAt: DateTime(2026, 4, 14, 8),
-        weightKg: 83.5,
-      ),
+      _buildWeightPoint(recordedAt: DateTime(2026, 4, 14, 8), weightKg: 83.5),
     ];
     final fakeHealth = _FakeHealth(healthDataPoints: healthDataPoints);
     final service = MobileHealthWeightService(
@@ -148,10 +133,7 @@ void main() {
       endExclusive: requestedEnd,
     );
     healthDataPoints.add(
-      _buildWeightPoint(
-        recordedAt: DateTime(2026, 4, 15, 8),
-        weightKg: 83.2,
-      ),
+      _buildWeightPoint(recordedAt: DateTime(2026, 4, 15, 8), weightKg: 83.2),
     );
     now = now.add(const Duration(minutes: 6));
     final secondRead = await service.loadWeightSamples(
@@ -171,14 +153,8 @@ void main() {
     final requestedEnd = DateTime(2026, 4, 23);
     final fakeHealth = _FakeHealth(
       healthDataPoints: <HealthDataPoint>[
-        _buildWeightPoint(
-          recordedAt: DateTime(2026, 4, 7, 8),
-          weightKg: 84.5,
-        ),
-        _buildWeightPoint(
-          recordedAt: DateTime(2026, 4, 14, 8),
-          weightKg: 83.5,
-        ),
+        _buildWeightPoint(recordedAt: DateTime(2026, 4, 7, 8), weightKg: 84.5),
+        _buildWeightPoint(recordedAt: DateTime(2026, 4, 14, 8), weightKg: 83.5),
       ],
     );
     final service = MobileHealthWeightService(
@@ -197,10 +173,7 @@ void main() {
 
     expect(firstRead, hasLength(1));
     expect(secondRead, hasLength(2));
-    expect(fakeHealth.requestedStartTimes, <DateTime>[
-      firstStart,
-      secondStart,
-    ]);
+    expect(fakeHealth.requestedStartTimes, <DateTime>[firstStart, secondStart]);
   });
 
   test('clears cache after successful weight write', () async {
@@ -209,10 +182,7 @@ void main() {
     final requestedEnd = DateTime(2026, 4, 23);
     final fakeHealth = _FakeHealth(
       healthDataPoints: <HealthDataPoint>[
-        _buildWeightPoint(
-          recordedAt: DateTime(2026, 4, 14, 8),
-          weightKg: 83.5,
-        ),
+        _buildWeightPoint(recordedAt: DateTime(2026, 4, 14, 8), weightKg: 83.5),
       ],
     );
     final service = MobileHealthWeightService(
@@ -243,10 +213,7 @@ void main() {
     final requestedStart = DateTime(2026, 4, 8);
     final requestedEnd = DateTime(2026, 4, 23);
     final healthDataPoints = <HealthDataPoint>[
-      _buildWeightPoint(
-        recordedAt: DateTime(2026, 4, 14, 8),
-        weightKg: 83.5,
-      ),
+      _buildWeightPoint(recordedAt: DateTime(2026, 4, 14, 8), weightKg: 83.5),
     ];
     final fakeHealth = _FakeHealth(
       healthDataPoints: healthDataPoints,
@@ -262,10 +229,7 @@ void main() {
       endExclusive: requestedEnd,
     );
     healthDataPoints.add(
-      _buildWeightPoint(
-        recordedAt: DateTime(2026, 4, 15, 8),
-        weightKg: 83.2,
-      ),
+      _buildWeightPoint(recordedAt: DateTime(2026, 4, 15, 8), weightKg: 83.2),
     );
     final saved = await service.saveWeightSample(
       recordedAt: DateTime(2026, 4, 15, 8),
@@ -287,10 +251,7 @@ void main() {
     final requestedStart = DateTime(2026, 4, 8);
     final requestedEnd = DateTime(2026, 4, 23);
     final healthDataPoints = <HealthDataPoint>[
-      _buildWeightPoint(
-        recordedAt: DateTime(2026, 4, 14, 8),
-        weightKg: 83.5,
-      ),
+      _buildWeightPoint(recordedAt: DateTime(2026, 4, 14, 8), weightKg: 83.5),
     ];
     final fakeHealth = _FakeHealth(
       healthDataPoints: healthDataPoints,
@@ -306,10 +267,7 @@ void main() {
       endExclusive: requestedEnd,
     );
     healthDataPoints.add(
-      _buildWeightPoint(
-        recordedAt: DateTime(2026, 4, 15, 8),
-        weightKg: 83.2,
-      ),
+      _buildWeightPoint(recordedAt: DateTime(2026, 4, 15, 8), weightKg: 83.2),
     );
     await expectLater(
       service.saveWeightSample(
@@ -374,7 +332,7 @@ void main() {
 }
 
 class _FakeHealth extends Health {
-  _FakeHealth({
+  new({
     required this.healthDataPoints,
     this.writeSucceeds = true,
     this.writeError,

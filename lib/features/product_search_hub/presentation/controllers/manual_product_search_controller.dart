@@ -649,10 +649,7 @@ class InventoryReceiptManualProductController
         return;
       }
 
-      state = state.copyWith(
-        isSearching: false,
-        searchResults: visibleResults,
-      );
+      state = state.copyWith(isSearching: false, searchResults: visibleResults);
     } on Object catch (error, stackTrace) {
       log(
         'Manual product search failed for query "$query".',

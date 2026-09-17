@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/presentation/constants/'
 /// Defines inventory item image tile.
 class InventoryItemImageTile extends StatelessWidget {
   /// The inventory item image tile.
-  const InventoryItemImageTile({super.key, this.imageUrl});
+  const new({super.key, this.imageUrl});
 
   /// The image url.
   final String? imageUrl;

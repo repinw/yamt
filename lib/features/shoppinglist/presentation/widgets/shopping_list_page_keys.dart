@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Defines shopping list page keys.
 class ShoppingListPageKeys {
-  const ShoppingListPageKeys._();
+  const new _();
 
   /// The clear crossed off button.
   static const clearCrossedOffButton = Key(

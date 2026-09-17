@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
@@ -17,58 +17,57 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Callback used to eat a prepared meal.
-typedef PreparedMealEatCallback =
-    Future<bool> Function({
-      required String mealId,
-      required num portions,
-      required MealType mealType,
-      required DateTime loggedDay,
-    });
+typedef PreparedMealEatCallback = Future<bool> Function({
+  required String mealId,
+  required num portions,
+  required MealType mealType,
+  required DateTime loggedDay,
+});
 
 /// Callback used to discard prepared meal portions.
-typedef PreparedMealDiscardCallback =
-    Future<bool> Function(
-      String mealId,
-      num portions,
-      InventoryDiscardReason reason,
-    );
+typedef PreparedMealDiscardCallback = Future<bool> Function(
+  String mealId,
+  num portions,
+  InventoryDiscardReason reason,
+);
 
 /// Callback used to fill a pending prepared meal ingredient.
-typedef PreparedMealIngredientFillCallback =
-    Future<bool> Function(
-      String mealId,
-      String ingredient,
-      List<String> inventoryItemIds,
-    );
+typedef PreparedMealIngredientFillCallback = Future<bool> Function(
+  String mealId,
+  String ingredient,
+  List<String> inventoryItemIds,
+);
 
 /// Callback used to ignore a pending prepared meal ingredient.
-typedef PreparedMealIngredientIgnoreCallback =
-    Future<bool> Function(
-      String mealId,
-      String ingredient,
-    );
+typedef PreparedMealIngredientIgnoreCallback = Future<bool> Function(
+  String mealId,
+  String ingredient,
+);
 
 /// Callback used to mutate one prepared meal by id.
 typedef PreparedMealIdCallback = Future<bool> Function(String mealId);
 
 /// Callback used to edit prepared meal metadata.
-typedef PreparedMealEditCallback =
-    Future<bool> Function(String mealId, PreparedMealEditSheetResult result);
+typedef PreparedMealEditCallback = Future<bool> Function(
+  String mealId,
+  PreparedMealEditSheetResult result,
+);
 
 /// Callback used to select more ingredients for an active meal edit.
-typedef PreparedMealEditIngredientSelectionCallback =
-    Future<bool> Function(String mealId, PreparedMealEditSheetResult result);
+typedef PreparedMealEditIngredientSelectionCallback = Future<bool> Function(
+  String mealId,
+  PreparedMealEditSheetResult result,
+);
 
 /// Callback used to save a prepared meal as a template.
-typedef PreparedMealSaveTemplateCallback =
-    Future<bool> Function(
-      PreparedMeal meal,
-    );
+typedef PreparedMealSaveTemplateCallback = Future<bool> Function(
+  PreparedMeal meal,
+);
 
 /// Actions used by [InventoryPreparedMealsSection].
 class PreparedMealSectionActions {
   /// Creates prepared meal section actions.
-  const PreparedMealSectionActions({
+  const new({
     required this.onEatPreparedMeal,
     required this.onThrowAwayPreparedMeal,
     required this.onFillPendingPreparedMealIngredient,
@@ -109,7 +108,7 @@ class PreparedMealSectionActions {
 /// Defines inventory prepared meals section.
 class InventoryPreparedMealsSection extends StatelessWidget {
   /// The inventory prepared meals section.
-  const InventoryPreparedMealsSection({
+  const new({
     required this.meals,
     required this.expandedPreparedMealId,
     required this.isExpanded,
@@ -208,7 +207,7 @@ class InventoryPreparedMealsSection extends StatelessWidget {
 }
 
 class _PreparedMealList extends StatelessWidget {
-  const _PreparedMealList({
+  const new({
     required this.meals,
     required this.expandedPreparedMealId,
     required this.enabled,
@@ -239,7 +238,7 @@ class _PreparedMealList extends StatelessWidget {
 }
 
 class _PreparedMealTiles extends StatelessWidget {
-  const _PreparedMealTiles({
+  const new({
     required this.meals,
     required this.expandedPreparedMealId,
     required this.enabled,
@@ -275,7 +274,7 @@ class _PreparedMealTiles extends StatelessWidget {
 }
 
 class _PreparedMealEntry extends StatelessWidget {
-  const _PreparedMealEntry({
+  const new({
     required this.meal,
     required this.expandedPreparedMealId,
     required this.enabled,

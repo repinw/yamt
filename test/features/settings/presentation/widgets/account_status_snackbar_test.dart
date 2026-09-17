@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/settings/presentation/widgets/account_status_snackbar/account_status_snackbar.dart';
 
 void main() {

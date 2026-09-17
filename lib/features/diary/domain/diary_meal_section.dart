@@ -8,7 +8,7 @@ part 'diary_meal_section.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMealEntry {
   /// Creates diary meal entry presentation data.
-  const DiaryMealEntry({
+  const new({
     required this.id,
     required this.mealType,
     required this.name,
@@ -25,8 +25,7 @@ class DiaryMealEntry {
   });
 
   /// Creates data from persisted JSON.
-  factory DiaryMealEntry.fromJson(Map<String, dynamic> json) =>
-      _$DiaryMealEntryFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$DiaryMealEntryFromJson(json);
 
   /// Converts data to persisted JSON.
   Map<String, dynamic> toJson() => _$DiaryMealEntryToJson(this);
@@ -80,14 +79,14 @@ class DiaryMealEntry {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMealSection {
   /// Creates a diary meal section.
-  const DiaryMealSection({
+  const new({
     required this.mealType,
     required this.entries,
     required this.totalKcal,
   });
 
   /// Creates data from persisted JSON.
-  factory DiaryMealSection.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$DiaryMealSectionFromJson(json);
 
   /// Converts data to persisted JSON.

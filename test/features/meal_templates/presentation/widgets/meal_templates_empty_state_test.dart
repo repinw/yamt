@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
@@ -12,7 +13,7 @@ import 'package:yamt/features/meal_templates/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class MockPreparedMealRecipeImporter extends Mock
-    implements PreparedMealRecipeImporter {}
+    implements PreparedMealRecipeImporter;
 
 void main() {
   late MockPreparedMealRecipeImporter mockImporter;
@@ -21,9 +22,7 @@ void main() {
     mockImporter = MockPreparedMealRecipeImporter();
   });
 
-  Widget buildHarness({
-    required GoRouter router,
-  }) {
+  Widget buildHarness({required GoRouter router}) {
     final container = ProviderContainer(
       overrides: [
         preparedMealRecipeImporterProvider.overrideWithValue(mockImporter),
@@ -35,7 +34,7 @@ void main() {
       container: container,
       child: MaterialApp.router(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
       ),
@@ -54,9 +53,8 @@ void main() {
         routes: [
           GoRoute(
             path: AppRoutes.root,
-            builder: (context, state) => const Scaffold(
-              body: MealTemplatesEmptyState(),
-            ),
+            builder: (context, state) =>
+                const Scaffold(body: MealTemplatesEmptyState()),
           ),
           GoRoute(
             path: AppRoutes.homeInventoryTemplateImportReview,
@@ -127,54 +125,49 @@ void main() {
 
       expect(navigated, isTrue);
       expect(capturedArgs, isNotNull);
-      expect(
-        capturedArgs!.importedRecipe.recipeUrl,
-        'https://example.com/123',
-      );
+      expect(capturedArgs!.importedRecipe.recipeUrl, 'https://example.com/123');
       expect(capturedArgs!.preferredName, 'Test Recipe');
       expect(capturedArgs!.preferredPortions, 2);
     },
   );
 
-  testWidgets(
-    'Edge Case (Cancel): click add recipe -> bottom sheet opens '
-    '-> user cancels -> nothing happens, no crash, no navigation',
-    (tester) async {
-      var navigated = false;
+  testWidgets('Edge Case (Cancel): click add recipe -> bottom sheet opens '
+      '-> user cancels -> nothing happens, no crash, no navigation', (
+    tester,
+  ) async {
+    var navigated = false;
 
-      final router = GoRouter(
-        initialLocation: AppRoutes.root,
-        routes: [
-          GoRoute(
-            path: AppRoutes.root,
-            builder: (context, state) => const Scaffold(
-              body: MealTemplatesEmptyState(),
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.homeInventoryTemplateImportReview,
-            builder: (context, state) {
-              navigated = true;
-              return const Scaffold(body: Text('Import Review Page'));
-            },
-          ),
-        ],
-      );
+    final router = GoRouter(
+      initialLocation: AppRoutes.root,
+      routes: [
+        GoRoute(
+          path: AppRoutes.root,
+          builder: (context, state) =>
+              const Scaffold(body: MealTemplatesEmptyState()),
+        ),
+        GoRoute(
+          path: AppRoutes.homeInventoryTemplateImportReview,
+          builder: (context, state) {
+            navigated = true;
+            return const Scaffold(body: Text('Import Review Page'));
+          },
+        ),
+      ],
+    );
 
-      await tester.pumpWidget(buildHarness(router: router));
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(buildHarness(router: router));
+    await tester.pumpAndSettle();
 
-      // Click "Add recipe template" button
-      await tester.tap(find.text('Add recipe template'));
-      await tester.pumpAndSettle();
+    // Click "Add recipe template" button
+    await tester.tap(find.text('Add recipe template'));
+    await tester.pumpAndSettle();
 
-      // Click Cancel
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
+    // Click Cancel
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
 
-      expect(navigated, isFalse);
-    },
-  );
+    expect(navigated, isFalse);
+  });
 
   testWidgets(
     'Error Case: click add recipe -> enter valid url -> import returns null '
@@ -187,9 +180,8 @@ void main() {
         routes: [
           GoRoute(
             path: AppRoutes.root,
-            builder: (context, state) => const Scaffold(
-              body: MealTemplatesEmptyState(),
-            ),
+            builder: (context, state) =>
+                const Scaffold(body: MealTemplatesEmptyState()),
           ),
           GoRoute(
             path: AppRoutes.homeInventoryTemplateImportReview,
@@ -227,10 +219,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(navigated, isFalse);
-      expect(
-        find.text('Recipe data could not be imported.'),
-        findsOneWidget,
-      );
+      expect(find.text('Recipe data could not be imported.'), findsOneWidget);
     },
   );
 }

@@ -1,7 +1,7 @@
 /// Defines nutrition label OCR draft.
 class NutritionLabelOcrDraft {
   /// Creates a nutrition label OCR draft.
-  const NutritionLabelOcrDraft({
+  const new({
     required this.barcode,
     this.name,
     this.brand,
@@ -110,29 +110,17 @@ enum NutritionLabelOcrStatus {
 /// Defines nutrition label OCR result.
 class NutritionLabelOcrResult {
   /// Creates a succeeded result.
-  const NutritionLabelOcrResult.succeeded({
-    required NutritionLabelOcrDraft draft,
-  }) : this._(
-         status: NutritionLabelOcrStatus.succeeded,
-         draft: draft,
-       );
+  const new succeeded({required NutritionLabelOcrDraft draft})
+    : this._(status: NutritionLabelOcrStatus.succeeded, draft: draft);
 
   /// Creates a canceled result.
-  const NutritionLabelOcrResult.canceled()
-    : this._(status: NutritionLabelOcrStatus.canceled);
+  const new canceled() : this._(status: NutritionLabelOcrStatus.canceled);
 
   /// Creates a failed result.
-  const NutritionLabelOcrResult.failed({required String errorCode})
-    : this._(
-        status: NutritionLabelOcrStatus.failed,
-        errorCode: errorCode,
-      );
+  const new failed({required String errorCode})
+    : this._(status: NutritionLabelOcrStatus.failed, errorCode: errorCode);
 
-  const NutritionLabelOcrResult._({
-    required this.status,
-    this.draft,
-    this.errorCode,
-  });
+  const new _({required this.status, this.draft, this.errorCode});
 
   /// The status.
   final NutritionLabelOcrStatus status;

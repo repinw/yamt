@@ -1,6 +1,6 @@
 import 'dart:async' show unawaited;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -49,14 +49,10 @@ Future<void> launchEditorBarcodeScanner({
     autofocusSearch: autofocusSearch,
     onStopVoiceSearch: voiceSearchController.stopVoiceSearchIfNeeded,
     onDirectComplete: onClosePage,
-    onApplyScannedProduct: (product, action) => onApplyAction(
-      action,
-      () => controller.applyScannedProduct(product),
-    ),
-    onApplyScannedInventoryItem: (item, action) => onApplyAction(
-      action,
-      () => controller.applyRecentItem(item),
-    ),
+    onApplyScannedProduct: (product, action) =>
+        onApplyAction(action, () => controller.applyScannedProduct(product)),
+    onApplyScannedInventoryItem: (item, action) =>
+        onApplyAction(action, () => controller.applyRecentItem(item)),
     onApplyScannedBarcodeOnly: controller.applyScannedBarcodeOnly,
     onShowSnackBar: onShowSnackBar,
     onSaved: onSaved,
@@ -146,12 +142,7 @@ void showEditorSnackBar(
 }) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        content: Text(message),
-        action: action,
-      ),
-    );
+    ..showSnackBar(SnackBar(content: Text(message), action: action));
 }
 
 /// Builds the optional initial info action (e.g. nutrition label OCR scan).

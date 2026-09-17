@@ -21,7 +21,7 @@ enum GlobalFoodItemStatus {
 @immutable
 class GlobalFoodItem {
   /// The global food item.
-  const GlobalFoodItem({
+  const new({
     required this.id,
     required this.foodFingerprint,
     required this.name,
@@ -46,7 +46,7 @@ class GlobalFoodItem {
   });
 
   /// Creates a [GlobalFoodItem] for create.
-  factory GlobalFoodItem.create({
+  factory create({
     required String id,
     required String name,
     required DateTime now,
@@ -95,7 +95,7 @@ class GlobalFoodItem {
   }
 
   /// Creates a [GlobalFoodItem] for from json.
-  factory GlobalFoodItem.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final storeName = _normalizedStoreNameValue(json['store_name']);
     return GlobalFoodItem(
       id: json['id'] as String? ?? '',

@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _testHarness(Widget child, {Locale? locale}) {
   return MaterialApp(
     locale: locale,
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: child),
   );
@@ -27,9 +28,7 @@ void main() {
     await tester.pumpWidget(_testHarness(const SizedBox(key: Key('root'))));
     final context = tester.element(find.byKey(const Key('root')));
 
-    final validator = AuthValidationFactory.fromContext(
-      context,
-    ).password();
+    final validator = AuthValidationFactory.fromContext(context).password();
 
     expect(validator('12345'), isNotNull);
     expect(validator('123456'), isNull);

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -22,7 +22,7 @@ const _productSearchHubSelectionOverlayClearance = 92.0;
 /// Layout shell for product search hub.
 class ProductSearchHubScaffold extends StatelessWidget {
   /// Creates product search hub scaffold.
-  const ProductSearchHubScaffold({
+  const new({
     required this.title,
     required this.savedSelections,
     required this.isMutatingSelection,
@@ -123,7 +123,7 @@ class ProductSearchHubScaffold extends StatelessWidget {
 }
 
 class _ProductSearchHubNestedContent extends StatelessWidget {
-  const _ProductSearchHubNestedContent({
+  const new({
     required this.bottomClearance,
     required this.showDiarySourceActions,
     required this.selectedProductKeys,
@@ -198,7 +198,7 @@ class _ProductSearchHubNestedContent extends StatelessWidget {
 }
 
 class _ProductSearchHubOverlay extends StatelessWidget {
-  const _ProductSearchHubOverlay({
+  const new({
     required this.productCount,
     required this.isMutatingSelection,
     required this.onCountPressed,

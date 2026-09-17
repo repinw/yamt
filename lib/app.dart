@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -14,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Root application widget.
 class YAMT extends ConsumerStatefulWidget {
   /// Creates app root.
-  const YAMT({super.key}); // coverage:ignore-line
+  const new({super.key}); // coverage:ignore-line
 
   @override
   ConsumerState<YAMT> createState() => _YAMTState();
@@ -53,12 +52,7 @@ class _YAMTState extends ConsumerState<YAMT> {
         onReceiptSaved: () => ref.invalidate(inventoryItemsControllerProvider),
         child: child ?? const SizedBox.shrink(),
       ),
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     );
   }

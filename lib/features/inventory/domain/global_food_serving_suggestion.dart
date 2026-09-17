@@ -13,11 +13,7 @@ const String fingerprintServingItemKeyPrefix = 'fingerprint';
 @immutable
 class ServingSizeSuggestion {
   /// The serving size suggestion.
-  const ServingSizeSuggestion({
-    required this.amount,
-    required this.unit,
-    this.label,
-  });
+  const new({required this.amount, required this.unit, this.label});
 
   /// The amount.
   final double amount;
@@ -45,7 +41,7 @@ class ServingSizeSuggestion {
 @immutable
 class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
   /// The global food serving suggestion.
-  const GlobalFoodServingSuggestion({
+  const new({
     required this.id,
     required this.itemKey,
     required this.selectionCount,
@@ -59,7 +55,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
   });
 
   /// Creates a [GlobalFoodServingSuggestion] for from json.
-  factory GlobalFoodServingSuggestion.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final amount = _readPositiveDouble(json['amount']) ?? 0;
     final unit = ConsumedUnit.fromJsonValue(json['unit'] as String?);
     final updatedAt = _readDateTime(json['updated_at']) ?? DateTime.now();
@@ -179,13 +175,13 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
 /// Defines global food serving suggestion set.
 class GlobalFoodServingSuggestionSet {
   /// The global food serving suggestion set.
-  const GlobalFoodServingSuggestionSet({
+  const new({
     this.personalSuggestion,
     this.globalSuggestions = const <GlobalFoodServingSuggestion>[],
   });
 
   /// Creates a [GlobalFoodServingSuggestionSet] for empty.
-  const GlobalFoodServingSuggestionSet.empty()
+  const new empty()
     : personalSuggestion = null,
       globalSuggestions = const <GlobalFoodServingSuggestion>[];
 

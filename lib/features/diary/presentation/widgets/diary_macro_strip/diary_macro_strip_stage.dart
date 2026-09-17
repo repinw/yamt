@@ -16,7 +16,7 @@ enum DiaryMacroStripStage {
 /// Keys of the daily card parts the strip replaces once they scroll away.
 class DiaryMacroStripAnchors {
   /// Creates fresh anchor keys.
-  DiaryMacroStripAnchors();
+  new();
 
   /// The whole daily card.
   final GlobalKey card = GlobalKey();

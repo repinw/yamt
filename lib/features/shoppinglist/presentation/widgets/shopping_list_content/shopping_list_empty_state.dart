@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Empty-list illustration and localized explanation.
 class ShoppingListEmptyState extends StatelessWidget {
   /// Creates the empty-list message.
-  const ShoppingListEmptyState({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) => Padding(

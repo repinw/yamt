@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_logic.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -15,7 +15,7 @@ import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 /// Owns page text controllers for cookflow storage containers.
 class CookingFlowStorageContainerController {
   /// Creates controller and primary storage container.
-  CookingFlowStorageContainerController({required int initialFinalPortions}) {
+  new({required int initialFinalPortions}) {
     containers.add(_createPrimaryStorageContainer(initialFinalPortions));
   }
 

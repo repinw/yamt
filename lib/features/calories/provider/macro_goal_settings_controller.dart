@@ -67,10 +67,7 @@ class MacroGoalSettingsController extends _$MacroGoalSettingsController {
 
   /// Resets multipliers to defaults for current sex and sport setting.
   Future<void> resetToDefaults() async {
-    final next = state.copyWith(
-      clearCustomProtein: true,
-      clearCustomFat: true,
-    );
+    final next = state.copyWith(clearCustomProtein: true, clearCustomFat: true);
     await updateSettings(next);
   }
 }

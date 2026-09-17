@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/presentation/controllers/'
@@ -13,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines household join section.
 class HouseholdJoinSection extends ConsumerStatefulWidget {
   /// The household join section.
-  const HouseholdJoinSection({required this.isBusy, super.key});
+  const new({required this.isBusy, super.key});
 
   /// Whether busy.
   final bool isBusy;

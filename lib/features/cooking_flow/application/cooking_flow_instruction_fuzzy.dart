@@ -16,10 +16,7 @@ const int maxCookingFuzzyInstructionSpanTokens = 3;
 /// Token position inside an instruction.
 class CookingInstructionToken {
   /// Creates a token span.
-  const CookingInstructionToken({
-    required this.start,
-    required this.end,
-  });
+  const new({required this.start, required this.end});
 
   /// Token start offset in text.
   final int start;
@@ -32,10 +29,7 @@ class CookingInstructionToken {
 @immutable
 class CookingFuzzyQuery {
   /// Creates a fuzzy query.
-  const CookingFuzzyQuery({
-    required this.text,
-    required this.tokenCount,
-  });
+  const new({required this.text, required this.tokenCount});
 
   /// Normalized query text.
   final String text;
@@ -58,7 +52,7 @@ class CookingFuzzyQuery {
 /// Candidate match found by fuzzy comparison.
 class FuzzyInstructionCandidate {
   /// Creates a candidate match.
-  const FuzzyInstructionCandidate({
+  const new({
     required this.start,
     required this.end,
     required this.score,
@@ -140,10 +134,7 @@ FuzzyInstructionCandidate? findBestFuzzyInstructionCandidate({
       }
       final candidateText = instruction.substring(start, end);
       final normalizedCandidate = normalizeCookingFuzzyText(candidateText);
-      if (!_isViableCookingFuzzyCandidate(
-        normalizedCandidate,
-        parserLocale,
-      )) {
+      if (!_isViableCookingFuzzyCandidate(normalizedCandidate, parserLocale)) {
         continue;
       }
       for (final query in queries) {
@@ -266,10 +257,7 @@ List<CookingInstructionToken> cookingInstructionTokens(String value) {
   return RegExp('[0-9A-Za-zÀ-ÖØ-öø-ÿ]+')
       .allMatches(value)
       .map(
-        (match) => CookingInstructionToken(
-          start: match.start,
-          end: match.end,
-        ),
+        (match) => CookingInstructionToken(start: match.start, end: match.end),
       )
       .toList(growable: false);
 }

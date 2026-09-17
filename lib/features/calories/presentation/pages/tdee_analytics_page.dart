@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_provider.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
@@ -15,7 +15,7 @@ import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_
 /// and weight trend.
 class TdeeAnalyticsPage extends ConsumerWidget {
   /// Creates the TDEE analytics page.
-  const TdeeAnalyticsPage({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,9 +47,8 @@ class TdeeAnalyticsPage extends ConsumerWidget {
       ),
       body: analyticsAsync.when(
         data: (data) => _buildContent(context, data, uiState, controller),
-        loading: () => const Center(
-          child: CircularProgressIndicator.adaptive(),
-        ),
+        loading: () =>
+            const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),

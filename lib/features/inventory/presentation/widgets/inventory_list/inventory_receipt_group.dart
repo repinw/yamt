@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines inventory receipt group.
 class InventoryReceiptGroup {
   /// The inventory receipt group.
-  const InventoryReceiptGroup({
+  const new({
     required this.key,
     required this.receiptId,
     required this.receiptDate,
@@ -17,10 +17,7 @@ class InventoryReceiptGroup {
   });
 
   /// Creates a [InventoryReceiptGroup] for from items.
-  factory InventoryReceiptGroup.fromItems(
-    String key,
-    List<InventoryItem> items,
-  ) {
+  factory fromItems(String key, List<InventoryItem> items) {
     final sortedItems = List<InventoryItem>.from(items)
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 

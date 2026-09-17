@@ -5,15 +5,10 @@ import 'package:yamt/features/product_search_hub/domain/'
 
 /// Search lookup result for the product search hub.
 class ProductSearchHubSearchLookupResult {
-  const ProductSearchHubSearchLookupResult._({
-    required this.results,
-    required this.hasFailed,
-  });
+  const new _({required this.results, required this.hasFailed});
 
   /// Successful lookup.
-  factory ProductSearchHubSearchLookupResult.success(
-    List<OffProductSearchResult> results,
-  ) {
+  factory success(List<OffProductSearchResult> results) {
     return ProductSearchHubSearchLookupResult._(
       results: results,
       hasFailed: false,
@@ -21,7 +16,7 @@ class ProductSearchHubSearchLookupResult {
   }
 
   /// Failed lookup.
-  const ProductSearchHubSearchLookupResult.failed()
+  const new failed()
     : this._(results: const <OffProductSearchResult>[], hasFailed: true);
 
   /// Visible results.

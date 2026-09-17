@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_edit_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_page/'
@@ -10,7 +10,7 @@ enum _InventoryPageView { stock, history }
 /// Defines inventory page.
 class InventoryPage extends ConsumerStatefulWidget {
   /// The inventory page.
-  const InventoryPage({
+  const new({
     super.key,
     this.expandedPreparedMealId,
     this.includeHomeShellChrome = false,

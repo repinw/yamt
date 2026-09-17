@@ -3,13 +3,13 @@
 
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
 class CookingFlowIntroMealHero extends StatelessWidget {
-  const CookingFlowIntroMealHero({
+  const new({
     required this.label,
     required this.imageBytes,
     required this.imageUrl,
@@ -81,7 +81,7 @@ class CookingFlowIntroMealHero extends StatelessWidget {
 }
 
 class _IntroMealHeroFallback extends StatelessWidget {
-  const _IntroMealHeroFallback({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -94,10 +94,8 @@ class _IntroMealHeroFallback extends StatelessWidget {
     return Center(
       child: Text(
         initial.toUpperCase(),
-        style: Theme.of(context).textTheme.displaySmall?.copyWith(
-          color: colors.primary,
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(context).textTheme.displaySmall
+            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
       ),
     );
   }

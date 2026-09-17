@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/settings/presentation/widgets/link_email_password_dialog/link_email_password_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -13,7 +14,7 @@ Widget _dialogUnderTest({
   bool Function(Object error)? shouldBubbleSubmitError,
 }) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: Builder(
@@ -43,36 +44,33 @@ void main() {
 
     expect(find.text('Link guest account'), findsOneWidget);
     expect(
-      find.text(
-        'Create email sign-in credentials for this guest account.',
-      ),
+      find.text('Create email sign-in credentials for this guest account.'),
       findsOneWidget,
     );
   });
 
-  testWidgets(
-    'fails form validation and does not submit if fields are empty',
-    (tester) async {
-      var submitted = false;
+  testWidgets('fails form validation and does not submit if fields are empty', (
+    tester,
+  ) async {
+    var submitted = false;
 
-      await tester.pumpWidget(
-        _dialogUnderTest(
-          onSubmitCredentials: ({required email, required password}) async {
-            submitted = true;
-          },
-          errorMessageFor: (error) => 'Error',
-        ),
-      );
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      _dialogUnderTest(
+        onSubmitCredentials: ({required email, required password}) async {
+          submitted = true;
+        },
+        errorMessageFor: (error) => 'Error',
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      final submitButtonFinder = find.byType(FilledButton);
-      await tester.tap(submitButtonFinder);
-      await tester.pumpAndSettle();
+    final submitButtonFinder = find.byType(FilledButton);
+    await tester.tap(submitButtonFinder);
+    await tester.pumpAndSettle();
 
-      expect(submitted, isFalse);
-      expect(find.text('The field is required'), findsNWidgets(3));
-    },
-  );
+    expect(submitted, isFalse);
+    expect(find.text('The field is required'), findsNWidgets(3));
+  });
 
   testWidgets('submits successfully when fields are filled', (tester) async {
     var submittedEmail = '';
@@ -96,16 +94,10 @@ void main() {
     );
 
     // Enter password
-    await tester.enterText(
-      find.byType(TextFormField).at(1),
-      'password123',
-    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
 
     // Enter confirm password
-    await tester.enterText(
-      find.byType(TextFormField).at(2),
-      'password123',
-    );
+    await tester.enterText(find.byType(TextFormField).at(2), 'password123');
 
     await tester.pumpAndSettle();
 
@@ -117,42 +109,35 @@ void main() {
     expect(submittedPassword, 'password123');
   });
 
-  testWidgets(
-    'handles submission error and displays formatted error message',
-    (tester) async {
-      final customError = Exception('Custom Error');
+  testWidgets('handles submission error and displays formatted error message', (
+    tester,
+  ) async {
+    final customError = Exception('Custom Error');
 
-      await tester.pumpWidget(
-        _dialogUnderTest(
-          onSubmitCredentials: ({required email, required password}) async {
-            throw customError;
-          },
-          errorMessageFor: (error) => 'Formatted: $error',
-        ),
-      );
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      _dialogUnderTest(
+        onSubmitCredentials: ({required email, required password}) async {
+          throw customError;
+        },
+        errorMessageFor: (error) => 'Formatted: $error',
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        'test@example.com',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).at(1),
-        'password123',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).at(2),
-        'password123',
-      );
-      await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'test@example.com',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+    await tester.enterText(find.byType(TextFormField).at(2), 'password123');
+    await tester.pumpAndSettle();
 
-      final submitButtonFinder = find.byType(FilledButton);
-      await tester.tap(submitButtonFinder);
-      await tester.pumpAndSettle();
+    final submitButtonFinder = find.byType(FilledButton);
+    await tester.tap(submitButtonFinder);
+    await tester.pumpAndSettle();
 
-      expect(find.text('Formatted: Exception: Custom Error'), findsOneWidget);
-    },
-  );
+    expect(find.text('Formatted: Exception: Custom Error'), findsOneWidget);
+  });
 
   testWidgets(
     'bubbles up submission error when shouldBubbleSubmitError returns true',
@@ -162,7 +147,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Builder(
@@ -199,14 +184,8 @@ void main() {
         find.byType(TextFormField).at(0),
         'test@example.com',
       );
-      await tester.enterText(
-        find.byType(TextFormField).at(1),
-        'password123',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).at(2),
-        'password123',
-      );
+      await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+      await tester.enterText(find.byType(TextFormField).at(2), 'password123');
       await tester.pumpAndSettle();
 
       final submitButtonFinder = find.byType(FilledButton);

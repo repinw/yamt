@@ -6,10 +6,7 @@ void main() {
   test('feature code uses app feedback-safe interaction wrappers', () {
     final violations = <String>[];
 
-    for (final file in _dartFilesUnder([
-      'lib/core/widgets',
-      'lib/features',
-    ])) {
+    for (final file in _dartFilesUnder(['lib/core/widgets', 'lib/features'])) {
       final path = _normalizeDartPath(file.path);
       final source = file.readAsStringSync();
 
@@ -59,12 +56,8 @@ final Map<String, RegExp> _directInteractionRules = <String, RegExp>{
   'CheckboxListTile': RegExp(
     r'\bCheckboxListTile(?:\.adaptive)?(?:<[^>]+>)?\s*\(',
   ),
-  'RadioListTile': RegExp(
-    r'\bRadioListTile(?:\.adaptive)?(?:<[^>]+>)?\s*\(',
-  ),
-  'SwitchListTile': RegExp(
-    r'\bSwitchListTile(?:\.adaptive)?(?:<[^>]+>)?\s*\(',
-  ),
+  'RadioListTile': RegExp(r'\bRadioListTile(?:\.adaptive)?(?:<[^>]+>)?\s*\('),
+  'SwitchListTile': RegExp(r'\bSwitchListTile(?:\.adaptive)?(?:<[^>]+>)?\s*\('),
 };
 
 String _normalizeDartPath(String path) {
@@ -76,8 +69,6 @@ Iterable<File> _dartFilesUnder(List<String> roots) sync* {
     yield* Directory(root)
         .listSync(recursive: true)
         .whereType<File>()
-        .where(
-          (file) => file.path.endsWith('.dart'),
-        );
+        .where((file) => file.path.endsWith('.dart'));
   }
 }

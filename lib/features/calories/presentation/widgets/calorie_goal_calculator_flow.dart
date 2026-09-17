@@ -1,8 +1,8 @@
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
@@ -43,10 +43,7 @@ enum _CalculatorStep {
 /// Defines calorie goal calculator flow.
 class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
   /// The calorie goal calculator flow.
-  const CalorieGoalCalculatorFlow({
-    required this.initialSettings,
-    super.key,
-  });
+  const new({required this.initialSettings, super.key});
 
   /// The initial settings.
   final CalorieGoalSettings initialSettings;
@@ -269,9 +266,8 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
             children: [
               Text(
                 l10n.caloriesCalculatorSheetTitle,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
@@ -592,7 +588,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -600,15 +596,14 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: Theme.of(
-        context,
-      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+      style: Theme.of(context).textTheme.titleMedium
+          ?.copyWith(fontWeight: FontWeight.w700),
     );
   }
 }
 
 class _StepPanel extends StatelessWidget {
-  const _StepPanel({required this.title, required this.child, super.key});
+  const new({required this.title, required this.child, super.key});
 
   final String title;
   final Widget child;

@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
@@ -27,9 +28,8 @@ import '../../../support/fake_local_image_store.dart';
 
 class _FakePreparedMealTemplateRepository
     implements PreparedMealTemplateRepository {
-  _FakePreparedMealTemplateRepository({
-    required List<PreparedMeal> initialTemplates,
-  }) : _templates = List<PreparedMeal>.from(initialTemplates);
+  new({required List<PreparedMeal> initialTemplates})
+    : _templates = List<PreparedMeal>.from(initialTemplates);
 
   final StreamController<List<PreparedMeal>> _controller =
       StreamController<List<PreparedMeal>>.broadcast();
@@ -64,7 +64,7 @@ class _FakePreparedMealTemplateRepository
 }
 
 class _FakePreparedMealRecipeImporter extends PreparedMealRecipeImporter {
-  const _FakePreparedMealRecipeImporter(this.recipe);
+  const new(this.recipe);
 
   final PreparedMealRecipeImport? recipe;
 
@@ -181,7 +181,7 @@ Widget _buildHarness({
     container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     ),

@@ -1,6 +1,6 @@
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -33,10 +33,7 @@ Future<InventoryDiscardReason?> showInventoryDiscardReasonDialog(
 }
 
 class _InventoryDiscardReasonDialog extends StatelessWidget {
-  const _InventoryDiscardReasonDialog({
-    required this.itemName,
-    required this.useRootNavigator,
-  });
+  const new({required this.itemName, required this.useRootNavigator});
 
   final String? itemName;
   final bool useRootNavigator;
@@ -49,16 +46,12 @@ class _InventoryDiscardReasonDialog extends StatelessWidget {
     return InventoryActionPickerSheet(
       title: l10n.inventoryDiscardReasonTitle,
       subtitle: itemName,
-      onClose: () => Navigator.of(
-        context,
-        rootNavigator: useRootNavigator,
-      ).pop(),
+      onClose: () =>
+          Navigator.of(context, rootNavigator: useRootNavigator).pop(),
       footer: Center(
         child: TextButton(
-          onPressed: () => Navigator.of(
-            context,
-            rootNavigator: useRootNavigator,
-          ).pop(),
+          onPressed: () =>
+              Navigator.of(context, rootNavigator: useRootNavigator).pop(),
           child: Text(l10n.inventoryReceiptReviewCancelAction),
         ),
       ),

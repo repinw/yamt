@@ -7,7 +7,7 @@ const _coordinatorLogName = 'InventoryItemRowActionCoordinator';
 /// Defines inventory item row action coordinator.
 class InventoryItemRowActionCoordinator {
   /// The inventory item row action coordinator.
-  const InventoryItemRowActionCoordinator({
+  const new({
     required this.isWorking,
     required this.setWorking,
     required this.isMounted,

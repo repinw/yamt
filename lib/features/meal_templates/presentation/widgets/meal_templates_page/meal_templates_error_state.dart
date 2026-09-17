@@ -1,14 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Error state card for the cookbook page.
 class MealTemplatesErrorState extends StatelessWidget {
   /// Creates the error state widget.
-  const MealTemplatesErrorState({
-    required this.onRetry,
-    super.key,
-  });
+  const new({required this.onRetry, super.key});
 
   /// Action when retry is pressed.
   final VoidCallback onRetry;
@@ -45,10 +42,8 @@ class MealTemplatesErrorState extends StatelessWidget {
                 Text(
                   l10n.preparedMealTemplatesLoadFailed,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    height: 1.5,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: colors.onSurfaceVariant, height: 1.5),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 FilledButton.icon(

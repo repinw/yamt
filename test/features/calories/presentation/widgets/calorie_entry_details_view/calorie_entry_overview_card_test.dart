@@ -1,12 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_overview_card.dart';
@@ -44,9 +45,8 @@ void main() {
         entry: entry,
         width: 360,
         overrides: [
-          localImageBytesProvider(
-            imageRef,
-          ).overrideWith((ref) async => _transparentPngBytes),
+          localImageBytesProvider(imageRef)
+              .overrideWith((ref) async => _transparentPngBytes),
         ],
       ),
     );
@@ -115,7 +115,7 @@ Widget _wrapOverview({
   return ProviderScope(
     overrides: overrides,
     child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Align(

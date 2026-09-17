@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 class _FakeGlobalFoodItemStore implements GlobalFoodItemStore {
-  _FakeGlobalFoodItemStore({List<GlobalFoodItemDocument>? initialDocuments})
+  new({List<GlobalFoodItemDocument>? initialDocuments})
     : _documents = initialDocuments ?? <GlobalFoodItemDocument>[];
 
   List<GlobalFoodItemDocument> _documents;
@@ -285,9 +285,9 @@ void main() {
       initialDocuments: <GlobalFoodItemDocument>[
         GlobalFoodItemDocument(
           id: 'milk',
-          data: _item(
-            'milk',
-          ).copyWith(storeName: 'Aldi', normalizedStoreName: 'aldi').toJson(),
+          data: _item('milk')
+              .copyWith(storeName: 'Aldi', normalizedStoreName: 'aldi')
+              .toJson(),
         ),
       ],
     );

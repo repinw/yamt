@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
@@ -9,11 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Stable compact activity and weight frame.
 class DiaryCompactActivityWeightSurface extends StatelessWidget {
   /// Creates compact activity and weight surface.
-  const DiaryCompactActivityWeightSurface({
-    required this.body,
-    this.header,
-    super.key,
-  });
+  const new({required this.body, this.header, super.key});
 
   /// Optional content rendered above metric row.
   final Widget? header;
@@ -24,10 +20,7 @@ class DiaryCompactActivityWeightSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _CompactMetricsFrame(
-      child: _CompactMetricsContent(
-        header: header,
-        body: body,
-      ),
+      child: _CompactMetricsContent(header: header, body: body),
     );
   }
 }
@@ -35,7 +28,7 @@ class DiaryCompactActivityWeightSurface extends StatelessWidget {
 /// Loaded compact weight metric.
 class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
   /// Creates the loaded compact weight metric.
-  const DiaryCompactActivityWeightMetricsRow({
+  const new({
     required this.data,
     required this.isWeightExpanded,
     required this.onTapWeight,
@@ -74,7 +67,7 @@ class DiaryCompactActivityWeightMetricsRow extends StatelessWidget {
 /// Skeleton row for compact activity and weight metrics.
 class DiaryCompactActivityWeightSkeletonRow extends StatelessWidget {
   /// Creates compact metric skeleton row.
-  const DiaryCompactActivityWeightSkeletonRow({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -88,10 +81,7 @@ class DiaryCompactActivityWeightSkeletonRow extends StatelessWidget {
 }
 
 class _CompactMetricsContent extends StatelessWidget {
-  const _CompactMetricsContent({
-    required this.body,
-    required this.header,
-  });
+  const new({required this.body, required this.header});
 
   final Widget body;
   final Widget? header;
@@ -114,7 +104,7 @@ class _CompactMetricsContent extends StatelessWidget {
 }
 
 class _CompactMetricsFrame extends StatelessWidget {
-  const _CompactMetricsFrame({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -140,7 +130,7 @@ class _CompactMetricsFrame extends StatelessWidget {
 }
 
 class _CompactMetricItem extends StatelessWidget {
-  const _CompactMetricItem({
+  const new({
     required this.icon,
     required this.label,
     required this.value,
@@ -181,9 +171,7 @@ class _CompactMetricItem extends StatelessWidget {
                     color: colors.primary,
                     size: AppSizes.compactMetricIcon,
                   ),
-                  const SizedBox(
-                    width: AppSizes.compactMetricIconLabelGap,
-                  ),
+                  const SizedBox(width: AppSizes.compactMetricIconLabelGap),
                   Flexible(
                     child: Text(
                       label.toUpperCase(),
@@ -236,7 +224,7 @@ class _CompactMetricItem extends StatelessWidget {
 }
 
 class _CompactMetricSkeletonItem extends StatelessWidget {
-  const _CompactMetricSkeletonItem({required this.icon, required this.label});
+  const new({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -257,10 +245,7 @@ class _CompactMetricSkeletonItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: AppSizes.compactMetricIcon,
-              ),
+              Icon(icon, size: AppSizes.compactMetricIcon),
               const SizedBox(width: AppSizes.compactMetricIconLabelGap),
               Flexible(
                 child: Text(
@@ -295,16 +280,15 @@ class _CompactMetricSkeletonItem extends StatelessWidget {
 }
 
 class _CompactMetricDivider extends StatelessWidget {
-  const _CompactMetricDivider();
+  const new();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: AppSizes.compactMetricDividerWidth,
       height: 32,
-      color: Theme.of(context).colorScheme.outlineVariant.withValues(
-        alpha: AppOpacities.compactMetricDivider,
-      ),
+      color: Theme.of(context).colorScheme.outlineVariant
+          .withValues(alpha: AppOpacities.compactMetricDivider),
     );
   }
 }

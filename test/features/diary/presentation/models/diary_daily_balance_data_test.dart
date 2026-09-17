@@ -155,43 +155,40 @@ void main() {
       expect(data.leftSubtitleParts, isEmpty);
     });
 
-    test(
-      'formats future day with baseValue, plannedWithCarryoverValue, '
-      'and carryover',
-      () {
-        const metrics = DiaryDailyBalanceMetrics(
-          bufferAdjustmentKcal: 0,
-          realEatenKcal: 0,
-          eatenKcal: 0,
-          realDayLeftKcal: 2150,
-          dayLeftKcal: 2150,
-          targetKcal: 2150,
-          baseGoalKcal: 2000,
-          carryoverKcal: 150,
-          activitySegmentKcal: 0,
-          activitySegmentReferenceKcal: 2150,
-        );
+    test('formats future day with baseValue, plannedWithCarryoverValue, '
+        'and carryover', () {
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 0,
+        eatenKcal: 0,
+        realDayLeftKcal: 2150,
+        dayLeftKcal: 2150,
+        targetKcal: 2150,
+        baseGoalKcal: 2000,
+        carryoverKcal: 150,
+        activitySegmentKcal: 0,
+        activitySegmentReferenceKcal: 2150,
+      );
 
-        final futureDay = selectedDay.add(const Duration(days: 1));
-        final data = DiaryDailyBalanceData.from(
-          selectedDay: futureDay,
-          metrics: metrics,
-          isPauseDay: false,
-          numberFormat: numberFormat,
-          l10n: l10n,
-          now: selectedDay,
-        );
+      final futureDay = selectedDay.add(const Duration(days: 1));
+      final data = DiaryDailyBalanceData.from(
+        selectedDay: futureDay,
+        metrics: metrics,
+        isPauseDay: false,
+        numberFormat: numberFormat,
+        l10n: l10n,
+        now: selectedDay,
+      );
 
-        expect(data.isFutureDay, isTrue);
-        expect(data.baseNumber, '2,000');
-        expect(data.plannedWithCarryoverNumber, '2,150');
-        expect(data.caloriesUnit, 'kcal');
-        expect(data.baseValue, '2,000 kcal');
-        expect(data.plannedWithCarryoverValue, '2,150 kcal');
-        expect(data.leftSubtitle, 'Carryover +150 kcal');
-        expect(data.leftSubtitleParts, isEmpty);
-      },
-    );
+      expect(data.isFutureDay, isTrue);
+      expect(data.baseNumber, '2,000');
+      expect(data.plannedWithCarryoverNumber, '2,150');
+      expect(data.caloriesUnit, 'kcal');
+      expect(data.baseValue, '2,000 kcal');
+      expect(data.plannedWithCarryoverValue, '2,150 kcal');
+      expect(data.leftSubtitle, 'Carryover +150 kcal');
+      expect(data.leftSubtitleParts, isEmpty);
+    });
 
     test(
       'formats future day without carryover subtitle when carryover is zero',

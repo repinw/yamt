@@ -43,12 +43,15 @@ void main() {
       sameDay,
       otherDay,
     ]);
-    final duplicateRequest = ResolvedCalorieGoalDaysRequest.fromDays(
-      <DateTime>[day, sameDay, otherDay],
-    );
-    final reversedRequest = ResolvedCalorieGoalDaysRequest.fromDays(
-      <DateTime>[otherDay, day],
-    );
+    final duplicateRequest = ResolvedCalorieGoalDaysRequest.fromDays(<DateTime>[
+      day,
+      sameDay,
+      otherDay,
+    ]);
+    final reversedRequest = ResolvedCalorieGoalDaysRequest.fromDays(<DateTime>[
+      otherDay,
+      day,
+    ]);
     final detailedActivityRequest = ResolvedCalorieGoalDaysRequest.fromDays(
       <DateTime>[day, otherDay],
       forceDetailedActivity: true,
@@ -85,10 +88,7 @@ void main() {
     final secondGoal = goals[diaryDayKey(secondDay)];
     expect(
       goals.keys,
-      orderedEquals(<String>[
-        diaryDayKey(firstDay),
-        diaryDayKey(secondDay),
-      ]),
+      orderedEquals(<String>[diaryDayKey(firstDay), diaryDayKey(secondDay)]),
     );
     expect(firstGoal, isNotNull);
     expect(firstGoal!.day, normalizeDiaryDay(firstDay));
@@ -98,46 +98,43 @@ void main() {
     expect(secondGoal.goalKcal, 2100);
   });
 
-  test(
-    'resolves higher goal on training days and budget-neutral deduction '
-    'on rest days',
-    () async {
-      // 2026-04-13 is Monday (weekday 1)
-      final monday = DateTime(2026, 4, 13);
-      // 2026-04-14 is Tuesday (weekday 2)
-      final tuesday = DateTime(2026, 4, 14);
+  test('resolves higher goal on training days and budget-neutral deduction '
+      'on rest days', () async {
+    // 2026-04-13 is Monday (weekday 1)
+    final monday = DateTime(2026, 4, 13);
+    // 2026-04-14 is Tuesday (weekday 2)
+    final tuesday = DateTime(2026, 4, 14);
 
-      // 3 training days: Monday (1), Wednesday (3), Friday (5)
-      // Base: 2000 kcal, Offset: +200 kcal
-      // Training days (3): 2200 kcal
-      // Rest days (4): (7*2000 - 3*2200) / 4 = (14000 - 6600) / 4 = 1850 kcal
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            dailyKcalGoal: 2000,
-            changedAt: monday,
-            calculatorProfile: null,
-          )
-          .copyWith(
-            trainingWeekdays: const [1, 3, 5],
-            trainingDayKcalOffset: 200,
-          );
+    // 3 training days: Monday (1), Wednesday (3), Friday (5)
+    // Base: 2000 kcal, Offset: +200 kcal
+    // Training days (3): 2200 kcal
+    // Rest days (4): (7*2000 - 3*2200) / 4 = (14000 - 6600) / 4 = 1850 kcal
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          dailyKcalGoal: 2000,
+          changedAt: monday,
+          calculatorProfile: null,
+        )
+        .copyWith(
+          trainingWeekdays: const [1, 3, 5],
+          trainingDayKcalOffset: 200,
+        );
 
-      final container = _createContainer(today: monday, settings: settings);
-      addTearDown(container.dispose);
+    final container = _createContainer(today: monday, settings: settings);
+    addTearDown(container.dispose);
 
-      final mondayGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(monday).future,
-      );
-      final tuesdayGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(tuesday).future,
-      );
+    final mondayGoal = await container.read(
+      resolvedCalorieGoalForDayProvider(monday).future,
+    );
+    final tuesdayGoal = await container.read(
+      resolvedCalorieGoalForDayProvider(tuesday).future,
+    );
 
-      expect(mondayGoal.storedGoalKcal, 2000);
-      expect(mondayGoal.goalKcal, 2200);
-      expect(tuesdayGoal.storedGoalKcal, 2000);
-      expect(tuesdayGoal.goalKcal, 1850);
-    },
-  );
+    expect(mondayGoal.storedGoalKcal, 2000);
+    expect(mondayGoal.goalKcal, 2200);
+    expect(tuesdayGoal.storedGoalKcal, 2000);
+    expect(tuesdayGoal.goalKcal, 1850);
+  });
 
   test('respects manual day toggle override for training day', () async {
     // 2026-04-14 is Tuesday (normally rest day)
@@ -149,10 +146,7 @@ void main() {
           changedAt: DateTime(2026, 4),
           calculatorProfile: null,
         )
-        .copyWith(
-          trainingWeekdays: const [1, 3, 5],
-          trainingDayKcalOffset: 200,
-        )
+        .copyWith(trainingWeekdays: const [1, 3, 5], trainingDayKcalOffset: 200)
         .toggleTrainingDay(tuesday);
 
     final container = _createContainer(today: tuesday, settings: settings);
@@ -245,40 +239,37 @@ void main() {
     },
   );
 
-  test(
-    'does not clamp a learned resolved goal above the 1200 floor',
-    () async {
-      final today = DateTime(2026, 4, 15);
-      final sourceStart = today.subtract(const Duration(days: 7));
-      final settings = const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: sourceStart,
-            dailyKcalGoal: 1450,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: today,
-            dailyKcalGoal: 1450,
-            calculatorProfile: null,
-            source: CalorieGoalSource.weeklyCheckIn,
-            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: sourceStart,
-              windowEndDate: today.subtract(const Duration(days: 1)),
-              trendWeightChangePerDay: 0,
-              calculatedTdeeKcal: 1450,
-              lowConfidence: false,
-            ),
-          );
+  test('does not clamp a learned resolved goal above the 1200 floor', () async {
+    final today = DateTime(2026, 4, 15);
+    final sourceStart = today.subtract(const Duration(days: 7));
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: sourceStart,
+          dailyKcalGoal: 1450,
+          calculatorProfile: null,
+        )
+        .applyGoalChange(
+          changedAt: today,
+          dailyKcalGoal: 1450,
+          calculatorProfile: null,
+          source: CalorieGoalSource.weeklyCheckIn,
+          weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+            windowStartDate: sourceStart,
+            windowEndDate: today.subtract(const Duration(days: 1)),
+            trendWeightChangePerDay: 0,
+            calculatedTdeeKcal: 1450,
+            lowConfidence: false,
+          ),
+        );
 
-      final container = _createContainer(today: today, settings: settings);
-      addTearDown(container.dispose);
+    final container = _createContainer(today: today, settings: settings);
+    addTearDown(container.dispose);
 
-      final resolvedGoal = await container.read(
-        resolvedCalorieGoalForDayProvider(today).future,
-      );
+    final resolvedGoal = await container.read(
+      resolvedCalorieGoalForDayProvider(today).future,
+    );
 
-      expect(resolvedGoal.goalKcal, 1450);
-      expect(resolvedGoal.wasClampedToMinimum, isFalse);
-    },
-  );
+    expect(resolvedGoal.goalKcal, 1450);
+    expect(resolvedGoal.wasClampedToMinimum, isFalse);
+  });
 }

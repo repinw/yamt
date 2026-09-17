@@ -85,9 +85,7 @@ CalorieGoalSettings _settingsWithTrustedSnapshot() {
 
 class _ReadThrowingCalorieSettingsRepository
     extends FakeCalorieSettingsRepository {
-  _ReadThrowingCalorieSettingsRepository({
-    super.initialSettings,
-  });
+  new({super.initialSettings});
 
   @override
   Future<CalorieGoalSettings> readSettings() async {

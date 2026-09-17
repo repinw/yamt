@@ -11,9 +11,7 @@ import 'package:yamt/features/product_search_hub/domain/product_ai_search_models
 
 /// Builds the default kcal density for an AI draft.
 double baseProductAiPer100Kcal(ProductAiSearchDraft draft) {
-  return _roundToWholeNumber(
-    draft.defaultKcal * 100 / draft.totalWeightGrams,
-  );
+  return _roundToWholeNumber(draft.defaultKcal * 100 / draft.totalWeightGrams);
 }
 
 /// Builds nutrition data for the selected AI portion and kcal density.
@@ -30,10 +28,7 @@ ProductAiNutritionSelection buildProductAiNutritionSelection({
     draft.totalKcalMax * 100 / draft.totalWeightGrams,
   );
   final resolvedPer100Kcal = _roundToWholeNumber(
-    selectedPer100Kcal.clamp(
-      minPer100Kcal,
-      maxPer100Kcal,
-    ),
+    selectedPer100Kcal.clamp(minPer100Kcal, maxPer100Kcal),
   );
   final selectedTotalKcal = _roundToWholeNumber(
     resolvedPer100Kcal * draft.totalWeightGrams / 100,

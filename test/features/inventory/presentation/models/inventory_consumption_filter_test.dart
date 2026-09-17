@@ -56,9 +56,6 @@ void main() {
     final next = filter.copyWith(hideFullyConsumedItems: false);
 
     expect(next.hideFullyConsumedItems, isFalse);
-    expect(
-      const InventoryConsumptionFilter().hideFullyConsumedItems,
-      isTrue,
-    );
+    expect(const InventoryConsumptionFilter().hideFullyConsumedItems, isTrue);
   });
 }

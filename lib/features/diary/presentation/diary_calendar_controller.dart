@@ -24,10 +24,7 @@ DiaryCalendarBounds diaryCalendarBounds(Ref ref) {
 /// UI state for the diary calendar.
 class DiaryCalendarState {
   /// Creates diary calendar state.
-  const DiaryCalendarState({
-    required this.today,
-    required this.selectedDay,
-  });
+  const new({required this.today, required this.selectedDay});
 
   /// Today's normalized date.
   final DateTime today;
@@ -39,10 +36,7 @@ class DiaryCalendarState {
   bool get isSelectedToday => isSameCalendarDay(selectedDay, today);
 
   /// Returns a copy with selected overrides.
-  DiaryCalendarState copyWith({
-    DateTime? today,
-    DateTime? selectedDay,
-  }) {
+  DiaryCalendarState copyWith({DateTime? today, DateTime? selectedDay}) {
     return DiaryCalendarState(
       today: today ?? this.today,
       selectedDay: selectedDay ?? this.selectedDay,
@@ -56,10 +50,7 @@ class DiaryCalendarController extends _$DiaryCalendarController {
   @override
   DiaryCalendarState build() {
     final today = _currentToday();
-    return DiaryCalendarState(
-      today: today,
-      selectedDay: today,
-    );
+    return DiaryCalendarState(today: today, selectedDay: today);
   }
 
   /// Selects [day], clamped to the selectable range.

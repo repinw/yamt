@@ -16,7 +16,7 @@ import 'package:yamt/features/calories/provider/calorie_entry_mutations.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
-  _FakeCalorieLogRepository({List<CalorieEntry>? initialEntries})
+  new({List<CalorieEntry>? initialEntries})
     : _entries = initialEntries ?? <CalorieEntry>[];
 
   final List<CalorieEntry> _entries;
@@ -216,7 +216,7 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 }
 
 class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
-  _FakeCalorieSettingsRepository({CalorieGoalSettings? initialSettings})
+  new({CalorieGoalSettings? initialSettings})
     : _settings = initialSettings ?? const CalorieGoalSettings.empty();
 
   CalorieGoalSettings _settings;

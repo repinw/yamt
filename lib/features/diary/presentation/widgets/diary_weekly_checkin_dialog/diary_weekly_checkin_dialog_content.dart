@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/'
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Content for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInDialogContent extends StatelessWidget {
   /// Creates diary weekly check-in dialog content.
-  const DiaryWeeklyCheckInDialogContent({required this.checkInData, super.key});
+  const new({required this.checkInData, super.key});
 
   /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
@@ -51,7 +51,7 @@ class DiaryWeeklyCheckInDialogContent extends StatelessWidget {
 /// Intro text for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInDialogIntro extends StatelessWidget {
   /// Creates diary weekly check-in dialog intro text.
-  const DiaryWeeklyCheckInDialogIntro({required this.checkInData, super.key});
+  const new({required this.checkInData, super.key});
 
   /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;
@@ -71,10 +71,7 @@ class DiaryWeeklyCheckInDialogIntro extends StatelessWidget {
 /// Blocked reason text for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInBlockedMessage extends StatelessWidget {
   /// Creates blocked reason text.
-  const DiaryWeeklyCheckInBlockedMessage({
-    required this.checkInData,
-    super.key,
-  });
+  const new({required this.checkInData, super.key});
 
   /// Weekly check-in data.
   final DiaryWeeklyCheckInData checkInData;

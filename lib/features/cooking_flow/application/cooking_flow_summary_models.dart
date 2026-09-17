@@ -5,7 +5,7 @@ const Object _keepSummaryValue = Object();
 /// Editable ingredient draft for summary step.
 class CookingFlowSummaryIngredientDraft {
   /// Creates draft.
-  const CookingFlowSummaryIngredientDraft({
+  const new({
     required this.key,
     required this.name,
     required this.amount,

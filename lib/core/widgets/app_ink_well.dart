@@ -1,13 +1,13 @@
 // Mirrors Flutter's Ink APIs; delegated property docs stay in the SDK.
 // ignore_for_file: public_member_api_docs
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 
 /// App-standard [InkWell] with Material feedback disabled centrally.
 class AppInkWell extends StatelessWidget {
   /// Creates an app ink well.
-  const AppInkWell({
+  const new({
     required this.child,
     this.onTap,
     this.onDoubleTap,
@@ -119,7 +119,7 @@ class AppInkWell extends StatelessWidget {
 /// App-standard [InkResponse] with Material feedback disabled centrally.
 class AppInkResponse extends StatelessWidget {
   /// Creates an app ink response.
-  const AppInkResponse({
+  const new({
     required this.child,
     this.onTap,
     this.onDoubleTap,

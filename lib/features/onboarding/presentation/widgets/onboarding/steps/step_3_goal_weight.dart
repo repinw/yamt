@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Onboarding step for current and target weight.
 class Step3GoalWeight extends StatelessWidget {
   /// Creates goal-weight onboarding step.
-  const Step3GoalWeight({
+  const new({
     required this.state,
     required this.notifier,
     this.showErrors = false,

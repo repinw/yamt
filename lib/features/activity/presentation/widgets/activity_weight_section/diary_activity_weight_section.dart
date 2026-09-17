@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
@@ -23,11 +23,7 @@ const _activityWeightRefreshPeriod = Duration(minutes: 1);
 /// Activity and weight section for the diary page.
 class DiaryActivityWeightSection extends ConsumerStatefulWidget {
   /// Creates the activity and weight section.
-  const DiaryActivityWeightSection({
-    required this.selectedDay,
-    this.header,
-    super.key,
-  });
+  const new({required this.selectedDay, this.header, super.key});
 
   /// The selected diary day.
   final DateTime selectedDay;

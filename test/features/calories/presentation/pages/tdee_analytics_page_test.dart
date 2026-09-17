@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
@@ -69,9 +69,7 @@ void main() {
               (ref, query) => Future.value(fakeState),
             ),
           ],
-          child: const MaterialApp(
-            home: TdeeAnalyticsPage(),
-          ),
+          child: const MaterialApp(home: TdeeAnalyticsPage()),
         ),
       );
 

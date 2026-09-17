@@ -36,10 +36,7 @@ const dailyLearnedTdeeMaximumLookbackDays = 28;
 /// Defines calorie weekly check in weight point.
 class CalorieWeeklyCheckInWeightPoint {
   /// The calorie weekly check in weight point.
-  const CalorieWeeklyCheckInWeightPoint({
-    required this.dayIndex,
-    required this.weightKg,
-  });
+  const new({required this.dayIndex, required this.weightKg});
 
   /// The day index.
   final int dayIndex;
@@ -51,7 +48,7 @@ class CalorieWeeklyCheckInWeightPoint {
 /// Defines calorie weekly check in calculation.
 class CalorieWeeklyCheckInCalculation {
   /// The calorie weekly check in calculation.
-  const CalorieWeeklyCheckInCalculation({
+  const new({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
     double? measuredTdeeKcal,
@@ -137,7 +134,7 @@ class CalorieWeeklyCheckInCalculation {
 /// Defines measured TDEE calculation before EMA smoothing.
 class CalorieMeasuredTdeeCalculation {
   /// The measured TDEE calculation.
-  const CalorieMeasuredTdeeCalculation({
+  const new({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
     double? measuredTdeeKcal,
@@ -178,7 +175,7 @@ class CalorieMeasuredTdeeCalculation {
 /// Defines learned TDEE target calculation from measured data.
 class CalorieLearnedTdeeGoalCalculation {
   /// The learned TDEE goal calculation.
-  const CalorieLearnedTdeeGoalCalculation({
+  const new({
     required this.measured,
     required this.calculatedTdeeKcal,
     required this.rawGoalKcal,

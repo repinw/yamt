@@ -1,13 +1,13 @@
 // Internal split file. Public names are imported only by sibling widgets.
 // ignore_for_file: public_member_api_docs
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
 
 class InventoryItemEatSheetViewData {
-  const InventoryItemEatSheetViewData({
+  const new({
     required this.viewInsetsBottom,
     required this.hero,
     required this.amountSection,
@@ -29,7 +29,7 @@ class InventoryItemEatSheetViewData {
 }
 
 class InventoryItemEatSheetHeroData {
-  const InventoryItemEatSheetHeroData({
+  const new({
     required this.itemName,
     required this.imageUrl,
     required this.eyebrow,
@@ -41,7 +41,7 @@ class InventoryItemEatSheetHeroData {
 }
 
 class InventoryItemEatSheetAmountSectionData {
-  const InventoryItemEatSheetAmountSectionData({
+  const new({
     required this.clearTooltip,
     required this.controller,
     required this.focusNode,
@@ -79,7 +79,7 @@ class InventoryItemEatSheetAmountSectionData {
 }
 
 class InventoryItemEatAmountModeOption {
-  const InventoryItemEatAmountModeOption({
+  const new({
     required this.id,
     required this.label,
     this.amount,
@@ -101,7 +101,7 @@ class InventoryItemEatAmountModeOption {
 }
 
 class InventoryItemEatSheetManualPortionSectionData {
-  const InventoryItemEatSheetManualPortionSectionData({
+  const new({
     required this.title,
     required this.controller,
     required this.focusNode,
@@ -128,7 +128,7 @@ class InventoryItemEatSheetManualPortionSectionData {
 }
 
 class InventoryItemEatSheetWhenSectionData {
-  const InventoryItemEatSheetWhenSectionData({
+  const new({
     required this.isToday,
     required this.label,
     required this.selectedMealType,
@@ -144,7 +144,7 @@ class InventoryItemEatSheetWhenSectionData {
 }
 
 class InventoryItemEatSheetInedibleSectionData {
-  const InventoryItemEatSheetInedibleSectionData({
+  const new({
     required this.controller,
     required this.focusNode,
     required this.errorText,
@@ -168,7 +168,7 @@ class InventoryItemEatSheetInedibleSectionData {
 }
 
 class InventoryItemEatSheetFooterData {
-  const InventoryItemEatSheetFooterData({
+  const new({
     required this.confirmActionText,
     required this.onConfirm,
     required this.addMoreActionText,

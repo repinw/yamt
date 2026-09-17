@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
@@ -11,7 +11,7 @@ const _thumbSize = 54.0;
 /// Entry image, or the entry's initial when no image loads.
 class MealThumb extends ConsumerWidget {
   /// Creates a meal thumbnail.
-  const MealThumb({required this.entry, super.key});
+  const new({required this.entry, super.key});
 
   /// Entry whose media should be rendered.
   final DiaryMealEntry entry;
@@ -44,7 +44,7 @@ class MealThumb extends ConsumerWidget {
 }
 
 class _MealThumbFallback extends StatelessWidget {
-  const _MealThumbFallback({required this.label});
+  const new({required this.label});
 
   final String label;
 

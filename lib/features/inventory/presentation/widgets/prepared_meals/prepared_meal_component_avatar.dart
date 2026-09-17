@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
 /// Defines prepared meal component avatar.
 class PreparedMealComponentAvatar extends StatelessWidget {
   /// The prepared meal component avatar.
-  const PreparedMealComponentAvatar({
+  const new({
     required this.label,
     required this.imageUrl,
     super.key,
@@ -47,10 +47,7 @@ class PreparedMealComponentAvatar extends StatelessWidget {
 }
 
 class _PreparedMealComponentAvatarFallback extends StatelessWidget {
-  const _PreparedMealComponentAvatarFallback({
-    required this.label,
-    required this.size,
-  });
+  const new({required this.label, required this.size});
 
   final String label;
   final double size;
@@ -71,10 +68,8 @@ class _PreparedMealComponentAvatarFallback extends StatelessWidget {
         child: Center(
           child: Text(
             initial.toUpperCase(),
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colors.primary,
-              fontWeight: FontWeight.w700,
-            ),
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: colors.primary, fontWeight: FontWeight.w700),
           ),
         ),
       ),

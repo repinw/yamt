@@ -1,13 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Styled card container for daily budget details sheet sections.
 class DiaryDailyBudgetSheetCard extends StatelessWidget {
   /// Creates a styled sheet card.
-  const DiaryDailyBudgetSheetCard({
-    required this.child,
-    super.key,
-  });
+  const new({required this.child, super.key});
 
   /// Card body widget.
   final Widget child;
@@ -19,9 +16,7 @@ class DiaryDailyBudgetSheetCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: 0.5),
-        ),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
       ),
       padding: const EdgeInsets.all(AppSpacing.md),
       child: child,
@@ -32,7 +27,7 @@ class DiaryDailyBudgetSheetCard extends StatelessWidget {
 /// Key-value row inside daily budget detail sections.
 class DiaryDailyBudgetRow extends StatelessWidget {
   /// Creates a budget row.
-  const DiaryDailyBudgetRow({
+  const new({
     required this.label,
     required this.value,
     this.valueColor,
@@ -90,9 +85,7 @@ class DiaryDailyBudgetRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
       child: Row(
         children: [
-          Expanded(
-            child: Text(label, style: labelStyle),
-          ),
+          Expanded(child: Text(label, style: labelStyle)),
           const SizedBox(width: AppSpacing.sm),
           Text(value, style: valueStyle),
         ],

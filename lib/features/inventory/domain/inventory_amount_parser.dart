@@ -36,11 +36,7 @@ extension InventoryAmountUnitCode on InventoryAmountUnit {
 /// Defines inventory amount parse result.
 class InventoryAmountParseResult {
   /// The inventory amount parse result.
-  const InventoryAmountParseResult({
-    required this.amount,
-    required this.unit,
-    this.scale = 1,
-  });
+  const new({required this.amount, required this.unit, this.scale = 1});
 
   /// The amount.
   final int amount;
@@ -130,7 +126,7 @@ int? parseInventoryAmountInput({
 /// Defines inventory amount parser.
 class InventoryAmountParser {
   /// The inventory amount parser.
-  const InventoryAmountParser();
+  const new();
 
   static final RegExp _packPattern = RegExp(r'^(\d+)[x\u00D7](.+)$');
   static final RegExp _valueWithUnitPattern = RegExp(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Wraps the existing calorie entry details view with PopScope.
 class CalorieEntryEditorDetailsScaffold extends StatelessWidget {
   /// Creates details scaffold.
-  const CalorieEntryEditorDetailsScaffold({
+  const new({
     required this.entry,
     required this.draft,
     required this.isSaving,

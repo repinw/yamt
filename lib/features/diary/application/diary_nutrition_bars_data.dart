@@ -7,7 +7,7 @@ part 'diary_nutrition_bars_data.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryNutritionBarsData {
   /// Creates diary nutrition bars data.
-  const DiaryNutritionBarsData({
+  const new({
     required this.carbs,
     required this.protein,
     required this.fat,
@@ -15,7 +15,7 @@ class DiaryNutritionBarsData {
   });
 
   /// Creates data from persisted JSON.
-  factory DiaryNutritionBarsData.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$DiaryNutritionBarsDataFromJson(json);
 
   /// Converts data to persisted JSON.

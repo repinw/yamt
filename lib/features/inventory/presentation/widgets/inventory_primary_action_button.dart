@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Defines inventory primary action button.
 class InventoryPrimaryActionButton extends StatelessWidget {
   /// The inventory primary action button.
-  const InventoryPrimaryActionButton({
+  const new({
     required this.tooltip,
     required this.onPressed,
     required this.showText,
@@ -130,7 +130,7 @@ class InventoryPrimaryActionButton extends StatelessWidget {
 }
 
 class _TextActionContent extends StatelessWidget {
-  const _TextActionContent({
+  const new({
     required this.label,
     required this.color,
     required this.iconSize,
@@ -147,9 +147,8 @@ class _TextActionContent extends StatelessWidget {
     final text = Text(
       label,
       textAlign: TextAlign.center,
-      style: Theme.of(
-        context,
-      ).textTheme.labelLarge?.copyWith(color: color, fontSize: 12),
+      style: Theme.of(context).textTheme.labelLarge
+          ?.copyWith(color: color, fontSize: 12),
     );
     if (icon == null) {
       return text;

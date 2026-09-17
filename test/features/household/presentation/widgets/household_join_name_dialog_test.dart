@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_join_name_dialog/household_join_name_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -7,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 void main() {
   Widget buildTestApp({required void Function(String?) onResult}) {
     return MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Builder(
         builder: (context) {

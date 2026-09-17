@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_image_generator.dart';
 
 class _RecordingImageStorageClient implements AiChefImageStorageClient {
-  _RecordingImageStorageClient({required this.canUpload});
+  new({required this.canUpload});
 
   @override
   final bool canUpload;
@@ -28,9 +28,8 @@ void main() {
     () async {
       final storageClient = _RecordingImageStorageClient(canUpload: true);
       final generator = AiChefImageGenerator(
-        imageBytesClient: (_) => Future<Uint8List?>.error(
-          TimeoutException('image timed out'),
-        ),
+        imageBytesClient: (_) =>
+            Future<Uint8List?>.error(TimeoutException('image timed out')),
         imageStorageClient: storageClient,
       );
 

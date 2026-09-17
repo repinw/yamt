@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
@@ -25,11 +25,7 @@ Future<bool> _deleteWeight({
 /// Expanded weight history card.
 class DiaryWeightDetailsCard extends ConsumerWidget {
   /// Creates a weight details card.
-  const DiaryWeightDetailsCard({
-    required this.data,
-    required this.selectedDay,
-    super.key,
-  });
+  const new({required this.data, required this.selectedDay, super.key});
 
   /// Loaded activity and weight data.
   final DiaryActivityWeightData data;

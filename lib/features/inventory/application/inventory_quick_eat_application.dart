@@ -57,15 +57,12 @@ abstract interface class InventoryQuickEatActions {
 /// Runs quick-eat mutations against Inventory repositories.
 final class InventoryQuickEatApplication implements InventoryQuickEatActions {
   /// Creates the quick-eat application service.
-  InventoryQuickEatApplication({
-    required InventoryItemRepository inventoryRepository,
-    required PreparedMealRepository preparedMealRepository,
-    required PreparedMealCalorieLogBridge calorieLogBridge,
-    required InventoryPendingConsumptionStore pendingConsumptions,
-  }) : _inventoryRepository = inventoryRepository,
-       _preparedMealRepository = preparedMealRepository,
-       _calorieLogBridge = calorieLogBridge,
-       _pendingConsumptions = pendingConsumptions;
+  new({
+    required this._inventoryRepository,
+    required this._preparedMealRepository,
+    required this._calorieLogBridge,
+    required this._pendingConsumptions,
+  });
 
   final InventoryItemRepository _inventoryRepository;
   final PreparedMealRepository _preparedMealRepository;
@@ -80,10 +77,8 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     required int amount,
   }) {
     return _mutationQueue.run<String?>(
-      operation: () => _stageInventoryItemConsumption(
-        itemId: itemId,
-        amount: amount,
-      ),
+      operation: () =>
+          _stageInventoryItemConsumption(itemId: itemId, amount: amount),
       fallbackValue: null,
       onError: _logMutationError,
     );

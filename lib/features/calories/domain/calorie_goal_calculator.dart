@@ -13,7 +13,7 @@ const _calculatorLogName = 'CalorieGoalCalculator';
 /// Defines calorie goal calculation result.
 class CalorieGoalCalculationResult {
   /// The calorie goal calculation result.
-  const CalorieGoalCalculationResult({
+  const new({
     required this.bmrKcal,
     required this.tdeeKcal,
     required this.expectedActivityKcal,

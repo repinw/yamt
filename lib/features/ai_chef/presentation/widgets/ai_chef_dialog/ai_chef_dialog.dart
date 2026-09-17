@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/ai_chef/application/'
     'ai_chef_inventory_input_builder.dart';
@@ -42,7 +42,7 @@ Future<void> showAiChefDialog(
 /// The dialog widget coordinating the AI generation process.
 class AiChefDialog extends ConsumerStatefulWidget {
   /// Creates a dialog.
-  const AiChefDialog({super.key, this.inventoryItemsLoader});
+  const new({super.key, this.inventoryItemsLoader});
 
   /// Loads active inventory from the caller scope.
   final AiChefInventoryItemsLoader? inventoryItemsLoader;
@@ -219,16 +219,13 @@ class _AiChefDialogState extends ConsumerState<AiChefDialog> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
       );
   }
 }
 
 class _ErrorStateView extends StatelessWidget {
-  const _ErrorStateView({required this.onRetry, required this.onClose});
+  const new({required this.onRetry, required this.onClose});
 
   final VoidCallback onRetry;
   final VoidCallback onClose;

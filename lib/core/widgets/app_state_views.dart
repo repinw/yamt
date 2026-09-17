@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Centered loading indicator for full-page async states.
 class AppLoadingView extends StatelessWidget {
   /// Creates app loading view.
-  const AppLoadingView({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class AppLoadingView extends StatelessWidget {
 /// Centered error card with retry action for full-page async states.
 class AppErrorRetryView extends StatelessWidget {
   /// Creates app error retry view.
-  const AppErrorRetryView({
+  const new({
     required this.onRetry,
     required this.message,
     required this.retryLabel,

@@ -28,7 +28,7 @@ const _weekOverviewLogName = 'CalorieWeekOverviewProvider';
 /// Defines calorie week consumption day snapshot.
 class CalorieWeekConsumptionDaySnapshot {
   /// The calorie week consumption day snapshot.
-  const CalorieWeekConsumptionDaySnapshot({
+  const new({
     required this.date,
     required this.totalKcal,
     required this.entryCount,
@@ -47,10 +47,7 @@ class CalorieWeekConsumptionDaySnapshot {
 /// Defines calorie week consumption snapshot.
 class CalorieWeekConsumptionSnapshot {
   /// The calorie week consumption snapshot.
-  const CalorieWeekConsumptionSnapshot({
-    required this.days,
-    required this.totalConsumedKcal,
-  });
+  const new({required this.days, required this.totalConsumedKcal});
 
   /// The days.
   final List<CalorieWeekConsumptionDaySnapshot> days;
@@ -63,7 +60,7 @@ class CalorieWeekConsumptionSnapshot {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieWeekDayOverview {
   /// The calorie week day overview.
-  const CalorieWeekDayOverview({
+  const new({
     required this.date,
     required this.totalKcal,
     required this.goalKcal,
@@ -77,7 +74,7 @@ class CalorieWeekDayOverview {
   }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
 
   /// Creates data from persisted JSON.
-  factory CalorieWeekDayOverview.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$CalorieWeekDayOverviewFromJson(json);
 
   /// Converts data to persisted JSON.
@@ -133,7 +130,7 @@ class CalorieWeekDayOverview {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieWeekOverview {
   /// The calorie week overview.
-  const CalorieWeekOverview({
+  const new({
     required this.days,
     required this.totalConsumedKcal,
     required this.totalGoalKcal,
@@ -147,7 +144,7 @@ class CalorieWeekOverview {
   });
 
   /// Creates data from persisted JSON.
-  factory CalorieWeekOverview.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$CalorieWeekOverviewFromJson(json);
 
   /// Converts data to persisted JSON.
@@ -312,23 +309,21 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     final overviews = snapshot.days
         .asMap()
         .entries
-        .map(
-          (entry) {
-            final goal = resolvedGoalsByDay[diaryDayKey(entry.value.date)]!;
-            return CalorieWeekDayOverview(
-              date: entry.value.date,
-              totalKcal: entry.value.totalKcal,
-              goalKcal: goal.goalKcal,
-              baseGoalKcal: goal.storedGoalKcal,
-              activityBonusKcal: goal.activityDeltaKcal,
-              todayActiveKcal: goal.todayActiveKcal,
-              expectedActivityKcal: goal.expectedActivityKcal,
-              isActivityTrackingActive: goal.isActivityTrackingActive,
-              entryCount: entry.value.entryCount,
-              isPauseDay: settings.isPauseDay(entry.value.date),
-            );
-          },
-        )
+        .map((entry) {
+          final goal = resolvedGoalsByDay[diaryDayKey(entry.value.date)]!;
+          return CalorieWeekDayOverview(
+            date: entry.value.date,
+            totalKcal: entry.value.totalKcal,
+            goalKcal: goal.goalKcal,
+            baseGoalKcal: goal.storedGoalKcal,
+            activityBonusKcal: goal.activityDeltaKcal,
+            todayActiveKcal: goal.todayActiveKcal,
+            expectedActivityKcal: goal.expectedActivityKcal,
+            isActivityTrackingActive: goal.isActivityTrackingActive,
+            entryCount: entry.value.entryCount,
+            isPauseDay: settings.isPauseDay(entry.value.date),
+          );
+        })
         .toList(growable: false);
     final today = snapshot.days.last.date;
     final visibleWindowStart = snapshot.days.first.date;

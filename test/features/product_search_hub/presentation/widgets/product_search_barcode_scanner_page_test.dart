@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
@@ -231,7 +232,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           locale: const Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: InventoryBarcodeCandidatePickerSheet(
@@ -270,10 +271,7 @@ void main() {
       await tester.pump();
 
       expect(selectedCandidate?.barcode, candidate.barcode);
-      expect(
-        selectedAction,
-        InventoryBarcodeCandidateAction.addToInventory,
-      );
+      expect(selectedAction, InventoryBarcodeCandidateAction.addToInventory);
     },
   );
 
@@ -294,7 +292,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: InventoryBarcodeCandidatePickerSheet(
@@ -308,9 +306,7 @@ void main() {
     await tester.pump();
 
     await tester.tap(
-      find.byKey(
-        const Key('inventory_barcode_candidate_create_manual_button'),
-      ),
+      find.byKey(const Key('inventory_barcode_candidate_create_manual_button')),
     );
     await tester.pump();
 

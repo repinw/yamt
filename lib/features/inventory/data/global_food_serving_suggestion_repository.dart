@@ -32,7 +32,7 @@ GlobalFoodServingSuggestionRepository globalFoodServingSuggestionRepository(
 
 class _UnavailableGlobalFoodServingSuggestionRepository
     implements GlobalFoodServingSuggestionRepository {
-  const _UnavailableGlobalFoodServingSuggestionRepository();
+  const new();
 
   @override
   Future<GlobalFoodServingSuggestionSet> readSuggestions({

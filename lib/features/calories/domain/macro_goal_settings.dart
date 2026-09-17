@@ -33,14 +33,14 @@ abstract final class MacroCalculationDefaults {
 @immutable
 class MacroGoalSettings {
   /// Creates macro goal settings.
-  const MacroGoalSettings({
+  const new({
     this.isSportActive = true,
     this.customProteinMultiplier,
     this.customFatMultiplier,
   });
 
   /// Parses from JSON map.
-  factory MacroGoalSettings.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return MacroGoalSettings(
       isSportActive: json['is_sport_active'] as bool? ?? true,
       customProteinMultiplier: (json['custom_protein_multiplier'] as num?)
@@ -130,9 +130,6 @@ class MacroGoalSettings {
           customFatMultiplier == other.customFatMultiplier;
 
   @override
-  int get hashCode => Object.hash(
-    isSportActive,
-    customProteinMultiplier,
-    customFatMultiplier,
-  );
+  int get hashCode =>
+      Object.hash(isSportActive, customProteinMultiplier, customFatMultiplier);
 }

@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -13,12 +14,9 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_search_shell.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-Widget _wrapForm({
-  required WidgetBuilder builder,
-  Listenable? listenable,
-}) {
+Widget _wrapForm({required WidgetBuilder builder, Listenable? listenable}) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: listenable == null
@@ -533,10 +531,7 @@ void main() {
       final confirmButtonFinder = find.byKey(
         const Key('receipt_review_manual_optional_nutrition_confirm_button'),
       );
-      expect(
-        tester.widget<IconButton>(confirmButtonFinder).onPressed,
-        isNull,
-      );
+      expect(tester.widget<IconButton>(confirmButtonFinder).onPressed, isNull);
 
       await tester.enterText(
         _editableTextWithin(

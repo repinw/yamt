@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
@@ -11,11 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// its entries.
 class DiaryMealGroup extends StatelessWidget {
   /// Creates a diary meal group.
-  const DiaryMealGroup({
-    required this.section,
-    required this.onTapEntry,
-    super.key,
-  });
+  const new({required this.section, required this.onTapEntry, super.key});
 
   /// Meal section with at least one entry.
   final DiaryMealSection section;

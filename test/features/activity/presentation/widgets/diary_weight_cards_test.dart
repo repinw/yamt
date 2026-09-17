@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
@@ -89,9 +90,8 @@ Future<void> _pumpWeightSection(
   final overrides = <Override>[
     appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
     authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
-    diaryActivityWeightDataProvider(
-      selectedDay,
-    ).overrideWith((ref) async => data),
+    diaryActivityWeightDataProvider(selectedDay)
+        .overrideWith((ref) async => data),
     if (includeWeightActions)
       diaryWeightActionsProvider.overrideWith(
         (ref) => DiaryWeightActions(
@@ -108,7 +108,7 @@ Future<void> _pumpWeightSection(
       overrides: overrides,
       child: MaterialApp(
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: SingleChildScrollView(

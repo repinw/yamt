@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines email password credentials form.
 class EmailPasswordCredentialsForm extends StatefulWidget {
   /// The email password credentials form.
-  const EmailPasswordCredentialsForm({
+  const new({
     required this.onSubmitCredentials,
     super.key,
     this.submitLabel,

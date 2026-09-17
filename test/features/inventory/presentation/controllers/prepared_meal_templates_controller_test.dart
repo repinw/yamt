@@ -12,9 +12,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 
 class _FakePreparedMealTemplateRepository
     implements PreparedMealTemplateRepository {
-  _FakePreparedMealTemplateRepository({
-    required List<PreparedMeal> initialTemplates,
-  }) : _templates = List<PreparedMeal>.from(initialTemplates);
+  new({required List<PreparedMeal> initialTemplates})
+    : _templates = List<PreparedMeal>.from(initialTemplates);
 
   final StreamController<List<PreparedMeal>> _controller =
       StreamController<List<PreparedMeal>>.broadcast();
@@ -59,9 +58,8 @@ class _FakePreparedMealTemplateRepository
 
 class _SilentPreparedMealTemplateRepository
     implements PreparedMealTemplateRepository {
-  _SilentPreparedMealTemplateRepository({
-    required List<PreparedMeal> initialTemplates,
-  }) : _templates = List<PreparedMeal>.from(initialTemplates);
+  new({required List<PreparedMeal> initialTemplates})
+    : _templates = List<PreparedMeal>.from(initialTemplates);
 
   List<PreparedMeal> _templates;
   List<PreparedMeal> savedTemplates = const <PreparedMeal>[];
@@ -85,7 +83,7 @@ class _SilentPreparedMealTemplateRepository
 }
 
 class _FakePreparedMealRecipeImporter extends PreparedMealRecipeImporter {
-  const _FakePreparedMealRecipeImporter(this.recipe);
+  const new(this.recipe);
 
   final PreparedMealRecipeImport? recipe;
 
@@ -174,14 +172,8 @@ PreparedMeal _recipeTemplate({required String id, required String name}) {
     createdAt: DateTime.parse('2026-04-02T12:00:00Z'),
     updatedAt: DateTime.parse('2026-04-02T12:00:00Z'),
     components: const <PreparedMealComponent>[],
-    recipeIngredients: const <String>[
-      '200 g pasta',
-      '150 g tomatoes',
-    ],
-    recipeInstructions: const <String>[
-      'Cook pasta.',
-      'Toss with tomatoes.',
-    ],
+    recipeIngredients: const <String>['200 g pasta', '150 g tomatoes'],
+    recipeInstructions: const <String>['Cook pasta.', 'Toss with tomatoes.'],
   );
 }
 
@@ -578,10 +570,7 @@ void main() {
               title: 'Soup',
               servings: 4,
               ingredients: <String>['1 L Brühe'],
-              instructions: <String>[
-                'Brühe erhitzen.',
-                'Suppe ziehen lassen.',
-              ],
+              instructions: <String>['Brühe erhitzen.', 'Suppe ziehen lassen.'],
             ),
           ),
         ),

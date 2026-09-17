@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/application/diary_day_type_provider.dart';
@@ -22,9 +22,7 @@ Future<void> showDiaryDayTypeSheet({
     showDragHandle: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(AppRadius.lg),
-      ),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
     ),
     builder: (_) => DiaryDayTypeSheet(selectedDay: selectedDay),
   );
@@ -33,7 +31,7 @@ Future<void> showDiaryDayTypeSheet({
 /// Day type picker for a single diary day.
 class DiaryDayTypeSheet extends ConsumerWidget {
   /// Creates the day type picker.
-  const DiaryDayTypeSheet({required this.selectedDay, super.key});
+  const new({required this.selectedDay, super.key});
 
   /// Day whose type is changed.
   final DateTime selectedDay;
@@ -111,7 +109,7 @@ class DiaryDayTypeSheet extends ConsumerWidget {
 }
 
 class _DiaryDayTypeOption extends StatelessWidget {
-  const _DiaryDayTypeOption({
+  const new({
     required this.type,
     required this.subtitle,
     required this.isSelected,

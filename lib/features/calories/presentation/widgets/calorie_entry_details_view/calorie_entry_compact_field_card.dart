@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Compact labeled card used by calorie entry detail controls.
 class CalorieEntryCompactFieldCard extends StatelessWidget {
   /// Creates a compact field card.
-  const CalorieEntryCompactFieldCard({
-    required this.label,
-    required this.child,
-    super.key,
-  });
+  const new({required this.label, required this.child, super.key});
 
   /// Uppercase label shown above the field.
   final String label;

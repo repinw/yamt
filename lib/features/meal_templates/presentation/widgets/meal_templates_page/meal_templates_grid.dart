@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
@@ -7,7 +7,7 @@ import 'package:yamt/features/meal_templates/presentation/widgets/'
 /// Editorial responsive grid layout for prepared meal template cards.
 class MealTemplatesGrid extends StatelessWidget {
   /// Creates the template grid widget.
-  const MealTemplatesGrid({
+  const new({
     required this.templates,
     required this.includeAppBar,
     required this.onOpen,
@@ -54,18 +54,15 @@ class MealTemplatesGrid extends StatelessWidget {
           mainAxisSpacing: AppSpacing.md,
           childAspectRatio: childAspectRatio,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final template = templates[index];
-            return PreparedMealTemplateCard(
-              template: template,
-              onOpenPressed: () => onOpen(template),
-              onEditPressed: onEdit,
-              onDeletePressed: onDelete,
-            );
-          },
-          childCount: templates.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final template = templates[index];
+          return PreparedMealTemplateCard(
+            template: template,
+            onOpenPressed: () => onOpen(template),
+            onEditPressed: onEdit,
+            onDeletePressed: onDelete,
+          );
+        }, childCount: templates.length),
       ),
     );
   }

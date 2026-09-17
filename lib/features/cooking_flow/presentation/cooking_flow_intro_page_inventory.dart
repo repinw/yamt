@@ -3,8 +3,8 @@
 
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
@@ -24,7 +24,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CookingFlowInventoryCheckCard extends ConsumerStatefulWidget {
-  const CookingFlowInventoryCheckCard({
+  const new({
     required this.template,
     required this.targetPortions,
     required this.inventoryItems,
@@ -99,16 +99,12 @@ class _CookingFlowInventoryCheckCardState
       children: <Widget>[
         Row(
           children: <Widget>[
-            Icon(
-              Icons.shopping_cart_outlined,
-              color: colors.onSurfaceVariant,
-            ),
+            Icon(Icons.shopping_cart_outlined, color: colors.onSurfaceVariant),
             const SizedBox(width: AppSpacing.sm),
             Text(
               l10n.cookflowInventoryCheckTitle,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w800),
             ),
             const Spacer(),
             if (inventoryState.hasAnySelections)
@@ -125,9 +121,8 @@ class _CookingFlowInventoryCheckCardState
         if (inventoryState.rows.isEmpty)
           Text(
             l10n.cookflowEmptyIngredients,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
+            style: Theme.of(context).textTheme.bodyLarge
+                ?.copyWith(color: colors.onSurfaceVariant),
           ),
         for (
           var index = 0;
@@ -153,10 +148,8 @@ class _CookingFlowInventoryCheckCardState
                 index,
                 CookingFlowInventoryRowAction.shoppingCart,
               ),
-              onIgnorePressed: () => _selectAction(
-                index,
-                CookingFlowInventoryRowAction.ignored,
-              ),
+              onIgnorePressed: () =>
+                  _selectAction(index, CookingFlowInventoryRowAction.ignored),
               onBuyRemainingPressed: () => _setConflictResolution(
                 index,
                 CookingFlowInventoryConflictResolution.buyRemaining,

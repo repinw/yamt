@@ -80,10 +80,7 @@ bool _hasCompletionMarker(AppPreferences preferences, String userId) {
       calorieGoalOnboardingCompletedValue;
 }
 
-Future<void> _writeCompletionMarker(
-  AppPreferences preferences,
-  String userId,
-) {
+Future<void> _writeCompletionMarker(AppPreferences preferences, String userId) {
   return preferences.setString(
     calorieGoalOnboardingKeyForUser(userId),
     calorieGoalOnboardingCompletedValue,

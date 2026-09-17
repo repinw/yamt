@@ -52,8 +52,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1081825170446',
     projectId: 'mealtrack-4b239',
     authDomain: 'mealtrack-4b239.firebaseapp.com',
-    databaseURL:
-        'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: 'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'mealtrack-4b239.firebasestorage.app',
     measurementId: 'G-9ZGKX53QVX',
   );
@@ -63,8 +62,7 @@ class DefaultFirebaseOptions {
     appId: '1:1081825170446:android:e6e0bc6a9f527f1dfc985f',
     messagingSenderId: '1081825170446',
     projectId: 'mealtrack-4b239',
-    databaseURL:
-        'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: 'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'mealtrack-4b239.firebasestorage.app',
   );
 
@@ -73,13 +71,10 @@ class DefaultFirebaseOptions {
     appId: '1:1081825170446:ios:de7cb0bdf9fdcf2cfc985f',
     messagingSenderId: '1081825170446',
     projectId: 'mealtrack-4b239',
-    databaseURL:
-        'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: 'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'mealtrack-4b239.firebasestorage.app',
-    androidClientId:
-        '1081825170446-dvbil6k7m45qed4etj3v4kbqsd7l4q0r.apps.googleusercontent.com',
-    iosClientId:
-        '1081825170446-983f1du3ein766kbqdvcb23pboubdbi7.apps.googleusercontent.com',
+    androidClientId: '1081825170446-dvbil6k7m45qed4etj3v4kbqsd7l4q0r.apps.googleusercontent.com',
+    iosClientId: '1081825170446-983f1du3ein766kbqdvcb23pboubdbi7.apps.googleusercontent.com',
     iosBundleId: 'de.yamt.app',
   );
 }

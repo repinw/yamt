@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -13,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines calorie entry editor page.
 class CalorieEntryEditorPage extends ConsumerStatefulWidget {
   /// The calorie entry editor page.
-  const CalorieEntryEditorPage({
+  const new({
     super.key,
     this.entryId,
     this.prefilledProfile,

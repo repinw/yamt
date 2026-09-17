@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
@@ -9,7 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Meal type selector for calorie entry details.
 class CalorieEntryMealTypeDropdown extends StatelessWidget {
   /// Creates a meal type selector.
-  const CalorieEntryMealTypeDropdown({
+  const new({
     required this.selectedMealType,
     required this.isEnabled,
     required this.onMealTypeChanged,
@@ -57,9 +57,8 @@ class CalorieEntryMealTypeDropdown extends StatelessWidget {
                 child: Text(
                   mealType.localizedName(l10n),
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
               );
             })

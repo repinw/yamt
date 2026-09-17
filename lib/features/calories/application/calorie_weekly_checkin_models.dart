@@ -40,7 +40,7 @@ enum CalorieLearnedTdeeFreshness {
 /// Defines calorie weekly check in window day.
 class CalorieWeeklyCheckInWindowDay {
   /// The calorie weekly check in window day.
-  const CalorieWeeklyCheckInWindowDay({
+  const new({
     required this.day,
     required this.hasEntries,
     required this.loggedIntakeKcal,
@@ -79,7 +79,7 @@ class CalorieWeeklyCheckInWindowDay {
 /// Defines calorie weekly check in data.
 class CalorieWeeklyCheckInData {
   /// The calorie weekly check in data.
-  const CalorieWeeklyCheckInData({
+  const new({
     required this.pendingWeeklyCheckIn,
     required this.shouldAutoOpen,
     required this.days,

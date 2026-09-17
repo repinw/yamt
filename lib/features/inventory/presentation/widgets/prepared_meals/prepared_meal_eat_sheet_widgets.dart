@@ -1,7 +1,7 @@
 // Internal split file. Public names are imported only by sibling widgets.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_flow/'
@@ -15,14 +15,14 @@ import 'package:yamt/l10n/app_localizations.dart';
 enum PreparedMealEatAmountMode { portions, grams }
 
 class PreparedMealQuickOption {
-  const PreparedMealQuickOption({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   final String label;
   final num value;
 }
 
 class PreparedMealEatPortionsSection extends StatelessWidget {
-  const PreparedMealEatPortionsSection({
+  const new({
     required this.controller,
     required this.focusNode,
     required this.errorText,
@@ -109,7 +109,7 @@ class PreparedMealEatPortionsSection extends StatelessWidget {
 }
 
 class PreparedMealEatAmountModeSelector extends StatelessWidget {
-  const PreparedMealEatAmountModeSelector({
+  const new({
     required this.amountMode,
     required this.canUseGrams,
     required this.onChanged,
@@ -136,10 +136,8 @@ class PreparedMealEatAmountModeSelector extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         dropdownColor: colors.surfaceContainerHigh,
         icon: Icon(Icons.expand_more_rounded, color: colors.onSurfaceVariant),
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: colors.onSurface,
-          fontWeight: FontWeight.w700,
-        ),
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(color: colors.onSurface, fontWeight: FontWeight.w700),
         items: [
           for (final option in options)
             DropdownMenuItem<PreparedMealEatAmountMode>(
@@ -160,10 +158,7 @@ class PreparedMealEatAmountModeSelector extends StatelessWidget {
     );
   }
 
-  String _labelForMode(
-    PreparedMealEatAmountMode mode,
-    AppLocalizations l10n,
-  ) {
+  String _labelForMode(PreparedMealEatAmountMode mode, AppLocalizations l10n) {
     return switch (mode) {
       PreparedMealEatAmountMode.portions => l10n.preparedMealPortionsToUseLabel,
       PreparedMealEatAmountMode.grams => l10n.inventoryItemEatSheetUnitGram,

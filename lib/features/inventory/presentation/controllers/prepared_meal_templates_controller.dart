@@ -33,20 +33,15 @@ enum PreparedMealTemplateSaveFailureReason {
 
 /// Defines prepared meal template save result.
 class PreparedMealTemplateSaveResult {
-  const PreparedMealTemplateSaveResult._({
-    required this.isSuccess,
-    this.templateId,
-    this.failureReason,
-  });
+  const new _({required this.isSuccess, this.templateId, this.failureReason});
 
   /// Creates a [PreparedMealTemplateSaveResult] for success.
-  const PreparedMealTemplateSaveResult.success(String templateId)
+  const new success(String templateId)
     : this._(isSuccess: true, templateId: templateId);
 
   /// Creates a [PreparedMealTemplateSaveResult] for failure.
-  const PreparedMealTemplateSaveResult.failure(
-    PreparedMealTemplateSaveFailureReason reason,
-  ) : this._(isSuccess: false, failureReason: reason);
+  const new failure(PreparedMealTemplateSaveFailureReason reason)
+    : this._(isSuccess: false, failureReason: reason);
 
   /// Whether success.
   final bool isSuccess;

@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart';
@@ -12,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Expanded Burn Week progress bar for full balance cards.
 class DiaryExpandedBalanceProgressBar extends StatelessWidget {
   /// Creates an expanded diary balance progress bar.
-  const DiaryExpandedBalanceProgressBar({
+  const new({
     required this.actualConsumedKcal,
     required this.targetKcal,
     required this.weeklyGoalKcal,
@@ -38,9 +38,8 @@ class DiaryExpandedBalanceProgressBar extends StatelessWidget {
     final isDark = colors.brightness == Brightness.dark;
     final accents = MetricAccentColors.of(context);
     final activity = accents.activityFor(colors.brightness);
-    final targetLabel = AppLocalizations.of(
-      context,
-    )!.diaryBalanceTargetMarkerLabel;
+    final targetLabel = AppLocalizations.of(context)!
+        .diaryBalanceTargetMarkerLabel;
     final trackColor = colors.surface;
     final dividerColor = diaryBalanceProgressDividerColor(colors);
 

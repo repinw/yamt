@@ -8,49 +8,42 @@ const maxFileLineLimit = 300;
 
 void main() {
   group('Architecture - File Size Guard', () {
-    test(
-      'non-test, non-generated Dart files must not exceed '
-      '$maxFileLineLimit lines',
-      () {
-        final libDir = Directory('lib');
-        expect(
-          libDir.existsSync(),
-          isTrue,
-          reason: 'lib/ directory must exist',
+    test('non-test, non-generated Dart files must not exceed '
+        '$maxFileLineLimit lines', () {
+      final libDir = Directory('lib');
+      expect(libDir.existsSync(), isTrue, reason: 'lib/ directory must exist');
+
+      final violations = <String>[];
+      final dartFiles = libDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where(_isSubjectToLineCountCheck);
+
+      for (final file in dartFiles) {
+        final relativePath = file.path.replaceAll(r'\', '/');
+        final lineCount = file.readAsLinesSync().length;
+
+        if (lineCount > maxFileLineLimit &&
+            !_legacyLargeFilesAllowlist.contains(relativePath)) {
+          violations.add(
+            '$relativePath: $lineCount lines (max $maxFileLineLimit)',
+          );
+        }
+      }
+
+      final failureMessage = StringBuffer()
+        ..writeln(
+          'The following new/unapproved files exceed the '
+          '$maxFileLineLimit line limit:',
+        )
+        ..writeln(violations.join('\n'))
+        ..writeln(
+          '\nPer architecture.md, split files exceeding 250-300 lines '
+          'into smaller, focused modules.',
         );
 
-        final violations = <String>[];
-        final dartFiles = libDir
-            .listSync(recursive: true)
-            .whereType<File>()
-            .where(_isSubjectToLineCountCheck);
-
-        for (final file in dartFiles) {
-          final relativePath = file.path.replaceAll(r'\', '/');
-          final lineCount = file.readAsLinesSync().length;
-
-          if (lineCount > maxFileLineLimit &&
-              !_legacyLargeFilesAllowlist.contains(relativePath)) {
-            violations.add(
-              '$relativePath: $lineCount lines (max $maxFileLineLimit)',
-            );
-          }
-        }
-
-        final failureMessage = StringBuffer()
-          ..writeln(
-            'The following new/unapproved files exceed the '
-            '$maxFileLineLimit line limit:',
-          )
-          ..writeln(violations.join('\n'))
-          ..writeln(
-            '\nPer architecture.md, split files exceeding 250-300 lines '
-            'into smaller, focused modules.',
-          );
-
-        expect(violations, isEmpty, reason: failureMessage.toString());
-      },
-    );
+      expect(violations, isEmpty, reason: failureMessage.toString());
+    });
   });
 }
 

@@ -12,13 +12,11 @@ import 'package:yamt/features/health/domain/health_workout_session.dart';
 /// Reads raw Health data and converts it into diary domain models.
 class DiaryHealthMobileHealthReader {
   /// Creates a Health reader.
-  const DiaryHealthMobileHealthReader({
-    required Health health,
-    required DiaryHealthReadQueue readQueue,
-    required Future<void> Function() ensureConfigured,
-  }) : _health = health,
-       _readQueue = readQueue,
-       _ensureConfigured = ensureConfigured;
+  const new({
+    required this._health,
+    required this._readQueue,
+    required this._ensureConfigured,
+  });
 
   final Health _health;
   final DiaryHealthReadQueue _readQueue;
@@ -185,10 +183,7 @@ class DiaryHealthMobileHealthReader {
   }
 
   int _sumUnassignedActiveEnergyCalories(List<HealthEnergySegment> segments) {
-    return segments.fold<int>(
-      0,
-      (sum, segment) => sum + segment.totalCalories,
-    );
+    return segments.fold<int>(0, (sum, segment) => sum + segment.totalCalories);
   }
 
   String _sourceNames(List<HealthDataPoint> points) {
@@ -747,7 +742,7 @@ List<_DateTimeInterval> _subtractIntervals({
 }
 
 class _DateTimeInterval {
-  const _DateTimeInterval(this.start, this.endExclusive);
+  const new(this.start, this.endExclusive);
 
   final DateTime start;
   final DateTime endExclusive;

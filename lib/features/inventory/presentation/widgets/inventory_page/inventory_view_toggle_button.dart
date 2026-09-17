@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Button that toggles between stock and history views on inventory page.
 class InventoryViewToggleButton extends StatelessWidget {
   /// Creates an inventory view toggle button.
-  const InventoryViewToggleButton({
-    required this.isShowingStock,
-    required this.onToggle,
-    super.key,
-  });
+  const new({required this.isShowingStock, required this.onToggle, super.key});
 
   /// Whether current view is stock.
   final bool isShowingStock;

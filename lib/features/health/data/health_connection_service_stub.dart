@@ -10,7 +10,7 @@ HealthConnectionService createHealthConnectionService({
 }
 
 class _UnsupportedHealthConnectionService implements HealthConnectionService {
-  const _UnsupportedHealthConnectionService();
+  const new();
 
   @override
   Future<HealthDisconnectResult> disconnect() async {

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Expanded section shown when future start is selected.
 class Step6FutureStartSection extends StatelessWidget {
   /// Creates future-start section.
-  const Step6FutureStartSection({
+  const new({
     required this.futureGoalStartDate,
     required this.onFutureGoalStartChangeRequested,
     super.key,
@@ -33,9 +33,8 @@ class Step6FutureStartSection extends StatelessWidget {
           Text(
             dateFormat.format(futureGoalStartDate),
             key: CalorieGoalOnboardingKeys.goalStartValue,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.bodyLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(

@@ -11,9 +11,7 @@ void main() {
     test('initializes with default settings when preferences are empty', () {
       final preferences = MemoryAppPreferences();
       final container = ProviderContainer(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(preferences),
-        ],
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
       );
       addTearDown(container.dispose);
 
@@ -35,9 +33,7 @@ void main() {
       );
 
       final container = ProviderContainer(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(preferences),
-        ],
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
       );
       addTearDown(container.dispose);
 
@@ -51,9 +47,7 @@ void main() {
     test('setSportActive updates state and persists to preferences', () async {
       final preferences = MemoryAppPreferences();
       final container = ProviderContainer(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(preferences),
-        ],
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
       );
       addTearDown(container.dispose);
 
@@ -74,9 +68,7 @@ void main() {
     test('setCustomMultipliers updates state and persists', () async {
       final preferences = MemoryAppPreferences();
       final container = ProviderContainer(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(preferences),
-        ],
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
       );
       addTearDown(container.dispose);
 
@@ -103,9 +95,7 @@ void main() {
       () async {
         final preferences = MemoryAppPreferences();
         final container = ProviderContainer(
-          overrides: [
-            appPreferencesProvider.overrideWithValue(preferences),
-          ],
+          overrides: [appPreferencesProvider.overrideWithValue(preferences)],
         );
         addTearDown(container.dispose);
 

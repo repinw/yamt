@@ -16,15 +16,12 @@ const String _repositoryLogName = 'FirestoreKitchenUtensilRepository';
 /// Firestore/Firebase Storage kitchen utensil repository.
 class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
   /// Creates repository.
-  FirestoreKitchenUtensilRepository({
-    required InventoryUserSession session,
-    required SessionShutdownSignal sessionShutdownSignal,
-    required KitchenUtensilStore store,
-    required KitchenUtensilImageStore imageStore,
-  }) : _session = session,
-       _sessionShutdownSignal = sessionShutdownSignal,
-       _store = store,
-       _imageStore = imageStore;
+  new({
+    required this._session,
+    required this._sessionShutdownSignal,
+    required this._store,
+    required this._imageStore,
+  });
 
   final InventoryUserSession _session;
   final SessionShutdownSignal _sessionShutdownSignal;
@@ -36,9 +33,7 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
   Stream<List<KitchenUtensil>> watchAll() {
     final userId = _currentUserId();
     if (userId == null) {
-      return Stream<List<KitchenUtensil>>.value(
-        const <KitchenUtensil>[],
-      );
+      return Stream<List<KitchenUtensil>>.value(const <KitchenUtensil>[]);
     }
     return _watchAllForUser(userId);
   }

@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 /// Manages scroll-driven visibility state for home shell chrome.
 class HomeShellChromeVisibilityController extends ValueNotifier<double> {
   /// Creates home shell chrome visibility controller initialized to visible.
-  HomeShellChromeVisibilityController() : super(1);
+  new() : super(1);
 
   static const _hideScrollDistance = 320;
   static const _revealScrollDistance = 140;

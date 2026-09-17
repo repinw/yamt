@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
@@ -30,7 +30,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Builds the active cookflow step body.
 class CookingFlowPageBody extends StatelessWidget {
   /// Creates cookflow body.
-  const CookingFlowPageBody({
+  const new({
     required this.isRestoringSession,
     required this.templatesAsync,
     required this.wizardState,
@@ -312,7 +312,7 @@ class CookingFlowPageBody extends StatelessWidget {
 }
 
 class _CookingFlowLoadingIndicator extends StatelessWidget {
-  const _CookingFlowLoadingIndicator();
+  const new();
 
   @override
   Widget build(BuildContext context) {

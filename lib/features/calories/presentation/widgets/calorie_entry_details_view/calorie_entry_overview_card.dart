@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
@@ -19,7 +19,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Header card for the calorie entry details sheet.
 class CalorieEntryOverviewCard extends ConsumerWidget {
   /// Creates the calorie entry overview card.
-  const CalorieEntryOverviewCard({
+  const new({
     required this.entry,
     required this.isSaving,
     required this.selectedMealType,

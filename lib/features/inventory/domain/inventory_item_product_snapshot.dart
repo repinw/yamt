@@ -6,7 +6,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 @immutable
 class InventoryItemProductSnapshot {
   /// The inventory item product snapshot.
-  const InventoryItemProductSnapshot({
+  const new({
     required this.name,
     this.brand,
     this.category,
@@ -20,7 +20,7 @@ class InventoryItemProductSnapshot {
   });
 
   /// Creates a [InventoryItemProductSnapshot] for from json.
-  factory InventoryItemProductSnapshot.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return InventoryItemProductSnapshot(
       name: json['name'] as String? ?? '',
       brand: _readTrimmedString(json['brand']),

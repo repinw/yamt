@@ -241,96 +241,90 @@ void main() {
       },
     );
 
-    test(
-      'createPreparedMealsFromTemplateContainers consumes once '
-      'and saves splits',
-      () async {
-        final harness = _WorkflowHarness();
-        final inventoryRepository = _FakeInventoryItemRepository(
-          items: <InventoryItem>[
-            _measuredItem(
-              id: 'pasta',
-              name: 'Pasta',
-              currentAmount: 200,
-              initialAmount: 200,
-              initialQuantity: 1,
-            ),
-            _measuredItem(
-              id: 'sauce',
-              name: 'Sauce',
-              currentAmount: 100,
-              initialAmount: 100,
-              initialQuantity: 1,
-            ),
-          ],
-        );
+    test('createPreparedMealsFromTemplateContainers consumes once '
+        'and saves splits', () async {
+      final harness = _WorkflowHarness();
+      final inventoryRepository = _FakeInventoryItemRepository(
+        items: <InventoryItem>[
+          _measuredItem(
+            id: 'pasta',
+            name: 'Pasta',
+            currentAmount: 200,
+            initialAmount: 200,
+            initialQuantity: 1,
+          ),
+          _measuredItem(
+            id: 'sauce',
+            name: 'Sauce',
+            currentAmount: 100,
+            initialAmount: 100,
+            initialQuantity: 1,
+          ),
+        ],
+      );
 
-        final result = await harness.workflows
-            .createPreparedMealsFromTemplateContainers(
-              template: _meal(
-                id: 'template',
-                name: 'Spaghetti',
-                totalPortions: 4,
-                remainingPortions: 4,
-                recipeIngredients: const <String>[
-                  '100 g pasta',
-                  '50 g sauce',
-                ],
-                components: const <PreparedMealComponent>[],
-              ),
+      final result = await harness.workflows
+          .createPreparedMealsFromTemplateContainers(
+            template: _meal(
+              id: 'template',
+              name: 'Spaghetti',
               totalPortions: 4,
-              recipeIngredientAssignments: const <String, List<String>>{
-                '100 g pasta': <String>['pasta'],
-                '50 g sauce': <String>['sauce'],
-              },
-              recipeIngredientAmountConversions:
-                  const <String, RecipeIngredientAmountConversion>{},
-              inventoryRepository: inventoryRepository,
-              ingredientParser: ingredientParser,
-              sourceKeysByIngredient: const <String, String>{
-                '100 g pasta': 'row-pasta',
-                '50 g sauce': 'row-sauce',
-              },
-              containers: const <PreparedMealContainerInput>[
-                PreparedMealContainerInput(
-                  id: 'container-1',
-                  label: 'Pasta',
-                  totalPortions: 4,
-                  finalNetWeight: 700,
-                  sourceKeys: <String>['row-pasta'],
-                ),
-                PreparedMealContainerInput(
-                  id: 'container-2',
-                  label: 'Sauce',
-                  totalPortions: 4,
-                  finalNetWeight: 300,
-                  sourceKeys: <String>['row-sauce'],
-                ),
-              ],
-            );
+              remainingPortions: 4,
+              recipeIngredients: const <String>['100 g pasta', '50 g sauce'],
+              components: const <PreparedMealComponent>[],
+            ),
+            totalPortions: 4,
+            recipeIngredientAssignments: const <String, List<String>>{
+              '100 g pasta': <String>['pasta'],
+              '50 g sauce': <String>['sauce'],
+            },
+            recipeIngredientAmountConversions:
+                const <String, RecipeIngredientAmountConversion>{},
+            inventoryRepository: inventoryRepository,
+            ingredientParser: ingredientParser,
+            sourceKeysByIngredient: const <String, String>{
+              '100 g pasta': 'row-pasta',
+              '50 g sauce': 'row-sauce',
+            },
+            containers: const <PreparedMealContainerInput>[
+              PreparedMealContainerInput(
+                id: 'container-1',
+                label: 'Pasta',
+                totalPortions: 4,
+                finalNetWeight: 700,
+                sourceKeys: <String>['row-pasta'],
+              ),
+              PreparedMealContainerInput(
+                id: 'container-2',
+                label: 'Sauce',
+                totalPortions: 4,
+                finalNetWeight: 300,
+                sourceKeys: <String>['row-sauce'],
+              ),
+            ],
+          );
 
-        expect(result.isSuccess, isTrue);
-        expect(inventoryRepository.saveCount, 1);
-        expect(inventoryRepository.lastSavedItems[0].currentAmount, 100);
-        expect(inventoryRepository.lastSavedItems[1].currentAmount, 50);
-        expect(harness.saveCalls, 1);
-        expect(harness.lastSavedMeals, hasLength(2));
+      expect(result.isSuccess, isTrue);
+      expect(inventoryRepository.saveCount, 1);
+      expect(inventoryRepository.lastSavedItems[0].currentAmount, 100);
+      expect(inventoryRepository.lastSavedItems[1].currentAmount, 50);
+      expect(harness.saveCalls, 1);
+      expect(harness.lastSavedMeals, hasLength(2));
 
-        final pastaMeal = harness.lastSavedMeals[0];
-        expect(pastaMeal.name, 'Spaghetti - Pasta');
-        expect(pastaMeal.totalPortions, 4);
-        expect(pastaMeal.finalNetWeight, 700);
-        expect(pastaMeal.components.single.inventoryItemId, 'pasta');
-        expect(pastaMeal.totalKcal, 100);
+      final pastaMeal = harness.lastSavedMeals[0];
+      expect(pastaMeal.name, 'Spaghetti - Pasta');
+      expect(pastaMeal.totalPortions, 4);
+      expect(pastaMeal.finalNetWeight, 700);
+      expect(pastaMeal.components.single.inventoryItemId, 'pasta');
+      expect(pastaMeal.totalKcal, 100);
 
-        final sauceMeal = harness.lastSavedMeals[1];
-        expect(sauceMeal.name, 'Spaghetti - Sauce');
-        expect(sauceMeal.totalPortions, 4);
-        expect(sauceMeal.finalNetWeight, 300);
-        expect(sauceMeal.components.single.inventoryItemId, 'sauce');
-        expect(sauceMeal.totalKcal, 50);
-      },
-    );
+      final sauceMeal = harness.lastSavedMeals[1];
+      expect(sauceMeal.name, 'Spaghetti - Sauce');
+      expect(sauceMeal.totalPortions, 4);
+      expect(sauceMeal.finalNetWeight, 300);
+      expect(sauceMeal.components.single.inventoryItemId, 'sauce');
+      expect(sauceMeal.totalKcal, 50);
+    });
 
     test(
       'createPreparedMealsFromTemplateContainers restores inventory on failure',
@@ -580,10 +574,7 @@ void main() {
               name: 'Rice Bowl',
               totalPortions: 2,
               remainingPortions: 2,
-              recipeIngredients: const <String>[
-                '100 g rice',
-                '50 g peas',
-              ],
+              recipeIngredients: const <String>['100 g rice', '50 g peas'],
               pendingRecipeIngredients: const <String>[
                 '100 g rice',
                 '50 g peas',
@@ -616,10 +607,10 @@ void main() {
           harness.lastSavedMeals.single.pendingRecipeIngredients,
           const <String>['50 g peas'],
         );
-        expect(
-          harness.lastSavedMeals.single.recipeIngredients,
-          const <String>['100 g rice', '50 g peas'],
-        );
+        expect(harness.lastSavedMeals.single.recipeIngredients, const <String>[
+          '100 g rice',
+          '50 g peas',
+        ]);
       },
     );
 
@@ -697,50 +688,47 @@ void main() {
       },
     );
 
-    test(
-      'fillPreparedMealPendingIngredient restores inventory '
-      'when meal save fails',
-      () async {
-        final harness = _WorkflowHarness(
-          saveMealsResults: <bool>[false],
-          meals: <PreparedMeal>[
-            _meal(
-              id: 'meal-1',
-              name: 'Soup',
-              totalPortions: 2,
-              remainingPortions: 2,
-              pendingRecipeIngredients: const <String>['100 g rice'],
-              components: const <PreparedMealComponent>[],
-            ),
-          ],
-        );
-        final inventoryRepository = _FakeInventoryItemRepository(
-          items: <InventoryItem>[
-            _measuredItem(
-              id: 'rice',
-              name: 'Rice',
-              currentAmount: 150,
-              initialAmount: 150,
-              initialQuantity: 1,
-            ),
-          ],
-        );
+    test('fillPreparedMealPendingIngredient restores inventory '
+        'when meal save fails', () async {
+      final harness = _WorkflowHarness(
+        saveMealsResults: <bool>[false],
+        meals: <PreparedMeal>[
+          _meal(
+            id: 'meal-1',
+            name: 'Soup',
+            totalPortions: 2,
+            remainingPortions: 2,
+            pendingRecipeIngredients: const <String>['100 g rice'],
+            components: const <PreparedMealComponent>[],
+          ),
+        ],
+      );
+      final inventoryRepository = _FakeInventoryItemRepository(
+        items: <InventoryItem>[
+          _measuredItem(
+            id: 'rice',
+            name: 'Rice',
+            currentAmount: 150,
+            initialAmount: 150,
+            initialQuantity: 1,
+          ),
+        ],
+      );
 
-        final saved = await harness.workflows.fillPreparedMealPendingIngredient(
-          mealId: 'meal-1',
-          ingredient: '100 g rice',
-          inventoryItemIds: const <String>['rice'],
-          inventoryRepository: inventoryRepository,
-          ingredientParser: ingredientParser,
-        );
+      final saved = await harness.workflows.fillPreparedMealPendingIngredient(
+        mealId: 'meal-1',
+        ingredient: '100 g rice',
+        inventoryItemIds: const <String>['rice'],
+        inventoryRepository: inventoryRepository,
+        ingredientParser: ingredientParser,
+      );
 
-        expect(saved, isFalse);
-        expect(inventoryRepository.saveCount, 1);
-        expect(harness.saveCalls, 1);
-        expect(harness.restoreInventoryCalls, 1);
-        expect(harness.lastRestoredItems.single.currentAmount, 150);
-      },
-    );
+      expect(saved, isFalse);
+      expect(inventoryRepository.saveCount, 1);
+      expect(harness.saveCalls, 1);
+      expect(harness.restoreInventoryCalls, 1);
+      expect(harness.lastRestoredItems.single.currentAmount, 150);
+    });
 
     test('ignorePreparedMealPendingIngredient saves updated meal', () async {
       final harness = _WorkflowHarness(
@@ -763,10 +751,7 @@ void main() {
 
       expect(saved, isTrue);
       expect(harness.saveCalls, 1);
-      expect(
-        harness.lastSavedMeals.single.pendingRecipeIngredients,
-        isEmpty,
-      );
+      expect(harness.lastSavedMeals.single.pendingRecipeIngredients, isEmpty);
     });
 
     test('consumePreparedMeal saves reduced meal and calorie entry', () async {
@@ -944,48 +929,43 @@ void main() {
       expect(harness.loadCalls, 0);
     });
 
-    test(
-      'throwAwayPreparedMeal restores previous meal state '
-      'when event save fails',
-      () async {
-        final sourceItem = _measuredItem(
-          id: 'rice',
-          name: 'Rice',
-          currentAmount: 400,
-          initialAmount: 400,
-          initialQuantity: 1,
-          unitPrice: 4,
-        );
-        final harness = _WorkflowHarness(
-          meals: <PreparedMeal>[
-            _meal(
-              id: 'meal-1',
-              name: 'Rice Bowl',
-              totalPortions: 4,
-              remainingPortions: 4,
-              components: <PreparedMealComponent>[
-                _component(item: sourceItem, usedAmount: 400, totalKcal: 400),
-              ],
-            ),
-          ],
-        );
-        final discardRepository = _FakeDiscardEventRepository(
-          shouldSave: false,
-        );
+    test('throwAwayPreparedMeal restores previous meal state '
+        'when event save fails', () async {
+      final sourceItem = _measuredItem(
+        id: 'rice',
+        name: 'Rice',
+        currentAmount: 400,
+        initialAmount: 400,
+        initialQuantity: 1,
+        unitPrice: 4,
+      );
+      final harness = _WorkflowHarness(
+        meals: <PreparedMeal>[
+          _meal(
+            id: 'meal-1',
+            name: 'Rice Bowl',
+            totalPortions: 4,
+            remainingPortions: 4,
+            components: <PreparedMealComponent>[
+              _component(item: sourceItem, usedAmount: 400, totalKcal: 400),
+            ],
+          ),
+        ],
+      );
+      final discardRepository = _FakeDiscardEventRepository(shouldSave: false);
 
-        final saved = await harness.workflows.throwAwayPreparedMeal(
-          mealId: 'meal-1',
-          discardedPortions: 1,
-          reason: InventoryDiscardReason.spoiled,
-          discardEventRepository: discardRepository,
-        );
+      final saved = await harness.workflows.throwAwayPreparedMeal(
+        mealId: 'meal-1',
+        discardedPortions: 1,
+        reason: InventoryDiscardReason.spoiled,
+        discardEventRepository: discardRepository,
+      );
 
-        expect(saved, isFalse);
-        expect(discardRepository.saveCount, 1);
-        expect(harness.saveCalls, 2);
-        expect(harness.lastSavedMeals.single.remainingPortions, 4);
-      },
-    );
+      expect(saved, isFalse);
+      expect(discardRepository.saveCount, 1);
+      expect(harness.saveCalls, 2);
+      expect(harness.lastSavedMeals.single.remainingPortions, 4);
+    });
 
     test('restorePreparedMealPortions saves increased portions', () async {
       final harness = _WorkflowHarness(
@@ -1148,11 +1128,9 @@ void main() {
 }
 
 class _WorkflowHarness {
-  _WorkflowHarness({
-    List<PreparedMeal>? meals,
-    List<bool>? saveMealsResults,
-  }) : _meals = List<PreparedMeal>.from(meals ?? const <PreparedMeal>[]),
-       _saveMealsResults = List<bool>.from(saveMealsResults ?? <bool>[true]);
+  new({List<PreparedMeal>? meals, List<bool>? saveMealsResults})
+    : _meals = List<PreparedMeal>.from(meals ?? const <PreparedMeal>[]),
+      _saveMealsResults = List<bool>.from(saveMealsResults ?? <bool>[true]);
 
   final List<PreparedMeal> _meals;
   final List<bool> _saveMealsResults;
@@ -1185,10 +1163,7 @@ class _WorkflowHarness {
         return didSave;
       },
       restoreInventory:
-          ({
-            required inventoryRepository,
-            required previousItems,
-          }) async {
+          ({required inventoryRepository, required previousItems}) async {
             restoreInventoryCalls += 1;
             lastRestoredItems = List<InventoryItem>.from(previousItems);
           },
@@ -1204,7 +1179,7 @@ class _WorkflowHarness {
 }
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({List<InventoryItem>? items})
+  new({List<InventoryItem>? items})
     : _items = List<InventoryItem>.from(items ?? const <InventoryItem>[]);
 
   final List<InventoryItem> _items;
@@ -1241,7 +1216,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
 }
 
 class _FakeDiscardEventRepository implements InventoryDiscardEventRepository {
-  _FakeDiscardEventRepository({this.shouldSave = true});
+  new({this.shouldSave = true});
 
   final bool shouldSave;
   int saveCount = 0;

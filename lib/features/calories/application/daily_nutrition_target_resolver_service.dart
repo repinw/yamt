@@ -16,10 +16,7 @@ part 'daily_nutrition_target_resolver_service.g.dart';
 class DailyNutritionTargetResolverService
     implements DailyNutritionTargetResolver {
   /// Creates a target resolver service.
-  const DailyNutritionTargetResolverService({
-    required this.macroSettings,
-    this.goalSettings,
-  });
+  const new({required this.macroSettings, this.goalSettings});
 
   /// Current macro multiplier settings.
   final MacroGoalSettings macroSettings;
@@ -75,10 +72,7 @@ class DailyNutritionTargetResolverService
     required DateTime day,
     required double goalKcal,
   }) {
-    return resolveTarget(
-      day: day,
-      goalKcal: goalKcal,
-    );
+    return resolveTarget(day: day, goalKcal: goalKcal);
   }
 
   MacroCalculationResult _applyCarryoverIfNeeded({

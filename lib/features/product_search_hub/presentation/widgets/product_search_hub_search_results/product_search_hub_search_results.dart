@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -13,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Product search hub result list.
 class ProductSearchHubSearchResults extends StatelessWidget {
   /// Creates product search hub search results.
-  const ProductSearchHubSearchResults({
+  const new({
     required this.results,
     required this.isSearching,
     required this.hasFailed,
@@ -86,7 +86,7 @@ class ProductSearchHubSearchResults extends StatelessWidget {
 }
 
 class _ProductSearchHubSearchLoading extends StatelessWidget {
-  const _ProductSearchHubSearchLoading({required this.label});
+  const new({required this.label});
 
   final String label;
 
@@ -104,7 +104,7 @@ class _ProductSearchHubSearchLoading extends StatelessWidget {
 }
 
 class _ProductSearchHubSearchError extends StatelessWidget {
-  const _ProductSearchHubSearchError({
+  const new({
     required this.message,
     required this.retryLabel,
     required this.onRetry,
@@ -140,7 +140,7 @@ class _ProductSearchHubSearchError extends StatelessWidget {
 }
 
 class _ProductSearchHubSearchEmpty extends StatelessWidget {
-  const _ProductSearchHubSearchEmpty({
+  const new({
     required this.message,
     required this.createLabel,
     required this.onCreate,
@@ -176,7 +176,7 @@ class _ProductSearchHubSearchEmpty extends StatelessWidget {
 }
 
 class _ProductSearchHubSearchResultList extends StatelessWidget {
-  const _ProductSearchHubSearchResultList({
+  const new({
     required this.results,
     required this.showLoading,
     required this.keyboardDismissBehavior,
@@ -217,9 +217,8 @@ class _ProductSearchHubSearchResultList extends StatelessWidget {
                 imageUrl: result.imageUrl,
                 packageWeight: result.packageWeight,
                 nutrition: result.nutrition,
-                statusLabel: gradeOffProductNutrition(
-                  result.nutrition,
-                ).localizedLabel(l10n),
+                statusLabel: gradeOffProductNutrition(result.nutrition)
+                    .localizedLabel(l10n),
                 onCopy: onResultCopied == null
                     ? null
                     : () {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_fab_action_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Bottom sheet with inventory add actions.
 class InventoryFabActionSheet extends StatelessWidget {
   /// Creates inventory action sheet.
-  const InventoryFabActionSheet({
+  const new({
     required this.isCameraEnabled,
     required this.onProductSearchHub,
     required this.onManualSearch,

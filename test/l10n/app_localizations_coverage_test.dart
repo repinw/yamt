@@ -456,10 +456,7 @@ void main() {
     expect(delegate.isSupported(const Locale('en')), isTrue);
     expect(delegate.isSupported(const Locale('de')), isTrue);
     expect(delegate.isSupported(const Locale('fr')), isFalse);
-    expect(
-      await delegate.load(const Locale('en')),
-      isA<AppLocalizationsEn>(),
-    );
+    expect(await delegate.load(const Locale('en')), isA<AppLocalizationsEn>());
     expect(delegate.shouldReload(delegate), isFalse);
   });
 }

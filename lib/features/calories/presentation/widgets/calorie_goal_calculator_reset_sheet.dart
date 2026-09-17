@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_flow.dart';
@@ -15,9 +15,7 @@ Future<void> showCalorieGoalCalculatorResetSheet(
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
     builder: (context) {
-      return CalorieGoalCalculatorFlow(
-        initialSettings: initialSettings,
-      );
+      return CalorieGoalCalculatorFlow(initialSettings: initialSettings);
     },
   );
 }

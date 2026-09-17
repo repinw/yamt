@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
-
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -28,7 +27,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines settings page.
 class SettingsPage extends ConsumerWidget {
   /// The settings page.
-  const SettingsPage({super.key, this.includeHomeShellChrome = false});
+  const new({super.key, this.includeHomeShellChrome = false});
 
   /// Whether to render the shared home shell app bar as a sliver.
   final bool includeHomeShellChrome;
@@ -51,9 +50,7 @@ class SettingsPage extends ConsumerWidget {
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: settingsMaxWidth,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: settingsMaxWidth),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -78,9 +75,7 @@ class SettingsPage extends ConsumerWidget {
                       ),
                       SettingsSection(
                         title: l10n.settingsAppearanceSectionTitle,
-                        children: const [
-                          _LanguageTile(),
-                        ],
+                        children: const [_LanguageTile()],
                       ),
                       SettingsSection(
                         title: l10n.settingsAppSectionTitle,
@@ -121,7 +116,7 @@ class SettingsPage extends ConsumerWidget {
 }
 
 class _SettingsIntro extends StatelessWidget {
-  const _SettingsIntro({required this.l10n});
+  const new({required this.l10n});
 
   final AppLocalizations l10n;
 
@@ -144,7 +139,7 @@ class _SettingsIntro extends StatelessWidget {
 }
 
 class _CalorieGoalStartTile extends ConsumerWidget {
-  const _CalorieGoalStartTile();
+  const new();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -184,7 +179,7 @@ class _CalorieGoalStartTile extends ConsumerWidget {
 }
 
 class _CalorieGoalCalculatorTile extends ConsumerWidget {
-  const _CalorieGoalCalculatorTile();
+  const new();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -211,7 +206,7 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
 }
 
 class _TdeeAnalyticsTile extends StatelessWidget {
-  const _TdeeAnalyticsTile();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +220,7 @@ class _TdeeAnalyticsTile extends StatelessWidget {
 }
 
 class _MacroGoalsTile extends ConsumerWidget {
-  const _MacroGoalsTile();
+  const new();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -242,7 +237,7 @@ class _MacroGoalsTile extends ConsumerWidget {
 }
 
 class _CalorieGoalIntroTile extends ConsumerWidget {
-  const _CalorieGoalIntroTile();
+  const new();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -279,7 +274,7 @@ class _CalorieGoalIntroTile extends ConsumerWidget {
 }
 
 class _AboutTile extends ConsumerWidget {
-  const _AboutTile();
+  const new();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -312,7 +307,7 @@ class _AboutTile extends ConsumerWidget {
 }
 
 class _HouseholdTile extends StatelessWidget {
-  const _HouseholdTile({required this.l10n});
+  const new({required this.l10n});
 
   final AppLocalizations l10n;
 
@@ -329,7 +324,7 @@ class _HouseholdTile extends StatelessWidget {
 }
 
 class _LanguageTile extends StatelessWidget {
-  const _LanguageTile();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -361,7 +356,5 @@ String _localizedLanguageLabel(AppLocalizations l10n, Locale locale) {
 }
 
 void _showNotImplementedSnackBar(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }

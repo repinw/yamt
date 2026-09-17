@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -43,9 +44,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User {}
+class _MockUser extends Mock implements User;
 
 class _FakeInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
@@ -70,7 +71,7 @@ class _FakeInventoryDiscardEventRepository
 }
 
 class _FakeFridgeItemRepository implements InventoryItemRepository {
-  _FakeFridgeItemRepository({required this.onReadAll});
+  new({required this.onReadAll});
 
   final Future<List<InventoryItem>> Function() onReadAll;
   final StreamController<List<InventoryItem>> _watchController =
@@ -163,7 +164,7 @@ class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
 
 class _RecordingOffProductSearchRepository
     implements OffProductSearchRepository {
-  _RecordingOffProductSearchRepository(this.results);
+  new(this.results);
 
   final List<OffProductSearchResult> results;
   String? lastQuery;
@@ -208,12 +209,11 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
 }
 
 class _DelayedStageInventoryItemsController extends InventoryItemsController {
-  _DelayedStageInventoryItemsController({
-    required List<InventoryItem> initialItems,
-    required Future<void> Function() waitForStage,
+  new({
+    required this._initialItems,
+    required this._waitForStage,
     this.onStageStarted,
-  }) : _initialItems = initialItems,
-       _waitForStage = waitForStage;
+  });
 
   final List<InventoryItem> _initialItems;
   final Future<void> Function() _waitForStage;
@@ -245,9 +245,7 @@ class _DelayedStageInventoryItemsController extends InventoryItemsController {
 }
 
 class _RecordingInventoryItemsController extends InventoryItemsController {
-  _RecordingInventoryItemsController({
-    required List<InventoryItem> initialItems,
-  }) : _initialItems = initialItems;
+  new({required this._initialItems});
 
   final List<InventoryItem> _initialItems;
   final List<String> discardedPendingIds = <String>[];
@@ -412,7 +410,7 @@ Future<void> _pumpTestApp(
       child: MaterialApp.router(
         routerConfig: router,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),
@@ -433,10 +431,7 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _tapInventoryRowAction(
-  WidgetTester tester,
-  String tooltip,
-) async {
+Future<void> _tapInventoryRowAction(WidgetTester tester, String tooltip) async {
   await _tapVisible(tester, find.byTooltip(tooltip));
 }
 
@@ -448,10 +443,7 @@ Future<void> _showInventoryFilterResults(WidgetTester tester) async {
   await _tapVisible(tester, find.text('Show results'));
 }
 
-Future<void> _selectInventoryListMode(
-  WidgetTester tester,
-  String label,
-) async {
+Future<void> _selectInventoryListMode(WidgetTester tester, String label) async {
   await _openInventoryFilters(tester);
   await _tapVisible(tester, find.text(label));
   await _showInventoryFilterResults(tester);
@@ -517,11 +509,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await _pumpTestApp(
-      tester,
-      repository,
-      includeHomeShellChrome: true,
-    );
+    await _pumpTestApp(tester, repository, includeHomeShellChrome: true);
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.history_rounded), findsOneWidget);
@@ -744,11 +732,7 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item(
-          'a',
-          name: 'Milk',
-          ocrName: 'MILCH 3,5%',
-        ),
+        _item('a', name: 'Milk', ocrName: 'MILCH 3,5%'),
       ],
     );
     final globalRepository = _RecordingGlobalFoodItemRepository();
@@ -823,13 +807,9 @@ void main() {
     },
   );
 
-  testWidgets('edit action opens the inventory item editor', (
-    tester,
-  ) async {
+  testWidgets('edit action opens the inventory item editor', (tester) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[
-        _item('a', name: 'Milk'),
-      ],
+      onReadAll: () async => <InventoryItem>[_item('a', name: 'Milk')],
     );
     addTearDown(repository.dispose);
 
@@ -906,9 +886,7 @@ void main() {
     expect(find.text('Undo'), findsNothing);
   });
 
-  testWidgets('eat action direct-saves local nutrition', (
-    tester,
-  ) async {
+  testWidgets('eat action direct-saves local nutrition', (tester) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
     );
@@ -936,9 +914,7 @@ void main() {
       ),
       overrides: <Override>[
         calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-          commitStore,
-        ),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
         firebaseAuthProvider.overrideWithValue(auth),
       ],
     );
@@ -998,9 +974,7 @@ void main() {
       ),
       overrides: <Override>[
         calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-          commitStore,
-        ),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
         firebaseAuthProvider.overrideWithValue(auth),
       ],
     );
@@ -1116,12 +1090,7 @@ void main() {
     (tester) async {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <InventoryItem>[
-          _item(
-            'a',
-            name: 'Milk',
-            brand: 'Acme',
-            quantity: 1,
-          ),
+          _item('a', name: 'Milk', brand: 'Acme', quantity: 1),
         ],
       );
       final shoppingRepository = FakeShoppingListRepository();
@@ -1132,9 +1101,7 @@ void main() {
         tester,
         repository,
         overrides: <Override>[
-          shoppingListRepositoryProvider.overrideWithValue(
-            shoppingRepository,
-          ),
+          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
         ],
       );
       await tester.pumpAndSettle();
@@ -1150,90 +1117,78 @@ void main() {
     },
   );
 
-  testWidgets(
-    'fully consumed item expands shopping list action and '
-    'shows success feedback',
-    (tester) async {
-      final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <InventoryItem>[
-          _item(
-            'a',
-            name: 'Milk',
-            brand: 'Acme',
-            quantity: 0,
-            initialQuantity: 1,
-          ),
-        ],
-      );
-      final shoppingRepository = FakeShoppingListRepository();
-      addTearDown(repository.dispose);
-      addTearDown(shoppingRepository.dispose);
+  testWidgets('fully consumed item expands shopping list action and '
+      'shows success feedback', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item(
+          'a',
+          name: 'Milk',
+          brand: 'Acme',
+          quantity: 0,
+          initialQuantity: 1,
+        ),
+      ],
+    );
+    final shoppingRepository = FakeShoppingListRepository();
+    addTearDown(repository.dispose);
+    addTearDown(shoppingRepository.dispose);
 
-      await _pumpTestApp(
-        tester,
-        repository,
-        overrides: <Override>[
-          shoppingListRepositoryProvider.overrideWithValue(
-            shoppingRepository,
-          ),
-        ],
-      );
-      await tester.pumpAndSettle();
-      await _toggleFullyConsumedFilter(tester);
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+      ],
+    );
+    await tester.pumpAndSettle();
+    await _toggleFullyConsumedFilter(tester);
 
-      expect(find.byTooltip('Add to shopping list'), findsOneWidget);
-      expect(find.byTooltip('Eat'), findsNothing);
+    expect(find.byTooltip('Add to shopping list'), findsOneWidget);
+    expect(find.byTooltip('Eat'), findsNothing);
 
-      await tester.tap(find.byTooltip('Add to shopping list'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Add to shopping list'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Item added to shopping list.'), findsOneWidget);
-      expect(shoppingRepository.savedItems, hasLength(1));
-      final addedItem = shoppingRepository.savedItems.single;
-      expect(addedItem.name, 'Milk');
-      expect(addedItem.brand, 'Acme');
-      expect(addedItem.quantity, 1);
-    },
-  );
+    expect(find.text('Item added to shopping list.'), findsOneWidget);
+    expect(shoppingRepository.savedItems, hasLength(1));
+    final addedItem = shoppingRepository.savedItems.single;
+    expect(addedItem.name, 'Milk');
+    expect(addedItem.brand, 'Acme');
+    expect(addedItem.quantity, 1);
+  });
 
-  testWidgets(
-    'shopping list action falls back to quantity one when '
-    'initial quantity is zero',
-    (tester) async {
-      final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <InventoryItem>[
-          _item('a', name: 'Milk', quantity: 0, initialQuantity: 0),
-        ],
-      );
-      final shoppingRepository = FakeShoppingListRepository();
-      addTearDown(repository.dispose);
-      addTearDown(shoppingRepository.dispose);
+  testWidgets('shopping list action falls back to quantity one when '
+      'initial quantity is zero', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a', name: 'Milk', quantity: 0, initialQuantity: 0),
+      ],
+    );
+    final shoppingRepository = FakeShoppingListRepository();
+    addTearDown(repository.dispose);
+    addTearDown(shoppingRepository.dispose);
 
-      await _pumpTestApp(
-        tester,
-        repository,
-        overrides: <Override>[
-          shoppingListRepositoryProvider.overrideWithValue(
-            shoppingRepository,
-          ),
-        ],
-      );
-      await tester.pumpAndSettle();
-      await _toggleFullyConsumedFilter(tester);
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+      ],
+    );
+    await tester.pumpAndSettle();
+    await _toggleFullyConsumedFilter(tester);
 
-      await tester.tap(find.byTooltip('Add to shopping list'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Add to shopping list'));
+    await tester.pumpAndSettle();
 
-      expect(shoppingRepository.savedItems, hasLength(1));
-      expect(shoppingRepository.savedItems.single.quantity, 1);
-    },
-  );
+    expect(shoppingRepository.savedItems, hasLength(1));
+    expect(shoppingRepository.savedItems.single.quantity, 1);
+  });
 
   testWidgets(
     'shopping list action shows add-failed feedback on save failure',
-    (
-      tester,
-    ) async {
+    (tester) async {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <InventoryItem>[
           _item('a', name: 'Milk', quantity: 0, initialQuantity: 1),
@@ -1248,9 +1203,7 @@ void main() {
         tester,
         repository,
         overrides: <Override>[
-          shoppingListRepositoryProvider.overrideWithValue(
-            shoppingRepository,
-          ),
+          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
         ],
       );
       await tester.pumpAndSettle();
@@ -1405,9 +1358,7 @@ void main() {
     expect(_stockLabel('3 /3'), findsOneWidget);
   });
 
-  testWidgets('throw-away undo also removes the discard event', (
-    tester,
-  ) async {
+  testWidgets('throw-away undo also removes the discard event', (tester) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
         _item('a', quantity: 3, initialQuantity: 3),

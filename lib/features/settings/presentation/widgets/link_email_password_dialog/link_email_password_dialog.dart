@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shared/widgets/email_password_credentials_form.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines link email password dialog.
 class LinkEmailPasswordDialog extends StatefulWidget {
   /// The link email password dialog.
-  const LinkEmailPasswordDialog({
+  const new({
     required this.l10n,
     required this.onSubmitCredentials,
     required this.errorMessageFor,

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'scanned_receipt.dart';
@@ -9,6 +9,7 @@ part of 'scanned_receipt.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -36,16 +37,21 @@ $ScannedReceiptCopyWith<ScannedReceipt> get copyWith => _$ScannedReceiptCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScannedReceipt&&(identical(other.id, id) || other.id == id)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.printedTotal, printedTotal) || other.printedTotal == printedTotal)&&const DeepCollectionEquality().equals(other.sourceFilePaths, sourceFilePaths)&&(identical(other.sourceMimeType, sourceMimeType) || other.sourceMimeType == sourceMimeType)&&(identical(other.confidenceScore, confidenceScore) || other.confidenceScore == confidenceScore)&&(identical(other.rawText, rawText) || other.rawText == rawText)&&(identical(other.currency, currency) || other.currency == currency)&&const DeepCollectionEquality().equals(other.items, items));
+  final _this = this as ScannedReceipt;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScannedReceipt&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.storeName, _this.storeName) || other.storeName == _this.storeName)&&(identical(other.dateTime, _this.dateTime) || other.dateTime == _this.dateTime)&&(identical(other.printedTotal, _this.printedTotal) || other.printedTotal == _this.printedTotal)&&const DeepCollectionEquality().equals(other.sourceFilePaths, _this.sourceFilePaths)&&(identical(other.sourceMimeType, _this.sourceMimeType) || other.sourceMimeType == _this.sourceMimeType)&&(identical(other.confidenceScore, _this.confidenceScore) || other.confidenceScore == _this.confidenceScore)&&(identical(other.rawText, _this.rawText) || other.rawText == _this.rawText)&&(identical(other.currency, _this.currency) || other.currency == _this.currency)&&const DeepCollectionEquality().equals(other.items, _this.items));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,storeName,dateTime,printedTotal,const DeepCollectionEquality().hash(sourceFilePaths),sourceMimeType,confidenceScore,rawText,currency,const DeepCollectionEquality().hash(items));
+int get hashCode {
+  final _this = this as ScannedReceipt;
+  return Object.hash(runtimeType,_this.id,_this.storeName,_this.dateTime,_this.printedTotal,const DeepCollectionEquality().hash(_this.sourceFilePaths),_this.sourceMimeType,_this.confidenceScore,_this.rawText,_this.currency,const DeepCollectionEquality().hash(_this.items));
+}
 
 @override
 String toString() {
-  return 'ScannedReceipt(id: $id, storeName: $storeName, dateTime: $dateTime, printedTotal: $printedTotal, sourceFilePaths: $sourceFilePaths, sourceMimeType: $sourceMimeType, confidenceScore: $confidenceScore, rawText: $rawText, currency: $currency, items: $items)';
+  final _this = this as ScannedReceipt;
+  return 'ScannedReceipt(id: ${_this.id}, storeName: ${_this.storeName}, dateTime: ${_this.dateTime}, printedTotal: ${_this.printedTotal}, sourceFilePaths: ${_this.sourceFilePaths}, sourceMimeType: ${_this.sourceMimeType}, confidenceScore: ${_this.confidenceScore}, rawText: ${_this.rawText}, currency: ${_this.currency}, items: ${_this.items})';
 }
 
 
@@ -74,7 +80,7 @@ class _$ScannedReceiptCopyWithImpl<$Res>
 /// Create a copy of ScannedReceipt
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? storeName = freezed,Object? dateTime = freezed,Object? printedTotal = freezed,Object? sourceFilePaths = null,Object? sourceMimeType = freezed,Object? confidenceScore = null,Object? rawText = freezed,Object? currency = null,Object? items = null,}) {
-  return _then(_self.copyWith(
+  return _then(ScannedReceipt(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,storeName: freezed == storeName ? _self.storeName : storeName // ignore: cast_nullable_to_non_nullable
 as String?,dateTime: freezed == dateTime ? _self.dateTime : dateTime // ignore: cast_nullable_to_non_nullable
@@ -226,7 +232,7 @@ return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that
 
 
 class _ScannedReceipt extends ScannedReceipt {
-  const _ScannedReceipt({required this.id, this.storeName, this.dateTime, this.printedTotal, final  List<String> sourceFilePaths = const <String>[], this.sourceMimeType, this.confidenceScore = 1.0, this.rawText, this.currency = 'EUR', final  List<ReceiptLineItem> items = const <ReceiptLineItem>[]}): _sourceFilePaths = sourceFilePaths,_items = items,super._();
+  const _ScannedReceipt({required this.id, this.storeName, this.dateTime, this.printedTotal,  List<String> sourceFilePaths = const <String>[], this.sourceMimeType, this.confidenceScore = 1.0, this.rawText, this.currency = 'EUR',  List<ReceiptLineItem> items = const <ReceiptLineItem>[]}): _sourceFilePaths = sourceFilePaths,_items = items,super._();
   
 
 /// Unique ID for this scan session.
@@ -276,16 +282,18 @@ _$ScannedReceiptCopyWith<_ScannedReceipt> get copyWith => __$ScannedReceiptCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScannedReceipt&&(identical(other.id, id) || other.id == id)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.printedTotal, printedTotal) || other.printedTotal == printedTotal)&&const DeepCollectionEquality().equals(other._sourceFilePaths, _sourceFilePaths)&&(identical(other.sourceMimeType, sourceMimeType) || other.sourceMimeType == sourceMimeType)&&(identical(other.confidenceScore, confidenceScore) || other.confidenceScore == confidenceScore)&&(identical(other.rawText, rawText) || other.rawText == rawText)&&(identical(other.currency, currency) || other.currency == currency)&&const DeepCollectionEquality().equals(other._items, _items));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScannedReceipt&&(identical(other.id, id) || other.id == id)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.printedTotal, printedTotal) || other.printedTotal == printedTotal)&&const DeepCollectionEquality().equals(other.sourceFilePaths, _sourceFilePaths)&&(identical(other.sourceMimeType, sourceMimeType) || other.sourceMimeType == sourceMimeType)&&(identical(other.confidenceScore, confidenceScore) || other.confidenceScore == confidenceScore)&&(identical(other.rawText, rawText) || other.rawText == rawText)&&(identical(other.currency, currency) || other.currency == currency)&&const DeepCollectionEquality().equals(other.items, _items));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,storeName,dateTime,printedTotal,const DeepCollectionEquality().hash(_sourceFilePaths),sourceMimeType,confidenceScore,rawText,currency,const DeepCollectionEquality().hash(_items));
+int get hashCode {
+    return Object.hash(runtimeType,id,storeName,dateTime,printedTotal,const DeepCollectionEquality().hash(_sourceFilePaths),sourceMimeType,confidenceScore,rawText,currency,const DeepCollectionEquality().hash(_items));
+}
 
 @override
 String toString() {
-  return 'ScannedReceipt(id: $id, storeName: $storeName, dateTime: $dateTime, printedTotal: $printedTotal, sourceFilePaths: $sourceFilePaths, sourceMimeType: $sourceMimeType, confidenceScore: $confidenceScore, rawText: $rawText, currency: $currency, items: $items)';
+    return 'ScannedReceipt(id: $id, storeName: $storeName, dateTime: $dateTime, printedTotal: $printedTotal, sourceFilePaths: $sourceFilePaths, sourceMimeType: $sourceMimeType, confidenceScore: $confidenceScore, rawText: $rawText, currency: $currency, items: $items)';
 }
 
 

@@ -151,9 +151,7 @@ void main() {
           _entry(
             id: 'food-$index',
             name: 'Day $index food',
-            loggedAt: addDiaryDays(start, index).add(
-              const Duration(hours: 12),
-            ),
+            loggedAt: addDiaryDays(start, index).add(const Duration(hours: 12)),
             kcal: 2002,
           ),
       ],
@@ -161,9 +159,7 @@ void main() {
     final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
       for (var index = 0; index < 14; index += 1)
         HealthWeightSample(
-          recordedAt: addDiaryDays(start, index).add(
-            const Duration(hours: 7),
-          ),
+          recordedAt: addDiaryDays(start, index).add(const Duration(hours: 7)),
           weightKg: 84,
         ),
     ]);
@@ -232,9 +228,7 @@ void main() {
     expect(
       result.table,
       isNot(
-        contains(
-          'formula=measured_total_tdee - credited_activity_average',
-        ),
+        contains('formula=measured_total_tdee - credited_activity_average'),
       ),
     );
     expect(
@@ -253,9 +247,7 @@ void main() {
           _entry(
             id: 'food-$index',
             name: 'Day $index food',
-            loggedAt: addDiaryDays(start, index).add(
-              const Duration(hours: 12),
-            ),
+            loggedAt: addDiaryDays(start, index).add(const Duration(hours: 12)),
             kcal: 2000,
           ),
       ],

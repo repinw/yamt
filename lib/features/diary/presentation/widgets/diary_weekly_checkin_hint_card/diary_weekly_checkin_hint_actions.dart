@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
@@ -9,7 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Action row for the diary weekly check-in hint.
 class DiaryWeeklyCheckInHintActions extends StatelessWidget {
   /// Creates diary weekly check-in hint actions.
-  const DiaryWeeklyCheckInHintActions({
+  const new({
     required this.checkInData,
     required this.selectedDay,
     required this.selectedDayHasEntries,
@@ -91,7 +91,7 @@ class DiaryWeeklyCheckInHintActions extends StatelessWidget {
 }
 
 class _ContinueButton extends StatelessWidget {
-  const _ContinueButton({required this.onPressed});
+  const new({required this.onPressed});
 
   final VoidCallback onPressed;
 
@@ -108,7 +108,7 @@ class _ContinueButton extends StatelessWidget {
 }
 
 class _TrackMissingWeightButton extends StatelessWidget {
-  const _TrackMissingWeightButton({required this.onPressed});
+  const new({required this.onPressed});
 
   final VoidCallback onPressed;
 
@@ -125,7 +125,7 @@ class _TrackMissingWeightButton extends StatelessWidget {
 }
 
 class _SkipDayButton extends StatelessWidget {
-  const _SkipDayButton({
+  const new({
     required this.selectedDayData,
     required this.onToggleSelectedDaySkipped,
   });

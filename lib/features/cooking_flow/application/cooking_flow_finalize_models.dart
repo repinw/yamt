@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 /// Resolved nutrition preview for finalize step.
 class CookingFlowNutritionPreview {
   /// Creates preview.
-  const CookingFlowNutritionPreview({
+  const new({
     required this.kcal,
     required this.carbs,
     required this.protein,
@@ -13,11 +13,7 @@ class CookingFlowNutritionPreview {
   });
 
   /// Empty preview.
-  const CookingFlowNutritionPreview.zero()
-    : kcal = 0,
-      carbs = 0,
-      protein = 0,
-      fat = 0;
+  const new zero() : kcal = 0, carbs = 0, protein = 0, fat = 0;
 
   /// Kcal value.
   final double kcal;
@@ -35,7 +31,7 @@ class CookingFlowNutritionPreview {
 /// Pure storage container input for save/validation.
 class CookingFlowFinalizeStorageContainerInput {
   /// Creates container input.
-  const CookingFlowFinalizeStorageContainerInput({
+  const new({
     required this.id,
     required this.label,
     required this.taraText,
@@ -113,15 +109,13 @@ enum CookingFlowFinalizeSaveFailure {
 /// Save result from controller.
 class CookingFlowFinalizeSaveResult {
   /// Creates success.
-  const CookingFlowFinalizeSaveResult.success({
+  const new success({
     required this.preparedMealId,
     required this.containerCount,
   }) : failure = null;
 
   /// Creates failure.
-  const CookingFlowFinalizeSaveResult.failure(this.failure)
-    : preparedMealId = null,
-      containerCount = 0;
+  const new failure(this.failure) : preparedMealId = null, containerCount = 0;
 
   /// Failure reason, null on success.
   final CookingFlowFinalizeSaveFailure? failure;
@@ -139,7 +133,7 @@ class CookingFlowFinalizeSaveResult {
 /// Resolved save plan before storage split.
 class CookingFlowFinalizeMealSavePlan {
   /// Creates save plan.
-  const CookingFlowFinalizeMealSavePlan({
+  const new({
     required this.template,
     required this.recipeIngredientAssignments,
     required this.recipeIngredientAmountConversions,

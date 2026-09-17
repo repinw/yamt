@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Window date row for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInWindowRow extends StatelessWidget {
   /// Creates a window date row.
-  const DiaryWeeklyCheckInWindowRow({required this.pending, super.key});
+  const new({required this.pending, super.key});
 
   /// Pending weekly check-in.
   final PendingCalorieGoalWeeklyCheckIn pending;
@@ -30,7 +30,7 @@ class DiaryWeeklyCheckInWindowRow extends StatelessWidget {
 /// Calculation rows for the diary weekly check-in dialog.
 class DiaryWeeklyCheckInCalculationRows extends StatelessWidget {
   /// Creates calculation rows.
-  const DiaryWeeklyCheckInCalculationRows({
+  const new({
     required this.calculation,
     required this.lowConfidence,
     required this.usesHealthActivity,
@@ -72,7 +72,7 @@ class DiaryWeeklyCheckInCalculationRows extends StatelessWidget {
 }
 
 class _TrendRow extends StatelessWidget {
-  const _TrendRow({required this.calculation});
+  const new({required this.calculation});
 
   final CalorieWeeklyCheckInCalculation calculation;
 
@@ -91,7 +91,7 @@ class _TrendRow extends StatelessWidget {
 }
 
 class _MeasuredTotalTdeeRow extends StatelessWidget {
-  const _MeasuredTotalTdeeRow({required this.calculation});
+  const new({required this.calculation});
 
   final CalorieWeeklyCheckInCalculation calculation;
 
@@ -109,7 +109,7 @@ class _MeasuredTotalTdeeRow extends StatelessWidget {
 }
 
 class _MeasuredBaseTdeeRow extends StatelessWidget {
-  const _MeasuredBaseTdeeRow({required this.calculation});
+  const new({required this.calculation});
 
   final CalorieWeeklyCheckInCalculation calculation;
 
@@ -127,7 +127,7 @@ class _MeasuredBaseTdeeRow extends StatelessWidget {
 }
 
 class _CreditedActivityRow extends StatelessWidget {
-  const _CreditedActivityRow({required this.calculation});
+  const new({required this.calculation});
 
   final CalorieWeeklyCheckInCalculation calculation;
 
@@ -145,7 +145,7 @@ class _CreditedActivityRow extends StatelessWidget {
 }
 
 class _NewTargetRow extends StatelessWidget {
-  const _NewTargetRow({required this.calculation});
+  const new({required this.calculation});
 
   final CalorieWeeklyCheckInCalculation calculation;
 
@@ -163,7 +163,7 @@ class _NewTargetRow extends StatelessWidget {
 }
 
 class _LowConfidenceText extends StatelessWidget {
-  const _LowConfidenceText();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -171,15 +171,14 @@ class _LowConfidenceText extends StatelessWidget {
 
     return Text(
       l10n.caloriesWeeklyCheckInDialogLowConfidence,
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      style: Theme.of(context).textTheme.bodySmall
+          ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
 }
 
 class _MetricRow extends StatelessWidget {
-  const _MetricRow({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -201,9 +200,8 @@ class _MetricRow extends StatelessWidget {
         Text(
           value,
           textAlign: TextAlign.right,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
       ],
     );

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Shared weight input row for cookflow measurement fields.
 class CookingFlowWeightInputRow extends StatelessWidget {
   /// Creates weight input row.
-  const CookingFlowWeightInputRow({
+  const new({
     required this.controller,
     required this.unitLabel,
     super.key,

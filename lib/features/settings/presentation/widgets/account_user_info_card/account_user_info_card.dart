@@ -1,16 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines account user info card.
 class AccountUserInfoCard extends StatelessWidget {
   /// The account user info card.
-  const AccountUserInfoCard({
-    required this.user,
-    required this.l10n,
-    super.key,
-  });
+  const new({required this.user, required this.l10n, super.key});
 
   /// The user.
   final User user;

@@ -7,7 +7,7 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 
 class _FakeCalorieSettingsUserSession implements CalorieSettingsUserSession {
-  _FakeCalorieSettingsUserSession({this.currentUserId});
+  new({this.currentUserId});
 
   @override
   final String? currentUserId;

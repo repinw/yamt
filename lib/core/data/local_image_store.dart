@@ -6,7 +6,7 @@ import 'package:meta/meta.dart';
 @immutable
 class LocalImageRef {
   /// Creates local image reference.
-  const LocalImageRef({required this.storageFolder, required this.entityId});
+  const new({required this.storageFolder, required this.entityId});
 
   /// Folder name inside local image storage root.
   final String storageFolder;

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/activity/presentation/widgets/'
     'activity_weight_section/diary_activity_weight_section.dart';
@@ -14,7 +14,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 /// daily balance card.
 class DiaryPageHeader extends StatelessWidget {
   /// Creates the diary page header.
-  const DiaryPageHeader({
+  const new({
     required this.selectedDay,
     required this.dashboardData,
     required this.showIntroBanner,
@@ -50,9 +50,7 @@ class DiaryPageHeader extends StatelessWidget {
           children: [
             DiaryActivityWeightSection(
               selectedDay: selectedDay,
-              header: DiaryWeeklyBalanceSummary(
-                selectedDay: selectedDay,
-              ),
+              header: DiaryWeeklyBalanceSummary(selectedDay: selectedDay),
             ),
             if (showIntroBanner) ...[
               const SizedBox(height: AppSpacing.sm),
@@ -62,9 +60,7 @@ class DiaryPageHeader extends StatelessWidget {
               ),
             ],
             if (dashboardData != null)
-              DiaryWeeklyCheckInSection(
-                selectedDay: selectedDay,
-              ),
+              DiaryWeeklyCheckInSection(selectedDay: selectedDay),
             const SizedBox(height: AppSpacing.xl),
           ],
         ),

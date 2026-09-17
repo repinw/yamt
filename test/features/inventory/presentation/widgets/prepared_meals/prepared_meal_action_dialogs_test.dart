@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_action_dialogs.dart';
@@ -11,7 +12,7 @@ import '../../../../../support/prepared_meal_test_data.dart';
 PreparedMeal _meal() => preparedMealTestData();
 
 class _ActionDialogsHarness extends StatefulWidget {
-  const _ActionDialogsHarness({required this.meal, this.pickLoggedDay});
+  const new({required this.meal, this.pickLoggedDay});
 
   final PreparedMeal meal;
   final Future<DateTime?> Function({
@@ -79,9 +80,7 @@ class _ActionDialogsHarnessState extends State<_ActionDialogsHarness> {
 }
 
 void main() {
-  testWidgets('eat dialog opens on root navigator by default', (
-    tester,
-  ) async {
+  testWidgets('eat dialog opens on root navigator by default', (tester) async {
     final rootObserver = RecordingNavigatorObserver();
     final nestedObserver = RecordingNavigatorObserver();
 
@@ -90,7 +89,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: _ActionDialogsHarness(meal: _meal()),
       ),
@@ -122,7 +121,7 @@ void main() {
         rootObserver: rootObserver,
         nestedObserver: nestedObserver,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         child: _ActionDialogsHarness(meal: _meal()),
       ),
@@ -146,7 +145,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(meal: _meal()),
       ),
@@ -184,7 +183,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(meal: _meal()),
       ),
@@ -213,7 +212,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(meal: _meal()),
       ),
@@ -246,14 +245,14 @@ void main() {
   testWidgets('eat dialog returns selected meal day on confirm', (
     tester,
   ) async {
-    final today = DateUtils.dateOnly(
-      DateTime.now(),
-    ).toIso8601String().substring(0, 10);
+    final today = DateUtils.dateOnly(DateTime.now())
+        .toIso8601String()
+        .substring(0, 10);
 
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(meal: _meal()),
       ),
@@ -273,17 +272,15 @@ void main() {
     expect(find.textContaining(':$today'), findsOneWidget);
   });
 
-  testWidgets('eat dialog can convert grams to portions', (
-    tester,
-  ) async {
-    final today = DateUtils.dateOnly(
-      DateTime.now(),
-    ).toIso8601String().substring(0, 10);
+  testWidgets('eat dialog can convert grams to portions', (tester) async {
+    final today = DateUtils.dateOnly(DateTime.now())
+        .toIso8601String()
+        .substring(0, 10);
 
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(
           meal: _meal().copyWith(
@@ -321,7 +318,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: _ActionDialogsHarness(
             meal: PreparedMeal.fromJson({
@@ -368,7 +365,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(
           meal: _meal().copyWith(remainingPortions: 0.5),
@@ -398,7 +395,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(
           meal: _meal(),
@@ -452,7 +449,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(
           meal: _meal(),
@@ -495,7 +492,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(meal: _meal()),
       ),
@@ -517,7 +514,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('de'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(
           meal: _meal().copyWith(remainingPortions: 0.5),
@@ -542,7 +539,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _ActionDialogsHarness(meal: _meal()),
       ),

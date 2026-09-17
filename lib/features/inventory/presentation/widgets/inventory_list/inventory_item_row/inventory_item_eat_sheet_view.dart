@@ -1,7 +1,7 @@
 // Internal split file. Public names are imported only by sibling widgets.
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
@@ -29,7 +29,7 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_nutrition_strip.dart';
 
 class InventoryItemEatSheetView extends StatelessWidget {
-  const InventoryItemEatSheetView({required this.data});
+  const new({required this.data});
 
   final InventoryItemEatSheetViewData data;
 
@@ -105,7 +105,7 @@ class InventoryItemEatSheetView extends StatelessWidget {
 }
 
 class _InventoryItemEatAmountSection extends StatelessWidget {
-  const _InventoryItemEatAmountSection({required this.data});
+  const new({required this.data});
 
   final InventoryItemEatSheetAmountSectionData data;
 
@@ -188,7 +188,7 @@ class _InventoryItemEatAmountSection extends StatelessWidget {
 }
 
 class _InventoryItemEatManualSection extends StatelessWidget {
-  const _InventoryItemEatManualSection({required this.data});
+  const new({required this.data});
 
   final InventoryItemEatSheetManualPortionSectionData data;
 
@@ -235,7 +235,7 @@ class _InventoryItemEatManualSection extends StatelessWidget {
 }
 
 class _InventoryItemEatWhenSection extends StatelessWidget {
-  const _InventoryItemEatWhenSection({required this.data});
+  const new({required this.data});
 
   final InventoryItemEatSheetWhenSectionData data;
 
@@ -255,7 +255,7 @@ class _InventoryItemEatWhenSection extends StatelessWidget {
 }
 
 class _InventoryItemEatAmountModeSelector extends StatelessWidget {
-  const _InventoryItemEatAmountModeSelector({required this.data});
+  const new({required this.data});
 
   final InventoryItemEatSheetAmountSectionData data;
 
@@ -271,10 +271,8 @@ class _InventoryItemEatAmountModeSelector extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         dropdownColor: colors.surfaceContainerHigh,
         icon: Icon(Icons.expand_more_rounded, color: colors.onSurfaceVariant),
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: colors.onSurface,
-          fontWeight: FontWeight.w700,
-        ),
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(color: colors.onSurface, fontWeight: FontWeight.w700),
         items: [
           for (final option in data.modeOptions)
             DropdownMenuItem<String>(

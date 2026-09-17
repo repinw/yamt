@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'global_food_nutrition.dart';
@@ -9,6 +9,7 @@ part of 'global_food_nutrition.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $GlobalFoodNutritionCopyWith<GlobalFoodNutrition> get copyWith => _$GlobalFoodNu
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GlobalFoodNutrition&&(identical(other.qualityStatus, qualityStatus) || other.qualityStatus == qualityStatus)&&(identical(other.per100Kcal, per100Kcal) || other.per100Kcal == per100Kcal)&&(identical(other.per100Protein, per100Protein) || other.per100Protein == per100Protein)&&(identical(other.per100Carbs, per100Carbs) || other.per100Carbs == per100Carbs)&&(identical(other.per100Fat, per100Fat) || other.per100Fat == per100Fat)&&(identical(other.per100Salt, per100Salt) || other.per100Salt == per100Salt)&&(identical(other.per100SaturatedFat, per100SaturatedFat) || other.per100SaturatedFat == per100SaturatedFat)&&(identical(other.per100PolyunsaturatedFat, per100PolyunsaturatedFat) || other.per100PolyunsaturatedFat == per100PolyunsaturatedFat)&&(identical(other.per100Sugar, per100Sugar) || other.per100Sugar == per100Sugar)&&(identical(other.per100Fiber, per100Fiber) || other.per100Fiber == per100Fiber));
+  final _this = this as GlobalFoodNutrition;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GlobalFoodNutrition&&(identical(other.qualityStatus, _this.qualityStatus) || other.qualityStatus == _this.qualityStatus)&&(identical(other.per100Kcal, _this.per100Kcal) || other.per100Kcal == _this.per100Kcal)&&(identical(other.per100Protein, _this.per100Protein) || other.per100Protein == _this.per100Protein)&&(identical(other.per100Carbs, _this.per100Carbs) || other.per100Carbs == _this.per100Carbs)&&(identical(other.per100Fat, _this.per100Fat) || other.per100Fat == _this.per100Fat)&&(identical(other.per100Salt, _this.per100Salt) || other.per100Salt == _this.per100Salt)&&(identical(other.per100SaturatedFat, _this.per100SaturatedFat) || other.per100SaturatedFat == _this.per100SaturatedFat)&&(identical(other.per100PolyunsaturatedFat, _this.per100PolyunsaturatedFat) || other.per100PolyunsaturatedFat == _this.per100PolyunsaturatedFat)&&(identical(other.per100Sugar, _this.per100Sugar) || other.per100Sugar == _this.per100Sugar)&&(identical(other.per100Fiber, _this.per100Fiber) || other.per100Fiber == _this.per100Fiber));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,qualityStatus,per100Kcal,per100Protein,per100Carbs,per100Fat,per100Salt,per100SaturatedFat,per100PolyunsaturatedFat,per100Sugar,per100Fiber);
+int get hashCode {
+  final _this = this as GlobalFoodNutrition;
+  return Object.hash(runtimeType,_this.qualityStatus,_this.per100Kcal,_this.per100Protein,_this.per100Carbs,_this.per100Fat,_this.per100Salt,_this.per100SaturatedFat,_this.per100PolyunsaturatedFat,_this.per100Sugar,_this.per100Fiber);
+}
 
 @override
 String toString() {
-  return 'GlobalFoodNutrition(qualityStatus: $qualityStatus, per100Kcal: $per100Kcal, per100Protein: $per100Protein, per100Carbs: $per100Carbs, per100Fat: $per100Fat, per100Salt: $per100Salt, per100SaturatedFat: $per100SaturatedFat, per100PolyunsaturatedFat: $per100PolyunsaturatedFat, per100Sugar: $per100Sugar, per100Fiber: $per100Fiber)';
+  final _this = this as GlobalFoodNutrition;
+  return 'GlobalFoodNutrition(qualityStatus: ${_this.qualityStatus}, per100Kcal: ${_this.per100Kcal}, per100Protein: ${_this.per100Protein}, per100Carbs: ${_this.per100Carbs}, per100Fat: ${_this.per100Fat}, per100Salt: ${_this.per100Salt}, per100SaturatedFat: ${_this.per100SaturatedFat}, per100PolyunsaturatedFat: ${_this.per100PolyunsaturatedFat}, per100Sugar: ${_this.per100Sugar}, per100Fiber: ${_this.per100Fiber})';
 }
 
 
@@ -63,7 +69,7 @@ class _$GlobalFoodNutritionCopyWithImpl<$Res>
 /// Create a copy of GlobalFoodNutrition
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? qualityStatus = null,Object? per100Kcal = freezed,Object? per100Protein = freezed,Object? per100Carbs = freezed,Object? per100Fat = freezed,Object? per100Salt = freezed,Object? per100SaturatedFat = freezed,Object? per100PolyunsaturatedFat = freezed,Object? per100Sugar = freezed,Object? per100Fiber = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(GlobalFoodNutrition(
 qualityStatus: null == qualityStatus ? _self.qualityStatus : qualityStatus // ignore: cast_nullable_to_non_nullable
 as GlobalFoodNutritionQualityStatus,per100Kcal: freezed == per100Kcal ? _self.per100Kcal : per100Kcal // ignore: cast_nullable_to_non_nullable
 as double?,per100Protein: freezed == per100Protein ? _self.per100Protein : per100Protein // ignore: cast_nullable_to_non_nullable
@@ -239,16 +245,18 @@ _$GlobalFoodNutritionCopyWith<_GlobalFoodNutrition> get copyWith => __$GlobalFoo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GlobalFoodNutrition&&(identical(other.qualityStatus, qualityStatus) || other.qualityStatus == qualityStatus)&&(identical(other.per100Kcal, per100Kcal) || other.per100Kcal == per100Kcal)&&(identical(other.per100Protein, per100Protein) || other.per100Protein == per100Protein)&&(identical(other.per100Carbs, per100Carbs) || other.per100Carbs == per100Carbs)&&(identical(other.per100Fat, per100Fat) || other.per100Fat == per100Fat)&&(identical(other.per100Salt, per100Salt) || other.per100Salt == per100Salt)&&(identical(other.per100SaturatedFat, per100SaturatedFat) || other.per100SaturatedFat == per100SaturatedFat)&&(identical(other.per100PolyunsaturatedFat, per100PolyunsaturatedFat) || other.per100PolyunsaturatedFat == per100PolyunsaturatedFat)&&(identical(other.per100Sugar, per100Sugar) || other.per100Sugar == per100Sugar)&&(identical(other.per100Fiber, per100Fiber) || other.per100Fiber == per100Fiber));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _GlobalFoodNutrition&&(identical(other.qualityStatus, qualityStatus) || other.qualityStatus == qualityStatus)&&(identical(other.per100Kcal, per100Kcal) || other.per100Kcal == per100Kcal)&&(identical(other.per100Protein, per100Protein) || other.per100Protein == per100Protein)&&(identical(other.per100Carbs, per100Carbs) || other.per100Carbs == per100Carbs)&&(identical(other.per100Fat, per100Fat) || other.per100Fat == per100Fat)&&(identical(other.per100Salt, per100Salt) || other.per100Salt == per100Salt)&&(identical(other.per100SaturatedFat, per100SaturatedFat) || other.per100SaturatedFat == per100SaturatedFat)&&(identical(other.per100PolyunsaturatedFat, per100PolyunsaturatedFat) || other.per100PolyunsaturatedFat == per100PolyunsaturatedFat)&&(identical(other.per100Sugar, per100Sugar) || other.per100Sugar == per100Sugar)&&(identical(other.per100Fiber, per100Fiber) || other.per100Fiber == per100Fiber));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,qualityStatus,per100Kcal,per100Protein,per100Carbs,per100Fat,per100Salt,per100SaturatedFat,per100PolyunsaturatedFat,per100Sugar,per100Fiber);
+int get hashCode {
+    return Object.hash(runtimeType,qualityStatus,per100Kcal,per100Protein,per100Carbs,per100Fat,per100Salt,per100SaturatedFat,per100PolyunsaturatedFat,per100Sugar,per100Fiber);
+}
 
 @override
 String toString() {
-  return 'GlobalFoodNutrition(qualityStatus: $qualityStatus, per100Kcal: $per100Kcal, per100Protein: $per100Protein, per100Carbs: $per100Carbs, per100Fat: $per100Fat, per100Salt: $per100Salt, per100SaturatedFat: $per100SaturatedFat, per100PolyunsaturatedFat: $per100PolyunsaturatedFat, per100Sugar: $per100Sugar, per100Fiber: $per100Fiber)';
+    return 'GlobalFoodNutrition(qualityStatus: $qualityStatus, per100Kcal: $per100Kcal, per100Protein: $per100Protein, per100Carbs: $per100Carbs, per100Fat: $per100Fat, per100Salt: $per100Salt, per100SaturatedFat: $per100SaturatedFat, per100PolyunsaturatedFat: $per100PolyunsaturatedFat, per100Sugar: $per100Sugar, per100Fiber: $per100Fiber)';
 }
 
 

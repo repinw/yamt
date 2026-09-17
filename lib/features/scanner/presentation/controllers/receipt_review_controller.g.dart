@@ -103,7 +103,7 @@ abstract class _$ReceiptReviewController extends $Notifier<ReceiptReviewState> {
   ReceiptReviewState build(ScannedReceipt initialReceipt);
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ReceiptReviewState, ReceiptReviewState>;
     final element =
         ref.element
@@ -113,6 +113,6 @@ abstract class _$ReceiptReviewController extends $Notifier<ReceiptReviewState> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, () => build(_$args));
+    return element.handleCreate(ref, () => build(_$args));
   }
 }

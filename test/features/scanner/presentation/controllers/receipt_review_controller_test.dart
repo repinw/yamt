@@ -58,9 +58,7 @@ void main() {
       items: [initialItem1, initialItem2, initialItemPfand],
     );
 
-    ProviderContainer createContainer({
-      ScannedReceipt receipt = baseReceipt,
-    }) {
+    ProviderContainer createContainer({ScannedReceipt receipt = baseReceipt}) {
       fakeResolver = FakeReceiptProductResolver();
       fakeGateway = FakeReceiptStorageGateway();
 

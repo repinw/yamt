@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_cover.dart';
@@ -18,7 +18,7 @@ enum KitchenUtensilImageSource {
 /// Image preview and picker controls for the kitchen utensil sheet.
 class KitchenUtensilImageField extends StatelessWidget {
   /// Creates image picker field.
-  const KitchenUtensilImageField({
+  const new({
     required this.label,
     required this.imageBytes,
     required this.imageUrl,
@@ -61,9 +61,8 @@ class KitchenUtensilImageField extends StatelessWidget {
       children: [
         Text(
           l10n.kitchenUtensilImageLabel,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
@@ -95,7 +94,7 @@ class KitchenUtensilImageField extends StatelessWidget {
 }
 
 class _KitchenUtensilImageActions extends StatelessWidget {
-  const _KitchenUtensilImageActions({
+  const new({
     required this.hasImage,
     required this.supportsCamera,
     required this.isPickingImage,
@@ -152,9 +151,8 @@ class _KitchenUtensilImageActions extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         Text(
           l10n.kitchenUtensilImageHint,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: hintColor,
-          ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: hintColor),
         ),
       ],
     );

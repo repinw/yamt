@@ -149,9 +149,9 @@ void main() {
         selectedAt: now.add(const Duration(minutes: 2)),
       );
 
-      final snapshot = await _candidateCollection(
-        firestore: firestore,
-      ).doc('barcode-4006381333931-off-4006381333931').get();
+      final snapshot = await _candidateCollection(firestore: firestore)
+          .doc('barcode-4006381333931-off-4006381333931')
+          .get();
 
       expect(snapshot.exists, isTrue);
       expect(snapshot.data()!['selection_count'], 3);

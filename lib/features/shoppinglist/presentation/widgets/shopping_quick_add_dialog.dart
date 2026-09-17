@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -18,7 +18,7 @@ Future<void> showShoppingQuickAddDialog({
 }
 
 class _ShoppingQuickAddDialog extends StatefulWidget {
-  const _ShoppingQuickAddDialog({required this.l10n, required this.onSubmit});
+  const new({required this.l10n, required this.onSubmit});
 
   final AppLocalizations l10n;
   final Future<bool> Function({required String name, required String brand})

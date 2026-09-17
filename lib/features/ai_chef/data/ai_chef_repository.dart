@@ -23,11 +23,10 @@ const _location = 'global';
 const _timeout = Duration(seconds: 30);
 
 /// Calls the Firebase AI Chef template model.
-typedef AiChefTemplateModelClient =
-    Future<String?> Function({
-      required String templateId,
-      required Map<String, Object?> inputs,
-    });
+typedef AiChefTemplateModelClient = Future<String?> Function({
+  required String templateId,
+  required Map<String, Object?> inputs,
+});
 
 /// Firebase AI Chef repository provider.
 @riverpod
@@ -40,14 +39,13 @@ FirebaseAiChefRepository aiChefRepository(Ref ref) {
 /// Repository managing recipe generation using Firebase Vertex AI templates.
 class FirebaseAiChefRepository {
   /// Creates an instance.
-  FirebaseAiChefRepository({
+  new({
     FirebaseStorage? storage,
     FirebaseAuth? auth,
-    AiChefRecipeResponseParser parser = const AiChefRecipeResponseParser(),
+    this._parser = const AiChefRecipeResponseParser(),
     AiChefImageGenerator? imageGenerator,
     AiChefTemplateModelClient? templateModelClient,
-  }) : _parser = parser,
-       _imageGenerator =
+  }) : _imageGenerator =
            imageGenerator ?? AiChefImageGenerator(storage: storage, auth: auth),
        _templateModelClient =
            templateModelClient ?? _firebaseAiChefTemplateClient;
@@ -94,7 +92,7 @@ class FirebaseAiChefRepository {
         return null;
       }
 
-      return _buildMeal(draft);
+      return await _buildMeal(draft);
     } on Object catch (error, stackTrace) {
       log(
         'Firebase AI recipe generation failed.',
@@ -139,9 +137,8 @@ Future<String?> _firebaseAiChefTemplateClient({
   required String templateId,
   required Map<String, Object?> inputs,
 }) async {
-  final model = FirebaseAI.vertexAI(
-    location: _location,
-  ).templateGenerativeModel();
+  final model = FirebaseAI.agentPlatform(location: _location)
+      .templateGenerativeModel();
   final response = await model.generateContent(templateId, inputs: inputs);
   return response.text;
 }

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Defines nutrition metric.
 class NutritionMetric {
   /// The nutrition metric.
-  const NutritionMetric({required this.label, required this.value});
+  const new({required this.label, required this.value});
 
   /// The label.
   final String label;
@@ -16,7 +16,7 @@ class NutritionMetric {
 /// Shared nutrition metrics strip.
 class NutritionMetricsStrip extends StatelessWidget {
   /// The nutrition metrics strip.
-  const NutritionMetricsStrip({
+  const new({
     required this.metrics,
     super.key,
     this.colorScheme,
@@ -66,9 +66,7 @@ class NutritionMetricsStrip extends StatelessWidget {
         decoration: BoxDecoration(
           color: stripColor,
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(
-            color: resolvedColorScheme.outline,
-          ),
+          border: Border.all(color: resolvedColorScheme.outline),
         ),
         child: Row(
           children: [
@@ -107,7 +105,7 @@ class NutritionMetricsStrip extends StatelessWidget {
 }
 
 class _NutritionMetricCell extends StatelessWidget {
-  const _NutritionMetricCell({
+  const new({
     required this.metric,
     required this.colorScheme,
     required this.isHighlighted,
@@ -153,10 +151,8 @@ class _NutritionMetricCell extends StatelessWidget {
             metric.value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: valueColor,
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(color: valueColor, fontWeight: FontWeight.w800),
           ),
         ],
       ),

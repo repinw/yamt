@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Text labels used by [showWeightEntryDialog].
 @immutable
 class WeightEntryDialogLabels {
   /// Creates weight entry dialog labels.
-  const WeightEntryDialogLabels({
+  const new({
     required this.title,
     required this.fieldLabel,
     required this.emptyErrorText,
@@ -41,11 +41,7 @@ class WeightEntryDialogLabels {
 @immutable
 class WeightEntryDialogKeys {
   /// Creates weight entry dialog keys.
-  const WeightEntryDialogKeys({
-    this.fieldKey,
-    this.clearButtonKey,
-    this.saveButtonKey,
-  });
+  const new({this.fieldKey, this.clearButtonKey, this.saveButtonKey});
 
   /// Key for the text field.
   final Key? fieldKey;
@@ -69,17 +65,13 @@ enum WeightEntryDialogAction {
 /// Result returned by [showWeightEntryDialog].
 @immutable
 class WeightEntryDialogResult {
-  const WeightEntryDialogResult._({
-    required this.action,
-    this.weightKg,
-  });
+  const new _({required this.action, this.weightKg});
 
   /// Creates a clear result.
-  const WeightEntryDialogResult.clear()
-    : this._(action: WeightEntryDialogAction.clear);
+  const new clear() : this._(action: WeightEntryDialogAction.clear);
 
   /// Creates a save result.
-  const WeightEntryDialogResult.save(double weightKg)
+  const new save(double weightKg)
     : this._(action: WeightEntryDialogAction.save, weightKg: weightKg);
 
   /// Selected action.
@@ -111,7 +103,7 @@ Future<WeightEntryDialogResult?> showWeightEntryDialog({
 }
 
 class _WeightEntryDialogContent extends StatefulWidget {
-  const _WeightEntryDialogContent({
+  const new({
     required this.labels,
     required this.keys,
     required this.initialWeightKg,
@@ -170,9 +162,9 @@ class _WeightEntryDialogContentState extends State<_WeightEntryDialogContent> {
         if (widget.showClearAction)
           TextButton(
             key: widget.keys.clearButtonKey,
-            onPressed: () => Navigator.of(
-              context,
-            ).pop(const WeightEntryDialogResult.clear()),
+            onPressed: () =>
+                Navigator.of(context)
+                    .pop(const WeightEntryDialogResult.clear()),
             child: Text(labels.clearActionLabel),
           ),
         TextButton(
@@ -206,9 +198,7 @@ class _WeightEntryDialogContentState extends State<_WeightEntryDialogContent> {
       return;
     }
 
-    Navigator.of(
-      context,
-    ).pop(WeightEntryDialogResult.save(parsedWeight));
+    Navigator.of(context).pop(WeightEntryDialogResult.save(parsedWeight));
   }
 }
 

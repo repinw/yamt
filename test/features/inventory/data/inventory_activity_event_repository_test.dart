@@ -48,12 +48,7 @@ void main() {
     final events = List<InventoryActivityEvent>.generate(501, (index) {
       return _event(
         id: 'event-$index',
-        happenedAt: DateTime.utc(
-          2026,
-          4,
-          7,
-          10,
-        ).add(Duration(minutes: index)),
+        happenedAt: DateTime.utc(2026, 4, 7, 10).add(Duration(minutes: index)),
       );
     });
 

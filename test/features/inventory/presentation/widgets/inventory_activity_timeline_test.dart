@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
@@ -38,7 +39,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: InventoryActivityTimeline(
@@ -58,7 +59,7 @@ void main() {
 
 class _FakeInventoryActivityEventRepository
     implements InventoryActivityEventRepository {
-  const _FakeInventoryActivityEventRepository(this.events);
+  const new(this.events);
 
   final List<InventoryActivityEvent> events;
 

@@ -9,7 +9,7 @@ import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 /// One previous day's contribution to the carryover calculation.
 class DiaryCarryoverDayDetail {
   /// Creates a carryover day detail.
-  const DiaryCarryoverDayDetail({
+  const new({
     required this.date,
     required this.goalKcal,
     required this.consumedKcal,
@@ -36,7 +36,7 @@ class DiaryCarryoverDayDetail {
 /// Detailed breakdown of today's calorie budget and carryover origin.
 class DiaryDailyBudgetDetailsData {
   /// Creates daily budget details data.
-  const DiaryDailyBudgetDetailsData({
+  const new({
     required this.selectedDay,
     required this.baseGoalKcal,
     required this.carryoverKcal,
@@ -52,7 +52,7 @@ class DiaryDailyBudgetDetailsData {
   });
 
   /// Builds budget details from week overview, day overview, and daily metrics.
-  factory DiaryDailyBudgetDetailsData.from({
+  factory from({
     required CalorieWeekOverview weekOverview,
     required CalorieWeekDayOverview selectedDayOverview,
     required DiaryDailyBalanceMetrics metrics,
@@ -138,7 +138,7 @@ class DiaryDailyBudgetDetailsData {
 }
 
 class _DiaryDailyBudgetDetailsResolver {
-  const _DiaryDailyBudgetDetailsResolver({
+  const new({
     required this.weekOverview,
     required this.selectedDayOverview,
     required this.metrics,
@@ -190,9 +190,9 @@ class _DiaryDailyBudgetDetailsResolver {
   }
 
   int _resolveRemainingRunDays() {
-    final completedDays = normalizeDiaryDay(
-      selectedDayOverview.date,
-    ).difference(normalizeDiaryDay(carryoverStartDate)).inDays;
+    final completedDays = normalizeDiaryDay(selectedDayOverview.date)
+        .difference(normalizeDiaryDay(carryoverStartDate))
+        .inDays;
     return math.max(
       1,
       calorieGoalRunLengthDays -
@@ -201,9 +201,7 @@ class _DiaryDailyBudgetDetailsResolver {
   }
 }
 
-DiaryCarryoverDayDetail _toCarryoverDayDetail(
-  CalorieWeekDayOverview day,
-) {
+DiaryCarryoverDayDetail _toCarryoverDayDetail(CalorieWeekDayOverview day) {
   final differenceKcal = day.goalKcal - day.countedTotalKcal;
   return DiaryCarryoverDayDetail(
     date: day.date,

@@ -3,7 +3,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 /// Defines inventory consumption filter.
 class InventoryConsumptionFilter {
   /// The inventory consumption filter.
-  const InventoryConsumptionFilter({this.hideFullyConsumedItems = true});
+  const new({this.hideFullyConsumedItems = true});
 
   /// The hide fully consumed items.
   final bool hideFullyConsumedItems;

@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -156,9 +156,10 @@ Future<InventoryItem?> _updateSavedItemIfNeeded({
     return originalItem;
   }
 
-  final controller = ProviderScope.containerOf(context, listen: false).read(
-    inventoryItemsControllerProvider.notifier,
-  );
+  final controller = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(inventoryItemsControllerProvider.notifier);
   final saved = await controller.updateItem(resizedItem);
   if (!context.mounted) {
     return null;

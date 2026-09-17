@@ -12,11 +12,10 @@ const String _repositoryLogName = 'FirestoreShoppingListRepository';
 /// Defines firestore shopping list repository.
 class FirestoreShoppingListRepository implements ShoppingListRepository {
   /// Creates an instance.
-  FirestoreShoppingListRepository({
-    required ShoppingListUserSession session,
-    required ShoppingListItemStore store,
-  }) : _session = session,
-       _store = store;
+  new({
+    required this._session,
+    required this._store,
+  });
 
   final ShoppingListUserSession _session;
   final ShoppingListItemStore _store;

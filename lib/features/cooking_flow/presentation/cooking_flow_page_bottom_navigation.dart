@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Builds cookflow bottom navigation for the current step.
 class CookingFlowPageBottomNavigation extends StatelessWidget {
   /// Creates bottom navigation.
-  const CookingFlowPageBottomNavigation({
+  const new({
     required this.step,
     required this.isFinalizingMeal,
     required this.hasValidFinalizeWeight,

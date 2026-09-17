@@ -13,7 +13,7 @@ const _recipeImporterLogName = 'PreparedMealRecipeImporter';
 /// Defines prepared meal recipe import.
 class PreparedMealRecipeImport {
   /// The prepared meal recipe import.
-  const PreparedMealRecipeImport({
+  const new({
     required this.recipeUrl,
     required this.title,
     required this.servings,
@@ -48,10 +48,7 @@ class PreparedMealRecipeImport {
 /// Defines prepared meal recipe importer.
 class PreparedMealRecipeImporter {
   /// The prepared meal recipe importer.
-  const PreparedMealRecipeImporter({
-    this.parser = const PreparedMealRecipeHtmlParser(),
-    this.client,
-  });
+  const new({this.parser = const PreparedMealRecipeHtmlParser(), this.client});
 
   /// The parser used to extract recipe data from HTML.
   final PreparedMealRecipeHtmlParser parser;
@@ -83,8 +80,7 @@ class PreparedMealRecipeImporter {
                 'User-Agent':
                     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                     '(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                'Accept':
-                    'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
               },
             )

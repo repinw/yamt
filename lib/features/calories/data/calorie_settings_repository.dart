@@ -42,11 +42,7 @@ abstract interface class CalorieSettingsUserSession {
 /// Defines firestore calorie settings repository.
 class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
   /// Creates an instance.
-  FirestoreCalorieSettingsRepository({
-    required CalorieSettingsUserSession session,
-    required FirebaseFirestore firestore,
-  }) : _session = session,
-       _firestore = firestore;
+  new({required this._session, required this._firestore});
 
   final CalorieSettingsUserSession _session;
   final FirebaseFirestore _firestore;
@@ -203,8 +199,7 @@ CalorieSettingsRepository calorieSettingsRepository(Ref ref) {
 }
 
 class _CurrentCalorieSettingsUserSession implements CalorieSettingsUserSession {
-  const _CurrentCalorieSettingsUserSession({required String? currentUserId})
-    : _currentUserId = currentUserId;
+  const new({required this._currentUserId});
 
   final String? _currentUserId;
 
@@ -228,7 +223,7 @@ FirebaseFirestore? _resolveFirestore() {
 
 class _UnavailableCalorieSettingsRepository
     implements CalorieSettingsRepository {
-  const _UnavailableCalorieSettingsRepository();
+  const new();
 
   @override
   Stream<CalorieGoalSettings> watchSettings() {

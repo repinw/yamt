@@ -4,7 +4,7 @@ import 'package:yamt/features/health/domain/health_workout_session.dart';
 /// Defines diary health day data.
 class DiaryHealthDayData {
   /// The diary health day data.
-  const DiaryHealthDayData({
+  const new({
     required this.totalSteps,
     required this.workouts,
     this.unassignedActiveEnergySegments = const <HealthEnergySegment>[],

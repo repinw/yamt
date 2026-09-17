@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
@@ -9,7 +9,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progres
 /// segmented bar, and consumed/target ratio.
 class DiaryNutritionMacroRow extends StatelessWidget {
   /// Creates a nutrition macro row.
-  const DiaryNutritionMacroRow({
+  const new({
     required this.label,
     required this.current,
     required this.target,

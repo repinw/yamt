@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -14,11 +14,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Add button row for optional nutrition.
 class OptionalNutritionAddRow extends StatelessWidget {
   /// Creates optional nutrition add row.
-  const OptionalNutritionAddRow({
-    required this.label,
-    required this.onPressed,
-    super.key,
-  });
+  const new({required this.label, required this.onPressed, super.key});
 
   /// Row label.
   final String label;
@@ -47,7 +43,7 @@ class OptionalNutritionAddRow extends StatelessWidget {
 /// Inline composer for optional nutrition fields.
 class OptionalNutritionComposer extends StatelessWidget {
   /// Creates optional nutrition composer.
-  const OptionalNutritionComposer({
+  const new({
     required this.valueText,
     required this.selectedUnit,
     required this.selectedType,

@@ -40,78 +40,72 @@ void main() {
       expect(isPendingGlobalFoodItemId(cloned.globalFoodItemId), isTrue);
     });
 
-    test(
-      'preserves new image from baseItem over template image '
-      '(immutability rule)',
-      () {
-        final baseItem = InventoryItem.create(
-          id: 'base-1',
-          name: '',
-          entryDate: testNow,
-          storeName: store,
-          quantity: 1,
-          imageUrl: 'https://local-camera.com/new_photo.jpg',
-        );
+    test('preserves new image from baseItem over template image '
+        '(immutability rule)', () {
+      final baseItem = InventoryItem.create(
+        id: 'base-1',
+        name: '',
+        entryDate: testNow,
+        storeName: store,
+        quantity: 1,
+        imageUrl: 'https://local-camera.com/new_photo.jpg',
+      );
 
-        const template = OffProductSearchResult(
-          code: '111222',
-          name: 'Pasta',
-          score: 1,
-          imageUrl: 'https://images.com/old_template.jpg',
-        );
+      const template = OffProductSearchResult(
+        code: '111222',
+        name: 'Pasta',
+        score: 1,
+        imageUrl: 'https://images.com/old_template.jpg',
+      );
 
-        final cloned = cloneSearchResultAsDraftItem(
-          template: template,
-          now: testNow,
-          storeName: store,
-          baseItem: baseItem,
-        );
+      final cloned = cloneSearchResultAsDraftItem(
+        template: template,
+        now: testNow,
+        storeName: store,
+        baseItem: baseItem,
+      );
 
-        expect(cloned.imageUrl, 'https://local-camera.com/new_photo.jpg');
-      },
-    );
+      expect(cloned.imageUrl, 'https://local-camera.com/new_photo.jpg');
+    });
 
-    test(
-      'preserves new nutrition from baseItem over template nutrition '
-      '(immutability rule)',
-      () {
-        const customNutrition = GlobalFoodNutrition(
-          qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
-          per100Kcal: 380,
-          per100Protein: 14,
-        );
+    test('preserves new nutrition from baseItem over template nutrition '
+        '(immutability rule)', () {
+      const customNutrition = GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+        per100Kcal: 380,
+        per100Protein: 14,
+      );
 
-        final baseItem = InventoryItem.create(
-          id: 'base-1',
-          name: '',
-          entryDate: testNow,
-          storeName: store,
-          quantity: 1,
-          nutrition: customNutrition,
-        );
+      final baseItem = InventoryItem.create(
+        id: 'base-1',
+        name: '',
+        entryDate: testNow,
+        storeName: store,
+        quantity: 1,
+        nutrition: customNutrition,
+      );
 
-        const template = OffProductSearchResult(
-          code: '111222',
-          name: 'Pasta',
-          score: 1,
-          nutrition: GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 350,
-            per100Protein: 11,
-          ),
-        );
+      const template = OffProductSearchResult(
+        code: '111222',
+        name: 'Pasta',
+        score: 1,
+        nutrition: GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 350,
+          per100Protein: 11,
+        ),
+      );
 
-        final cloned = cloneSearchResultAsDraftItem(
-          template: template,
-          now: testNow,
-          storeName: store,
-          baseItem: baseItem,
-        );
+      final cloned = cloneSearchResultAsDraftItem(
+        template: template,
+        now: testNow,
+        storeName: store,
+        baseItem: baseItem,
+      );
 
-        expect(cloned.nutrition?.per100Kcal, 380.0);
-        expect(cloned.nutrition?.per100Protein, 14.0);
-      },
-    );
+      expect(cloned.nutrition?.per100Kcal, 380.0);
+      expect(cloned.nutrition?.per100Protein, 14.0);
+    });
 
     test('clones inventory item template with decoupled id', () {
       final itemTemplate = InventoryItem.create(

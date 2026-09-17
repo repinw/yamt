@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Defines calorie goal start picker.
 abstract final class CalorieGoalStartPicker {
@@ -12,19 +12,14 @@ abstract final class CalorieGoalStartPicker {
   }) async {
     final referenceDate = normalizeDate(now ?? DateTime.now());
     final normalizedFirstDate = normalizeDate(
-      firstDate ??
-          DateTime(
-            referenceDate.year - 10,
-          ),
+      firstDate ?? DateTime(referenceDate.year - 10),
     );
     final normalizedLastDate = normalizeDate(
       lastDate ?? DateTime(referenceDate.year + 10, 12, 31),
     );
     final normalizedInitialDate = normalizeDate(initialGoalStartDate);
     final clampedInitialDate =
-        normalizedInitialDate.isBefore(
-          normalizedFirstDate,
-        )
+        normalizedInitialDate.isBefore(normalizedFirstDate)
         ? normalizedFirstDate
         : normalizedInitialDate.isAfter(normalizedLastDate)
         ? normalizedLastDate

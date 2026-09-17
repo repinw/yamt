@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Card showing live preview of calculated macro distribution and percentages.
 class SettingsMacroGoalsPreviewCard extends StatelessWidget {
   /// Creates a macro goals preview card.
-  const SettingsMacroGoalsPreviewCard({
+  const new({
     required this.goalKcal,
     required this.weightKg,
     required this.proteinGrams,
@@ -134,7 +134,7 @@ class SettingsMacroGoalsPreviewCard extends StatelessWidget {
 /// Pill widget rendering an individual macronutrient in the preview card.
 class SettingsMacroGoalsPreviewPill extends StatelessWidget {
   /// Creates a macro preview pill.
-  const SettingsMacroGoalsPreviewPill({
+  const new({
     required this.label,
     required this.grams,
     required this.percentage,

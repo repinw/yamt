@@ -3,7 +3,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 /// Defines inventory item row snapshot.
 class InventoryItemRowSnapshot {
   /// The inventory item row snapshot.
-  const InventoryItemRowSnapshot({
+  const new({
     required this.itemId,
     required this.name,
     required this.imageUrl,
@@ -12,7 +12,7 @@ class InventoryItemRowSnapshot {
   });
 
   /// Creates a [InventoryItemRowSnapshot] for from item.
-  factory InventoryItemRowSnapshot.fromItem(InventoryItem item) {
+  factory fromItem(InventoryItem item) {
     return InventoryItemRowSnapshot(
       itemId: item.id,
       name: item.name,

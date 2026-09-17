@@ -11,9 +11,7 @@ const String _repositoryLogName = 'FirestoreGlobalFoodReceiptAliasRepository';
 class FirestoreGlobalFoodReceiptAliasRepository
     implements GlobalFoodReceiptAliasRepository {
   /// Creates an instance.
-  FirestoreGlobalFoodReceiptAliasRepository({
-    required GlobalFoodReceiptAliasStore store,
-  }) : _store = store;
+  new({required this._store});
 
   final GlobalFoodReceiptAliasStore _store;
   Future<void> _writeBarrier = Future<void>.value();

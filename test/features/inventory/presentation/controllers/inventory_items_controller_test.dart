@@ -17,7 +17,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+  new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
   final StreamController<List<InventoryItem>> _controller =
@@ -259,10 +259,7 @@ void main() {
         overrides: [
           inventoryItemRepositoryProvider.overrideWithValue(repository),
           inventoryActivityActorProvider.overrideWithValue(
-            const InventoryActivityActor(
-              userId: 'user-1',
-              displayName: 'Alex',
-            ),
+            const InventoryActivityActor(userId: 'user-1', displayName: 'Alex'),
           ),
           inventoryActivityEventRepositoryProvider.overrideWithValue(
             activityRepository,
@@ -411,10 +408,7 @@ void main() {
   });
 
   test('restoreConsumedItem records restored activity event', () async {
-    final item = _item(
-      id: 'a',
-      weight: '500g',
-    ).copyWith(currentAmount: 300);
+    final item = _item(id: 'a', weight: '500g').copyWith(currentAmount: 300);
     final repository = _FakeInventoryItemRepository(
       initialItems: <InventoryItem>[item],
     );
@@ -680,9 +674,10 @@ void main() {
 
   test('updateItem rejects fully consumed items', () async {
     final consumedAt = DateTime.parse('2026-04-07T13:00:00Z');
-    final original = _item(id: 'a', quantity: 0).copyWith(
-      lastConsumedAt: consumedAt,
-    );
+    final original = _item(
+      id: 'a',
+      quantity: 0,
+    ).copyWith(lastConsumedAt: consumedAt);
     final repository = _FakeInventoryItemRepository(
       initialItems: <InventoryItem>[original],
     );
@@ -835,9 +830,7 @@ void main() {
     'swapItemCandidate rejects items that were already partially consumed',
     () async {
       final repository = _FakeInventoryItemRepository(
-        initialItems: <InventoryItem>[
-          _item(id: 'a', initialQuantity: 2),
-        ],
+        initialItems: <InventoryItem>[_item(id: 'a', initialQuantity: 2)],
       );
       final globalRepository = _FakeGlobalFoodItemRepository();
       addTearDown(repository.dispose);

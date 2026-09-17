@@ -111,11 +111,7 @@ void main() {
           calorieLogRepositoryProvider.overrideWithValue(logRepository),
           calorieEntryPostPersistHookProvider.overrideWith(
             (ref) =>
-                ({
-                  required entry,
-                  inventoryContext,
-                  scannedSourceRef,
-                }) async {
+                ({required entry, inventoryContext, scannedSourceRef}) async {
                   if (inventoryContext == null) {
                     return;
                   }
@@ -193,11 +189,7 @@ void main() {
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieEntryPostPersistHookProvider.overrideWith(
           (ref) =>
-              ({
-                required entry,
-                inventoryContext,
-                scannedSourceRef,
-              }) async {
+              ({required entry, inventoryContext, scannedSourceRef}) async {
                 if (inventoryContext == null) {
                   return;
                 }

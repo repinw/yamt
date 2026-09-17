@@ -12,20 +12,15 @@ enum KitchenUtensilSaveFailureReason {
 
 /// Kitchen utensil save result.
 class KitchenUtensilSaveResult {
-  const KitchenUtensilSaveResult._({
-    required this.isSuccess,
-    this.utensilId,
-    this.failureReason,
-  });
+  const new _({required this.isSuccess, this.utensilId, this.failureReason});
 
   /// Successful save.
-  const KitchenUtensilSaveResult.success(String utensilId)
+  const new success(String utensilId)
     : this._(isSuccess: true, utensilId: utensilId);
 
   /// Failed save.
-  const KitchenUtensilSaveResult.failure(
-    KitchenUtensilSaveFailureReason reason,
-  ) : this._(isSuccess: false, failureReason: reason);
+  const new failure(KitchenUtensilSaveFailureReason reason)
+    : this._(isSuccess: false, failureReason: reason);
 
   /// Whether save succeeded.
   final bool isSuccess;

@@ -14,7 +14,7 @@ AuthErrorMessageMapper authErrorMessageMapper(Ref ref) {
 /// Maps auth exceptions to localized user-facing messages.
 class AuthErrorMessageMapper {
   /// Creates auth error message mapper.
-  const AuthErrorMessageMapper();
+  const new();
 
   /// Returns localized message for [error].
   String messageFor({required AppLocalizations l10n, required Object error}) {

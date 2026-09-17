@@ -4,10 +4,7 @@ import 'package:yamt/features/inventory/domain/inventory_product_matcher.dart';
 void main() {
   test('matches a product with a qualified variant name', () {
     expect(
-      InventoryProductMatcher.matches(
-        'Eiweißbrot',
-        'Eiweißbrot - Proteinkorn',
-      ),
+      InventoryProductMatcher.matches('Eiweißbrot', 'Eiweißbrot - Proteinkorn'),
       isTrue,
     );
   });

@@ -27,9 +27,7 @@ class _FakeMatcher extends GlobalFoodItemMatcher {
     Iterable<InventoryItem> items,
   ) async {
     recordedItems.addAll(items);
-    return {
-      for (final item in items) item.id: candidatesToReturn,
-    };
+    return {for (final item in items) item.id: candidatesToReturn};
   }
 }
 
@@ -163,10 +161,7 @@ void main() {
       );
 
       expect(batchResult.length, 2);
-      expect(
-        batchResult['milk']?.first.source,
-        CandidateSource.history,
-      );
+      expect(batchResult['milk']?.first.source, CandidateSource.history);
       expect(batchResult['bananas']?.first.id, 'g_123');
       final milkLookup = matcher.recordedItems.firstWhere(
         (item) => item.id == 'milk',

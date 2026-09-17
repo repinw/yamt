@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
@@ -11,11 +11,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Onboarding step to configure training days and calorie cycling offset.
 class StepTrainingDays extends StatelessWidget {
   /// Creates training days onboarding step.
-  const StepTrainingDays({
-    required this.state,
-    required this.notifier,
-    super.key,
-  });
+  const new({required this.state, required this.notifier, super.key});
 
   /// Current calculator form state.
   final CalorieGoalCalculatorFormState state;
@@ -99,7 +95,7 @@ class StepTrainingDays extends StatelessWidget {
 }
 
 class _TrainingChoiceCard extends StatelessWidget {
-  const _TrainingChoiceCard({
+  const new({
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -174,10 +170,7 @@ class _TrainingChoiceCard extends StatelessWidget {
               ),
             ],
           ),
-          if (child != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            child!,
-          ],
+          if (child != null) ...[const SizedBox(height: AppSpacing.md), child!],
         ],
       ),
     );

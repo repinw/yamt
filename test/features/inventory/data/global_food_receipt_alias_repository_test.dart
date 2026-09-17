@@ -6,9 +6,7 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 
 class _FakeGlobalFoodReceiptAliasStore implements GlobalFoodReceiptAliasStore {
-  _FakeGlobalFoodReceiptAliasStore({
-    this.documents = const <GlobalFoodReceiptAliasDocument>[],
-  });
+  new({this.documents = const <GlobalFoodReceiptAliasDocument>[]});
 
   List<GlobalFoodReceiptAliasDocument> documents;
   String? lastLookupKey;

@@ -24,7 +24,7 @@ CookingFlowWizardSessionService cookingFlowWizardSessionService(Ref ref) {
 /// Handles cookflow wizard session persistence and mapping.
 class CookingFlowWizardSessionService {
   /// Creates wizard session controller.
-  const CookingFlowWizardSessionService(this._sessionCoordinator);
+  const new(this._sessionCoordinator);
 
   final CookingFlowSessionCoordinator _sessionCoordinator;
 

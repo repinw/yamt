@@ -19,9 +19,7 @@ void main() {
     final selectedDay = DateTime(2026, 4, 27, 18);
     final normalizedDay = normalizeDiaryDay(selectedDay);
     final weekOverview = _weekOverview(selectedDay: normalizedDay);
-    final entries = <CalorieEntry>[
-      _entry(id: 'breakfast', day: normalizedDay),
-    ];
+    final entries = <CalorieEntry>[_entry(id: 'breakfast', day: normalizedDay)];
     final runState = const BurnWeekRunState.initial().copyWith(
       currentWeekStartDayKey: diaryDayKey(normalizedDay),
       runWeekNumber: 3,
@@ -35,9 +33,8 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(repository),
-        calorieWeekOverviewForWindowProvider(
-          normalizedDay,
-        ).overrideWith((ref) => weekOverview),
+        calorieWeekOverviewForWindowProvider(normalizedDay)
+            .overrideWith((ref) => weekOverview),
         burnWeekRunControllerProvider.overrideWith(
           () => _FakeBurnWeekRunController(runState),
         ),
@@ -67,9 +64,7 @@ void main() {
       observers: [observer],
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(repository),
-        calorieWeekOverviewForWindowProvider(
-          normalizedDay,
-        ).overrideWith((ref) {
+        calorieWeekOverviewForWindowProvider(normalizedDay).overrideWith((ref) {
           final completer = Completer<CalorieWeekOverview>();
           completions.add(completer);
           return completer.future;
@@ -100,7 +95,7 @@ void main() {
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
-  _FakeBurnWeekRunController(this.runState);
+  new(this.runState);
 
   final BurnWeekRunState runState;
 
@@ -135,10 +130,7 @@ CalorieWeekOverview _weekOverview({required DateTime selectedDay}) {
   ];
   return CalorieWeekOverview(
     days: days,
-    totalConsumedKcal: days.fold<double>(
-      0,
-      (sum, day) => sum + day.totalKcal,
-    ),
+    totalConsumedKcal: days.fold<double>(0, (sum, day) => sum + day.totalKcal),
     totalGoalKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),
     remainingKcal: 14700,
     balanceStartDate: days.first.date,

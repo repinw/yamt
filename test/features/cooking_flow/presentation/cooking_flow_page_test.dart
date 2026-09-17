@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
@@ -31,11 +32,7 @@ import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _FakeCookingFlowSessionLocalStore
     implements CookingFlowSessionLocalStore {
-  _FakeCookingFlowSessionLocalStore({
-    this.initialSession,
-    this.saveSucceeds = true,
-    this.onSave,
-  });
+  new({this.initialSession, this.saveSucceeds = true, this.onSave});
 
   CookingFlowSession? initialSession;
   final bool saveSucceeds;
@@ -73,7 +70,7 @@ class _FakeCookingFlowSessionLocalStore
 
 class _StaticPreparedMealTemplatesController
     extends PreparedMealTemplatesController {
-  _StaticPreparedMealTemplatesController(this._templates);
+  new(this._templates);
 
   final List<PreparedMeal> _templates;
 
@@ -84,7 +81,7 @@ class _StaticPreparedMealTemplatesController
 }
 
 class _StaticInventoryItemsController extends InventoryItemsController {
-  _StaticInventoryItemsController(this._items);
+  new(this._items);
 
   final List<InventoryItem> _items;
 
@@ -95,7 +92,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
 }
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
-  _FakeInventoryItemRepository(this.items);
+  new(this.items);
 
   final List<InventoryItem> items;
 
@@ -121,9 +118,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
 }
 
 class _CapturingPreparedMealsController extends PreparedMealsController {
-  _CapturingPreparedMealsController({
-    required PreparedMealCreationResult result,
-  }) : _result = result;
+  new({required this._result});
 
   final PreparedMealCreationResult _result;
   Map<String, List<String>>? _capturedAssignments;
@@ -180,7 +175,7 @@ class _CapturingPreparedMealsController extends PreparedMealsController {
 }
 
 class _StaticKitchenUtensilsController extends KitchenUtensilsController {
-  _StaticKitchenUtensilsController(this._utensils);
+  new(this._utensils);
 
   final List<KitchenUtensil> _utensils;
 
@@ -332,7 +327,7 @@ Widget _buildHarness({
     container: container,
     child: MaterialApp(
       locale: const Locale('de'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: CookingFlowPage(templateId: templates.single.id),
     ),
@@ -394,21 +389,18 @@ Widget _buildRouterHarness({
       ),
       GoRoute(
         path: AppRoutes.homeInventoryTemplates,
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Template list route')),
-        ),
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('Template list route'))),
       ),
       GoRoute(
         path: AppRoutes.homeShopping,
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Shopping list route')),
-        ),
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('Shopping list route'))),
       ),
       GoRoute(
         path: AppRoutes.homeKitchenUtensils,
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Kitchen utensil route')),
-        ),
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('Kitchen utensil route'))),
       ),
     ],
   );
@@ -417,7 +409,7 @@ Widget _buildRouterHarness({
     container: container,
     child: MaterialApp.router(
       locale: const Locale('de'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     ),
@@ -428,9 +420,7 @@ void main() {
   testWidgets('start back leaves cookflow when session save fails', (
     tester,
   ) async {
-    final sessionStore = _FakeCookingFlowSessionLocalStore(
-      saveSucceeds: false,
-    );
+    final sessionStore = _FakeCookingFlowSessionLocalStore(saveSucceeds: false);
 
     await tester.pumpWidget(
       _buildRouterHarness(
@@ -501,10 +491,7 @@ void main() {
         templates: <PreparedMeal>[
           _template(
             id: 'template-1',
-            recipeIngredients: const <String>[
-              '300g Linsen',
-              '150g Reis',
-            ],
+            recipeIngredients: const <String>['300g Linsen', '150g Reis'],
           ),
         ],
       ),
@@ -529,10 +516,7 @@ void main() {
       '300 g Linsen',
       '150 g Reis',
     ]);
-    expect(
-      find.text('Zutaten zur Einkaufsliste hinzugefügt.'),
-      findsOneWidget,
-    );
+    expect(find.text('Zutaten zur Einkaufsliste hinzugefügt.'), findsOneWidget);
     expect(find.text('Shopping list route'), findsOneWidget);
 
     await tester.binding.handlePopRoute();
@@ -578,10 +562,7 @@ void main() {
     expect(shoppingListRepository.savedItems.single.name, '300 g Linsen');
     expect(sessionStore.saveCallCount, greaterThanOrEqualTo(1));
     expect(sessionSave.isCompleted, isFalse);
-    expect(
-      find.text('Zutaten zur Einkaufsliste hinzugefügt.'),
-      findsOneWidget,
-    );
+    expect(find.text('Zutaten zur Einkaufsliste hinzugefügt.'), findsOneWidget);
     expect(find.text('Shopping list route'), findsOneWidget);
   });
 
@@ -643,11 +624,7 @@ void main() {
         sessionStore: sessionStore,
         templates: <PreparedMeal>[_template(id: 'template-1')],
         kitchenUtensils: <KitchenUtensil>[
-          _kitchenUtensil(
-            id: 'pot-1',
-            name: 'Suppentopf',
-            weightGrams: 420,
-          ),
+          _kitchenUtensil(id: 'pot-1', name: 'Suppentopf', weightGrams: 420),
         ],
       ),
     );
@@ -692,16 +669,8 @@ void main() {
         sessionStore: sessionStore,
         templates: <PreparedMeal>[_template(id: 'template-1')],
         kitchenUtensils: <KitchenUtensil>[
-          _kitchenUtensil(
-            id: 'pot-1',
-            name: 'Suppentopf',
-            weightGrams: 420,
-          ),
-          _kitchenUtensil(
-            id: 'pot-2',
-            name: 'Saucenbox',
-            weightGrams: 180,
-          ),
+          _kitchenUtensil(id: 'pot-1', name: 'Suppentopf', weightGrams: 420),
+          _kitchenUtensil(id: 'pot-2', name: 'Saucenbox', weightGrams: 180),
         ],
       ),
     );
@@ -807,16 +776,8 @@ void main() {
         sessionStore: sessionStore,
         templates: <PreparedMeal>[_template(id: 'template-1')],
         kitchenUtensils: <KitchenUtensil>[
-          _kitchenUtensil(
-            id: 'pot-1',
-            name: 'Suppentopf',
-            weightGrams: 420,
-          ),
-          _kitchenUtensil(
-            id: 'pot-2',
-            name: 'Bräter',
-            weightGrams: 800,
-          ),
+          _kitchenUtensil(id: 'pot-1', name: 'Suppentopf', weightGrams: 420),
+          _kitchenUtensil(id: 'pot-2', name: 'Bräter', weightGrams: 800),
         ],
       ),
     );
@@ -861,11 +822,7 @@ void main() {
         sessionStore: sessionStore,
         templates: <PreparedMeal>[_template(id: 'template-1')],
         kitchenUtensils: <KitchenUtensil>[
-          _kitchenUtensil(
-            id: 'pot-1',
-            name: 'Suppentopf',
-            weightGrams: 420,
-          ),
+          _kitchenUtensil(id: 'pot-1', name: 'Suppentopf', weightGrams: 420),
         ],
       ),
     );
@@ -875,9 +832,7 @@ void main() {
     expect(find.text('Gespeicherte Utensilien'), findsNothing);
   });
 
-  testWidgets('intro portion scaler scales assignment amounts', (
-    tester,
-  ) async {
+  testWidgets('intro portion scaler scales assignment amounts', (tester) async {
     final sessionStore = _FakeCookingFlowSessionLocalStore(
       initialSession: const CookingFlowSession(
         templateId: 'template-1',
@@ -1171,11 +1126,7 @@ void main() {
         step: CookingFlowSessionStep.cooking,
         taraText: '1000',
         adjustmentInputText: '',
-        adjustments: <String>[
-          '100 g Erbsen',
-          '50 g Butter',
-          '1 TL Salz',
-        ],
+        adjustments: <String>['100 g Erbsen', '50 g Butter', '1 TL Salz'],
         summaryIngredients: <CookingFlowSummaryIngredientSessionDraft>[],
         grossWeightText: '',
         splitIntoPortions: true,
@@ -1200,10 +1151,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('50 g Butter'), findsNothing);
-    expect(
-      sessionStore.savedSession?.adjustments,
-      <String>['100 g Erbsen', '1 TL Salz'],
-    );
+    expect(sessionStore.savedSession?.adjustments, <String>[
+      '100 g Erbsen',
+      '1 TL Salz',
+    ]);
   });
 
   testWidgets('cooking phase voice input shows permission failure', (
@@ -1297,10 +1248,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Butter'), findsWidgets);
-    expect(
-      sessionStore.savedSession?.summaryIngredients.single.name,
-      'Butter',
-    );
+    expect(sessionStore.savedSession?.summaryIngredients.single.name, 'Butter');
     expect(
       sessionStore.savedSession?.summaryIngredients.single.inventoryItemIds,
       <String>['butter'],
@@ -1359,14 +1307,8 @@ void main() {
 
     expect(find.text('Ungelöste Anpassungen'), findsNothing);
     expect(sessionStore.savedSession?.adjustments, <String>[]);
-    expect(
-      sessionStore.savedSession?.summaryIngredients.single.name,
-      'Butter',
-    );
-    expect(
-      sessionStore.savedSession?.summaryIngredients.single.amount,
-      '50',
-    );
+    expect(sessionStore.savedSession?.summaryIngredients.single.name, 'Butter');
+    expect(sessionStore.savedSession?.summaryIngredients.single.amount, '50');
   });
 
   testWidgets('intro parses embedded package weights from imports', (
@@ -1513,12 +1455,9 @@ void main() {
     await tester.tap(find.text('Mahlzeit speichern'));
     await tester.pumpAndSettle();
 
-    expect(
-      preparedMealsController._capturedAssignments,
-      <String, List<String>>{
-        '600g Tomaten, passiert': <String>['tomatoes'],
-      },
-    );
+    expect(preparedMealsController._capturedAssignments, <String, List<String>>{
+      '600g Tomaten, passiert': <String>['tomatoes'],
+    });
     expect(preparedMealsController._capturedTotalPortions, 3);
     expect(preparedMealsController._capturedTemplatePortions, 3);
   });
@@ -1578,19 +1517,14 @@ void main() {
     expect(find.text('Herzhafter Linseneintopf'), findsOneWidget);
     expect(sessionStore.clearCallCount, 1);
     expect(preparedMealsController._capturedFinalNetWeight, 1500);
-    expect(
-      preparedMealsController._capturedAssignments,
-      <String, List<String>>{
-        '300g Linsen': <String>['item-1'],
-      },
-    );
+    expect(preparedMealsController._capturedAssignments, <String, List<String>>{
+      '300g Linsen': <String>['item-1'],
+    });
   });
 
   testWidgets(
     'finalize save without portions keeps base portions and net weight',
-    (
-      tester,
-    ) async {
+    (tester) async {
       final inventoryItem = _inventoryItem(
         id: 'item-1',
         name: 'Linsen',

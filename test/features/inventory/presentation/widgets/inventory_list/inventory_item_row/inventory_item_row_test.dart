@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -15,7 +16,7 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _InventoryItemRowHost extends StatelessWidget {
-  const _InventoryItemRowHost({
+  const new({
     required this.showRow,
     required this.bucket,
     this.item,
@@ -41,7 +42,7 @@ class _InventoryItemRowHost extends StatelessWidget {
       child: MaterialApp(
         theme: theme,
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: PageStorage(
           bucket: bucket,
@@ -85,9 +86,7 @@ class _InventoryItemRowHost extends StatelessWidget {
 }
 
 class _RecordingInventoryItemsController extends InventoryItemsController {
-  _RecordingInventoryItemsController({
-    required void Function(InventoryItem) onBuyAgainItem,
-  }) : _onBuyAgainItem = onBuyAgainItem;
+  new({required this._onBuyAgainItem});
 
   final void Function(InventoryItem) _onBuyAgainItem;
 
@@ -312,16 +311,10 @@ void main() {
               weight: '500g',
             )
             .withDerivedAmount(weight: '500g', quantity: 1)
-            .copyWith(
-              currentAmount: 250,
-            );
+            .copyWith(currentAmount: 250);
 
     await tester.pumpWidget(
-      _InventoryItemRowHost(
-        showRow: true,
-        bucket: bucket,
-        item: partialItem,
-      ),
+      _InventoryItemRowHost(showRow: true, bucket: bucket, item: partialItem),
     );
     await tester.pumpAndSettle();
 

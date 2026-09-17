@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
 
 void main() {
@@ -31,9 +31,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: BarcodeScannerOverlay(
-            onToggleTorch: () => toggleCount++,
-          ),
+          body: BarcodeScannerOverlay(onToggleTorch: () => toggleCount++),
         ),
       ),
     );
@@ -51,10 +49,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: BarcodeScannerOverlay(
-            isTorchOn: true,
-            onToggleTorch: () {},
-          ),
+          body: BarcodeScannerOverlay(isTorchOn: true, onToggleTorch: () {}),
         ),
       ),
     );
@@ -66,11 +61,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: BarcodeScannerOverlay(),
-        ),
-      ),
+      const MaterialApp(home: Scaffold(body: BarcodeScannerOverlay())),
     );
 
     expect(find.byIcon(Icons.check_rounded), findsNothing);
@@ -78,11 +69,7 @@ void main() {
     // Rebuild with isLocked = true
     await tester.pumpWidget(
       const MaterialApp(
-        home: Scaffold(
-          body: BarcodeScannerOverlay(
-            isLocked: true,
-          ),
-        ),
+        home: Scaffold(body: BarcodeScannerOverlay(isLocked: true)),
       ),
     );
 
@@ -103,9 +90,7 @@ void main() {
         data: MediaQueryData(disableAnimations: true),
         child: MaterialApp(
           home: Scaffold(
-            body: BarcodeScannerOverlay(
-              hintMessage: 'Scanning paused',
-            ),
+            body: BarcodeScannerOverlay(hintMessage: 'Scanning paused'),
           ),
         ),
       ),

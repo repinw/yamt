@@ -9,9 +9,8 @@ typedef DiaryPostFrameScheduler = void Function(VoidCallback callback);
 /// Coordinates auto-open and deferred weekly check-in dialog scheduling.
 class DiaryWeeklyCheckInDialogScheduler {
   /// Creates a dialog scheduler.
-  DiaryWeeklyCheckInDialogScheduler({
-    DiaryPostFrameScheduler? schedulePostFrame,
-  }) : _schedulePostFrame = schedulePostFrame ?? _defaultSchedulePostFrame;
+  new({DiaryPostFrameScheduler? schedulePostFrame})
+    : _schedulePostFrame = schedulePostFrame ?? _defaultSchedulePostFrame;
 
   final DiaryPostFrameScheduler _schedulePostFrame;
   DiaryWeeklyCheckInData? _deferredCheckInData;

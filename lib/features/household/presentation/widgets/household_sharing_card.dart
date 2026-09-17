@@ -2,8 +2,8 @@ import 'dart:developer' as developer;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/'
@@ -22,7 +22,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines household sharing card.
 class HouseholdSharingCard extends ConsumerWidget {
   /// The household sharing card.
-  const HouseholdSharingCard({required this.user, super.key});
+  const new({required this.user, super.key});
 
   /// The user.
   final User user;
@@ -161,9 +161,8 @@ class HouseholdSharingCard extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.householdLeaveSuccess)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.householdLeaveSuccess)));
     } on Object catch (error) {
       if (!context.mounted) {
         return;
@@ -176,7 +175,7 @@ class HouseholdSharingCard extends ConsumerWidget {
 }
 
 class _HouseholdLoadErrorView extends StatelessWidget {
-  const _HouseholdLoadErrorView({required this.message, required this.error});
+  const new({required this.message, required this.error});
 
   final String message;
   final Object? error;
@@ -199,7 +198,7 @@ class _HouseholdLoadErrorView extends StatelessWidget {
 }
 
 class _HouseholdCardShell extends StatelessWidget {
-  const _HouseholdCardShell({required this.title, required this.child});
+  const new({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -229,7 +228,7 @@ class _HouseholdCardShell extends StatelessWidget {
 }
 
 class _HouseholdInfoBanner extends StatelessWidget {
-  const _HouseholdInfoBanner({required this.message});
+  const new({required this.message});
 
   final String message;
 

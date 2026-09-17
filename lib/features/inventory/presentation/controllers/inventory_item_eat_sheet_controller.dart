@@ -14,10 +14,7 @@ export 'package:yamt/features/inventory/presentation/controllers/'
 /// Controls inventory eat sheet amount and portion calculations.
 class InventoryItemEatSheetController {
   /// The inventory eat sheet controller.
-  const InventoryItemEatSheetController({
-    required this.item,
-    required this.maxAmount,
-  });
+  const new({required this.item, required this.maxAmount});
 
   /// Item being consumed.
   final InventoryItem item;
@@ -51,10 +48,7 @@ class InventoryItemEatSheetController {
     if (fixedUnit != null) {
       return <ConsumedUnit>[fixedUnit];
     }
-    return const <ConsumedUnit>[
-      ConsumedUnit.grams,
-      ConsumedUnit.milliliters,
-    ];
+    return const <ConsumedUnit>[ConsumedUnit.grams, ConsumedUnit.milliliters];
   }
 
   /// Inventory unit used by the item.
@@ -190,9 +184,7 @@ class InventoryItemEatSheetController {
       return _ceilPositiveAmountWithinRemainingStock(totalAmount);
     }
 
-    return parseInventoryAmount(
-      formatInventoryNutritionValue(count),
-    );
+    return parseInventoryAmount(formatInventoryNutritionValue(count));
   }
 
   /// Resolves inventory amount from current portion input.

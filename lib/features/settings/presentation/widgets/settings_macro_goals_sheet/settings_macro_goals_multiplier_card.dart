@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Card containing a slider to configure an individual macro multiplier (g/kg).
 class SettingsMacroGoalsMultiplierCard extends StatelessWidget {
   /// Creates a multiplier slider card.
-  const SettingsMacroGoalsMultiplierCard({
+  const new({
     required this.sliderKey,
     required this.label,
     required this.accentColor,
@@ -67,10 +67,7 @@ class SettingsMacroGoalsMultiplierCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
               Row(
                 children: [
                   Text(

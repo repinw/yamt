@@ -113,29 +113,14 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
 /// Actions that bridge diary UI to calorie-owned weekly check-in behavior.
 class DiaryWeeklyCheckInActions {
   /// Creates weekly check-in actions.
-  const DiaryWeeklyCheckInActions({
-    required Future<void> Function(DiaryWeeklyCheckInData data)
-    syncLearnedTdeeCache,
-    required Future<bool> Function(DiaryWeeklyCheckInData data)
-    applyWeeklyCheckIn,
-    required Future<bool> Function(DiaryWeeklyCheckInData data)
-    rejectWeeklyCheckIn,
-    required Future<bool> Function(
-      PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
-    )
-    showWeeklyCheckInAgain,
-    required Future<bool> Function({
-      required DateTime selectedDay,
-      required bool isSkipped,
-    })
-    setSkippedIntakeDay,
-    required void Function() refreshCheckInData,
-  }) : _syncLearnedTdeeCache = syncLearnedTdeeCache,
-       _applyWeeklyCheckIn = applyWeeklyCheckIn,
-       _rejectWeeklyCheckIn = rejectWeeklyCheckIn,
-       _showWeeklyCheckInAgain = showWeeklyCheckInAgain,
-       _setSkippedIntakeDay = setSkippedIntakeDay,
-       _refreshCheckInData = refreshCheckInData;
+  const new({
+    required this._syncLearnedTdeeCache,
+    required this._applyWeeklyCheckIn,
+    required this._rejectWeeklyCheckIn,
+    required this._showWeeklyCheckInAgain,
+    required this._setSkippedIntakeDay,
+    required this._refreshCheckInData,
+  });
 
   final Future<void> Function(DiaryWeeklyCheckInData data)
   _syncLearnedTdeeCache;
@@ -179,10 +164,7 @@ class DiaryWeeklyCheckInActions {
     required DateTime selectedDay,
     required bool isSkipped,
   }) {
-    return _setSkippedIntakeDay(
-      selectedDay: selectedDay,
-      isSkipped: isSkipped,
-    );
+    return _setSkippedIntakeDay(selectedDay: selectedDay, isSkipped: isSkipped);
   }
 
   /// Refreshes weekly check-in data.

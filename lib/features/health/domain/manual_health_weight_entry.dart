@@ -3,7 +3,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 /// Defines manual health weight entry.
 class ManualHealthWeightEntry {
   /// Creates an instance.
-  ManualHealthWeightEntry({required DateTime day, required this.weightKg})
+  new({required DateTime day, required this.weightKg})
     : day = DateTime(day.year, day.month, day.day);
 
   /// The day.

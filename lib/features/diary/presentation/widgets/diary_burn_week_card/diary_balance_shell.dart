@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Outer shell for diary Burn Week card states.
 class DiaryBalanceShell extends StatelessWidget {
   /// Creates a Burn Week card shell.
-  const DiaryBalanceShell({
-    required this.child,
-    this.framed = true,
-    super.key,
-  });
+  const new({required this.child, this.framed = true, super.key});
 
   /// Shell content.
   final Widget child;

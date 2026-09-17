@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -51,10 +51,7 @@ Future<bool> completeInventoryManualAddEatFlow({
     }
 
     final pendingConsumption = await inventoryController
-        .stagePendingConsumption(
-          item.id,
-          request.inventoryAmount,
-        );
+        .stagePendingConsumption(item.id, request.inventoryAmount);
     if (pendingConsumption == null) {
       if (context.mounted) {
         showInventoryManualAddSnackBar(
@@ -71,7 +68,7 @@ Future<bool> completeInventoryManualAddEatFlow({
       return false;
     }
 
-    return InventoryItemEatFlow.complete(
+    return await InventoryItemEatFlow.complete(
       context: context,
       container: container,
       itemBeforeMutation: item,

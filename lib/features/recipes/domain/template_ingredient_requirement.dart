@@ -25,7 +25,7 @@ extension TemplateIngredientUnitCode on TemplateIngredientUnit {
 /// Defines template ingredient requirement.
 class TemplateIngredientRequirement {
   /// The template ingredient requirement.
-  const TemplateIngredientRequirement({
+  const new({
     required this.amount,
     required this.unit,
     required this.name,

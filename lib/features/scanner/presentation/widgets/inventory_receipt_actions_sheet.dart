@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Modal bottom sheet displaying available inventory receipt and product add
 /// actions.
 class InventoryReceiptActionsSheet extends StatelessWidget {
   /// Creates an [InventoryReceiptActionsSheet].
-  const InventoryReceiptActionsSheet({
+  const new({
     required this.isCameraEnabled,
     required this.onManualAddTap,
     required this.onScanCameraTap,

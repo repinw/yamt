@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -28,7 +29,7 @@ import 'package:yamt/features/health/application/'
 /// Diary content.
 class DiaryPage extends ConsumerStatefulWidget {
   /// The diary page.
-  const DiaryPage({super.key, this.includeHomeShellChrome = false});
+  const new({super.key, this.includeHomeShellChrome = false});
 
   /// Key used by the shell and later design tests.
   static const pageKey = ValueKey<String>('diary-page');
@@ -105,7 +106,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       color: colors.surface,
       child: CustomScrollView(
         key: DiaryPage.pageKey,
-        cacheExtent: 0,
+        scrollCacheExtent: const ScrollCacheExtent.pixels(0),
         slivers: [
           if (widget.includeHomeShellChrome)
             DiaryHomeShellTopChrome(
@@ -247,7 +248,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
 /// Centers page content at the narrow content width.
 class _NarrowContent extends StatelessWidget {
-  const _NarrowContent({required this.child});
+  const new({required this.child});
 
   final Widget child;
 

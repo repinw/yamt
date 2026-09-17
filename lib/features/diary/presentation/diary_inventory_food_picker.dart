@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
@@ -18,13 +18,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Food selected from the diary inventory quick-eat picker.
 sealed class DiaryInventoryFoodSelection {
   /// Creates a diary inventory food selection.
-  const DiaryInventoryFoodSelection();
+  const new();
 }
 
 /// Inventory item selected from the diary quick-eat picker.
 class DiaryInventoryItemFoodSelection extends DiaryInventoryFoodSelection {
   /// Creates an inventory item selection.
-  const DiaryInventoryItemFoodSelection(this.item);
+  const new(this.item);
 
   /// Selected inventory item.
   final InventoryItem item;
@@ -33,7 +33,7 @@ class DiaryInventoryItemFoodSelection extends DiaryInventoryFoodSelection {
 /// Prepared meal selected from the diary quick-eat picker.
 class DiaryPreparedMealFoodSelection extends DiaryInventoryFoodSelection {
   /// Creates a prepared meal selection.
-  const DiaryPreparedMealFoodSelection(this.meal);
+  const new(this.meal);
 
   /// Selected prepared meal.
   final PreparedMeal meal;
@@ -42,7 +42,7 @@ class DiaryPreparedMealFoodSelection extends DiaryInventoryFoodSelection {
 /// Lazily loads inventory and prepared meals inside the quick-eat sheet.
 class DiaryInventoryFoodPickerSheet extends ConsumerWidget {
   /// Creates lazy diary inventory picker sheet.
-  const DiaryInventoryFoodPickerSheet({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -70,11 +70,7 @@ class DiaryInventoryFoodPickerSheet extends ConsumerWidget {
 /// Inventory and prepared-meal picker used by diary quick eat.
 class DiaryInventoryFoodPicker extends StatelessWidget {
   /// Creates inventory and prepared-meal picker.
-  const DiaryInventoryFoodPicker({
-    required this.items,
-    required this.meals,
-    super.key,
-  });
+  const new({required this.items, required this.meals, super.key});
 
   /// Available inventory items.
   final List<InventoryItem> items;
@@ -91,7 +87,7 @@ class DiaryInventoryFoodPicker extends StatelessWidget {
 }
 
 class _DiaryInventoryFoodPickerShell extends StatelessWidget {
-  const _DiaryInventoryFoodPickerShell({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -154,10 +150,7 @@ class _DiaryInventoryFoodPickerShell extends StatelessWidget {
 }
 
 class _DiaryInventoryFoodPickerContent extends ConsumerWidget {
-  const _DiaryInventoryFoodPickerContent({
-    required this.items,
-    required this.meals,
-  });
+  const new({required this.items, required this.meals});
 
   final List<InventoryItem> items;
   final List<PreparedMeal> meals;
@@ -186,9 +179,9 @@ class _DiaryInventoryFoodPickerContent extends ConsumerWidget {
             imageUrl: item.imageUrl,
             title: item.name,
             subtitle: item.brand,
-            onTap: () => Navigator.of(context).pop(
-              DiaryInventoryItemFoodSelection(item),
-            ),
+            onTap: () =>
+                Navigator.of(context)
+                    .pop(DiaryInventoryItemFoodSelection(item)),
           );
         }
 
@@ -205,9 +198,8 @@ class _DiaryInventoryFoodPickerContent extends ConsumerWidget {
             ),
             meal.totalPortions,
           ),
-          onTap: () => Navigator.of(context).pop(
-            DiaryPreparedMealFoodSelection(meal),
-          ),
+          onTap: () =>
+              Navigator.of(context).pop(DiaryPreparedMealFoodSelection(meal)),
         );
       },
     );

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
     'ai_chef_button/ai_chef_button.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -11,7 +12,7 @@ void main() {
       const ProviderScope(
         child: MaterialApp(
           locale: Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: _AiChefButtonTestHost(),
         ),
@@ -28,12 +29,10 @@ void main() {
 }
 
 class _AiChefButtonTestHost extends StatelessWidget {
-  const _AiChefButtonTestHost();
+  const new();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(actions: const [AiChefButton()]),
-    );
+    return Scaffold(appBar: AppBar(actions: const [AiChefButton()]));
   }
 }

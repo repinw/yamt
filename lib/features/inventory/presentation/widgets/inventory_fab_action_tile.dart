@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// List tile for one inventory FAB action.
 class InventoryFabActionTile extends StatelessWidget {
   /// Creates inventory FAB action tile.
-  const InventoryFabActionTile({
+  const new({
     required this.icon,
     required this.label,
     required this.onPressed,

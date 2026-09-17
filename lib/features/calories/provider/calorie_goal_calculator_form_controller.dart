@@ -134,14 +134,24 @@ class CalorieGoalCalculatorFormController
     }
 
     state = state.copyWith(isSaving: true);
-    final saved = await ref
-        .read(calorieGoalControllerProvider.notifier)
-        .saveCalculatedGoal(
-          profile,
-          goalStartDate: goalStartDate,
-          allowFutureGoalStart: allowFutureGoalStart,
-          countGoalStartDayForLearning: countGoalStartDayForLearning,
-        );
+    // Keeps the auto-dispose goal controller alive until the save completes.
+    final goalSubscription = ref.listen(
+      calorieGoalControllerProvider,
+      (_, _) {},
+    );
+    final bool saved;
+    try {
+      saved = await ref
+          .read(calorieGoalControllerProvider.notifier)
+          .saveCalculatedGoal(
+            profile,
+            goalStartDate: goalStartDate,
+            allowFutureGoalStart: allowFutureGoalStart,
+            countGoalStartDayForLearning: countGoalStartDayForLearning,
+          );
+    } finally {
+      goalSubscription.close();
+    }
     if (!ref.mounted) {
       return saved;
     }

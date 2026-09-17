@@ -238,7 +238,7 @@ void main() {
 
 class _FakeInventoryItemRepository
     implements InventoryItemRepository, InventoryItemRecentManualReader {
-  _FakeInventoryItemRepository(this._items);
+  new(this._items);
 
   final List<InventoryItem> _items;
   int? readRecentManualLimit;

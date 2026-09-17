@@ -1,17 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _textVoiceSearchMaxLines = 3;
 final _textVoiceSearchInputFormatters = <TextInputFormatter>[
-  FilteringTextInputFormatter.deny(
-    RegExp(r'[\r\n]+'),
-    replacementString: ' ',
-  ),
+  FilteringTextInputFormatter.deny(RegExp(r'[\r\n]+'), replacementString: ' '),
 ];
 
 /// Controller for interacting with [TextVoiceSearchBar] without a [GlobalKey].
@@ -53,7 +50,7 @@ class TextVoiceSearchController {
 /// Shared search field with an optional built-in voice search button.
 class TextVoiceSearchBar extends StatefulWidget {
   /// Creates shared text search bar with optional voice search.
-  const TextVoiceSearchBar({
+  const new({
     required this.controller,
     required this.label,
     required this.fieldKey,
@@ -425,7 +422,7 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
 }
 
 class _TextVoiceSearchField extends StatelessWidget {
-  const _TextVoiceSearchField({
+  const new({
     required this.controller,
     required this.label,
     required this.hintText,
@@ -576,7 +573,7 @@ class _TextVoiceSearchField extends StatelessWidget {
 }
 
 class _TextVoiceSearchPrefixIcon extends StatelessWidget {
-  const _TextVoiceSearchPrefixIcon();
+  const new();
 
   @override
   Widget build(BuildContext context) {
@@ -593,7 +590,7 @@ class _TextVoiceSearchPrefixIcon extends StatelessWidget {
 }
 
 class _TextVoiceSearchSuffixActions extends StatelessWidget {
-  const _TextVoiceSearchSuffixActions({
+  const new({
     required this.isSearching,
     required this.hasText,
     required this.enabled,
@@ -646,7 +643,7 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
 }
 
 class _TextVoiceSearchVoiceButton extends StatelessWidget {
-  const _TextVoiceSearchVoiceButton({
+  const new({
     required super.key,
     required this.enabled,
     required this.isListening,

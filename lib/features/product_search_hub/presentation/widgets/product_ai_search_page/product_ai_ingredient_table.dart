@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
@@ -9,7 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Ingredient nutrition estimate table for AI product drafts.
 class AiIngredientTable extends StatelessWidget {
   /// Creates an ingredient table.
-  const AiIngredientTable({required this.draft, super.key});
+  const new({required this.draft, super.key});
 
   /// Current AI draft.
   final ProductAiSearchDraft draft;
@@ -18,19 +18,16 @@ class AiIngredientTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final headerStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
-      color: colors.onSurfaceVariant,
-      fontWeight: FontWeight.w700,
-    );
+    final headerStyle = Theme.of(context).textTheme.labelSmall
+        ?.copyWith(color: colors.onSurfaceVariant, fontWeight: FontWeight.w700);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           l10n.inventoryManualAddAiSearchIngredientsTitle,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
@@ -92,25 +89,23 @@ class AiIngredientTable extends StatelessWidget {
 /// Ingredient row in the AI estimate table.
 class AiIngredientRow extends StatelessWidget {
   /// Creates an ingredient row.
-  const AiIngredientRow({required this.ingredient, super.key});
+  const new({required this.ingredient, super.key});
 
   /// Ingredient estimate.
   final ProductAiSearchIngredientRow ingredient;
 
   @override
   Widget build(BuildContext context) {
-    final valueStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final valueStyle = Theme.of(context).textTheme.bodySmall
+        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           ingredient.label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.xs),
         Row(
@@ -176,7 +171,7 @@ class AiIngredientRow extends StatelessWidget {
 /// Total row in the AI estimate table.
 class AiIngredientTotalRow extends StatelessWidget {
   /// Creates a total row.
-  const AiIngredientTotalRow({required this.draft, super.key});
+  const new({required this.draft, super.key});
 
   /// Current AI draft.
   final ProductAiSearchDraft draft;
@@ -194,9 +189,8 @@ class AiIngredientTotalRow extends StatelessWidget {
           flex: 4,
           child: Text(
             AppLocalizations.of(context)!.inventoryManualAddAiSearchTotalLabel,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
