@@ -9,7 +9,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/core/widgets/text_voice_search_bar.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';

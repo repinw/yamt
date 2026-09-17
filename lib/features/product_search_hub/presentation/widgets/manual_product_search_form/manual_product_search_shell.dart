@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/core/widgets/text_voice_search_bar.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shell for manual product search modal pages.
