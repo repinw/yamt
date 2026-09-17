@@ -253,18 +253,15 @@ class _PreparedMealEatSheetState extends State<_PreparedMealEatSheet> {
       ),
       NutritionMetric(
         label: l10n.inventoryNutritionCarbsShortLabel,
-        value:
-            '${formatInventoryNutritionValue(widget.meal.totalCarbs * multiplier)}g',
+        value: _formatNutritionGrams(widget.meal.totalCarbs * multiplier),
       ),
       NutritionMetric(
         label: l10n.caloriesProteinLabel,
-        value:
-            '${formatInventoryNutritionValue(widget.meal.totalProtein * multiplier)}g',
+        value: _formatNutritionGrams(widget.meal.totalProtein * multiplier),
       ),
       NutritionMetric(
         label: l10n.caloriesFatLabel,
-        value:
-            '${formatInventoryNutritionValue(widget.meal.totalFat * multiplier)}g',
+        value: _formatNutritionGrams(widget.meal.totalFat * multiplier),
       ),
     ];
   }
@@ -554,7 +551,15 @@ bool _canUseGramAmountMode(PreparedMeal meal) {
 }
 
 String _formatGrams(num grams) {
-  return '${formatInventoryAmountValue(amount: grams.round(), unit: InventoryAmountUnit.gram)}g';
+  final amount = formatInventoryAmountValue(
+    amount: grams.round(),
+    unit: InventoryAmountUnit.gram,
+  );
+  return '${amount}g';
+}
+
+String _formatNutritionGrams(double value) {
+  return '${formatInventoryNutritionValue(value)}g';
 }
 
 Future<DateTime?> _showPreparedMealDayPicker({

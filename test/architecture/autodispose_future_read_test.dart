@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Architecture - AutoDispose Future Read Guard', () {
-    test('production code must not call ref.read or container.read on .future', () {
+    test('production code must not call ref.read or container.read on '
+        '.future', () {
       final libDir = Directory('lib');
       expect(libDir.existsSync(), isTrue, reason: 'lib/ directory must exist');
 

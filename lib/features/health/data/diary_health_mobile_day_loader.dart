@@ -241,14 +241,16 @@ class DiaryHealthMobileDayLoader {
     required DateTime dayStart,
     required DiaryHealthDayData data,
   }) {
+    final unassignedActiveEnergyKcal = _sumUnassignedActiveEnergyCalories(
+      data.unassignedActiveEnergySegments,
+    );
     log(
       'Read day data from cache. '
       'day=${dayStart.toIso8601String()} '
       'steps=${data.totalSteps} '
       'workouts=${data.workouts.length} '
       'workout_kcal=${_sumWorkoutCalories(data.workouts)} '
-      'unassigned_active_energy_kcal='
-      '${_sumUnassignedActiveEnergyCalories(data.unassignedActiveEnergySegments)} '
+      'unassigned_active_energy_kcal=$unassignedActiveEnergyKcal '
       'workout_steps=${_sumWorkoutSteps(data.workouts)}',
       name: diaryHealthLogName,
     );

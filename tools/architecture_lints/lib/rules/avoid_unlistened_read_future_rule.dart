@@ -20,8 +20,8 @@ class AvoidUnlistenedReadFutureRule extends AnalysisRule {
   static const lint = LintCode(
     'avoid_unlistened_read_future',
     'Avoid calling {0}.read({1}.future). '
-        'Reading .future on an unlistened auto-disposed provider causes it to be '
-        'disposed during loading, throwing StateError. '
+        'Reading .future on an unlistened auto-disposed provider causes it '
+        'to be disposed during loading, throwing StateError. '
         'Query the repository directly or keep a subscription.',
   );
 

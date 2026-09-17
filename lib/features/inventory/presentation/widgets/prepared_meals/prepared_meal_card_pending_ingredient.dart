@@ -226,7 +226,12 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
 
 String _pendingIngredientInventoryAmount(InventoryItem item) {
   if (item.usesAmountProgress && item.amountUnit != null) {
-    return '${formatInventoryAmountValue(amount: item.currentAmount, unit: item.amountUnit!, scale: item.amountScale)} ${item.amountUnit!.code}';
+    final amount = formatInventoryAmountValue(
+      amount: item.currentAmount,
+      unit: item.amountUnit!,
+      scale: item.amountScale,
+    );
+    return '$amount ${item.amountUnit!.code}';
   }
   return '${item.quantity}x';
 }

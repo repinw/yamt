@@ -83,7 +83,12 @@ class InventoryItemProgressCalculator {
     InventoryAmountUnit unit, {
     required int scale,
   }) {
-    return '${formatInventoryAmountValue(amount: value, unit: unit, scale: scale)}${_unitSuffix(unit)}';
+    final amount = formatInventoryAmountValue(
+      amount: value,
+      unit: unit,
+      scale: scale,
+    );
+    return '$amount${_unitSuffix(unit)}';
   }
 
   String _unitSuffix(InventoryAmountUnit unit) {

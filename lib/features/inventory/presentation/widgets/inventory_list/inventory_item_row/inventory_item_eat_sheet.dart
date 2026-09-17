@@ -373,13 +373,14 @@ class _InventoryItemEatSheetState
           if (value >= widget.maxAmount || value < 1 || !values.add(value)) {
             continue;
           }
+          final amountLabel = formatInventoryAmountValue(
+            amount: value,
+            unit: _inventoryAmountUnit,
+            scale: _inventoryAmountScale,
+          );
           final label = unitLabel == null
-              ? formatInventoryAmountValue(
-                  amount: value,
-                  unit: _inventoryAmountUnit,
-                  scale: _inventoryAmountScale,
-                )
-              : '${formatInventoryAmountValue(amount: value, unit: _inventoryAmountUnit, scale: _inventoryAmountScale)} $unitLabel';
+              ? amountLabel
+              : '$amountLabel $unitLabel';
           options.add(InventoryServingOption(label: label, value: value));
         }
         return options;
@@ -620,20 +621,17 @@ class _InventoryItemEatSheetState
       if (nutrition?.per100Carbs != null)
         (
           label: l10n.inventoryNutritionCarbsShortLabel,
-          value:
-              '${formatInventoryNutritionValue(nutrition!.per100Carbs! * factor)}g',
+          value: _formatGrams(nutrition!.per100Carbs! * factor),
         ),
       if (nutrition?.per100Protein != null)
         (
           label: l10n.caloriesProteinLabel,
-          value:
-              '${formatInventoryNutritionValue(nutrition!.per100Protein! * factor)}g',
+          value: _formatGrams(nutrition!.per100Protein! * factor),
         ),
       if (nutrition?.per100Fat != null)
         (
           label: l10n.caloriesFatLabel,
-          value:
-              '${formatInventoryNutritionValue(nutrition!.per100Fat! * factor)}g',
+          value: _formatGrams(nutrition!.per100Fat! * factor),
         ),
     ];
   }
@@ -1115,4 +1113,8 @@ class _InventoryItemEatSheetState
       );
     });
   }
+}
+
+String _formatGrams(double value) {
+  return '${formatInventoryNutritionValue(value)}g';
 }

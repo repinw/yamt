@@ -70,9 +70,16 @@ class DiaryDailyBalanceData {
             ),
           );
     final bufferAdjustmentLabel = isPauseDay ? null : adjustmentLabel;
+    final realEatenLabel = l10n.diaryBalanceRealEatenLabel(
+      formatDiaryKcal(
+        numberFormat,
+        metrics.realEatenKcal,
+        l10n.caloriesUnitKcal,
+      ),
+    );
     final eatenSubtitle = metrics.bufferAdjustmentKcal.round() == 0
         ? null
-        : '${l10n.diaryBalanceRealEatenLabel(formatDiaryKcal(numberFormat, metrics.realEatenKcal, l10n.caloriesUnitKcal))} · $adjustmentLabel';
+        : '$realEatenLabel · $adjustmentLabel';
 
     final today = normalizeDiaryDay(now ?? DateTime.now());
     final isFutureDay = normalizeDiaryDay(selectedDay).isAfter(today);

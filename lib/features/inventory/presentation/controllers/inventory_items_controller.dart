@@ -431,19 +431,29 @@ class InventoryItemsController extends _$InventoryItemsController {
     required String? actualDataOwnerUserId,
     required String? effectiveDataOwnerUserId,
   }) {
+    final scopeDetails = _buildScopeDebugDetails(
+      actualDataOwnerUserId: actualDataOwnerUserId,
+      effectiveDataOwnerUserId: effectiveDataOwnerUserId,
+    );
     log(
       'Permission denied while watching inventory. '
       'shouldRecover=$shouldRecover '
-      '${_buildScopeDebugDetails(actualDataOwnerUserId: actualDataOwnerUserId, effectiveDataOwnerUserId: effectiveDataOwnerUserId)}',
+      '$scopeDetails',
       name: _controllerLogName,
     );
   }
 
   /// On skipped household access recovery.
   void onSkippedHouseholdAccessRecovery() {
+    final scopeDetails = _buildScopeDebugDetails(
+      actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider),
+      effectiveDataOwnerUserId: ref.read(
+        effectiveHouseholdDataOwnerUserIdProvider,
+      ),
+    );
     log(
       'Inventory access recovery had no owner swap candidate. '
-      '${_buildScopeDebugDetails(actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider), effectiveDataOwnerUserId: ref.read(effectiveHouseholdDataOwnerUserIdProvider))}',
+      '$scopeDetails',
       name: _controllerLogName,
     );
   }

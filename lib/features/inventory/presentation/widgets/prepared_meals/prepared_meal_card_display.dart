@@ -253,7 +253,11 @@ bool _isGramTrackedPreparedMeal(PreparedMeal meal) {
 }
 
 String _formatPreparedMealGramAmount(num amount) {
-  return '${formatInventoryAmountValue(amount: amount.round(), unit: InventoryAmountUnit.gram)}g';
+  final grams = formatInventoryAmountValue(
+    amount: amount.round(),
+    unit: InventoryAmountUnit.gram,
+  );
+  return '${grams}g';
 }
 
 String? _preparedMealGramProgressLabel(PreparedMeal meal) {
