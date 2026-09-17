@@ -7,6 +7,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/di
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
 const double _valueWidth = 42;
+const double _totalWidth = 68;
 
 /// Width of the value column of a quiet macro row.
 const double diaryQuietMacroValueWidth = 60;
@@ -115,7 +116,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             // Column 4: Context Current / Target
             SizedBox(
-              width: 68,
+              width: _totalWidth,
               child: RichText(
                 textAlign: TextAlign.right,
                 maxLines: 1,

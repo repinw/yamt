@@ -98,7 +98,8 @@ class _DiaryTopBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final calendarState = ref.watch(diaryCalendarControllerProvider);
     final bounds = ref.watch(diaryCalendarBoundsProvider);
-    final controller = ref.read(diaryCalendarControllerProvider.notifier);
+    DiaryCalendarController controller() =>
+        ref.read(diaryCalendarControllerProvider.notifier);
     final compact = shouldUseCompactHomeChrome(context);
 
     return SafeArea(
@@ -119,8 +120,8 @@ class _DiaryTopBar extends ConsumerWidget {
                 today: calendarState.today,
                 canGoBack: bounds.canGoBack(calendarState.selectedDay),
                 canGoForward: bounds.canGoForward(calendarState.selectedDay),
-                onPrevious: controller.selectPreviousDay,
-                onNext: controller.selectNextDay,
+                onPrevious: () => controller().selectPreviousDay(),
+                onNext: () => controller().selectNextDay(),
                 onOpenCalendar: () async {
                   final pickedDay = await showDiaryCalendarOverviewSheet(
                     context: context,
@@ -129,7 +130,7 @@ class _DiaryTopBar extends ConsumerWidget {
                     bounds: bounds,
                   );
                   if (pickedDay != null) {
-                    controller.selectDay(pickedDay);
+                    controller().selectDay(pickedDay);
                   }
                 },
                 leadingActions: const [HomeShellMenuButton()],

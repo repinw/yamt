@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
@@ -149,7 +150,7 @@ class _CalorieGoalStartTile extends ConsumerWidget {
     final locale = Localizations.localeOf(context).toString();
     final dateFormat = DateFormat.yMMMd(locale);
     final initialGoalStartDate =
-        latestGoal?.effectiveCountingStartDate ?? DateTime.now();
+        latestGoal?.effectiveCountingStartDate ?? ref.watch(clockProvider)();
 
     return SettingsTile(
       key: SettingsPageKeys.calorieGoalStartTile,

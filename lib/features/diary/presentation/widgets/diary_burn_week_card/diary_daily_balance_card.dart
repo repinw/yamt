@@ -103,8 +103,8 @@ class DiaryDailyBalanceCard extends StatelessWidget {
                     ],
                     const SizedBox(height: AppSpacing.md),
                     Divider(
-                      height: 1,
-                      thickness: 1,
+                      height: AppSizes.dividerThickness,
+                      thickness: AppSizes.dividerThickness,
                       color: colors.outlineVariant.withValues(alpha: 0.35),
                     ),
                   ],

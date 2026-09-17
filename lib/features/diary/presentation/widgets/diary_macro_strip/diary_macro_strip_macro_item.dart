@@ -67,7 +67,7 @@ class DiaryMacroStripMacroItem extends StatelessWidget {
           color: color,
           trackColor: colors.surfaceContainerHighest,
           isDark: colors.brightness == Brightness.dark,
-          height: 4,
+          height: AppSizes.stripProgressBarHeight,
         ),
       ],
     );

@@ -45,7 +45,7 @@ class DiaryMacroStripKcalRow extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.pill),
             child: SizedBox(
-              height: 4,
+              height: AppSizes.stripProgressBarHeight,
               child: ColoredBox(
                 color: colors.surfaceContainerHighest,
                 child: FractionallySizedBox(

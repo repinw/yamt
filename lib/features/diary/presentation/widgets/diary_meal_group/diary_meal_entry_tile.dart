@@ -154,7 +154,10 @@ class _CountBadge extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: colors.primary,
                   borderRadius: BorderRadius.circular(AppRadius.pill),
-                  border: Border.all(color: colors.surface, width: 2),
+                  border: Border.all(
+                    color: colors.surface,
+                    width: AppSizes.badgeBorderWidth,
+                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

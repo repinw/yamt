@@ -213,6 +213,12 @@ abstract final class AppSizes {
   /// Max width for settings-style content columns.
   static const double narrowContentMaxWidth = 560;
 
+  /// Height of the thin progress bars in the diary macro strip.
+  static const double stripProgressBarHeight = 4;
+
+  /// Border width that separates a count badge from the image below it.
+  static const double badgeBorderWidth = 2;
+
   /// Minimum size of a tap target.
   static const double minTapTarget = 48;
 
