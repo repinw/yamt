@@ -5,6 +5,8 @@
   "homeCalories": "Diary",
   "homeCookbook": "Cookbook",
   "homeSettings": "Settings",
+  "homeProgress": "Progress",
+  "homeMenuTooltip": "Menu",
   "aiChefTooltip": "Let the AI suggest a random recipe",
   "aiChefSetupTitle": "What should the AI cook?",
   "aiChefSetupSubtitle": "Choose whether your inventory matters and add any wishes.",
@@ -1014,6 +1016,35 @@
   "diaryNutritionTitle": "Macronutrients",
   "diaryBalanceEatenLabel": "Eaten",
   "diaryBalanceLeftTodayLabel": "Left today",
+  "diaryBalanceOverGoalLabel": "Over goal",
+  "diaryBalanceShowDetails": "Show all numbers",
+  "diaryBalanceHideDetails": "Show fewer numbers",
+  "diaryAmountLeft": "{amount} left",
+  "@diaryAmountLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryAmountOver": "{amount} over",
+  "@diaryAmountOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMealEntryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@diaryMealEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressTdeeTrendTitle": "TDEE and weight trend",
+  "progressTdeeTrendSubtitle": "Burn curve, fluctuation range and goal forecast",
   "diaryBalanceBaseLabel": "Base",
   "diaryBalancePlannedWithCarryoverLabel": "Planned with carryover",
   "diaryBalanceWeekLabel": "Week {week}",

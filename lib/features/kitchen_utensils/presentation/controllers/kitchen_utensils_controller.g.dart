@@ -41,7 +41,7 @@ final class KitchenUtensilsControllerProvider
 }
 
 String _$kitchenUtensilsControllerHash() =>
-    r'ede168765c770ba126c789a88f7a07a0e30fcf58';
+    r'451230e8406f6523e917dd31e90d4049c8236b62';
 
 /// Kitchen utensils controller.
 

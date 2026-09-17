@@ -25,6 +25,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeSettings => 'Einstellungen';
 
   @override
+  String get homeProgress => 'Fortschritt';
+
+  @override
+  String get homeMenuTooltip => 'Menü';
+
+  @override
   String get aiChefTooltip =>
       'Lass dir von der KI ein zufälliges Rezept vorschlagen';
 
@@ -2319,6 +2325,43 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryBalanceLeftTodayLabel => 'Übrig heute';
+
+  @override
+  String get diaryBalanceOverGoalLabel => 'Über Ziel';
+
+  @override
+  String get diaryBalanceShowDetails => 'Alle Zahlen anzeigen';
+
+  @override
+  String get diaryBalanceHideDetails => 'Weniger Zahlen anzeigen';
+
+  @override
+  String diaryAmountLeft(String amount) {
+    return '$amount übrig';
+  }
+
+  @override
+  String diaryAmountOver(String amount) {
+    return '$amount drüber';
+  }
+
+  @override
+  String diaryMealEntryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Einträge',
+      one: '1 Eintrag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressTdeeTrendTitle => 'TDEE- & Gewichtsverlauf';
+
+  @override
+  String get progressTdeeTrendSubtitle =>
+      'Verbrauchskurve, Schwankungsbereich & Zielprognose';
 
   @override
   String get diaryBalanceBaseLabel => 'Basis';

@@ -8,7 +8,6 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -27,90 +26,89 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines settings page.
 class SettingsPage extends ConsumerWidget {
   /// The settings page.
-  const new({super.key, this.includeHomeShellChrome = false});
-
-  /// Whether to render the shared home shell app bar as a sliver.
-  final bool includeHomeShellChrome;
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
-    return CustomScrollView(
-      slivers: [
-        if (includeHomeShellChrome)
-          HomeShellTabTopChrome(title: l10n.homeSettings),
-        SliverPadding(
-          padding: responsivePagePadding(
-            context,
-            top: AppSpacing.xl,
-            bottom: homeShellPageBottomPadding(context),
-          ),
-          sliver: SliverList.list(
-            children: [
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: settingsMaxWidth),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _SettingsIntro(l10n: l10n),
-                      const SizedBox(height: AppSpacing.lg),
-                      const SettingsProfileCard(),
-                      const SizedBox(height: AppSpacing.lg),
-                      SettingsSection(
-                        title: l10n.settingsAccountHouseholdSectionTitle,
-                        children: [_HouseholdTile(l10n: l10n)],
-                      ),
-                      SettingsSection(
-                        title: l10n.settingsHealthGoalsSectionTitle,
-                        children: const [
-                          SettingsHealthConnectTile(),
-                          _CalorieGoalStartTile(),
-                          _CalorieGoalCalculatorTile(),
-                          _TdeeAnalyticsTile(),
-                          _MacroGoalsTile(),
-                          _CalorieGoalIntroTile(),
-                        ],
-                      ),
-                      SettingsSection(
-                        title: l10n.settingsAppearanceSectionTitle,
-                        children: const [_LanguageTile()],
-                      ),
-                      SettingsSection(
-                        title: l10n.settingsAppSectionTitle,
-                        children: [
-                          SettingsTile(
-                            key: SettingsPageKeys.notificationsTile,
-                            icon: Icons.notifications_none_rounded,
-                            title: l10n.settingsNotificationsTitle,
-                            subtitle: l10n.settingsNotificationsSubtitle,
-                            onTap: () => _showNotImplementedSnackBar(
-                              context,
-                              l10n.commonNotImplementedYet,
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.homeSettings)),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: responsivePagePadding(
+              context,
+              top: AppSpacing.xl,
+              bottom: AppSpacing.xl + MediaQuery.paddingOf(context).bottom,
+            ),
+            sliver: SliverList.list(
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: settingsMaxWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _SettingsIntro(l10n: l10n),
+                        const SizedBox(height: AppSpacing.lg),
+                        const SettingsProfileCard(),
+                        const SizedBox(height: AppSpacing.lg),
+                        SettingsSection(
+                          title: l10n.settingsAccountHouseholdSectionTitle,
+                          children: [_HouseholdTile(l10n: l10n)],
+                        ),
+                        SettingsSection(
+                          title: l10n.settingsHealthGoalsSectionTitle,
+                          children: const [
+                            SettingsHealthConnectTile(),
+                            _CalorieGoalStartTile(),
+                            _CalorieGoalCalculatorTile(),
+                            _MacroGoalsTile(),
+                            _CalorieGoalIntroTile(),
+                          ],
+                        ),
+                        SettingsSection(
+                          title: l10n.settingsAppearanceSectionTitle,
+                          children: const [_LanguageTile()],
+                        ),
+                        SettingsSection(
+                          title: l10n.settingsAppSectionTitle,
+                          children: [
+                            SettingsTile(
+                              key: SettingsPageKeys.notificationsTile,
+                              icon: Icons.notifications_none_rounded,
+                              title: l10n.settingsNotificationsTitle,
+                              subtitle: l10n.settingsNotificationsSubtitle,
+                              onTap: () => _showNotImplementedSnackBar(
+                                context,
+                                l10n.commonNotImplementedYet,
+                              ),
                             ),
-                          ),
-                          SettingsTile(
-                            key: SettingsPageKeys.privacyTile,
-                            icon: Icons.lock_outline_rounded,
-                            title: l10n.settingsPrivacyTitle,
-                            subtitle: l10n.settingsPrivacySubtitle,
-                            onTap: () => _showNotImplementedSnackBar(
-                              context,
-                              l10n.commonNotImplementedYet,
+                            SettingsTile(
+                              key: SettingsPageKeys.privacyTile,
+                              icon: Icons.lock_outline_rounded,
+                              title: l10n.settingsPrivacyTitle,
+                              subtitle: l10n.settingsPrivacySubtitle,
+                              onTap: () => _showNotImplementedSnackBar(
+                                context,
+                                l10n.commonNotImplementedYet,
+                              ),
                             ),
-                          ),
-                          const _AboutTile(),
-                        ],
-                      ),
-                    ],
+                            const _AboutTile(),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -201,20 +199,6 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
                 initialSettings: settings,
               ),
             ),
-    );
-  }
-}
-
-class _TdeeAnalyticsTile extends StatelessWidget {
-  const new();
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsTile(
-      icon: Icons.insights_rounded,
-      title: 'TDEE- & Gewichtsverlauf',
-      subtitle: 'Verbrauchskurve, Flux-Range & Ziel-Antizipation',
-      onTap: () => unawaited(context.push(AppRoutes.homeCaloriesAnalytics)),
     );
   }
 }

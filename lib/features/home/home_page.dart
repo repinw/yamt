@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
+import 'package:yamt/features/home/widgets/home_menu_drawer.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome_visibility_controller.dart';
 import 'package:yamt/features/home/widgets/'
     'inventory_action_fab.dart';
@@ -12,7 +14,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _inventoryBranchIndex = 0;
 const _diaryBranchIndex = 1;
 const _cookbookBranchIndex = 2;
-const _settingsBranchIndex = 3;
+const _progressBranchIndex = 3;
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerStatefulWidget {
@@ -28,6 +30,7 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   late final HomeShellChromeVisibilityController _chromeVisibilityController;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -49,12 +52,16 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  void _openMenu() {
+    _scaffoldKey.currentState?.openDrawer();
+  }
+
   HomeTabType _currentTab() {
     return switch (widget.navigationShell.currentIndex) {
       _inventoryBranchIndex => HomeTabType.inventory,
       _diaryBranchIndex => HomeTabType.diary,
       _cookbookBranchIndex => HomeTabType.cookbook,
-      _settingsBranchIndex => HomeTabType.settings,
+      _progressBranchIndex => HomeTabType.progress,
       _ => HomeTabType.inventory, // coverage:ignore-line
     };
   }
@@ -88,11 +95,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.settings_rounded,
-          label: l10n.homeSettings,
+          icon: Icons.insights_rounded,
+          label: l10n.homeProgress,
         ),
-        isSelected: currentTab == HomeTabType.settings,
-        onTap: () => _onTabTapped(_settingsBranchIndex),
+        isSelected: currentTab == HomeTabType.progress,
+        onTap: () => _onTabTapped(_progressBranchIndex),
       ),
     ];
   }
@@ -103,7 +110,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final currentTab = _currentTab();
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
-      HomeTabType.diary || HomeTabType.cookbook || HomeTabType.settings => null,
+      HomeTabType.diary || HomeTabType.cookbook || HomeTabType.progress => null,
     };
 
     final theme = Theme.of(context);
@@ -116,28 +123,35 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Theme(
       data: homeTheme,
       child: Scaffold(
-        extendBody: currentTab != HomeTabType.settings,
+        key: _scaffoldKey,
+        extendBody: true,
+        drawer: const HomeMenuDrawer(),
         body: NotificationListener<ScrollNotification>(
           onNotification: _chromeVisibilityController.handleScrollNotification,
-          child: Stack(
-            children: [
-              widget.navigationShell,
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: ValueListenableBuilder<double>(
-                  valueListenable: _chromeVisibilityController,
-                  child: HomeBottomNavBar(entries: _navEntries(context, l10n)),
-                  builder: (context, visibility, bottomNavBar) {
-                    return HomeShellBottomChrome(
-                      visibility: visibility,
-                      child: bottomNavBar!,
-                    );
-                  },
+          child: HomeShellMenuScope(
+            openMenu: _openMenu,
+            child: Stack(
+              children: [
+                widget.navigationShell,
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: _chromeVisibilityController,
+                    child: HomeBottomNavBar(
+                      entries: _navEntries(context, l10n),
+                    ),
+                    builder: (context, visibility, bottomNavBar) {
+                      return HomeShellBottomChrome(
+                        visibility: visibility,
+                        child: bottomNavBar!,
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

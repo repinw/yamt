@@ -20,7 +20,9 @@ settings.
 
 ## Public Edge
 
-- `presentation/pages/settings_page.dart` is the main settings page.
+- `presentation/pages/settings_page.dart` is the main settings page. It is a
+  pushed page with its own app bar, opened from the Home side menu at
+  `AppRoutes.homeSettings`.
 - `presentation/pages/account_page.dart` is the account management page.
 - `presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart` is the settings-owned tile that
   delegates Health connection actions to the Health feature.
@@ -46,7 +48,7 @@ Current providers:
 - `features/calories` for calorie goal settings surfaces.
 - `features/health` for Health connection status, actions, and domain result
   models.
-- `core/widgets` for optional shell chrome when Settings is embedded.
+- `core/widgets` for shared layout helpers.
 - `features/shared` for shared credential form widgets.
 
 Keep cross-feature work at page, tile, or application action boundaries. Do not

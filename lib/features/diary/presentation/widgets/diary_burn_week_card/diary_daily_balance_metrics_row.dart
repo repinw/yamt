@@ -8,10 +8,14 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Top row showing left and eaten balance metrics.
 class DiaryDailyBalanceMetricsRow extends StatelessWidget {
   /// Creates the daily balance metrics row.
-  const new({required this.data, super.key});
+  const new({required this.data, required this.showDetails, super.key});
 
   /// Render-ready card data.
   final DiaryDailyBalanceData data;
+
+  /// Whether the eaten metric is shown next to what is left. Future days
+  /// always show both planning values.
+  final bool showDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +24,11 @@ class DiaryDailyBalanceMetricsRow extends StatelessWidget {
     final accents = MetricAccentColors.of(context);
     final primary = accents.today;
 
+    final leftAccent = data.isOverTarget ? colors.error : primary;
     final resolvedLeftLabel = data.isFutureDay
         ? l10n.diaryBalanceBaseLabel
+        : data.isOverTarget
+        ? l10n.diaryBalanceOverGoalLabel
         : l10n.diaryBalanceLeftTodayLabel;
     final resolvedLeftValue = data.isFutureDay
         ? data.baseNumber
@@ -31,13 +38,13 @@ class DiaryDailyBalanceMetricsRow extends StatelessWidget {
         : data.leftUnit;
     final resolvedLeftLabelColor = (data.isFutureDay || data.isPauseDay)
         ? colors.onSurfaceVariant
-        : primary;
+        : leftAccent;
     final resolvedLeftValueColor = data.isFutureDay
         ? colors.onSurface
-        : (data.isPauseDay ? colors.onSurfaceVariant : primary);
+        : (data.isPauseDay ? colors.onSurfaceVariant : leftAccent);
     final resolvedLeftUnitColor = (data.isFutureDay || data.isPauseDay)
         ? colors.onSurfaceVariant
-        : primary.withValues(alpha: 0.78);
+        : leftAccent.withValues(alpha: 0.78);
 
     final resolvedRightLabel = data.isFutureDay
         ? l10n.diaryBalancePlannedWithCarryoverLabel
@@ -75,21 +82,23 @@ class DiaryDailyBalanceMetricsRow extends StatelessWidget {
             icon: data.isFutureDay ? null : Icons.circle,
           ),
         ),
-        const SizedBox(width: AppSpacing.xl),
-        Expanded(
-          child: DiaryBalanceMetricTile.daily(
-            label: resolvedRightLabel,
-            value: resolvedRightValue,
-            unit: resolvedRightUnit,
-            unitFontSize: resolvedRightUnitFontSize,
-            subtitle: resolvedRightSubtitle,
-            labelColor: resolvedRightLabelColor,
-            valueColor: resolvedRightValueColor,
-            unitColor: resolvedRightUnitColor,
-            alignment: CrossAxisAlignment.end,
-            textAlign: TextAlign.end,
+        if (showDetails || data.isFutureDay) ...[
+          const SizedBox(width: AppSpacing.xl),
+          Expanded(
+            child: DiaryBalanceMetricTile.daily(
+              label: resolvedRightLabel,
+              value: resolvedRightValue,
+              unit: resolvedRightUnit,
+              unitFontSize: resolvedRightUnitFontSize,
+              subtitle: resolvedRightSubtitle,
+              labelColor: resolvedRightLabelColor,
+              valueColor: resolvedRightValueColor,
+              unitColor: resolvedRightUnitColor,
+              alignment: CrossAxisAlignment.end,
+              textAlign: TextAlign.end,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

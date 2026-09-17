@@ -2,9 +2,6 @@ import 'package:flutter/widgets.dart';
 
 /// Defines stable keys for calorie debug UI.
 abstract final class CalorieDebugKeys {
-  /// Opens calorie debug actions.
-  static const actionsMenuButton = Key('calories_debug_actions_menu_button');
-
   /// Prints calorie debug dump.
   static const debugDumpButton = Key('calories_debug_dump_button');
 

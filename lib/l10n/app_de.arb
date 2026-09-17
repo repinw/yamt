@@ -5,6 +5,8 @@
   "homeCalories": "Tagebuch",
   "homeCookbook": "Kochbuch",
   "homeSettings": "Einstellungen",
+  "homeProgress": "Fortschritt",
+  "homeMenuTooltip": "Menü",
   "aiChefTooltip": "Lass dir von der KI ein zufälliges Rezept vorschlagen",
   "aiChefSetupTitle": "Was soll die KI kochen?",
   "aiChefSetupSubtitle": "Wähle, ob dein Vorrat beachtet wird, und ergänze Wünsche.",
@@ -1007,6 +1009,35 @@
   "diaryNutritionTitle": "Makronährstoffe",
   "diaryBalanceEatenLabel": "Gegessen",
   "diaryBalanceLeftTodayLabel": "Übrig heute",
+  "diaryBalanceOverGoalLabel": "Über Ziel",
+  "diaryBalanceShowDetails": "Alle Zahlen anzeigen",
+  "diaryBalanceHideDetails": "Weniger Zahlen anzeigen",
+  "diaryAmountLeft": "{amount} übrig",
+  "@diaryAmountLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryAmountOver": "{amount} drüber",
+  "@diaryAmountOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMealEntryCount": "{count, plural, =1{1 Eintrag} other{{count} Einträge}}",
+  "@diaryMealEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressTdeeTrendTitle": "TDEE- & Gewichtsverlauf",
+  "progressTdeeTrendSubtitle": "Verbrauchskurve, Schwankungsbereich & Zielprognose",
   "diaryBalanceBaseLabel": "Basis",
   "diaryBalancePlannedWithCarryoverLabel": "Mit Übertrag geplant",
   "diaryBalanceWeekLabel": "Woche {week}",

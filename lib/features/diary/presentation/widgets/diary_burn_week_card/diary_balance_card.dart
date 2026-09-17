@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
@@ -46,8 +48,9 @@ class DiaryBalanceCard extends ConsumerWidget {
     );
 
     if (dashboardData != null) {
+      final now = ref.watch(clockProvider)();
       final data = DiaryBalanceSource.fromDashboardData(dashboardData)
-          .resolve(now: DateTime.now());
+          .resolve(now: now);
 
       final scheduledRestartDate = data.scheduledRestartDate;
       if (scheduledRestartDate != null) {
@@ -74,11 +77,16 @@ class DiaryBalanceCard extends ConsumerWidget {
         isPauseDay: data.loadedMetrics!.state.isPauseDay,
         numberFormat: numberFormat,
         l10n: l10n,
+        now: now,
         budgetDetails: data.loadedMetrics!.budgetDetails,
       );
 
       return DiaryDailyBalanceCard(
         data: dailyData,
+        showDetails: ref.watch(diaryBalanceDetailsControllerProvider),
+        onToggleDetails: () => unawaited(
+          ref.read(diaryBalanceDetailsControllerProvider.notifier).toggle(),
+        ),
         kcalBarKey: kcalBarKey,
         macroBarsKey: macroBarsKey,
       );

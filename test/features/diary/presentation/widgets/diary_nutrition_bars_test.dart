@@ -241,7 +241,7 @@ Future<void> _pumpNutritionBars(
   bool embedded = false,
 }) async {
   final nutritionBars = embedded
-      ? DiaryNutritionBars.embedded(selectedDay: selectedDay)
+      ? DiaryNutritionBars.embedded(selectedDay: selectedDay, showTotals: true)
       : DiaryNutritionBars(selectedDay: selectedDay);
 
   await tester.pumpWidget(

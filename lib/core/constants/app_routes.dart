@@ -66,7 +66,10 @@ abstract final class AppRoutes {
   /// TDEE and weight analytics route.
   static const homeCaloriesAnalytics = '/home/calories/analytics';
 
-  /// Settings home route.
+  /// Progress home route.
+  static const homeProgress = '/home/progress';
+
+  /// Settings route, opened from the home side menu.
   static const homeSettings = '/home/settings';
 
   /// Account settings route.

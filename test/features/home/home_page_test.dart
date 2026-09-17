@@ -10,6 +10,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_menu_button.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
@@ -26,6 +27,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
+import 'package:yamt/features/home/widgets/home_menu_drawer.dart';
 import 'package:yamt/features/home/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
@@ -304,7 +306,7 @@ String _titleForTab(HomeTabType tab) {
     HomeTabType.inventory => 'Inventory',
     HomeTabType.diary => 'Today',
     HomeTabType.cookbook => 'Cookbook',
-    HomeTabType.settings => 'Settings',
+    HomeTabType.progress => 'Progress',
   };
 }
 
@@ -413,9 +415,9 @@ Widget _buildHarness({
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: AppRoutes.homeSettings,
+                path: AppRoutes.homeProgress,
                 builder: (context, state) =>
-                    branchBody ?? _defaultBranchBody(HomeTabType.settings),
+                    branchBody ?? _defaultBranchBody(HomeTabType.progress),
               ),
             ],
           ),
@@ -427,6 +429,11 @@ Widget _buildHarness({
           onHubRouteExtra?.call(state.extra);
           return const SizedBox();
         },
+      ),
+      GoRoute(
+        path: AppRoutes.homeSettings,
+        builder: (context, state) =>
+            const Scaffold(body: Text('Settings route')),
       ),
       GoRoute(
         path: AppRoutes.homeShopping,
@@ -567,7 +574,7 @@ void main() {
   ) async {
     final scenarios = <String, String>{
       AppRoutes.homeInventoryTemplates: 'Cookbook',
-      AppRoutes.homeSettings: 'Settings',
+      AppRoutes.homeProgress: 'Progress',
     };
 
     for (final scenario in scenarios.entries) {
@@ -590,6 +597,77 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
     }
+  });
+
+  testWidgets('diary menu button on the left opens settings', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final menuButton = find.byKey(HomeShellMenuButton.buttonKey);
+    expect(
+      tester.getCenter(menuButton).dx,
+      lessThan(tester.getCenter(find.byKey(DiaryDayNavigatorKeys.label)).dx),
+    );
+
+    await tester.tap(menuButton);
+    await tester.pumpAndSettle();
+    expect(find.byType(HomeMenuDrawer), findsOneWidget);
+
+    await tester.tap(find.byKey(HomeMenuDrawer.settingsTileKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Settings route'), findsOneWidget);
+  });
+
+  testWidgets('tabs other than diary have no menu button', (tester) async {
+    for (final location in [
+      AppRoutes.homeProgress,
+      AppRoutes.homeInventory,
+      AppRoutes.homeInventoryTemplates,
+    ]) {
+      final repository = FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          settingsRepository: repository,
+          initialLocation: location,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(HomeShellMenuButton.buttonKey), findsNothing);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    }
+  });
+
+  testWidgets('bottom navigation lists diary, inventory, cookbook, progress', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
+    await tester.pumpAndSettle();
+
+    final labels = tester
+        .widgetList<HomeBottomNavBar>(find.byType(HomeBottomNavBar))
+        .single
+        .entries
+        .map((entry) => entry.item.label)
+        .toList();
+    expect(labels, ['Diary', 'Inventory', 'Cookbook', 'Progress']);
+    expect(find.byIcon(Icons.settings_rounded), findsNothing);
   });
 
   testWidgets('tab top chrome renders caller-owned actions', (tester) async {
@@ -1581,9 +1659,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('INVENTORY'), findsOneWidget);
     expect(find.text('DIARY'), findsOneWidget);
+    expect(find.text('INVENTORY'), findsOneWidget);
     expect(find.text('COOKBOOK'), findsOneWidget);
+    expect(find.text('PROGRESS'), findsOneWidget);
     expect(
       tester.getCenter(find.text('DIARY')).dx,
       lessThan(tester.getCenter(find.text('INVENTORY')).dx),
@@ -1594,11 +1673,9 @@ void main() {
     );
     expect(
       tester.getCenter(find.text('COOKBOOK')).dx,
-      lessThan(tester.getCenter(find.text('SETTINGS')).dx),
+      lessThan(tester.getCenter(find.text('PROGRESS')).dx),
     );
-    expect(find.text('BURN'), findsNothing);
-    expect(find.text('SETTINGS'), findsOneWidget);
-    expect(find.text('STATISTICS'), findsNothing);
+    expect(find.text('SETTINGS'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

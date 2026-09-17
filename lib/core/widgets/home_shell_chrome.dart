@@ -83,8 +83,8 @@ enum HomeTabType {
   /// Cookbook.
   cookbook,
 
-  /// Settings.
-  settings,
+  /// Progress.
+  progress,
 }
 
 /// Floating sliver that hosts the shared home top chrome.

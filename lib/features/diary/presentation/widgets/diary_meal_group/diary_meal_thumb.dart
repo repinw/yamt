@@ -6,7 +6,7 @@ import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
-const _thumbSize = 54.0;
+const _thumbSize = 44.0;
 
 /// Entry image, or the entry's initial when no image loads.
 class MealThumb extends ConsumerWidget {

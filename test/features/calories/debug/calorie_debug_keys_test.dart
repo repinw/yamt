@@ -5,10 +5,6 @@ import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
 void main() {
   test('calorie debug keys generate stable values', () {
     expect(
-      CalorieDebugKeys.actionsMenuButton,
-      const Key('calories_debug_actions_menu_button'),
-    );
-    expect(
       CalorieDebugKeys.debugDumpButton,
       const Key('calories_debug_dump_button'),
     );

@@ -1,17 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/activity/presentation/widgets/'
-    'activity_weight_section/diary_activity_weight_section.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_weekly_balance_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_intro_banner_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 
-/// Renders the diary activity, intro, and weekly check-in controls below the
-/// daily balance card.
+/// Renders the diary intro and weekly check-in prompts below the daily
+/// balance card.
 class DiaryPageHeader extends StatelessWidget {
   /// Creates the diary page header.
   const new({
@@ -48,10 +44,6 @@ class DiaryPageHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DiaryActivityWeightSection(
-              selectedDay: selectedDay,
-              header: DiaryWeeklyBalanceSummary(selectedDay: selectedDay),
-            ),
             if (showIntroBanner) ...[
               const SizedBox(height: AppSpacing.sm),
               DiaryIntroBannerCard(

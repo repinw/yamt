@@ -3,10 +3,22 @@ import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_scaled_value_text.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
+const double _valueWidth = 42;
+
+/// Width of the value column of a quiet macro row.
+const double diaryQuietMacroValueWidth = 60;
+
+/// Gap between a macro row's value and label columns.
+const double diaryMacroValueLabelGap = 6;
+
+/// Width of a macro row's label column.
+const double diaryMacroLabelWidth = 44;
+
 /// Single macronutrient progress row with remaining value, label,
-/// segmented bar, and consumed/target ratio.
+/// segmented bar, and optionally the consumed/target ratio.
 class DiaryNutritionMacroRow extends StatelessWidget {
   /// Creates a nutrition macro row.
   const new({
@@ -16,6 +28,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     required this.color,
     required this.numberFormat,
     required this.unit,
+    this.showTotal = true,
     super.key,
   });
 
@@ -37,6 +50,9 @@ class DiaryNutritionMacroRow extends StatelessWidget {
   /// Display unit string (e.g. "g").
   final String unit;
 
+  /// Whether the consumed/target ratio is shown after the bar.
+  final bool showTotal;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -49,6 +65,9 @@ class DiaryNutritionMacroRow extends StatelessWidget {
       math.max(0, roundedRemaining),
     );
     final trackColor = colors.surface;
+    final textTheme = Theme.of(context).textTheme;
+    // Without the totals column the remaining grams get more room and size.
+    final valueStyle = showTotal ? textTheme.titleMedium : textTheme.titleLarge;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -56,25 +75,22 @@ class DiaryNutritionMacroRow extends StatelessWidget {
         children: [
           // Column 1: Remaining or overage value (right-aligned)
           SizedBox(
-            width: 42,
-            child: Text(
+            width: showTotal ? _valueWidth : diaryQuietMacroValueWidth,
+            child: DiaryScaledValueText(
               isOverTarget
                   ? '+${numberFormat.format(-roundedRemaining)}$unit'
                   : '$remainingFormatted$unit',
-              textAlign: TextAlign.right,
-              maxLines: 1,
-              style: TextStyle(
+              style: valueStyle?.copyWith(
                 color: color,
-                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -0.4,
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: diaryMacroValueLabelGap),
           // Column 2: Macro label
           SizedBox(
-            width: 44,
+            width: diaryMacroLabelWidth,
             child: Text(
               label,
               maxLines: 1,
@@ -95,33 +111,35 @@ class DiaryNutritionMacroRow extends StatelessWidget {
               isDark: isDark,
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          // Column 4: Context Current / Target
-          SizedBox(
-            width: 68,
-            child: RichText(
-              textAlign: TextAlign.right,
-              maxLines: 1,
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: numberFormat.format(current.round()),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colors.onSurface,
-                      fontWeight: FontWeight.w800,
+          if (showTotal) ...[
+            const SizedBox(width: AppSpacing.sm),
+            // Column 4: Context Current / Target
+            SizedBox(
+              width: 68,
+              child: RichText(
+                textAlign: TextAlign.right,
+                maxLines: 1,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: numberFormat.format(current.round()),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                  TextSpan(
-                    text: ' / ${numberFormat.format(target.round())}$unit',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
+                    TextSpan(
+                      text: ' / ${numberFormat.format(target.round())}$unit',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

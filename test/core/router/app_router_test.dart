@@ -670,10 +670,23 @@ void main() {
     expect(router.state.uri.path, AppRoutes.homeCalories);
     expect(find.text('Today'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.settings_rounded).hitTestable());
+    await tester.tap(find.byIcon(Icons.insights_rounded).hitTestable());
+    await _pumpRouterTransition(tester);
+    expect(router.state.uri.path, AppRoutes.homeProgress);
+    expect(find.byIcon(Icons.menu_rounded).hitTestable(), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.menu_book_rounded).hitTestable());
+    await _pumpRouterTransition(tester);
+    await tester.tap(find.byIcon(Icons.menu_rounded).hitTestable());
+    await _pumpRouterTransition(tester);
+    await tester.tap(find.text('Settings').hitTestable());
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettings);
-    expect(find.text('Settings'), findsWidgets);
+    expect(find.byIcon(Icons.menu_rounded).hitTestable(), findsNothing);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Settings')),
+      findsOneWidget,
+    );
 
     router.go(AppRoutes.homeSettingsAccount);
     await _pumpRouterTransition(tester);

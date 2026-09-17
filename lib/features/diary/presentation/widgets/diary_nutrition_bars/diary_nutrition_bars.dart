@@ -22,15 +22,22 @@ class DiaryNutritionBars extends ConsumerWidget {
   /// Creates standalone diary nutrition bars.
   const new({required this.selectedDay, super.key})
     : _framed = true,
-      _showTitle = true;
+      _showTitle = true,
+      showTotals = true;
 
   /// Creates embedded diary nutrition bars without a standalone card frame.
-  const new embedded({required this.selectedDay, super.key})
-    : _framed = false,
-      _showTitle = false;
+  const new embedded({
+    required this.selectedDay,
+    required this.showTotals,
+    super.key,
+  }) : _framed = false,
+       _showTitle = false;
 
   /// The selected diary day.
   final DateTime selectedDay;
+
+  /// Whether each row shows eaten and target grams next to its bar.
+  final bool showTotals;
 
   /// Whether to draw the standalone card shell.
   final bool _framed;
@@ -59,7 +66,11 @@ class DiaryNutritionBars extends ConsumerWidget {
             )
           : data == null
           ? DiaryNutritionBarsSkeleton(showTitle: _showTitle)
-          : DiaryNutritionBarsContent(data: data, showTitle: _showTitle),
+          : DiaryNutritionBarsContent(
+              data: data,
+              showTitle: _showTitle,
+              showTotals: showTotals,
+            ),
     );
 
     if (!_framed) {

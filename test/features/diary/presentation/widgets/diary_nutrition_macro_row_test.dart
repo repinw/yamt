@@ -13,6 +13,7 @@ void main() {
       required double current,
       required double target,
       String unit = 'g',
+      bool showTotal = true,
     }) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -27,6 +28,7 @@ void main() {
                   color: Colors.green,
                   numberFormat: numberFormat,
                   unit: unit,
+                  showTotal: showTotal,
                 ),
               ),
             ),
@@ -85,6 +87,22 @@ void main() {
       expect(find.text('0g'), findsOneWidget);
       expect(find.textContaining('0 / 0g', findRichText: true), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('hides eaten and target when totals are off', (tester) async {
+      await pumpRow(
+        tester,
+        label: 'Protein',
+        current: 45,
+        target: 100,
+        showTotal: false,
+      );
+
+      expect(find.text('55g'), findsOneWidget);
+      expect(
+        find.textContaining('45 / 100g', findRichText: true),
+        findsNothing,
+      );
     });
   });
 }

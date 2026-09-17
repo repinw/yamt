@@ -27,7 +27,8 @@ abstract final class DiaryDayNavigatorKeys {
   static const label = ValueKey<String>('diary-day-navigator-label');
 }
 
-/// Centered single-day pill with previous/next arrows and trailing actions.
+/// Centered single-day pill with previous/next arrows, leading and trailing
+/// actions.
 class DiaryDayNavigator extends StatefulWidget {
   /// Creates a diary day navigator.
   const new({
@@ -38,6 +39,7 @@ class DiaryDayNavigator extends StatefulWidget {
     required this.onPrevious,
     required this.onNext,
     required this.onOpenCalendar,
+    this.leadingActions = const <Widget>[],
     this.actions = const <Widget>[],
     super.key,
   });
@@ -63,6 +65,9 @@ class DiaryDayNavigator extends StatefulWidget {
   /// Called when the day label is tapped.
   final VoidCallback onOpenCalendar;
 
+  /// Round top-bar actions aligned to the left edge.
+  final List<Widget> leadingActions;
+
   /// Round top-bar actions aligned to the right edge.
   final List<Widget> actions;
 
@@ -85,12 +90,13 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
 
   @override
   Widget build(BuildContext context) {
-    // Reserve the actions' width on both sides so the pill stays centered.
-    final actionsWidth = widget.actions.isEmpty
-        ? 0.0
-        : widget.actions.length *
-                  (AppSizes.homeTopBarIconButton + AppSpacing.xs) +
-              AppSpacing.xs;
+    // Reserve the wider side's actions on both sides so the pill stays
+    // centered.
+    final actionsWidth = _actionsWidth(
+      widget.leadingActions.length > widget.actions.length
+          ? widget.leadingActions.length
+          : widget.actions.length,
+    );
 
     return Stack(
       alignment: Alignment.center,
@@ -103,6 +109,11 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
             child: _buildPill(context),
           ),
         ),
+        if (widget.leadingActions.isNotEmpty)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: HomeTopBarActions(actions: widget.leadingActions),
+          ),
         if (widget.actions.isNotEmpty)
           Align(
             alignment: Alignment.centerRight,
@@ -110,6 +121,14 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
           ),
       ],
     );
+  }
+
+  double _actionsWidth(int count) {
+    if (count == 0) {
+      return 0;
+    }
+    return count * (AppSizes.homeTopBarIconButton + AppSpacing.xs) +
+        AppSpacing.xs;
   }
 
   Widget _buildPill(BuildContext context) {

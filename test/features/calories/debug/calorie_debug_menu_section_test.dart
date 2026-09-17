@@ -4,9 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_actions_menu.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_menu_section.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
@@ -15,41 +15,11 @@ import 'package:yamt/features/health/data/'
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../../../helpers/root_navigator_test_utils.dart';
 import '../support/fake_calories_repositories.dart';
 
 void main() {
-  testWidgets('opens debug menu on root navigator from nested navigator', (
-    tester,
-  ) async {
-    final rootObserver = RecordingNavigatorObserver();
-    final nestedObserver = RecordingNavigatorObserver();
-
-    await _pumpNestedDebugMenu(
-      tester,
-      rootObserver: rootObserver,
-      nestedObserver: nestedObserver,
-    );
-
-    rootObserver.clear();
-    nestedObserver.clear();
-    await tester.tap(find.byKey(CalorieDebugKeys.actionsMenuButton));
-    await tester.pumpAndSettle();
-
-    expectRootPopupRoutePushed(
-      rootObserver: rootObserver,
-      nestedObserver: nestedObserver,
-    );
-    expect(find.byKey(CalorieDebugKeys.debugDumpButton), findsOneWidget);
-  });
-
-  testWidgets('opens app bar debug menu and downloads calorie dump', (
-    tester,
-  ) async {
+  testWidgets('lists debug actions and downloads calorie dump', (tester) async {
     await _pumpDebugMenu(tester);
-
-    await tester.tap(find.byKey(CalorieDebugKeys.actionsMenuButton));
-    await tester.pumpAndSettle();
 
     expect(find.byKey(CalorieDebugKeys.debugDumpButton), findsOneWidget);
     expect(
@@ -77,8 +47,6 @@ void main() {
 
     await _pumpDebugMenu(tester, logRepository: logRepository);
 
-    await tester.tap(find.byKey(CalorieDebugKeys.actionsMenuButton));
-    await tester.pumpAndSettle();
     await tester.tap(find.byKey(CalorieDebugKeys.debugDumpButton));
     await tester.pumpAndSettle();
 
@@ -107,8 +75,6 @@ void main() {
 }
 
 Future<void> _selectDebugAction(WidgetTester tester, Key actionKey) async {
-  await tester.tap(find.byKey(CalorieDebugKeys.actionsMenuButton));
-  await tester.pumpAndSettle();
   await tester.tap(find.byKey(actionKey));
   await tester.pumpAndSettle();
 }
@@ -151,63 +117,11 @@ Future<void> _pumpDebugMenu(
           FakeManualHealthWeightRepository([]),
         ),
       ],
-      child: MaterialApp(
-        locale: const Locale('en'),
+      child: const MaterialApp(
+        locale: Locale('en'),
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          appBar: AppBar(actions: const [CalorieDebugActionsMenu()]),
-        ),
-      ),
-    ),
-  );
-  await tester.pumpAndSettle();
-}
-
-Future<void> _pumpNestedDebugMenu(
-  WidgetTester tester, {
-  required RecordingNavigatorObserver rootObserver,
-  required RecordingNavigatorObserver nestedObserver,
-}) async {
-  final logRepository = FakeCalorieLogRepository();
-  final settingsRepository = FakeCalorieSettingsRepository();
-  addTearDown(() async {
-    await logRepository.dispose();
-    await settingsRepository.dispose();
-  });
-
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(logRepository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        diaryHealthServiceProvider.overrideWithValue(
-          FakeDiaryHealthService({}),
-        ),
-        healthConnectionServiceProvider.overrideWithValue(
-          FakeHealthConnectionService(
-            const HealthConnectionStatus.unsupported(),
-          ),
-        ),
-        healthWeightServiceProvider.overrideWithValue(
-          FakeHealthWeightService([]),
-        ),
-        calorieDebugFileExporterProvider.overrideWithValue(
-          const _FakeCalorieDebugFileExporter(),
-        ),
-        manualHealthWeightRepositoryProvider.overrideWithValue(
-          FakeManualHealthWeightRepository([]),
-        ),
-      ],
-      child: nestedNavigatorHarness(
-        rootObserver: rootObserver,
-        nestedObserver: nestedObserver,
-        locale: const Locale('en'),
-        localizationsDelegates: appLocalizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        child: Scaffold(
-          appBar: AppBar(actions: const [CalorieDebugActionsMenu()]),
-        ),
+        home: Scaffold(body: CalorieDebugMenuSection()),
       ),
     ),
   );

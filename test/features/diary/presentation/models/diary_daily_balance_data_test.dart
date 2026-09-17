@@ -30,6 +30,7 @@ void main() {
         isPauseDay: false,
         numberFormat: numberFormat,
         l10n: l10n,
+        now: selectedDay,
       );
 
       expect(data.leftValue, '1,350');
@@ -76,6 +77,7 @@ void main() {
         isPauseDay: false,
         numberFormat: numberFormat,
         l10n: l10n,
+        now: selectedDay,
       );
 
       expect(data.leftSubtitle, 'Base 2,000 · Carryover -80');
@@ -114,6 +116,7 @@ void main() {
           isPauseDay: false,
           numberFormat: numberFormat,
           l10n: l10n,
+          now: selectedDay,
         );
 
         expect(data.leftSubtitle, 'Base 2,000 kcal');
@@ -147,6 +150,7 @@ void main() {
         isPauseDay: true,
         numberFormat: numberFormat,
         l10n: l10n,
+        now: selectedDay,
       );
 
       expect(data.leftValue, 'Pause day');
@@ -222,5 +226,56 @@ void main() {
         expect(data.leftSubtitleParts, isEmpty);
       },
     );
+
+    test('marks today over target and drops the sign of the overage', () {
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 2600,
+        eatenKcal: 2600,
+        realDayLeftKcal: -600,
+        dayLeftKcal: -600,
+        targetKcal: 2000,
+        baseGoalKcal: 2000,
+        activitySegmentKcal: 0,
+        activitySegmentReferenceKcal: 2000,
+      );
+
+      final data = DiaryDailyBalanceData.from(
+        selectedDay: selectedDay,
+        metrics: metrics,
+        isPauseDay: false,
+        numberFormat: numberFormat,
+        l10n: l10n,
+        now: selectedDay,
+      );
+
+      expect(data.isOverTarget, isTrue);
+      expect(data.leftValue, '600');
+    });
+
+    test('never marks a pause day over target', () {
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 2600,
+        eatenKcal: 2600,
+        realDayLeftKcal: -600,
+        dayLeftKcal: -600,
+        targetKcal: 2000,
+        baseGoalKcal: 2000,
+        activitySegmentKcal: 0,
+        activitySegmentReferenceKcal: 2000,
+      );
+
+      final data = DiaryDailyBalanceData.from(
+        selectedDay: selectedDay,
+        metrics: metrics,
+        isPauseDay: true,
+        numberFormat: numberFormat,
+        l10n: l10n,
+        now: selectedDay,
+      );
+
+      expect(data.isOverTarget, isFalse);
+    });
   });
 }

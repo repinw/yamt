@@ -38,8 +38,8 @@ void main() {
         matching: find.byType(SizedBox),
       ),
     );
-    expect(sizedBox.width, 54);
-    expect(sizedBox.height, 54);
+    expect(sizedBox.width, 44);
+    expect(sizedBox.height, 44);
 
     final clipRRect = tester.widget<ClipRRect>(
       find.descendant(

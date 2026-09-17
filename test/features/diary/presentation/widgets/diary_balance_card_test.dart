@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -478,12 +479,12 @@ void main() {
   });
 
   testWidgets('renders dark over-goal state', (tester) async {
-    final selectedDay = normalizeDiaryDay(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
+    final now = DateTime(2026, 4, 28, 12);
+    final selectedDay = DateTime(2026, 4, 27);
 
     await _pumpBalanceCard(
       tester,
+      now: now,
       selectedDay: selectedDay,
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 2500],
@@ -494,8 +495,93 @@ void main() {
     );
 
     expect(find.text('EATEN'), findsOneWidget);
+    expect(find.text('OVER GOAL'), findsOneWidget);
+    expect(find.text('LEFT TODAY'), findsNothing);
+    expect(_findTextContaining('500 kcal'), findsOneWidget);
+    expect(_findTextContaining('-500 kcal'), findsNothing);
+  });
+
+  testWidgets('decides future days from the clock provider', (tester) async {
+    // With the real clock this day lies in the past and shows LEFT TODAY.
+    final now = DateTime(2026, 4, 26, 12);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+    );
+
+    expect(find.text('BASE'), findsOneWidget);
+    expect(find.text('LEFT TODAY'), findsNothing);
+  });
+
+  testWidgets('quiet future day shows only the target planned with carryover', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 4, 26, 12);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+      showDetails: false,
+    );
+
+    expect(find.text('PLANNED WITH CARRYOVER'), findsOneWidget);
+    expect(find.text('BASE'), findsNothing);
+  });
+
+  testWidgets('quiet card shows only what is left and toggles on tap', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 4, 28, 12);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1200],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+      showDetails: false,
+    );
+
     expect(find.text('LEFT TODAY'), findsOneWidget);
-    expect(_findTextContaining('-500 kcal'), findsOneWidget);
+    expect(find.text('EATEN'), findsNothing);
+    expect(find.byIcon(Icons.expand_more_rounded), findsOneWidget);
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
+      findsNothing,
+    );
+
+    await tester.tap(find.text('LEFT TODAY'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('EATEN'), findsOneWidget);
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('EATEN'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('EATEN'), findsNothing);
   });
 
   testWidgets('renders future non-live day snapshot', (tester) async {
@@ -564,12 +650,12 @@ void main() {
   testWidgets('shows full negative carryover instead of clamping left kcal', (
     tester,
   ) async {
-    final selectedDay = normalizeDiaryDay(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
+    final now = DateTime(2026, 4, 28, 12);
+    final selectedDay = DateTime(2026, 4, 27);
 
     await _pumpBalanceCard(
       tester,
+      now: now,
       selectedDay: selectedDay,
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 0],
@@ -579,7 +665,9 @@ void main() {
       todayFlexibleGoalKcal: -838,
     );
 
-    expect(_findTextContaining('-838 kcal'), findsOneWidget);
+    expect(find.text('OVER GOAL'), findsOneWidget);
+    expect(_findTextContaining('838 kcal'), findsOneWidget);
+    expect(_findTextContaining('-838 kcal'), findsNothing);
   });
 
   testWidgets('daily progress ignores legacy corrected activity kcal', (
@@ -767,6 +855,8 @@ Future<void> _pumpBalanceCard(
   ValueChanged<DateTime>? onRestartRunFrom,
   VoidCallback? onContinueRunAfterLimitWarning,
   bool weekOverviewThrows = false,
+  bool showDetails = true,
+  DateTime? now,
 }) async {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final weekOverview = _weekOverview(
@@ -792,7 +882,14 @@ Future<void> _pumpBalanceCard(
     ProviderScope(
       observers: observers,
       overrides: [
-        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        if (now != null) clockProvider.overrideWithValue(() => now),
+        appPreferencesProvider.overrideWithValue(
+          MemoryAppPreferences(
+            initialStrings: showDetails
+                ? const {'diary_balance_details_v1': 'shown'}
+                : null,
+          ),
+        ),
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(null),
         ),

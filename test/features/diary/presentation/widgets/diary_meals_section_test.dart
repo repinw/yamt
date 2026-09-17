@@ -143,6 +143,52 @@ void main() {
     expect(find.text('Pasta'), findsOneWidget);
   });
 
+  testWidgets('merges identical foods and expands them on tap', (tester) async {
+    DiaryMealEntry oats(String id) => _entry(
+      id: id,
+      day: selectedDay,
+      mealType: MealType.lunch,
+      name: 'Oats',
+      kcal: 75,
+      protein: 2,
+      carbs: 12,
+      fat: 1,
+      amount: 20,
+    );
+
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(MealType.lunch, [
+          oats('oats-1'),
+          oats('oats-2'),
+          oats('oats-3'),
+        ]),
+      ],
+    );
+
+    expect(find.text('Oats'), findsOneWidget);
+    expect(find.text('225 kcal'), findsOneWidget);
+    expect(find.text('60 g'), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
+    final semantics = tester.ensureSemantics();
+    expect(find.bySemanticsLabel(RegExp('3 entries')), findsOneWidget);
+    semantics.dispose();
+    expect(find.text('75 kcal'), findsNothing);
+
+    await tester.tap(find.text('Oats'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Oats'), findsNWidgets(4));
+    expect(find.text('75 kcal'), findsNWidgets(3));
+
+    await tester.tap(find.text('Oats').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Oats'), findsOneWidget);
+  });
+
   testWidgets('shows retry and reloads after meals load error', (tester) async {
     var shouldFail = true;
     await _pumpDiaryWidget(

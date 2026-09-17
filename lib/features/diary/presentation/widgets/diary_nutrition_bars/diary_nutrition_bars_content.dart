@@ -12,13 +12,21 @@ const double diaryMacroRowGap = AppSpacing.xs;
 /// Content of the diary nutrition bars displaying all three macro rows.
 class DiaryNutritionBarsContent extends StatelessWidget {
   /// Creates the nutrition bars content.
-  const new({required this.data, required this.showTitle, super.key});
+  const new({
+    required this.data,
+    required this.showTitle,
+    required this.showTotals,
+    super.key,
+  });
 
   /// Loaded nutrition values and targets.
   final DiaryNutritionBarsData data;
 
   /// Whether to show the top section title.
   final bool showTitle;
+
+  /// Whether each row shows eaten and target grams next to its bar.
+  final bool showTotals;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +60,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               color: accentColors.protein,
               numberFormat: numberFormat,
               unit: l10n.caloriesUnitGram,
+              showTotal: showTotals,
             ),
             const SizedBox(height: diaryMacroRowGap),
             DiaryNutritionMacroRow(
@@ -61,6 +70,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               color: accentColors.carbs,
               numberFormat: numberFormat,
               unit: l10n.caloriesUnitGram,
+              showTotal: showTotals,
             ),
             const SizedBox(height: diaryMacroRowGap),
             DiaryNutritionMacroRow(
@@ -70,6 +80,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               color: accentColors.fat,
               numberFormat: numberFormat,
               unit: l10n.caloriesUnitGram,
+              showTotal: showTotals,
             ),
           ],
         ),

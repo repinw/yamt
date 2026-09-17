@@ -42,7 +42,7 @@ final class HealthConnectionControllerProvider
 }
 
 String _$healthConnectionControllerHash() =>
-    r'a52078c78b3af05110448140ad63ce3e72fcd6d5';
+    r'9bc7964302701356b0934b6303deb67455e544f0';
 
 /// Defines health connection controller.
 

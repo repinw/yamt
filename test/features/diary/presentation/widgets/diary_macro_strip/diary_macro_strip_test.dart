@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -13,14 +15,23 @@ import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/di
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../helpers/memory_app_preferences.dart';
 import '../../../support/diary_dashboard_test_support.dart';
 
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
-  Widget app(Widget child) {
+  Widget app(Widget child, {bool showDetails = false}) {
     return ProviderScope(
       overrides: [
+        clockProvider.overrideWithValue(() => DateTime(2026, 4, 27, 12)),
+        appPreferencesProvider.overrideWithValue(
+          MemoryAppPreferences(
+            initialStrings: showDetails
+                ? const {'diary_balance_details_v1': 'shown'}
+                : null,
+          ),
+        ),
         diaryDayDashboardControllerProvider(selectedDay).overrideWithValue(
           diaryDashboardLoadedStateForTest(
             selectedDay: selectedDay,
@@ -42,8 +53,26 @@ void main() {
     );
   }
 
-  testWidgets('shows macro progress with segmented bars', (tester) async {
+  testWidgets('quiet strip says what is left and what is over', (tester) async {
     await tester.pumpWidget(app(DiaryMacroStrip(selectedDay: selectedDay)));
+
+    expect(find.text('64g left'), findsOneWidget);
+    expect(find.text('2g left'), findsOneWidget);
+    expect(find.text('2g over'), findsOneWidget);
+    expect(find.text('41 / 105'), findsNothing);
+    final overage = tester.widget<Text>(find.text('2g over'));
+    expect(
+      overage.style?.color,
+      Theme.of(tester.element(find.text('2g over'))).colorScheme.error,
+    );
+  });
+
+  testWidgets('detailed strip shows eaten and target with segmented bars', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      app(DiaryMacroStrip(selectedDay: selectedDay), showDetails: true),
+    );
 
     expect(find.text('41 / 105'), findsOneWidget);
     expect(find.text('102 / 100'), findsOneWidget);
@@ -135,14 +164,14 @@ void main() {
     await tester.pumpWidget(
       app(DiaryMacroStripOverlay(selectedDay: selectedDay, stage: stage)),
     );
-    expect(find.text('41 / 105'), findsNothing);
+    expect(find.text('64g left'), findsNothing);
 
     stage.value = DiaryMacroStripStage.full;
     await tester.pumpAndSettle();
-    expect(find.text('41 / 105'), findsOneWidget);
+    expect(find.text('64g left'), findsOneWidget);
 
     stage.value = DiaryMacroStripStage.kcal;
     await tester.pumpAndSettle();
-    expect(find.text('41 / 105'), findsNothing);
+    expect(find.text('64g left'), findsNothing);
   });
 }

@@ -1,13 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
-import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_kcal_row.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_macro_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Compact daily kcal, protein, carbs, and fat progress in the daily card's
@@ -46,9 +47,10 @@ class DiaryMacroStrip extends ConsumerWidget {
     }
     final data = dashboardData.nutritionBars;
     final daily = DiaryBalanceSource.fromDashboardData(dashboardData)
-        .resolve(now: ref.watch(calorieBalanceNowProvider)())
+        .resolve(now: ref.watch(clockProvider)())
         .loadedMetrics
         ?.daily;
+    final showDetails = ref.watch(diaryBalanceDetailsControllerProvider);
     final l10n = AppLocalizations.of(context)!;
     final accents = MetricAccentColors.of(context);
     final macros = [
@@ -76,9 +78,10 @@ class DiaryMacroStrip extends ConsumerWidget {
             child: Padding(
               key: kcalRowKey,
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: _KcalStripItem(
+              child: DiaryMacroStripKcalRow(
                 eaten: daily.eatenKcal,
                 target: daily.targetKcal,
+                showTotal: showDetails,
               ),
             ),
           ),
@@ -90,11 +93,12 @@ class DiaryMacroStrip extends ConsumerWidget {
                   in macros.indexed) ...[
                 if (index > 0) const SizedBox(width: AppSpacing.lg),
                 Expanded(
-                  child: _MacroStripItem(
+                  child: DiaryMacroStripMacroItem(
                     letter: letter,
                     current: current,
                     target: target,
                     color: color,
+                    showTotal: showDetails,
                   ),
                 ),
               ],
@@ -130,110 +134,6 @@ class _Reveal extends StatelessWidget {
                 child: child,
               ),
             ),
-    );
-  }
-}
-
-class _KcalStripItem extends StatelessWidget {
-  const new({required this.eaten, required this.target});
-
-  final double eaten;
-  final double target;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    final format = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toLanguageTag(),
-    );
-    final labelStyle = theme.textTheme.labelSmall?.copyWith(
-      color: colors.onSurfaceVariant,
-      fontWeight: FontWeight.w700,
-    );
-    final progress = target <= 0 ? 0.0 : (eaten / target).clamp(0.0, 1.0);
-
-    return Row(
-      children: [
-        Text(l10n.caloriesUnitKcal, style: labelStyle),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            child: SizedBox(
-              height: 4,
-              child: ColoredBox(
-                color: colors.surfaceContainerHighest,
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: progress,
-                  child: ColoredBox(color: colors.primary),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Text(
-          '${format.format(eaten.round())} / ${format.format(target.round())}',
-          maxLines: 1,
-          style: labelStyle,
-        ),
-      ],
-    );
-  }
-}
-
-class _MacroStripItem extends StatelessWidget {
-  const new({
-    required this.letter,
-    required this.current,
-    required this.target,
-    required this.color,
-  });
-
-  final String letter;
-  final double current;
-  final double target;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final format = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toLanguageTag(),
-    );
-    final labelStyle = theme.textTheme.labelSmall?.copyWith(
-      color: colors.onSurfaceVariant,
-      fontWeight: FontWeight.w700,
-    );
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            Text(letter, style: labelStyle),
-            const Spacer(),
-            Text(
-              '${format.format(current.round())} / '
-              '${format.format(target.round())}',
-              maxLines: 1,
-              style: labelStyle,
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xxs),
-        DiarySegmentedProgressBar(
-          progress: target <= 0 ? 0 : current / target,
-          color: color,
-          trackColor: colors.surfaceContainerHighest,
-          isDark: colors.brightness == Brightness.dark,
-          height: 4,
-        ),
-      ],
     );
   }
 }

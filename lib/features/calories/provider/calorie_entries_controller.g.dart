@@ -122,7 +122,7 @@ final class CalorieEntryByIdProvider
   }
 }
 
-String _$calorieEntryByIdHash() => r'5a59a396ab6e1f6b79c6f084214ccffb13846fcb';
+String _$calorieEntryByIdHash() => r'8a97364b59a39400011c3ef15a2056f2019f19a5';
 
 /// Calorie entry by id.
 

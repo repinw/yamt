@@ -213,6 +213,9 @@ abstract final class AppSizes {
   /// Max width for settings-style content columns.
   static const double narrowContentMaxWidth = 560;
 
+  /// Minimum size of a tap target.
+  static const double minTapTarget = 48;
+
   /// Diameter for circular home top bar icon buttons.
   static const double homeTopBarIconButton = 36;
 

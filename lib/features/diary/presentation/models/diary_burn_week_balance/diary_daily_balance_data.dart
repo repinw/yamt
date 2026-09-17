@@ -46,6 +46,7 @@ class DiaryDailyBalanceData {
     this.leftSubtitleParts = const [],
     this.budgetDetails,
     this.isFutureDay = false,
+    this.isOverTarget = false,
     this.baseValue = '',
     this.plannedWithCarryoverValue = '',
   });
@@ -57,8 +58,8 @@ class DiaryDailyBalanceData {
     required bool isPauseDay,
     required NumberFormat numberFormat,
     required AppLocalizations l10n,
+    required DateTime now,
     DiaryDailyBudgetDetailsData? budgetDetails,
-    DateTime? now,
   }) {
     final adjustmentLabel = metrics.bufferAdjustmentKcal.round() == 0
         ? null
@@ -81,7 +82,7 @@ class DiaryDailyBalanceData {
         ? null
         : '$realEatenLabel · $adjustmentLabel';
 
-    final today = normalizeDiaryDay(now ?? DateTime.now());
+    final today = normalizeDiaryDay(now);
     final isFutureDay = normalizeDiaryDay(selectedDay).isAfter(today);
     final resolvedSubtitle = resolveDiaryDailyBalanceSubtitle(
       isFutureDay: isFutureDay,
@@ -97,9 +98,11 @@ class DiaryDailyBalanceData {
     );
     final eatenNumber = numberFormat.format(metrics.eatenKcal.round());
     final targetNumber = numberFormat.format(metrics.targetKcal.round());
+    final roundedLeftKcal = metrics.dayLeftKcal.round();
+    final isOverTarget = !isPauseDay && !isFutureDay && roundedLeftKcal < 0;
     final leftNumber = isPauseDay
         ? l10n.diaryBalancePauseDayValue
-        : numberFormat.format(metrics.dayLeftKcal.round());
+        : numberFormat.format(roundedLeftKcal.abs());
     final leftUnit = isPauseDay ? null : l10n.caloriesUnitKcal;
     final targetAddition = '/ $targetNumber';
 
@@ -132,6 +135,7 @@ class DiaryDailyBalanceData {
       leftSubtitleParts: resolvedSubtitle.parts,
       budgetDetails: budgetDetails,
       isFutureDay: isFutureDay,
+      isOverTarget: isOverTarget,
       baseValue: baseValue,
       plannedWithCarryoverValue: plannedWithCarryoverValue,
     );
@@ -157,6 +161,10 @@ class DiaryDailyBalanceData {
 
   /// Whether this card represents a future day.
   final bool isFutureDay;
+
+  /// Whether more was eaten than the target. [leftValue] then holds the
+  /// amount over the target without a sign.
+  final bool isOverTarget;
 
   /// Base goal value string including unit (e.g. '2,000 kcal').
   final String baseValue;

@@ -221,4 +221,4 @@ final class NutritionLabelTemplateModelClientProvider
 }
 
 String _$nutritionLabelTemplateModelClientHash() =>
-    r'a4b3a6445a314b1a8aa3329246181b7c1e9327bc';
+    r'a41a290f1a1d2ea5d63a541d5ba6d7c73063f9f8';

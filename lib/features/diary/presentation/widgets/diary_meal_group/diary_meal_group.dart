@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_entry_tile.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_entry_group_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -45,8 +45,8 @@ class DiaryMealGroup extends StatelessWidget {
                 style: labelStyle,
               ),
             ),
-            // A single food already shows the same kcal in its row.
-            if (section.entries.length > 1) ...[
+            // A single food row already shows the same kcal.
+            if (section.entryGroups.length > 1) ...[
               const SizedBox(width: AppSpacing.md),
               Text(
                 '${numberFormat.format(section.totalKcal.round())} '
@@ -58,8 +58,12 @@ class DiaryMealGroup extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.xxs),
-        for (final entry in section.entries)
-          DiaryMealEntryTile(entry: entry, onTap: () => onTapEntry(entry)),
+        for (final group in section.entryGroups)
+          DiaryMealEntryGroupTile(
+            key: ValueKey<String>(group.entries.first.id),
+            group: group,
+            onTapEntry: onTapEntry,
+          ),
       ],
     );
   }

@@ -6,7 +6,7 @@ import 'package:yamt/features/home/widgets/inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_page.dart';
-import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
+import 'package:yamt/features/progress/presentation/progress_page.dart';
 
 /// Builds the home navigation shell route with bottom-bar tab branches.
 StatefulShellRoute buildHomeShellRoute() {
@@ -53,9 +53,8 @@ StatefulShellRoute buildHomeShellRoute() {
       StatefulShellBranch(
         routes: [
           GoRoute(
-            path: AppRoutes.homeSettings,
-            builder: (context, state) =>
-                const SettingsPage(includeHomeShellChrome: true),
+            path: AppRoutes.homeProgress,
+            builder: (context, state) => const ProgressPage(),
           ),
         ],
       ),

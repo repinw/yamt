@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-const _appBarDebugIconSplashRadius = 18.0;
 
 enum _CalorieDebugAction { debugDump, settingsDump, weeklyCheckInDump }
 
@@ -41,12 +41,14 @@ extension _CalorieDebugActionDetails on _CalorieDebugAction {
 
   Future<void> run(
     BuildContext context,
+    WidgetRef ref,
     CalorieDebugActionController controller,
   ) {
     return switch (this) {
       _CalorieDebugAction.debugDump => _printCalorieDebugDump(
         context,
         controller,
+        now: ref.read(clockProvider)(),
       ),
       _CalorieDebugAction.settingsDump => _printCalorieSettingsDebugDump(
         context,
@@ -58,59 +60,46 @@ extension _CalorieDebugActionDetails on _CalorieDebugAction {
   }
 }
 
-/// Debug-only calorie actions menu for the home shell app bar.
-class CalorieDebugActionsMenu extends ConsumerWidget {
-  /// Creates the calorie debug actions menu.
+/// Debug-only calorie actions listed in the home side menu.
+class CalorieDebugMenuSection extends ConsumerWidget {
+  /// Creates the calorie debug menu section.
   const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PopupMenuButton<_CalorieDebugAction>(
-      key: CalorieDebugKeys.actionsMenuButton,
-      tooltip: AppLocalizations.of(context)!.caloriesDebugActionsTooltip,
-      useRootNavigator: true,
-      icon: const Icon(Icons.bug_report_rounded),
-      iconSize: 20,
-      padding: EdgeInsets.zero,
-      splashRadius: _appBarDebugIconSplashRadius,
-      onSelected: (action) {
-        final controller = ref.read(
-          calorieDebugActionControllerProvider.notifier,
-        );
-        unawaited(action.run(context, controller));
-      },
-      itemBuilder: (context) {
-        final l10n = AppLocalizations.of(context)!;
-        return [
-          for (final action in _CalorieDebugAction.values)
-            PopupMenuItem<_CalorieDebugAction>(
-              key: action.key,
-              value: action,
-              child: _CalorieDebugMenuItem(
-                icon: action.icon,
-                label: action.label(l10n),
-              ),
-            ),
-        ];
-      },
-    );
-  }
-}
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
-class _CalorieDebugMenuItem extends StatelessWidget {
-  const new({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon),
-        const SizedBox(width: 12),
-        Flexible(child: Text(label)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.md,
+            AppSpacing.xl,
+            AppSpacing.xs,
+          ),
+          child: Text(
+            l10n.caloriesDebugActionsTooltip,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        for (final action in _CalorieDebugAction.values)
+          ListTile(
+            key: action.key,
+            leading: Icon(action.icon),
+            title: Text(action.label(l10n)),
+            onTap: () {
+              final controller = ref.read(
+                calorieDebugActionControllerProvider.notifier,
+              );
+              unawaited(action.run(context, ref, controller));
+            },
+          ),
       ],
     );
   }
@@ -118,11 +107,12 @@ class _CalorieDebugMenuItem extends StatelessWidget {
 
 Future<void> _printCalorieDebugDump(
   BuildContext context,
-  CalorieDebugActionController controller,
-) async {
+  CalorieDebugActionController controller, {
+  required DateTime now,
+}) async {
   final l10n = AppLocalizations.of(context)!;
   final result = await controller.printDebugDump(
-    now: DateTime.now(),
+    now: now,
     saveDialogTitle: l10n.caloriesDebugDumpSaveDialogTitle,
   );
   if (!context.mounted) {

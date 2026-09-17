@@ -12,10 +12,22 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// One logged food: image, name, macros, kcal, and amount.
 class DiaryMealEntryTile extends StatelessWidget {
   /// Creates a diary entry row.
-  const new({required this.entry, required this.onTap, super.key});
+  const new({
+    required this.entry,
+    required this.onTap,
+    this.count = 1,
+    this.expanded,
+    super.key,
+  });
 
-  /// Entry to display.
+  /// Entry to display, or the combined entry of a merged group.
   final DiaryMealEntry entry;
+
+  /// How many logged entries the row stands for.
+  final int count;
+
+  /// Expansion state of a merged group; `null` for a single entry.
+  final bool? expanded;
 
   /// Called when the row is tapped.
   final VoidCallback onTap;
@@ -29,6 +41,7 @@ class DiaryMealEntryTile extends StatelessWidget {
       Localizations.localeOf(context).toLanguageTag(),
     );
     final portionText = formatDiaryMealPortionLabel(context, entry);
+    final expanded = this.expanded;
 
     return Material(
       key: DiaryMealsSectionKeys.entryTile(entry.id),
@@ -37,12 +50,18 @@ class DiaryMealEntryTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 56),
+          constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
             child: Row(
               children: [
-                MealThumb(entry: entry),
+                if (count > 1)
+                  _CountBadge(
+                    count: count,
+                    child: MealThumb(entry: entry),
+                  )
+                else
+                  MealThumb(entry: entry),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
@@ -53,12 +72,11 @@ class DiaryMealEntryTile extends StatelessWidget {
                         entry.name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleSmall?.copyWith(
                           color: colors.onSurface,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.xxs),
                       DiaryMacroSummary(
                         protein: entry.totalProtein,
                         carbs: entry.totalCarbs,
@@ -75,9 +93,9 @@ class DiaryMealEntryTile extends StatelessWidget {
                     Text(
                       '${numberFormat.format(entry.totalKcal.round())} '
                       '${l10n.caloriesUnitKcal}',
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         color: colors.onSurface,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     if (portionText != null)
@@ -90,10 +108,71 @@ class DiaryMealEntryTile extends StatelessWidget {
                       ),
                   ],
                 ),
+                if (expanded != null) ...[
+                  const SizedBox(width: AppSpacing.xxs),
+                  AnimatedRotation(
+                    turns: expanded ? 0.5 : 0,
+                    duration: AppDurations.compactMetricExpansion,
+                    child: Icon(
+                      Icons.expand_more_rounded,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Shows how many entries a merged row stands for, on the food image.
+class _CountBadge extends StatelessWidget {
+  const new({required this.count, required this.child});
+
+  final int count;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Semantics(
+      label: AppLocalizations.of(context)!.diaryMealEntryCount(count),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          child,
+          Positioned(
+            right: -AppSpacing.xxs,
+            bottom: -AppSpacing.xxs,
+            child: ExcludeSemantics(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colors.primary,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(color: colors.surface, width: 2),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs,
+                    vertical: AppSpacing.xxs,
+                  ),
+                  child: Text(
+                    '$count',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.onPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -40,8 +40,8 @@ state, and calorie-owned side effects from health or weight changes.
 - `presentation/pages/tdee_analytics_page.dart` for visual TDEE expenditure,
   flux range corridor, and goal anticipation analysis (routed via
   `AppRoutes.homeCaloriesAnalytics`).
-- Debug-only surfaces under `debug/`, currently composed by the Diary home shell
-  only in debug builds.
+- `debug/calorie_debug_menu_section.dart`, a debug-only list of dump actions
+  that the Home side menu shows only in debug builds.
 
 Other features should depend on domain types or complete widgets instead of
 reassembling Calories internals. New calorie-owned side effects should live in

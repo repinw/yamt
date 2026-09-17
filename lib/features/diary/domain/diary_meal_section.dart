@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/diary/domain/diary_meal_entry_group.dart';
 
 part 'diary_meal_section.g.dart';
 
@@ -79,11 +80,8 @@ class DiaryMealEntry {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMealSection {
   /// Creates a diary meal section.
-  const new({
-    required this.mealType,
-    required this.entries,
-    required this.totalKcal,
-  });
+  new({required this.mealType, required this.entries, required this.totalKcal})
+    : entryGroups = groupDiaryMealEntries(entries);
 
   /// Creates data from persisted JSON.
   factory fromJson(Map<String, dynamic> json) =>
@@ -104,6 +102,10 @@ class DiaryMealSection {
 
   /// Section kcal total.
   final double totalKcal;
+
+  /// [entries] with identical foods merged, computed once.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final List<DiaryMealEntryGroup> entryGroups;
 
   /// Total protein in grams across all entries in this section.
   double get totalProtein =>

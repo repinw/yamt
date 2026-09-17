@@ -128,6 +128,18 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get homeSettings;
 
+  /// No description provided for @homeProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get homeProgress;
+
+  /// No description provided for @homeMenuTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get homeMenuTooltip;
+
   /// No description provided for @aiChefTooltip.
   ///
   /// In en, this message translates to:
@@ -4077,6 +4089,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Left today'**
   String get diaryBalanceLeftTodayLabel;
+
+  /// No description provided for @diaryBalanceOverGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Over goal'**
+  String get diaryBalanceOverGoalLabel;
+
+  /// No description provided for @diaryBalanceShowDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all numbers'**
+  String get diaryBalanceShowDetails;
+
+  /// No description provided for @diaryBalanceHideDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Show fewer numbers'**
+  String get diaryBalanceHideDetails;
+
+  /// No description provided for @diaryAmountLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} left'**
+  String diaryAmountLeft(String amount);
+
+  /// No description provided for @diaryAmountOver.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} over'**
+  String diaryAmountOver(String amount);
+
+  /// No description provided for @diaryMealEntryCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String diaryMealEntryCount(int count);
+
+  /// No description provided for @progressTdeeTrendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE and weight trend'**
+  String get progressTdeeTrendTitle;
+
+  /// No description provided for @progressTdeeTrendSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Burn curve, fluctuation range and goal forecast'**
+  String get progressTdeeTrendSubtitle;
 
   /// No description provided for @diaryBalanceBaseLabel.
   ///

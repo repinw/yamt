@@ -1,11 +1,10 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_actions_menu.dart';
+import 'package:yamt/core/widgets/home_shell_menu_button.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_calendar_overview_sheet/diary_calendar_overview_sheet.dart';
@@ -133,10 +132,8 @@ class _DiaryTopBar extends ConsumerWidget {
                     controller.selectDay(pickedDay);
                   }
                 },
-                actions: const [
-                  DiaryDayTypeToggle(),
-                  if (kDebugMode) CalorieDebugActionsMenu(),
-                ],
+                leadingActions: const [HomeShellMenuButton()],
+                actions: const [DiaryDayTypeToggle()],
               ),
             ),
           ),

@@ -5,11 +5,11 @@ import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 void main() {
   group('DiaryMealSection macro totals', () {
     test('computes totalProtein, totalCarbs, and totalFat from entries', () {
-      const section = DiaryMealSection(
+      final section = DiaryMealSection(
         mealType: MealType.lunch,
         totalKcal: 650,
         entries: [
-          DiaryMealEntry(
+          const DiaryMealEntry(
             id: 'chicken',
             mealType: MealType.lunch,
             name: 'Chicken Breast',
@@ -18,7 +18,7 @@ void main() {
             totalCarbs: 0,
             totalFat: 5.2,
           ),
-          DiaryMealEntry(
+          const DiaryMealEntry(
             id: 'rice',
             mealType: MealType.lunch,
             name: 'White Rice',
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('returns 0 when section has no entries', () {
-      const section = DiaryMealSection(
+      final section = DiaryMealSection(
         mealType: MealType.dinner,
         totalKcal: 0,
         entries: [],

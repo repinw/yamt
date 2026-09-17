@@ -125,7 +125,7 @@ final class CalorieWeekConsumptionSnapshotProvider
 }
 
 String _$calorieWeekConsumptionSnapshotHash() =>
-    r'94debead174ee08ef160f4bef048b07a2810f7de';
+    r'6ba6dba802963acc759a066f0ff4c016c118d2a9';
 
 /// Calorie week consumption snapshot for window.
 
@@ -270,7 +270,7 @@ final class CalorieWeekOverviewProvider
 }
 
 String _$calorieWeekOverviewHash() =>
-    r'fec207db49ed096beb332cfd22a84252060dc198';
+    r'b225b1492e2e058c035ea73a9ae7890fbe23693d';
 
 /// Calorie week overview for window.
 

@@ -180,11 +180,11 @@ DiaryDayDashboardData _dashboardData(DateTime day) {
     weekOverview: _weekOverview(day),
     selectedDayEntries: [entry],
     runState: const BurnWeekRunState.initial(),
-    mealSections: const [
+    mealSections: [
       DiaryMealSection(
         mealType: MealType.breakfast,
         entries: [
-          DiaryMealEntry(
+          const DiaryMealEntry(
             id: 'entry-1',
             mealType: MealType.breakfast,
             name: 'Oats',

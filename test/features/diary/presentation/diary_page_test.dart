@@ -63,6 +63,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_weekly_progress_section.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -691,7 +692,7 @@ void main() {
     expect(find.text('Could not reject the weekly check-in.'), findsOneWidget);
   });
 
-  testWidgets('shows weekly balance beside weight without activity metrics', (
+  testWidgets('weekly progress shows balance beside weight without activity', (
     tester,
   ) async {
     const healthStatus = HealthConnectionStatus(
@@ -711,6 +712,9 @@ void main() {
           workouts: [],
         ),
       },
+      body: SingleChildScrollView(
+        child: DiaryWeeklyProgressSection(selectedDay: selectedDay),
+      ),
     );
 
     await _pumpFrames(tester);
@@ -721,7 +725,7 @@ void main() {
     expect(find.text('ACTIVITY'), findsNothing);
   });
 
-  testWidgets('shows weekly and weight skeleton while dashboard is loading', (
+  testWidgets('weekly progress shows skeleton while dashboard is loading', (
     tester,
   ) async {
     await _pumpDiaryPage(
@@ -734,12 +738,35 @@ void main() {
         error: null,
       ),
       initialFrameCount: 0,
+      body: SingleChildScrollView(
+        child: DiaryWeeklyProgressSection(selectedDay: selectedDay),
+      ),
     );
 
     expect(find.byType(DiaryActivityWeightSection), findsOneWidget);
     expect(find.byType(DiaryWeeklyBalanceSummary), findsOneWidget);
-    expect(find.byType(DiaryWeeklyCheckInSection), findsNothing);
   });
+
+  testWidgets(
+    'diary no longer shows weekly progress or check-in while loading',
+    (tester) async {
+      await _pumpDiaryPage(
+        tester,
+        selectedDay: selectedDay,
+        dashboardState: const DiaryDayDashboardState(
+          data: null,
+          isFromCache: false,
+          isRefreshing: true,
+          error: null,
+        ),
+        initialFrameCount: 0,
+      );
+
+      expect(find.byType(DiaryWeeklyProgressSection), findsNothing);
+      expect(find.byType(DiaryActivityWeightSection), findsNothing);
+      expect(find.byType(DiaryWeeklyCheckInSection), findsNothing);
+    },
+  );
 
   testWidgets('shows weekly check-in success card for todays learned target', (
     tester,
@@ -1242,6 +1269,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   bool includeHomeShellChrome = false,
   bool useGoRouter = false,
   int initialFrameCount = 8,
+  Widget? body,
 }) async {
   final resolvedLogRepository = logRepository ?? FakeCalorieLogRepository();
   final resolvedSettingsRepository =
@@ -1331,7 +1359,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   });
 
   final diaryPage = Scaffold(
-    body: DiaryPage(includeHomeShellChrome: includeHomeShellChrome),
+    body: body ?? DiaryPage(includeHomeShellChrome: includeHomeShellChrome),
   );
   final app = useGoRouter
       ? MaterialApp.router(

@@ -33,6 +33,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
+import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 
 /// Builds the complete route tree for `GoRouter`.
 List<RouteBase> buildAppRoutes(Ref ref) {
@@ -82,6 +83,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       builder: (context, state) => ProductSearchHubSearchPage(
         args: resolveProductSearchHubRouteArgs(state.extra),
       ),
+    ),
+    GoRoute(
+      path: AppRoutes.homeSettings,
+      builder: (context, state) => const SettingsPage(),
     ),
     GoRoute(
       path: AppRoutes.homeSettingsAccount,

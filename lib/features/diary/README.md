@@ -23,13 +23,21 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
 
 - `presentation/diary_page.dart` is the main page.
 - `presentation/widgets/diary_meals_section.dart` owns the quick-eat buttons
-  and the meals logged on the selected day.
+  and the meals logged on the selected day. Identical foods in one meal are
+  merged into one row (`domain/diary_meal_entry_group.dart`) that expands to
+  its single entries.
 - `presentation/widgets/diary_macro_strip/` owns the compact kcal and macro
   strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it
   in stages as the daily card's kcal bar and macro bars scroll away; the page
   places the trigger sliver directly above the daily card.
+- `presentation/widgets/diary_weekly_progress_section.dart` is the weekly
+  budget, activity, and weight card. The Progress tab shows it; the diary page
+  does not.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
   diary-facing daily and weekly calorie balance UI.
+  The daily card is quiet by default (kcal and grams left only) and shows all
+  numbers after a tap. Over the target it shows the overage with an
+  "Over goal" label in the error color.
 
 Other features should compose the page or complete widgets instead of wiring
 Diary application providers directly.
@@ -56,6 +64,8 @@ Main application adapters and mappers:
   updates through the calorie goal controller)
 - `data/diary_day_dashboard_cache_store.dart`
 - `presentation/controllers/diary_day_dashboard_controller.dart`
+- `presentation/controllers/diary_balance_details_controller.dart` (quiet or
+  detailed daily card and macro strip; saved in `AppPreferences`)
 - `presentation/diary_calendar_controller.dart` (selected day and
   `diaryCalendarBoundsProvider`; range rules in `domain/diary_calendar_bounds.dart`)
 
