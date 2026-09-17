@@ -39,6 +39,7 @@ const Set<String> _directInteractionAllowedPaths = <String>{
   'lib/core/widgets/app_dropdown_button.dart',
   'lib/core/widgets/app_ink_well.dart',
   'lib/core/widgets/app_selection_list_tiles.dart',
+  'lib/core/widgets/app_switch_list_tile.dart',
 };
 
 const Set<String> _feedbackConfigurationAllowedPaths = <String>{

@@ -1,7 +1,7 @@
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
+import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/inventory/presentation/models/receipt_item_editor_draft.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_discount_rows_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_form_field_metadata.dart';

@@ -61,7 +61,6 @@ bool _isSubjectToLineCountCheck(File file) {
 /// When files are refactored, they are removed from this set so they
 /// never regress (ratchet principle).
 const _legacyLargeFilesAllowlist = <String>{
-  'lib/core/widgets/app_selection_list_tiles.dart',
   'lib/core/widgets/home_shell_chrome.dart',
   'lib/core/widgets/text_voice_search_bar.dart',
   'lib/features/activity/presentation/widgets/activity_weight_section/diary_compact_activity_weight_surface.dart',

@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
+import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/onboarding/steps/'
     'step_training_days_cycling_preview.dart';
