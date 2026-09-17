@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/core/widgets/app_field_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Eat-now date and meal type controls for AI search.
@@ -113,30 +113,10 @@ class AiEatWhenCard extends StatelessWidget {
       );
     }
 
-    return Material(
-      color: Colors.transparent,
-      child: AppInkWell(
-        key: const Key('manual_product_ai_logged_at_button'),
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: colors.outlineVariant),
-          ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 66),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.lg,
-              ),
-              child: content,
-            ),
-          ),
-        ),
-      ),
+    return AppFieldCard(
+      tapTargetKey: const Key('manual_product_ai_logged_at_button'),
+      onTap: onPressed,
+      child: content,
     );
   }
 }
